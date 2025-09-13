@@ -1,21 +1,21 @@
 ---
-name: Segðu frá villu
-about: Segðu okkur hvað gerðist svo við getum bætt okkur
-title: "[VILLA] "
+name: Bug report
+about: Create a report to help us improve
+title: ''
 labels: ''
 assignees: ''
 
 ---
 
-**Lýstu villunni**
-Skýr og hnitmiðuð lýsing á villunni.
+**Describe the bug**
+A clear and concise description of what the bug is.
 
-**Hvernig er hægt að endurframkalla**
-Skref sem hægt er að nota til að endurskapa villuna:
-1. Farðu á '...'
-2. Smelltu á '....'
-3. Skrunaði niður að '....'
-4. Sjá villu
+**To Reproduce**
+Steps to reproduce the behavior:
+1. Go to '...'
+2. Click on '....'
+3. Scroll down to '....'
+4. See error
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.
