@@ -1,0 +1,22 @@
+# Dockerfile for OIDC Bridge Proxy
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies (use install instead of ci since we don't have package-lock.json)
+RUN npm install --production
+
+# Copy application files
+COPY oidc-bridge-proxy.js ./
+
+# Expose port (Cloud Run uses 8080 by default)
+EXPOSE 8080
+
+# Set environment variable for port
+ENV PORT=8080
+
+# Start the application
+CMD ["node", "oidc-bridge-proxy.js"]

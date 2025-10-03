@@ -1,0 +1,10 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/ekklesia-prod-10-2025/zitadel:latest'
+      - '.'
+
+images:
+  - 'gcr.io/ekklesia-prod-10-2025/zitadel:latest'
