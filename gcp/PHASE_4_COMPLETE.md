@@ -52,13 +52,13 @@ User → ZITADEL → OIDC Bridge → Kenni.is
 ## 👤 User Details
 
 ### Registered User
-- **User ID:** 340504966944793723
-- **Email:** gudrodur@gmail.com
-- **Name:** Guðröður Atli Jónsson
-  - Given Name: Guðröður Atli
-  - Family Name: Jónsson
-- **Phone:** +3547758493
-- **Kenni.is Subject ID:** a6399cb7-1019-4165-9b8c-426c0ad48dd4
+- **User ID:** 340504966944793723 (admin user)
+- **Email:** g******@gmail.com
+- **Name:** G****** A*** J******
+  - Given Name: G****** A***
+  - Family Name: J******
+- **Phone:** +354 *** ****
+- **Kenni.is Subject ID:** (masked)
 
 ### Authentication Methods
 - ✅ **External IDP:** Kenni.is (linked)
@@ -148,7 +148,7 @@ Redirect URI: https://oidc-bridge-proxy-ymzrguoifa-nw.a.run.app/callback
 
 ### Test 2: Password Login ✅
 1. Navigate to: https://zitadel-ymzrguoifa-nw.a.run.app/ui/login/
-2. Enter email: gudrodur@gmail.com
+2. Enter email: (user email)
 3. Enter password
 4. **Result:** Successfully authenticated and logged in
 

@@ -1,0 +1,46 @@
+# Code Rules for Claude Code
+
+## Git Commit Rules
+
+### PROHIBITED: Claude Code Attribution
+- ❌ NEVER add "🤖 Generated with [Claude Code](https://claude.com/claude-code)" to commit messages
+- ❌ NEVER add "Co-Authored-By: Claude <noreply@anthropic.com>" to commit messages
+- ❌ NEVER add any AI attribution or co-authorship markers to git commits
+- ✅ All commits must be authored solely by the human user
+
+### Documentation Rules
+
+#### Personal Information Protection
+- ❌ NEVER include full names in public documentation
+- ❌ NEVER include complete email addresses in public documentation
+- ❌ NEVER include phone numbers in public documentation
+- ⚠️ Kennitala: Show first 6 digits (birthdate), mask last 4 digits
+- ✅ Mask personal information when documenting test results
+
+#### Masking Format
+When documenting personal information, use this format:
+- Names: `G****** A*** J******` (first letter + asterisks for each part)
+- Email: `g******@gmail.com` (first letter + asterisks before @)
+- Phone: `+354 *** ****` (country code + masked digits)
+- Kennitala: `200978-****` (show birthdate DDMMYY, mask last 4 digits)
+
+#### Example:
+```markdown
+❌ WRONG:
+- Given Name: Guðröður Atli
+- Email: gudrodur@gmail.com
+- Phone: +354 775 8493
+- Kennitala: 200978-3589
+
+✅ CORRECT:
+- Given Name: G****** A***
+- Email: g******@gmail.com
+- Phone: +354 *** ****
+- Kennitala: 200978-****
+```
+
+## Code Authorship
+
+- All code, documentation, and commits are authored by the human user
+- Claude Code is a tool/assistant, not an author or co-author
+- No AI attribution markers in any committed files
