@@ -20,11 +20,11 @@
 9. **SUCCESS!** ✅
 
 ### ✅ User Information Retrieved
-- **Name:** Guðröður Atli Jónsson (split correctly as given_name + family_name)
-- **Email:** gudrodur@gmail.com
-- **Phone:** +3547758493
-- **Subject ID:** a6399cb7-1019-4165-9b8c-426c0ad48dd4
-- **National ID:** (included in token claims)
+- **Name:** G****** A*** J****** (split correctly as given_name + family_name)
+- **Email:** g******@gmail.com
+- **Phone:** +354 *** ****
+- **Subject ID:** (masked)
+- **National ID:** (included in token claims - masked)
 
 ---
 
@@ -182,8 +182,8 @@ curl https://oidc-bridge-proxy-ymzrguoifa-nw.a.run.app/.well-known/openid-config
 ### Test 3: Token Claims ✅
 From OIDC Bridge logs:
 ```
-Subject: a6399cb7-1019-4165-9b8c-426c0ad48dd4
-Name split: "Guðröður Atli Jónsson" → "Guðröður Atli" + "Jónsson"
+Subject: (masked)
+Name split: "G****** A*** J******" → "G****** A***" + "J******"
 Audience: zitadel-kenni-bridge
 Issuer: https://oidc-bridge-proxy-ymzrguoifa-nw.a.run.app
 ```
@@ -232,7 +232,7 @@ Issuer: https://oidc-bridge-proxy-ymzrguoifa-nw.a.run.app
 ### 5. Name Splitting for ZITADEL
 - Kenni.is provides single `name` field
 - ZITADEL expects `given_name` and `family_name`
-- Split on last space: "Guðröður Atli Jónsson" → "Guðröður Atli" + "Jónsson"
+- Split on last space: "G****** A*** J******" → "G****** A***" + "J******"
 
 ---
 
@@ -240,9 +240,9 @@ Issuer: https://oidc-bridge-proxy-ymzrguoifa-nw.a.run.app
 
 ### 1. ✅ Complete User Registration - DONE!
 User successfully registered in ZITADEL:
-- **User ID:** 340504966944793723
-- **Email:** gudrodur@gmail.com
-- **Linked to:** Kenni.is (Subject ID: a6399cb7-1019-4165-9b8c-426c0ad48dd4)
+- **User ID:** 340504966944793723 (admin user)
+- **Email:** g******@gmail.com
+- **Linked to:** Kenni.is (Subject ID: masked)
 - **Password:** Set for hybrid authentication
 - **Authentication methods:** Kenni.is (external) + Password (local)
 
