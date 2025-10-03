@@ -1,0 +1,20 @@
+ExternalDomain: zitadel-ymzrguoifa-nw.a.run.app
+ExternalSecure: true
+ExternalPort: 443
+
+FirstInstance:
+  Skip: false
+  InstanceName: Ekklesia
+  DefaultLanguage: en
+  Org:
+    Name: Ekklesia
+    Human:
+      UserName: admin
+      FirstName: Admin
+      LastName: User
+      Email:
+        Address: admin@ekklesia.is
+        Verified: true
+      PreferredLanguage: en
+      Password: Admin123!@#Admin
+      PasswordChangeRequired: false
