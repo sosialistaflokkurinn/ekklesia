@@ -1,0 +1,30 @@
+{
+  "name": "ekklesia-members",
+  "version": "2.0.0",
+  "description": "Ekklesia Members Service - OIDC Authentication",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "keywords": [
+    "ekklesia",
+    "members",
+    "fastify"
+  ],
+  "author": "Sósíalistaflokkurinn",
+  "license": "ISC",
+  "dependencies": {
+    "@fastify/cookie": "^9.3.1",
+    "@fastify/session": "^10.9.0",
+    "dotenv": "^17.2.3",
+    "fastify": "^4.28.1",
+    "fastify-plugin": "^5.1.0",
+    "openid-client": "^5.7.1",
+    "pino": "^9.3.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
