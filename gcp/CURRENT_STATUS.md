@@ -58,12 +58,12 @@
   - ✅ Token audience (set to `zitadel-kenni-bridge`)
   - ✅ Redirect URI (updated to `/callback` endpoint)
 - **User Info Retrieved:**
-  - Name: "Guðröður Atli Jónsson" (split correctly) ✅
-  - Email: gudrodur@gmail.com ✅
-  - Phone: +3547758493 ✅
-  - Subject ID: a6399cb7-1019-4165-9b8c-426c0ad48dd4 ✅
+  - Name: "G****** A*** J******" (split correctly) ✅
+  - Email: g******@gmail.com ✅
+  - Phone: +354 *** **** ✅
+  - Subject ID: (masked) ✅
 - **User Registration:** ✅ **COMPLETE!**
-  - User ID: 340504966944793723 ✅
+  - User ID: 340504966944793723 (admin user) ✅
   - Linked to Kenni.is identity ✅
   - Password set for hybrid authentication ✅
   - Can login via Kenni.is OR username/password ✅
