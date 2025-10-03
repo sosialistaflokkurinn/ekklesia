@@ -4,6 +4,7 @@
 
 **Last Updated**: October 3, 2025
 **Deployment Status**: Production infrastructure live on GCP
+**Documentation**: Reorganized into architecture/, specifications/, guides/, and archive/ directories
 
 ---
 
@@ -69,8 +70,29 @@ Components:
 
 ## Documentation Files
 
+### Directory Structure
+```
+docs/
+├── DOCUMENTATION_INDEX.md          # This file
+├── architecture/                   # System design documents
+│   ├── identity.md
+│   └── TECHNICAL_SOLUTION.md
+├── specifications/                 # Technical specifications
+│   ├── MEMBERS_OIDC_SPEC.md
+│   └── members-oidc-v1.0.md
+├── guides/                         # Implementation guides
+│   ├── GITHUB_MCP_GUIDE.md
+│   └── MEMBERS_DEPLOYMENT_GUIDE.md
+├── integration/                    # Integration tests
+└── archive/                        # Historical/backup files
+    ├── github_issue_comments.md
+    └── identity.md.backup
+```
+
+---
+
 ### 1. Identity & Authentication
-**File**: `/home/gudro/Development/projects/ekklesia/docs/identity.md`
+**File**: `/home/gudro/Development/projects/ekklesia/docs/architecture/identity.md`
 
 **Contents**:
 - Production infrastructure overview
@@ -90,7 +112,7 @@ Components:
 ---
 
 ### 2. Technical Solution
-**File**: `/home/gudro/Development/projects/ekklesia/docs/TECHNICAL_SOLUTION.md`
+**File**: `/home/gudro/Development/projects/ekklesia/docs/architecture/TECHNICAL_SOLUTION.md`
 
 **Contents**:
 - Production URLs and endpoints
@@ -114,57 +136,45 @@ Components:
 
 ---
 
-### 3. Architecture: Development vs Production
-**File**: `/home/gudro/Development/projects/ekklesia/docs/ARCHITECTURE_DEV_VS_PROD.md`
+### 3. Members OIDC Specification
+**File**: `/home/gudro/Development/projects/ekklesia/docs/specifications/members-oidc-v1.0.md`
 
 **Contents**:
-- Comparison of development and production environments
-- Migration path from dev to prod
-- Environment-specific configurations
-- Testing strategies
+- Complete OIDC integration specification
+- Authentication flow documentation
+- API endpoints and configuration
+- Security requirements
 
 ---
 
-### 4. GCP Migration Plan
-**File**: `/home/gudro/Development/projects/ekklesia/docs/GCP_MIGRATION_PLAN.md`
+### 4. GitHub MCP Guide
+**File**: `/home/gudro/Development/projects/ekklesia/docs/guides/GITHUB_MCP_GUIDE.md`
 
 **Contents**:
-- Migration strategy from ZITADEL Cloud to self-hosted
-- Phase-by-phase implementation plan
-- Risk assessment and mitigation
-- Rollback procedures
+- GitHub integration guide
+- MCP (Model Context Protocol) usage
+- Configuration and setup instructions
 
 ---
 
-### 5. ZITADEL Setup Checklist
-**File**: `/home/gudro/Development/projects/ekklesia/docs/ZITADEL_SETUP_CHECKLIST.md`
+### 5. Members Deployment Guide
+**File**: `/home/gudro/Development/projects/ekklesia/docs/guides/MEMBERS_DEPLOYMENT_GUIDE.md`
 
 **Contents**:
-- Step-by-step setup checklist
-- Configuration verification steps
-- Post-deployment validation
-- Security hardening tasks
+- Step-by-step deployment instructions
+- Environment configuration
+- Testing and verification procedures
 
 ---
 
-### 6. GitHub Issue Comments
-**File**: `/home/gudro/Development/projects/ekklesia/docs/github_issue_comments.md`
+### 6. GitHub Issue Comments (Archived)
+**File**: `/home/gudro/Development/projects/ekklesia/docs/archive/github_issue_comments.md`
 
 **Contents**:
 - Template comments for closing GitHub issues #2, #3, #4
 - Production deployment confirmation
 - Status updates for each issue
 - Combined comment for bulk update
-
----
-
-### 7. Documentation Updates Log
-**File**: `/home/gudro/Development/projects/ekklesia/docs/DOCUMENTATION_UPDATE_2025-10-01.md`
-
-**Contents**:
-- Historical documentation updates
-- Change log for documentation revisions
-- Previous migration notes
 
 ---
 

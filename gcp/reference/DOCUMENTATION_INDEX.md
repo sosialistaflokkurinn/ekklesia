@@ -1,7 +1,7 @@
 # 📚 Documentation Index - GCP Deployment
 
 **Last Updated:** 2025-10-03
-**Status:** ✅ All documentation current - Members Service Milestone 2 Complete!
+**Status:** ✅ All documentation current - Kenni.is authentication FULLY INTEGRATED!
 
 ---
 
@@ -9,25 +9,24 @@
 
 ### 🚀 Getting Started
 - **README.md** - Project overview and current status
-- **guides/QUICKSTART.md** - Fast-track deployment guide
-- **reference/PHASE_4_COMPLETE.md** ⭐ - Complete project summary - PRODUCTION READY!
-- **reference/MEMBERS_OIDC_SUCCESS.md** ⭐ NEW! - Members service OIDC authentication (Milestone 2)
-- **reference/KENNI_INTEGRATION_SUCCESS.md** - Kenni.is authentication integration complete!
-- **reference/DEPLOYMENT_SUCCESS.md** - OIDC Bridge deployment success
+- **QUICKSTART.md** - Fast-track deployment guide
+- **PHASE_4_COMPLETE.md** ⭐ NEW! - Complete project summary - PRODUCTION READY!
+- **KENNI_INTEGRATION_SUCCESS.md** - Kenni.is authentication integration complete!
+- **DEPLOYMENT_SUCCESS.md** - OIDC Bridge deployment success
 
 ### 📖 Comprehensive Guides
-- **guides/DEPLOYMENT_GUIDE.md** - Complete OIDC Bridge Proxy deployment
-- **guides/IAM_TROUBLESHOOTING.md** - Permission issues and solutions
-- **guides/LOAD_BALANCER_SETUP.md** - Load Balancer + Custom Domain configuration
-- **guides/GCP_QUICKSTART.md** - Quick setup reference
+- **DEPLOYMENT_GUIDE.md** - Complete OIDC Bridge Proxy deployment
+- **GCLOUD_COMMANDS_REFERENCE.md** - All gcloud CLI commands explained
+- **IAM_TROUBLESHOOTING.md** - Permission issues and solutions
+- **ZITADEL_DEPLOYMENT_SUCCESS.md** - Complete ZITADEL deployment report
+- **ZITADEL_QUICK_REFERENCE.md** - ZITADEL commands and fixes
+- **ZITADEL_CLI_SETUP.md** ⭐ NEW! - CLI/API access with service account and PAT
+- **LOAD_BALANCER_SETUP.md** - Load Balancer + Custom Domain configuration
 
 ### 🔧 Quick Reference
-- **reference/QUICK_REFERENCE.md** - Common commands and tests
-- **reference/GCLOUD_COMMANDS_REFERENCE.md** - All gcloud CLI commands explained
-- **reference/CURRENT_STATUS.md** - Detailed status (Íslenska)
-- **reference/ZITADEL_QUICK_REFERENCE.md** - ZITADEL commands and fixes
-- **reference/ZITADEL_CLI_SETUP.md** ⭐ NEW! - CLI/API access with service account and PAT
-- **reference/ZITADEL_DEPLOYMENT_SUCCESS.md** - Complete ZITADEL deployment report
+- **QUICK_REFERENCE.md** - Common commands and tests
+- **CURRENT_STATUS.md** - Detailed status (Íslenska)
+- **GCP_QUICKSTART.md** - Quick setup reference
 
 ---
 
@@ -47,7 +46,7 @@
 
 ---
 
-#### reference/PHASE_4_COMPLETE.md ⭐ NEW!
+#### PHASE_4_COMPLETE.md ⭐ NEW!
 **Purpose:** Complete project summary - All phases complete!
 **Contains:**
 - Complete integration stack overview
@@ -63,7 +62,7 @@
 
 ---
 
-#### reference/KENNI_INTEGRATION_SUCCESS.md
+#### KENNI_INTEGRATION_SUCCESS.md
 **Purpose:** Complete Kenni.is authentication integration success report
 **Contains:**
 - Full authentication flow explanation
@@ -79,7 +78,7 @@
 
 ---
 
-#### reference/ZITADEL_CLI_SETUP.md ⭐ NEW!
+#### ZITADEL_CLI_SETUP.md ⭐ NEW!
 **Purpose:** Complete guide for ZITADEL CLI/API access
 **Contains:**
 - Service account setup (user "cli")
@@ -96,7 +95,7 @@
 
 ---
 
-#### reference/ZITADEL_DEPLOYMENT_SUCCESS.md
+#### ZITADEL_DEPLOYMENT_SUCCESS.md
 **Purpose:** Complete ZITADEL deployment success report  
 **Contains:**
 - What was deployed (ZITADEL + Cloud SQL)
@@ -110,7 +109,7 @@
 
 ---
 
-#### reference/ZITADEL_QUICK_REFERENCE.md ⭐ NEW!
+#### ZITADEL_QUICK_REFERENCE.md ⭐ NEW!
 **Purpose:** Fast ZITADEL command lookup and troubleshooting  
 **Contains:**
 - Critical configuration values
@@ -125,7 +124,7 @@
 
 ---
 
-#### reference/DEPLOYMENT_SUCCESS.md
+#### DEPLOYMENT_SUCCESS.md
 **Purpose:** OIDC Bridge Proxy success summary  
 **Contains:**
 - OIDC Bridge deployment details
@@ -139,7 +138,7 @@
 
 ---
 
-#### reference/CURRENT_STATUS.md (Íslenska)
+#### CURRENT_STATUS.md (Íslenska)
 **Purpose:** Detailed status report in Icelandic  
 **Contains:**
 - Success confirmation
@@ -152,7 +151,7 @@
 
 ---
 
-#### guides/DEPLOYMENT_GUIDE.md
+#### DEPLOYMENT_GUIDE.md
 **Purpose:** Comprehensive deployment walkthrough  
 **Contains:**
 - Prerequisites
@@ -165,7 +164,7 @@
 
 ---
 
-#### reference/QUICK_REFERENCE.md
+#### QUICK_REFERENCE.md
 **Purpose:** Fast command lookup  
 **Contains:**
 - Service endpoints
@@ -178,7 +177,7 @@
 
 ---
 
-#### reference/GCLOUD_COMMANDS_REFERENCE.md
+#### GCLOUD_COMMANDS_REFERENCE.md
 **Purpose:** Complete gcloud CLI reference  
 **Contains:**
 - All commands used
@@ -191,7 +190,7 @@
 
 ---
 
-#### guides/IAM_TROUBLESHOOTING.md
+#### IAM_TROUBLESHOOTING.md
 **Purpose:** Permission problem solving  
 **Contains:**
 - Common permission errors
@@ -204,7 +203,7 @@
 
 ---
 
-#### guides/QUICKSTART.md
+#### QUICKSTART.md
 **Purpose:** Fast deployment guide  
 **Contains:**
 - Minimal steps to deploy
@@ -216,7 +215,7 @@
 
 ---
 
-#### guides/GCP_QUICKSTART.md
+#### GCP_QUICKSTART.md
 **Purpose:** GCP project setup reference  
 **Contains:**
 - Initial project setup
@@ -228,9 +227,9 @@
 
 ---
 
-### Deployment Scripts
+### Scripts
 
-#### deployment/deploy_proxy.sh ⭐
+#### deploy_proxy.sh ⭐
 **Purpose:** Main deployment script  
 **What it does:**
 1. Builds Docker container
@@ -243,7 +242,7 @@
 
 ---
 
-#### deployment/fix_permissions.sh
+#### fix_permissions.sh
 **Purpose:** Grant basic IAM permissions  
 **What it does:**
 - Grants Cloud Build permissions
@@ -255,7 +254,7 @@
 
 ---
 
-#### deployment/fix_actAs_permission.sh ⭐
+#### fix_actAs_permission.sh ⭐
 **Purpose:** Grant Service Account User role  
 **What it does:**
 - Grants `iam.serviceAccountUser` role
@@ -265,7 +264,7 @@
 
 ---
 
-#### deployment/test_region_latency.sh
+#### test_region_latency.sh
 **Purpose:** Find best GCP region  
 **What it does:**
 - Pings GCP regions
@@ -276,7 +275,7 @@
 
 ---
 
-#### deployment/setup_secrets.sh
+#### setup_secrets.sh
 **Purpose:** Create secrets in Secret Manager  
 **What it does:**
 - Reads from .env.zitadel
@@ -287,7 +286,7 @@
 
 ---
 
-#### deployment/setup_gcp_project.sh
+#### setup_gcp_project.sh
 **Purpose:** Complete project setup  
 **What it does:**
 - Enables APIs
@@ -299,9 +298,9 @@
 
 ---
 
-### Deployment Configuration Files
+### Configuration Files
 
-#### deployment/cloudbuild.yaml
+#### cloudbuild.yaml
 **Purpose:** Cloud Build configuration  
 **Defines:**
 - Docker build steps
@@ -311,7 +310,7 @@
 
 ---
 
-#### deployment/Dockerfile.bridge-proxy
+#### Dockerfile.bridge-proxy
 **Purpose:** Container definition  
 **Defines:**
 - Base image (node:18-alpine)
@@ -321,7 +320,7 @@
 
 ---
 
-#### deployment/package.json
+#### package.json
 **Purpose:** Node.js dependencies  
 **Contains:**
 - express
@@ -332,7 +331,7 @@
 
 ---
 
-#### deployment/oidc-bridge-proxy.js
+#### oidc-bridge-proxy.js
 **Purpose:** Main application code  
 **Contains:**
 - OIDC provider implementation
@@ -355,43 +354,43 @@
 ## 🎯 Reading Guide by Scenario
 
 ### Scenario 1: "I want to deploy ZITADEL quickly"
-1. **reference/ZITADEL_QUICK_REFERENCE.md** - Fast deployment and commands
-2. **reference/ZITADEL_DEPLOYMENT_SUCCESS.md** - What to expect
+1. **ZITADEL_QUICK_REFERENCE.md** - Fast deployment and commands
+2. **ZITADEL_DEPLOYMENT_SUCCESS.md** - What to expect
 
 ### Scenario 2: "I want to deploy OIDC Bridge quickly"
-1. **guides/QUICKSTART.md** - Fast deployment steps
-2. **reference/QUICK_REFERENCE.md** - Commands you'll need
+1. **QUICKSTART.md** - Fast deployment steps
+2. **QUICK_REFERENCE.md** - Commands you'll need
 
 ### Scenario 3: "I want to understand everything"
 1. **README.md** - Start here
-2. **guides/DEPLOYMENT_GUIDE.md** - Comprehensive OIDC Bridge guide
-3. **reference/ZITADEL_DEPLOYMENT_SUCCESS.md** - ZITADEL deployment details
-4. **reference/GCLOUD_COMMANDS_REFERENCE.md** - Learn commands
-5. **reference/DEPLOYMENT_SUCCESS.md** - See what worked
+2. **DEPLOYMENT_GUIDE.md** - Comprehensive OIDC Bridge guide
+3. **ZITADEL_DEPLOYMENT_SUCCESS.md** - ZITADEL deployment details
+4. **GCLOUD_COMMANDS_REFERENCE.md** - Learn commands
+5. **DEPLOYMENT_SUCCESS.md** - See what worked
 
 ### Scenario 4: "ZITADEL is broken"
-1. **reference/ZITADEL_QUICK_REFERENCE.md** - Common issues with fixes
-2. **reference/ZITADEL_DEPLOYMENT_SUCCESS.md** - Root cause analysis of past issues
+1. **ZITADEL_QUICK_REFERENCE.md** - Common issues with fixes
+2. **ZITADEL_DEPLOYMENT_SUCCESS.md** - Root cause analysis of past issues
 3. Check logs and compare with documented issues
 
 ### Scenario 5: "OIDC Bridge is broken"
-1. **guides/IAM_TROUBLESHOOTING.md** - Permission fixes
-2. **guides/DEPLOYMENT_GUIDE.md** - Troubleshooting section
-3. **reference/QUICK_REFERENCE.md** - Diagnostic commands
+1. **IAM_TROUBLESHOOTING.md** - Permission fixes
+2. **DEPLOYMENT_GUIDE.md** - Troubleshooting section
+3. **QUICK_REFERENCE.md** - Diagnostic commands
 
 ### Scenario 6: "What did we accomplish?"
-1. **reference/ZITADEL_DEPLOYMENT_SUCCESS.md** - ZITADEL deployment report
-2. **reference/DEPLOYMENT_SUCCESS.md** - OIDC Bridge deployment
-3. **reference/CURRENT_STATUS.md** - Status in Icelandic
+1. **ZITADEL_DEPLOYMENT_SUCCESS.md** - ZITADEL deployment report
+2. **DEPLOYMENT_SUCCESS.md** - OIDC Bridge deployment
+3. **CURRENT_STATUS.md** - Status in Icelandic
 4. **README.md** - Current state
 
 ### Scenario 7: "I need a specific command"
-1. **reference/ZITADEL_QUICK_REFERENCE.md** - ZITADEL commands
-2. **reference/QUICK_REFERENCE.md** - OIDC Bridge commands
-3. **reference/GCLOUD_COMMANDS_REFERENCE.md** - All commands
+1. **ZITADEL_QUICK_REFERENCE.md** - ZITADEL commands
+2. **QUICK_REFERENCE.md** - OIDC Bridge commands
+3. **GCLOUD_COMMANDS_REFERENCE.md** - All commands
 
 ### Scenario 8: "I want to use ZITADEL CLI/API"
-1. **reference/ZITADEL_CLI_SETUP.md** - Complete CLI setup and usage guide
+1. **ZITADEL_CLI_SETUP.md** - Complete CLI setup and usage guide
 2. Check service account: `cli` (User ID: 340499069199721595)
 3. Use PAT for authentication
 4. Follow API examples and security best practices
@@ -400,18 +399,18 @@
 
 ## 📊 Documentation Statistics
 
-**Total Files:** 30+
-**Documentation Files:** 18+ markdown files
-**Scripts:** 8+ bash scripts
-**Config Files:** 6+ files
+**Total Files:** 26
+**Documentation Files:** 15 markdown files
+**Scripts:** 6 bash scripts
+**Config Files:** 5 files
 
-**Lines of Documentation:** ~10,000+ lines
-**Commands Documented:** 150+ (including CLI/API, monitoring, operations)
+**Lines of Documentation:** ~7,500+ lines
+**Commands Documented:** 100+ (including CLI/API examples)
 **Issues Resolved:** 18 (all documented and fixed!)
-**Services Deployed:** 4 (OIDC Bridge + ZITADEL + Members + Load Balancer)
+**Services Deployed:** 3 (OIDC Bridge Proxy + ZITADEL + Load Balancer)
 **Integrations:** 1 (Kenni.is ✅ PRODUCTION READY!)
 **Users Registered:** 1 human + 1 service account (CLI access enabled)
-**Custom Domain:** auth.si-xj.org ✅ **LIVE with SSL!**
+**Custom Domain:** auth.si-xj.org (configured)
 
 ---
 
@@ -460,26 +459,26 @@
 ## 🎯 Most Important Files
 
 ### Top 3 for ZITADEL Operations
-1. **reference/ZITADEL_QUICK_REFERENCE.md** - Fast command lookup and troubleshooting
-2. **reference/ZITADEL_DEPLOYMENT_SUCCESS.md** - Complete deployment report and root cause analysis
+1. **ZITADEL_QUICK_REFERENCE.md** - Fast command lookup and troubleshooting
+2. **ZITADEL_DEPLOYMENT_SUCCESS.md** - Complete deployment report and root cause analysis
 3. **README.md** - Current status of both services
 
 ### Top 3 for OIDC Bridge Operations
-1. **reference/QUICK_REFERENCE.md** - Fast command lookup
+1. **QUICK_REFERENCE.md** - Fast command lookup
 2. **README.md** - Current status
-3. **deployment/deploy_proxy.sh** - Redeploy when needed
+3. **deploy_proxy.sh** - Redeploy when needed
 
 ### Top 3 for Learning
-1. **reference/ZITADEL_DEPLOYMENT_SUCCESS.md** - ZITADEL deployment with detailed debugging process
-2. **reference/DEPLOYMENT_SUCCESS.md** - OIDC Bridge deployment
-3. **guides/DEPLOYMENT_GUIDE.md** - How to deploy OIDC Bridge
-4. **reference/GCLOUD_COMMANDS_REFERENCE.md** - Understand gcloud commands
+1. **ZITADEL_DEPLOYMENT_SUCCESS.md** - ZITADEL deployment with detailed debugging process
+2. **DEPLOYMENT_SUCCESS.md** - OIDC Bridge deployment
+3. **DEPLOYMENT_GUIDE.md** - How to deploy OIDC Bridge
+4. **GCLOUD_COMMANDS_REFERENCE.md** - Understand gcloud commands
 
 ### Top 3 for Troubleshooting
-1. **reference/ZITADEL_QUICK_REFERENCE.md** - ZITADEL issues and fixes
-2. **guides/IAM_TROUBLESHOOTING.md** - Permission fixes
-3. **guides/DEPLOYMENT_GUIDE.md** - Common OIDC Bridge issues
-4. **reference/QUICK_REFERENCE.md** - Diagnostic commands
+1. **ZITADEL_QUICK_REFERENCE.md** - ZITADEL issues and fixes
+2. **IAM_TROUBLESHOOTING.md** - Permission fixes
+3. **DEPLOYMENT_GUIDE.md** - Common OIDC Bridge issues
+4. **QUICK_REFERENCE.md** - Diagnostic commands
 
 ---
 
@@ -517,29 +516,7 @@
 **User registration & hybrid auth completed:** 2025-10-03 ✅
 **CLI/API access setup completed:** 2025-10-03 ✅
 **DNS configuration fixed:** 2025-10-03 ✅ (Changed from CNAME to A record)
-**SSL certificate provisioned:** 2025-10-03 ✅ (ACTIVE)
-**ZITADEL external domain updated:** 2025-10-03 ✅ (auth.si-xj.org)
-**Members service deployed (M1):** 2025-10-03 ✅
-**Operational documentation completed:** 2025-10-03 ✅
 **Cloudflare API token saved:** 2025-10-03 ✅ (Secret Manager: `cloudflare-api-token`)
 **Phase 4 COMPLETE - PRODUCTION READY!** 🎉
-**Custom Domain:** https://auth.si-xj.org ✅ **LIVE AND WORKING!**
-**All infrastructure operational and documented**
-
-#### MEMBERS_OIDC_SUCCESS.md ⭐ NEW!
-**Purpose:** Members service OIDC authentication implementation success  
-**Contains:**
-- Full OIDC integration with ZITADEL
-- PKCE authentication flow implementation
-- Session management with secure cookies
-- Protected routes and middleware
-- Security features (state, nonce, token validation)
-- Organization membership setup
-- Issues resolved (session secret, undefined errors)
-- Deployment configuration
-- Testing procedures
-- Next steps for Milestone 3
-
-**Read this:** After completing Members service OIDC authentication to understand the implementation and deployment
-
----
+**Custom Domain:** auth.si-xj.org (SSL provisioning - DNS now correct!)
+**All documentation updated with DNS fix and current status**
