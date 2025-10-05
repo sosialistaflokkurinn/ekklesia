@@ -1,8 +1,8 @@
 # 🗺️ Ekklesia Platform - Master Documentation Map
 
-**Version**: 2.0.0
-**Last Updated**: 2025-10-03
-**Status**: Phase 4 Complete + Members Service Milestone 2 Complete
+**Version**: 3.2.0
+**Last Updated**: 2025-10-05
+**Status**: ✅ Firebase Migration Complete - Hybrid Architecture Operational
 
 ---
 
@@ -25,7 +25,7 @@
 
 **Ekklesia** is a democratic participation platform for Samstaða (Iceland Social Democratic Party), providing:
 
-- **Secure Authentication**: National eID (Kenni.is) integration via ZITADEL
+- **Secure Authentication**: National eID (Kenni.is) integration via Firebase/Identity Platform
 - **Member Portal**: View profile, roles, and participate in party activities
 - **Voting System**: Democratic decision-making platform
 - **Event Management**: Election and event administration
@@ -34,55 +34,72 @@
 
 | Component | Technology | Status |
 |-----------|-----------|--------|
-| **Identity Provider** | ZITADEL (self-hosted) | ✅ Production |
-| **Authentication Bridge** | Node.js OIDC Proxy | ✅ Production |
+| **Identity Provider** | Firebase/Identity Platform | ✅ Production (Free Tier) |
+| **Authentication Bridge** | Node.js OIDC Proxy (PKCE) | ✅ Production |
 | **National eID** | Kenni.is Integration | ✅ Production |
-| **Members Service** | Node.js (Fastify) | ✅ Deployed (M2 - OIDC Auth) |
-| **Portal** | Python (Morepath) | 📋 Planned |
-| **Database** | PostgreSQL 15 | ✅ Production |
-| **Infrastructure** | GCP Cloud Run + Cloud SQL | ✅ Production |
+| **Members Service** | Node.js (Express) | ✅ Production (Firebase Auth) |
+| **Portal** | Python (Morepath) | 📦 Ready to Deploy |
+| **Voting** | Python (Morepath) | 📦 Ready to Deploy |
+| **Infrastructure** | GCP Cloud Run | ✅ Production |
 | **Region** | europe-west2 (London) | ✅ Production |
 
 ---
 
 ## Current Status
 
-### ✅ Completed (Phase 1-4)
+### ✅ Completed (Phase 1-5)
 
-**Phase 4 Complete** - Production Authentication Infrastructure (Oct 3, 2025)
+**Phase 5 Complete** - Firebase Migration & Hybrid Architecture (Oct 5, 2025)
 
-| Component | Status | URL/ID |
-|-----------|--------|--------|
-| **ZITADEL** | ✅ Production | https://zitadel-ymzrguoifa-nw.a.run.app |
-| **Custom Domain** | ✅ LIVE | https://auth.si-xj.org |
-| **OIDC Bridge** | ✅ Deployed | https://oidc-bridge-proxy-ymzrguoifa-nw.a.run.app |
-| **Kenni.is IdP** | ✅ Configured | Working + Tested |
-| **Cloud SQL** | ✅ Running | PostgreSQL 15 (zitadel8) |
-| **Load Balancer** | ✅ Configured | 34.8.250.20 |
-| **Members Service** | ✅ Deployed + Tested | https://members-ymzrguoifa-nw.a.run.app |
-| **Members OIDC App** | ✅ Working | Client ID: 340609127703243145 |
+| Component | Status | URL/Service |
+|-----------|--------|-------------|
+| **Firebase/Identity Platform** | ✅ Production | ekklesia-prod-10-2025 (Free Tier) |
+| **OIDC Bridge** | ✅ Enhanced | https://oidc-bridge-proxy-ymzrguoifa-ew2.a.run.app (PKCE) |
+| **Kenni.is IdP** | ✅ Integrated | National eID + Kennitala extraction |
+| **Members Service** | ✅ Production | https://members-521240388393.europe-west2.run.app |
+| **Portal Service** | 📦 Ready | Code committed, ready to deploy |
+| **Voting Service** | 📦 Ready | Code committed, ready to deploy |
+| **ZITADEL** | ⚠️ Decommissioned | Saved $135/month (~$1,620/year) |
 
+**Cost Savings**: $135/month by migrating from ZITADEL to Firebase
 **Issues Resolved**: 18 total (Issues #2, #3, #4 closed)
 
 ### 🔨 In Progress
 
-- **Members Service Development** (Milestone 3-4)
-  - Story #20: Enhanced membership profile
-  - Story #25: Voting integration (planned)
+- **Security Hardening** (High Priority)
+  - Move JWT key to Secret Manager
+  - Add rate limiting
+  - Add Cloud Armor protection
 
-### ✅ Recently Completed
+- **Database Migration** (Medium Priority)
+  - Migrate kennitalas.txt → Cloud SQL with hashing
+
+### ✅ Recently Completed (October 2025)
+
+- **Phase 5: Firebase Migration** (Oct 5, 2025)
+  - ✅ Migrated from ZITADEL to Firebase/Identity Platform
+  - ✅ Enhanced OIDC Bridge with PKCE support
+  - ✅ Kennitala extraction working (verified)
+  - ✅ Members service with Firebase authentication
+  - ✅ Portal & Voting services committed to repository
+  - ✅ Cost savings: $135/month
+  - ✅ ZITADEL infrastructure decommissioned
+
+- **Milestone 3: Voting Eligibility** (Oct 5, 2025)
+  - ✅ Story #14: Secure login with Kenni.is
+  - ✅ Kennitala verification system
+  - ✅ Member verification service
+  - ✅ CSS component architecture
+  - ✅ Icelandic internationalization
 
 - **Milestone 2: OIDC Authentication** (Oct 3, 2025)
-  - ✅ Story #14: Secure login with Kenni.is
-  - OpenID Connect integration with ZITADEL
-  - PKCE authentication flow implemented
-  - Session management with secure cookies
-  - Protected routes with auth middleware
-  - Icelandic language UI
-  - Full production deployment
+  - ✅ OpenID Connect integration
+  - ✅ PKCE authentication flow
+  - ✅ Session management
+  - ✅ Protected routes
 
 - **Milestone 1: Hello World Service** (Oct 3, 2025)
-  - Members service deployed to Cloud Run
+  - ✅ Members service deployed to Cloud Run
   - Health endpoint operational
   - Deployment automation established
 
