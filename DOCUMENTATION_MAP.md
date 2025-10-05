@@ -117,12 +117,15 @@ ekklesia/
 │   ├── architecture/             🏗️ System design documents
 │   │   ├── identity.md
 │   │   ├── TECHNICAL_SOLUTION.md
-│   │   └── ARCHITECTURE_DEV_VS_PROD.md
+│   │   ├── ARCHITECTURE_DEV_VS_PROD.md
+│   │   └── HYBRID_ARCHITECTURE.md
 │   ├── guides/                   📖 Implementation guides
 │   │   ├── MEMBERS_DEPLOYMENT_GUIDE.md
 │   │   └── GCP_MIGRATION_PLAN.md
 │   ├── integration/              🔗 Integration testing
 │   │   └── INTEGRATION_TESTS.md
+│   ├── plans/                    📝 Future feature plans
+│   │   └── GOOGLE_AUTH_LINKING_PLAN.md
 │   └── DOCUMENTATION_INDEX.md    📇 Docs directory index
 │
 ├── gcp/                          ⚙️ Infrastructure & Operations
@@ -177,9 +180,18 @@ ekklesia/
 
 | Document | Purpose | Audience |
 |----------|---------|----------|
+| `architecture/HYBRID_ARCHITECTURE.md` | ✨ **Current** - Firebase + OIDC Bridge design | All |
 | `architecture/identity.md` | Authentication system design | Developers, Architects |
 | `architecture/TECHNICAL_SOLUTION.md` | Production infrastructure | DevOps, Operations |
 | `architecture/ARCHITECTURE_DEV_VS_PROD.md` | Environment comparison | All |
+
+### 📝 Future Plans
+
+| Document | Purpose | Status | Estimated Effort |
+|----------|---------|--------|------------------|
+| `plans/GOOGLE_AUTH_LINKING_PLAN.md` | Migrate to Google login after Kenni.is verification | 📋 Planned | 2-3 days |
+
+**Note:** Plans are detailed implementation guides for future features. They include architecture changes, migration steps, testing plans, and rollback procedures.
 
 ### 📖 Implementation Guides
 
