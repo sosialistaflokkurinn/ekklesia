@@ -406,19 +406,26 @@ members/
 
 ## External Resources
 
-### ZITADEL
+### Firebase / Identity Platform (Current)
+- Identity Platform: https://cloud.google.com/identity-platform/docs
+- Firebase Auth: https://firebase.google.com/docs/auth
+- Admin SDK: https://firebase.google.com/docs/admin/setup
+- Custom OIDC Providers: https://cloud.google.com/identity-platform/docs/how-to-enable-application-oidc-generic
+
+### ZITADEL (Legacy - Decommissioned)
 - Official Docs: https://zitadel.com/docs
 - OIDC Guide: https://zitadel.com/docs/guides/integrate/login/oidc
 - API Reference: https://zitadel.com/docs/apis/introduction
 
 ### GCP
 - Cloud Run: https://cloud.google.com/run/docs
-- Cloud SQL: https://cloud.google.com/sql/docs
 - Secret Manager: https://cloud.google.com/secret-manager/docs
+- Cloud Build: https://cloud.google.com/build/docs
 
 ### Standards
 - OpenID Connect: https://openid.net/specs/openid-connect-core-1_0.html
 - OAuth 2.0 PKCE: https://datatracker.ietf.org/doc/html/rfc7636
+- Kenni.is: https://idp.kenni.is/
 
 ### Project
 - GitHub Repository: https://github.com/sosialistaflokkurinn/ekklesia
@@ -434,12 +441,12 @@ members/
 - **On-Call**: (rotation schedule)
 
 ### External Resources
-- **ZITADEL Support**: https://zitadel.com/contact
+- **Firebase Support**: https://firebase.google.com/support
 - **GCP Support**: GCP Console → Support
 - **Kenni.is Support**: https://idp.kenni.is/
 
 ---
 
-**Document Version**: 1.0.0
-**Last Reviewed**: 2025-10-03
+**Document Version**: 3.2.0
+**Last Reviewed**: 2025-10-05
 **Next Review**: 2026-01-03 (Quarterly)
