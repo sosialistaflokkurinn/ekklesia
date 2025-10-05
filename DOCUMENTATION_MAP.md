@@ -190,6 +190,7 @@ ekklesia/
 | Document | Purpose | Status | Estimated Effort |
 |----------|---------|--------|------------------|
 | `plans/GOOGLE_AUTH_LINKING_PLAN.md` | Migrate to Google login after Kenni.is verification | 📋 Planned | 2-3 days |
+| `plans/PORTAL_VOTING_DEPLOYMENT_PLAN.md` | Deploy Portal & Voting services to Cloud Run | 📋 Planned | 4-5 days |
 
 **Note:** Plans are detailed implementation guides for future features. They include architecture changes, migration steps, testing plans, and rollback procedures.
 
