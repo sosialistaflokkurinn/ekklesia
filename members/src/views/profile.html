@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{t:profile.title}} - {{t:common.appName}}</title>
+
+  <!-- Global Styles -->
+  <link rel="stylesheet" href="/styles/global.css">
+  <!-- Component Styles -->
+  <link rel="stylesheet" href="/styles/components/profile.css">
+</head>
+<body>
+  <div class="container profile-container">
+    <h1 class="profile-title">{{t:profile.title}}</h1>
+    <p class="profile-subtitle">{{t:profile.subtitle}}</p>
+
+    {{VERIFICATION_ALERTS}}
+
+    {{STATUS_ALERTS}}
+
+    <div class="profile-info">
+      <div class="info-row">
+        <span class="info-label">{{t:profile.fields.name}}:</span>
+        <span class="info-value">{{USER_NAME}}</span>
+      </div>
+
+      <div class="info-row">
+        <span class="info-label">{{t:profile.fields.email}}:</span>
+        <span class="info-value">
+          {{USER_EMAIL}}
+          {{EMAIL_VERIFIED_BADGE}}
+        </span>
+      </div>
+
+      {{PHONE_NUMBER_ROW}}
+
+      <div class="info-row">
+        <span class="info-label">{{t:profile.fields.memberNumber}}:</span>
+        <span class="info-value">{{MEMBERSHIP_NUMBER}}</span>
+      </div>
+
+      <div class="info-row">
+        <span class="info-label">{{t:profile.fields.votingRights}}:</span>
+        <span class="info-value">
+          {{VOTING_RIGHTS_BADGE}}
+        </span>
+      </div>
+
+      <div class="info-row">
+        <span class="info-label">{{t:profile.fields.status}}:</span>
+        <span class="info-value">
+          {{STATUS_BADGE}}
+        </span>
+      </div>
+
+      <div class="info-row">
+        <span class="info-label">{{t:profile.fields.memberSince}}:</span>
+        <span class="info-value">{{MEMBER_SINCE}}</span>
+      </div>
+
+      {{FEES_OWED_ROW}}
+
+      <div class="info-row">
+        <span class="info-label">{{t:profile.fields.lastPayment}}:</span>
+        <span class="info-value">{{LAST_PAYMENT}}</span>
+      </div>
+
+      <div class="info-row">
+        <span class="info-label">{{t:profile.fields.lastUpdated}}:</span>
+        <span class="info-value">{{LAST_UPDATED}}</span>
+      </div>
+    </div>
+
+    <div class="profile-actions">
+      <a href="/" class="btn btn-secondary">{{t:profile.actions.home}}</a>
+      <a href="/logout" class="btn btn-primary">{{t:profile.actions.logout}}</a>
+    </div>
+  </div>
+</body>
+</html>

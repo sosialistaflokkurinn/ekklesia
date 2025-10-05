@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{t:login.title}} - {{t:common.appName}}</title>
+
+  <!-- Global Styles -->
+  <link rel="stylesheet" href="/styles/global.css">
+  <!-- Component Styles -->
+  <link rel="stylesheet" href="/styles/components/login.css">
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
+  <!-- FirebaseUI for Web -->
+  <script src="https://www.gstatic.com/firebasejs/ui/6.1.0/firebase-ui-auth.js"></script>
+  <link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/6.1.0/firebase-ui-auth.css" />
+</head>
+<body>
+  <div class="container text-center">
+    <div class="login-logo">🏛️</div>
+    <h1 class="login-title">{{t:common.appName}}</h1>
+    <p class="login-subtitle">{{t:login.subtitle}}</p>
+
+    <div id="firebaseui-auth-container" class="firebase-ui-container"></div>
+    <div class="login-loading">{{t:login.loadingOptions}}</div>
+    <div id="error-message" class="login-error"></div>
+  </div>
+
+  <script type="module">
+    // Import Firebase modules
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getAuth, OAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "{{FIREBASE_API_KEY}}",
+      authDomain: "{{FIREBASE_AUTH_DOMAIN}}",
+      projectId: "{{FIREBASE_PROJECT_ID}}"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // Create OIDC provider for Kenni.is
+    const provider = new OAuthProvider('{{KENNI_PROVIDER_ID}}');
+
+    // Request scopes from Kenni.is (CRITICAL: must include national_id!)
+    provider.addScope('openid');
+    provider.addScope('profile');
+    provider.addScope('national_id');  // This is the kennitala we need!
+
+    console.log('🔧 Provider configured with scopes:', ['openid', 'profile', 'national_id']);
+    console.log('🔧 Provider ID:', '{{KENNI_PROVIDER_ID}}');
+    console.log('🔧 Firebase config:', {
+      apiKey: '{{FIREBASE_API_KEY}}'.substring(0, 10) + '...',
+      authDomain: '{{FIREBASE_AUTH_DOMAIN}}',
+      projectId: '{{FIREBASE_PROJECT_ID}}'
+    });
+
+    // Hide loading message
+    document.querySelector('.login-loading').style.display = 'none';
+
+    // Show Kenni.is button
+    const container = document.getElementById('firebaseui-auth-container');
+    container.innerHTML = `
+      <button id="kenni-signin-btn" class="kenni-signin-btn">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+        </svg>
+        {{t:login.loginWithKenni}}
+      </button>
+    `;
+
+    const button = document.getElementById('kenni-signin-btn');
+
+    // Check for redirect result first (user returning from Kenni.is)
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('🔍 PAGE LOAD - Checking for redirect result from Kenni.is');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('📋 Current URL:', window.location.href);
+    console.log('📋 URL params:', window.location.search);
+    console.log('📋 URL hash:', window.location.hash);
+    console.log('🔍 Auth state:', auth.currentUser ? ('User: ' + auth.currentUser.uid) : 'No user');
+    console.log('🔄 Calling getRedirectResult()...');
+
+    const redirectStartTime = Date.now();
+
+    getRedirectResult(auth)
+      .then((result) => {
+        const duration = Date.now() - redirectStartTime;
+        console.log('📥 getRedirectResult() completed (took ' + duration + 'ms)');
+        console.log('📥 Result:', result ? 'Data received' : 'null');
+
+        if (result && result.user) {
+          console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+          console.log('✅ USER SUCCESSFULLY SIGNED IN!');
+          console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+          console.log('👤 User UID:', result.user.uid);
+          console.log('📧 Email:', result.user.email);
+          console.log('🔑 Provider ID:', result.providerId);
+          console.log('🎫 Credential:', result.credential ? 'Present' : 'Missing');
+
+          if (result.credential) {
+            console.log('🎫 Credential details:', {
+              providerId: result.credential.providerId,
+              signInMethod: result.credential.signInMethod,
+              accessToken: result.credential.accessToken ? 'present (length: ' + result.credential.accessToken.length + ')' : 'missing'
+            });
+          }
+
+          // Get Firebase ID token
+          console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+          console.log('🎫 GETTING FIREBASE ID TOKEN');
+          console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+          result.user.getIdToken().then((idToken) => {
+            console.log('✅ ID token received, length:', idToken.length);
+
+            // Extract OAuth access token if available (needed to fetch userinfo with national_id)
+            const oauthAccessToken = result.credential?.accessToken;
+            console.log('🔑 OAuth access token:', oauthAccessToken ? 'present' : 'missing');
+
+            fetch('/verify-token', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                idToken: idToken,
+                oauthAccessToken: oauthAccessToken,
+                returnTo: '{{RETURN_TO}}'
+              })
+            })
+            .then(response => {
+              console.log('📨 Response status:', response.status);
+              return response.json();
+            })
+            .then(data => {
+              console.log('📊 Response data:', data);
+
+              if (data.success) {
+                console.log('✅ Verification successful! Redirecting to:', data.returnTo);
+                window.location.href = data.returnTo || '/profile';
+              } else {
+                console.error('❌ Verification failed:', data.error);
+                showError('Innskráning mistókst: ' + (data.error || 'Óþekkt villa'));
+              }
+            })
+            .catch(error => {
+              console.error('❌ Verification error:', error);
+              showError('Innskráning mistókst. Vinsamlegast reyndu aftur.');
+            });
+          });
+        } else {
+          console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+          console.log('ℹ️ NO REDIRECT RESULT');
+          console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+          console.log('This is expected behavior on first page load.');
+          console.log('Click the "Innskrá með Kenni.is" button to start authentication.');
+          console.log('After authenticating with Kenni.is, you will return here with a result.');
+        }
+      })
+      .catch((error) => {
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.error('❌ ERROR IN getRedirectResult()');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.error('Error code:', error.code);
+        console.error('Error message:', error.message);
+        console.error('Error name:', error.name);
+        if (error.customData) {
+          console.error('Custom data:', error.customData);
+        }
+        console.error('Full error:', error);
+        console.error('Stack:', error.stack);
+        showError('Innskráning mistókst: ' + error.message);
+      });
+
+    // Handle button click - sign in with Kenni.is
+    button.onclick = () => {
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('🚀 BUTTON CLICKED - Starting sign-in with Kenni.is');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+      const startTime = Date.now();
+
+      // Try popup first - gives better error messages for debugging
+      signInWithPopup(auth, provider)
+        .then((result) => {
+          const duration = Date.now() - startTime;
+          console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+          console.log('✅ POPUP SIGN-IN SUCCESSFUL! (took ' + duration + 'ms)');
+          console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+          // Get ID token and send to backend
+          result.user.getIdToken().then((idToken) => {
+            console.log('🎫 Got ID token, sending to backend...');
+
+            const oauthAccessToken = result.credential?.accessToken;
+            console.log('🔑 OAuth access token:', oauthAccessToken ? 'present' : 'missing');
+
+            fetch('/verify-token', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                idToken: idToken,
+                oauthAccessToken: oauthAccessToken,
+                returnTo: '{{RETURN_TO}}'
+              })
+            })
+            .then(r => r.json())
+            .then(data => {
+              if (data.success) {
+                window.location.href = data.returnTo || '/profile';
+              } else {
+                showError('Verification failed: ' + data.error);
+              }
+            });
+          });
+        })
+        .catch((error) => {
+          const duration = Date.now() - startTime;
+          console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+          console.error('❌ POPUP SIGN-IN ERROR (after ' + duration + 'ms)');
+          console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+          console.error('Error code:', error.code);
+          console.error('Error message:', error.message);
+          showError('Innskráning mistókst: ' + error.message);
+        });
+    };
+
+    // Error display function
+    function showError(message) {
+      const errorDiv = document.getElementById('error-message');
+      errorDiv.textContent = message;
+      errorDiv.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

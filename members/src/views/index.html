@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{t:common.appName}} - {{t:landing.title}}</title>
+
+  <!-- Global Styles -->
+  <link rel="stylesheet" href="/styles/global.css">
+  <!-- Component Styles -->
+  <link rel="stylesheet" href="/styles/components/index.css">
+</head>
+<body>
+  <div class="container text-center">
+    <div class="landing-logo">🏛️</div>
+    <h1 class="landing-title">{{t:common.appName}}</h1>
+    <p class="landing-subtitle">{{t:landing.title}}</p>
+
+    {{ERROR_MESSAGE}}
+
+    {{AUTH_CONTENT}}
+
+    <div class="features">
+      <h3>{{t:landing.features.title}}</h3>
+      <div class="feature">
+        {{t:landing.features.electronicId}}
+      </div>
+      <div class="feature">
+        {{t:landing.features.personalArea}}
+      </div>
+      <div class="feature">
+        {{t:landing.features.voting}}
+      </div>
+      <div class="feature">
+        {{t:landing.features.events}}
+      </div>
+    </div>
+
+    <div class="landing-footer">
+      {{t:landing.footer}}
+    </div>
+  </div>
+</body>
+</html>
