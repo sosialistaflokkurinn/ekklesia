@@ -1,0 +1,72 @@
+# Environment files with secrets
+.env
+.env.local
+*.env
+!*.env.example
+
+# OAuth/OIDC credentials
+*client_secret*
+*CLIENT_SECRET*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+*.egg-info/
+.eggs/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# General
+node_modules/
+dist/
+build/
+.DS_Store
+*.log
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup and temp files
+*.backup
+*.bak
+*.orig
+*.tmp
+temp/
+tmp/
+
+# Shell scripts and markdown files
+*.sh
+*.md
+
+# Git ignore files (keep local only)
+.gitignore
+.gitignore-auth
+
+# Portal alembic migrations
+portal/alembic/
+voting/alembic/
+
+# Entire directories
+archive/
+auth/
+portal/
+voting/
+template/
+usr/
+json

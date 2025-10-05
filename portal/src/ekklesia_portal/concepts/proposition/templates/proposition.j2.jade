@@ -1,0 +1,25 @@
+- if layout
+  - extends "ekklesia_portal/layout.j2.jade"
+
+
+- block title
+  title= full_title
+
+
+- block content
+
+  if options.active_tab|default(none) is not none
+    = detail_top()
+
+  .proposition(id="proposition_{{ id }}", class=("" if options.margin else "proposition_no_margin"))
+    .card-body(class=("" if not current_user_is_supporter else "card-body-supported"))
+      = card()
+
+  if options.show_tabs
+    .proposition_tab_header
+      = tabs()
+
+  = tab_content()
+
+// generated from jade
+//- vim: set filetype=jade sw=2 ts=2 sts=2 expandtab:
