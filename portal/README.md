@@ -1,10 +1,55 @@
 # Ekklesia Portal
 
+🟡 **Status**: Deployed to GCP Cloud Run but not operational (dependency issues)
+📍 **Production URL**: https://portal-ymzrguoifa-nw.a.run.app (returns 503)
+📄 **Deployment Guide**: See [DEPLOYMENT.md](DEPLOYMENT.md) for current status and resolution steps
+
+---
+
 This repository is part of the [Ekklesia e-democracy](https://ekklesiademocracy.org)
 platform. It provides the motion portal Web UI, the public API and administrative interface.
 
-You can find more development and operation documentation in the
-[Ekklesia Documentation](https://ekklesiademocracy.org)
+## Current Deployment Status (Samstaða)
+
+**Project**: ekklesia-prod-10-2025 (GCP)
+**Region**: europe-west2 (London)
+**Last Updated**: 2025-10-07
+
+### Infrastructure
+
+✅ **Cloud SQL Database**
+- Instance: `ekklesia-db`
+- Version: PostgreSQL 15
+- Tier: db-f1-micro (614 MB RAM, shared CPU)
+- Database: `ekklesia_portal` (created, empty)
+- User: `ekklesia_portal`
+
+✅ **Cloud Run Service**
+- Service: `portal`
+- Memory: 512 MB
+- CPU: 1
+- Concurrency: 80
+- Environment: DATABASE_URL, SESSION_SECRET (from Secret Manager)
+
+❌ **Current Issue**
+- Service returns HTTP 503
+- Root cause: Container crashes on startup (Python dependency resolution)
+- Migrations: 24 Alembic migrations pending (blocked by 503)
+
+**See**: [DEPLOYMENT.md](DEPLOYMENT.md) for complete infrastructure setup and troubleshooting
+
+### Integration with Members Service
+
+The Portal service integrates with the Members authentication system:
+
+- **Authentication**: Firebase/Identity Platform custom tokens
+- **National eID**: Kenni.is OAuth PKCE integration
+- **Member Verification**: Cloud Function verifies kennitala against membership list
+- **User Profile**: Firestore stores user profiles and kennitala mapping
+
+**Members Service**: https://members-ymzrguoifa-nw.a.run.app (operational)
+
+---
 
 ## Tech Stack
 
@@ -24,6 +69,8 @@ You can find more development and operation documentation in the
 - (Optional) Run on NixOS with the included NixOS module
 - (Optional) Docker / Podman for running container images (built by Nix)
 
+---
+
 ## Development
 
 To get a consistent development environment, we use
@@ -42,7 +89,7 @@ in the Ekklesia documentation.
 The following instructions assume that *Nix* is already installed, has Nix
 flakes enabled, and an empty + writable PostgreSQL database can be accessed somehow.
 
-If you don't have *Nix* with Flakes support and or can’t use an existing
+If you don't have *Nix* with Flakes support and or can't use an existing
 PostgreSQL server, have a look at the [Development Environment](https://docs.ekklesiademocracy.org/en/latest/development/dev_env.html)
 section in the Ekklesia documentation.
 
@@ -53,15 +100,15 @@ or the first step will take a long time to complete.
 1. Clone the repository and enter nix shell in the project root folder to open a shell which is
    your dev environment:
 
-   ```
-   git clone https://github.com/edemocracy/ekklesia-portal
-   cd ekklesia-portal
+   ```bash
+   git clone https://github.com/sosialistaflokkurinn/ekklesia
+   cd ekklesia/portal
    nix develop
    ```
 
 2. Compile translations and CSS (look at `dodo.py` to see what this does):
 
-   ```
+   ```bash
    doit
    ```
 
@@ -73,28 +120,65 @@ or the first step will take a long time to complete.
 
 4. Set up the dev database (look at `flake.nix` to see what this does):
 
-   ```
+   ```bash
    create_dev_db
    ```
 
 5. Run the development server (look at `flake.nix` to see what this does):
-   ```
+   ```bash
    run_dev
    ```
 
 Run `help` to see all commonly used dev shell commands.
 
+---
+
 ## Running In Production
 
-A production environment can be built by Nix. The generated output
-doesn’t have additional requirements. The application can be run by a
+### Samstaða GCP Deployment
+
+**Current Method**: Docker container on Cloud Run (see [DEPLOYMENT.md](DEPLOYMENT.md))
+
+The Portal service is deployed to GCP Cloud Run using:
+- Cloud SQL PostgreSQL 15 for database
+- Secret Manager for credentials
+- Cloud Run for containerized application
+- Alembic for database migrations
+
+**Deployment Scripts**:
+- `setup-database.sh` - Create database and user
+- `deploy-to-cloud-run.sh` - Build and deploy container
+- `run-migrations.sh` - Run Alembic migrations (blocked by 503 issue)
+
+**Current Issue**: Container deployment successful but service returns 503 due to Python dependency resolution. See [DEPLOYMENT.md](DEPLOYMENT.md) for resolution options.
+
+### Original Nix-based Production (Alternative)
+
+A production environment can also be built by Nix. The generated output
+doesn't have additional requirements. The application can be run by a
 start script directly, using the included NixOS module or the Docker image
 built by Nix. Static assets are built separately and can be served by the
 included minimal Nginx. As for the application itself, we can build a
 standalone start script or a Docker image.
 
 See the [Ekklesia Operations Manual](https://docs.ekklesiademocracy.org/en/latest/operations/index.html)
-for more information.
+for more information about Nix-based deployments.
+
+---
+
+## Project Documentation
+
+**Samstaða-specific documentation**:
+- [DEPLOYMENT.md](DEPLOYMENT.md) - GCP Cloud Run deployment guide and current status
+- [PORTAL_DEPLOYMENT_PROGRESS.md](../PORTAL_DEPLOYMENT_PROGRESS.md) - Detailed deployment history
+- [CURRENT_PRODUCTION_STATUS.md](../CURRENT_PRODUCTION_STATUS.md) - Full production infrastructure status
+
+**Upstream Ekklesia documentation**:
+- [Ekklesia Documentation](https://docs.ekklesiademocracy.org) - Official documentation
+- [Development Guide](https://docs.ekklesiademocracy.org/en/latest/development/index.html)
+- [Operations Manual](https://docs.ekklesiademocracy.org/en/latest/operations/index.html)
+
+---
 
 ## History
 
@@ -104,12 +188,22 @@ based on the [Morepath](https://github.com/morepath/morepath) web
 framework and tries to explore ideas from the Ruby project
 [Trailblazer](https://trailblazer.to).
 
+**Samstaða Deployment**: Deployed to GCP Cloud Run as part of the Ekklesia platform for the Icelandic Social Democratic Party (Samstaða), integrated with Kenni.is national eID system and Firebase/Identity Platform for authentication.
+
+---
+
 ## License
 
 AGPLv3, see LICENSE
 
-## Active Authors
+## Authors
 
-- Tobias ‘dpausp’
-- Nico ‘kaenganxt’
-- Holger ‘plexar’
+**Upstream Ekklesia Project**:
+- Tobias 'dpausp'
+- Nico 'kaenganxt'
+- Holger 'plexar'
+
+**Samstaða Deployment**:
+- Infrastructure: GCP Cloud Run, Cloud SQL PostgreSQL 15
+- Integration: Firebase/Identity Platform + Kenni.is OAuth
+- Repository: https://github.com/sosialistaflokkurinn/ekklesia
