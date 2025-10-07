@@ -1,331 +1,325 @@
 # Documentation Index
 
-## Status: PHASE 4 COMPLETE - PRODUCTION DEPLOYED
+## Status: FIREBASE MIGRATION COMPLETE - PRODUCTION DEPLOYED
 
-**Last Updated**: October 3, 2025
-**Deployment Status**: Production infrastructure live on GCP
-**Documentation**: Reorganized into architecture/, specifications/, guides/, and archive/ directories
+**Last Updated**: October 7, 2025
+**Current Branch**: feature/database-migration
+**Deployment Status**: Firebase + Cloud Run production infrastructure live on GCP
+**Documentation**: Root-level status docs + organized docs/ directory
+
+---
+
+## ⚠️ MAJOR ARCHITECTURE CHANGE
+
+**ZITADEL infrastructure has been completely replaced with Firebase Identity Platform**
+
+- **Migration Date**: October 6-7, 2025
+- **Reason**: Cost savings ($135/mo → $7-10/mo) + Firebase Free Tier
+- **Result**: Direct Firebase + Kenni.is PKCE integration
+- **Status**: All ZITADEL resources decommissioned
 
 ---
 
 ## Quick Links
 
 ### Production Services
-- **ZITADEL Console**: https://zitadel-ymzrguoifa-nw.a.run.app
-- **Custom Domain**: https://auth.si-xj.org (SSL provisioning)
-- **OIDC Bridge Proxy**: https://oidc-bridge-proxy-ymzrguoifa-nw.a.run.app
-- **GCP Console**: https://console.cloud.google.com
+- **Firebase Hosting**: https://ekklesia-prod-10-2025.web.app
+- **Test Page**: https://ekklesia-prod-10-2025.web.app/test.html
+- **Members Service**: https://members-ymzrguoifa-nw.a.run.app
+- **Portal Service**: https://portal-ymzrguoifa-nw.a.run.app (🟡 deployed, DB not migrated)
+- **handleKenniAuth**: https://handlekenniauth-ymzrguoifa-nw.a.run.app
+- **verifyMembership**: https://verifymembership-ymzrguoifa-nw.a.run.app
+- **Firebase Console**: https://console.firebase.google.com/project/ekklesia-prod-10-2025
+- **GCP Console**: https://console.cloud.google.com/run?project=ekklesia-prod-10-2025
 
-### GitHub Issues
-- [Issue #2: ZITADEL Tenant & Project Setup](https://github.com/samstada/ekklesia/issues/2) - ✅ COMPLETED
-- [Issue #3: Kenni.is IdP Integration](https://github.com/samstada/ekklesia/issues/3) - ✅ COMPLETED
-- [Issue #4: CLI/API Access Configuration](https://github.com/samstada/ekklesia/issues/4) - ✅ COMPLETED
+### Current Architecture Documentation
+- **Production Status**: [/CURRENT_PRODUCTION_STATUS.md](../CURRENT_PRODUCTION_STATUS.md)
+- **Portal Deployment**: [/PORTAL_DEPLOYMENT_PROGRESS.md](../PORTAL_DEPLOYMENT_PROGRESS.md)
+- **Documentation Map**: [/DOCUMENTATION_MAP.md](../DOCUMENTATION_MAP.md)
+- **Performance Notes**: [/PERFORMANCE_NOTES.md](../PERFORMANCE_NOTES.md)
 
 ---
 
 ## Production Infrastructure Summary
 
-### Deployment Architecture
+### Current Deployment Architecture (Firebase-based)
 ```
 Production Environment: GCP (europe-west2 - London)
 
 Components:
-├── ZITADEL (Cloud Run)
-│   ├── URL: https://zitadel-ymzrguoifa-nw.a.run.app
-│   ├── Custom Domain: https://auth.si-xj.org
-│   ├── CPU: 2 vCPU, Memory: 2 GiB
-│   └── Auto-scaling: 1-10 instances
+├── Firebase Services (Free Tier)
+│   ├── Hosting: https://ekklesia-prod-10-2025.web.app
+│   ├── Authentication: Custom token auth with Kenni.is claims
+│   ├── Firestore: User profiles and metadata
+│   └── Storage: User data and membership lists
 │
-├── OIDC Bridge Proxy (Cloud Run)
-│   ├── URL: https://oidc-bridge-proxy-ymzrguoifa-nw.a.run.app
-│   ├── Purpose: Kenni.is OIDC compatibility layer
-│   └── Auto-scaling: 1-5 instances
+├── Cloud Functions (Python 3.11)
+│   ├── handleKenniAuth (512 MB)
+│   │   └── OAuth PKCE token exchange with Kenni.is
+│   └── verifyMembership (256 MB)
+│       └── Membership verification against kennitalas.txt
+│
+├── Cloud Run Services
+│   ├── Members (Node.js, 512 MB)
+│   │   └── URL: https://members-ymzrguoifa-nw.a.run.app
+│   └── Portal (Python/Morepath, 512 MB) 🟡
+│       └── URL: https://portal-ymzrguoifa-nw.a.run.app
 │
 ├── Cloud SQL PostgreSQL 15
-│   ├── Instance: zitadel8
-│   ├── Tier: db-custom-2-7680 (2 vCPU, 7.5 GB RAM)
-│   ├── Storage: 10 GB SSD
-│   └── Private IP only
-│
-├── Load Balancer
-│   ├── IP: 34.8.250.20
-│   ├── SSL: Google-managed certificate
-│   └── Domain: auth.si-xj.org
+│   ├── Instance: ekklesia-db
+│   ├── Tier: db-f1-micro (614 MB RAM, shared CPU)
+│   ├── Storage: 10 GB PD_HDD
+│   ├── Database: ekklesia_portal (created, not migrated)
+│   └── User: ekklesia_portal
 │
 └── Secret Manager
-    ├── Database credentials
-    ├── ZITADEL master key
-    ├── Kenni.is OIDC secrets
-    └── JWT signing keys
+    ├── kenni-client-secret (Kenni.is OAuth)
+    ├── portal-db-password
+    ├── portal-session-secret
+    └── members-session-secret (legacy)
 ```
 
 ### Key Identifiers
-- **Organization ID**: 340504441601245339
-- **Project ID**: 340504441601245339
-- **Primary Admin User ID**: 340504966944793723
-- **Service Account ID**: 340499069199721595
-- **Load Balancer IP**: 34.8.250.20
+- **GCP Project**: ekklesia-prod-10-2025 (521240388393)
+- **Region**: europe-west2 (London)
+- **Firebase Project**: ekklesia-prod-10-2025
+- **Kenni.is Client ID**: @sosi-kosningakerfi.is/rafr-nt-kosningakerfi-s-s
+- **Kenni.is Issuer**: https://idp.kenni.is/sosi-kosningakerfi.is
+- **OAuth Scopes**: openid, profile, national_id, email, phone_number
 
 ---
 
 ## Documentation Files
 
-### Directory Structure
+### Root-Level Documentation (Primary)
+```
+/home/gudro/Development/projects/ekklesia/
+├── CURRENT_PRODUCTION_STATUS.md    # ⭐ Main production status
+├── PORTAL_DEPLOYMENT_PROGRESS.md   # Portal deployment details
+├── PORTAL_DEPLOYMENT_STATUS.md     # Portal status (duplicate)
+├── DOCUMENTATION_MAP.md            # Complete architecture map
+├── PERFORMANCE_NOTES.md            # OAuth performance analysis
+├── CHANGELOG_2025-10-05.md         # Migration changelog
+└── README.md                       # Project overview
+```
+
+### docs/ Directory (Historical + Specs)
 ```
 docs/
 ├── DOCUMENTATION_INDEX.md          # This file
-├── architecture/                   # System design documents
-│   ├── identity.md
-│   └── TECHNICAL_SOLUTION.md
+├── architecture/                   # System design (OUTDATED)
+│   ├── identity.md                # ⚠️ ZITADEL-based (deprecated)
+│   └── TECHNICAL_SOLUTION.md      # ⚠️ ZITADEL-based (deprecated)
 ├── specifications/                 # Technical specifications
-│   ├── MEMBERS_OIDC_SPEC.md
-│   └── members-oidc-v1.0.md
+│   ├── MEMBERS_OIDC_SPEC.md       # ⚠️ ZITADEL-based (deprecated)
+│   └── members-oidc-v1.0.md       # ⚠️ ZITADEL-based (deprecated)
 ├── guides/                         # Implementation guides
 │   ├── GITHUB_MCP_GUIDE.md
-│   └── MEMBERS_DEPLOYMENT_GUIDE.md
-├── integration/                    # Integration tests
-└── archive/                        # Historical/backup files
-    ├── github_issue_comments.md
-    └── identity.md.backup
+│   └── MEMBERS_DEPLOYMENT_GUIDE.md # ⚠️ Needs update for Firebase
+├── plans/                          # Planning documents
+└── archive/                        # Historical files
+    └── github_issue_comments.md
+```
+
+### Service-Specific Documentation
+```
+members/
+├── README.md                       # Members service overview
+└── functions/
+    └── main.py                     # Cloud Functions implementation
+
+portal/
+├── DEPLOYMENT.md                   # ✅ Portal deployment guide (verified)
+├── README.md                       # Portal application docs
+└── pyproject.toml                  # Dependencies
 ```
 
 ---
 
-### 1. Identity & Authentication
-**File**: `/home/gudro/Development/projects/ekklesia/docs/architecture/identity.md`
+## Current Production Status
 
-**Contents**:
-- Production infrastructure overview
-- ZITADEL tenant and project details (Issue #2)
-- Kenni.is IdP integration configuration (Issue #3)
-- Members app OIDC registration (Issue #4)
-- Security notes and best practices
-- Production deployment status
+### ✅ Fully Operational Services
+1. **Firebase Hosting** - Static site and test page
+2. **Firebase Authentication** - Custom token auth with Kenni.is
+3. **Firestore** - User profile storage
+4. **handleKenniAuth** - OAuth PKCE token exchange (512 MB)
+   - Captures: kennitala, name, email, phone_number
+   - Performance: ~3 seconds (industry standard)
+5. **verifyMembership** - Membership verification (256 MB)
+6. **Members Service** - Node.js application (512 MB)
+7. **Cloud SQL** - PostgreSQL 15 instance (RUNNABLE)
 
-**Key Sections**:
-- Production architecture diagram
-- Admin and service account information
-- OIDC bridge proxy configuration
-- Mapped claims from Kenni.is
-- Secret management with GCP Secret Manager
+### 🟡 Partially Complete
+1. **Portal Service** - Deployed but database not migrated
+   - Container: ✅ Deployed (512 MB)
+   - Database: 🟡 Created but empty (0 tables)
+   - Issue: Python dependency resolution
+   - Status: Returns 503 error
+   - See: [PORTAL_DEPLOYMENT_PROGRESS.md](../PORTAL_DEPLOYMENT_PROGRESS.md)
 
----
-
-### 2. Technical Solution
-**File**: `/home/gudro/Development/projects/ekklesia/docs/architecture/TECHNICAL_SOLUTION.md`
-
-**Contents**:
-- Production URLs and endpoints
-- Infrastructure architecture details
-- Cloud Run deployment specifications
-- Database configuration
-- Networking and security setup
-- Operations guide (monitoring, backup, scaling)
-- Configuration details
-- Cost optimization
-
-**Key Sections**:
-- ZITADEL Cloud Run configuration
-- OIDC Bridge Proxy setup
-- Cloud SQL PostgreSQL settings
-- Load Balancer and DNS configuration
-- Secret Manager integration
-- Monitoring and logging
-- Backup and disaster recovery
-- Maintenance procedures
+### ❌ Deprecated/Removed Services
+1. **ZITADEL** - Completely removed (Oct 6)
+2. **OIDC Bridge Proxy** - Removed (no longer needed)
+3. **Cloud SQL zitadel8** - Deleted
+4. **Load Balancer (auth.si-xj.org)** - Removed
+5. **All ZITADEL-related secrets** - Deprecated
 
 ---
 
-### 3. Members OIDC Specification
-**File**: `/home/gudro/Development/projects/ekklesia/docs/specifications/members-oidc-v1.0.md`
+## Migration History
 
-**Contents**:
-- Complete OIDC integration specification
-- Authentication flow documentation
-- API endpoints and configuration
-- Security requirements
+### Timeline
+| Date | Event | Impact |
+|------|-------|--------|
+| Oct 1, 2025 | Project created | Initial GCP setup |
+| Oct 2, 2025 | ZITADEL deployed | Initial authentication infrastructure |
+| Oct 3, 2025 | Members service deployed | Hello World + OIDC |
+| Oct 5, 2025 | ZITADEL integration complete | Kenni.is working via OIDC bridge |
+| Oct 6, 2025 | **Firebase migration started** | Cost optimization initiative |
+| Oct 7, 2025 | **Firebase migration complete** | Direct Kenni.is PKCE + custom tokens |
+| Oct 7, 2025 | Enhanced claims capture | Added email + phone_number scopes |
+| Oct 7, 2025 | Portal deployment started | Cloud SQL + Portal service deployed |
 
----
-
-### 4. GitHub MCP Guide
-**File**: `/home/gudro/Development/projects/ekklesia/docs/guides/GITHUB_MCP_GUIDE.md`
-
-**Contents**:
-- GitHub integration guide
-- MCP (Model Context Protocol) usage
-- Configuration and setup instructions
-
----
-
-### 5. Members Deployment Guide
-**File**: `/home/gudro/Development/projects/ekklesia/docs/guides/MEMBERS_DEPLOYMENT_GUIDE.md`
-
-**Contents**:
-- Step-by-step deployment instructions
-- Environment configuration
-- Testing and verification procedures
+### Cost Impact
+- **Before (ZITADEL)**: ~$135/month
+- **After (Firebase)**: ~$7-10/month
+- **Annual Savings**: ~$1,500-1,536
 
 ---
 
-### 6. GitHub Issue Comments (Archived)
-**File**: `/home/gudro/Development/projects/ekklesia/docs/archive/github_issue_comments.md`
+## Documentation Status
 
-**Contents**:
-- Template comments for closing GitHub issues #2, #3, #4
-- Production deployment confirmation
-- Status updates for each issue
-- Combined comment for bulk update
+### ✅ Up-to-Date Documentation
+1. **[CURRENT_PRODUCTION_STATUS.md](../CURRENT_PRODUCTION_STATUS.md)** - Complete production overview
+2. **[portal/DEPLOYMENT.md](../portal/DEPLOYMENT.md)** - Portal deployment guide (verified Oct 7)
+3. **[PORTAL_DEPLOYMENT_PROGRESS.md](../PORTAL_DEPLOYMENT_PROGRESS.md)** - Deployment status
+4. **[DOCUMENTATION_MAP.md](../DOCUMENTATION_MAP.md)** - Architecture map
+5. **[PERFORMANCE_NOTES.md](../PERFORMANCE_NOTES.md)** - OAuth performance
 
----
+### ⚠️ Outdated Documentation (ZITADEL-based)
+1. **docs/architecture/identity.md** - References ZITADEL infrastructure
+2. **docs/architecture/TECHNICAL_SOLUTION.md** - ZITADEL deployment details
+3. **docs/specifications/MEMBERS_OIDC_SPEC.md** - ZITADEL OIDC specs
+4. **docs/specifications/members-oidc-v1.0.md** - ZITADEL integration
+5. **docs/guides/MEMBERS_DEPLOYMENT_GUIDE.md** - ZITADEL-based deployment
 
-## Phase Completion Status
-
-### Phase 1: Planning & Design ✅
-- Architecture design completed
-- Requirements documented
-- GCP project setup
-- Resource allocation planned
-
-### Phase 2: Infrastructure Setup ✅
-- Cloud SQL PostgreSQL 15 deployed
-- Secret Manager configured
-- VPC networking established
-- IAM roles and service accounts created
-
-### Phase 3: Service Deployment ✅
-- ZITADEL deployed to Cloud Run
-- OIDC Bridge Proxy deployed to Cloud Run
-- Load Balancer configured
-- DNS and SSL setup initiated
-
-### Phase 4: Configuration & Testing ✅
-- ZITADEL organization and project created
-- Kenni.is IdP integration configured
-- Members app OIDC registration completed
-- Service account for CLI/API access configured
-- Production validation completed
-
----
-
-## Issue Resolution Summary
-
-### Issue #2: ZITADEL Tenant & Project Setup ✅
-**Status**: COMPLETED
-
-**Deliverables**:
-- Self-hosted ZITADEL deployed on GCP Cloud Run
-- Cloud SQL PostgreSQL 15 database configured
-- Organization and project created
-- Admin user configured (User ID: 340504966944793723)
-- Service account created for automation
-- Secrets stored in GCP Secret Manager
-
----
-
-### Issue #3: Kenni.is IdP Integration ✅
-**Status**: COMPLETED
-
-**Deliverables**:
-- OIDC Bridge Proxy deployed on Cloud Run
-- Kenni.is external IdP configured in ZITADEL
-- Attribute mapping completed (sub, name, email, national_id, phone_number)
-- OIDC incompatibility resolved via bridge proxy
-- Client credentials secured in Secret Manager
-
----
-
-### Issue #4: CLI/API Access Configuration ✅
-**Status**: COMPLETED
-
-**Deliverables**:
-- Service account created (ID: 340499069199721595)
-- Service account key generated
-- API access configured for automation
-- CLI authentication tested
-- Credentials stored in GCP Secret Manager
+**Recommendation**: Archive ZITADEL docs and create new Firebase-based documentation.
 
 ---
 
 ## Next Steps & Recommendations
 
-### Immediate Actions
-1. **SSL Certificate**: Monitor SSL provisioning for auth.si-xj.org custom domain
-2. **End-to-End Testing**: Complete authentication flow testing with real Kenni.is user
-3. **Documentation**: Update GitHub issues #2, #3, #4 with completion status
+### Immediate Actions (Critical)
+1. **Fix Portal Dependencies** - Export requirements.txt from poetry.lock
+2. **Run Portal Migrations** - Execute 24 Alembic migrations
+3. **Verify Portal Health** - Ensure service responds 200 OK
+4. **Update Outdated Docs** - Archive ZITADEL docs, create Firebase equivalents
 
 ### Short-term Improvements
-1. **Break-Glass Access**: Add second admin account for redundancy
-2. **Monitoring**: Configure production alerts and dashboards
-3. **Runbooks**: Document operational procedures
-4. **Backup Testing**: Validate backup and recovery procedures
+1. **Documentation Cleanup**
+   - Archive all ZITADEL-based documentation
+   - Create Firebase integration guide
+   - Document current OAuth PKCE flow
+   - Update members deployment guide
+
+2. **Portal Service**
+   - Grant database privileges manually
+   - Test authentication integration
+   - Configure monitoring alerts
+
+3. **Monitoring & Operations**
+   - Set up Cloud Logging alerts
+   - Document operational runbooks
+   - Test backup/recovery procedures
 
 ### Long-term Enhancements
-1. **High Availability**: Consider Cloud SQL HA configuration
-2. **Multi-Region**: Evaluate multi-region deployment for failover
-3. **Infrastructure as Code**: Implement Terraform for reproducible deployments
-4. **Cost Optimization**: Review and optimize based on actual usage patterns
-5. **Security Audit**: Conduct comprehensive security review
+1. **Production Hardening**
+   - Custom domain for Portal service
+   - CDN for static assets
+   - Multi-region failover planning
+
+2. **Cost Optimization**
+   - Monitor Firebase usage (ensure Free Tier)
+   - Right-size Cloud SQL (db-f1-micro sufficient?)
+   - Review Cloud Run scaling settings
+
+3. **Infrastructure as Code**
+   - Terraform configuration
+   - Automated deployments
+   - Disaster recovery automation
 
 ---
 
 ## Access & Credentials
 
 ### GCP Console Access
-- **Project**: (Your GCP project ID)
+- **Project**: ekklesia-prod-10-2025 (521240388393)
 - **Region**: europe-west2 (London)
-- **IAM**: Configured for team access
+- **Account**: gudrodur@sosialistaflokkurinn.is
 
-### ZITADEL Console Access
-- **URL**: https://zitadel-ymzrguoifa-nw.a.run.app
-- **Primary Admin**: gudro (Guðröður)
-- **User ID**: 340504966944793723
+### Firebase Console Access
+- **Project**: ekklesia-prod-10-2025
+- **URL**: https://console.firebase.google.com/project/ekklesia-prod-10-2025
+- **Account**: gudrodur@sosialistaflokkurinn.is
 
 ### Secret Manager
-All production credentials stored in GCP Secret Manager:
-- `zitadel-masterkey`
-- `zitadel-db-password`
-- `kenni-client-secret`
-- `oidc-bridge-jwt-secret`
+Production credentials in GCP Secret Manager:
+- `kenni-client-secret` - Kenni.is OAuth client secret
+- `portal-db-password` - Portal PostgreSQL password
+- `portal-session-secret` - Portal session encryption
+- `members-session-secret` - Members session (legacy)
+
+### Deprecated Secrets
+- `idp-client-id`, `idp-client-secret` - ZITADEL configs
+- `zitadel-*` - All ZITADEL-related secrets
+- `kenni-client-id`, `kenni-issuer` - Now environment variables
 
 ---
 
 ## Support & Resources
 
 ### Internal Resources
-- **Documentation Directory**: `/home/gudro/Development/projects/ekklesia/docs/`
-- **Code Repository**: `/home/gudro/Development/projects/ekklesia/`
-- **Architecture Scripts**: `/home/gudro/Development/projects/ekklesia/arch_scripts/`
+- **Documentation Root**: `/home/gudro/Development/projects/ekklesia/`
+- **Code Repository**: Same directory
+- **Current Branch**: `feature/database-migration`
+- **Main Branch**: `main`
 
 ### External Resources
-- **ZITADEL Docs**: https://zitadel.com/docs
+- **Firebase Docs**: https://firebase.google.com/docs
 - **GCP Cloud Run**: https://cloud.google.com/run/docs
 - **GCP Cloud SQL**: https://cloud.google.com/sql/docs
 - **Kenni.is**: https://idp.kenni.is/
+- **Reference Repo**: https://github.com/gudrodur/firebase-manual-oauth-pkce
 
 ### Contact
 - **Primary Contact**: Guðröður (gudro)
-- **Project**: Samstaða Voting System
-- **GitHub**: https://github.com/samstada/ekklesia
+- **Production Account**: gudrodur@sosialistaflokkurinn.is
+- **Reference Account**: gudrodur@gmail.com
+- **Project**: Ekklesia e-democracy platform
 
 ---
 
 ## Document Maintenance
 
 ### Update Schedule
-- **Weekly**: Operational status updates
-- **Monthly**: Architecture review and optimization
-- **Quarterly**: Comprehensive documentation audit
+- **Daily**: During active development
+- **Weekly**: Production status updates
+- **Monthly**: Comprehensive documentation review
 
 ### Version Control
-All documentation is version-controlled in the git repository:
-- Branch: `feature/zitadel-auth-development`
-- Main branch: `main`
+All documentation is version-controlled:
+- **Current Branch**: `feature/database-migration`
+- **Main Branch**: `main`
+- **Last Update**: 2025-10-07
 
 ### Change Log
-- **2025-10-03**: Phase 4 completion, production deployment documentation
-- **2025-10-01**: Initial documentation structure created
-- Earlier updates tracked in git history
+- **2025-10-07**: Complete rewrite for Firebase migration
+- **2025-10-05**: Firebase migration documentation added
+- **2025-10-03**: ZITADEL Phase 4 completion
+- **2025-10-01**: Initial documentation structure
 
 ---
 
 **End of Documentation Index**
+
+**Note**: This index has been completely rewritten to reflect the current Firebase-based architecture. All references to ZITADEL infrastructure are historical and marked as deprecated.
