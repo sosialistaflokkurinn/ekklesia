@@ -161,6 +161,8 @@
       <p><strong>Display Name:</strong> <span id="display-name">-</span></p>
       <p><strong>UID:</strong> <span id="uid">-</span></p>
       <p><strong>Kennitala:</strong> <span id="kennitala">-</span></p>
+      <p><strong>Email:</strong> <span id="email">-</span></p>
+      <p><strong>Phone:</strong> <span id="phone">-</span></p>
     </div>
 
     <div id="auth-buttons">
@@ -360,10 +362,17 @@
 
         const idTokenResult = await user.getIdTokenResult();
         const kennitala = idTokenResult.claims.kennitala || 'Not found';
+        const email = idTokenResult.claims.email || 'Not available';
+        const phone = idTokenResult.claims.phoneNumber || 'Not available';
+
         document.getElementById('kennitala').textContent = kennitala;
+        document.getElementById('email').textContent = email;
+        document.getElementById('phone').textContent = phone;
 
         addLog(`User authenticated: ${user.displayName || user.uid}`, 'success');
         addLog(`Kennitala: ${kennitala}`, 'info');
+        addLog(`Email: ${email}`, 'info');
+        addLog(`Phone: ${phone}`, 'info');
       } else {
         statusDiv.className = 'status not-authenticated';
         statusDiv.textContent = '❌ Not Authenticated';
