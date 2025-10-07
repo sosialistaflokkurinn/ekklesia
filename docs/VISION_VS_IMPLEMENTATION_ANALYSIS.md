@@ -457,9 +457,17 @@ From [SYSTEM_ARCHITECTURE_OVERVIEW.md](SYSTEM_ARCHITECTURE_OVERVIEW.md):
 
 ## Conclusion
 
+⚠️ **UPDATE (2025-10-07)**: This analysis has been superseded by a decision to adopt the Ekklesia platform's proposition-based model rather than the original election-focused vision.
+
+**See**: [UPDATED_SYSTEM_VISION.md](UPDATED_SYSTEM_VISION.md) for the current architectural vision.
+
+---
+
+### Original Analysis (Now Superseded)
+
 **Alignment Score: 🟢 92% - Excellent**
 
-The **original architectural vision** and **GitHub issues** are **highly aligned**. The implementation successfully preserves the core principles:
+The **original architectural vision** and **GitHub issues** were **highly aligned**. The implementation successfully preserved the core principles:
 
 ✅ **Three-component separation**: Members, Events (Portal), Elections (Voting)
 ✅ **S2S communication**: Voting token issuance via server-to-server calls
@@ -467,21 +475,50 @@ The **original architectural vision** and **GitHub issues** are **highly aligned
 ✅ **Security**: One-time voting tokens, no PII in voting system
 ✅ **Permissions-based access**: Eligibility determined by Members system
 
-The main deviations are **positive** (better technology choices, lower costs) rather than compromises. The current blocker (Portal 503) is a **technical issue** rather than an **architectural problem**.
+The main deviations were **positive** (better technology choices, lower costs) rather than compromises.
 
-**The vision is being implemented correctly. Continue with current approach.**
+---
+
+### What Changed (2025-10-07)
+
+**Decision Made**: Adopt Ekklesia platform as-is (proposition/policy-based democracy) rather than building election-focused system.
+
+**Key Change**:
+- **Old Vision**: Elections (pick officers, board members, referendums)
+- **New Vision**: Propositions (policy development, collaborative decision-making)
+
+**Why**:
+- Ekklesia Portal is designed for **motions/propositions**, not elections
+- Rather than build custom "Events" service, adopt Ekklesia's proven model
+- Faster time-to-value with mature open-source platform
+- Richer democratic process (discussion, deliberation, score voting)
+
+**Impact**:
+- ✅ Members component: No change (already production-ready)
+- ✅ Portal component: Use for propositions (not election administration)
+- ✅ Voting component: Use for score voting on propositions
+- ✅ Architecture preserved: Three components, S2S integration, anonymous voting
+- 🔄 Use case changed: Policy decisions instead of officer elections
+
+**See**: [NAMING_CLARIFICATION.md](NAMING_CLARIFICATION.md) for the analysis that led to this decision.
+
+**The updated vision is documented in [UPDATED_SYSTEM_VISION.md](UPDATED_SYSTEM_VISION.md).**
 
 ---
 
 ## References
 
 **Original Vision**:
-- [SYSTEM_ARCHITECTURE_OVERVIEW.md](SYSTEM_ARCHITECTURE_OVERVIEW.md)
+- [SYSTEM_ARCHITECTURE_OVERVIEW.md](SYSTEM_ARCHITECTURE_OVERVIEW.md) - Election-focused (superseded)
+
+**Updated Vision**:
+- [UPDATED_SYSTEM_VISION.md](UPDATED_SYSTEM_VISION.md) - **Current vision** (proposition-focused)
+- [NAMING_CLARIFICATION.md](NAMING_CLARIFICATION.md) - Analysis of naming confusion
 
 **GitHub Issues**:
 - [Epic #1: Platform Bootstrap](https://github.com/sosialistaflokkurinn/ekklesia/issues/1)
 - [Epic #16: Member Core](https://github.com/sosialistaflokkurinn/ekklesia/issues/16)
-- [Epic #17: Events - Member Experience](https://github.com/sosialistaflokkurinn/ekklesia/issues/17)
+- [Epic #17: Events - Member Experience](https://github.com/sosialistaflokkurinn/ekklesia/issues/17) (now: Proposition Experience)
 - [Epic #18: Voting Service Core](https://github.com/sosialistaflokkurinn/ekklesia/issues/18)
 - [Story #14: Secure Login](https://github.com/sosialistaflokkurinn/ekklesia/issues/14)
 
