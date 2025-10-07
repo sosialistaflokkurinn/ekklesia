@@ -1,4 +1,4 @@
-# Ekklesia Portal - Production Dockerfile for Cloud Run
+# Ekklesia Portal - Simplified Production Dockerfile for Cloud Run
 FROM python:3.11-slim
 
 # Install system dependencies
@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
     postgresql-client \
     libpq-dev \
     curl \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
 # Create application user
@@ -15,36 +16,63 @@ RUN useradd -m -u 10000 ekklesia-portal
 # Set working directory
 WORKDIR /app
 
-# Copy dependency files
-COPY pyproject.toml poetry.lock ./
-
-# Install Poetry and dependencies
-RUN pip install --no-cache-dir poetry==1.7.1 && \
-    poetry config virtualenvs.create false && \
-    poetry install --no-dev --no-interaction --no-ansi
-
-# Copy application source
+# Copy application source first (for pip install -e)
 COPY src/ ./src/
 COPY alembic/ ./alembic/
 COPY alembic.ini ./
-
-# Copy babel config for translations
 COPY babel.cfg ./
-
-# Copy entrypoint script
 COPY entrypoint.sh ./
+COPY pyproject.toml ./
+
+# Install PyYAML 6.0.1 first to avoid build issues with 5.4.1
+RUN pip install --no-cache-dir pyyaml==6.0.1
+
+# Install ekklesia-common from GitHub WITH all its dependencies
+RUN pip install --no-cache-dir git+https://github.com/edemocracy/ekklesia-common.git@master
+
+# Install remaining Portal-specific dependencies
+RUN pip install --no-cache-dir \
+    alembic \
+    dataclasses-json \
+    passlib \
+    psycopg2-binary \
+    sqlalchemy==1.4.53 \
+    sqlalchemy-searchable \
+    base32-crockford \
+    babel \
+    deform \
+    eliot-tree \
+    pdbpp \
+    Jinja2 \
+    typer \
+    gunicorn \
+    ipython \
+    rich \
+    pytz \
+    zope.sqlalchemy \
+    case-conversion \
+    attrs \
+    more.babel-i18n \
+    more.browser-session \
+    more.forwarded \
+    more.itsdangerous \
+    more.jinja2 \
+    more.transaction \
+    more.webassets \
+    morepath \
+    webob
 
 # Compile translations (if they exist)
 RUN if [ -d "src/ekklesia_portal/translations" ]; then \
     cd src/ekklesia_portal && \
-    find translations -name "*.mo" -o -name "*.po" | head -1 && \
     python -m babel.messages.frontend compile -d translations || true; \
     fi
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PORT=8080
+    PORT=8080 \
+    PYTHONPATH=/app/src
 
 # Change ownership and make entrypoint executable
 RUN chown -R ekklesia-portal:ekklesia-portal /app && \
