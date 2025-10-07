@@ -149,8 +149,21 @@ ekklesia/
 │   │   └── sh-files/
 │   └── DOCUMENTATION_INDEX.md    📇 GCP directory index
 │
-├── members/                      👤 Members Service (NEW)
+├── members/                      👤 Members Service
 │   ├── src/                      💻 Application code
+│   ├── auth/                     🔐 Firebase Authentication
+│   │   ├── kenni-auth.js         # Kenni.is integration module
+│   │   ├── config/               # Firebase OIDC provider config
+│   │   └── styles/               # Component CSS
+│   ├── functions/                ☁️ Cloud Functions
+│   │   └── index.js              # Claims mapping & verification
+│   ├── test/                     🧪 Testing
+│   │   └── kenni-auth-test.html  # Auth flow test page
+│   ├── docs/                     📚 Service documentation
+│   │   ├── FIREBASE_KENNI_SETUP.md
+│   │   └── KENNI_QUICKSTART.md
+│   ├── scripts/                  🔧 Setup scripts
+│   │   └── setup-firebase-kenni.sh
 │   ├── Dockerfile                🐳 Container definition
 │   ├── package.json              📦 Dependencies
 │   └── README.md                 📖 Service documentation
@@ -180,10 +193,12 @@ ekklesia/
 
 | Document | Purpose | Audience |
 |----------|---------|----------|
-| `architecture/HYBRID_ARCHITECTURE.md` | ✨ **Current** - Firebase + OIDC Bridge design | All |
+| `architecture/HYBRID_ARCHITECTURE.md` | Firebase + OIDC Bridge design (Legacy) | All |
 | `architecture/identity.md` | Authentication system design | Developers, Architects |
 | `architecture/TECHNICAL_SOLUTION.md` | Production infrastructure | DevOps, Operations |
 | `architecture/ARCHITECTURE_DEV_VS_PROD.md` | Environment comparison | All |
+| `../members/docs/FIREBASE_KENNI_SETUP.md` | ✨ **Current** - Direct Firebase + Kenni.is | All |
+| `../members/docs/KENNI_QUICKSTART.md` | Quick start guide (no OIDC bridge) | Developers |
 
 ### 📝 Future Plans
 
