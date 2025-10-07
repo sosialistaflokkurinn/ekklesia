@@ -161,8 +161,6 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
         # Step 3: Extract user information
         national_id = decoded_kenni_token.get("national_id")
         full_name = decoded_kenni_token.get("name")
-        email = decoded_kenni_token.get("email")
-        phone_number = decoded_kenni_token.get("phone_number")
 
         if not national_id:
             raise Exception("No national_id in Kenni.is token")
@@ -188,18 +186,10 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
             auth_uid = user_doc.id
             print(f"INFO: User profile for kennitala {normalized_kennitala[:7]}**** already exists with UID {auth_uid}")
 
-            # Update last login and sync email/phone from Kenni.is
-            update_data = {
+            # Update last login
+            users_ref.document(auth_uid).update({
                 'lastLogin': firestore.SERVER_TIMESTAMP
-            }
-            if email:
-                update_data['email'] = email
-            if phone_number:
-                update_data['phoneNumber'] = phone_number
-            if full_name:
-                update_data['fullName'] = full_name
-
-            users_ref.document(auth_uid).update(update_data)
+            })
         else:
             # Create new user
             print(f"INFO: Creating new user for kennitala {normalized_kennitala[:7]}****")
@@ -211,8 +201,7 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
             user_profile_data = {
                 'fullName': full_name,
                 'kennitala': normalized_kennitala,
-                'email': email,
-                'phoneNumber': phone_number,
+                'email': None,
                 'photoURL': None,
                 'role': 'user',
                 'isMember': False,  # Will be verified separately
@@ -222,14 +211,11 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
             db.collection('users').document(auth_uid).set(user_profile_data)
             print(f"INFO: Created Firestore user profile at /users/{auth_uid}")
 
-        # Step 5: Create Firebase custom token with all claims
-        custom_claims = {'kennitala': normalized_kennitala}
-        if email:
-            custom_claims['email'] = email
-        if phone_number:
-            custom_claims['phoneNumber'] = phone_number
-
-        custom_token = auth.create_custom_token(auth_uid, developer_claims=custom_claims)
+        # Step 5: Create Firebase custom token with kennitala claim
+        custom_token = auth.create_custom_token(
+            auth_uid,
+            developer_claims={'kennitala': normalized_kennitala}
+        )
 
         # Step 6: Return custom token to frontend
         response_data = {
@@ -306,13 +292,7 @@ def verifyMembership(req: https_fn.CallableRequest) -> dict:
             if line.strip()
         ]
 
-        # Normalize kennitala for comparison (remove hyphen if present)
-        # File format: 2009783589 (no hyphen)
-        # Token format: may be 200978-3589 (with hyphen) or 2009783589 (without)
-        kennitala_normalized = kennitala.replace('-', '')
-
-        # Check membership status
-        is_member = kennitala_normalized in kennitalas
+        is_member = kennitala in kennitalas
 
         # Update user profile in Firestore
         db = firestore.client()

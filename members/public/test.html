@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔐 Stage 3: Manual OAuth Test</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 12px;
+      padding: 40px;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 8px;
+      color: #1a202c;
+    }
+
+    .subtitle {
+      color: #718096;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+
+    .status {
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-weight: 500;
+    }
+
+    .status.authenticated {
+      background: #c6f6d5;
+      color: #22543d;
+      border-left: 4px solid #38a169;
+    }
+
+    .status.not-authenticated {
+      background: #fed7d7;
+      color: #742a2a;
+      border-left: 4px solid #e53e3e;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s;
+      width: 100%;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+
+    .btn:hover {
+      background: #5568d3;
+    }
+
+    .btn:disabled {
+      background: #cbd5e0;
+      cursor: not-allowed;
+    }
+
+    .btn.secondary {
+      background: #e53e3e;
+    }
+
+    .btn.secondary:hover {
+      background: #c53030;
+    }
+
+    .info-box {
+      background: #ebf8ff;
+      border-left: 4px solid #3182ce;
+      padding: 16px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+
+    .info-box p {
+      margin: 4px 0;
+      color: #2c5282;
+      font-size: 14px;
+    }
+
+    .debug-log {
+      background: #1a202c;
+      color: #a0aec0;
+      padding: 16px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 20px;
+    }
+
+    .debug-log .log-entry {
+      margin: 4px 0;
+      padding: 4px 0;
+      border-bottom: 1px solid #2d3748;
+    }
+
+    .debug-log .log-entry:last-child {
+      border-bottom: none;
+    }
+
+    .debug-log .timestamp {
+      color: #718096;
+    }
+
+    .debug-log .success {
+      color: #48bb78;
+    }
+
+    .debug-log .error {
+      color: #f56565;
+    }
+
+    .debug-log .info {
+      color: #63b3ed;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔐 Stage 3: Manual OAuth + Custom Token</h1>
+    <p class="subtitle">Manual OAuth with PKCE → Cloud Function → Firebase Custom Token</p>
+
+    <div id="status" class="status not-authenticated">
+      ❌ Not Authenticated
+    </div>
+
+    <div class="info-box" id="user-info" style="display: none;">
+      <p><strong>Display Name:</strong> <span id="display-name">-</span></p>
+      <p><strong>UID:</strong> <span id="uid">-</span></p>
+      <p><strong>Kennitala:</strong> <span id="kennitala">-</span></p>
+    </div>
+
+    <div id="auth-buttons">
+      <button class="btn" onclick="signInWithKenni()">
+        Sign In with Kenni.is (Manual OAuth)
+      </button>
+      <p style="color: #718096; font-size: 14px; margin-top: 8px;">
+        Click to authenticate with Iceland's national eID service
+      </p>
+    </div>
+
+    <button id="signout-btn" class="btn secondary" onclick="signOut()" style="display: none;">
+      Sign Out
+    </button>
+
+    <div class="debug-log">
+      <strong>Debug Log:</strong>
+      <div id="log"></div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signInWithCustomToken,
+      signOut as firebaseSignOut
+    } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBsDqnt8G54VAANlucQpI20r3Sw1p2Bcp4",
+      authDomain: "ekklesia-prod-10-2025.firebaseapp.com",
+      projectId: "ekklesia-prod-10-2025",
+      storageBucket: "ekklesia-prod-10-2025.firebasestorage.app",
+      messagingSenderId: "521240388393",
+      appId: "1:521240388393:web:de2a986ae545e20bb5cd38"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // Kenni.is configuration
+    const KENNI_IS_ISSUER_URL = 'https://idp.kenni.is/sosi-kosningakerfi.is';
+    const KENNI_IS_CLIENT_ID = '@sosi-kosningakerfi.is/rafr-nt-kosningakerfi-s-s';
+    const KENNI_IS_REDIRECT_URI = window.location.origin + window.location.pathname;
+
+    // Logging
+    function addLog(message, type = 'info') {
+      const log = document.getElementById('log');
+      const timestamp = new Date().toLocaleTimeString();
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      entry.innerHTML = `<span class="timestamp">[${timestamp}]</span> <span class="${type}">${message}</span>`;
+      log.appendChild(entry);
+      log.scrollTop = log.scrollHeight;
+      console.log(`[${type.toUpperCase()}] ${message}`);
+    }
+
+    // Base64 URL encode
+    function base64URLEncode(buffer) {
+      const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+      return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+    }
+
+    // SHA-256 hash
+    async function sha256(buffer) {
+      return await crypto.subtle.digest('SHA-256', buffer);
+    }
+
+    // Generate PKCE challenge
+    async function generatePKCE() {
+      const array = new Uint8Array(32);
+      crypto.getRandomValues(array);
+      const verifier = base64URLEncode(array);
+
+      const encoder = new TextEncoder();
+      const data = encoder.encode(verifier);
+      const hash = await sha256(data);
+      const challenge = base64URLEncode(hash);
+
+      return { verifier, challenge };
+    }
+
+    // Sign in with Kenni.is
+    window.signInWithKenni = async function() {
+      try {
+        addLog('Initiating Kenni.is OAuth flow...', 'info');
+
+        const { verifier, challenge } = await generatePKCE();
+        sessionStorage.setItem('pkce_code_verifier', verifier);
+        addLog('PKCE challenge generated', 'success');
+
+        const params = new URLSearchParams({
+          client_id: KENNI_IS_CLIENT_ID,
+          redirect_uri: KENNI_IS_REDIRECT_URI,
+          response_type: 'code',
+          scope: 'openid profile national_id',
+          code_challenge: challenge,
+          code_challenge_method: 'S256',
+        });
+
+        const authUrl = `${KENNI_IS_ISSUER_URL}/oidc/auth?${params.toString()}`;
+        addLog('Redirecting to Kenni.is...', 'info');
+
+        window.location.assign(authUrl);
+      } catch (error) {
+        addLog(`Error: ${error.message}`, 'error');
+      }
+    };
+
+    // Handle OAuth callback
+    async function handleCallback() {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+      const error = params.get('error');
+
+      if (error) {
+        addLog(`OAuth error: ${error}`, 'error');
+        return;
+      }
+
+      if (!code) return; // Not a callback
+
+      addLog('OAuth callback received', 'info');
+
+      const verifier = sessionStorage.getItem('pkce_code_verifier');
+      if (!verifier) {
+        addLog('No PKCE verifier found', 'error');
+        return;
+      }
+
+      try {
+        addLog('Calling handleKenniAuth Cloud Function...', 'info');
+
+        const functionUrl = 'https://handlekenniauth-ymzrguoifa-nw.a.run.app';
+        const response = await fetch(functionUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            kenniAuthCode: code,
+            pkceCodeVerifier: verifier
+          }),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Cloud Function error: ${response.status} - ${errorText}`);
+        }
+
+        const data = await response.json();
+        addLog('Received custom token from Cloud Function', 'success');
+
+        addLog('Signing in with custom token...', 'info');
+        await signInWithCustomToken(auth, data.customToken);
+
+        addLog('Successfully signed in!', 'success');
+        sessionStorage.removeItem('pkce_code_verifier');
+
+        // Clear URL parameters
+        window.history.replaceState({}, document.title, window.location.pathname);
+
+      } catch (error) {
+        addLog(`Callback error: ${error.message}`, 'error');
+      }
+    }
+
+    // Sign out
+    window.signOut = async function() {
+      try {
+        await firebaseSignOut(auth);
+        addLog('Signed out successfully', 'success');
+      } catch (error) {
+        addLog(`Sign out error: ${error.message}`, 'error');
+      }
+    };
+
+    // Auth state observer
+    onAuthStateChanged(auth, async (user) => {
+      const statusDiv = document.getElementById('status');
+      const authButtons = document.getElementById('auth-buttons');
+      const signoutBtn = document.getElementById('signout-btn');
+      const userInfo = document.getElementById('user-info');
+
+      if (user) {
+        statusDiv.className = 'status authenticated';
+        statusDiv.textContent = '✅ Authenticated';
+        authButtons.style.display = 'none';
+        signoutBtn.style.display = 'block';
+        userInfo.style.display = 'block';
+
+        document.getElementById('display-name').textContent = user.displayName || 'N/A';
+        document.getElementById('uid').textContent = user.uid;
+
+        const idTokenResult = await user.getIdTokenResult();
+        const kennitala = idTokenResult.claims.kennitala || 'Not found';
+        document.getElementById('kennitala').textContent = kennitala;
+
+        addLog(`User authenticated: ${user.displayName || user.uid}`, 'success');
+        addLog(`Kennitala: ${kennitala}`, 'info');
+      } else {
+        statusDiv.className = 'status not-authenticated';
+        statusDiv.textContent = '❌ Not Authenticated';
+        authButtons.style.display = 'block';
+        signoutBtn.style.display = 'none';
+        userInfo.style.display = 'none';
+      }
+    });
+
+    // Initialize
+    addLog('Test page loaded - Stage 3: Manual OAuth + Custom Token', 'info');
+    handleCallback();
+  </script>
+</body>
+</html>
