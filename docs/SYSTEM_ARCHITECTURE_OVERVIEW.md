@@ -4,7 +4,7 @@
 
 **Document Type**: Macro View - System Architecture Overview
 **Last Updated**: 2025-10-07
-**Status**: Original Design Document
+**Status**: ✅ **Active - Primary Architectural Vision** (Restored Oct 7, 2025)
 
 ---
 
@@ -113,6 +113,14 @@ The voting system consists of three main components:
 
 ## Current Implementation Status (2025-10-07)
 
+⚠️ **UPDATE (Oct 7, 2025)**: Ekklesia Platform evaluation completed and archived. Returning to original election-focused vision.
+
+**Decision**: Build custom Events service for election administration (Option 2: Build Custom "Events" Component).
+
+**See**: [archive/ekklesia-platform-evaluation/README.md](../archive/ekklesia-platform-evaluation/README.md) for Ekklesia evaluation details.
+
+---
+
 ### Members System - ✅ Production
 
 **Implementation**: Firebase-based authentication with Kenni.is national eID integration
@@ -131,31 +139,41 @@ The voting system consists of three main components:
 
 **See**: [members/README.md](../members/README.md) and [CURRENT_PRODUCTION_STATUS.md](../CURRENT_PRODUCTION_STATUS.md)
 
-### Portal System (Events) - 🟡 Deployed (Issues)
+### Events System (`Atburðir`) - 🔨 To Be Built
 
-**Implementation**: Ekklesia Portal (Python/Morepath)
+**Decision**: Build custom Events service for election administration
 
-- **Production URL**: https://portal-ymzrguoifa-nw.a.run.app (returns 503)
-- **Technology**: Cloud Run + Cloud SQL PostgreSQL 15
-- **Database**: ekklesia-db instance, ekklesia_portal database (created, empty)
-- **Status**: Deployed but not operational (dependency resolution issues)
+- **Purpose**: Election administration, voting token issuance, eligibility management
+- **Technology**: To be determined (likely Node.js or Python)
+- **Database**: Cloud SQL PostgreSQL 15 (ekklesia-db instance available)
+- **Status**: Design phase
 
-**Components**:
-- Cloud Run service (512 MB, Python/Morepath)
-- Cloud SQL PostgreSQL 15 (db-f1-micro)
-- 24 Alembic database migrations (pending, blocked by 503)
+**Required Features**:
+- Create and manage elections (officer elections, referendums)
+- Define eligibility rules (who can vote in which elections)
+- Issue one-time voting tokens to eligible members (S2S to Voting)
+- Fetch and display results from Voting system
+- Admin interface for election management
 
-**See**: [portal/DEPLOYMENT.md](../portal/DEPLOYMENT.md) and [PORTAL_DEPLOYMENT_PROGRESS.md](../PORTAL_DEPLOYMENT_PROGRESS.md)
+**See**: Design document to be created
 
-### Voting System - 📦 Ready to Deploy
+### Voting System (`Kosning`) - 📋 To Be Designed
 
-**Implementation**: Ekklesia Voting (Python/Morepath)
+**Decision**: Evaluate options (Ekklesia Voting standalone vs custom build)
 
-- **Status**: Code committed, ready to deploy
-- **Technology**: Same as Portal (Cloud Run + Cloud SQL)
-- **Deployment**: Blocked pending Portal service resolution
+- **Purpose**: Accept voting tokens, record ballots anonymously
+- **Technology**: To be determined
+- **Database**: Cloud SQL PostgreSQL 15 (shared or separate)
+- **Status**: Pending Events service design
 
-**See**: [voting/README.md](../voting/README.md)
+**Required Features**:
+- Validate one-time voting tokens
+- Record ballots anonymously (no PII)
+- Enforce one-vote-per-token (database constraint)
+- Support multiple voting methods (yes/no, single choice, ranked choice)
+- Result tabulation and export
+
+**See**: Design document to be created
 
 ---
 
@@ -168,11 +186,11 @@ The voting system consists of three main components:
 - Non-personally identifiable voting tokens
 
 ### Current Implementation (2025)
-- **Members**: Firebase custom tokens with kennitala claims
-- **Portal (Events)**: Ekklesia Portal (open-source e-democracy platform)
-- **Voting (Elections)**: Ekklesia Voting (open-source voting module)
+- **Members**: ✅ Firebase custom tokens with kennitala claims (production)
+- **Events**: 🔨 Custom service to be built (election administration)
+- **Voting**: 📋 To be designed (anonymous ballot recording)
 - **Integration**: Kenni.is national eID for authentication
-- **Cost**: $7-10/month (Cloud SQL only)
+- **Cost**: Currently $0/month (Firebase free tier), estimated $7-15/month with Events + Voting
 
 ---
 
@@ -181,13 +199,18 @@ The voting system consists of three main components:
 **Current Implementation**:
 - [CURRENT_PRODUCTION_STATUS.md](../CURRENT_PRODUCTION_STATUS.md) - Production infrastructure
 - [docs/DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md) - Complete documentation index
-- [members/README.md](../members/README.md) - Members service
-- [portal/README.md](../portal/README.md) - Portal service
-- [voting/README.md](../voting/README.md) - Voting service
+- [members/README.md](../members/README.md) - Members service (production)
 
 **Design & Planning**:
-- [docs/plans/PORTAL_VOTING_DEPLOYMENT_PLAN.md](plans/PORTAL_VOTING_DEPLOYMENT_PLAN.md) - Deployment plan
+- Events service design (to be created)
+- Voting service design (to be created)
 - [docs/FIREBASE_MIGRATION_STATUS.md](FIREBASE_MIGRATION_STATUS.md) - Migration history
+
+**Archived Evaluations**:
+- [archive/ekklesia-platform-evaluation/](../archive/ekklesia-platform-evaluation/) - Ekklesia platform evaluation (Oct 2025)
+- [docs/ABOUT_EKKLESIA_PLATFORM.md](ABOUT_EKKLESIA_PLATFORM.md) - What is Ekklesia?
+- [docs/UPDATED_SYSTEM_VISION.md](UPDATED_SYSTEM_VISION.md) - Proposition-based vision (archived)
+- [docs/NAMING_CLARIFICATION.md](NAMING_CLARIFICATION.md) - Naming analysis
 
 **Historical**:
 - [docs/archive/](archive/) - ZITADEL-era documentation (deprecated)
@@ -197,7 +220,7 @@ The voting system consists of three main components:
 ## Project
 
 - **Organization**: Samstaða (Icelandic Social Democratic Party)
-- **Platform**: Ekklesia e-democracy platform
+- **Platform**: Custom e-democracy platform for elections
 - **Repository**: https://github.com/sosialistaflokkurinn/ekklesia
 - **Project**: ekklesia-prod-10-2025 (GCP)
 - **Region**: europe-west2 (London)
