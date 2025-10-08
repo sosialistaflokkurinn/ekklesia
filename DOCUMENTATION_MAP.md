@@ -1,6 +1,6 @@
 # 🗺️ Ekklesia Platform - Master Documentation Map
 
-**Version**: 4.2.0
+**Version**: 4.3.0
 **Last Updated**: 2025-10-08
 **Status**: ✅ Members Service Production - Membership Verification Complete
 
@@ -152,11 +152,12 @@ ekklesia/
 │   │   └── MEMBERS_DEPLOYMENT_GUIDE.md   Members service deployment
 │   ├── plans/                        📝 Future feature plans
 │   │   └── GOOGLE_AUTH_LINKING_PLAN.md      Migration to Google login
-│   └── archive/                      📦 Historical documents
-│       ├── DOCUMENTATION_INDEX.md    📇 Legacy docs index
-│       ├── TECHNICAL_SOLUTION.md     ZITADEL architecture
-│       ├── HYBRID_ARCHITECTURE.md    OIDC Bridge architecture
-│       └── ... (ZITADEL-era docs)
+│
+├── archive/                          📦 Archived Code & Documentation (Local-only)
+│   ├── members-service/              Members development history (Oct 2025)
+│   ├── documentation/                Historical docs (ZITADEL-era)
+│   ├── ekklesia-platform-evaluation/ Platform evaluation (Oct 7)
+│   └── zitadel-legacy/               ZITADEL infrastructure
 │
 ├── gcp/                              ⚙️ Infrastructure Reference (Archived)
 │   ├── DOCUMENTATION_INDEX.md        📇 GCP directory index
@@ -212,7 +213,6 @@ ekklesia/
 | `design/VOTING_SERVICE_DESIGN.md` | Voting service design (anonymous ballot recording) | 📋 Planned |
 | `status/CURRENT_PRODUCTION_STATUS.md` | Production infrastructure status | ✅ Current (Oct 8) |
 | `status/FIREBASE_MIGRATION_STATUS.md` | Firebase migration summary | ✅ Current (Oct 6-7) |
-| `archive/DOCUMENTATION_INDEX.md` | Legacy documentation index | 📦 Archived |
 
 ### 📝 Future Plans
 
@@ -229,9 +229,9 @@ ekklesia/
 ### 📦 Archived Documentation
 
 **ZITADEL-era documents** (deprecated Oct 6-7, 2025):
-- `docs/archive/TECHNICAL_SOLUTION.md` - ZITADEL architecture
-- `docs/archive/HYBRID_ARCHITECTURE.md` - OIDC Bridge design
-- `docs/archive/GCP_MIGRATION_PLAN.md` - Original GCP migration plan
+- `archive/documentation/TECHNICAL_SOLUTION.md` - ZITADEL architecture
+- `archive/documentation/HYBRID_ARCHITECTURE.md` - OIDC Bridge design
+- `archive/documentation/GCP_MIGRATION_PLAN.md` - Original GCP migration plan
 - `docs/specifications/MEMBERS_OIDC_SPEC.md` - ZITADEL-based OIDC spec
 
 **Ekklesia Platform Evaluation** (archived Oct 7, 2025):
@@ -453,8 +453,8 @@ All `gcp/reference/` documents are ZITADEL-era and deprecated:
 
 ---
 
-**Document Version**: 4.2.0
+**Document Version**: 4.3.0
 **Last Reviewed**: 2025-10-08
-**Changes**: Reorganized docs/ into subdirectories (status/, design/, archive/)
+**Changes**: Consolidated all archives into single archive/ directory (local-only)
 **Validated With**: gcloud CLI, firebase CLI, gsutil (production infrastructure)
 **Next Review**: 2026-01-08 (Quarterly)
