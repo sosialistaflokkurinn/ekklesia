@@ -1,6 +1,6 @@
 # 🚀 Ekklesia Production Status
 
-**Last Updated**: 2025-10-09 20:55 UTC
+**Last Updated**: 2025-10-08 12:30 UTC
 **Project**: ekklesia-prod-10-2025 (521240388393)
 **Region**: europe-west2 (London)
 **Validated**: CLI tools (gcloud, firebase, gsutil)
@@ -12,8 +12,6 @@
 ### Cloud Run Services
 | Service | Type | URL | Status | Memory | Last Deploy |
 |---------|------|-----|--------|--------|-------------|
-| **elections-service** | Node.js 18 + Express | https://elections-service-521240388393.europe-west2.run.app | ✅ Active | 512 MB | Oct 9, 2025 20:52 UTC |
-| **events-service** | Node.js 18 + Express | https://events-service-521240388393.europe-west2.run.app | ✅ Active | 512 MB | Oct 9, 2025 13:01 UTC |
 | **handlekenniauth** | Cloud Function (Python 3.11) | https://handlekenniauth-ymzrguoifa-nw.a.run.app | ✅ Active | 512 MB | Oct 8, 2025 10:08 UTC |
 | **verifymembership** | Cloud Function (Python 3.11) | https://verifymembership-ymzrguoifa-nw.a.run.app | ✅ Active | 256 MB | Oct 8, 2025 12:30 UTC |
 
@@ -28,7 +26,7 @@
 ### Cloud SQL Services
 | Service | Instance | Status | Details | IP Address |
 |---------|----------|--------|---------|------------|
-| **PostgreSQL 15** | ekklesia-db | ✅ RUNNABLE | db-f1-micro, europe-west2, pgaudit enabled, 30-day backups | 34.147.159.80 |
+| **PostgreSQL 15** | ekklesia-db | ✅ RUNNABLE | db-f1-micro, europe-west2, ready for Events service | 34.147.159.80 |
 
 ---
 
@@ -145,125 +143,39 @@
 
 ---
 
-### ✅ Events Service - Production (Oct 9, 2025)
+### 🔨 Events Service - Design Complete (Oct 8, 2025)
 
-**Status**: ✅ MVP Deployed to Production
-**URL**: https://events-service-521240388393.europe-west2.run.app
-
+**Status**: Design complete, ready for implementation
 **Technology Stack**:
-- **Runtime**: Node.js 18 + Express
-- **Deployment**: Cloud Run (serverless, europe-west2)
-- **Database**: Cloud SQL PostgreSQL 15 (Unix socket connection)
+- **Runtime**: Node.js + Express
+- **Deployment**: Cloud Run (serverless)
+- **Database**: Cloud SQL PostgreSQL 15 (ekklesia-db, shared instance)
 - **Auth**: Firebase Admin SDK (verify JWT from Members)
-- **Container**: Docker (node:18-slim base image)
 
-**MVP Scope (Deployed)**:
-- ✅ One election (Prófunarkosning 2025)
-- ✅ One question (yes/no/abstain)
-- ✅ Active membership eligibility check
-- ✅ One-time voting token issuance (SHA-256 hashed, 32 bytes)
-- ✅ Token storage with audit trail (kennitala → token_hash)
-- ✅ Token retrieval endpoint
-- ⏸️ S2S communication with Elections service (Phase 5)
+**MVP Scope**:
+- One election (Kosning)
+- One question (yes/no/abstain)
+- Active membership eligibility
+- One-time voting token issuance (SHA-256 hashed)
+- S2S communication with Elections service
+- Audit trail (kennitala → token_hash)
 
-**API Endpoints**:
-- `GET /health` - Health check (✅ Production verified)
-- `GET /api/election` - Election details
-- `POST /api/request-token` - Issue voting token
-- `GET /api/my-status` - Participation status
-- `GET /api/my-token` - Retrieve issued token
-- `GET /api/results` - Results placeholder
+**Implementation Timeline**: 5 days (4 phases)
 
-**Cloud Run Configuration**:
-- Memory: 512 MB
-- CPU: 1
-- Max instances: 10
-- Min instances: 0
-- Timeout: 60s
-- Cloud SQL connector: ekklesia-prod-10-2025:europe-west2:ekklesia-db
-- Public access: Allowed (Firebase auth enforced at app level)
-
-**Testing Results**:
-- ✅ Local testing complete (Phase 3, Oct 9)
-- ✅ Production deployment successful (Phase 4, Oct 9)
-- ✅ Health check verified: Service running
-- ✅ Firebase Admin SDK initialized
-- ✅ Cloud SQL connection via Unix socket
-- Sample voting token issued (local): `51a4fcc6f8a3a805385231248ec596098a79dbab5dc7859b1771c6b9c4727964`
-
-**Implementation Timeline**:
-- ✅ Phase 1: Database Setup (Oct 9, 2025)
-- ✅ Phase 2: Core API (Oct 9, 2025)
-- ✅ Phase 3: Testing & Debugging (Oct 9, 2025)
-- ✅ Phase 4: Cloud Run Deployment (Oct 9, 2025)
-- 📋 Phase 5: Elections Service Integration (Next)
-
-**Deployment**:
-- Deploy script: `events/deploy.sh`
-- Image: `gcr.io/ekklesia-prod-10-2025/events-service`
-- Test page: `events/test-production.html` (use with Members service)
-
-**Design Document**: [docs/design/EVENTS_SERVICE_MVP.md](../design/EVENTS_SERVICE_MVP.md)
-**Testing Log**: [archive/testing-logs/EVENTS_SERVICE_TESTING_LOG.md](../../archive/testing-logs/EVENTS_SERVICE_TESTING_LOG.md) (archived Oct 11)
+**Design Document**: [docs/EVENTS_SERVICE_MVP.md](docs/EVENTS_SERVICE_MVP.md)
 
 ---
 
-### ✅ Elections Service - Production (Oct 9, 2025)
+### 📋 Elections Service - Next Phase
 
-**Status**: ✅ Deployed to Production (MVP Complete)
-**URL**: https://elections-service-521240388393.europe-west2.run.app
+**Status**: Design pending, implements after Events service
 **Purpose**: Anonymous ballot recording (no PII, S2S only)
 
-**Technology Stack**:
-- **Runtime**: Node.js 18 + Express
-- **Deployment**: Cloud Run (serverless, europe-west2)
-- **Database**: Cloud SQL PostgreSQL 15 (ekklesia-db, `elections` schema)
-- **Auth**: S2S API key for Events service communication
-
-**MVP Features** (Deployed):
-- ✅ S2S token registration (Events → Elections)
-- ✅ Anonymous ballot recording (no PII, no member data)
-- ✅ One-vote-per-token enforcement (database constraints)
-- ✅ Results tabulation (S2S endpoint for Events)
-- ✅ yes/no/abstain voting (MVP scope)
-- ✅ Audit logging (no PII, token hash prefix only)
-
-**API Endpoints**:
-- `GET /health` - Health check (✅ Verified)
-- `POST /api/s2s/register-token` - Register voting token (S2S, API key)
-- `GET /api/s2s/results` - Fetch results (S2S, API key)
-- `POST /api/vote` - Submit ballot (public, token-based)
-- `GET /api/token-status` - Check token validity (public, token-based)
-
-**Database Schema** (`elections`):
-- `voting_tokens` - One-time tokens (SHA-256 hashed)
-- `ballots` - Anonymous ballots (timestamp rounded to minute)
-- `audit_log` - System events (no PII)
-
-**Cloud Run Configuration** (optimized for 300 votes/sec spike):
-- Memory: 512 MB
-- CPU: 1 (with startup boost)
-- Max instances: 100
-- Min instances: 0 (cost optimization)
-- Concurrency: 50 (database-bound)
-- Timeout: 5s (fail fast)
-- Cloud SQL: Unix socket connection
-
-**Deployment Timeline**:
-- ✅ Phase 1: Database Setup (Oct 9, 2025)
-- ✅ Phase 2: Core API Implementation (Oct 9, 2025)
-- ✅ Phase 3: Local Testing (Oct 9, 2025)
-- ✅ Phase 4: Cloud Run Deployment (Oct 9, 2025 20:52 UTC)
-- ⏸️ Phase 5: Integration Testing (Next - test with Events service)
-
-**Next Steps**:
-1. Update Events service to call Elections S2S endpoints
-2. End-to-end integration testing
-3. Load testing (300 votes/sec spike - see USAGE_CONTEXT.md)
-
-**Design Document**: [docs/design/ELECTIONS_SERVICE_MVP.md](../design/ELECTIONS_SERVICE_MVP.md)
-**Load Patterns**: [docs/USAGE_CONTEXT.md](../USAGE_CONTEXT.md)
-**Operations**: [docs/OPERATIONAL_PROCEDURES.md](../OPERATIONAL_PROCEDURES.md)
+**Planned Features**:
+- Accept voting tokens (S2S registered by Events)
+- Record ballots anonymously
+- Enforce one-vote-per-token
+- Calculate and return results to Events service
 
 ---
 
@@ -405,7 +317,6 @@ gcloud sql instances describe ekklesia-db
 | Oct 8, 2025 | **Legacy cleanup complete** | ZITADEL and Portal archived |
 | Oct 8, 2025 | **Membership verification complete** | Kennitala normalization, 2,273 members verified |
 | Oct 8, 2025 | **UI improvements deployed** | Icelandic i18n, socialist red theme, multi-page portal |
-| Oct 9, 2025 | **Events service Phase 1-3 complete** | Database, API, testing complete - ready for deployment |
 
 ---
 
@@ -414,23 +325,17 @@ gcloud sql instances describe ekklesia-db
 ### ✅ Production
 - **Members Service**: Fully operational (Oct 6, 2025)
 - **Firebase Authentication**: Working with Kenni.is
-- **Cloud SQL**: Active with Events service database
+- **Cloud SQL**: Ready for Events service
 - **Cost**: $7/month (90% savings vs ZITADEL)
 
 ### 🔨 In Progress
+- **Events Service**: Design complete, ready to implement
 - **Branch**: feature/firebase-members-auth (PR #28 open)
-  - Ready to merge after final production testing
 
 ### 📋 Next Steps
-1. Test Events service with production Firebase authentication
-   - Use test-production.html to verify all endpoints
-   - Test token issuance flow end-to-end
-   - Verify database writes in production
-2. Merge PR #28 to main (after production testing)
-3. Design Elections service (Phase 5)
-   - Anonymous ballot recording (S2S only)
-   - Token validation and one-vote enforcement
-   - Result calculation and storage
+1. Merge PR #28 to main (after review)
+2. Implement Events service (5-day timeline)
+3. Design Elections service
 4. Implement Elections service
 
 ---
