@@ -40,10 +40,11 @@ h1 {
   --color-success-border: #38a169;
   --color-success: #48bb78;
 
-  --color-error-bg: #fed7d7;
-  --color-error-text: #742a2a;
-  --color-error-border: #e53e3e;
-  --color-error: #f56565;
+  /* Error colors - Orange for contrast with red primary */
+  --color-error-bg: #fff3e0;
+  --color-error-text: #e65100;
+  --color-error-border: #ff6f00;
+  --color-error: #ff9800;
 
   --color-info-bg: #ebf8ff;
   --color-info-text: #2c5282;
