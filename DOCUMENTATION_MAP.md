@@ -126,7 +126,6 @@
 ekklesia/
 ├── DOCUMENTATION_MAP.md              ⭐ YOU ARE HERE - Master index
 ├── CURRENT_PRODUCTION_STATUS.md      📊 Production infrastructure status
-├── PORTAL_DEPLOYMENT_PROGRESS.md     🟡 Portal deployment status & issues
 │
 ├── docs/                             📄 Architecture & Plans
 │   ├── DOCUMENTATION_INDEX.md        📇 Complete docs directory index
@@ -141,8 +140,7 @@ ekklesia/
 │   ├── guides/                       📖 Implementation guides
 │   │   └── GITHUB_MCP_GUIDE.md       GitHub MCP integration
 │   ├── plans/                        📝 Future feature plans
-│   │   ├── GOOGLE_AUTH_LINKING_PLAN.md      Migration to Google login
-│   │   └── PORTAL_VOTING_DEPLOYMENT_PLAN.md Ekklesia deployment (archived)
+│   │   └── GOOGLE_AUTH_LINKING_PLAN.md      Migration to Google login
 │   └── archive/                      📦 Historical documents
 │       ├── TECHNICAL_SOLUTION.md     ZITADEL architecture
 │       ├── HYBRID_ARCHITECTURE.md    OIDC Bridge architecture
@@ -208,7 +206,6 @@ ekklesia/
 | Document | Purpose | Status | Estimated Effort |
 |----------|---------|--------|------------------|
 | `plans/GOOGLE_AUTH_LINKING_PLAN.md` | Migrate to Google login after Kenni.is | 📋 Planned | 2-3 days |
-| `plans/PORTAL_VOTING_DEPLOYMENT_PLAN.md` | Ekklesia deployment plan | ⚠️ Archived (Oct 7) | N/A |
 
 ### 📖 Implementation Guides
 
@@ -244,7 +241,7 @@ ekklesia/
 ⚠️ **Note**: Most GCP documentation is ZITADEL-era and archived. Current production infrastructure is documented in:
 - `CURRENT_PRODUCTION_STATUS.md` (root)
 - `docs/DOCUMENTATION_INDEX.md`
-- `portal/DEPLOYMENT.md`
+- `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md`
 
 ### 📚 Reference Documentation (Archived)
 
@@ -332,20 +329,21 @@ All `gcp/reference/` documents are ZITADEL-era and deprecated:
 
 **Daily Work:**
 - Production Status: `CURRENT_PRODUCTION_STATUS.md`
-- Portal Issues: `PORTAL_DEPLOYMENT_PROGRESS.md`
+- Architecture: `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md`
 - Members Deployment: `members/docs/FIREBASE_KENNI_SETUP.md`
 
 ### 🏗️ **Architect - System Design**
 
 **Getting Started:**
-1. Read: `docs/DOCUMENTATION_INDEX.md` (complete architecture overview)
-2. Review: `CURRENT_PRODUCTION_STATUS.md` (current infrastructure)
-3. Study: `docs/FIREBASE_MIGRATION_STATUS.md` (migration details)
-4. Plan: `docs/plans/PORTAL_VOTING_DEPLOYMENT_PLAN.md` (next steps)
+1. Read: `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md` (primary architectural vision)
+2. Review: `docs/EVENTS_SERVICE_DESIGN.md` (Events service design)
+3. Review: `docs/VOTING_SERVICE_DESIGN.md` (Voting service design)
+4. Study: `docs/FIREBASE_MIGRATION_STATUS.md` (migration details)
 
 **Daily Work:**
-- Architecture: `docs/DOCUMENTATION_INDEX.md`
-- Future Plans: `docs/plans/`
+- Architecture: `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md`
+- Service Designs: `docs/EVENTS_SERVICE_DESIGN.md`, `docs/VOTING_SERVICE_DESIGN.md`
+- Future Plans: `docs/plans/GOOGLE_AUTH_LINKING_PLAN.md`
 - Cost Analysis: `CURRENT_PRODUCTION_STATUS.md` (Cost section)
 
 ### 🆘 **On-Call - Handling Incidents**
