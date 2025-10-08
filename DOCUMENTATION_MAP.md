@@ -73,7 +73,7 @@
   - Membership verification with 2,273 members
   - Kennitala normalization implemented
   - Icelandic i18n, socialist red theme
-  - See: `CURRENT_PRODUCTION_STATUS.md`
+  - See: `docs/CURRENT_PRODUCTION_STATUS.md`
 - **Events Service**: Design complete, ready for implementation
   - See: `docs/EVENTS_SERVICE_MVP.md`
 - **Elections Service**: Next phase (design pending)
@@ -88,7 +88,7 @@
 - ✅ UI improvements: Icelandic i18n, socialist red theme
 - ✅ Multi-page portal: dashboard, profile, test pages
 - ✅ Documentation deep review and validation
-- 📄 Documentation: `CURRENT_PRODUCTION_STATUS.md`
+- 📄 Documentation: `docs/CURRENT_PRODUCTION_STATUS.md`
 
 **Oct 7, 2025 - Return to Original Vision**
 - ✅ Ekklesia platform evaluated and archived (472 files)
@@ -136,7 +136,7 @@
 ```
 ekklesia/
 ├── DOCUMENTATION_MAP.md              ⭐ YOU ARE HERE - Master index
-├── CURRENT_PRODUCTION_STATUS.md      📊 Production infrastructure status
+│   ├── docs/CURRENT_PRODUCTION_STATUS.md  📊 Production infrastructure status
 │
 ├── docs/                             📄 Architecture & Plans
 │   ├── DOCUMENTATION_INDEX.md        📇 Complete docs directory index
@@ -248,7 +248,7 @@ ekklesia/
 **Purpose**: Infrastructure reference documentation (mostly archived)
 
 ⚠️ **Note**: Most GCP documentation is ZITADEL-era and archived. Current production infrastructure is documented in:
-- `CURRENT_PRODUCTION_STATUS.md` (root)
+- `docs/CURRENT_PRODUCTION_STATUS.md` (root)
 - `docs/DOCUMENTATION_INDEX.md`
 - `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md`
 
@@ -330,7 +330,7 @@ All `gcp/reference/` documents are ZITADEL-era and deprecated:
 ### 🚀 **DevOps - Deploying & Operating**
 
 **Getting Started:**
-1. Read: `CURRENT_PRODUCTION_STATUS.md` (production status)
+1. Read: `docs/CURRENT_PRODUCTION_STATUS.md` (production status)
 2. Review: `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md` (architecture)
 3. Deploy Members: `members/scripts/deploy-stage-3-functions.sh`
 
@@ -339,7 +339,7 @@ All `gcp/reference/` documents are ZITADEL-era and deprecated:
 - Voting Service: Implementation (6 weeks, see design doc)
 
 **Daily Work:**
-- Production Status: `CURRENT_PRODUCTION_STATUS.md`
+- Production Status: `docs/CURRENT_PRODUCTION_STATUS.md`
 - Architecture: `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md`
 - Members Deployment: `members/docs/FIREBASE_KENNI_SETUP.md`
 
@@ -355,12 +355,12 @@ All `gcp/reference/` documents are ZITADEL-era and deprecated:
 - Architecture: `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md`
 - Service Designs: `docs/EVENTS_SERVICE_DESIGN.md`, `docs/VOTING_SERVICE_DESIGN.md`
 - Future Plans: `docs/plans/GOOGLE_AUTH_LINKING_PLAN.md`
-- Cost Analysis: `CURRENT_PRODUCTION_STATUS.md` (Cost section)
+- Cost Analysis: `docs/CURRENT_PRODUCTION_STATUS.md` (Cost section)
 
 ### 🆘 **On-Call - Handling Incidents**
 
 **Emergency Quick Start:**
-1. **Status**: `CURRENT_PRODUCTION_STATUS.md` (what's running)
+1. **Status**: `docs/CURRENT_PRODUCTION_STATUS.md` (what's running)
 2. **Services**: Check Cloud Run services in GCP Console
 3. **Logs**: Cloud Logging → Filter by service
 4. **Firebase**: Firebase Console → Authentication → Users
@@ -378,7 +378,7 @@ All `gcp/reference/` documents are ZITADEL-era and deprecated:
 
 | Frequency | What to Update | Responsibility |
 |-----------|----------------|----------------|
-| **After Each Deployment** | CURRENT_PRODUCTION_STATUS.md | DevOps |
+| **After Each Deployment** | docs/CURRENT_PRODUCTION_STATUS.md | DevOps |
 | **After Service Changes** | Service README.md files | Developers |
 | **After Architecture Changes** | DOCUMENTATION_INDEX.md | Architects |
 | **Monthly** | Review all status docs | Tech lead |
