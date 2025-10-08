@@ -51,7 +51,7 @@
 
 ### ✅ Production Services (October 7, 2025)
 
-**Firebase Migration Complete** - Direct Kenni.is Integration (Oct 6-7, 2025)
+**Firebase Migration Complete** - Ekklesia Platform Archived, Custom Services in Design (Oct 7, 2025)
 
 | Component | Status | URL/Service |
 |-----------|--------|-------------|
@@ -59,26 +59,37 @@
 | **Firebase Hosting** | ✅ Production | https://ekklesia-prod-10-2025.web.app |
 | **handleKenniAuth** | ✅ Production | Cloud Function (512 MB) |
 | **verifyMembership** | ✅ Production | Cloud Function (256 MB) |
-| **Members Service** | ✅ Production | https://members-ymzrguoifa-nw.a.run.app |
-| **Portal Service** | 🟡 Deployed | https://portal-ymzrguoifa-nw.a.run.app (503) |
+| **Members Service** | ✅ Production | Firebase-based (kennitala auth) |
+| **Events Service** | 🔨 Design | Custom election administration |
+| **Voting Service** | 📋 Design | Custom anonymous ballot recording |
 | **Cloud SQL** | ✅ Production | ekklesia-db (PostgreSQL 15) |
-| **Voting Service** | 📦 Ready | Code committed, ready to deploy |
 
-**Cost**: $7-10/month (down from $135/month with ZITADEL)
+**Cost**: $7-15/month (Members $0, Events ~$5, Voting ~$2, Cloud SQL ~$7)
 
-### 🔨 Current Issues
+### 🔨 Current Work
 
-- **Portal Service**: Container deployed but returns 503 (dependency resolution issues)
-  - See: `portal/DEPLOYMENT.md` and `PORTAL_DEPLOYMENT_PROGRESS.md`
-- **Database Migration**: 24 Alembic migrations pending (blocked by Portal 503)
+- **Events Service**: Design complete, ready for implementation
+  - See: `docs/EVENTS_SERVICE_DESIGN.md`
+- **Voting Service**: Design complete, ready for implementation
+  - See: `docs/VOTING_SERVICE_DESIGN.md`
+- **Ekklesia Platform**: Evaluated and archived (Oct 7)
+  - Reason: Proposition-based platform, mismatch with election requirements
+  - See: `archive/ekklesia-platform-evaluation/README.md`
 
 ### 📋 Recent Milestones (October 2025)
 
-**Oct 7, 2025 - Portal Deployment Attempt**
+**Oct 7, 2025 - Return to Original Vision**
+- ✅ Ekklesia platform evaluated and archived (472 files)
+- ✅ Events service design document created
+- ✅ Voting service design document created
+- ✅ Original election-focused architecture restored
+- 📄 Documentation: `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md`
+
+**Oct 7, 2025 - Ekklesia Platform Evaluation**
+- ✅ Portal service deployed to Cloud Run (503 error)
 - ✅ Cloud SQL instance created (ekklesia-db)
-- ✅ Portal service deployed to Cloud Run
-- ❌ Service returns 503 (Python dependency issues)
-- 📄 Documentation: `PORTAL_DEPLOYMENT_PROGRESS.md`
+- ❌ Decision: Ekklesia platform does not match requirements
+- 📄 Documentation: `archive/ekklesia-platform-evaluation/README.md`
 
 **Oct 6-7, 2025 - Firebase Migration (ZITADEL Removed)**
 - ✅ Migrated from ZITADEL to Firebase/Identity Platform
@@ -119,6 +130,9 @@ ekklesia/
 │
 ├── docs/                             📄 Architecture & Plans
 │   ├── DOCUMENTATION_INDEX.md        📇 Complete docs directory index
+│   ├── SYSTEM_ARCHITECTURE_OVERVIEW.md 🏗️ Primary architectural vision
+│   ├── EVENTS_SERVICE_DESIGN.md      🔨 Events service design document
+│   ├── VOTING_SERVICE_DESIGN.md      📋 Voting service design document
 │   ├── FIREBASE_MIGRATION_STATUS.md  ✅ Firebase migration summary
 │   ├── specifications/               📋 Technical specifications
 │   │   └── MEMBERS_OIDC_SPEC.md      ⚠️ Legacy (ZITADEL-based)
@@ -128,7 +142,7 @@ ekklesia/
 │   │   └── GITHUB_MCP_GUIDE.md       GitHub MCP integration
 │   ├── plans/                        📝 Future feature plans
 │   │   ├── GOOGLE_AUTH_LINKING_PLAN.md      Migration to Google login
-│   │   └── PORTAL_VOTING_DEPLOYMENT_PLAN.md Portal & Voting deployment
+│   │   └── PORTAL_VOTING_DEPLOYMENT_PLAN.md Ekklesia deployment (archived)
 │   └── archive/                      📦 Historical documents
 │       ├── TECHNICAL_SOLUTION.md     ZITADEL architecture
 │       ├── HYBRID_ARCHITECTURE.md    OIDC Bridge architecture
@@ -164,23 +178,13 @@ ekklesia/
 │   ├── package.json                  Node.js dependencies
 │   └── README.md                     📖 Service documentation
 │
-├── portal/                           🌐 Portal Service (Deployed - Issues)
-│   ├── ekklesia_portal/              💻 Application code
-│   ├── alembic/                      🗄️ Database migrations (24 pending)
-│   ├── nix/                          ❄️ Nix build configuration
-│   ├── deploy-to-cloud-run.sh        🚀 Deployment script
-│   ├── setup-database.sh             🗄️ Database setup script
-│   ├── run-migrations.sh             📝 Migration runner
-│   ├── Dockerfile                    🐳 Container definition
-│   ├── pyproject.toml                📦 Poetry dependencies
-│   ├── DEPLOYMENT.md                 📖 Deployment guide & status
-│   └── README.md                     📖 Service documentation
-│
-└── voting/                           🗳️ Voting Service (Ready)
-    ├── ekklesia_voting/              💻 Application code
-    ├── alembic/                      🗄️ Database migrations
-    ├── nix/                          ❄️ Nix build configuration
-    └── README.md                     📖 Service documentation
+└── archive/                          📦 Archived Code & Evaluations
+    ├── ekklesia-platform-evaluation/ 🔍 Ekklesia platform evaluation (Oct 7)
+    │   ├── README.md                 Why Ekklesia was not used
+    │   ├── portal/                   Ekklesia Portal codebase
+    │   ├── voting/                   Ekklesia Voting codebase
+    │   └── *.md                      Proposition-based vision docs (archived)
+    └── ... (other archived code)
 ```
 
 ---
@@ -189,10 +193,13 @@ ekklesia/
 
 **Purpose**: Architecture documentation, plans, and archived ZITADEL-era docs
 
-### 📊 Current Status Documents
+### 🏗️ Architecture Documents
 
 | Document | Purpose | Status |
 |----------|---------|--------|
+| `SYSTEM_ARCHITECTURE_OVERVIEW.md` | Primary architectural vision (election-focused) | ✅ Active (Oct 7) |
+| `EVENTS_SERVICE_DESIGN.md` | Events service design (election administration) | ✅ Complete (Oct 7) |
+| `VOTING_SERVICE_DESIGN.md` | Voting service design (anonymous ballot recording) | ✅ Complete (Oct 7) |
 | `DOCUMENTATION_INDEX.md` | Complete documentation index | ✅ Current (Oct 7) |
 | `FIREBASE_MIGRATION_STATUS.md` | Firebase migration summary | ✅ Current (Oct 6-7) |
 
@@ -201,7 +208,7 @@ ekklesia/
 | Document | Purpose | Status | Estimated Effort |
 |----------|---------|--------|------------------|
 | `plans/GOOGLE_AUTH_LINKING_PLAN.md` | Migrate to Google login after Kenni.is | 📋 Planned | 2-3 days |
-| `plans/PORTAL_VOTING_DEPLOYMENT_PLAN.md` | Deploy Portal & Voting to Cloud Run | 📋 In Progress | 4-5 days |
+| `plans/PORTAL_VOTING_DEPLOYMENT_PLAN.md` | Ekklesia deployment plan | ⚠️ Archived (Oct 7) | N/A |
 
 ### 📖 Implementation Guides
 
@@ -217,6 +224,14 @@ ekklesia/
 - `archive/GCP_MIGRATION_PLAN.md` - Original GCP migration plan
 - `specifications/MEMBERS_OIDC_SPEC.md` - ZITADEL-based OIDC spec
 - `architecture/identity.md` - ZITADEL identity architecture
+
+**Ekklesia Platform Evaluation** (archived Oct 7, 2025):
+- `archive/ekklesia-platform-evaluation/README.md` - Why Ekklesia was not used
+- `archive/ekklesia-platform-evaluation/portal/` - Ekklesia Portal codebase (400+ files)
+- `archive/ekklesia-platform-evaluation/voting/` - Ekklesia Voting codebase (60+ files)
+- `archive/ekklesia-platform-evaluation/ABOUT_EKKLESIA_PLATFORM.md` - Platform background
+- `archive/ekklesia-platform-evaluation/UPDATED_SYSTEM_VISION.md` - Proposition-based vision (superseded)
+- `archive/ekklesia-platform-evaluation/NAMING_CLARIFICATION.md` - Naming confusion analysis
 
 **See**: `docs/DOCUMENTATION_INDEX.md` for complete archive listing
 
@@ -269,32 +284,23 @@ All `gcp/reference/` documents are ZITADEL-era and deprecated:
 
 ---
 
-## /portal/ Directory
+## /archive/ Directory
 
-**Purpose**: Portal service - Deployed but not operational
+**Purpose**: Archived code and evaluations
 
-### Current Status
+### Ekklesia Platform Evaluation
 
-🟡 **Deployed but Database Not Migrated** (Oct 7, 2025)
+📦 **Archived** (Oct 7, 2025) - 472 files archived
 
-- Container: ✅ Deployed to Cloud Run
-- Database: ✅ Created (ekklesia_portal, empty)
-- Service: ❌ Returns 503 (dependency issues)
-- Migrations: ❌ Not run (24 pending)
+**Reason**: Ekklesia Platform is designed for propositions/motions (policy development), not elections (candidate selection). Mismatch with original vision.
 
-**See**: `portal/DEPLOYMENT.md` and `PORTAL_DEPLOYMENT_PROGRESS.md` for details
+**Contents**:
+- `portal/` - Ekklesia Portal codebase (400+ files)
+- `voting/` - Ekklesia Voting codebase (60+ files)
+- `README.md` - Evaluation summary and decision rationale
+- Documentation files (ABOUT_EKKLESIA_PLATFORM.md, etc.)
 
-### Key Files
-
-| File/Directory | Purpose | Status |
-|----------------|---------|--------|
-| `ekklesia_portal/` | Application code (Morepath) | ✅ Ready |
-| `alembic/` | Database migrations (24 total) | ⏳ Pending |
-| `deploy-to-cloud-run.sh` | Deployment script | ✅ Used (Oct 7) |
-| `setup-database.sh` | Database setup | ✅ Run (Oct 7) |
-| `run-migrations.sh` | Migration runner | ⏳ Blocked (503) |
-| `Dockerfile` | Container definition | 🔧 Needs fix (dependencies) |
-| `DEPLOYMENT.md` | Deployment guide & status | ✅ Current |
+**See**: `archive/ekklesia-platform-evaluation/README.md` for complete evaluation details
 
 ---
 
@@ -303,23 +309,26 @@ All `gcp/reference/` documents are ZITADEL-era and deprecated:
 ### 👨‍💻 **Developer - Building Features**
 
 **Getting Started:**
-1. Read: `members/docs/FIREBASE_KENNI_SETUP.md` (current architecture)
-2. Review: `CURRENT_PRODUCTION_STATUS.md` (production services)
-3. Setup: `members/docs/KENNI_QUICKSTART.md` (local development)
+1. Read: `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md` (overall vision)
+2. Review: `docs/EVENTS_SERVICE_DESIGN.md` (Events service design)
+3. Review: `docs/VOTING_SERVICE_DESIGN.md` (Voting service design)
+4. Setup: `members/docs/FIREBASE_KENNI_SETUP.md` (Firebase + Kenni.is)
 
-**Daily Work:**
-- Members Code: `members/src/`
-- Cloud Functions: `members/functions/`
-- Portal Code: `portal/ekklesia_portal/`
-- Voting Code: `voting/ekklesia_voting/`
+**Current Work:**
+- Members Service (Production): `members/`
+- Events Service (Design): `docs/EVENTS_SERVICE_DESIGN.md`
+- Voting Service (Design): `docs/VOTING_SERVICE_DESIGN.md`
 
 ### 🚀 **DevOps - Deploying & Operating**
 
 **Getting Started:**
 1. Read: `CURRENT_PRODUCTION_STATUS.md` (production status)
-2. Review: `docs/DOCUMENTATION_INDEX.md` (all infrastructure)
+2. Review: `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md` (architecture)
 3. Deploy Members: `members/scripts/deploy-stage-3-functions.sh`
-4. Deploy Portal: `portal/DEPLOYMENT.md` (with current issues)
+
+**Next Steps:**
+- Events Service: Implementation (5 weeks, see design doc)
+- Voting Service: Implementation (6 weeks, see design doc)
 
 **Daily Work:**
 - Production Status: `CURRENT_PRODUCTION_STATUS.md`
