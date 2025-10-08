@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mín síða - Sósíalistaflokkurinn</title>
+  <link rel="stylesheet" href="/styles/global.css">
+  <link rel="stylesheet" href="/styles/components/nav.css">
+  <link rel="stylesheet" href="/styles/components/page.css">
+</head>
+<body class="authenticated">
+  <!-- Navigation -->
+  <nav class="nav-header">
+    <div class="nav-container">
+      <a href="/dashboard.html" class="nav-brand">Sósíalistaflokkurinn</a>
+      <div class="nav-links">
+        <a href="/dashboard.html" class="nav-link active" id="nav-dashboard">Mín síða</a>
+        <a href="/profile.html" class="nav-link" id="nav-profile">Prófíll</a>
+        <a href="#" class="nav-link nav-logout" id="nav-logout">Útskrá</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <div class="page-container">
+    <!-- Welcome Card -->
+    <div class="card welcome-card">
+      <h2 class="card-title" id="welcome-title">Velkomin(n)</h2>
+      <p class="card-content">
+        <span id="welcome-message">Félagasvæði Sósíalistaflokksins</span>
+      </p>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="card">
+      <h3 class="card-title">Flýtileiðir</h3>
+      <div class="info-grid">
+        <a href="/profile.html" class="info-item" style="text-decoration: none; cursor: pointer;">
+          <div class="info-label">Prófíll</div>
+          <div class="info-value">Skoða mínar upplýsingar</div>
+        </a>
+        <div class="info-item" style="opacity: 0.5;">
+          <div class="info-label">Atburðir</div>
+          <div class="info-value">Væntanlegt</div>
+        </div>
+        <div class="info-item" style="opacity: 0.5;">
+          <div class="info-label">Kosningar</div>
+          <div class="info-value">Væntanlegt</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Member Status -->
+    <div class="card" id="membership-card">
+      <h3 class="card-title">Félagastaða</h3>
+      <div class="card-content" id="membership-status">
+        Hleð inn...
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { R } from '/i18n/R.js';
+    import { requireAuth, signOut, getUserData } from '/js/auth.js';
+
+    // Set page title
+    document.title = R.string.page_title_dashboard;
+
+    // Update static strings
+    document.getElementById('nav-dashboard').textContent = R.string.nav_dashboard;
+    document.getElementById('nav-profile').textContent = R.string.nav_profile;
+    document.getElementById('nav-logout').textContent = R.string.nav_logout;
+
+    // Auth guard - redirect if not authenticated
+    const user = await requireAuth();
+
+    // Get user data
+    const userData = await getUserData(user);
+
+    // Update welcome message
+    document.getElementById('welcome-title').textContent =
+      `${R.string.dashboard_welcome}, ${userData.displayName || 'félagi'}!`;
+
+    // Update membership status
+    const membershipCard = document.getElementById('membership-status');
+    if (userData.isMember) {
+      membershipCard.innerHTML = `
+        <div style="color: var(--color-success-text); font-weight: 500;">
+          ✓ ${R.string.membership_active}
+        </div>
+      `;
+    } else {
+      membershipCard.innerHTML = `
+        <div style="color: var(--color-gray-600);">
+          ${R.string.membership_inactive}
+        </div>
+      `;
+    }
+
+    // Logout handler
+    document.getElementById('nav-logout').addEventListener('click', async (e) => {
+      e.preventDefault();
+      await signOut();
+    });
+  </script>
+</body>
+</html>
