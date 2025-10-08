@@ -4,157 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Innskráning - Sósíalistaflokkurinn</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .container {
-      background: white;
-      border-radius: 12px;
-      padding: 40px;
-      max-width: 600px;
-      width: 100%;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    }
-
-    h1 {
-      font-size: 24px;
-      margin-bottom: 8px;
-      color: #1a202c;
-    }
-
-    .subtitle {
-      color: #718096;
-      margin-bottom: 30px;
-      font-size: 14px;
-    }
-
-    .status {
-      padding: 16px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      font-weight: 500;
-    }
-
-    .status.authenticated {
-      background: #c6f6d5;
-      color: #22543d;
-      border-left: 4px solid #38a169;
-    }
-
-    .status.not-authenticated {
-      background: #fed7d7;
-      color: #742a2a;
-      border-left: 4px solid #e53e3e;
-    }
-
-    .btn {
-      display: inline-block;
-      padding: 12px 24px;
-      background: #667eea;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 16px;
-      font-weight: 500;
-      cursor: pointer;
-      text-decoration: none;
-      transition: background 0.2s;
-      width: 100%;
-      text-align: center;
-      margin-bottom: 12px;
-    }
-
-    .btn:hover {
-      background: #5568d3;
-    }
-
-    .btn:disabled {
-      background: #cbd5e0;
-      cursor: not-allowed;
-    }
-
-    .btn.secondary {
-      background: #e53e3e;
-    }
-
-    .btn.secondary:hover {
-      background: #c53030;
-    }
-
-    .info-box {
-      background: #ebf8ff;
-      border-left: 4px solid #3182ce;
-      padding: 16px;
-      margin-bottom: 20px;
-      border-radius: 4px;
-    }
-
-    .info-box p {
-      margin: 4px 0;
-      color: #2c5282;
-      font-size: 14px;
-    }
-
-    .debug-log {
-      background: #1a202c;
-      color: #a0aec0;
-      padding: 16px;
-      border-radius: 8px;
-      font-family: 'Courier New', monospace;
-      font-size: 12px;
-      max-height: 300px;
-      overflow-y: auto;
-      margin-top: 20px;
-    }
-
-    .debug-log .log-entry {
-      margin: 4px 0;
-      padding: 4px 0;
-      border-bottom: 1px solid #2d3748;
-    }
-
-    .debug-log .log-entry:last-child {
-      border-bottom: none;
-    }
-
-    .debug-log .timestamp {
-      color: #718096;
-    }
-
-    .debug-log .success {
-      color: #48bb78;
-    }
-
-    .debug-log .error {
-      color: #f56565;
-    }
-
-    .debug-log .info {
-      color: #63b3ed;
-    }
-  </style>
+  <link rel="stylesheet" href="/styles/global.css">
+  <link rel="stylesheet" href="/styles/components/login.css">
 </head>
 <body>
   <div class="container">
-    <h1>🔐 Innskráning</h1>
+    <h1>Innskráning</h1>
     <p class="subtitle">Félagar Sósíalistaflokksins</p>
 
     <div id="status" class="status not-authenticated">
-      ❌ Not Authenticated
+      Ekki innskráð(ur)
     </div>
 
     <div class="info-box" id="user-info" style="display: none;">
@@ -352,7 +211,7 @@
 
       if (user) {
         statusDiv.className = 'status authenticated';
-        statusDiv.textContent = '✅ Authenticated';
+        statusDiv.textContent = 'Innskráð(ur)';
         authButtons.style.display = 'none';
         signoutBtn.style.display = 'block';
         userInfo.style.display = 'block';
@@ -375,7 +234,7 @@
         addLog(`Phone: ${phone}`, 'info');
       } else {
         statusDiv.className = 'status not-authenticated';
-        statusDiv.textContent = '❌ Not Authenticated';
+        statusDiv.textContent = 'Ekki innskráð(ur)';
         authButtons.style.display = 'block';
         signoutBtn.style.display = 'none';
         userInfo.style.display = 'none';
