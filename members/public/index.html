@@ -52,23 +52,6 @@
     document.getElementById('login-btn').textContent = R.string.btn_login;
     document.getElementById('login-description').textContent = R.string.btn_login_description;
 
-    // Check if this is an OAuth callback (has ?code parameter)
-    const urlParams = new URLSearchParams(window.location.search);
-    const authCode = urlParams.get('code');
-
-    if (authCode) {
-      // OAuth callback - handle authentication
-      await handleOAuthCallback(authCode);
-      return;
-    }
-
-    // Check if already authenticated
-    const user = await getCurrentUser();
-    if (user) {
-      // Already logged in - redirect to dashboard
-      window.location.href = '/dashboard.html';
-    }
-
     // Kenni.is configuration
     const KENNI_IS_ISSUER_URL = 'https://idp.kenni.is/sosi-kosningakerfi.is';
     const KENNI_IS_CLIENT_ID = '@sosi-kosningakerfi.is/rafr-nt-kosningakerfi-s-s';
@@ -147,6 +130,26 @@
         authButtonsEl.style.display = 'block';
       }
     }
+
+    // Initialize page
+    (async () => {
+      // Check if this is an OAuth callback (has ?code parameter)
+      const urlParams = new URLSearchParams(window.location.search);
+      const authCode = urlParams.get('code');
+
+      if (authCode) {
+        // OAuth callback - handle authentication
+        await handleOAuthCallback(authCode);
+        return;
+      }
+
+      // Check if already authenticated
+      const user = await getCurrentUser();
+      if (user) {
+        // Already logged in - redirect to dashboard
+        window.location.href = '/dashboard.html';
+      }
+    })();
 
     // Sign in with Kenni.is
     document.getElementById('login-btn').addEventListener('click', async () => {
