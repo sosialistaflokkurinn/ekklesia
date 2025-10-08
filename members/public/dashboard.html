@@ -85,6 +85,8 @@
 
     // Get user data
     const userData = await getUserData(user);
+    console.log('User data:', userData);
+    console.log('isMember claim:', userData.isMember);
 
     // Update welcome message
     document.getElementById('welcome-title').textContent =
@@ -127,7 +129,7 @@
         if (result.data.isMember) {
           membershipCard.innerHTML = `
             <div style="color: var(--color-success-text); font-weight: 500;">
-              ✓ ${R.string.membership_verified}
+              ✓ ${R.string.membership_active}
             </div>
           `;
           verifyButtonContainer.style.display = 'none';
