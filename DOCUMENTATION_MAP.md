@@ -1,8 +1,8 @@
 # 🗺️ Ekklesia Platform - Master Documentation Map
 
-**Version**: 4.0.0
-**Last Updated**: 2025-10-07
-**Status**: ✅ Firebase Migration Complete - Production Operational
+**Version**: 4.1.0
+**Last Updated**: 2025-10-08
+**Status**: ✅ Members Service Production - Membership Verification Complete
 
 ---
 
@@ -37,12 +37,13 @@
 |-----------|-----------|--------|
 | **Identity Provider** | Firebase/Identity Platform | ✅ Production (Free Tier) |
 | **National eID** | Kenni.is OAuth PKCE | ✅ Production |
-| **Members Service** | Node.js (Express) | ✅ Production |
-| **Portal Service** | Python (Morepath) | 🟡 Deployed (DB not migrated) |
-| **Voting Service** | Python (Morepath) | 📦 Ready to Deploy |
-| **Database** | Cloud SQL PostgreSQL 15 | ✅ Production |
-| **Cloud Functions** | Python 3.11 | ✅ Production |
-| **Infrastructure** | GCP Cloud Run | ✅ Production |
+| **Members Service** | Firebase Hosting + Python Cloud Functions | ✅ Production |
+| **Membership Verification** | Firebase Storage + Cloud Functions | ✅ Production (2,273 members) |
+| **Events Service** | Design Complete | 📋 Ready to Implement |
+| **Elections Service** | Design Pending | 📋 Next Phase |
+| **Database** | Cloud SQL PostgreSQL 15 | ✅ Production (ready for Events) |
+| **Cloud Functions** | Python 3.11 (Gen 2) | ✅ Production (2 functions) |
+| **Infrastructure** | Firebase + Cloud Run | ✅ Production |
 | **Region** | europe-west2 (London) | ✅ Production |
 
 ---
@@ -68,20 +69,30 @@
 
 ### 🔨 Current Work
 
+- **Members Service**: ✅ Production operational (Oct 8, 2025)
+  - Membership verification with 2,273 members
+  - Kennitala normalization implemented
+  - Icelandic i18n, socialist red theme
+  - See: `CURRENT_PRODUCTION_STATUS.md`
 - **Events Service**: Design complete, ready for implementation
-  - See: `docs/EVENTS_SERVICE_DESIGN.md`
-- **Voting Service**: Design complete, ready for implementation
-  - See: `docs/VOTING_SERVICE_DESIGN.md`
-- **Ekklesia Platform**: Evaluated and archived (Oct 7)
-  - Reason: Proposition-based platform, mismatch with election requirements
-  - See: `archive/ekklesia-platform-evaluation/README.md`
+  - See: `docs/EVENTS_SERVICE_MVP.md`
+- **Elections Service**: Next phase (design pending)
+- **Documentation**: Deep review and validation complete (Oct 8)
 
 ### 📋 Recent Milestones (October 2025)
+
+**Oct 8, 2025 - Membership Verification Complete**
+- ✅ Kennitala normalization implemented (handles hyphen variants)
+- ✅ 2,273 members verified from January 2025 roster
+- ✅ Firebase Storage integration (kennitalas.txt, 24.47 KiB)
+- ✅ UI improvements: Icelandic i18n, socialist red theme
+- ✅ Multi-page portal: dashboard, profile, test pages
+- ✅ Documentation deep review and validation
+- 📄 Documentation: `CURRENT_PRODUCTION_STATUS.md`
 
 **Oct 7, 2025 - Return to Original Vision**
 - ✅ Ekklesia platform evaluated and archived (472 files)
 - ✅ Events service design document created
-- ✅ Voting service design document created
 - ✅ Original election-focused architecture restored
 - 📄 Documentation: `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md`
 
@@ -195,9 +206,9 @@ ekklesia/
 | Document | Purpose | Status |
 |----------|---------|--------|
 | `SYSTEM_ARCHITECTURE_OVERVIEW.md` | Primary architectural vision (election-focused) | ✅ Active (Oct 7) |
-| `EVENTS_SERVICE_DESIGN.md` | Events service design (election administration) | ✅ Complete (Oct 7) |
-| `VOTING_SERVICE_DESIGN.md` | Voting service design (anonymous ballot recording) | ✅ Complete (Oct 7) |
-| `DOCUMENTATION_INDEX.md` | Complete documentation index | ✅ Current (Oct 7) |
+| `EVENTS_SERVICE_MVP.md` | Events service MVP design (election administration) | ✅ Complete (Oct 8) |
+| `VOTING_SERVICE_DESIGN.md` | Voting service design (anonymous ballot recording) | 📋 Planned |
+| `DOCUMENTATION_INDEX.md` | Complete documentation index | ✅ Current (Oct 8) |
 | `FIREBASE_MIGRATION_STATUS.md` | Firebase migration summary | ✅ Current (Oct 6-7) |
 
 ### 📝 Future Plans
@@ -266,8 +277,10 @@ All `gcp/reference/` documents are ZITADEL-era and deprecated:
 | `public/styles/` | Component CSS | ✅ Production |
 | `data/kennitalas.txt` | Verified member kennitalas | ✅ Production |
 | `firebase.json` | Firebase configuration | ✅ Production |
-| `members/docs/FIREBASE_KENNI_SETUP.md` | Setup guide | ✅ Current |
-| `members/docs/KENNI_QUICKSTART.md` | Quick start guide | ✅ Current |
+| `members/docs/FIREBASE_KENNI_SETUP.md` | Setup guide | ⚠️ Legacy (ZITADEL-era) |
+| `members/docs/KENNI_QUICKSTART.md` | Quick start guide | ⚠️ Legacy (ZITADEL-era) |
+| `members/README.md` | Service overview and architecture | ✅ Current |
+| `members/functions/main.py` | Cloud Functions implementation | ✅ Production |
 
 ### Service Documentation
 
@@ -437,6 +450,7 @@ All `gcp/reference/` documents are ZITADEL-era and deprecated:
 
 ---
 
-**Document Version**: 4.0.0
-**Last Reviewed**: 2025-10-07
-**Next Review**: 2026-01-07 (Quarterly)
+**Document Version**: 4.1.0
+**Last Reviewed**: 2025-10-08
+**Validated With**: gcloud CLI, firebase CLI, gsutil (production infrastructure)
+**Next Review**: 2026-01-08 (Quarterly)
