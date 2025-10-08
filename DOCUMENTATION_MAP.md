@@ -136,7 +136,6 @@ ekklesia/
 │   ├── specifications/               📋 Technical specifications
 │   │   └── MEMBERS_OIDC_SPEC.md      ⚠️ Legacy (ZITADEL-based)
 │   ├── architecture/                 🏗️ System design (archived)
-│   │   └── identity.md               ⚠️ Legacy (ZITADEL-based)
 │   ├── guides/                       📖 Implementation guides
 │   │   └── GITHUB_MCP_GUIDE.md       GitHub MCP integration
 │   ├── plans/                        📝 Future feature plans
@@ -216,11 +215,10 @@ ekklesia/
 ### 📦 Archived Documentation
 
 **ZITADEL-era documents** (deprecated Oct 6-7, 2025):
-- `archive/TECHNICAL_SOLUTION.md` - ZITADEL architecture
-- `archive/HYBRID_ARCHITECTURE.md` - OIDC Bridge design
-- `archive/GCP_MIGRATION_PLAN.md` - Original GCP migration plan
-- `specifications/MEMBERS_OIDC_SPEC.md` - ZITADEL-based OIDC spec
-- `architecture/identity.md` - ZITADEL identity architecture
+- `docs/archive/TECHNICAL_SOLUTION.md` - ZITADEL architecture
+- `docs/archive/HYBRID_ARCHITECTURE.md` - OIDC Bridge design
+- `docs/archive/GCP_MIGRATION_PLAN.md` - Original GCP migration plan
+- `docs/specifications/MEMBERS_OIDC_SPEC.md` - ZITADEL-based OIDC spec
 
 **Ekklesia Platform Evaluation** (archived Oct 7, 2025):
 - `archive/ekklesia-platform-evaluation/README.md` - Why Ekklesia was not used
