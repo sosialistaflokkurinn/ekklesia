@@ -111,7 +111,7 @@
 **Features**:
 - ✅ Kenni.is national eID authentication
 - ✅ Kennitala extraction and verification
-- ✅ Kennitala normalization (handles both `200978-3589` and `2009783589` formats)
+- ✅ Kennitala normalization (handles both `DDMMYY-XXXX` and `DDMMYYXXXX` formats)
 - ✅ Member verification against membership list (2,273 members)
 - ✅ Custom Firebase tokens with kennitala + isMember claims
 - ✅ User profile storage in Firestore
@@ -356,6 +356,6 @@ gcloud sql instances describe ekklesia-db
 
 ---
 
-**Production Account**: gudrodur@sosialistaflokkurinn.is
+**Production Account**: g******@sosialistaflokkurinn.is
 **Project Repository**: https://github.com/sosialistaflokkurinn/ekklesia
 **Current Branch**: feature/firebase-members-auth (PR #28)
