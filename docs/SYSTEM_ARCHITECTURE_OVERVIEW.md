@@ -139,50 +139,47 @@ The voting system consists of three main components:
 
 **See**: [members/README.md](../members/README.md) and [CURRENT_PRODUCTION_STATUS.md](../CURRENT_PRODUCTION_STATUS.md)
 
-### Events System (`Atburðir`) - 🔨 Design Complete
+### Events System (`Atburðir`) - 🔨 MVP Design Complete
 
-**Decision**: Build custom Events service for election administration
+**Decision**: Build Events service first (MVP: one election, one question)
 
-- **Purpose**: Election administration, voting token issuance, eligibility management
+- **Purpose**: Election administration, voting token issuance, S2S to Elections service
 - **Technology**: Node.js + Express + Cloud SQL PostgreSQL 15
 - **Database**: Cloud SQL PostgreSQL 15 (ekklesia-db instance)
 - **Deployment**: Cloud Run (serverless, auto-scaling)
-- **Status**: 🔨 Design complete (Oct 8, 2025), ready for implementation
+- **Status**: 🔨 MVP Design complete (Oct 8, 2025), ready for implementation
 
-**Key Features**:
-- Create and manage elections (officer elections, referendums)
-- Define eligibility rules (membership, dues, roles, timeline)
-- Issue one-time voting tokens to eligible members (S2S to Voting)
-- Fetch and display results from Voting system
-- Admin interface for election management
-- Complete audit trail
+**MVP Scope**:
+- ✅ One election (Kosning)
+- ✅ One question (yes/no/abstain)
+- ✅ Active membership check
+- ✅ One-time voting tokens (SHA-256 hashed)
+- ✅ S2S token registration with Elections service
+- ✅ Audit trail (kennitala → token_hash)
+- ✅ Results fetching from Elections service
 
-**Implementation Timeline**: 5 weeks (5 phases)
+**Deferred to Future Phases**:
+- ❌ Multiple elections
+- ❌ Complex eligibility rules (dues, roles)
+- ❌ Admin UI
 
-**See**: [EVENTS_SERVICE_DESIGN.md](EVENTS_SERVICE_DESIGN.md)
+**Implementation Timeline**: 5 days (4 phases)
 
-### Voting System (`Kosning`) - 📋 Design Complete
+**See**: [EVENTS_SERVICE_MVP.md](EVENTS_SERVICE_MVP.md)
 
-**Decision**: Build custom Voting service for anonymous ballot recording
+### Elections System (`Kosningar`) - 📋 Next Phase
 
-- **Purpose**: Accept voting tokens, record ballots anonymously, tabulate results
-- **Technology**: Node.js + Express + PostgreSQL + Google Cloud Pub/Sub
-- **Database**: Cloud SQL PostgreSQL 15 (separate schema in ekklesia-db)
-- **Queue**: Google Cloud Pub/Sub (reliable ballot processing)
-- **Deployment**: Cloud Run (serverless, auto-scaling)
-- **Status**: 📋 Design complete (Oct 8, 2025), ready for implementation
+**Decision**: Build Elections service after Events (accepts tokens, records ballots)
 
-**Key Features**:
-- Validate one-time voting tokens (SHA-256 hashed)
-- Record ballots anonymously (no PII, unlinkable)
-- Enforce one-vote-per-token (database constraint + queue idempotency)
-- Support multiple voting methods (yes/no, single choice, ranked choice/IRV)
-- Queue-based ballot processing (Pub/Sub for reliability)
-- Result tabulation and export
+- **Purpose**: Anonymous ballot recording (no PII, no member authentication)
+- **Technology**: Node.js + Express + PostgreSQL
+- **Status**: 📋 Design pending, implements after Events service
 
-**Implementation Timeline**: 6 weeks (6 phases)
-
-**See**: [VOTING_SERVICE_DESIGN.md](VOTING_SERVICE_DESIGN.md)
+**Scope**:
+- Accept voting tokens (S2S registered by Events)
+- Record ballots anonymously
+- Enforce one-vote-per-token
+- Calculate and return results (S2S to Events)
 
 ---
 
@@ -196,10 +193,10 @@ The voting system consists of three main components:
 
 ### Current Implementation (Oct 2025)
 - **Members**: ✅ Firebase custom tokens with kennitala claims (production, Oct 6)
-- **Events**: 🔨 Custom Node.js service designed (ready for implementation, Oct 8)
-- **Voting**: 📋 Custom Node.js service designed (ready for implementation, Oct 8)
+- **Events (MVP)**: 🔨 Service designed - election admin, token issuance (ready for implementation, Oct 8)
+- **Elections**: 📋 Next phase - ballot recording service (design pending)
 - **Integration**: Kenni.is national eID for authentication
-- **Cost**: Currently $0/month (Firebase free tier), estimated $7-15/month with Events + Voting
+- **Cost**: Currently $0/month (Firebase free tier), estimated $7-15/month with Events + Elections
 
 ### Decommissioned Services (Oct 2025)
 - **Portal Service**: ❌ Decommissioned from Cloud Run (Oct 8, 2025)
@@ -216,8 +213,7 @@ The voting system consists of three main components:
 - [members/README.md](../members/README.md) - Members service (production)
 
 **Design & Planning**:
-- [EVENTS_SERVICE_DESIGN.md](EVENTS_SERVICE_DESIGN.md) - Events service design (complete)
-- [VOTING_SERVICE_DESIGN.md](VOTING_SERVICE_DESIGN.md) - Voting service design (complete)
+- [ELECTIONS_SERVICE_MVP.md](ELECTIONS_SERVICE_MVP.md) - Elections MVP design (one election, one question)
 - [docs/FIREBASE_MIGRATION_STATUS.md](FIREBASE_MIGRATION_STATUS.md) - Migration history
 
 **Archived Evaluations**:
