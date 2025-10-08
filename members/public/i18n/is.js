@@ -68,6 +68,11 @@ export const strings = {
   membership_status: "Félagastaða",
   membership_active: "Virkt félag",
   membership_inactive: "Ekki félag",
+  membership_not_verified: "Ekki staðfest",
+  membership_verifying: "Staðfesti félagsaðild...",
+  btn_verify_membership: "Staðfesta félagsaðild",
+  membership_verified: "Félagsaðild staðfest",
+  membership_verification_failed: "Villa við staðfestingu",
 
   // Navigation
   nav_logout: "Útskrá"
