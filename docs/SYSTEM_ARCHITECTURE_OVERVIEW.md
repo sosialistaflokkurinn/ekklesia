@@ -111,17 +111,17 @@ The voting system consists of three main components:
 
 ---
 
-## Current Implementation Status (2025-10-07)
+## Current Implementation Status (2025-10-08)
 
-⚠️ **UPDATE (Oct 7, 2025)**: Ekklesia Platform evaluation completed and archived. Returning to original election-focused vision.
+⚠️ **UPDATE (Oct 7-8, 2025)**: Ekklesia Platform evaluation completed and archived. Custom Events and Voting services designed. Portal service decommissioned.
 
-**Decision**: Build custom Events service for election administration (Option 2: Build Custom "Events" Component).
+**Decision**: Build custom Events and Voting services for election administration.
 
 **See**: [archive/ekklesia-platform-evaluation/README.md](../archive/ekklesia-platform-evaluation/README.md) for Ekklesia evaluation details.
 
 ---
 
-### Members System - ✅ Production
+### Members System (`Meðlimir`) - ✅ Production
 
 **Implementation**: Firebase-based authentication with Kenni.is national eID integration
 
@@ -129,7 +129,7 @@ The voting system consists of three main components:
 - **Technology**: Firebase Hosting + Cloud Functions + Firebase Authentication
 - **Authentication**: Direct Kenni.is OAuth PKCE
 - **Member Verification**: Kennitala verification against membership list
-- **Status**: Operational
+- **Status**: ✅ Operational (Oct 6, 2025)
 
 **Components**:
 - Firebase Hosting (static HTML/CSS)
@@ -139,41 +139,50 @@ The voting system consists of three main components:
 
 **See**: [members/README.md](../members/README.md) and [CURRENT_PRODUCTION_STATUS.md](../CURRENT_PRODUCTION_STATUS.md)
 
-### Events System (`Atburðir`) - 🔨 To Be Built
+### Events System (`Atburðir`) - 🔨 Design Complete
 
 **Decision**: Build custom Events service for election administration
 
 - **Purpose**: Election administration, voting token issuance, eligibility management
-- **Technology**: To be determined (likely Node.js or Python)
-- **Database**: Cloud SQL PostgreSQL 15 (ekklesia-db instance available)
-- **Status**: Design phase
+- **Technology**: Node.js + Express + Cloud SQL PostgreSQL 15
+- **Database**: Cloud SQL PostgreSQL 15 (ekklesia-db instance)
+- **Deployment**: Cloud Run (serverless, auto-scaling)
+- **Status**: 🔨 Design complete (Oct 8, 2025), ready for implementation
 
-**Required Features**:
+**Key Features**:
 - Create and manage elections (officer elections, referendums)
-- Define eligibility rules (who can vote in which elections)
+- Define eligibility rules (membership, dues, roles, timeline)
 - Issue one-time voting tokens to eligible members (S2S to Voting)
 - Fetch and display results from Voting system
 - Admin interface for election management
+- Complete audit trail
 
-**See**: Design document to be created
+**Implementation Timeline**: 5 weeks (5 phases)
 
-### Voting System (`Kosning`) - 📋 To Be Designed
+**See**: [EVENTS_SERVICE_DESIGN.md](EVENTS_SERVICE_DESIGN.md)
 
-**Decision**: Evaluate options (Ekklesia Voting standalone vs custom build)
+### Voting System (`Kosning`) - 📋 Design Complete
 
-- **Purpose**: Accept voting tokens, record ballots anonymously
-- **Technology**: To be determined
-- **Database**: Cloud SQL PostgreSQL 15 (shared or separate)
-- **Status**: Pending Events service design
+**Decision**: Build custom Voting service for anonymous ballot recording
 
-**Required Features**:
-- Validate one-time voting tokens
-- Record ballots anonymously (no PII)
-- Enforce one-vote-per-token (database constraint)
-- Support multiple voting methods (yes/no, single choice, ranked choice)
+- **Purpose**: Accept voting tokens, record ballots anonymously, tabulate results
+- **Technology**: Node.js + Express + PostgreSQL + Google Cloud Pub/Sub
+- **Database**: Cloud SQL PostgreSQL 15 (separate schema in ekklesia-db)
+- **Queue**: Google Cloud Pub/Sub (reliable ballot processing)
+- **Deployment**: Cloud Run (serverless, auto-scaling)
+- **Status**: 📋 Design complete (Oct 8, 2025), ready for implementation
+
+**Key Features**:
+- Validate one-time voting tokens (SHA-256 hashed)
+- Record ballots anonymously (no PII, unlinkable)
+- Enforce one-vote-per-token (database constraint + queue idempotency)
+- Support multiple voting methods (yes/no, single choice, ranked choice/IRV)
+- Queue-based ballot processing (Pub/Sub for reliability)
 - Result tabulation and export
 
-**See**: Design document to be created
+**Implementation Timeline**: 6 weeks (6 phases)
+
+**See**: [VOTING_SERVICE_DESIGN.md](VOTING_SERVICE_DESIGN.md)
 
 ---
 
@@ -185,12 +194,17 @@ The voting system consists of three main components:
 - Complete separation between Members, Events, and Elections
 - Non-personally identifiable voting tokens
 
-### Current Implementation (2025)
-- **Members**: ✅ Firebase custom tokens with kennitala claims (production)
-- **Events**: 🔨 Custom service to be built (election administration)
-- **Voting**: 📋 To be designed (anonymous ballot recording)
+### Current Implementation (Oct 2025)
+- **Members**: ✅ Firebase custom tokens with kennitala claims (production, Oct 6)
+- **Events**: 🔨 Custom Node.js service designed (ready for implementation, Oct 8)
+- **Voting**: 📋 Custom Node.js service designed (ready for implementation, Oct 8)
 - **Integration**: Kenni.is national eID for authentication
 - **Cost**: Currently $0/month (Firebase free tier), estimated $7-15/month with Events + Voting
+
+### Decommissioned Services (Oct 2025)
+- **Portal Service**: ❌ Decommissioned from Cloud Run (Oct 8, 2025)
+  - Reason: External Ekklesia Portal does not match election requirements
+  - See: [archive/ekklesia-platform-evaluation/README.md](../archive/ekklesia-platform-evaluation/README.md)
 
 ---
 
@@ -202,8 +216,8 @@ The voting system consists of three main components:
 - [members/README.md](../members/README.md) - Members service (production)
 
 **Design & Planning**:
-- Events service design (to be created)
-- Voting service design (to be created)
+- [EVENTS_SERVICE_DESIGN.md](EVENTS_SERVICE_DESIGN.md) - Events service design (complete)
+- [VOTING_SERVICE_DESIGN.md](VOTING_SERVICE_DESIGN.md) - Voting service design (complete)
 - [docs/FIREBASE_MIGRATION_STATUS.md](FIREBASE_MIGRATION_STATUS.md) - Migration history
 
 **Archived Evaluations**:
