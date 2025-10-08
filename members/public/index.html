@@ -29,6 +29,20 @@
   <script type="module">
     import { R } from '/i18n/R.js';
     import { getCurrentUser } from '/js/auth.js';
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getAuth, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyDpTF9pAjZX-uRlkJ0FT7RHZpP2rUmHt04",
+      authDomain: "ekklesia-prod-10-2025.firebaseapp.com",
+      projectId: "ekklesia-prod-10-2025",
+      storageBucket: "ekklesia-prod-10-2025.firebasestorage.app",
+      messagingSenderId: "709027529918",
+      appId: "1:709027529918:web:5e9f7e43b5f20a70b633d4"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
 
     // Set page title and strings
     document.title = R.string.page_title;
@@ -37,6 +51,16 @@
     document.getElementById('status-text').textContent = R.string.status_not_authenticated;
     document.getElementById('login-btn').textContent = R.string.btn_login;
     document.getElementById('login-description').textContent = R.string.btn_login_description;
+
+    // Check if this is an OAuth callback (has ?code parameter)
+    const urlParams = new URLSearchParams(window.location.search);
+    const authCode = urlParams.get('code');
+
+    if (authCode) {
+      // OAuth callback - handle authentication
+      await handleOAuthCallback(authCode);
+      return;
+    }
 
     // Check if already authenticated
     const user = await getCurrentUser();
@@ -48,7 +72,7 @@
     // Kenni.is configuration
     const KENNI_IS_ISSUER_URL = 'https://idp.kenni.is/sosi-kosningakerfi.is';
     const KENNI_IS_CLIENT_ID = '@sosi-kosningakerfi.is/rafr-nt-kosningakerfi-s-s';
-    const KENNI_IS_REDIRECT_URI = window.location.origin + '/test.html'; // Use test.html for OAuth callback
+    const KENNI_IS_REDIRECT_URI = window.location.origin + '/'; // Root URL registered with Kenni.is
 
     // Base64 URL encode
     function base64URLEncode(buffer) {
@@ -73,6 +97,55 @@
       const challenge = base64URLEncode(hash);
 
       return { verifier, challenge };
+    }
+
+    // Handle OAuth callback
+    async function handleOAuthCallback(authCode) {
+      const statusEl = document.getElementById('status');
+      const statusTextEl = document.getElementById('status-text');
+      const authButtonsEl = document.getElementById('auth-buttons');
+
+      statusEl.className = 'status authenticating';
+      statusTextEl.textContent = 'Staðfesti auðkenningu...';
+      authButtonsEl.style.display = 'none';
+
+      try {
+        const pkceVerifier = sessionStorage.getItem('pkce_code_verifier');
+        if (!pkceVerifier) {
+          throw new Error('Missing PKCE verifier');
+        }
+
+        // Call Cloud Function to exchange code for token
+        const response = await fetch('https://handlekenniauth-709027529918.europe-west2.run.app', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            kenni_auth_code: authCode,
+            pkce_code_verifier: pkceVerifier,
+            redirect_uri: KENNI_IS_REDIRECT_URI
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Authentication failed');
+        }
+
+        // Sign in to Firebase with custom token
+        await signInWithCustomToken(auth, data.firebase_token);
+
+        // Clear PKCE verifier
+        sessionStorage.removeItem('pkce_code_verifier');
+
+        // Redirect to dashboard
+        window.location.href = '/dashboard.html';
+      } catch (error) {
+        console.error('Authentication error:', error);
+        statusEl.className = 'status error';
+        statusTextEl.textContent = 'Villa við auðkenningu: ' + error.message;
+        authButtonsEl.style.display = 'block';
+      }
     }
 
     // Sign in with Kenni.is
