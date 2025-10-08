@@ -51,12 +51,14 @@ temp/
 tmp/
 
 # Documentation (local only - use DOCUMENTATION_MAP.md to find files)
-# Exception: GitHub issue templates must be in git
+# Exceptions: Essential docs and current work
 !.github/
 !.github/ISSUE_TEMPLATE/
 *.md
 !DOCUMENTATION_MAP.md
 !README.md
+!docs/SYSTEM_ARCHITECTURE_OVERVIEW.md
+!docs/EVENTS_SERVICE_DESIGN.md
 !.github/ISSUE_TEMPLATE/*.md
 
 # Scripts (local only - available on request)
