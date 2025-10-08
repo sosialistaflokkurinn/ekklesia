@@ -1,6 +1,6 @@
 # 🗺️ Ekklesia Platform - Master Documentation Map
 
-**Version**: 4.1.0
+**Version**: 4.2.0
 **Last Updated**: 2025-10-08
 **Status**: ✅ Members Service Production - Membership Verification Complete
 
@@ -73,9 +73,9 @@
   - Membership verification with 2,273 members
   - Kennitala normalization implemented
   - Icelandic i18n, socialist red theme
-  - See: `docs/CURRENT_PRODUCTION_STATUS.md`
+  - See: `docs/status/CURRENT_PRODUCTION_STATUS.md`
 - **Events Service**: Design complete, ready for implementation
-  - See: `docs/EVENTS_SERVICE_MVP.md`
+  - See: `docs/design/EVENTS_SERVICE_MVP.md`
 - **Elections Service**: Next phase (design pending)
 - **Documentation**: Deep review and validation complete (Oct 8)
 
@@ -88,7 +88,7 @@
 - ✅ UI improvements: Icelandic i18n, socialist red theme
 - ✅ Multi-page portal: dashboard, profile, test pages
 - ✅ Documentation deep review and validation
-- 📄 Documentation: `docs/CURRENT_PRODUCTION_STATUS.md`
+- 📄 Documentation: `docs/status/CURRENT_PRODUCTION_STATUS.md`
 
 **Oct 7, 2025 - Return to Original Vision**
 - ✅ Ekklesia platform evaluated and archived (472 files)
@@ -109,7 +109,7 @@
 - ✅ Members service operational with Firebase auth
 - ✅ ZITADEL infrastructure decommissioned
 - ✅ Cost savings: $135/month → $7-10/month
-- 📄 Documentation: `docs/FIREBASE_MIGRATION_STATUS.md`
+- 📄 Documentation: `docs/status/FIREBASE_MIGRATION_STATUS.md`
 
 **Oct 5, 2025 - Milestone 3: Voting Eligibility**
 - ✅ Story #14: Secure login with Kenni.is
@@ -136,22 +136,24 @@
 ```
 ekklesia/
 ├── DOCUMENTATION_MAP.md              ⭐ YOU ARE HERE - Master index
-│   ├── docs/CURRENT_PRODUCTION_STATUS.md  📊 Production infrastructure status
 │
 ├── docs/                             📄 Architecture & Plans
-│   ├── DOCUMENTATION_INDEX.md        📇 Complete docs directory index
 │   ├── SYSTEM_ARCHITECTURE_OVERVIEW.md 🏗️ Primary architectural vision
-│   ├── EVENTS_SERVICE_DESIGN.md      🔨 Events service design document
-│   ├── VOTING_SERVICE_DESIGN.md      📋 Voting service design document
-│   ├── FIREBASE_MIGRATION_STATUS.md  ✅ Firebase migration summary
+│   ├── status/                       📊 Production status
+│   │   ├── CURRENT_PRODUCTION_STATUS.md  📊 Production infrastructure status
+│   │   └── FIREBASE_MIGRATION_STATUS.md  ✅ Firebase migration summary
+│   ├── design/                       🔨 Service design documents
+│   │   ├── EVENTS_SERVICE_MVP.md     🔨 Events service design document
+│   │   └── VOTING_SERVICE_DESIGN.md  📋 Voting service design document
 │   ├── specifications/               📋 Technical specifications
 │   │   └── MEMBERS_OIDC_SPEC.md      ⚠️ Legacy (ZITADEL-based)
-│   ├── architecture/                 🏗️ System design (archived)
 │   ├── guides/                       📖 Implementation guides
-│   │   └── GITHUB_MCP_GUIDE.md       GitHub MCP integration
+│   │   ├── GITHUB_MCP_GUIDE.md       GitHub MCP integration
+│   │   └── MEMBERS_DEPLOYMENT_GUIDE.md   Members service deployment
 │   ├── plans/                        📝 Future feature plans
 │   │   └── GOOGLE_AUTH_LINKING_PLAN.md      Migration to Google login
 │   └── archive/                      📦 Historical documents
+│       ├── DOCUMENTATION_INDEX.md    📇 Legacy docs index
 │       ├── TECHNICAL_SOLUTION.md     ZITADEL architecture
 │       ├── HYBRID_ARCHITECTURE.md    OIDC Bridge architecture
 │       └── ... (ZITADEL-era docs)
@@ -206,10 +208,11 @@ ekklesia/
 | Document | Purpose | Status |
 |----------|---------|--------|
 | `SYSTEM_ARCHITECTURE_OVERVIEW.md` | Primary architectural vision (election-focused) | ✅ Active (Oct 7) |
-| `EVENTS_SERVICE_MVP.md` | Events service MVP design (election administration) | ✅ Complete (Oct 8) |
-| `VOTING_SERVICE_DESIGN.md` | Voting service design (anonymous ballot recording) | 📋 Planned |
-| `DOCUMENTATION_INDEX.md` | Complete documentation index | ✅ Current (Oct 8) |
-| `FIREBASE_MIGRATION_STATUS.md` | Firebase migration summary | ✅ Current (Oct 6-7) |
+| `design/EVENTS_SERVICE_MVP.md` | Events service MVP design (election administration) | ✅ Complete (Oct 8) |
+| `design/VOTING_SERVICE_DESIGN.md` | Voting service design (anonymous ballot recording) | 📋 Planned |
+| `status/CURRENT_PRODUCTION_STATUS.md` | Production infrastructure status | ✅ Current (Oct 8) |
+| `status/FIREBASE_MIGRATION_STATUS.md` | Firebase migration summary | ✅ Current (Oct 6-7) |
+| `archive/DOCUMENTATION_INDEX.md` | Legacy documentation index | 📦 Archived |
 
 ### 📝 Future Plans
 
@@ -318,19 +321,19 @@ All `gcp/reference/` documents are ZITADEL-era and deprecated:
 
 **Getting Started:**
 1. Read: `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md` (overall vision)
-2. Review: `docs/EVENTS_SERVICE_DESIGN.md` (Events service design)
-3. Review: `docs/VOTING_SERVICE_DESIGN.md` (Voting service design)
+2. Review: `docs/design/EVENTS_SERVICE_MVP.md` (Events service design)
+3. Review: `docs/design/VOTING_SERVICE_DESIGN.md` (Voting service design)
 4. Setup: `members/docs/FIREBASE_KENNI_SETUP.md` (Firebase + Kenni.is)
 
 **Current Work:**
 - Members Service (Production): `members/`
-- Events Service (Design): `docs/EVENTS_SERVICE_DESIGN.md`
-- Voting Service (Design): `docs/VOTING_SERVICE_DESIGN.md`
+- Events Service (Design): `docs/design/EVENTS_SERVICE_MVP.md`
+- Voting Service (Design): `docs/design/VOTING_SERVICE_DESIGN.md`
 
 ### 🚀 **DevOps - Deploying & Operating**
 
 **Getting Started:**
-1. Read: `docs/CURRENT_PRODUCTION_STATUS.md` (production status)
+1. Read: `docs/status/CURRENT_PRODUCTION_STATUS.md` (production status)
 2. Review: `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md` (architecture)
 3. Deploy Members: `members/scripts/deploy-stage-3-functions.sh`
 
@@ -339,7 +342,7 @@ All `gcp/reference/` documents are ZITADEL-era and deprecated:
 - Voting Service: Implementation (6 weeks, see design doc)
 
 **Daily Work:**
-- Production Status: `docs/CURRENT_PRODUCTION_STATUS.md`
+- Production Status: `docs/status/CURRENT_PRODUCTION_STATUS.md`
 - Architecture: `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md`
 - Members Deployment: `members/docs/FIREBASE_KENNI_SETUP.md`
 
@@ -347,20 +350,20 @@ All `gcp/reference/` documents are ZITADEL-era and deprecated:
 
 **Getting Started:**
 1. Read: `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md` (primary architectural vision)
-2. Review: `docs/EVENTS_SERVICE_DESIGN.md` (Events service design)
-3. Review: `docs/VOTING_SERVICE_DESIGN.md` (Voting service design)
-4. Study: `docs/FIREBASE_MIGRATION_STATUS.md` (migration details)
+2. Review: `docs/design/EVENTS_SERVICE_MVP.md` (Events service design)
+3. Review: `docs/design/VOTING_SERVICE_DESIGN.md` (Voting service design)
+4. Study: `docs/status/FIREBASE_MIGRATION_STATUS.md` (migration details)
 
 **Daily Work:**
 - Architecture: `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md`
-- Service Designs: `docs/EVENTS_SERVICE_DESIGN.md`, `docs/VOTING_SERVICE_DESIGN.md`
+- Service Designs: `docs/design/EVENTS_SERVICE_MVP.md`, `docs/design/VOTING_SERVICE_DESIGN.md`
 - Future Plans: `docs/plans/GOOGLE_AUTH_LINKING_PLAN.md`
-- Cost Analysis: `docs/CURRENT_PRODUCTION_STATUS.md` (Cost section)
+- Cost Analysis: `docs/status/CURRENT_PRODUCTION_STATUS.md` (Cost section)
 
 ### 🆘 **On-Call - Handling Incidents**
 
 **Emergency Quick Start:**
-1. **Status**: `docs/CURRENT_PRODUCTION_STATUS.md` (what's running)
+1. **Status**: `docs/status/CURRENT_PRODUCTION_STATUS.md` (what's running)
 2. **Services**: Check Cloud Run services in GCP Console
 3. **Logs**: Cloud Logging → Filter by service
 4. **Firebase**: Firebase Console → Authentication → Users
@@ -378,9 +381,9 @@ All `gcp/reference/` documents are ZITADEL-era and deprecated:
 
 | Frequency | What to Update | Responsibility |
 |-----------|----------------|----------------|
-| **After Each Deployment** | docs/CURRENT_PRODUCTION_STATUS.md | DevOps |
+| **After Each Deployment** | docs/status/CURRENT_PRODUCTION_STATUS.md | DevOps |
 | **After Service Changes** | Service README.md files | Developers |
-| **After Architecture Changes** | DOCUMENTATION_INDEX.md | Architects |
+| **After Architecture Changes** | DOCUMENTATION_MAP.md | Architects |
 | **Monthly** | Review all status docs | Tech lead |
 | **Quarterly** | Full documentation audit | Team |
 
@@ -450,7 +453,8 @@ All `gcp/reference/` documents are ZITADEL-era and deprecated:
 
 ---
 
-**Document Version**: 4.1.0
+**Document Version**: 4.2.0
 **Last Reviewed**: 2025-10-08
+**Changes**: Reorganized docs/ into subdirectories (status/, design/, archive/)
 **Validated With**: gcloud CLI, firebase CLI, gsutil (production infrastructure)
 **Next Review**: 2026-01-08 (Quarterly)
