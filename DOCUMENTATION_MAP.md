@@ -242,7 +242,7 @@ ekklesia/
 - `archive/ekklesia-platform-evaluation/UPDATED_SYSTEM_VISION.md` - Proposition-based vision (superseded)
 - `archive/ekklesia-platform-evaluation/NAMING_CLARIFICATION.md` - Naming confusion analysis
 
-**See**: `docs/DOCUMENTATION_INDEX.md` for complete archive listing
+**See**: `archive/documentation/DOCUMENTATION_INDEX.md` for complete archive listing
 
 ---
 
@@ -251,8 +251,7 @@ ekklesia/
 **Purpose**: Infrastructure reference documentation (mostly archived)
 
 ⚠️ **Note**: Most GCP documentation is ZITADEL-era and archived. Current production infrastructure is documented in:
-- `docs/CURRENT_PRODUCTION_STATUS.md` (root)
-- `docs/DOCUMENTATION_INDEX.md`
+- `docs/status/CURRENT_PRODUCTION_STATUS.md`
 - `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md`
 
 ### 📚 Reference Documentation (Archived)
@@ -262,7 +261,7 @@ All `gcp/reference/` documents are ZITADEL-era and deprecated:
 - `ZITADEL_DEPLOYMENT_SUCCESS.md` - ZITADEL deployment (decommissioned)
 - `MEMBERS_OIDC_SUCCESS.md` - OIDC Bridge success (removed)
 
-**See**: `gcp/DOCUMENTATION_INDEX.md` for complete GCP archive listing
+**See**: `archive/zitadel-legacy/gcp/DOCUMENTATION_INDEX.md` for complete GCP archive listing
 
 ---
 
@@ -280,8 +279,8 @@ All `gcp/reference/` documents are ZITADEL-era and deprecated:
 | `public/styles/` | Component CSS | ✅ Production |
 | `data/kennitalas.txt` | Verified member kennitalas | ✅ Production |
 | `firebase.json` | Firebase configuration | ✅ Production |
-| `members/docs/FIREBASE_KENNI_SETUP.md` | Setup guide | ⚠️ Legacy (ZITADEL-era) |
-| `members/docs/KENNI_QUICKSTART.md` | Quick start guide | ⚠️ Legacy (ZITADEL-era) |
+| `archive/members-service/documentation/FIREBASE_KENNI_SETUP.md` | Setup guide | ⚠️ Legacy (ZITADEL-era) |
+| `archive/members-service/documentation/KENNI_QUICKSTART.md` | Quick start guide | ⚠️ Legacy (ZITADEL-era) |
 | `members/README.md` | Service overview and architecture | ✅ Current |
 | `members/functions/main.py` | Cloud Functions implementation | ✅ Production |
 
@@ -290,8 +289,8 @@ All `gcp/reference/` documents are ZITADEL-era and deprecated:
 | Document | Purpose | Audience |
 |----------|---------|----------|
 | `README.md` | Service overview | All |
-| `members/docs/FIREBASE_KENNI_SETUP.md` | Firebase + Kenni.is setup | Developers, DevOps |
-| `members/docs/KENNI_QUICKSTART.md` | Quick start (no prerequisites) | Developers |
+| `archive/members-service/documentation/FIREBASE_KENNI_SETUP.md` | Firebase + Kenni.is setup (legacy) | Developers, DevOps |
+| `archive/members-service/documentation/KENNI_QUICKSTART.md` | Quick start (legacy) | Developers |
 
 ---
 
@@ -323,7 +322,7 @@ All `gcp/reference/` documents are ZITADEL-era and deprecated:
 1. Read: `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md` (overall vision)
 2. Review: `docs/design/EVENTS_SERVICE_MVP.md` (Events service design)
 3. Review: `docs/design/VOTING_SERVICE_DESIGN.md` (Voting service design)
-4. Setup: `members/docs/FIREBASE_KENNI_SETUP.md` (Firebase + Kenni.is)
+4. Setup: `docs/guides/MEMBERS_DEPLOYMENT_GUIDE.md` (Members deployment)
 
 **Current Work:**
 - Members Service (Production): `members/`
@@ -344,7 +343,7 @@ All `gcp/reference/` documents are ZITADEL-era and deprecated:
 **Daily Work:**
 - Production Status: `docs/status/CURRENT_PRODUCTION_STATUS.md`
 - Architecture: `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md`
-- Members Deployment: `members/docs/FIREBASE_KENNI_SETUP.md`
+- Members Deployment: `docs/guides/MEMBERS_DEPLOYMENT_GUIDE.md`
 
 ### 🏗️ **Architect - System Design**
 
