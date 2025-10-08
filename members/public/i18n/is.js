@@ -53,7 +53,7 @@ export const strings = {
 
   // Dashboard
   page_title_dashboard: "Mín síða - Sósíalistaflokkurinn",
-  dashboard_welcome: "Velkomin(n)",
+  dashboard_welcome: "Velkomið",
   dashboard_title: "Mín síða",
   dashboard_subtitle: "Félagasvæði Sósíalistaflokksins",
   nav_dashboard: "Mín síða",
@@ -66,7 +66,7 @@ export const strings = {
   profile_title: "Prófíll",
   profile_subtitle: "Mínar upplýsingar",
   membership_status: "Félagastaða",
-  membership_active: "Virkt félag",
+  membership_active: "staðfest aðild",
   membership_inactive: "Ekki félag",
   membership_not_verified: "Ekki staðfest",
   membership_verifying: "Staðfesti félagsaðild...",
