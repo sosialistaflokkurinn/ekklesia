@@ -30,9 +30,9 @@ h1 {
 /* === Colors === */
 
 :root {
-  /* Primary colors */
-  --color-primary: #667eea;
-  --color-primary-dark: #5568d3;
+  /* Primary colors - Socialist red */
+  --color-primary: #d32f2f;
+  --color-primary-dark: #b71c1c;
 
   /* Status colors */
   --color-success-bg: #c6f6d5;
@@ -79,7 +79,7 @@ h1 {
 /* === Layout === */
 
 body {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
   min-height: 100vh;
   display: flex;
   align-items: center;
