@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🔐 Stage 3: Manual OAuth Test</title>
+  <title>Innskráning - Sósíalistaflokkurinn</title>
   <style>
     * {
       margin: 0;
@@ -150,8 +150,8 @@
 </head>
 <body>
   <div class="container">
-    <h1>🔐 Stage 3: Manual OAuth + Custom Token</h1>
-    <p class="subtitle">Manual OAuth with PKCE → Cloud Function → Firebase Custom Token</p>
+    <h1>🔐 Innskráning</h1>
+    <p class="subtitle">Félagar Sósíalistaflokksins</p>
 
     <div id="status" class="status not-authenticated">
       ❌ Not Authenticated
@@ -167,15 +167,15 @@
 
     <div id="auth-buttons">
       <button class="btn" onclick="signInWithKenni()">
-        Sign In with Kenni.is (Manual OAuth)
+        Skrá inn með Kenni.is
       </button>
       <p style="color: #718096; font-size: 14px; margin-top: 8px;">
-        Click to authenticate with Iceland's national eID service
+        Auðkenning með rafrænum skilríkjum
       </p>
     </div>
 
     <button id="signout-btn" class="btn secondary" onclick="signOut()" style="display: none;">
-      Sign Out
+      Útskrá
     </button>
 
     <div class="debug-log">
@@ -383,7 +383,7 @@
     });
 
     // Initialize
-    addLog('Test page loaded - Stage 3: Manual OAuth + Custom Token', 'info');
+    addLog('Authentication page loaded', 'info');
     handleCallback();
   </script>
 </body>
