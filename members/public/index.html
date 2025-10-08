@@ -45,6 +45,7 @@
 
   <!-- Firebase SDK -->
   <script type="module">
+    import { R } from '/i18n/R.js';
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
     import {
       getAuth,
@@ -52,6 +53,9 @@
       signInWithCustomToken,
       signOut as firebaseSignOut
     } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+    // Set page title from R.string
+    document.title = R.string.page_title;
 
     // Firebase configuration
     const firebaseConfig = {
@@ -143,13 +147,13 @@
       const error = params.get('error');
 
       if (error) {
-        addLog(`OAuth error: ${error}`, 'error');
+        addLog(`${R.string.error_callback}: ${error}`, 'error');
         return;
       }
 
       if (!code) return; // Not a callback
 
-      addLog('OAuth callback received', 'info');
+      addLog(R.string.log_oauth_callback, 'info');
 
       const verifier = sessionStorage.getItem('pkce_code_verifier');
       if (!verifier) {
@@ -158,7 +162,7 @@
       }
 
       try {
-        addLog('Calling handleKenniAuth Cloud Function...', 'info');
+        addLog(R.string.log_calling_function, 'info');
 
         const functionUrl = 'https://handlekenniauth-ymzrguoifa-nw.a.run.app';
         const response = await fetch(functionUrl, {
@@ -172,23 +176,23 @@
 
         if (!response.ok) {
           const errorText = await response.text();
-          throw new Error(`Cloud Function error: ${response.status} - ${errorText}`);
+          throw new Error(`${R.string.error_function}: ${response.status} - ${errorText}`);
         }
 
         const data = await response.json();
-        addLog('Received custom token from Cloud Function', 'success');
+        addLog(R.string.log_received_token, 'success');
 
-        addLog('Signing in with custom token...', 'info');
+        addLog(R.string.log_signing_in, 'info');
         await signInWithCustomToken(auth, data.customToken);
 
-        addLog('Successfully signed in!', 'success');
+        addLog(R.string.log_signed_in, 'success');
         sessionStorage.removeItem('pkce_code_verifier');
 
         // Clear URL parameters
         window.history.replaceState({}, document.title, window.location.pathname);
 
       } catch (error) {
-        addLog(`Callback error: ${error.message}`, 'error');
+        addLog(`${R.string.error_callback}: ${error.message}`, 'error');
       }
     }
 
@@ -196,9 +200,9 @@
     window.signOut = async function() {
       try {
         await firebaseSignOut(auth);
-        addLog('Signed out successfully', 'success');
+        addLog(R.string.log_signed_out, 'success');
       } catch (error) {
-        addLog(`Sign out error: ${error.message}`, 'error');
+        addLog(`${R.string.error_signout}: ${error.message}`, 'error');
       }
     };
 
@@ -211,7 +215,7 @@
 
       if (user) {
         statusDiv.className = 'status authenticated';
-        statusDiv.textContent = 'Innskráð(ur)';
+        statusDiv.textContent = R.string.status_authenticated;
         authButtons.style.display = 'none';
         signoutBtn.style.display = 'block';
         userInfo.style.display = 'block';
@@ -220,21 +224,21 @@
         document.getElementById('uid').textContent = user.uid;
 
         const idTokenResult = await user.getIdTokenResult();
-        const kennitala = idTokenResult.claims.kennitala || 'Not found';
-        const email = idTokenResult.claims.email || 'Not available';
-        const phone = idTokenResult.claims.phoneNumber || 'Not available';
+        const kennitala = idTokenResult.claims.kennitala || R.string.placeholder_not_found;
+        const email = idTokenResult.claims.email || R.string.placeholder_not_available;
+        const phone = idTokenResult.claims.phoneNumber || R.string.placeholder_not_available;
 
         document.getElementById('kennitala').textContent = kennitala;
         document.getElementById('email').textContent = email;
         document.getElementById('phone').textContent = phone;
 
-        addLog(`User authenticated: ${user.displayName || user.uid}`, 'success');
-        addLog(`Kennitala: ${kennitala}`, 'info');
-        addLog(`Email: ${email}`, 'info');
-        addLog(`Phone: ${phone}`, 'info');
+        addLog(`${R.string.log_user_authenticated}: ${user.displayName || user.uid}`, 'success');
+        addLog(`${R.string.label_kennitala}: ${kennitala}`, 'info');
+        addLog(`${R.string.label_email}: ${email}`, 'info');
+        addLog(`${R.string.label_phone}: ${phone}`, 'info');
       } else {
         statusDiv.className = 'status not-authenticated';
-        statusDiv.textContent = 'Ekki innskráð(ur)';
+        statusDiv.textContent = R.string.status_not_authenticated;
         authButtons.style.display = 'block';
         signoutBtn.style.display = 'none';
         userInfo.style.display = 'none';
@@ -242,7 +246,7 @@
     });
 
     // Initialize
-    addLog('Authentication page loaded', 'info');
+    addLog(R.string.log_page_loaded, 'info');
     handleCallback();
   </script>
 </body>
