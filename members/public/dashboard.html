@@ -56,12 +56,29 @@
       <div class="card-content" id="membership-status">
         Hleð inn...
       </div>
+      <div id="verify-button-container" style="margin-top: var(--spacing-md); display: none;">
+        <button class="btn" id="verify-membership-btn">Staðfesta félagsaðild</button>
+      </div>
     </div>
   </div>
 
   <script type="module">
     import { R } from '/i18n/R.js';
     import { requireAuth, signOut, getUserData } from '/js/auth.js';
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js';
+
+    // Initialize Firebase (get config from auth.js app instance)
+    const firebaseConfig = {
+      apiKey: "AIzaSyBsDqnt8G54VAANlucQpI20r3Sw1p2Bcp4",
+      authDomain: "ekklesia-prod-10-2025.firebaseapp.com",
+      projectId: "ekklesia-prod-10-2025",
+      storageBucket: "ekklesia-prod-10-2025.firebasestorage.app",
+      messagingSenderId: "521240388393",
+      appId: "1:521240388393:web:de2a986ae545e20bb5cd38"
+    };
+    const app = initializeApp(firebaseConfig);
+    const functions = getFunctions(app, 'europe-west2');
 
     // Set page title
     document.title = R.string.page_title_dashboard;
@@ -83,19 +100,68 @@
 
     // Update membership status
     const membershipCard = document.getElementById('membership-status');
-    if (userData.isMember) {
-      membershipCard.innerHTML = `
-        <div style="color: var(--color-success-text); font-weight: 500;">
-          ✓ ${R.string.membership_active}
-        </div>
-      `;
-    } else {
-      membershipCard.innerHTML = `
-        <div style="color: var(--color-gray-600);">
-          ${R.string.membership_inactive}
-        </div>
-      `;
+    const verifyButtonContainer = document.getElementById('verify-button-container');
+
+    function updateMembershipUI(isMember) {
+      if (isMember) {
+        membershipCard.innerHTML = `
+          <div style="color: var(--color-success-text); font-weight: 500;">
+            ✓ ${R.string.membership_active}
+          </div>
+        `;
+        verifyButtonContainer.style.display = 'none';
+      } else {
+        membershipCard.innerHTML = `
+          <div style="color: var(--color-gray-600);">
+            ${R.string.membership_not_verified}
+          </div>
+        `;
+        verifyButtonContainer.style.display = 'block';
+      }
     }
+
+    updateMembershipUI(userData.isMember);
+
+    // Verify membership handler
+    document.getElementById('verify-membership-btn').addEventListener('click', async () => {
+      const btn = document.getElementById('verify-membership-btn');
+      btn.disabled = true;
+      btn.textContent = R.string.membership_verifying;
+
+      try {
+        const verifyMembership = httpsCallable(functions, 'verifyMembership');
+        const result = await verifyMembership();
+
+        if (result.data.isMember) {
+          membershipCard.innerHTML = `
+            <div style="color: var(--color-success-text); font-weight: 500;">
+              ✓ ${R.string.membership_verified}
+            </div>
+          `;
+          verifyButtonContainer.style.display = 'none';
+
+          // Refresh user data to get updated claims
+          await user.getIdToken(true);
+        } else {
+          membershipCard.innerHTML = `
+            <div style="color: var(--color-error-text);">
+              ${R.string.membership_inactive}
+            </div>
+          `;
+          btn.disabled = false;
+          btn.textContent = R.string.btn_verify_membership;
+        }
+      } catch (error) {
+        console.error('Membership verification error:', error);
+        membershipCard.innerHTML = `
+          <div style="color: var(--color-error-text);">
+            ${R.string.membership_verification_failed}: ${error.message}
+          </div>
+        `;
+        btn.disabled = false;
+        btn.textContent = R.string.btn_verify_membership;
+      }
+    });
 
     // Logout handler
     document.getElementById('nav-logout').addEventListener('click', async (e) => {
