@@ -286,8 +286,6 @@ def verifyMembership(req: https_fn.CallableRequest) -> dict:
             message="No kennitala found for user"
         )
 
-    print(f"DEBUG: Token kennitala: '{kennitala}'")
-
     try:
         # Read kennitalas.txt from Cloud Storage
         from google.cloud import storage
@@ -308,16 +306,13 @@ def verifyMembership(req: https_fn.CallableRequest) -> dict:
             if line.strip()
         ]
 
-        print(f"DEBUG: Total kennitalas in file: {len(kennitalas)}")
-        print(f"DEBUG: Sample kennitalas: {kennitalas[:3]}")
-
-        # Normalize kennitala for comparison (remove hyphen)
+        # Normalize kennitala for comparison (remove hyphen if present)
+        # File format: 2009783589 (no hyphen)
+        # Token format: may be 200978-3589 (with hyphen) or 2009783589 (without)
         kennitala_normalized = kennitala.replace('-', '')
-        print(f"DEBUG: Normalized kennitala: '{kennitala_normalized}'")
 
-        # Check both formats (with and without hyphen)
-        is_member = kennitala_normalized in kennitalas or kennitala in kennitalas
-        print(f"DEBUG: Membership check result: {is_member}")
+        # Check membership status
+        is_member = kennitala_normalized in kennitalas
 
         # Update user profile in Firestore
         db = firestore.client()
