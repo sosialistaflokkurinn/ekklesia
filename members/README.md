@@ -35,7 +35,62 @@
 - User profile with national eID data ✅
 - Icelandic language UI ✅
 - Component-based CSS architecture ✅
+- Internationalization (i18n) with R.string pattern ✅
 - Firestore user profiles ✅
+
+---
+
+## Architecture
+
+### CSS Methodology
+
+Following `.claude/rules.md` CSS principles:
+
+**1. Global Stylesheet** (`styles/global.css`):
+- CSS reset
+- Typography system
+- Color palette (CSS custom properties)
+- Spacing and layout variables
+- Socialist red brand colors
+
+**2. Component Stylesheets** (`styles/components/`):
+- `login.css` - Authentication page styles
+- Scoped, semantic CSS
+- No utility-first frameworks (no Tailwind)
+
+**Benefits for Designers**:
+- Clear separation: HTML structure + scoped CSS
+- CSS custom properties for easy theming
+- Semantic class names
+- Easy to iterate without touching JavaScript
+
+### Internationalization (i18n)
+
+Android R.string pattern for maintainable translations:
+
+**Structure**:
+```
+i18n/
+├── R.js              # Utility module
+└── is.js             # Icelandic strings
+```
+
+**Usage**:
+```javascript
+import { R } from '/i18n/R.js';
+const text = R.string.login_title; // "Innskráning"
+```
+
+**Adding Languages**:
+1. Create `i18n/en.js` with matching keys
+2. Uncomment language switching in `R.js`
+3. Add UI language switcher
+
+**Benefits**:
+- Centralized: All strings in one file per language
+- Scalable: Easy to add new languages
+- Type-safe: `R.string.key` pattern
+- Debug-friendly: Missing key warnings
 
 ---
 

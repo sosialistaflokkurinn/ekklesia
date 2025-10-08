@@ -49,5 +49,26 @@ export const strings = {
 
   // Placeholders
   placeholder_not_available: "Ekki tiltækt",
-  placeholder_not_found: "Fannst ekki"
+  placeholder_not_found: "Fannst ekki",
+
+  // Dashboard
+  page_title_dashboard: "Mín síða - Sósíalistaflokkurinn",
+  dashboard_welcome: "Velkomin(n)",
+  dashboard_title: "Mín síða",
+  dashboard_subtitle: "Félagasvæði Sósíalistaflokksins",
+  nav_dashboard: "Mín síða",
+  nav_profile: "Prófíll",
+  nav_events: "Atburðir",
+  nav_voting: "Kosningar",
+
+  // Profile
+  page_title_profile: "Prófíll - Sósíalistaflokkurinn",
+  profile_title: "Prófíll",
+  profile_subtitle: "Mínar upplýsingar",
+  membership_status: "Félagastaða",
+  membership_active: "Virkt félag",
+  membership_inactive: "Ekki félag",
+
+  // Navigation
+  nav_logout: "Útskrá"
 };

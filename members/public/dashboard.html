@@ -39,10 +39,10 @@
           <div class="info-label">Prófíll</div>
           <div class="info-value">Skoða mínar upplýsingar</div>
         </a>
-        <a href="/test-events.html" class="info-item" style="text-decoration: none; cursor: pointer;">
+        <div class="info-item" style="opacity: 0.5;">
           <div class="info-label">Atburðir</div>
-          <div class="info-value">Prófunarkosning 2025</div>
-        </a>
+          <div class="info-value">Væntanlegt</div>
+        </div>
         <div class="info-item" style="opacity: 0.5;">
           <div class="info-label">Kosningar</div>
           <div class="info-value">Væntanlegt</div>
@@ -56,21 +56,12 @@
       <div class="card-content" id="membership-status">
         Hleð inn...
       </div>
-      <div id="verify-button-container" style="margin-top: var(--spacing-md); display: none;">
-        <button class="btn" id="verify-membership-btn">Staðfesta félagsaðild</button>
-      </div>
     </div>
   </div>
 
   <script type="module">
     import { R } from '/i18n/R.js';
     import { requireAuth, signOut, getUserData } from '/js/auth.js';
-    import { getApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-    import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js';
-
-    // Get existing Firebase app instance (already initialized in auth.js)
-    const app = getApp();
-    const functions = getFunctions(app, 'europe-west2');
 
     // Set page title
     document.title = R.string.page_title_dashboard;
@@ -92,68 +83,19 @@
 
     // Update membership status
     const membershipCard = document.getElementById('membership-status');
-    const verifyButtonContainer = document.getElementById('verify-button-container');
-
-    function updateMembershipUI(isMember) {
-      if (isMember) {
-        membershipCard.innerHTML = `
-          <div style="color: var(--color-success-text); font-weight: 500;">
-            ✓ ${R.string.membership_active}
-          </div>
-        `;
-        verifyButtonContainer.style.display = 'none';
-      } else {
-        membershipCard.innerHTML = `
-          <div style="color: var(--color-gray-600);">
-            ${R.string.membership_not_verified}
-          </div>
-        `;
-        verifyButtonContainer.style.display = 'block';
-      }
+    if (userData.isMember) {
+      membershipCard.innerHTML = `
+        <div style="color: var(--color-success-text); font-weight: 500;">
+          ✓ ${R.string.membership_active}
+        </div>
+      `;
+    } else {
+      membershipCard.innerHTML = `
+        <div style="color: var(--color-gray-600);">
+          ${R.string.membership_inactive}
+        </div>
+      `;
     }
-
-    updateMembershipUI(userData.isMember);
-
-    // Verify membership handler
-    document.getElementById('verify-membership-btn').addEventListener('click', async () => {
-      const btn = document.getElementById('verify-membership-btn');
-      btn.disabled = true;
-      btn.textContent = R.string.membership_verifying;
-
-      try {
-        const verifyMembership = httpsCallable(functions, 'verifyMembership');
-        const result = await verifyMembership();
-
-        if (result.data.isMember) {
-          membershipCard.innerHTML = `
-            <div style="color: var(--color-success-text); font-weight: 500;">
-              ✓ ${R.string.membership_active}
-            </div>
-          `;
-          verifyButtonContainer.style.display = 'none';
-
-          // Refresh user data to get updated claims
-          await user.getIdToken(true);
-        } else {
-          membershipCard.innerHTML = `
-            <div style="color: var(--color-error-text);">
-              ${R.string.membership_inactive}
-            </div>
-          `;
-          btn.disabled = false;
-          btn.textContent = R.string.btn_verify_membership;
-        }
-      } catch (error) {
-        console.error('Membership verification error:', error);
-        membershipCard.innerHTML = `
-          <div style="color: var(--color-error-text);">
-            ${R.string.membership_verification_failed}: ${error.message}
-          </div>
-        `;
-        btn.disabled = false;
-        btn.textContent = R.string.btn_verify_membership;
-      }
-    });
 
     // Logout handler
     document.getElementById('nav-logout').addEventListener('click', async (e) => {
