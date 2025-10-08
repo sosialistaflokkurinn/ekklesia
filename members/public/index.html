@@ -30,6 +30,12 @@
     import { R } from '/i18n/R.js';
     import { getCurrentUser, auth } from '/js/auth.js';
     import { signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+    import { getApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js';
+
+    // Get existing Firebase app instance (already initialized in auth.js)
+    const app = getApp();
+    const functions = getFunctions(app, 'europe-west2');
 
     // Set page title and strings
     document.title = R.string.page_title;
@@ -106,6 +112,17 @@
 
         // Clear PKCE verifier
         sessionStorage.removeItem('pkce_code_verifier');
+
+        // Automatically verify membership after login
+        statusTextEl.textContent = 'Staðfesti félagsaðild...';
+        try {
+          const verifyMembership = httpsCallable(functions, 'verifyMembership');
+          await verifyMembership();
+          console.log('Membership verified during login');
+        } catch (verifyError) {
+          console.warn('Membership verification during login failed:', verifyError);
+          // Continue to dashboard even if verification fails
+        }
 
         // Redirect to dashboard
         window.location.href = '/dashboard.html';
