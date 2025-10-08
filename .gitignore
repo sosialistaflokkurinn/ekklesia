@@ -1,0 +1,85 @@
+# Environment files with secrets
+.env
+.env.local
+*.env
+!*.env.example
+
+# OAuth/OIDC credentials
+*client_secret*
+*CLIENT_SECRET*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+*.egg-info/
+.eggs/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# General
+node_modules/
+dist/
+build/
+.DS_Store
+*.log
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup and temp files
+*.backup
+*.bak
+*.orig
+*.tmp
+temp/
+tmp/
+
+# Documentation (local only - use DOCUMENTATION_MAP.md to find files)
+# Exception: GitHub issue templates must be in git
+!.github/
+!.github/ISSUE_TEMPLATE/
+*.md
+!DOCUMENTATION_MAP.md
+!README.md
+!.github/ISSUE_TEMPLATE/*.md
+
+# Scripts (local only - available on request)
+*.sh
+
+# Git ignore files (keep local only)
+.gitignore
+.gitignore-auth
+
+# Claude Code settings (local only)
+.code-rules
+.claude/
+
+# Validation scripts (local only)
+validate_documentation_map.py
+
+# Archive and legacy directories (not for production)
+archive/
+template/
+usr/
+json
+
+# Sensitive data files
+members/data/kennitalas.txt
+# Firebase local cache
+.firebase/
