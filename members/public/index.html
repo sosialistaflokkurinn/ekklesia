@@ -90,9 +90,8 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            kenni_auth_code: authCode,
-            pkce_code_verifier: pkceVerifier,
-            redirect_uri: KENNI_IS_REDIRECT_URI
+            kenniAuthCode: authCode,
+            pkceCodeVerifier: pkceVerifier
           })
         });
 
