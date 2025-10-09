@@ -18,14 +18,20 @@ from pathlib import Path
 from typing import Iterable, Set
 
 # By default we look for documentation assets in these directories.
-# Note: Archived directories (Oct 7-8, 2025):
+# Note: Archived directories (Oct 7-9, 2025):
+#   - gcp/ → archive/gcp-infrastructure/ (Oct 8, 2025)
 #   - portal/ → archive/ekklesia-platform-evaluation/portal/
 #   - voting/ → archive/ekklesia-platform-evaluation/voting/
 #   - auth/ → archive/zitadel-legacy/auth/
+# Current active directories:
+#   - docs/ - All documentation
+#   - members/ - Members service (Firebase-based, production)
+#   - events/ - Events service (Node.js, production Oct 9, 2025)
+#   - archive/ - Historical implementations and evaluations
 DEFAULT_SCAN_DIRS = (
     "docs",
-    "gcp",
     "members",
+    "events",
     "archive",
 )
 
@@ -34,7 +40,7 @@ DEFAULT_SCAN_DIRS = (
 DOC_SUFFIXES = (".md", ".markdown", ".mdx", ".rst", ".txt", ".sh")
 
 INLINE_CODE_PATTERN = re.compile(r"`([^`]+)`")
-PATH_PATTERN = re.compile(r"(?<![\w./-])(docs|gcp|members|archive)/[\w./-]+")
+PATH_PATTERN = re.compile(r"(?<![\w./-])(docs|members|events|archive)/[\w./-]+")
 
 EXCLUDE_PARTS = {"node_modules", "venv", ".venv", "__pycache__", "site-packages"}
 

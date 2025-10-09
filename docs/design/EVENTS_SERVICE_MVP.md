@@ -1,11 +1,32 @@
 # Events Service MVP Design Document
 
 **Component**: Events System (`Atburðir`)
-**Status**: 🔨 MVP Design Phase
-**Last Updated**: 2025-10-08
+**Status**: ✅ MVP Deployed to Production - Option A (Standalone)
+**Last Updated**: 2025-10-09
+**Production URL**: https://events-service-521240388393.europe-west2.run.app
 **Purpose**: Election administration and voting token issuance
 **MVP Scope**: One election, one question - manage election lifecycle and issue voting tokens
-**Architecture**: This service works with Members (✅ production) and will hand off to Elections (`Kosningar`) service
+**Architecture**: Standalone service working with Members (✅ production). Elections (`Kosningar`) integration deferred to Phase 5.
+
+---
+
+## ⚠️ Implementation Strategy: Option A (Standalone)
+
+**Decision**: Build Events service WITHOUT Elections service dependency for MVP.
+
+**Rationale**:
+- Elections service doesn't exist yet (next phase)
+- Events service can be fully functional standalone
+- Members can request and receive voting tokens
+- Tokens stored in database with full audit trail
+- S2S communication with Elections service deferred to Phase 2
+
+**What This Means**:
+- ✅ Events service is independently deployable and testable
+- ✅ Token generation and storage working immediately
+- ✅ Audit trail (kennitala → token) complete
+- ⏸️ Actual voting deferred to Elections service (Phase 2)
+- ⏸️ Results fetching deferred to Elections service (Phase 2)
 
 ---
 
@@ -152,43 +173,55 @@ GET    /api/election
          question_text,
          status,
          voting_starts_at,
-         voting_ends_at,
-         elections_service_url  // URL to Elections service for voting
+         voting_ends_at
        }
 
 POST   /api/request-token
-       Request a one-time voting token
+       Request a one-time voting token (MVP: store in DB only)
        Returns: {
          token,  // Plain token (sent once to member)
-         voting_url,  // URL to Elections service: https://elections-service/vote/:token
-         expires_at
+         expires_at,
+         message: "Token issued. Save this token - Elections service integration pending."
        }
 
-       Flow:
+       Flow (MVP - Option A):
        1. Verify member has active membership
        2. Check if token already issued (one per member)
        3. Check election is published and within voting period
        4. Generate secure token (32 bytes hex)
        5. Hash token (SHA-256)
        6. Store token_hash in voting_tokens table (with kennitala)
-       7. Send token_hash to Elections service via S2S (register token)
-       8. Return plain token + voting_url to member
+       7. Return plain token to member
+
+       Note: S2S registration with Elections service deferred to Phase 2
 
 GET    /api/my-status
        Check participation status
-       Returns: { token_issued: boolean, voted: boolean }
+       Returns: {
+         token_issued: boolean,
+         voted: boolean,
+         token_issued_at: timestamp (if issued)
+       }
+
+GET    /api/my-token
+       Retrieve previously issued token (if exists and not expired)
+       Returns: {
+         token: string,
+         issued_at: timestamp,
+         expires_at: timestamp
+       }
+
+       Note: Only returns if token exists and hasn't expired
 
 GET    /api/results
-       Get results from Elections service (only if election closed)
-       Returns: { yes: number, no: number, abstain: number, total: number }
-
-       Flow:
-       1. Check election status is 'closed'
-       2. Fetch results from Elections service via S2S
-       3. Return results to member
+       Get results (MVP: returns placeholder until Elections integration)
+       Returns: {
+         message: "Results available after Elections service integration",
+         election_status: string
+       }
 ```
 
-**Note**: Voting happens on Elections (`Kosningar`) service, not here. Member is redirected with their token.
+**Note**: MVP is standalone. Elections service integration (voting + results) deferred to Phase 2.
 
 ---
 
@@ -441,37 +474,45 @@ class ElectionsServiceClient {
 
 ---
 
-## Implementation Phases (MVP)
+## Implementation Phases (MVP - Option A: Standalone)
+
+**Strategy**: Build Events service WITHOUT Elections service dependency. S2S integration deferred to Phase 2.
 
 ### Phase 1: Database Setup (Day 1)
 - [ ] Create database migration script for Events service
 - [ ] Create `election` table (single row, hardcoded election)
 - [ ] Create `voting_tokens` table (with kennitala for audit)
-- [ ] Run migration on Cloud SQL
+- [ ] Run migration on Cloud SQL (ekklesia-db: 34.147.159.80)
+- [ ] Verify connection from local environment
 
 ### Phase 2: Core API (Day 2-3)
 - [ ] Set up Node.js/Express project (events-service)
-- [ ] Configure Cloud SQL connection
+- [ ] Configure Cloud SQL connection (PostgreSQL 15, ekklesia-db)
 - [ ] Firebase Admin SDK integration
-- [ ] Implement auth middleware (verify JWT)
-- [ ] GET /api/election
-- [ ] POST /api/request-token (with S2S call to Elections service)
-- [ ] GET /api/my-status
+- [ ] Implement auth middleware (verify JWT with kennitala claims)
+- [ ] GET /api/election (return election details)
+- [ ] POST /api/request-token (issue token, store in DB only - NO S2S)
+- [ ] GET /api/my-status (check token issuance and voted status)
+- [ ] GET /api/my-token (return previously issued token if exists)
 
-### Phase 3: S2S & Results (Day 4)
-- [ ] Implement Elections service client (S2S)
-- [ ] POST /api/s2s/vote-notification endpoint (receives vote confirmations)
-- [ ] GET /api/results (fetch from Elections service)
-- [ ] Generate S2S API keys (Secret Manager)
+### Phase 3: Testing & Local Development (Day 4)
+- [ ] Create test database seeds (sample election)
+- [ ] Test auth middleware with Firebase custom tokens
+- [ ] Test eligibility logic (active membership check)
+- [ ] Test token generation and storage
+- [ ] Verify token uniqueness constraints
+- [ ] Test error handling (expired election, duplicate token)
 
 ### Phase 4: Deployment (Day 5)
-- [ ] Create Dockerfile
-- [ ] Deploy to Cloud Run (events-service)
-- [ ] Configure environment variables (ELECTIONS_SERVICE_URL, S2S_API_KEY)
-- [ ] Test with mock Elections service
-- [ ] Manual election creation via SQL
+- [ ] Create Dockerfile for Node.js/Express
+- [ ] Deploy to Cloud Run (URL will be assigned by GCP)
+- [ ] Configure environment variables (DATABASE_URL, FIREBASE_PROJECT_ID)
+- [ ] Configure Cloud SQL connection from Cloud Run
+- [ ] Manual election creation via SQL (INSERT INTO election)
+- [ ] Test with production Firebase tokens
+- [ ] Document actual Cloud Run URL
 
-**Note**: This phase implements Events service only. Elections service (`Kosningar`) is next phase.
+**Note**: This MVP is fully functional without Elections service. Members can request tokens, tokens are stored, and audit trail exists. Integration with Elections service (voting + results) deferred to next phase.
 
 ---
 
@@ -484,20 +525,25 @@ class ElectionsServiceClient {
 
 ## MVP Scope Summary
 
-**What's included** (Events service):
+**What's included** (Events service - Option A: Standalone):
 - ✅ One election (Kosning)
 - ✅ One question (yes/no/abstain)
 - ✅ Firebase JWT authentication
 - ✅ Active membership check
 - ✅ One-time voting tokens (cryptographically secure)
-- ✅ S2S token registration with Elections service
+- ✅ Token storage in database
 - ✅ Audit trail (kennitala → token_hash)
-- ✅ Results fetching from Elections service
+- ✅ Token retrieval endpoint (GET /api/my-token)
 
-**What's deferred** (future phases):
+**What's deferred** (Phase 2 - Integration):
+- ⏸️ S2S token registration with Elections service
+- ⏸️ Vote notification endpoint (S2S callback)
+- ⏸️ Results fetching from Elections service
+- ⏸️ Elections service implementation
+
+**What's deferred** (Future phases):
 - ❌ Multiple elections
 - ❌ Multiple questions per election
 - ❌ Admin UI (election created via SQL)
 - ❌ Role-based access control (beyond active membership)
 - ❌ Complex eligibility rules (dues, roles, etc.)
-- ❌ Elections service implementation (next phase)
