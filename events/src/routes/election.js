@@ -3,7 +3,6 @@ const router = express.Router();
 const authenticate = require('../middleware/auth');
 const { getCurrentElection, getElectionStatus } = require('../services/electionService');
 const { issueVotingToken, getTokenStatus } = require('../services/tokenService');
-const { fetchResults: fetchElectionResults } = require('../services/electionsClient');
 
 /**
  * GET /api/election
@@ -129,8 +128,8 @@ router.get('/my-token', authenticate, async (req, res) => {
 
 /**
  * GET /api/results
- * Get election results from Elections service
- * Phase 5: Fetch results via S2S from Elections service
+ * Get election results
+ * MVP: Placeholder until Elections service integration
  */
 router.get('/results', authenticate, async (req, res) => {
   try {
@@ -143,32 +142,13 @@ router.get('/results', authenticate, async (req, res) => {
       });
     }
 
-    // Fetch results from Elections service via S2S
-    try {
-      const results = await fetchElectionResults();
-
-      res.json({
-        election_id: election.id,
-        election_title: election.title,
-        election_status: election.status,
-        total_ballots: results.total_ballots,
-        results: results.results,
-        fetched_at: new Date().toISOString()
-      });
-    } catch (electionsError) {
-      console.error('Elections service error:', electionsError);
-
-      // Graceful degradation: return partial data if Elections service is unavailable
-      res.json({
-        election_id: election.id,
-        election_title: election.title,
-        election_status: election.status,
-        total_ballots: 0,
-        results: null,
-        error: 'Elections service temporarily unavailable',
-        message: 'Results could not be fetched. Please try again later.'
-      });
-    }
+    res.json({
+      message: 'Results available after Elections service integration (Phase 2)',
+      election_id: election.id,
+      election_title: election.title,
+      election_status: election.status,
+      note: 'MVP implementation does not include Elections service. Results fetching deferred to Phase 2.'
+    });
   } catch (error) {
     console.error('Error fetching results:', error);
     res.status(500).json({
