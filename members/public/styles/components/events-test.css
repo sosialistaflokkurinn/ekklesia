@@ -1,0 +1,92 @@
+/* Events Test Page Component Styles */
+
+.event-title {
+    color: var(--color-primary);
+    font-size: 2rem;
+    margin: 0;
+    padding: 0;
+}
+
+.auth-status {
+    margin: var(--spacing-md) 0;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.status-authenticated {
+    background-color: var(--color-success-bg);
+    color: var(--color-success-text);
+}
+
+.status-unauthenticated {
+    background-color: var(--color-error-bg);
+    color: var(--color-error-text);
+}
+
+.user-details {
+    margin-top: var(--spacing-md);
+    padding: var(--spacing-md);
+    background-color: var(--color-gray-50);
+    border-radius: 4px;
+    line-height: 1.6;
+}
+
+.user-details div {
+    margin-bottom: var(--spacing-xs);
+}
+
+.api-info {
+    padding: var(--spacing-md);
+    background-color: #e7f3ff;
+    border-left: 4px solid #0066cc;
+    border-radius: 4px;
+    margin-bottom: var(--spacing-lg);
+}
+
+.test-section {
+    margin-top: var(--spacing-lg);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--color-gray-200);
+}
+
+.test-section:first-child {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+}
+
+.test-title {
+    color: var(--color-text);
+    font-size: 1.2rem;
+    margin-bottom: var(--spacing-md);
+}
+
+.test-result {
+    display: none;
+    margin-top: var(--spacing-md);
+    padding: var(--spacing-md);
+    border-radius: 4px;
+    border-left: 4px solid var(--color-primary);
+    background-color: var(--color-gray-50);
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    white-space: pre-wrap;
+    overflow-x: auto;
+    line-height: 1.4;
+}
+
+.test-success {
+    border-left-color: var(--color-success-text);
+    background-color: var(--color-success-bg);
+}
+
+.test-error {
+    border-left-color: var(--color-error-text);
+    background-color: var(--color-error-bg);
+}
