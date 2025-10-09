@@ -1,8 +1,8 @@
 # 🗺️ Ekklesia Platform - Master Documentation Map
 
-**Version**: 4.3.0
-**Last Updated**: 2025-10-08
-**Status**: ✅ Members Service Production - Membership Verification Complete
+**Version**: 5.0.0
+**Last Updated**: 2025-10-09
+**Status**: ✅ Events Service Production - MVP Deployed (Members ✅ + Events ✅)
 
 ---
 
@@ -39,7 +39,7 @@
 | **National eID** | Kenni.is OAuth PKCE | ✅ Production |
 | **Members Service** | Firebase Hosting + Python Cloud Functions | ✅ Production |
 | **Membership Verification** | Firebase Storage + Cloud Functions | ✅ Production (2,273 members) |
-| **Events Service** | Design Complete | 📋 Ready to Implement |
+| **Events Service** | Node.js + Express on Cloud Run | ✅ Production (Oct 9) |
 | **Elections Service** | Design Pending | 📋 Next Phase |
 | **Database** | Cloud SQL PostgreSQL 15 | ✅ Production (ready for Events) |
 | **Cloud Functions** | Python 3.11 (Gen 2) | ✅ Production (2 functions) |
@@ -50,9 +50,9 @@
 
 ## Current Status
 
-### ✅ Production Services (October 7, 2025)
+### ✅ Production Services (October 9, 2025)
 
-**Firebase Migration Complete** - Ekklesia Platform Archived, Custom Services in Design (Oct 7, 2025)
+**Events Service Deployed** - Core voting infrastructure operational (Oct 9, 2025)
 
 | Component | Status | URL/Service |
 |-----------|--------|-------------|
@@ -61,25 +61,36 @@
 | **handleKenniAuth** | ✅ Production | Cloud Function (512 MB) |
 | **verifyMembership** | ✅ Production | Cloud Function (256 MB) |
 | **Members Service** | ✅ Production | Firebase-based (kennitala auth) |
-| **Events Service** | 🔨 Design | Custom election administration |
-| **Voting Service** | 📋 Design | Custom anonymous ballot recording |
+| **Events Service** | ✅ Production | https://events-service-521240388393.europe-west2.run.app |
+| **Elections Service** | 📋 Next Phase | Custom anonymous ballot recording |
 | **Cloud SQL** | ✅ Production | ekklesia-db (PostgreSQL 15) |
 
-**Cost**: $7-15/month (Members $0, Events ~$5, Voting ~$2, Cloud SQL ~$7)
+**Cost**: ~$7/month (Members $0, Events $0 free tier, Cloud SQL ~$7)
 
 ### 🔨 Current Work
 
-- **Members Service**: ✅ Production operational (Oct 8, 2025)
-  - Membership verification with 2,273 members
-  - Kennitala normalization implemented
-  - Icelandic i18n, socialist red theme
-  - See: `docs/status/CURRENT_PRODUCTION_STATUS.md`
-- **Events Service**: Design complete, ready for implementation
-  - See: `docs/design/EVENTS_SERVICE_MVP.md`
+- **Events Service**: ✅ Production deployed (Oct 9, 2025)
+  - All 5 API endpoints operational
+  - Token issuance and audit trail working
+  - Production URL: https://events-service-521240388393.europe-west2.run.app
+  - Test page: https://ekklesia-prod-10-2025.web.app/test-events.html
+  - See: `docs/status/EVENTS_SERVICE_TESTING_LOG.md`
 - **Elections Service**: Next phase (design pending)
-- **Documentation**: Deep review and validation complete (Oct 8)
+  - Anonymous ballot recording
+  - S2S integration with Events service
+- **Documentation**: Updated with Events service deployment (Oct 9)
 
 ### 📋 Recent Milestones (October 2025)
+
+**Oct 9, 2025 - Events Service MVP Deployed to Production**
+- ✅ Database migration complete (election + voting_tokens tables)
+- ✅ 5 API endpoints operational (health, election, request-token, my-status, my-token)
+- ✅ Firebase JWT authentication working
+- ✅ SHA-256 token hashing with audit trail
+- ✅ Production test page with CSS components
+- ✅ Integrated with Members dashboard
+- ✅ Complete deployment in 1 day (4 phases)
+- 📄 Documentation: `docs/status/EVENTS_SERVICE_TESTING_LOG.md`
 
 **Oct 8, 2025 - Membership Verification Complete**
 - ✅ Kennitala normalization implemented (handles hyphen variants)
@@ -180,12 +191,35 @@ ekklesia/
 │   ├── docs/                         📚 Service documentation
 │   │   ├── FIREBASE_KENNI_SETUP.md   Setup guide
 │   │   └── KENNI_QUICKSTART.md       Quick start
-│   ├── scripts/                      🔧 Deployment scripts
-│   │   └── deploy-stage-3-functions.sh
 │   ├── data/                         📊 Membership data
 │   │   └── kennitalas.txt            Verified member kennitalas
 │   ├── firebase.json                 Firebase configuration
 │   ├── .firebaserc                   Firebase project config
+│   ├── package.json                  Node.js dependencies
+│   └── README.md                     📖 Service documentation
+│
+├── events/                           🎫 Events Service (Production Oct 9, 2025)
+│   ├── src/                          💻 Node.js application
+│   │   ├── index.js                  Express server entry point
+│   │   ├── config/                   Configuration modules
+│   │   │   ├── database.js           Cloud SQL connection
+│   │   │   └── firebase.js           Firebase Admin SDK
+│   │   ├── middleware/               Express middleware
+│   │   │   └── auth.js               JWT authentication
+│   │   ├── services/                 Business logic
+│   │   │   ├── electionService.js    Election management
+│   │   │   └── tokenService.js       Token generation
+│   │   └── routes/                   API routes
+│   │       └── election.js           Election endpoints
+│   ├── migrations/                   🗄️ Database migrations
+│   │   ├── 001_initial_schema.sql    Initial schema
+│   │   ├── 002_remove_elections_service_id.sql  Cleanup
+│   │   ├── run-migration.sh          Migration runner
+│   │   └── README.md                 Migration docs
+│   ├── Dockerfile                    🐳 Container image
+│   ├── .dockerignore                 Docker ignore rules
+│   ├── deploy.sh                     🚀 Cloud Run deployment
+│   ├── .env.example                  Environment template
 │   ├── package.json                  Node.js dependencies
 │   └── README.md                     📖 Service documentation
 │
@@ -208,11 +242,12 @@ ekklesia/
 
 | Document | Purpose | Status |
 |----------|---------|--------|
-| `SYSTEM_ARCHITECTURE_OVERVIEW.md` | Primary architectural vision (election-focused) | ✅ Active (Oct 7) |
-| `design/EVENTS_SERVICE_MVP.md` | Events service MVP design (election administration) | ✅ Complete (Oct 8) |
+| `SYSTEM_ARCHITECTURE_OVERVIEW.md` | Primary architectural vision (election-focused) | ✅ Active (Oct 9) |
+| `design/EVENTS_SERVICE_MVP.md` | Events service MVP design (election administration) | ✅ Production (Oct 9) |
 | `design/VOTING_SERVICE_DESIGN.md` | Voting service design (anonymous ballot recording) | 📋 Planned |
-| `status/CURRENT_PRODUCTION_STATUS.md` | Production infrastructure status | ✅ Current (Oct 8) |
+| `status/CURRENT_PRODUCTION_STATUS.md` | Production infrastructure status | ✅ Current (Oct 9) |
 | `status/FIREBASE_MIGRATION_STATUS.md` | Firebase migration summary | ✅ Current (Oct 6-7) |
+| `status/EVENTS_SERVICE_TESTING_LOG.md` | Events service testing journey & tools inventory | ✅ Phase 4 Complete (Oct 9) |
 
 ### 📝 Future Plans
 
@@ -334,11 +369,12 @@ All `gcp/reference/` documents are ZITADEL-era and deprecated:
 **Getting Started:**
 1. Read: `docs/status/CURRENT_PRODUCTION_STATUS.md` (production status)
 2. Review: `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md` (architecture)
-3. Deploy Members: `members/scripts/deploy-stage-3-functions.sh`
+3. Deploy Members: `firebase deploy --only hosting,functions` (from members/)
+4. Deploy Events: `./deploy.sh` (from events/)
 
 **Next Steps:**
-- Events Service: Implementation (5 weeks, see design doc)
-- Voting Service: Implementation (6 weeks, see design doc)
+- Elections Service: Design and implementation
+- Additional Events service features (multiple elections, admin UI)
 
 **Daily Work:**
 - Production Status: `docs/status/CURRENT_PRODUCTION_STATUS.md`
