@@ -1,0 +1,35 @@
+# Node modules (will be installed in container)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Environment files (use Cloud Run env vars instead)
+.env
+.env.*
+
+# Development files
+test.html
+*.md
+
+# Git files
+.git/
+.gitignore
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test and coverage files
+coverage/
+.nyc_output/
+
+# Documentation
+docs/
+migrations/
