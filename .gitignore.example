@@ -1,3 +1,7 @@
+# Ekklesia Platform - Git Ignore Template
+# Copy this to .gitignore and customize for local development
+# DO NOT commit .gitignore to git (it's in this file's ignore rules)
+
 # Environment files with secrets
 .env
 .env.local
@@ -50,23 +54,40 @@ build/
 temp/
 tmp/
 
-# Shell scripts and markdown files
-*.sh
+# Documentation (local only - use DOCUMENTATION_MAP.md to find files)
+# Exceptions: Essential docs and current work
+!.github/
+!.github/ISSUE_TEMPLATE/
 *.md
+!DOCUMENTATION_MAP.md
+!README.md
+!docs/SYSTEM_ARCHITECTURE_OVERVIEW.md
+!docs/design/EVENTS_SERVICE_MVP.md
+!docs/status/CURRENT_PRODUCTION_STATUS.md
+!.github/ISSUE_TEMPLATE/*.md
+
+# Scripts (local only - available on request)
+*.sh
 
 # Git ignore files (keep local only)
 .gitignore
 .gitignore-auth
 
-# Portal alembic migrations
-portal/alembic/
-voting/alembic/
+# Claude Code settings (local only)
+.code-rules
+.claude/
 
-# Entire directories
+# Validation scripts (local only)
+validate_documentation_map.py
+
+# Archive and legacy directories (not for production)
 archive/
-auth/
-portal/
-voting/
 template/
 usr/
 json
+
+# Sensitive data files
+members/data/kennitalas.txt
+
+# Firebase local cache
+.firebase/
