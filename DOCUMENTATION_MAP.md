@@ -1,8 +1,8 @@
 # 🗺️ Ekklesia Platform - Master Documentation Map
 
-**Version**: 5.0.0
-**Last Updated**: 2025-10-09
-**Status**: ✅ Events Service Production - MVP Deployed (Members ✅ + Events ✅)
+**Version**: 6.0.0
+**Last Updated**: 2025-10-10
+**Status**: ✅ Phase 5 Complete - Full Voting System Operational (Members ✅ + Events ✅ + Elections ✅)
 
 ---
 
@@ -16,9 +16,10 @@
 
 ### 📚 **Documentation Directories**
 - [/docs/ - Architecture & Plans](#docs-directory)
-- [/gcp/ - Infrastructure Reference (Archived)](#gcp-directory)
 - [/members/ - Members Service](#members-directory)
-- [/portal/ - Portal Service](#portal-directory)
+- [/events/ - Events Service](#events-directory)
+- [/elections/ - Elections Service](#elections-directory)
+- [/archive/ - Archived Code](#archive-directory)
 
 ---
 
@@ -28,8 +29,9 @@
 
 - **Secure Authentication**: National eID (Kenni.is) integration via Firebase/Identity Platform
 - **Member Portal**: View profile, roles, and participate in party activities
-- **Voting System**: Democratic decision-making platform
-- **Event Management**: Election and event administration
+- **Voting System**: Anonymous democratic decision-making platform
+- **Event Management**: Election and event administration with voting token issuance
+- **Elections Service**: Anonymous ballot recording with S2S integration
 
 ### Technology Stack
 
@@ -39,9 +41,9 @@
 | **National eID** | Kenni.is OAuth PKCE | ✅ Production |
 | **Members Service** | Firebase Hosting + Python Cloud Functions | ✅ Production |
 | **Membership Verification** | Firebase Storage + Cloud Functions | ✅ Production (2,273 members) |
-| **Events Service** | Node.js + Express on Cloud Run | ✅ Production (Oct 9) |
-| **Elections Service** | Design Pending | 📋 Next Phase |
-| **Database** | Cloud SQL PostgreSQL 15 | ✅ Production (ready for Events) |
+| **Events Service** | Node.js + Express on Cloud Run | ✅ Production (Oct 9-10) |
+| **Elections Service** | Node.js + Express on Cloud Run | ✅ Production (Oct 9-10) |
+| **Database** | Cloud SQL PostgreSQL 15 | ✅ Production (2 schemas: public, elections) |
 | **Cloud Functions** | Python 3.11 (Gen 2) | ✅ Production (2 functions) |
 | **Infrastructure** | Firebase + Cloud Run | ✅ Production |
 | **Region** | europe-west2 (London) | ✅ Production |
@@ -50,9 +52,9 @@
 
 ## Current Status
 
-### ✅ Production Services (October 9, 2025)
+### ✅ Production Services (October 10, 2025)
 
-**Events Service Deployed** - Core voting infrastructure operational (Oct 9, 2025)
+**Phase 5 Integration Complete** - Full end-to-end voting system operational (Oct 10, 2025)
 
 | Component | Status | URL/Service |
 |-----------|--------|-------------|
@@ -62,25 +64,45 @@
 | **verifyMembership** | ✅ Production | Cloud Function (256 MB) |
 | **Members Service** | ✅ Production | Firebase-based (kennitala auth) |
 | **Events Service** | ✅ Production | https://events-service-521240388393.europe-west2.run.app |
-| **Elections Service** | 📋 Next Phase | Custom anonymous ballot recording |
-| **Cloud SQL** | ✅ Production | ekklesia-db (PostgreSQL 15) |
+| **Elections Service** | ✅ Production | https://elections-service-521240388393.europe-west2.run.app |
+| **Cloud SQL** | ✅ Production | ekklesia-db (PostgreSQL 15, 2 schemas) |
 
-**Cost**: ~$7/month (Members $0, Events $0 free tier, Cloud SQL ~$7)
+**Cost**: ~$7-13/month (Members $0, Events $0-3, Elections $0-3, Cloud SQL ~$7)
 
 ### 🔨 Current Work
 
-- **Events Service**: ✅ Production deployed (Oct 9, 2025)
-  - All 5 API endpoints operational
-  - Token issuance and audit trail working
-  - Production URL: https://events-service-521240388393.europe-west2.run.app
-  - Test page: https://ekklesia-prod-10-2025.web.app/test-events.html
-  - See: `docs/status/EVENTS_SERVICE_TESTING_LOG.md`
-- **Elections Service**: Next phase (design pending)
-  - Anonymous ballot recording
-  - S2S integration with Events service
-- **Documentation**: Updated with Events service deployment (Oct 9)
+- **Phase 5**: ✅ Complete (Oct 10, 2025)
+  - S2S integration between Events and Elections services
+  - Token registration via S2S API
+  - Results fetching via S2S API
+  - End-to-end voting flow operational
+  - See: `docs/status/PHASE_5_INTEGRATION_COMPLETE.md`
+- **Phase 6**: Next phase (load testing)
+  - 300 votes/second spike test
+  - Cloud Run auto-scaling verification
+  - Database connection pool testing
+  - See: `docs/USAGE_CONTEXT.md`
 
 ### 📋 Recent Milestones (October 2025)
+
+**Oct 10, 2025 - Phase 5: Elections + Events Integration Complete**
+- ✅ Elections S2S client implemented (token registration + results fetching)
+- ✅ Events service updated with S2S integration
+- ✅ Test page enhanced with voting interface
+- ✅ End-to-end voting flow tested and verified
+- ✅ Production deployment complete (events-service-00002-dj7)
+- ✅ Comprehensive documentation created
+- 📄 Documentation: `docs/status/PHASE_5_INTEGRATION_COMPLETE.md`
+
+**Oct 9, 2025 - Elections Service MVP Deployed to Production**
+- ✅ Phase 1-4 complete (Database, API, Testing, Deployment)
+- ✅ S2S endpoints operational (register-token, results)
+- ✅ Anonymous ballot recording (no PII)
+- ✅ Two-schema security model (public + elections)
+- ✅ SHA-256 token hashing with one-time use enforcement
+- ✅ Audit logging (no PII)
+- ✅ Complete deployment in 1 day
+- 📄 Documentation: `docs/status/ELECTIONS_SERVICE_DEPLOYMENT.md`
 
 **Oct 9, 2025 - Events Service MVP Deployed to Production**
 - ✅ Database migration complete (election + voting_tokens tables)
@@ -91,6 +113,12 @@
 - ✅ Integrated with Members dashboard
 - ✅ Complete deployment in 1 day (4 phases)
 - 📄 Documentation: `docs/status/EVENTS_SERVICE_TESTING_LOG.md`
+
+**Oct 9, 2025 - Database Security Hardening**
+- ✅ pgaudit extension enabled (Cloud SQL audit logging)
+- ✅ Backup retention extended (7 → 30 days)
+- ✅ Security posture documented
+- 📄 Documentation: `docs/status/DATABASE_SECURITY_HARDENING.md`
 
 **Oct 8, 2025 - Membership Verification Complete**
 - ✅ Kennitala normalization implemented (handles hyphen variants)
@@ -107,12 +135,6 @@
 - ✅ Original election-focused architecture restored
 - 📄 Documentation: `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md`
 
-**Oct 7, 2025 - Ekklesia Platform Evaluation**
-- ✅ Portal service deployed to Cloud Run (503 error)
-- ✅ Cloud SQL instance created (ekklesia-db)
-- ❌ Decision: Ekklesia platform does not match requirements
-- 📄 Documentation: `archive/ekklesia-platform-evaluation/README.md`
-
 **Oct 6-7, 2025 - Firebase Migration (ZITADEL Removed)**
 - ✅ Migrated from ZITADEL to Firebase/Identity Platform
 - ✅ Direct Kenni.is OAuth PKCE integration
@@ -122,24 +144,6 @@
 - ✅ Cost savings: $135/month → $7-10/month
 - 📄 Documentation: `docs/status/FIREBASE_MIGRATION_STATUS.md`
 
-**Oct 5, 2025 - Milestone 3: Voting Eligibility**
-- ✅ Story #14: Secure login with Kenni.is
-- ✅ Kennitala verification system (kennitalas.txt)
-- ✅ Member verification Cloud Function
-- ✅ CSS component architecture
-- ✅ Icelandic internationalization (i18n)
-
-**Oct 3, 2025 - Milestone 2: OIDC Authentication**
-- ✅ OpenID Connect integration
-- ✅ PKCE authentication flow
-- ✅ Session management
-- ✅ Protected routes
-
-**Oct 3, 2025 - Milestone 1: Hello World Service**
-- ✅ Members service deployed to Cloud Run
-- ✅ Health endpoint operational
-- ✅ Deployment automation established
-
 ---
 
 ## Documentation Structure
@@ -147,119 +151,170 @@
 ```
 ekklesia/
 ├── DOCUMENTATION_MAP.md              ⭐ YOU ARE HERE - Master index
+├── test-voting-flow.sh               🧪 End-to-end voting flow test script
 │
 ├── docs/                             📄 Architecture & Plans
 │   ├── SYSTEM_ARCHITECTURE_OVERVIEW.md 🏗️ Primary architectural vision
-│   ├── status/                       📊 Production status
-│   │   ├── CURRENT_PRODUCTION_STATUS.md  📊 Production infrastructure status
-│   │   └── FIREBASE_MIGRATION_STATUS.md  ✅ Firebase migration summary
+│   ├── USAGE_CONTEXT.md              📊 Load patterns and capacity planning
+│   ├── OPERATIONAL_PROCEDURES.md     📋 Meeting day operations manual
+│   ├── DATABASE_REFERENCE.md         📚 Complete database reference (600+ lines)
+│   │
+│   ├── status/                       📊 Production status & deployment logs
+│   │   ├── CURRENT_PRODUCTION_STATUS.md        📊 Production infrastructure status
+│   │   ├── FIREBASE_MIGRATION_STATUS.md        ✅ Firebase migration summary
+│   │   ├── EVENTS_SERVICE_TESTING_LOG.md       ✅ Events service testing journey
+│   │   ├── ELECTIONS_SERVICE_DEPLOYMENT.md     ✅ Elections service deployment log
+│   │   ├── DATABASE_SECURITY_HARDENING.md      ✅ Database hardening implementation
+│   │   └── PHASE_5_INTEGRATION_COMPLETE.md     ✅ Phase 5 integration documentation
+│   │
 │   ├── design/                       🔨 Service design documents
-│   │   ├── EVENTS_SERVICE_MVP.md     🔨 Events service design document
-│   │   └── VOTING_SERVICE_DESIGN.md  📋 Voting service design document
+│   │   ├── EVENTS_SERVICE_MVP.md     ✅ Events service design (production)
+│   │   └── ELECTIONS_SERVICE_MVP.md  ✅ Elections service design (production)
+│   │
 │   ├── specifications/               📋 Technical specifications
-│   │   └── MEMBERS_OIDC_SPEC.md      ⚠️ Legacy (ZITADEL-based)
+│   │   ├── MEMBERS_OIDC_SPEC.md      ⚠️ Legacy (ZITADEL-based)
+│   │   └── members-oidc-v1.0.md      ⚠️ Legacy (ZITADEL-based)
+│   │
 │   ├── guides/                       📖 Implementation guides
 │   │   ├── GITHUB_MCP_GUIDE.md       GitHub MCP integration
-│   │   └── MEMBERS_DEPLOYMENT_GUIDE.md   Members service deployment
-│   ├── plans/                        📝 Future feature plans
-│   │   └── GOOGLE_AUTH_LINKING_PLAN.md      Migration to Google login
-│
-├── archive/                          📦 Archived Code & Documentation (Local-only)
-│   ├── members-service/              Members development history (Oct 2025)
-│   ├── documentation/                Historical docs (ZITADEL-era)
-│   ├── ekklesia-platform-evaluation/ Platform evaluation (Oct 7)
-│   └── zitadel-legacy/               ZITADEL infrastructure
-│
-├── gcp/                              ⚙️ Infrastructure Reference (Archived)
-│   ├── DOCUMENTATION_INDEX.md        📇 GCP directory index
-│   ├── deployment/                   🚀 Deployment scripts (legacy)
-│   ├── reference/                    📚 ZITADEL-era reference docs
-│   └── archive/                      📦 Historical scripts & docs
+│   │   ├── MEMBERS_DEPLOYMENT_GUIDE.md       Members service deployment
+│   │   ├── BRANCH_STRATEGY.md        Git branching strategy
+│   │   ├── SECRET_MANAGER.md         Secret Manager usage
+│   │   ├── VSCODE_DATABASE_SETUP.md  VS Code PostgreSQL extension setup
+│   │   └── DATABASE_QUICK_REFERENCE.md       Database one-page cheat sheet
+│   │
+│   └── plans/                        📝 Future feature plans
+│       └── GOOGLE_AUTH_LINKING_PLAN.md      Migration to Google login
 │
 ├── members/                          👤 Members Service (Production)
-│   ├── src/                          💻 Application code
-│   │   ├── index.js                  Main entry point
-│   │   ├── config.js                 Configuration
-│   │   └── routes/                   Route handlers
-│   ├── auth/                         🔐 Firebase Authentication
-│   │   ├── firebase-admin-init.js    Firebase Admin SDK setup
-│   │   └── kennitala-verification.js Membership verification
-│   ├── functions/                    ☁️ Cloud Functions
-│   │   └── index.js                  handleKenniAuth & verifyMembership
-│   ├── public/                       🎨 Static assets
-│   │   └── styles/                   Component CSS
-│   ├── docs/                         📚 Service documentation
-│   │   ├── FIREBASE_KENNI_SETUP.md   Setup guide
-│   │   └── KENNI_QUICKSTART.md       Quick start
+│   ├── src/                          💻 Application code (legacy)
+│   ├── functions/                    ☁️ Cloud Functions (Python 3.11)
+│   │   └── main.py                   handleKenniAuth & verifyMembership
+│   ├── public/                       🎨 Static assets & test pages
+│   │   ├── index.html                Login page
+│   │   ├── dashboard.html            Member dashboard
+│   │   ├── profile.html              Member profile
+│   │   ├── test-events.html          Events service test page (with voting)
+│   │   ├── styles/                   Component CSS
+│   │   ├── js/                       JavaScript modules
+│   │   └── i18n/                     Icelandic translations
 │   ├── data/                         📊 Membership data
-│   │   └── kennitalas.txt            Verified member kennitalas
+│   │   └── kennitalas.txt            Verified member kennitalas (not in git)
 │   ├── firebase.json                 Firebase configuration
 │   ├── .firebaserc                   Firebase project config
 │   ├── package.json                  Node.js dependencies
 │   └── README.md                     📖 Service documentation
 │
-├── events/                           🎫 Events Service (Production Oct 9, 2025)
+├── events/                           🎫 Events Service (Production Oct 9-10, 2025)
 │   ├── src/                          💻 Node.js application
 │   │   ├── index.js                  Express server entry point
 │   │   ├── config/                   Configuration modules
-│   │   │   ├── database.js           Cloud SQL connection
+│   │   │   ├── database.js           Cloud SQL connection pool
 │   │   │   └── firebase.js           Firebase Admin SDK
 │   │   ├── middleware/               Express middleware
-│   │   │   └── auth.js               JWT authentication
+│   │   │   └── auth.js               JWT authentication middleware
 │   │   ├── services/                 Business logic
 │   │   │   ├── electionService.js    Election management
-│   │   │   └── tokenService.js       Token generation
+│   │   │   ├── tokenService.js       Token generation (with S2S)
+│   │   │   └── electionsClient.js    Elections S2S client (Phase 5)
 │   │   └── routes/                   API routes
-│   │       └── election.js           Election endpoints
+│   │       └── election.js           Election endpoints (with S2S)
 │   ├── migrations/                   🗄️ Database migrations
-│   │   ├── 001_initial_schema.sql    Initial schema
-│   │   ├── 002_remove_elections_service_id.sql  Cleanup
+│   │   ├── 001_initial_schema.sql    Initial schema (election + voting_tokens)
+│   │   ├── 002_remove_elections_service_id.sql  Cleanup migration
 │   │   ├── run-migration.sh          Migration runner
-│   │   └── README.md                 Migration docs
-│   ├── Dockerfile                    🐳 Container image
+│   │   └── README.md                 Migration documentation
+│   ├── Dockerfile                    🐳 Container image definition
 │   ├── .dockerignore                 Docker ignore rules
-│   ├── deploy.sh                     🚀 Cloud Run deployment
-│   ├── .env.example                  Environment template
+│   ├── deploy.sh                     🚀 Cloud Run deployment script
+│   ├── .env.example                  Environment variable template
+│   ├── .env                          Local development environment (not in git)
+│   ├── package.json                  Node.js dependencies
+│   ├── test-production.html          Production test page (legacy)
+│   └── README.md                     📖 Service documentation
+│
+├── elections/                        🗳️ Elections Service (Production Oct 9-10, 2025)
+│   ├── src/                          💻 Node.js application
+│   │   ├── index.js                  Express server entry point
+│   │   ├── config/                   Configuration modules
+│   │   │   └── database.js           Cloud SQL connection pool
+│   │   ├── middleware/               Express middleware
+│   │   │   ├── auth.js               Token-based authentication
+│   │   │   └── s2sAuth.js            S2S API key authentication
+│   │   ├── services/                 Business logic
+│   │   │   ├── ballotService.js      Ballot recording (anonymous)
+│   │   │   └── tokenService.js       Token validation and management
+│   │   └── routes/                   API routes
+│   │       ├── vote.js               Public voting endpoints
+│   │       └── s2s.js                S2S endpoints (register-token, results)
+│   ├── migrations/                   🗄️ Database migrations
+│   │   ├── 001_initial_schema.sql    Elections schema (voting_tokens, ballots, audit_log)
+│   │   ├── run-migration.sh          Migration runner
+│   │   └── README.md                 Migration documentation
+│   ├── Dockerfile                    🐳 Container image definition
+│   ├── .dockerignore                 Docker ignore rules
+│   ├── deploy.sh                     🚀 Cloud Run deployment script
+│   ├── .env.example                  Environment variable template
+│   ├── .env                          Local development environment (not in git)
 │   ├── package.json                  Node.js dependencies
 │   └── README.md                     📖 Service documentation
 │
-└── archive/                          📦 Archived Code & Evaluations
-    ├── ekklesia-platform-evaluation/ 🔍 Ekklesia platform evaluation (Oct 7)
-    │   ├── README.md                 Why Ekklesia was not used
-    │   ├── portal/                   Ekklesia Portal codebase
-    │   ├── voting/                   Ekklesia Voting codebase
-    │   └── *.md                      Proposition-based vision docs (archived)
-    └── ... (other archived code)
+└── archive/                          📦 Archived Code & Documentation (Local-only)
+    ├── members-service/              Members development history (Oct 2025)
+    ├── documentation/                Historical docs (ZITADEL-era)
+    ├── ekklesia-platform-evaluation/ Platform evaluation (Oct 7)
+    └── zitadel-legacy/               ZITADEL infrastructure
 ```
 
 ---
 
 ## /docs/ Directory
 
-**Purpose**: Architecture documentation, plans, and archived ZITADEL-era docs
+**Purpose**: Architecture documentation, plans, and production status
 
 ### 🏗️ Architecture Documents
 
 | Document | Purpose | Status |
 |----------|---------|--------|
-| `SYSTEM_ARCHITECTURE_OVERVIEW.md` | Primary architectural vision (election-focused) | ✅ Active (Oct 9) |
-| `design/EVENTS_SERVICE_MVP.md` | Events service MVP design (election administration) | ✅ Production (Oct 9) |
-| `design/VOTING_SERVICE_DESIGN.md` | Voting service design (anonymous ballot recording) | 📋 Planned |
-| `status/CURRENT_PRODUCTION_STATUS.md` | Production infrastructure status | ✅ Current (Oct 9) |
-| `status/FIREBASE_MIGRATION_STATUS.md` | Firebase migration summary | ✅ Current (Oct 6-7) |
-| `status/EVENTS_SERVICE_TESTING_LOG.md` | Events service testing journey & tools inventory | ✅ Phase 4 Complete (Oct 9) |
+| `SYSTEM_ARCHITECTURE_OVERVIEW.md` | Primary architectural vision (3-service architecture) | ✅ Active (Oct 10) |
+| `USAGE_CONTEXT.md` | Load patterns and capacity planning (300 votes/sec) | ✅ Active (Oct 9) |
+| `OPERATIONAL_PROCEDURES.md` | Meeting day operations manual (scaling, monitoring) | ✅ Active (Oct 9) |
+| `DATABASE_REFERENCE.md` | Complete database reference (schemas, tables, security) | ✅ Active (Oct 9) |
 
-### 📝 Future Plans
+### 📊 Status & Deployment Documents
 
-| Document | Purpose | Status | Estimated Effort |
-|----------|---------|--------|------------------|
-| `plans/GOOGLE_AUTH_LINKING_PLAN.md` | Migrate to Google login after Kenni.is | 📋 Planned | 2-3 days |
+| Document | Purpose | Status |
+|----------|---------|--------|
+| `status/CURRENT_PRODUCTION_STATUS.md` | Production infrastructure status (all services) | ✅ Current (Oct 10) |
+| `status/PHASE_5_INTEGRATION_COMPLETE.md` | Phase 5 integration documentation (S2S) | ✅ Current (Oct 10) |
+| `status/ELECTIONS_SERVICE_DEPLOYMENT.md` | Elections service deployment log (Phases 1-4) | ✅ Current (Oct 9) |
+| `status/EVENTS_SERVICE_TESTING_LOG.md` | Events service testing journey & tools | ✅ Current (Oct 9) |
+| `status/DATABASE_SECURITY_HARDENING.md` | Database hardening implementation (pgaudit, backups) | ✅ Current (Oct 9) |
+| `status/FIREBASE_MIGRATION_STATUS.md` | Firebase migration summary (ZITADEL → Firebase) | ✅ Current (Oct 7) |
+
+### 🔨 Service Design Documents
+
+| Document | Purpose | Status |
+|----------|---------|--------|
+| `design/EVENTS_SERVICE_MVP.md` | Events service MVP design (token issuance, S2S) | ✅ Production (Oct 9-10) |
+| `design/ELECTIONS_SERVICE_MVP.md` | Elections service MVP design (anonymous ballots, S2S) | ✅ Production (Oct 9-10) |
 
 ### 📖 Implementation Guides
 
 | Document | Purpose | Status |
 |----------|---------|--------|
 | `guides/GITHUB_MCP_GUIDE.md` | GitHub MCP integration | ✅ Current |
+| `guides/MEMBERS_DEPLOYMENT_GUIDE.md` | Members service deployment | ✅ Current |
+| `guides/BRANCH_STRATEGY.md` | Git branching strategy | ✅ Current |
+| `guides/SECRET_MANAGER.md` | Secret Manager usage | ✅ Current |
+| `guides/VSCODE_DATABASE_SETUP.md` | VS Code PostgreSQL extension setup | ✅ Current (Oct 9) |
+| `guides/DATABASE_QUICK_REFERENCE.md` | Database one-page cheat sheet | ✅ Current (Oct 9) |
+
+### 📝 Future Plans
+
+| Document | Purpose | Status | Estimated Effort |
+|----------|---------|--------|------------------|
+| `plans/GOOGLE_AUTH_LINKING_PLAN.md` | Migrate to Google login after Kenni.is | 📋 Planned | 2-3 days |
 
 ### 📦 Archived Documentation
 
@@ -273,51 +328,28 @@ ekklesia/
 - `archive/ekklesia-platform-evaluation/README.md` - Why Ekklesia was not used
 - `archive/ekklesia-platform-evaluation/portal/` - Ekklesia Portal codebase (400+ files)
 - `archive/ekklesia-platform-evaluation/voting/` - Ekklesia Voting codebase (60+ files)
-- `archive/ekklesia-platform-evaluation/ABOUT_EKKLESIA_PLATFORM.md` - Platform background
-- `archive/ekklesia-platform-evaluation/UPDATED_SYSTEM_VISION.md` - Proposition-based vision (superseded)
-- `archive/ekklesia-platform-evaluation/NAMING_CLARIFICATION.md` - Naming confusion analysis
 
-**See**: `archive/documentation/DOCUMENTATION_INDEX.md` for complete archive listing
-
----
-
-## /gcp/ Directory
-
-**Purpose**: Infrastructure reference documentation (mostly archived)
-
-⚠️ **Note**: Most GCP documentation is ZITADEL-era and archived. Current production infrastructure is documented in:
-- `docs/status/CURRENT_PRODUCTION_STATUS.md`
-- `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md`
-
-### 📚 Reference Documentation (Archived)
-
-All `gcp/reference/` documents are ZITADEL-era and deprecated:
-- `PHASE_4_COMPLETE.md` - ZITADEL Phase 4 completion
-- `ZITADEL_DEPLOYMENT_SUCCESS.md` - ZITADEL deployment (decommissioned)
-- `MEMBERS_OIDC_SUCCESS.md` - OIDC Bridge success (removed)
-
-**See**: `archive/zitadel-legacy/gcp/DOCUMENTATION_INDEX.md` for complete GCP archive listing
+**See**: `archive/README.md` for complete archive listing
 
 ---
 
 ## /members/ Directory
 
-**Purpose**: Members service - Production application
+**Purpose**: Members service - Production application (Firebase Hosting + Cloud Functions)
 
 ### Key Files
 
 | File/Directory | Purpose | Status |
 |----------------|---------|--------|
-| `src/` | Application code (Express.js) | ✅ Production |
-| `functions/` | Cloud Functions (handleKenniAuth, verifyMembership) | ✅ Production |
-| `auth/` | Firebase authentication modules | ✅ Production |
-| `public/styles/` | Component CSS | ✅ Production |
-| `data/kennitalas.txt` | Verified member kennitalas | ✅ Production |
+| `functions/main.py` | Cloud Functions (handleKenniAuth, verifyMembership) | ✅ Production |
+| `public/` | Static assets (HTML, CSS, JS) | ✅ Production |
+| `public/test-events.html` | Events service test page (with voting interface) | ✅ Production (Oct 10) |
+| `public/styles/` | Component CSS (global, nav, page, login, events-test) | ✅ Production |
+| `public/js/auth.js` | Firebase authentication module | ✅ Production |
+| `public/i18n/` | Icelandic internationalization | ✅ Production |
+| `data/kennitalas.txt` | Verified member kennitalas (not in git) | ✅ Production |
 | `firebase.json` | Firebase configuration | ✅ Production |
-| `archive/members-service/documentation/FIREBASE_KENNI_SETUP.md` | Setup guide | ⚠️ Legacy (ZITADEL-era) |
-| `archive/members-service/documentation/KENNI_QUICKSTART.md` | Quick start guide | ⚠️ Legacy (ZITADEL-era) |
-| `members/README.md` | Service overview and architecture | ✅ Current |
-| `members/functions/main.py` | Cloud Functions implementation | ✅ Production |
+| `README.md` | Service overview and architecture | ✅ Current |
 
 ### Service Documentation
 
@@ -325,13 +357,88 @@ All `gcp/reference/` documents are ZITADEL-era and deprecated:
 |----------|---------|----------|
 | `README.md` | Service overview | All |
 | `archive/members-service/documentation/FIREBASE_KENNI_SETUP.md` | Firebase + Kenni.is setup (legacy) | Developers, DevOps |
-| `archive/members-service/documentation/KENNI_QUICKSTART.md` | Quick start (legacy) | Developers |
+
+---
+
+## /events/ Directory
+
+**Purpose**: Events service - Production application (Cloud Run, Node.js + Express)
+
+### Key Files
+
+| File/Directory | Purpose | Status |
+|----------------|---------|--------|
+| `src/index.js` | Express server entry point | ✅ Production (Oct 10) |
+| `src/services/electionsClient.js` | Elections S2S client (Phase 5) | ✅ Production (Oct 10) |
+| `src/services/tokenService.js` | Token generation with S2S registration | ✅ Production (Oct 10) |
+| `src/routes/election.js` | Election endpoints with S2S results | ✅ Production (Oct 10) |
+| `src/config/database.js` | Cloud SQL connection pool | ✅ Production |
+| `src/config/firebase.js` | Firebase Admin SDK | ✅ Production |
+| `src/middleware/auth.js` | JWT authentication middleware | ✅ Production |
+| `migrations/` | Database migrations (public schema) | ✅ Production |
+| `deploy.sh` | Cloud Run deployment script | ✅ Production (Oct 10) |
+| `Dockerfile` | Container image definition | ✅ Production |
+| `README.md` | Service documentation | ✅ Current |
+
+### API Endpoints
+
+| Endpoint | Method | Purpose | Status |
+|----------|--------|---------|--------|
+| `/health` | GET | Health check | ✅ Production |
+| `/api/election` | GET | Election details | ✅ Production |
+| `/api/request-token` | POST | Issue voting token (with S2S registration) | ✅ Production (Oct 10) |
+| `/api/my-status` | GET | Participation status | ✅ Production |
+| `/api/my-token` | GET | Retrieve token (disabled for security) | ✅ Production |
+| `/api/results` | GET | Fetch results (via S2S from Elections) | ✅ Production (Oct 10) |
+
+---
+
+## /elections/ Directory
+
+**Purpose**: Elections service - Production application (Cloud Run, Node.js + Express)
+
+### Key Files
+
+| File/Directory | Purpose | Status |
+|----------------|---------|--------|
+| `src/index.js` | Express server entry point | ✅ Production (Oct 9) |
+| `src/services/ballotService.js` | Anonymous ballot recording | ✅ Production |
+| `src/services/tokenService.js` | Token validation and management | ✅ Production |
+| `src/routes/vote.js` | Public voting endpoints | ✅ Production |
+| `src/routes/s2s.js` | S2S endpoints (register-token, results) | ✅ Production (Oct 10) |
+| `src/config/database.js` | Cloud SQL connection pool | ✅ Production |
+| `src/middleware/auth.js` | Token-based authentication | ✅ Production |
+| `src/middleware/s2sAuth.js` | S2S API key authentication | ✅ Production (Oct 10) |
+| `migrations/` | Database migrations (elections schema) | ✅ Production |
+| `deploy.sh` | Cloud Run deployment script | ✅ Production |
+| `Dockerfile` | Container image definition | ✅ Production |
+| `README.md` | Service documentation | ✅ Current |
+
+### API Endpoints
+
+| Endpoint | Method | Purpose | Auth | Status |
+|----------|--------|---------|------|--------|
+| `/health` | GET | Health check | None | ✅ Production |
+| `/api/vote` | POST | Submit ballot | Voting token | ✅ Production |
+| `/api/token-status` | GET | Check token validity | Voting token | ✅ Production |
+| `/api/s2s/register-token` | POST | Register voting token (S2S) | API key | ✅ Production (Oct 10) |
+| `/api/s2s/results` | GET | Fetch results (S2S) | API key | ✅ Production (Oct 10) |
+
+### Database Schema (elections)
+
+| Table | Purpose | PII |
+|-------|---------|-----|
+| `voting_tokens` | Token hash registry (one-time use) | ❌ No |
+| `ballots` | Anonymous ballots (yes/no/abstain) | ❌ No |
+| `audit_log` | System events (no member data) | ❌ No |
+
+**Security Model**: Elections service has NO access to member identity. Only token hashes.
 
 ---
 
 ## /archive/ Directory
 
-**Purpose**: Archived code and evaluations
+**Purpose**: Archived code and evaluations (local-only, not in git)
 
 ### Ekklesia Platform Evaluation
 
@@ -343,7 +450,6 @@ All `gcp/reference/` documents are ZITADEL-era and deprecated:
 - `portal/` - Ekklesia Portal codebase (400+ files)
 - `voting/` - Ekklesia Voting codebase (60+ files)
 - `README.md` - Evaluation summary and decision rationale
-- Documentation files (ABOUT_EKKLESIA_PLATFORM.md, etc.)
 
 **See**: `archive/ekklesia-platform-evaluation/README.md` for complete evaluation details
 
@@ -354,15 +460,16 @@ All `gcp/reference/` documents are ZITADEL-era and deprecated:
 ### 👨‍💻 **Developer - Building Features**
 
 **Getting Started:**
-1. Read: `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md` (overall vision)
-2. Review: `docs/design/EVENTS_SERVICE_MVP.md` (Events service design)
-3. Review: `docs/design/VOTING_SERVICE_DESIGN.md` (Voting service design)
-4. Setup: `docs/guides/MEMBERS_DEPLOYMENT_GUIDE.md` (Members deployment)
+1. Read: `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md` (3-service architecture)
+2. Review: `docs/design/EVENTS_SERVICE_MVP.md` (Events service)
+3. Review: `docs/design/ELECTIONS_SERVICE_MVP.md` (Elections service)
+4. Setup: `docs/guides/MEMBERS_DEPLOYMENT_GUIDE.md` (deployment)
 
 **Current Work:**
 - Members Service (Production): `members/`
-- Events Service (Design): `docs/design/EVENTS_SERVICE_MVP.md`
-- Voting Service (Design): `docs/design/VOTING_SERVICE_DESIGN.md`
+- Events Service (Production): `events/`
+- Elections Service (Production): `elections/`
+- Phase 6 (Next): Load testing (see `docs/USAGE_CONTEXT.md`)
 
 ### 🚀 **DevOps - Deploying & Operating**
 
@@ -371,42 +478,88 @@ All `gcp/reference/` documents are ZITADEL-era and deprecated:
 2. Review: `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md` (architecture)
 3. Deploy Members: `firebase deploy --only hosting,functions` (from members/)
 4. Deploy Events: `./deploy.sh` (from events/)
+5. Deploy Elections: `./deploy.sh` (from elections/)
 
-**Next Steps:**
-- Elections Service: Design and implementation
-- Additional Events service features (multiple elections, admin UI)
+**Operations:**
+- Operations Manual: `docs/OPERATIONAL_PROCEDURES.md`
+- Database Reference: `docs/DATABASE_REFERENCE.md`
+- Load Patterns: `docs/USAGE_CONTEXT.md`
 
 **Daily Work:**
 - Production Status: `docs/status/CURRENT_PRODUCTION_STATUS.md`
-- Architecture: `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md`
-- Members Deployment: `docs/guides/MEMBERS_DEPLOYMENT_GUIDE.md`
+- Phase 5 Status: `docs/status/PHASE_5_INTEGRATION_COMPLETE.md`
 
 ### 🏗️ **Architect - System Design**
 
 **Getting Started:**
-1. Read: `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md` (primary architectural vision)
+1. Read: `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md` (primary architecture)
 2. Review: `docs/design/EVENTS_SERVICE_MVP.md` (Events service design)
-3. Review: `docs/design/VOTING_SERVICE_DESIGN.md` (Voting service design)
-4. Study: `docs/status/FIREBASE_MIGRATION_STATUS.md` (migration details)
+3. Review: `docs/design/ELECTIONS_SERVICE_MVP.md` (Elections service design)
+4. Study: `docs/USAGE_CONTEXT.md` (load patterns and capacity planning)
+5. Study: `docs/status/PHASE_5_INTEGRATION_COMPLETE.md` (S2S integration)
 
 **Daily Work:**
 - Architecture: `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md`
-- Service Designs: `docs/design/EVENTS_SERVICE_MVP.md`, `docs/design/VOTING_SERVICE_DESIGN.md`
+- Load Planning: `docs/USAGE_CONTEXT.md`
+- Operations: `docs/OPERATIONAL_PROCEDURES.md`
+- Database: `docs/DATABASE_REFERENCE.md`
 - Future Plans: `docs/plans/GOOGLE_AUTH_LINKING_PLAN.md`
-- Cost Analysis: `docs/status/CURRENT_PRODUCTION_STATUS.md` (Cost section)
 
 ### 🆘 **On-Call - Handling Incidents**
 
 **Emergency Quick Start:**
 1. **Status**: `docs/status/CURRENT_PRODUCTION_STATUS.md` (what's running)
 2. **Services**: Check Cloud Run services in GCP Console
+   - Events: https://events-service-521240388393.europe-west2.run.app
+   - Elections: https://elections-service-521240388393.europe-west2.run.app
 3. **Logs**: Cloud Logging → Filter by service
 4. **Firebase**: Firebase Console → Authentication → Users
+5. **Database**: Cloud SQL Console → ekklesia-db
+
+**Operational Procedures**: `docs/OPERATIONAL_PROCEDURES.md`
 
 **Common Issues:**
-- Portal 503: See `PORTAL_DEPLOYMENT_PROGRESS.md`
 - Auth issues: Check Firebase Authentication logs
 - Member verification: Check `members/functions/` logs in GCP
+- Events/Elections issues: Check Cloud Run logs for respective service
+- Database issues: Check Cloud SQL logs and connection pool
+
+---
+
+## Testing Tools
+
+### End-to-End Test Script
+
+**File**: `test-voting-flow.sh`
+
+**Purpose**: Automated end-to-end voting flow test
+
+**Usage**:
+```bash
+# Start Cloud SQL Proxy first
+~/bin/cloud-sql-proxy ekklesia-prod-10-2025:europe-west2:ekklesia-db --port 5433 &
+
+# Run test
+./test-voting-flow.sh
+```
+
+**Tests**:
+1. Cloud SQL Proxy connectivity
+2. Token issuance (simulated)
+3. S2S token registration (Elections service)
+4. Vote submission
+5. Vote verification (database)
+6. Results fetching (S2S)
+
+### Web Test Interface
+
+**URL**: https://ekklesia-prod-10-2025.web.app/test-events.html
+
+**Features**:
+- Firebase authentication with Kenni.is
+- Token request button
+- Vote submission form (token input + yes/no/abstain dropdown)
+- Results display button (fetches from Elections service via S2S)
 
 ---
 
@@ -419,13 +572,14 @@ All `gcp/reference/` documents are ZITADEL-era and deprecated:
 | **After Each Deployment** | docs/status/CURRENT_PRODUCTION_STATUS.md | DevOps |
 | **After Service Changes** | Service README.md files | Developers |
 | **After Architecture Changes** | DOCUMENTATION_MAP.md | Architects |
+| **After Integration Work** | docs/status/PHASE_*.md | Developers |
 | **Monthly** | Review all status docs | Tech lead |
 | **Quarterly** | Full documentation audit | Team |
 
 ### Versioning Strategy
 
 **This Document** (`DOCUMENTATION_MAP.md`):
-- Major version (4.0.0) for architecture changes (Firebase migration)
+- Major version (6.0.0) for Phase 5 completion (Elections service + S2S integration)
 - Minor version for structural changes
 - Patch version for content updates
 
@@ -463,11 +617,6 @@ All `gcp/reference/` documents are ZITADEL-era and deprecated:
 - OAuth 2.0 PKCE: https://datatracker.ietf.org/doc/html/rfc7636
 - Kenni.is: https://idp.kenni.is/
 
-### Python Frameworks (Portal & Voting)
-- Morepath: https://morepath.readthedocs.io/
-- SQLAlchemy: https://www.sqlalchemy.org/
-- Alembic: https://alembic.sqlalchemy.org/
-
 ### Project
 - GitHub Repository: https://github.com/sosialistaflokkurinn/ekklesia
 - GitHub Issues: https://github.com/sosialistaflokkurinn/ekklesia/issues
@@ -485,11 +634,12 @@ All `gcp/reference/` documents are ZITADEL-era and deprecated:
 - Production issues: Check GCP Cloud Run logs
 - Firebase issues: Firebase Console → Authentication
 - Database issues: Cloud SQL Console → ekklesia-db
+- Operational procedures: `docs/OPERATIONAL_PROCEDURES.md`
 
 ---
 
-**Document Version**: 4.3.0
-**Last Reviewed**: 2025-10-08
-**Changes**: Consolidated all archives into single archive/ directory (local-only)
+**Document Version**: 6.0.0
+**Last Reviewed**: 2025-10-10
+**Changes**: Phase 5 complete - Elections service + S2S integration operational
 **Validated With**: gcloud CLI, firebase CLI, gsutil (production infrastructure)
-**Next Review**: 2026-01-08 (Quarterly)
+**Next Review**: 2026-01-10 (Quarterly)

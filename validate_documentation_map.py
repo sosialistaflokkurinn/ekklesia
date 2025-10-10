@@ -26,12 +26,14 @@ from typing import Iterable, Set
 # Current active directories:
 #   - docs/ - All documentation
 #   - members/ - Members service (Firebase-based, production)
-#   - events/ - Events service (Node.js, production Oct 9, 2025)
+#   - events/ - Events service (Node.js, production Oct 9-10, 2025)
+#   - elections/ - Elections service (Node.js, production Oct 9-10, 2025)
 #   - archive/ - Historical implementations and evaluations
 DEFAULT_SCAN_DIRS = (
     "docs",
     "members",
     "events",
+    "elections",
     "archive",
 )
 
@@ -40,7 +42,7 @@ DEFAULT_SCAN_DIRS = (
 DOC_SUFFIXES = (".md", ".markdown", ".mdx", ".rst", ".txt", ".sh")
 
 INLINE_CODE_PATTERN = re.compile(r"`([^`]+)`")
-PATH_PATTERN = re.compile(r"(?<![\w./-])(docs|members|events|archive)/[\w./-]+")
+PATH_PATTERN = re.compile(r"(?<![\w./-])(docs|members|events|elections|archive)/[\w./-]+")
 
 EXCLUDE_PARTS = {"node_modules", "venv", ".venv", "__pycache__", "site-packages"}
 
