@@ -1,6 +1,6 @@
 # 🚀 Ekklesia Production Status
 
-**Last Updated**: 2025-10-09 14:45 UTC
+**Last Updated**: 2025-10-09 20:55 UTC
 **Project**: ekklesia-prod-10-2025 (521240388393)
 **Region**: europe-west2 (London)
 **Validated**: CLI tools (gcloud, firebase, gsutil)
@@ -12,6 +12,7 @@
 ### Cloud Run Services
 | Service | Type | URL | Status | Memory | Last Deploy |
 |---------|------|-----|--------|--------|-------------|
+| **elections-service** | Node.js 18 + Express | https://elections-service-521240388393.europe-west2.run.app | ✅ Active | 512 MB | Oct 9, 2025 20:52 UTC |
 | **events-service** | Node.js 18 + Express | https://events-service-521240388393.europe-west2.run.app | ✅ Active | 512 MB | Oct 9, 2025 13:01 UTC |
 | **handlekenniauth** | Cloud Function (Python 3.11) | https://handlekenniauth-ymzrguoifa-nw.a.run.app | ✅ Active | 512 MB | Oct 8, 2025 10:08 UTC |
 | **verifymembership** | Cloud Function (Python 3.11) | https://verifymembership-ymzrguoifa-nw.a.run.app | ✅ Active | 256 MB | Oct 8, 2025 12:30 UTC |
@@ -27,7 +28,7 @@
 ### Cloud SQL Services
 | Service | Instance | Status | Details | IP Address |
 |---------|----------|--------|---------|------------|
-| **PostgreSQL 15** | ekklesia-db | ✅ RUNNABLE | db-f1-micro, europe-west2, used by Events service | 34.147.159.80 |
+| **PostgreSQL 15** | ekklesia-db | ✅ RUNNABLE | db-f1-micro, europe-west2, pgaudit enabled, 30-day backups | 34.147.159.80 |
 
 ---
 
@@ -207,16 +208,62 @@
 
 ---
 
-### 📋 Elections Service - Next Phase
+### ✅ Elections Service - Production (Oct 9, 2025)
 
-**Status**: Design pending, implements after Events service
+**Status**: ✅ Deployed to Production (MVP Complete)
+**URL**: https://elections-service-521240388393.europe-west2.run.app
 **Purpose**: Anonymous ballot recording (no PII, S2S only)
 
-**Planned Features**:
-- Accept voting tokens (S2S registered by Events)
-- Record ballots anonymously
-- Enforce one-vote-per-token
-- Calculate and return results to Events service
+**Technology Stack**:
+- **Runtime**: Node.js 18 + Express
+- **Deployment**: Cloud Run (serverless, europe-west2)
+- **Database**: Cloud SQL PostgreSQL 15 (ekklesia-db, `elections` schema)
+- **Auth**: S2S API key for Events service communication
+
+**MVP Features** (Deployed):
+- ✅ S2S token registration (Events → Elections)
+- ✅ Anonymous ballot recording (no PII, no member data)
+- ✅ One-vote-per-token enforcement (database constraints)
+- ✅ Results tabulation (S2S endpoint for Events)
+- ✅ yes/no/abstain voting (MVP scope)
+- ✅ Audit logging (no PII, token hash prefix only)
+
+**API Endpoints**:
+- `GET /health` - Health check (✅ Verified)
+- `POST /api/s2s/register-token` - Register voting token (S2S, API key)
+- `GET /api/s2s/results` - Fetch results (S2S, API key)
+- `POST /api/vote` - Submit ballot (public, token-based)
+- `GET /api/token-status` - Check token validity (public, token-based)
+
+**Database Schema** (`elections`):
+- `voting_tokens` - One-time tokens (SHA-256 hashed)
+- `ballots` - Anonymous ballots (timestamp rounded to minute)
+- `audit_log` - System events (no PII)
+
+**Cloud Run Configuration** (optimized for 300 votes/sec spike):
+- Memory: 512 MB
+- CPU: 1 (with startup boost)
+- Max instances: 100
+- Min instances: 0 (cost optimization)
+- Concurrency: 50 (database-bound)
+- Timeout: 5s (fail fast)
+- Cloud SQL: Unix socket connection
+
+**Deployment Timeline**:
+- ✅ Phase 1: Database Setup (Oct 9, 2025)
+- ✅ Phase 2: Core API Implementation (Oct 9, 2025)
+- ✅ Phase 3: Local Testing (Oct 9, 2025)
+- ✅ Phase 4: Cloud Run Deployment (Oct 9, 2025 20:52 UTC)
+- ⏸️ Phase 5: Integration Testing (Next - test with Events service)
+
+**Next Steps**:
+1. Update Events service to call Elections S2S endpoints
+2. End-to-end integration testing
+3. Load testing (300 votes/sec spike - see USAGE_CONTEXT.md)
+
+**Design Document**: [docs/design/ELECTIONS_SERVICE_MVP.md](../design/ELECTIONS_SERVICE_MVP.md)
+**Load Patterns**: [docs/USAGE_CONTEXT.md](../USAGE_CONTEXT.md)
+**Operations**: [docs/OPERATIONAL_PROCEDURES.md](../OPERATIONAL_PROCEDURES.md)
 
 ---
 
