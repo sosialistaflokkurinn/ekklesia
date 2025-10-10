@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Innskráning - Sósíalistaflokkurinn</title>
+  <link rel="stylesheet" href="/styles/global.css">
+  <link rel="stylesheet" href="/styles/components/login.css">
+</head>
+<body>
+  <div class="container">
+    <h1 id="login-title">Innskráning</h1>
+    <p class="subtitle" id="login-subtitle">Félagar Sósíalistaflokksins</p>
+
+    <div id="status" class="status not-authenticated">
+      <span id="status-text">Ekki innskráð(ur)</span>
+    </div>
+
+    <div id="auth-buttons">
+      <button class="btn" id="login-btn">
+        Skrá inn með Kenni.is
+      </button>
+      <p style="color: var(--color-gray-500); font-size: 14px; margin-top: var(--spacing-sm);">
+        <span id="login-description">Auðkenning með rafrænum skilríkjum</span>
+      </p>
+    </div>
+  </div>
+
+  <script type="module">
+    import { R } from '/i18n/R.js';
+    import { getCurrentUser, auth } from '/js/auth.js';
+    import { signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+    import { getApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js';
+
+    // Get existing Firebase app instance (already initialized in auth.js)
+    const app = getApp();
+    const functions = getFunctions(app, 'europe-west2');
+
+    // Set page title and strings
+    document.title = R.string.page_title;
+    document.getElementById('login-title').textContent = R.string.login_title;
+    document.getElementById('login-subtitle').textContent = R.string.login_subtitle;
+    document.getElementById('status-text').textContent = R.string.status_not_authenticated;
+    document.getElementById('login-btn').textContent = R.string.btn_login;
+    document.getElementById('login-description').textContent = R.string.btn_login_description;
+
+    // Kenni.is configuration
+    const KENNI_IS_ISSUER_URL = 'https://idp.kenni.is/sosi-kosningakerfi.is';
+    const KENNI_IS_CLIENT_ID = '@sosi-kosningakerfi.is/rafr-nt-kosningakerfi-s-s';
+    const KENNI_IS_REDIRECT_URI = window.location.origin + '/'; // Root URL registered with Kenni.is
+
+    // Base64 URL encode
+    function base64URLEncode(buffer) {
+      const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+      return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+    }
+
+    // SHA-256 hash
+    async function sha256(buffer) {
+      return await crypto.subtle.digest('SHA-256', buffer);
+    }
+
+    // Generate PKCE challenge
+    async function generatePKCE() {
+      const array = new Uint8Array(32);
+      crypto.getRandomValues(array);
+      const verifier = base64URLEncode(array);
+
+      const encoder = new TextEncoder();
+      const data = encoder.encode(verifier);
+      const hash = await sha256(data);
+      const challenge = base64URLEncode(hash);
+
+      return { verifier, challenge };
+    }
+
+    // Handle OAuth callback
+    async function handleOAuthCallback(authCode) {
+      const statusEl = document.getElementById('status');
+      const statusTextEl = document.getElementById('status-text');
+      const authButtonsEl = document.getElementById('auth-buttons');
+
+      statusEl.className = 'status authenticating';
+      statusTextEl.textContent = 'Staðfesti auðkenningu...';
+      authButtonsEl.style.display = 'none';
+
+      try {
+        const pkceVerifier = sessionStorage.getItem('pkce_code_verifier');
+        if (!pkceVerifier) {
+          throw new Error('Missing PKCE verifier');
+        }
+
+        // Call Cloud Function to exchange code for token
+        const response = await fetch('https://handlekenniauth-ymzrguoifa-nw.a.run.app', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            kenniAuthCode: authCode,
+            pkceCodeVerifier: pkceVerifier
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Authentication failed');
+        }
+
+        // Sign in to Firebase with custom token
+        await signInWithCustomToken(auth, data.customToken);
+
+        // Clear PKCE verifier
+        sessionStorage.removeItem('pkce_code_verifier');
+
+        // Automatically verify membership after login
+        statusTextEl.textContent = 'Staðfesti félagsaðild...';
+        try {
+          const verifyMembership = httpsCallable(functions, 'verifyMembership');
+          await verifyMembership();
+          console.log('Membership verified during login');
+        } catch (verifyError) {
+          console.warn('Membership verification during login failed:', verifyError);
+          // Continue to dashboard even if verification fails
+        }
+
+        // Redirect to dashboard
+        window.location.href = '/dashboard.html';
+      } catch (error) {
+        console.error('Authentication error:', error);
+        statusEl.className = 'status error';
+        statusTextEl.textContent = 'Villa við auðkenningu: ' + error.message;
+        authButtonsEl.style.display = 'block';
+      }
+    }
+
+    // Initialize page
+    (async () => {
+      // Check if this is an OAuth callback (has ?code parameter)
+      const urlParams = new URLSearchParams(window.location.search);
+      const authCode = urlParams.get('code');
+
+      if (authCode) {
+        // OAuth callback - handle authentication
+        await handleOAuthCallback(authCode);
+        return;
+      }
+
+      // Check if already authenticated
+      const user = await getCurrentUser();
+      if (user) {
+        // Already logged in - redirect to dashboard
+        window.location.href = '/dashboard.html';
+      }
+    })();
+
+    // Sign in with Kenni.is
+    document.getElementById('login-btn').addEventListener('click', async () => {
+      const { verifier, challenge } = await generatePKCE();
+      sessionStorage.setItem('pkce_code_verifier', verifier);
+
+      const params = new URLSearchParams({
+        client_id: KENNI_IS_CLIENT_ID,
+        redirect_uri: KENNI_IS_REDIRECT_URI,
+        response_type: 'code',
+        scope: 'openid profile national_id email phone_number',
+        code_challenge: challenge,
+        code_challenge_method: 'S256',
+      });
+
+      const authUrl = `${KENNI_IS_ISSUER_URL}/oidc/auth?${params.toString()}`;
+      window.location.assign(authUrl);
+    });
+  </script>
+</body>
+</html>
