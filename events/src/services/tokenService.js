@@ -1,11 +1,12 @@
 const crypto = require('crypto');
 const { query } = require('../config/database');
 const { isElectionActive } = require('./electionService');
+const { registerToken: registerWithElections } = require('./electionsClient');
 
 /**
  * Token Service
  * Handles voting token generation and management
- * MVP: Standalone mode - tokens stored in DB only (no Elections service S2S)
+ * Phase 5: Integrated mode - tokens registered with Elections service via S2S
  */
 
 /**
@@ -85,11 +86,21 @@ async function issueVotingToken(election, kennitala) {
 
   console.log('Voting token issued:', { kennitala, expiresAt });
 
-  // MVP: Return token to member (NO S2S to Elections service)
+  // Phase 5: Register token with Elections service via S2S
+  try {
+    await registerWithElections(tokenHash);
+    console.log('Token registered with Elections service:', { tokenHash: tokenHash.substring(0, 8) + '...' });
+  } catch (error) {
+    console.error('Failed to register token with Elections service:', error);
+    // Continue even if Elections service registration fails (graceful degradation)
+    // Member can still use token, but vote won't be recorded until Elections service is available
+  }
+
+  // Return token to member
   return {
     token,
     expires_at: expiresAt,
-    message: 'Token issued successfully. Save this token - you will need it to vote. Elections service integration pending.'
+    message: 'Token issued successfully. Save this token - you will need it to vote.'
   };
 }
 
