@@ -72,6 +72,33 @@
                 <button class="btn" id="btn-my-status" disabled>GET /api/my-status</button>
                 <pre class="test-result" id="result-my-status"></pre>
             </div>
+
+            <!-- Vote -->
+            <div class="test-section">
+                <h3 class="test-title">5. Kjósa (Elections Service)</h3>
+                <div style="margin-bottom: 10px;">
+                    <label style="display: block; margin-bottom: 5px;"><strong>Atkvæðismerki:</strong></label>
+                    <input type="text" id="voting-token" placeholder="Límdu atkvæðismerkið hér"
+                           style="width: 100%; padding: 8px; font-family: monospace; margin-bottom: 10px;">
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <label style="display: block; margin-bottom: 5px;"><strong>Svar:</strong></label>
+                    <select id="vote-answer" style="padding: 8px; width: 100%; margin-bottom: 10px;">
+                        <option value="yes">Já</option>
+                        <option value="no">Nei</option>
+                        <option value="abstain">Sitja hjá</option>
+                    </select>
+                </div>
+                <button class="btn" id="btn-vote">POST /api/vote (Elections Service)</button>
+                <pre class="test-result" id="result-vote"></pre>
+            </div>
+
+            <!-- Results -->
+            <div class="test-section">
+                <h3 class="test-title">6. Niðurstöður</h3>
+                <button class="btn" id="btn-results" disabled>GET /api/results</button>
+                <pre class="test-result" id="result-results"></pre>
+            </div>
         </div>
     </div>
 
@@ -80,6 +107,7 @@
         import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
         const PRODUCTION_API = 'https://events-service-521240388393.europe-west2.run.app';
+        const ELECTIONS_API = 'https://elections-service-521240388393.europe-west2.run.app';
         const auth = getAuth();
         let currentUser = null;
 
@@ -114,6 +142,7 @@
             document.getElementById('btn-election').disabled = !enabled;
             document.getElementById('btn-request-token').disabled = !enabled;
             document.getElementById('btn-my-status').disabled = !enabled;
+            document.getElementById('btn-results').disabled = !enabled;
         }
 
         async function getIdToken() {
@@ -184,6 +213,49 @@
                 showResult('result-my-status', data, !response.ok);
             } catch (error) {
                 showResult('result-my-status', { error: error.message }, true);
+            }
+        });
+
+        document.getElementById('btn-vote').addEventListener('click', async () => {
+            try {
+                const votingToken = document.getElementById('voting-token').value.trim();
+                const answer = document.getElementById('vote-answer').value;
+
+                if (!votingToken) {
+                    showResult('result-vote', { error: 'Vinsamlegast sláðu inn atkvæðismerki' }, true);
+                    return;
+                }
+
+                const response = await fetch(`${ELECTIONS_API}/api/vote`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${votingToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ answer })
+                });
+                const data = await response.json();
+                showResult('result-vote', data, !response.ok);
+
+                // If vote succeeded, clear the token field
+                if (response.ok) {
+                    document.getElementById('voting-token').value = '';
+                }
+            } catch (error) {
+                showResult('result-vote', { error: error.message }, true);
+            }
+        });
+
+        document.getElementById('btn-results').addEventListener('click', async () => {
+            try {
+                const token = await getIdToken();
+                const response = await fetch(`${PRODUCTION_API}/api/results`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                showResult('result-results', data, !response.ok);
+            } catch (error) {
+                showResult('result-results', { error: error.message }, true);
             }
         });
 
