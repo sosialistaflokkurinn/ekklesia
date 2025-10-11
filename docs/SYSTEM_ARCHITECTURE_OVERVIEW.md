@@ -177,21 +177,31 @@ The voting system consists of three main components:
 
 **See**:
 - [design/EVENTS_SERVICE_MVP.md](design/EVENTS_SERVICE_MVP.md) - Design document
-- [status/EVENTS_SERVICE_TESTING_LOG.md](status/EVENTS_SERVICE_TESTING_LOG.md) - Testing journey & deployment
+- [../archive/testing-logs/EVENTS_SERVICE_TESTING_LOG.md](../archive/testing-logs/EVENTS_SERVICE_TESTING_LOG.md) - Testing journey & deployment (archived Oct 11)
 
-### Elections System (`Kosningar`) - 📋 Next Phase
+### Elections System (`Kosningar`) - ✅ Production (Oct 9, 2025)
 
-**Decision**: Build Elections service after Events (accepts tokens, records ballots)
+**Status**: ✅ MVP Deployed to Production
+**URL**: https://elections-service-521240388393.europe-west2.run.app
 
 - **Purpose**: Anonymous ballot recording (no PII, no member authentication)
 - **Technology**: Node.js + Express + PostgreSQL
-- **Status**: 📋 Design pending, implements after Events service
+- **Deployment**: Cloud Run (serverless, europe-west2)
 
-**Scope**:
-- Accept voting tokens (S2S registered by Events)
-- Record ballots anonymously
-- Enforce one-vote-per-token
-- Calculate and return results (S2S to Events)
+**MVP Features** (Production):
+- ✅ Accept voting tokens (S2S registered by Events)
+- ✅ Record ballots anonymously (no PII, timestamp rounded to minute)
+- ✅ Enforce one-vote-per-token (database constraints + row-level locking)
+- ✅ Calculate and return results (S2S to Events via `/api/s2s/results`)
+- ✅ Audit logging (no PII, token hash prefix only)
+
+**API Endpoints**:
+- `POST /api/s2s/register-token` - Register voting token (S2S, API key)
+- `GET /api/s2s/results` - Fetch results (S2S, API key)
+- `POST /api/vote` - Submit ballot (public, token-based)
+- `GET /api/token-status` - Check token validity (public, token-based)
+
+**See**: [design/ELECTIONS_SERVICE_MVP.md](design/ELECTIONS_SERVICE_MVP.md) - Design document
 
 ---
 
@@ -206,9 +216,10 @@ The voting system consists of three main components:
 ### Current Implementation (Oct 2025)
 - **Members**: ✅ Firebase custom tokens with kennitala claims (production, Oct 6)
 - **Events (MVP)**: ✅ Deployed to production - election admin, token issuance (Oct 9)
-- **Elections**: 📋 Next phase - ballot recording service (design pending)
-- **Integration**: Kenni.is national eID for authentication
-- **Cost**: $7/month (Cloud SQL), Events service within Cloud Run free tier
+- **Elections (MVP)**: ✅ Deployed to production - anonymous ballot recording (Oct 9)
+- **Integration**: ✅ S2S communication complete - Events ↔ Elections (Phase 5, Oct 10)
+- **Authentication**: Kenni.is national eID for authentication
+- **Cost**: $7-13/month (Cloud SQL + Cloud Run, both services in production)
 
 ### Decommissioned Services (Oct 2025)
 - **Portal Service**: ❌ Decommissioned from Cloud Run (Oct 8, 2025)
@@ -226,7 +237,7 @@ The voting system consists of three main components:
 
 **Design & Planning**:
 - [ELECTIONS_SERVICE_MVP.md](ELECTIONS_SERVICE_MVP.md) - Elections MVP design (one election, one question)
-- [docs/FIREBASE_MIGRATION_STATUS.md](FIREBASE_MIGRATION_STATUS.md) - Migration history
+- [../archive/migrations/FIREBASE_MIGRATION_STATUS.md](../archive/migrations/FIREBASE_MIGRATION_STATUS.md) - Migration history (archived Oct 11)
 
 **Archived Evaluations**:
 - [archive/ekklesia-platform-evaluation/](../archive/ekklesia-platform-evaluation/) - Ekklesia platform evaluation (Oct 2025)
