@@ -1,7 +1,7 @@
 # 🗺️ Ekklesia Platform - Master Documentation Map
 
-**Version**: 6.0.0
-**Last Updated**: 2025-10-10
+**Version**: 6.1.0
+**Last Updated**: 2025-10-11
 **Status**: ✅ Phase 5 Complete - Full Voting System Operational (Members ✅ + Events ✅ + Elections ✅)
 
 ---
@@ -52,9 +52,10 @@
 
 ## Current Status
 
-### ✅ Production Services (October 10, 2025)
+### ✅ Production Services (October 11, 2025)
 
 **Phase 5 Integration Complete** - Full end-to-end voting system operational (Oct 10, 2025)
+**Documentation Cleanup Complete** - Status docs archived, code audit completed (Oct 11, 2025)
 
 | Component | Status | URL/Service |
 |-----------|--------|-------------|
@@ -84,6 +85,15 @@
   - See: `docs/USAGE_CONTEXT.md`
 
 ### 📋 Recent Milestones (October 2025)
+
+**Oct 11, 2025 - Documentation Cleanup & Code Audit Complete**
+- ✅ Code audit completed comparing implementation vs documentation
+- ✅ Documentation cleanup: 5 files archived to organized structure
+- ✅ Status documents updated with archive references
+- ✅ Archive README and status/README created
+- ✅ All cross-references validated
+- 📄 Documentation: `docs/status/CODE_AUDIT_2025-10-11_REVISED.md`
+- 📄 Documentation: `docs/status/AUDIT_SUMMARY.md`
 
 **Oct 10, 2025 - Phase 5: Elections + Events Integration Complete**
 - ✅ Elections S2S client implemented (token registration + results fetching)
@@ -161,11 +171,12 @@ ekklesia/
 │   │
 │   ├── status/                       📊 Production status & deployment logs
 │   │   ├── CURRENT_PRODUCTION_STATUS.md        📊 Production infrastructure status
-│   │   ├── FIREBASE_MIGRATION_STATUS.md        ✅ Firebase migration summary
-│   │   ├── EVENTS_SERVICE_TESTING_LOG.md       ✅ Events service testing journey
-│   │   ├── ELECTIONS_SERVICE_DEPLOYMENT.md     ✅ Elections service deployment log
-│   │   ├── DATABASE_SECURITY_HARDENING.md      ✅ Database hardening implementation
-│   │   └── PHASE_5_INTEGRATION_COMPLETE.md     ✅ Phase 5 integration documentation
+│   │   ├── PHASE_5_INTEGRATION_COMPLETE.md     ✅ Phase 5 integration documentation
+│   │   ├── PR28_AGUST_COMPLETE_REVIEW.md       ✅ PR #28 review (23 comments)
+│   │   ├── CODE_AUDIT_2025-10-11_REVISED.md    📋 Code audit (Oct 11)
+│   │   ├── AUDIT_SUMMARY.md                    📋 Audit executive summary
+│   │   ├── CLEANUP_PLAN.md                     📋 Documentation cleanup plan
+│   │   └── README.md                           📖 Status docs guide
 │   │
 │   ├── design/                       🔨 Service design documents
 │   │   ├── EVENTS_SERVICE_MVP.md     ✅ Events service design (production)
@@ -259,11 +270,16 @@ ekklesia/
 │   ├── package.json                  Node.js dependencies
 │   └── README.md                     📖 Service documentation
 │
-└── archive/                          📦 Archived Code & Documentation (Local-only)
+└── archive/                          📦 Archived Code & Documentation
+    ├── audits/                       Code audits (superseded versions)
+    ├── deployments/                  Historical deployment docs
+    ├── migrations/                   Historical migration docs
+    ├── testing-logs/                 Historical testing logs
     ├── members-service/              Members development history (Oct 2025)
     ├── documentation/                Historical docs (ZITADEL-era)
     ├── ekklesia-platform-evaluation/ Platform evaluation (Oct 7)
-    └── zitadel-legacy/               ZITADEL infrastructure
+    ├── zitadel-legacy/               ZITADEL infrastructure
+    └── README.md                     Archive index and rationale
 ```
 
 ---
@@ -285,12 +301,23 @@ ekklesia/
 
 | Document | Purpose | Status |
 |----------|---------|--------|
-| `status/CURRENT_PRODUCTION_STATUS.md` | Production infrastructure status (all services) | ✅ Current (Oct 10) |
+| `status/CURRENT_PRODUCTION_STATUS.md` | Production infrastructure status (all services) | ✅ Current (Oct 11) |
 | `status/PHASE_5_INTEGRATION_COMPLETE.md` | Phase 5 integration documentation (S2S) | ✅ Current (Oct 10) |
-| `status/ELECTIONS_SERVICE_DEPLOYMENT.md` | Elections service deployment log (Phases 1-4) | ✅ Current (Oct 9) |
-| `status/EVENTS_SERVICE_TESTING_LOG.md` | Events service testing journey & tools | ✅ Current (Oct 9) |
-| `status/DATABASE_SECURITY_HARDENING.md` | Database hardening implementation (pgaudit, backups) | ✅ Current (Oct 9) |
-| `status/FIREBASE_MIGRATION_STATUS.md` | Firebase migration summary (ZITADEL → Firebase) | ✅ Current (Oct 7) |
+| `status/PR28_AGUST_COMPLETE_REVIEW.md` | PR #28 complete review (23 comments from Ágúst) | ✅ Current (Oct 10) |
+| `status/CODE_AUDIT_2025-10-11_REVISED.md` | Code audit with evidence-based findings | ✅ Current (Oct 11) |
+| `status/AUDIT_SUMMARY.md` | Executive summary for stakeholders | ✅ Current (Oct 11) |
+| `status/CLEANUP_PLAN.md` | Documentation cleanup strategy | ✅ Current (Oct 11) |
+| `status/README.md` | Status documents guide | ✅ Current (Oct 11) |
+
+### 📦 Archived Status Documents
+
+| Document | Archived Date | Reason | Location |
+|----------|---------------|--------|----------|
+| `ELECTIONS_SERVICE_DEPLOYMENT.md` | Oct 11 | Historical deployment log | `archive/deployments/` |
+| `EVENTS_SERVICE_TESTING_LOG.md` | Oct 11 | Historical testing log | `archive/testing-logs/` |
+| `DATABASE_SECURITY_HARDENING.md` | Oct 11 | Historical hardening log | `archive/deployments/` |
+| `FIREBASE_MIGRATION_STATUS.md` | Oct 11 | Historical migration log | `archive/migrations/` |
+| `CODE_AUDIT_2025-10-11.md` | Oct 11 | Superseded by revised version | `archive/audits/` |
 
 ### 🔨 Service Design Documents
 
@@ -318,6 +345,13 @@ ekklesia/
 
 ### 📦 Archived Documentation
 
+**Status Documents** (archived Oct 11, 2025):
+- `archive/audits/CODE_AUDIT_2025-10-11.md` - Initial audit (superseded)
+- `archive/deployments/ELECTIONS_SERVICE_DEPLOYMENT.md` - Elections deployment log
+- `archive/deployments/DATABASE_SECURITY_HARDENING.md` - Database hardening log
+- `archive/testing-logs/EVENTS_SERVICE_TESTING_LOG.md` - Events testing log
+- `archive/migrations/FIREBASE_MIGRATION_STATUS.md` - Firebase migration log
+
 **ZITADEL-era documents** (deprecated Oct 6-7, 2025):
 - `archive/documentation/TECHNICAL_SOLUTION.md` - ZITADEL architecture
 - `archive/documentation/HYBRID_ARCHITECTURE.md` - OIDC Bridge design
@@ -329,7 +363,7 @@ ekklesia/
 - `archive/ekklesia-platform-evaluation/portal/` - Ekklesia Portal codebase (400+ files)
 - `archive/ekklesia-platform-evaluation/voting/` - Ekklesia Voting codebase (60+ files)
 
-**See**: `archive/README.md` for complete archive listing
+**See**: `archive/README.md` for complete archive listing with rationale
 
 ---
 
@@ -638,8 +672,8 @@ ekklesia/
 
 ---
 
-**Document Version**: 6.0.0
-**Last Reviewed**: 2025-10-10
-**Changes**: Phase 5 complete - Elections service + S2S integration operational
+**Document Version**: 6.1.0
+**Last Reviewed**: 2025-10-11
+**Changes**: Documentation cleanup complete - 5 files archived, code audit added, archive structure organized
 **Validated With**: gcloud CLI, firebase CLI, gsutil (production infrastructure)
-**Next Review**: 2026-01-10 (Quarterly)
+**Next Review**: 2026-01-11 (Quarterly)
