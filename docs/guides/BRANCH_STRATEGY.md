@@ -21,6 +21,7 @@ main ─────────────────────────
 
 **main** (Updated Oct 10, 2025):
 - ✅ PR #28 merged: Members service (Firebase migration)
+- ✅ Merge method: **Squash and merge** (one commit: `8d0c8c2`)
 - ✅ Includes: Firebase Authentication, Kenni.is OAuth PKCE flow
 - ✅ Production ready
 
@@ -41,13 +42,16 @@ main ─────────────────────────
 
 ### Why Squash and Merge?
 
+**Historical Context**: PR #28 (Members service) was successfully merged using **"Squash and merge"** on Oct 10, 2025, creating one clean commit (`8d0c8c2`) on main.
+
 PR #29 contains 88 commits with duplicate Members commits (already in main via PR #28). Using GitHub's **"Squash and merge"** button will:
 
-- ✅ Combine all 88 commits into **one clean commit**
+- ✅ Combine all 88 commits into **one clean commit** (same as PR #28)
 - ✅ Eliminate duplicate Members commits automatically
 - ✅ Create clean git history on main
 - ✅ Preserve all functionality (Events + Elections + Documentation)
 - ✅ Easier to revert if needed (single commit)
+- ✅ **Proven approach**: Successfully used for PR #28
 
 ### Merge Process (After Ágúst Review)
 
@@ -375,8 +379,15 @@ git log --oneline --graph --all --decorate | head -30
 ## Notes
 
 - **PR #28**: Created Oct 8, merged Oct 10, 2025 (Members service)
+  - Merge method: **Squash and merge** ✅
+  - Result: One commit `8d0c8c2` on main
+  - Merged by: gudrodur (Guðröður Atli Jónsson)
 - **PR #29**: Created Oct 10, 2025 - 88 commits awaiting review
+  - Recommended merge method: **Squash and merge** (same as PR #28)
+  - Will create one clean commit on main
 - **Branch strategy**: Use "Squash and merge" to clean up duplicate commits
 - **Future branches**: Always create from updated main after PR #29 merges
 
 **Key Decision**: Use GitHub's "Squash and merge" button to handle duplicate commits automatically.
+
+**Historical Validation**: PR #28 proved this approach works successfully - one clean commit, no issues.
