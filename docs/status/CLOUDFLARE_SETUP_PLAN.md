@@ -56,17 +56,24 @@ gcloud secrets list  # No Cloudflare secrets
 
 ### Question 1: Domain Ownership
 
-**Does Samstaða own a domain?**
+**✅ VERIFIED (Oct 12, 2025): SÍ owns these domains:**
 
-Possible domains:
-- `sosialistaflokkurinn.is` (likely)
-- `samstada.is` (possible)
-- Other domain?
+**Primary**: `sosialistaflokkurinn.is`
+- Registrant: SI320-IS (confirmed SÍ)
+- Status: Active (WordPress site)
+- Use: All Ekklesia services
 
-**Action Needed**: Check with Samstaða if they have:
-1. A registered domain name
-2. Access to manage DNS
-3. Cloudflare account (or ability to create one)
+**Alternative**: `xj.is`
+- Registrant: SI320-IS (same as sosialistaflokkurinn.is)
+- Status: Active (redirects to sosialistaflokkurinn.is)
+- Use: Short URLs (e.g., vote.xj.is)
+
+**NOT SÍ**: `samstodin.is` (registrant: SE5217-IS, different organization)
+
+**Action Needed**: Contact SÍ to:
+1. Get DNS management access for sosialistaflokkurinn.is
+2. Check if Cloudflare account exists
+3. Get Cloudflare API token (if account exists)
 
 ### Question 2: Previous si-xj.org Setup
 
@@ -77,10 +84,10 @@ The archived script references `si-xj.org`:
 DOMAIN="si-xj.org"
 ```
 
-**Questions**:
-1. Was this a test domain?
-2. Is it still owned by Samstaða?
-3. Can we check its current DNS records?
+**✅ VERIFIED (Oct 12, 2025)**:
+1. si-xj.org IS on Cloudflare (nameservers: bristol.ns.cloudflare.com, jakub.ns.cloudflare.com)
+2. Appears to be test/legacy domain (no longer primary)
+3. May have existing Cloudflare account we can reuse
 
 **Investigation Command**:
 ```bash
@@ -109,12 +116,12 @@ dig si-xj.org AAAA
 whois si-xj.org
 ```
 
-**Step 2: Contact Samstaða**
+**Step 2: Contact SÍ**
 
 Questions to ask:
-1. What domain does Samstaða own?
+1. ✅ sosialistaflokkurinn.is is confirmed SÍ domain (SI320-IS)
 2. Who has access to DNS management?
-3. Is there an existing Cloudflare account?
+3. Is there an existing Cloudflare account? (si-xj.org is on Cloudflare)
 4. Can we get API token access?
 
 **Step 3: Get Cloudflare API Token**
@@ -460,7 +467,7 @@ done
 
 ## Decision Tree
 
-### Scenario A: Samstaða Has Cloudflare + Domain
+### Scenario A: SÍ Has Cloudflare + Domain
 
 **Timeline**: 2-3 hours + DNS propagation
 
@@ -474,7 +481,7 @@ done
 
 **Cost**: $0 (Cloudflare Free)
 
-### Scenario B: Samstaða Has Domain, No Cloudflare
+### Scenario B: SÍ Has Domain, No Cloudflare
 
 **Timeline**: 4-5 hours + DNS propagation
 
@@ -520,7 +527,7 @@ vs. Manual Dashboard Setup:
 dig si-xj.org NS
 whois si-xj.org
 
-# Contact Samstaða about domain ownership
+# Contact SÍ about DNS management access
 # Questions:
 # 1. What domain do you own?
 # 2. Who manages DNS?
@@ -566,7 +573,7 @@ export CF_API_TOKEN=$(gcloud secrets versions access latest \
 
 **Immediate** (Today):
 1. ✅ Investigate si-xj.org domain
-2. ✅ Contact Samstaða about domain ownership
+2. ✅ Verified SÍ domain ownership (sosialistaflokkurinn.is, xj.is)
 3. ✅ Determine if Cloudflare account exists
 
 **If Domain Available** (Day 2):
@@ -622,4 +629,4 @@ If Cloudflare causes issues:
 **Document Version**: 1.0
 **Last Updated**: 2025-10-12
 **Status**: Investigation Phase
-**Next Step**: Check si-xj.org and contact Samstaða about domain
+**Next Step**: ✅ Domains verified - Contact SÍ for DNS management access

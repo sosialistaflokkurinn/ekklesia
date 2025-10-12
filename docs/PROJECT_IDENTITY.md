@@ -180,6 +180,60 @@ This should be used for all public-facing services:
 
 ---
 
+## Domain Ownership and History
+
+### SÍ Official Domains (Verified Oct 12, 2025)
+
+**Primary Domain**: `sosialistaflokkurinn.is`
+- **Registrant**: SI320-IS (SÍ)
+- **Status**: ✅ Active (WordPress site)
+- **Created**: March 23, 2017
+- **Expires**: March 23, 2026
+- **Use for Ekklesia**: All public-facing services (auth, api, vote, verify)
+
+**Short Domain**: `xj.is`
+- **Registrant**: SI320-IS (SÍ - same as sosialistaflokkurinn.is)
+- **Status**: ✅ Active (redirects to sosialistaflokkurinn.is)
+- **Created**: September 25, 2017
+- **Expires**: September 25, 2028
+- **Note**: Could be used for short URLs (e.g., vote.xj.is)
+
+### Historical/Unrelated Domains
+
+**samstodin.is** (NOT SÍ):
+- **Registrant**: SE5217-IS (NOT SI320-IS)
+- **Status**: Different organization
+- **Note**: Was previously connected to SÍ but is no longer
+- **Created**: March 20, 2020
+- **Expires**: March 20, 2026
+- **Do NOT use for Ekklesia**
+
+**malgagnid.is** (Unrelated):
+- **Registrant**: JFE43-IS (different organization)
+- **Status**: Unrelated to SÍ
+- **Created**: July 31, 2025 (very recent)
+- **Expires**: July 31, 2026
+- **Do NOT use for Ekklesia**
+
+### Domain Decision for Ekklesia
+
+**Use**: `sosialistaflokkurinn.is` (primary choice)
+- Official party domain
+- Confirmed SÍ ownership (SI320-IS)
+- Already active with party website
+- Professional appearance
+
+**Alternative**: `xj.is` (short URLs)
+- Same registrant as sosialistaflokkurinn.is
+- Shorter for mobile/SMS use
+- Could use for vote.xj.is (easier to type)
+
+**Do NOT use**: `samstodin.is` or `malgagnid.is`
+- Not owned by SÍ
+- Would create confusion
+
+---
+
 ## Historical Context: Why "Samstaða" Appeared
 
 ### Likely Origin
@@ -189,12 +243,14 @@ The term "Samstaða" probably appeared in early documentation because:
 2. **Specification documents**: UI mockups needed a party name, used generic term
 3. **ZITADEL project names**: Early authentication setup used placeholder
 4. **Not politically reviewed**: Technical specs created without party review
+5. **Domain confusion**: samstodin.is was historically connected to SÍ
 
 ### Why It Persisted
 
 - **Copy-paste**: Later documents copied from early specs
 - **Technical focus**: Developers focused on functionality, not political identity
 - **No harm intended**: Simply a placeholder that wasn't corrected
+- **Historical domain**: samstodin.is connection may have influenced naming
 
 ### Why It Must Be Fixed
 

@@ -114,8 +114,8 @@ INSERT INTO election (
     voting_ends_at
 ) VALUES (
     'Prófunarkosning 2025',
-    'Þetta er prófunarkosning fyrir Samstaða Ekklesia kerfið. Kosningin er ætluð til prófunar á atkvæðagreiðslukerfinu.',
-    'Samþykkir þú innleiðingu á nýju rafrænni atkvæðagreiðslukerfi fyrir Samstaða?',
+    'Þetta er prófunarkosning fyrir Ekklesia kerfið Sósíalistaflokksins. Kosningin er ætluð til prófunar á atkvæðagreiðslukerfinu.',
+    'Samþykkir þú innleiðingu á nýju rafrænni atkvæðagreiðslukerfi fyrir Sósíalistaflokkinn?',
     'published',
     NOW(),  -- Voting starts immediately
     NOW() + INTERVAL '30 days'  -- Voting ends in 30 days
