@@ -290,7 +290,39 @@ Then:
 
 ---
 
-### Phase 5: Update Application URLs (30 minutes)
+### Phase 5: Implement Origin Protection (2-3 hours) 🔴 CRITICAL
+
+**⚠️ IMPORTANT**: Before updating application URLs, you MUST implement origin protection to prevent Cloudflare bypass attacks.
+
+**The Problem**: Cloudflare DNS only protects traffic that goes through Cloudflare. The direct Cloud Run URLs remain publicly accessible:
+
+```
+Direct URLs (Still Exposed):
+❌ https://elections-service-521240388393.europe-west2.run.app
+❌ https://events-service-521240388393.europe-west2.run.app
+❌ https://handlekenniauth-521240388393.europe-west2.run.app
+❌ https://verifymembership-521240388393.europe-west2.run.app
+```
+
+**The Solution**: Implement IP filtering middleware to only accept traffic from Cloudflare IP ranges.
+
+**See Complete Implementation Guide**: [docs/security/CLOUDFLARE_BYPASS_PROTECTION.md](../security/CLOUDFLARE_BYPASS_PROTECTION.md)
+
+**Implementation Checklist**:
+- [ ] Create `shared/middleware/cloudflare-check.js` (Node.js services)
+- [ ] Create `members/functions/cloudflare_check.py` (Python Cloud Functions)
+- [ ] Add middleware to events-service
+- [ ] Add middleware to elections-service
+- [ ] Add decorator to handlekenniauth
+- [ ] Add decorator to verifymembership
+- [ ] Test direct URL access (should get 403 Forbidden)
+- [ ] Test Cloudflare URL access (should work normally)
+
+**Why This Is Critical**: Without origin protection, attackers can bypass Cloudflare's rate limiting, DDoS protection, and WAF by directly hitting the Cloud Run URLs.
+
+---
+
+### Phase 6: Update Application URLs (30 minutes)
 
 **Files to Update**:
 
