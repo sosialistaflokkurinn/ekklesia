@@ -63,14 +63,17 @@
   </div>
 
   <script type="module">
-    import { R } from '/i18n/R.js';
+    import { R } from '/i18n/strings-loader.js';
     import { requireAuth, signOut, getUserData } from '/js/auth.js';
     import { getApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
     import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js';
 
+    // Wait for strings to load
+    await R.load('is');
+
     // Get existing Firebase app instance (already initialized in auth.js)
     const app = getApp();
-    const functions = getFunctions(app, 'europe-west2');
+    const functions = getFunctions(app, R.string.config_firebase_region);
 
     // Set page title
     document.title = R.string.page_title_dashboard;
@@ -87,8 +90,9 @@
     const userData = await getUserData(user);
 
     // Update welcome message
+    const displayName = userData.displayName || R.string.dashboard_default_name;
     document.getElementById('welcome-title').textContent =
-      `${R.string.dashboard_welcome}, ${userData.displayName || 'félagi'}!`;
+      R.format(R.string.dashboard_welcome_user, R.string.dashboard_welcome, displayName);
 
     // Update membership status
     const membershipCard = document.getElementById('membership-status');

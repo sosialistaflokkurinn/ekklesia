@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Icelandic (Íslenska) Language Resources
+  Ekklesia Members Service - Sósíalistaflokkur Íslands
+
+  Following Android strings.xml pattern for maintainability.
+  Format: <string name="key_name">Value</string>
+-->
+<resources>
+    <!-- ========================================== -->
+    <!-- PAGE METADATA -->
+    <!-- ========================================== -->
+    <string name="app_name">Sósíalistaflokkurinn</string>
+    <string name="page_title">Innskráning - Sósíalistaflokkurinn</string>
+    <string name="page_title_dashboard">Mín síða - Sósíalistaflokkurinn</string>
+    <string name="page_title_profile">Prófíll - Sósíalistaflokkurinn</string>
+    <string name="page_title_test_events">Prófunarkosning 2025 - Sósíalistaflokkurinn</string>
+
+    <!-- ========================================== -->
+    <!-- LOGIN PAGE (index.html) -->
+    <!-- ========================================== -->
+    <string name="login_title">Innskráning</string>
+    <string name="login_subtitle">Félagar Sósíalistaflokksins</string>
+    <string name="btn_login">Skrá inn með Kenni.is</string>
+    <string name="btn_login_description">Auðkenning með rafrænum skilríkjum</string>
+
+    <!-- Authentication status -->
+    <string name="status_authenticated">Innskráð(ur)</string>
+    <string name="status_not_authenticated">Ekki innskráð(ur)</string>
+    <string name="status_authenticating">Staðfesti auðkenningu...</string>
+    <string name="status_verifying_membership">Staðfesti félagsaðild...</string>
+
+    <!-- Login errors -->
+    <string name="error_missing_pkce">Missing PKCE verifier</string>
+    <string name="error_authentication_failed">Authentication failed</string>
+    <string name="error_authentication">Villa við auðkenningu: %s</string>
+    <string name="error_csrf_title">Villa</string>
+    <string name="error_csrf_message">Öryggisvillaog: CSRF árásvörn virk. Vinsamlegast reyndu aftur.</string>
+
+    <!-- ========================================== -->
+    <!-- NAVIGATION -->
+    <!-- ========================================== -->
+    <string name="nav_brand">Sósíalistaflokkurinn</string>
+    <string name="nav_dashboard">Mín síða</string>
+    <string name="nav_profile">Prófíll</string>
+    <string name="nav_events">Atburðir</string>
+    <string name="nav_voting">Kosningar</string>
+    <string name="nav_logout">Útskrá</string>
+
+    <!-- ========================================== -->
+    <!-- DASHBOARD PAGE (dashboard.html) -->
+    <!-- ========================================== -->
+    <string name="dashboard_welcome">Velkomin(n)</string>
+    <string name="dashboard_welcome_user">%s, %s!</string>
+    <string name="dashboard_subtitle">Félagasvæði Sósíalistaflokksins</string>
+    <string name="dashboard_default_name">félagi</string>
+
+    <!-- Quick links -->
+    <string name="quick_links_title">Flýtileiðir</string>
+    <string name="quick_links_profile_label">Prófíll</string>
+    <string name="quick_links_profile_desc">Skoða mínar upplýsingar</string>
+    <string name="quick_links_events_label">Atburðir</string>
+    <string name="quick_links_events_desc">Prófunarkosning 2025</string>
+    <string name="quick_links_voting_label">Kosningar</string>
+    <string name="quick_links_voting_desc">Væntanlegt</string>
+
+    <!-- Membership status -->
+    <string name="membership_title">Félagastaða</string>
+    <string name="membership_loading">Hleð inn...</string>
+    <string name="membership_active">✓ staðfest aðild</string>
+    <string name="membership_inactive">Ekki félag</string>
+    <string name="membership_not_verified">Ekki staðfest</string>
+    <string name="membership_verifying">Staðfesti félagsaðild...</string>
+    <string name="membership_verification_failed">Villa við staðfestingu</string>
+    <string name="btn_verify_membership">Staðfesta félagsaðild</string>
+
+    <!-- ========================================== -->
+    <!-- PROFILE PAGE (profile.html) -->
+    <!-- ========================================== -->
+    <string name="profile_title">Prófíll</string>
+    <string name="profile_subtitle">Mínar upplýsingar</string>
+
+    <!-- Personal information -->
+    <string name="section_personal_info">Persónuupplýsingar</string>
+    <string name="label_name">Nafn</string>
+    <string name="label_kennitala">Kennitala</string>
+    <string name="label_email">Netfang</string>
+    <string name="label_phone">Símanúmer</string>
+    <string name="label_uid">Notandaauðkenni</string>
+    <string name="label_status">Staða</string>
+
+    <!-- Placeholders -->
+    <string name="placeholder_dash">-</string>
+    <string name="placeholder_not_available">Ekki tiltækt</string>
+    <string name="placeholder_not_found">Fannst ekki</string>
+
+    <!-- ========================================== -->
+    <!-- TEST EVENTS PAGE (test-events.html) -->
+    <!-- ========================================== -->
+    <string name="test_events_title">🚀 Prófunarkosning 2025</string>
+
+    <!-- Authentication status -->
+    <string name="test_auth_title">Auðkenning</string>
+    <string name="test_auth_not_authenticated">Ekki auðkenndur</string>
+    <string name="test_auth_authenticated">✓ Auðkenndur</string>
+    <string name="test_auth_uid">UID:</string>
+    <string name="test_auth_kennitala">Kennitala:</string>
+    <string name="test_auth_membership">Félagsaðild:</string>
+    <string name="test_auth_yes">✓ Já</string>
+    <string name="test_auth_no">✗ Nei</string>
+    <string name="test_auth_not_available">Ekki tiltækt</string>
+
+    <!-- API Tests -->
+    <string name="test_api_title">API Prófanir</string>
+    <string name="test_api_production_env">Framleiðsluumhverfi:</string>
+
+    <!-- Test sections -->
+    <string name="test_1_title">1. Heilsuathugun (engin auðkenning)</string>
+    <string name="test_1_button">GET /health</string>
+
+    <string name="test_2_title">2. Sækja kosningaupplýsingar</string>
+    <string name="test_2_button">GET /api/election</string>
+
+    <string name="test_3_title">3. Biðja um atkvæðismerki</string>
+    <string name="test_3_button">POST /api/request-token</string>
+
+    <string name="test_4_title">4. Athuga þátttökustöðu</string>
+    <string name="test_4_button">GET /api/my-status</string>
+
+    <string name="test_5_title">5. Kjósa (Elections Service)</string>
+    <string name="test_5_button">POST /api/vote (Elections Service)</string>
+    <string name="test_5_token_label">Atkvæðismerki:</string>
+    <string name="test_5_token_placeholder">Límdu atkvæðismerkið hér</string>
+    <string name="test_5_answer_label">Svar:</string>
+    <string name="test_5_answer_yes">Já</string>
+    <string name="test_5_answer_no">Nei</string>
+    <string name="test_5_answer_abstain">Sitja hjá</string>
+    <string name="test_5_error_no_token">Vinsamlegast sláðu inn atkvæðismerki</string>
+
+    <string name="test_6_title">6. Niðurstöður</string>
+    <string name="test_6_button">GET /api/results</string>
+
+    <!-- Test errors -->
+    <string name="test_error_not_authenticated">Not authenticated</string>
+
+    <!-- ========================================== -->
+    <!-- COMMON / SHARED STRINGS -->
+    <!-- ========================================== -->
+    <string name="loading">Hleð inn...</string>
+    <string name="error_generic">Villa: %s</string>
+    <string name="success">Tókst</string>
+    <string name="failed">Mistókst</string>
+
+    <!-- ========================================== -->
+    <!-- CONSOLE LOG MESSAGES (for debugging) -->
+    <!-- ========================================== -->
+    <string name="log_membership_verified">Membership verified during login</string>
+    <string name="log_membership_verify_failed">Membership verification during login failed:</string>
+    <string name="log_authentication_error">Authentication error:</string>
+    <string name="log_csrf_failed">CSRF check failed: state mismatch</string>
+    <string name="log_membership_verification_error">Membership verification error:</string>
+
+    <!-- ========================================== -->
+    <!-- CONFIGURATION (not translated) -->
+    <!-- ========================================== -->
+    <!-- OAuth configuration -->
+    <string name="config_kenni_issuer">https://idp.kenni.is/sosi-kosningakerfi.is</string>
+    <string name="config_kenni_client_id">@sosi-kosningakerfi.is/rafr-nt-kosningakerfi-s-s</string>
+    <string name="config_oauth_scopes">openid profile national_id email phone_number</string>
+
+    <!-- API endpoints -->
+    <string name="config_api_handle_auth">https://handlekenniauth-ymzrguoifa-nw.a.run.app</string>
+    <string name="config_api_events">https://events-service-521240388393.europe-west2.run.app</string>
+    <string name="config_api_elections">https://elections-service-521240388393.europe-west2.run.app</string>
+
+    <!-- Paths -->
+    <string name="path_dashboard">/dashboard.html</string>
+    <string name="path_profile">/profile.html</string>
+    <string name="path_test_events">/test-events.html</string>
+
+    <!-- Firebase region -->
+    <string name="config_firebase_region">europe-west2</string>
+</resources>
