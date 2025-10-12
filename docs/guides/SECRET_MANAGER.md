@@ -30,6 +30,7 @@ Google Cloud Secret Manager is used to store all sensitive credentials for the E
 | `kenni-client-secret` | Kenni.is OAuth client secret | handleKenniAuth (Members) | Oct 1, 2025 | Manual (when Kenni.is key changes) |
 | `postgres-password` | Cloud SQL PostgreSQL password | Events, Elections services | Oct 9, 2025 | Quarterly (recommended) |
 | `elections-s2s-api-key` | S2S authentication between Events ↔ Elections | Events + Elections services | Oct 9, 2025 | Annually (recommended) |
+| `cloudflare-api-token` | Cloudflare API token for DNS management | Manual DNS operations, automation scripts | Oct 12, 2025 | Annually (recommended) |
 
 ---
 
@@ -201,16 +202,112 @@ cd elections && ./deploy.sh
 
 ---
 
+### 4. cloudflare-api-token
+
+**Purpose**: Cloudflare API token for DNS management and automation
+
+**Used By**:
+- Manual DNS operations (via curl or scripts)
+- Automation scripts for DNS updates
+- Phase 2 security hardening (DNS configuration)
+
+**Format**: String (Cloudflare provided, format: `<token>`)
+
+**Created**: Oct 12, 2025 (Phase 2 - Rate limiting setup)
+
+**Current Value**: `gD0MXa-Y6K3n8pDDxbkyJnJuy-YIGl2KTOyD3Rn7`
+
+**Permissions**: Edit zone DNS (si-xj.org zone only)
+- Read DNS records
+- Create DNS records
+- Update DNS records
+- Delete DNS records
+
+**Zone**: `si-xj.org` (Zone ID: `4cab51095e756bd898cc3debec754828`)
+
+**How to Store**:
+```bash
+# Store in Secret Manager
+echo -n "gD0MXa-Y6K3n8pDDxbkyJnJuy-YIGl2KTOyD3Rn7" | gcloud secrets create cloudflare-api-token \
+  --data-file=- \
+  --replication-policy=automatic \
+  --project=ekklesia-prod-10-2025
+```
+
+**Access Pattern**:
+```bash
+# Retrieve for use in scripts
+API_TOKEN=$(gcloud secrets versions access latest \
+  --secret=cloudflare-api-token \
+  --project=ekklesia-prod-10-2025)
+
+# Use with Cloudflare API
+curl "https://api.cloudflare.com/client/v4/zones/4cab51095e756bd898cc3debec754828/dns_records" \
+  -H "Authorization: Bearer $API_TOKEN"
+```
+
+**Example Uses**:
+```bash
+# Create DNS record
+cat > /tmp/dns_record.json << 'EOF'
+{
+  "type": "CNAME",
+  "name": "auth",
+  "content": "handlekenniauth-xxx.run.app",
+  "ttl": 1,
+  "proxied": true
+}
+EOF
+
+curl -X POST "https://api.cloudflare.com/client/v4/zones/ZONE_ID/dns_records" \
+  -H "Authorization: Bearer $API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d @/tmp/dns_record.json
+
+# Verify token
+curl "https://api.cloudflare.com/client/v4/user/tokens/verify" \
+  -H "Authorization: Bearer $API_TOKEN"
+```
+
+**Rotation Strategy**:
+- **When**: Annually or on security incident
+- **How**: Generate new token in Cloudflare dashboard, update secret
+- **Impact**: Update any automation scripts using the token
+
+**How to Rotate**:
+```bash
+# 1. Create new token in Cloudflare dashboard
+#    Dashboard → My Profile → API Tokens → Create Token
+#    Template: Edit zone DNS
+#    Zone: si-xj.org
+
+# 2. Store new token in Secret Manager
+echo -n "NEW_CLOUDFLARE_TOKEN" | gcloud secrets versions add cloudflare-api-token \
+  --data-file=- \
+  --project=ekklesia-prod-10-2025
+
+# 3. Delete old token in Cloudflare dashboard
+#    My Profile → API Tokens → [Old Token] → Delete
+```
+
+**Security Notes**:
+- Token has minimal permissions (DNS only, single zone)
+- Cannot access other Cloudflare settings (SSL, firewall, etc.)
+- Can be revoked instantly in Cloudflare dashboard
+- All API calls are logged in Cloudflare audit log
+
+---
+
 ## Cost
 
 **Pricing** (as of 2025):
 - Active secret versions: $0.06/month per secret
 - Access operations: $0.03 per 10,000 accesses
 
-**Current Monthly Cost** (Oct 10, 2025):
-- 3 secrets × $0.06 = **$0.18/month**
+**Current Monthly Cost** (Oct 12, 2025):
+- 4 secrets × $0.06 = **$0.24/month**
 - Access operations (estimated 100,000/month): **$0.30/month**
-- **Total**: ~$0.48/month
+- **Total**: ~$0.54/month
 
 **Negligible cost** - included in overall infrastructure budget.
 
@@ -590,14 +687,16 @@ echo "DATABASE_PASSWORD=<from-secret-manager>" > .env.example
 
 ## Summary
 
-**Active Secrets**: 3 (kenni-client-secret, postgres-password, elections-s2s-api-key)
-**Cost**: ~$0.48/month (negligible)
+**Active Secrets**: 4 (kenni-client-secret, postgres-password, elections-s2s-api-key, cloudflare-api-token)
+**Cost**: ~$0.54/month (negligible)
 **Access**: Via gcloud CLI or Cloud Run/Functions environment variables
 **Rotation**:
 - Database password: Quarterly (recommended)
 - S2S API key: Annually (recommended)
+- Cloudflare API token: Annually (recommended)
 - OAuth secrets: On-demand (when provider changes)
 
 **Best Practice**: All sensitive configuration should be in Secret Manager, never in git or hardcoded.
 
 **Phase 5 Complete** (Oct 10, 2025): All 3 services operational with S2S authentication via elections-s2s-api-key.
+**Phase 2 Security Complete** (Oct 12, 2025): Cloudflare DNS configured via API using cloudflare-api-token.
