@@ -74,30 +74,49 @@ def handleKenniAuth(req: https_fn.Request):
 
 **Solution Options**:
 
-#### Option A: Cloud Armor (Recommended for Production)
+#### Option A: Cloudflare (RECOMMENDED - Most Cost-Effective)
 ```bash
-# Pros: GCP-native, DDoS protection, layer 7 firewall
-# Cons: $0.75/policy/month + $0.0075/million requests
-# Timeline: 2-3 hours setup
+# Pros: FREE, edge-level protection, DDoS included, WAF, professional setup
+# Cons: Requires custom domain (e.g., api.sosialistaflokkurinn.is)
+# Timeline: 2-3 hours setup + DNS propagation
 
-gcloud compute security-policies create ekklesia-rate-limit \
-  --project ekklesia-prod-10-2025
+# Cost Comparison:
+# - Cloudflare Free:  $0/month (includes rate limiting + DDoS)
+# - Cloudflare Pro:   $25/month (advanced features)
+# - Cloud Armor:      $0.75/month + $0.0075/million requests
+# - Firebase App Check: $0/month (but less effective)
 
-# Rate limit: 100 requests/minute per IP for Cloud Functions
-gcloud compute security-policies rules create 1000 \
-  --security-policy ekklesia-rate-limit \
-  --expression "origin.ip == '[ENTER IP]'" \
-  --action "rate-based-ban" \
-  --rate-limit-threshold-count 100 \
-  --rate-limit-threshold-interval-sec 60 \
-  --ban-duration-sec 600 \
-  --project ekklesia-prod-10-2025
+# Setup Steps:
+# 1. Add domain to Cloudflare
+# 2. Update nameservers to Cloudflare
+# 3. Add CNAME records:
+#    auth.sosialistaflokkurinn.is → handlekenniauth-xxx.run.app (Proxied ☁️)
+#    api.sosialistaflokkurinn.is  → events-service-xxx.run.app (Proxied ☁️)
+#
+# 4. Configure rate limiting rules in Cloudflare dashboard:
+#    - Security → WAF → Rate limiting rules
+#    - Block requests > 100/min per IP
+#    - Challenge suspicious traffic with CAPTCHA
 ```
 
-#### Option B: Firebase App Check (Recommended for Free Tier)
+**Cloudflare Benefits**:
+- ✅ **Free tier** - $0/month (vs Cloud Armor $0.75/month + usage)
+- ✅ **Edge-level** protection (blocks bad traffic before it reaches GCP)
+- ✅ **DDoS protection** included (layer 3/4)
+- ✅ **SSL/TLS** encryption included
+- ✅ **No code changes** needed (unlike Firebase App Check)
+- ✅ **Protects all services** (Cloud Functions + Cloud Run)
+- ✅ **Professional setup** (used by millions of sites)
+
+**Cloudflare Limitations**:
+- ⚠️ Requires custom domain (can't proxy `*.run.app` directly)
+- ⚠️ DNS propagation time (24-48 hours)
+- ⚠️ Must update OAuth redirect URIs to use new domain
+
+#### Option B: Firebase App Check (If No Custom Domain)
 ```javascript
-// Pros: Free, easy setup, mobile + web support
-// Cons: Requires client SDK changes, bypass-able with effort
+// Pros: Free, no domain needed, works with *.run.app
+// Cons: Client-side only, bypass-able, less effective than Cloudflare
 // Timeline: 1-2 hours
 
 // Enable App Check for Cloud Functions
@@ -112,13 +131,33 @@ const appCheck = initializeAppCheck(app, {
 });
 ```
 
-#### Option C: Application-Level Rate Limiting
+#### Option C: Cloud Armor (NOT Recommended - More Expensive)
+```bash
+# Pros: GCP-native, layer 7 firewall
+# Cons: $0.75/month + $0.0075/million requests (more expensive than Cloudflare)
+# Timeline: 2-3 hours setup
+
+gcloud compute security-policies create ekklesia-rate-limit \
+  --project ekklesia-prod-10-2025
+
+# Rate limit: 100 requests/minute per IP
+gcloud compute security-policies rules create 1000 \
+  --security-policy ekklesia-rate-limit \
+  --expression "origin.ip == '[ENTER IP]'" \
+  --action "rate-based-ban" \
+  --rate-limit-threshold-count 100 \
+  --rate-limit-threshold-interval-sec 60 \
+  --ban-duration-sec 600 \
+  --project ekklesia-prod-10-2025
+```
+
+#### Option D: Application-Level Rate Limiting (NOT Recommended - Complex)
 ```python
-# Pros: Fine-grained control, free
-# Cons: Must implement per-function, state management needed
+# Pros: Fine-grained control
+# Cons: Must implement per-function, state management, MOST WORK
 # Timeline: 4-6 hours
 
-# Use Cloud Memorystore (Redis) or Firestore for rate limit tracking
+# Use Firestore for rate limit tracking
 from datetime import datetime, timedelta
 
 def check_rate_limit(ip: str, limit: int = 10, window: int = 60) -> bool:
@@ -141,11 +180,14 @@ def check_rate_limit(ip: str, limit: int = 10, window: int = 60) -> bool:
     return True  # Allowed
 ```
 
-**Recommendation**: **Option B (Firebase App Check)** for MVP
-- Free tier compatible
-- Easy to implement
-- Sufficient for current scale (300 members)
-- Can upgrade to Cloud Armor if needed
+**Recommendation**: **Option A (Cloudflare)** - Most cost-effective
+- **Free** (vs Cloud Armor $0.75+/month)
+- Better protection (edge-level + DDoS)
+- Professional solution
+- **Prerequisite**: Need custom domain or subdomain
+  - Example: `auth.sosialistaflokkurinn.is`, `api.sosialistaflokkurinn.is`
+  - Check if Samstaða already owns sosialistaflokkurinn.is
+- **Fallback**: Use Firebase App Check if no domain available
 
 ---
 
@@ -441,10 +483,15 @@ firebase deploy --only firestore:rules --project ekklesia-prod-10-2025
    - Add try/catch around create_user
    - Test concurrent login scenario
 
-4. **Rate Limiting (Quick Win)** (#31) - 1-2 hours
-   - Implement Firebase App Check
-   - Add reCAPTCHA v3
-   - Test with production
+4. **Rate Limiting** (#31) - 2-3 hours (with Cloudflare)
+   - **Option A** (RECOMMENDED): Set up Cloudflare if custom domain available
+     - Add domain to Cloudflare
+     - Configure DNS (CNAME records)
+     - Set up rate limiting rules
+     - Wait for DNS propagation (may take 24-48 hours)
+   - **Option B** (Fallback): Implement Firebase App Check if no domain
+     - Add reCAPTCHA v3
+     - Test with production
 
 **Testing Strategy**:
 ```bash
@@ -535,16 +582,170 @@ gcloud logging read \
 
 ### Current Monthly Cost: ~$7
 
-| Item | Current | With Security | Delta |
-|------|---------|---------------|-------|
+### With Cloudflare (RECOMMENDED)
+
+| Item | Current | With Cloudflare Free | Delta |
+|------|---------|---------------------|-------|
 | Firestore | Free tier | Free tier | $0 |
 | Cloud Functions | Free tier | Free tier | $0 |
-| Firebase App Check | N/A | Free tier | $0 |
-| reCAPTCHA v3 | N/A | Free (1M/month) | $0 |
-| Cloud Armor (optional) | N/A | $0.75/month | +$0.75 |
-| **Total** | **$7** | **$7-8** | **+$0-1** |
+| Cloud SQL | $7 | $7 | $0 |
+| Cloudflare Free | N/A | **FREE** | **$0** |
+| - Rate limiting | N/A | Included | $0 |
+| - DDoS protection | N/A | Included | $0 |
+| - SSL/TLS | N/A | Included | $0 |
+| **Total** | **$7** | **$7** | **$0** |
 
-**Conclusion**: Minimal cost impact (<15% increase)
+**Cost Comparison vs Other Options**:
+- ✅ **Cloudflare Free**: $0/month (best value!)
+- 💰 **Cloud Armor**: $0.75/month + $0.0075/million requests
+- 🆓 **Firebase App Check**: $0/month (but less effective)
+- 💎 **Cloudflare Pro** (optional): $25/month (advanced features)
+
+**Conclusion**: **ZERO cost increase** with Cloudflare Free tier!
+
+---
+
+## Cloudflare Setup Guide (If Using Option A)
+
+### Prerequisites
+- Custom domain or subdomain access (e.g., sosialistaflokkurinn.is)
+- DNS management access
+
+### Step 1: Create Cloudflare Account
+```bash
+# 1. Go to https://dash.cloudflare.com/sign-up
+# 2. Create free account
+# 3. Verify email
+```
+
+### Step 2: Add Domain to Cloudflare
+```bash
+# 1. In Cloudflare dashboard, click "Add a Site"
+# 2. Enter your domain: sosialistaflokkurinn.is
+# 3. Select "Free" plan
+# 4. Cloudflare will scan existing DNS records
+```
+
+### Step 3: Update Nameservers
+```bash
+# Cloudflare will provide nameservers like:
+# - tara.ns.cloudflare.com
+# - walt.ns.cloudflare.com
+
+# Update at your domain registrar:
+# 1. Log in to domain registrar (where you bought the domain)
+# 2. Find DNS/Nameserver settings
+# 3. Replace existing nameservers with Cloudflare's
+# 4. Wait 24-48 hours for propagation
+```
+
+### Step 4: Add DNS Records for Cloud Run Services
+```bash
+# In Cloudflare dashboard → DNS → Records
+
+# Add CNAME records (Proxied = ON ☁️):
+Type    Name    Target                                              Proxy
+CNAME   auth    handlekenniauth-521240388393.europe-west2.run.app  ON ☁️
+CNAME   api     events-service-521240388393.europe-west2.run.app   ON ☁️
+CNAME   vote    elections-service-521240388393.europe-west2.run.app ON ☁️
+CNAME   verify  verifymembership-521240388393.europe-west2.run.app ON ☁️
+
+# Result URLs:
+# - https://auth.sosialistaflokkurinn.is (Members OAuth)
+# - https://api.sosialistaflokkurinn.is (Events API)
+# - https://vote.sosialistaflokkurinn.is (Elections API)
+# - https://verify.sosialistaflokkurinn.is (Membership verification)
+```
+
+### Step 5: Configure Rate Limiting
+```bash
+# In Cloudflare dashboard → Security → WAF → Rate limiting rules
+
+# Rule 1: Protect OAuth endpoint
+Name: "Rate limit OAuth"
+If incoming requests match:
+  - Hostname equals "auth.sosialistaflokkurinn.is"
+  - URI Path equals "/handleKenniAuth"
+When rate exceeds:
+  - 100 requests per 1 minute
+  - From the same IP address
+Then:
+  - Block for 10 minutes
+
+# Rule 2: Protect API endpoints
+Name: "Rate limit API"
+If incoming requests match:
+  - Hostname equals "api.sosialistaflokkurinn.is"
+When rate exceeds:
+  - 300 requests per 1 minute (allow legitimate voting spike)
+  - From the same IP address
+Then:
+  - Challenge (CAPTCHA) for 5 minutes
+```
+
+### Step 6: Configure SSL/TLS
+```bash
+# Cloudflare → SSL/TLS → Overview
+# Select: "Full (strict)" mode
+
+# This ensures:
+# Browser ← HTTPS → Cloudflare ← HTTPS → Cloud Run
+```
+
+### Step 7: Update Application URLs
+```javascript
+// Update members/public/index.html
+// OLD:
+const HANDLE_KENNI_AUTH_URL =
+  'https://handlekenniauth-521240388393.europe-west2.run.app';
+
+// NEW:
+const HANDLE_KENNI_AUTH_URL =
+  'https://auth.sosialistaflokkurinn.is/handleKenniAuth';
+```
+
+```python
+# Update Kenni.is OAuth redirect URI
+# Go to Kenni.is developer console:
+# OLD: https://handlekenniauth-xxx.run.app
+# NEW: https://auth.sosialistaflokkurinn.is/handleKenniAuth
+```
+
+### Step 8: Test Configuration
+```bash
+# 1. Wait for DNS propagation (check with):
+dig auth.sosialistaflokkurinn.is
+
+# 2. Test OAuth flow:
+curl -I https://auth.sosialistaflokkurinn.is/handleKenniAuth
+
+# 3. Test rate limiting (send 101 requests):
+for i in {1..101}; do
+  curl -X POST https://auth.sosialistaflokkurinn.is/handleKenniAuth \
+    -H "Content-Type: application/json" \
+    -d '{"test":"data"}' \
+    -w "\n%{http_code}\n"
+done
+# Should get 429 (Too Many Requests) after 100 requests
+
+# 4. Verify in Cloudflare dashboard:
+# - Security → Events → Check for blocked requests
+```
+
+### Troubleshooting
+```bash
+# Issue: "ERR_SSL_VERSION_OR_CIPHER_MISMATCH"
+# Solution: Ensure SSL/TLS mode is "Full (strict)"
+
+# Issue: "DNS_PROBE_FINISHED_NXDOMAIN"
+# Solution: DNS not propagated yet, wait 24-48 hours
+
+# Issue: "ERR_TOO_MANY_REDIRECTS"
+# Solution: Change SSL/TLS mode from "Flexible" to "Full (strict)"
+
+# Issue: OAuth redirect fails
+# Solution: Update redirect URI in Kenni.is to new Cloudflare URL
+```
 
 ---
 
