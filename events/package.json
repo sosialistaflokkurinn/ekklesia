@@ -14,7 +14,7 @@
     "elections",
     "voting"
   ],
-  "author": "Samstaða",
+  "author": "Sósíalistaflokkur Íslands (Socialist Party of Iceland)",
   "license": "UNLICENSED",
   "dependencies": {
     "cors": "^2.8.5",

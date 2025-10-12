@@ -340,7 +340,7 @@ See `functions/requirements.txt`:
 
 ## Project
 
-- **Organization**: Samstaða (Icelandic Social Democratic Party)
+- **Organization**: Sósíalistaflokkur Íslands (Socialist Party of Iceland)
 - **Repository**: https://github.com/sosialistaflokkurinn/ekklesia
 - **Platform**: Ekklesia e-democracy platform
 - **Project**: ekklesia-prod-10-2025

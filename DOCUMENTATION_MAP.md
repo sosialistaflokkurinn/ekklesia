@@ -25,7 +25,7 @@
 
 ## Project Overview
 
-**Ekklesia** is a democratic participation platform for Samstaða (Iceland Social Democratic Party), providing:
+**Ekklesia** is a democratic participation platform for Sósíalistaflokkur Íslands (Socialist Party of Iceland), providing:
 
 - **Secure Authentication**: National eID (Kenni.is) integration via Firebase/Identity Platform
 - **Member Portal**: View profile, roles, and participate in party activities

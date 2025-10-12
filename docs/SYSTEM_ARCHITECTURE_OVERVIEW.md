@@ -252,7 +252,7 @@ The voting system consists of three main components:
 
 ## Project
 
-- **Organization**: Samstaða (Icelandic Social Democratic Party)
+- **Organization**: Sósíalistaflokkur Íslands (Socialist Party of Iceland)
 - **Platform**: Custom e-democracy platform for elections
 - **Repository**: https://github.com/sosialistaflokkurinn/ekklesia
 - **Project**: ekklesia-prod-10-2025 (GCP)
