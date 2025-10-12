@@ -178,12 +178,16 @@ The `members/auth/` directory contains the original Node.js/ZITADEL implementati
 ### Security Features
 
 - ✅ OAuth 2.0 PKCE (RFC 7636) - Public client flow
-- ✅ State parameter for CSRF protection
+- ✅ State parameter for CSRF protection (Issue #33, Oct 12, 2025)
 - ✅ Nonce for replay attack prevention
 - ✅ Firebase custom tokens with verified claims
 - ✅ Kennitala verification against membership list
 - ✅ Secure HTTPS-only communication
-- ✅ Firebase security rules for Firestore
+- ✅ Firebase security rules for Firestore (Issue #30, Oct 12, 2025)
+- ✅ Idempotency protection for user creation (Issue #32, Oct 12, 2025)
+- ✅ Cloudflare rate limiting - 100 req/10sec per IP (Issue #31, Oct 12, 2025)
+- ✅ Origin protection - CF-Ray header + Cloudflare IP validation (Oct 12, 2025)
+- ✅ SSL/TLS Full (strict) encryption via Cloudflare
 
 ---
 
