@@ -201,26 +201,47 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
 
             users_ref.document(auth_uid).update(update_data)
         else:
-            # Create new user
+            # Create new user (with race condition handling)
             print(f"INFO: Creating new user for kennitala {normalized_kennitala[:7]}****")
-            new_user = auth.create_user(display_name=full_name)
-            auth_uid = new_user.uid
-            print(f"INFO: Created new Firebase Auth user with UID: {auth_uid}")
 
-            # Create user profile in Firestore
-            user_profile_data = {
-                'fullName': full_name,
-                'kennitala': normalized_kennitala,
-                'email': email,
-                'phoneNumber': phone_number,
-                'photoURL': None,
-                'role': 'user',
-                'isMember': False,  # Will be verified separately
-                'createdAt': firestore.SERVER_TIMESTAMP,
-                'lastLogin': firestore.SERVER_TIMESTAMP
-            }
-            db.collection('users').document(auth_uid).set(user_profile_data)
-            print(f"INFO: Created Firestore user profile at /users/{auth_uid}")
+            try:
+                new_user = auth.create_user(display_name=full_name)
+                auth_uid = new_user.uid
+                print(f"INFO: Created new Firebase Auth user with UID: {auth_uid}")
+
+                # Create user profile in Firestore
+                user_profile_data = {
+                    'fullName': full_name,
+                    'kennitala': normalized_kennitala,
+                    'email': email,
+                    'phoneNumber': phone_number,
+                    'photoURL': None,
+                    'role': 'user',
+                    'isMember': False,  # Will be verified separately
+                    'createdAt': firestore.SERVER_TIMESTAMP,
+                    'lastLogin': firestore.SERVER_TIMESTAMP
+                }
+                db.collection('users').document(auth_uid).set(user_profile_data)
+                print(f"INFO: Created Firestore user profile at /users/{auth_uid}")
+
+            except Exception as e:
+                # Handle race condition: user created by concurrent request
+                error_message = str(e)
+                if 'already exists' in error_message.lower() or 'uid_already_exists' in error_message.lower():
+                    print(f"WARN: User already exists (race condition detected), retrying query for kennitala {normalized_kennitala[:7]}****")
+                    # Retry query to find the user created by concurrent request
+                    query = users_ref.where('kennitala', '==', normalized_kennitala).limit(1)
+                    existing_users = list(query.stream())
+                    if existing_users:
+                        auth_uid = existing_users[0].id
+                        print(f"INFO: Found existing user after race condition: {auth_uid}")
+                    else:
+                        # This shouldn't happen, but handle it gracefully
+                        print(f"ERROR: Race condition unresolved - user exists but not found in Firestore")
+                        raise Exception("User creation race condition could not be resolved")
+                else:
+                    # Re-raise if it's a different error
+                    raise
 
         # Step 5: Create Firebase custom token with all claims
         custom_claims = {'kennitala': normalized_kennitala}

@@ -139,8 +139,24 @@
       // Check if this is an OAuth callback (has ?code parameter)
       const urlParams = new URLSearchParams(window.location.search);
       const authCode = urlParams.get('code');
+      const returnedState = urlParams.get('state');
 
       if (authCode) {
+        // Validate CSRF state parameter
+        const storedState = sessionStorage.getItem('oauth_state');
+        if (!storedState || returnedState !== storedState) {
+          statusEl.textContent = 'Villa';
+          statusTextEl.textContent = 'Öryggisvillaog: CSRF árásvörn virk. Vinsamlegast reyndu aftur.';
+          statusTextEl.style.color = 'red';
+          console.error('CSRF check failed: state mismatch');
+          sessionStorage.removeItem('oauth_state');
+          sessionStorage.removeItem('pkce_code_verifier');
+          return;
+        }
+
+        // State validated - clean up and proceed
+        sessionStorage.removeItem('oauth_state');
+
         // OAuth callback - handle authentication
         await handleOAuthCallback(authCode);
         return;
@@ -154,10 +170,21 @@
       }
     })();
 
+    // Generate CSRF state parameter
+    function generateState() {
+      const array = new Uint8Array(32);
+      crypto.getRandomValues(array);
+      return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+    }
+
     // Sign in with Kenni.is
     document.getElementById('login-btn').addEventListener('click', async () => {
       const { verifier, challenge } = await generatePKCE();
       sessionStorage.setItem('pkce_code_verifier', verifier);
+
+      // Generate and store CSRF state parameter
+      const state = generateState();
+      sessionStorage.setItem('oauth_state', state);
 
       const params = new URLSearchParams({
         client_id: KENNI_IS_CLIENT_ID,
@@ -166,6 +193,7 @@
         scope: 'openid profile national_id email phone_number',
         code_challenge: challenge,
         code_challenge_method: 'S256',
+        state: state,  // Add CSRF protection
       });
 
       const authUrl = `${KENNI_IS_ISSUER_URL}/oidc/auth?${params.toString()}`;
