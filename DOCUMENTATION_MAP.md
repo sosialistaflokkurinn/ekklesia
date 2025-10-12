@@ -86,13 +86,19 @@
 
 ### 📋 Recent Milestones (October 2025)
 
-**Oct 12, 2025 - Phase 1 Security Hardening Complete**
-- ✅ Firestore Security Rules deployed (#30)
-- ✅ CSRF Protection deployed (#33)
-- ✅ Idempotency Fix deployed (#32)
+**Oct 12, 2025 - Security Hardening Complete (Phase 1 & 2)**
+- ✅ **Phase 1**: Firestore Security Rules deployed (#30)
+- ✅ **Phase 1**: CSRF Protection deployed (#33)
+- ✅ **Phase 1**: Idempotency Fix deployed (#32)
+- ✅ **Phase 2**: Cloudflare rate limiting deployed (#31)
+  - Combined rate limiting rule (100 req/10sec across all 4 services)
+  - Origin protection middleware (Node.js + Python)
+  - DNS configuration via Cloudflare (auth.si-xj.org, api.si-xj.org, vote.si-xj.org, verify.si-xj.org)
+  - SSL/TLS Full (strict) encryption
+- ✅ **Phase 3**: Automation script created (scripts/cloudflare-setup.sh, 843 lines)
+- ✅ **Phase 3**: Git pre-commit hook for rule enforcement
 - ✅ All critical security vulnerabilities fixed
-- ✅ Production deployments: Firestore rules (20:58 UTC), Hosting (21:01 UTC), Cloud Function (21:03 UTC)
-- 📄 Documentation: `docs/status/SECURITY_HARDENING_PLAN.md`
+- 📄 Documentation: `docs/status/SECURITY_HARDENING_PLAN.md`, `docs/security/CLOUDFLARE_SETUP.md`
 
 **Oct 11, 2025 - Documentation Cleanup & Code Audit Complete**
 - ✅ Code audit completed comparing implementation vs documentation

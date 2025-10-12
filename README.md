@@ -67,10 +67,16 @@ Regnhlífarverkefni fyrir kosningakerfi Sósíalistaflokksins ásamt meðlima og
 
 - **National eID**: Government-issued Kenni.is authentication
 - **OAuth 2.0 PKCE**: RFC 7636 public client flow
+- **CSRF Protection**: State parameter validation (Issue #33 ✅)
+- **Firestore Security Rules**: Role-based access control (Issue #30 ✅)
+- **Rate Limiting**: Cloudflare protection - 100 req/10sec per IP (Issue #31 ✅)
+- **Origin Protection**: CF-Ray header + IP validation on all services
+- **Idempotency**: Race condition protection for user creation (Issue #32 ✅)
 - **Anonymity**: Elections service has zero member identity knowledge
 - **Audit Logging**: Complete trail in Events service (with PII), system-only logs in Elections (no PII)
 - **One-Vote-Per-Token**: Database constraints enforce single vote
 - **SHA-256 Hashing**: All tokens cryptographically hashed
+- **SSL/TLS**: Full (strict) encryption via Cloudflare
 
 ---
 
@@ -102,7 +108,7 @@ cd ekklesia
 - **Oct 8, 2025**: Members service operational
 - **Oct 9, 2025**: Events + Elections services deployed
 - **Oct 10, 2025**: Full S2S integration complete
-- **Oct 12, 2025**: Security hardening branch
+- **Oct 12, 2025**: Security hardening complete (Phase 1-3: Firestore rules, CSRF, rate limiting, Cloudflare automation)
 
 ---
 

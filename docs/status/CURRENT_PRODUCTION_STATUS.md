@@ -1,21 +1,24 @@
 # 🚀 Ekklesia Production Status
 
-**Last Updated**: 2025-10-09 20:55 UTC
+**Last Updated**: 2025-10-12 23:30 UTC
 **Project**: ekklesia-prod-10-2025 (521240388393)
 **Region**: europe-west2 (London)
 **Validated**: CLI tools (gcloud, firebase, gsutil)
+**Security Status**: ✅ Phase 1-3 Hardening Complete (Oct 12, 2025)
 
 ---
 
 ## ✅ Active Services
 
 ### Cloud Run Services
-| Service | Type | URL | Status | Memory | Last Deploy |
-|---------|------|-----|--------|--------|-------------|
-| **elections-service** | Node.js 18 + Express | https://elections-service-521240388393.europe-west2.run.app | ✅ Active | 512 MB | Oct 9, 2025 20:52 UTC |
-| **events-service** | Node.js 18 + Express | https://events-service-521240388393.europe-west2.run.app | ✅ Active | 512 MB | Oct 9, 2025 13:01 UTC |
-| **handlekenniauth** | Cloud Function (Python 3.11) | https://handlekenniauth-ymzrguoifa-nw.a.run.app | ✅ Active | 512 MB | Oct 8, 2025 10:08 UTC |
-| **verifymembership** | Cloud Function (Python 3.11) | https://verifymembership-ymzrguoifa-nw.a.run.app | ✅ Active | 256 MB | Oct 8, 2025 12:30 UTC |
+| Service | Type | Public URL (Cloudflare) | Status | Memory | Last Deploy |
+|---------|------|--------------------------|--------|--------|-------------|
+| **elections-service** | Node.js 18 + Express | https://vote.si-xj.org | ✅ Active | 512 MB | Oct 12, 2025 21:39 UTC |
+| **events-service** | Node.js 18 + Express | https://api.si-xj.org | ✅ Active | 512 MB | Oct 12, 2025 21:38 UTC |
+| **handlekenniauth** | Cloud Function (Python 3.11) | https://auth.si-xj.org | ✅ Active | 512 MB | Oct 12, 2025 21:41 UTC |
+| **verifymembership** | Cloud Function (Python 3.11) | https://verify.si-xj.org | ✅ Active | 256 MB | Oct 12, 2025 21:41 UTC |
+
+**Note**: Direct Cloud Run URLs (*.run.app) are protected with origin validation and return 403.
 
 ### Firebase Services
 | Service | URL | Status | Details | Last Deploy |
@@ -29,6 +32,63 @@
 | Service | Instance | Status | Details | IP Address |
 |---------|----------|--------|---------|------------|
 | **PostgreSQL 15** | ekklesia-db | ✅ RUNNABLE | db-f1-micro, europe-west2, pgaudit enabled, 30-day backups | 34.147.159.80 |
+
+### Cloudflare CDN & Security
+| Service | Domain | Status | Protection | Last Deploy |
+|---------|--------|--------|------------|-------------|
+| **Auth Service** | auth.si-xj.org | ✅ Active | Rate limiting, Origin protection | Oct 12, 2025 21:41 UTC |
+| **API Service** | api.si-xj.org | ✅ Active | Rate limiting, Origin protection | Oct 12, 2025 21:38 UTC |
+| **Vote Service** | vote.si-xj.org | ✅ Active | Rate limiting, Origin protection | Oct 12, 2025 21:39 UTC |
+| **Verify Service** | verify.si-xj.org | ✅ Active | Rate limiting, Origin protection | Oct 12, 2025 21:41 UTC |
+
+**Rate Limiting**: Combined rule (100 req/10sec per IP + datacenter)
+**SSL/TLS**: Full (strict) encryption
+**Bot Protection**: Enabled
+**Browser Integrity Check**: Enabled
+
+---
+
+## 🔒 Security Hardening (Oct 12, 2025)
+
+**Status**: ✅ Phase 1-3 Complete (All critical security issues resolved)
+
+### Phase 1: Critical Fixes (Oct 12, 2025 21:03 UTC)
+- ✅ **Issue #30**: Firestore Security Rules deployed
+- ✅ **Issue #33**: CSRF Protection (state parameter validation)
+- ✅ **Issue #32**: Idempotency Fix (user creation race condition)
+
+### Phase 2: Cloudflare Infrastructure (Oct 12, 2025 22:51 UTC)
+- ✅ **Issue #31**: Rate Limiting deployed (combined rule: 9e3a46b65ab448b29f0d908f5bfd8253)
+- ✅ **DNS Configuration**: 4 CNAME records via Cloudflare API
+  - auth.si-xj.org → handlekenniauth (Origin protection: ✅)
+  - api.si-xj.org → events-service (Origin protection: ✅)
+  - vote.si-xj.org → elections-service (Origin protection: ✅)
+  - verify.si-xj.org → verifymembership (Origin protection: ✅)
+- ✅ **Origin Protection Middleware**: CF-Ray + Cloudflare IP validation
+  - Node.js: events/src/middleware/cloudflare.js (160 lines)
+  - Node.js: elections/src/middleware/cloudflare.js (160 lines)
+  - Python: members/functions/cloudflare_check.py (140 lines)
+- ✅ **SSL/TLS**: Full (strict) encryption mode
+- ✅ **Bot Protection**: JavaScript Detections enabled
+
+### Phase 3: Automation & Safety (Oct 12, 2025 23:17 UTC)
+- ✅ **Automation Script**: scripts/cloudflare-setup.sh (843 lines)
+  - Complete DNS, rate limiting, verification, testing automation
+  - Reduces manual work from 2-3 hours to 2-3 minutes (98% time savings)
+- ✅ **Git Pre-commit Hook**: Prevents tracking forbidden files (.gitignore, AUTOMATION.md, secrets)
+- ✅ **Hook Installation Script**: scripts/install-git-hooks.sh (147 lines)
+
+**Documentation**:
+- [docs/status/SECURITY_HARDENING_PLAN.md](SECURITY_HARDENING_PLAN.md) - Complete hardening plan
+- [docs/security/CLOUDFLARE_SETUP.md](../security/CLOUDFLARE_SETUP.md) - Cloudflare infrastructure guide
+- [scripts/README.md](../../scripts/README.md) - Automation scripts guide
+
+**Testing Results**:
+- ✅ Origin protection working (direct URLs blocked with 403)
+- ✅ DNS propagation complete (all 4 domains resolving)
+- ✅ Rate limiting active (100 req/10sec per IP)
+- ✅ SSL/TLS encryption verified
+- ✅ Pre-commit hook tested and blocking forbidden files
 
 ---
 

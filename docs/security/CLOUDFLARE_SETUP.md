@@ -1,8 +1,9 @@
 # Cloudflare Rate Limiting Setup for Ekklesia
 
 **Created**: 2025-10-12
-**Status**: 🔨 Phase 2 Implementation
-**Issue**: #31 - Rate Limiting for Cloud Functions and Cloud Run Services
+**Updated**: 2025-10-12 22:51 UTC
+**Status**: ✅ Phase 2 Complete - All Services Protected
+**Issue**: #31 - Rate Limiting for Cloud Functions and Cloud Run Services ✅
 **Domain**: si-xj.org (already on Cloudflare)
 
 ---
@@ -637,20 +638,26 @@ Update the following files with Cloudflare domain URLs:
 
 **What was done**:
 1. ✅ Verified si-xj.org is on Cloudflare
-2. ✅ Created 4 DNS CNAME records (auth, api, vote, verify)
+2. ✅ Created 4 DNS CNAME records (auth, api, vote, verify) - via Cloudflare API
 3. ✅ Configured SSL/TLS to Full (strict)
-4. ✅ Created 4 rate limiting rules (100-500 req/min per IP)
+4. ✅ Created combined rate limiting rule (9e3a46b65ab448b29f0d908f5bfd8253) - 100 req/10sec per IP
 5. ✅ Enabled Bot Fight Mode and Browser Integrity Check
 6. ✅ Implemented Cloudflare IP filtering middleware (Node.js + Python)
-7. ✅ Updated OAuth redirect URIs
+7. ✅ Updated OAuth redirect URIs (not needed - kept direct URLs for Members)
 8. ✅ Tested rate limiting and direct URL blocking
 
 **Result**: All Ekklesia services now protected by Cloudflare at $0/month cost.
 
-**Next Steps**: Monitor analytics, adjust rate limits if needed based on real-world usage.
+**Free Tier Limitations Encountered**:
+- ❌ Only 1 rate limiting rule allowed (combined all 4 services into single rule)
+- ❌ Only 10-second periods allowed (not 60 seconds)
+- ❌ Only 10-second mitigation timeout (not 10 minutes)
+- ✅ Solution: Combined rule with generous 100 req/10sec limit (600/min effective)
+
+**Next Steps**: Monitor analytics via Cloudflare dashboard, adjust rate limits if needed based on real-world usage.
 
 ---
 
-**Last Updated**: 2025-10-12
-**Status**: 🔨 Phase 2 Implementation
-**Issue**: #31
+**Last Updated**: 2025-10-12 22:51 UTC
+**Status**: ✅ Phase 2 Complete - All Services Protected
+**Issue**: #31 ✅ Resolved
