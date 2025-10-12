@@ -1,10 +1,10 @@
 # Security Hardening Plan - Deep Dive
 
 **Created**: 2025-10-12
-**Updated**: 2025-10-12 21:45 UTC (Phase 2 Complete)
+**Updated**: 2025-10-12 22:51 UTC (Phase 2 Complete - Rate Limiting Active)
 **Branch**: feature/security-hardening
-**Status**: ✅ Phase 1 Complete | ✅ Phase 2 Complete (Origin Protection Active)
-**Issues**: #30 ✅, #31 ✅ (Origin Protection Deployed), #32 ✅, #33 ✅
+**Status**: ✅ Phase 1 Complete | ✅ Phase 2 Complete (Full Cloudflare Protection)
+**Issues**: #30 ✅, #31 ✅ (Rate Limiting Deployed), #32 ✅, #33 ✅
 
 ## ✅ Phase 1 Complete (Oct 12, 2025 21:03 UTC)
 
@@ -22,7 +22,7 @@
 
 ---
 
-## ✅ Phase 2 Complete (Oct 12, 2025 21:45 UTC)
+## ✅ Phase 2 Complete (Oct 12, 2025 22:51 UTC)
 
 **Rate limiting infrastructure fully deployed (Issue #31):**
 
@@ -52,10 +52,19 @@
   - Browser Integrity Check: Enabled
   - Security Level: Always protected (automatic)
 
-- ⏳ **Rate Limiting Rules** - Pending manual configuration in Cloudflare dashboard
-  - 4 rules needed (auth, api, vote, verify subdomains)
-  - Configuration requires Cloudflare Pro or Enterprise plan
-  - Free tier: Manual rate limiting via WAF custom rules available
+- ✅ **Rate Limiting Rules** - Complete (Free Tier)
+  - Combined rule protecting all 4 services (via Cloudflare API)
+  - Rule ID: 9e3a46b65ab448b29f0d908f5bfd8253
+  - Rate limit: 100 requests per 10 seconds (600 req/min)
+  - Per IP address + Cloudflare datacenter (ip.src + cf.colo.id)
+  - Action: Block for 10 seconds when limit exceeded
+  - Applies to: auth.si-xj.org, api.si-xj.org, vote.si-xj.org, verify.si-xj.org
+
+**Free Tier Limitations**:
+- ❌ Only 1 rate limiting rule allowed (not 4 separate rules)
+- ❌ Only 10-second periods (not 60 seconds/1 minute)
+- ❌ Only 10-second mitigation timeout (not 10 minutes)
+- ✅ Combined rule covers all services with generous 100 req/10sec limit
 
 ### Service Deployments (Oct 12, 2025)
 - ✅ **Events service**: Revision events-service-00003-rgk (21:38 UTC)
@@ -93,18 +102,32 @@ $ dig @1.1.1.1 +short auth.si-xj.org
 104.21.6.57
 ```
 
-### Next Steps (Optional - Rate Limiting Rules)
-Rate limiting rules require manual configuration in Cloudflare dashboard:
-1. Navigate to Security → WAF → Rate limiting rules
-2. Create 4 rules (see CLOUDFLARE_SETUP.md for details):
-   - auth.si-xj.org: 100 req/min → Block
-   - api.si-xj.org: 200 req/min → Block
-   - vote.si-xj.org: 500 req/min → Challenge (CAPTCHA)
-   - verify.si-xj.org: 50 req/min → Block
+### Rate Limiting Configuration (Completed via API)
+Rate limiting rule created via Cloudflare API (Oct 12, 2025 22:51 UTC):
 
-**Note**: Free tier may have limitations on advanced rate limiting rules. Origin protection (blocking direct URLs) is active and provides significant security improvement.
+**Rule Details**:
+```json
+{
+  "id": "9e3a46b65ab448b29f0d908f5bfd8253",
+  "description": "Rate Limit Protection - All Services (100 req/10sec, block 10sec)",
+  "expression": "(http.host in {\"auth.si-xj.org\" \"api.si-xj.org\" \"vote.si-xj.org\" \"verify.si-xj.org\"})",
+  "action": "block",
+  "ratelimit": {
+    "characteristics": ["ip.src", "cf.colo.id"],
+    "period": 10,
+    "requests_per_period": 100,
+    "mitigation_timeout": 10
+  }
+}
+```
 
-**See**: [docs/security/CLOUDFLARE_SETUP.md](../security/CLOUDFLARE_SETUP.md) for complete setup instructions
+**What This Protects**:
+- ✅ All 4 services covered by single rule (free tier limitation)
+- ✅ 100 requests per 10 seconds = 600 requests/minute (generous)
+- ✅ Blocks DDoS and brute force attacks
+- ✅ Origin protection prevents bypass via direct URLs
+
+**See**: [docs/security/CLOUDFLARE_SETUP.md](../security/CLOUDFLARE_SETUP.md) for complete setup documentation
 
 ---
 
