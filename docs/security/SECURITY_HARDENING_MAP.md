@@ -211,20 +211,23 @@ This document serves as the **central navigation map** for the security hardenin
 
 **Prerequisites**:
 - ✅ Cloudflare bypass protection implemented (Task 1.4)
-- ⏸️ Domain access confirmed (sosialistaflokkurinn.is)
+- ✅ Domain access confirmed (si-xj.org - developer has full access)
 - ⏸️ Cloudflare API token obtained
 - ⏸️ Token stored in GCP Secret Manager
 
 #### Task 2.1: Domain Investigation
 - **Effort**: 15 minutes
-- **Status**: ⏸️ Blocked (need to contact Samstaða)
+- **Status**: ✅ COMPLETE (Oct 12, 2025)
 - **Actions**:
-  - Check si-xj.org status (discovered: still on Cloudflare!)
-  - Contact Samstaða about sosialistaflokkurinn.is ownership
-  - Determine DNS management access
-  - Check for existing Cloudflare account
+  - ✅ Check si-xj.org status (confirmed: ON Cloudflare)
+  - ✅ Verify domain ownership (developer has full access)
+  - ✅ Confirm DNS management access (yes)
+  - ✅ Verify Cloudflare account exists (yes)
 
-**Discovery**: si-xj.org IS on Cloudflare (nameservers: bristol/jakub.ns.cloudflare.com)
+**✅ DECISION**: Use si-xj.org (developer has full access, already on Cloudflare)
+- Nameservers: bristol.ns.cloudflare.com, jakub.ns.cloudflare.com
+- Existing DNS: members.si-xj.org → 34.117.214.88
+- Can migrate to sosialistaflokkurinn.is or xj.is later if party decides
 
 ---
 
@@ -242,19 +245,21 @@ This document serves as the **central navigation map** for the security hardenin
 
 #### Task 2.3: Create DNS Records
 - **Effort**: 20 minutes
-- **Status**: ⏸️ Blocked (need API access)
+- **Status**: ⏸️ Ready (waiting for API token)
 - **Actions**:
   - Run: `./cloudflare-dns.sh setup`
   - Verify: `./cloudflare-dns.sh status`
-  - Check: `dig auth.sosialistaflokkurinn.is`
+  - Check: `dig auth.si-xj.org`
 
-**DNS Records to Create**:
+**DNS Records to Create** (si-xj.org):
 ```
-auth.sosialistaflokkurinn.is → handlekenniauth-521240388393.europe-west2.run.app
-verify.sosialistaflokkurinn.is → verifymembership-521240388393.europe-west2.run.app
-api.sosialistaflokkurinn.is → events-service-521240388393.europe-west2.run.app
-vote.sosialistaflokkurinn.is → elections-service-521240388393.europe-west2.run.app
+auth.si-xj.org → handlekenniauth-521240388393.europe-west2.run.app
+verify.si-xj.org → verifymembership-521240388393.europe-west2.run.app
+api.si-xj.org → events-service-521240388393.europe-west2.run.app
+vote.si-xj.org → elections-service-521240388393.europe-west2.run.app
 ```
+
+**Script Updated**: cloudflare-dns.sh now uses si-xj.org as default domain
 
 ---
 
@@ -363,13 +368,17 @@ vote.sosialistaflokkurinn.is → elections-service-521240388393.europe-west2.run
 | Oct 12 | Bypass protection guide | CLOUDFLARE_BYPASS_PROTECTION.md | ✅ Done |
 | Oct 12 | Automated DNS script | cloudflare-dns.sh | ✅ Done |
 | Oct 12 | si-xj.org discovery | CLOUDFLARE_SETUP_PLAN.md | ✅ Done |
+| Oct 12 | Domain ownership verification | PROJECT_IDENTITY.md | ✅ Done |
+| Oct 12 | Domain decision (si-xj.org) | PROJECT_IDENTITY.md | ✅ Done |
+| Oct 12 | Party identity cleanup | Multiple files | ✅ Done |
+| Oct 12 | Task 2.1: Domain Investigation | SECURITY_HARDENING_MAP.md | ✅ Done |
 
 ### In Progress 🔨
 
 | Task | Status | Blocker | Next Action |
 |------|--------|---------|-------------|
-| Domain investigation | ⏸️ Paused | Need to contact Samstaða | Ask about sosialistaflokkurinn.is ownership |
-| API token | ⏸️ Paused | Need domain access first | Get API token when domain confirmed |
+| Cloudflare API token | ⏸️ Ready | Need to get API token | Login to Cloudflare and create API token |
+| Store token in GCP | ⏸️ Ready | Need API token first | Store in Secret Manager |
 
 ### Planned ⏸️
 

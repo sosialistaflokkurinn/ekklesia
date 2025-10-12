@@ -217,16 +217,31 @@ This should be used for all public-facing services:
 
 ### Domain Decision for Ekklesia
 
-**Use**: `sosialistaflokkurinn.is` (primary choice)
-- Official party domain
-- Confirmed SÍ ownership (SI320-IS)
-- Already active with party website
-- Professional appearance
+**✅ DECISION (Oct 12, 2025): Use `si-xj.org`**
 
-**Alternative**: `xj.is` (short URLs)
-- Same registrant as sosialistaflokkurinn.is
-- Shorter for mobile/SMS use
-- Could use for vote.xj.is (easier to type)
+**Rationale**:
+- Full developer access (no approval delays)
+- Already on Cloudflare (bristol.ns.cloudflare.com, jakub.ns.cloudflare.com)
+- Can proceed immediately with security hardening
+- Temporary or permanent use (flexible)
+- Existing DNS record: members.si-xj.org → 34.117.214.88
+
+**Cloudflare Status**: ✅ Active
+- Nameservers: bristol.ns.cloudflare.com, jakub.ns.cloudflare.com
+- Cloudflare API access: Available
+- Can create DNS records immediately
+
+**Subdomains for Ekklesia**:
+- `auth.si-xj.org` → handlekenniauth (OAuth)
+- `verify.si-xj.org` → verifymembership (Membership verification)
+- `api.si-xj.org` → events-service (Token issuance)
+- `vote.si-xj.org` → elections-service (Voting)
+
+**Future Options** (if party decides):
+- Can migrate to `sosialistaflokkurinn.is` (SI320-IS) later
+- Can use `xj.is` (SI320-IS) for shorter URLs
+- DNS change is straightforward (just update CNAME records)
+- All infrastructure remains the same (only DNS changes)
 
 **Do NOT use**: `samstodin.is` or `malgagnid.is`
 - Not owned by SÍ
