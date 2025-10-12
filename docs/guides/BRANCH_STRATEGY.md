@@ -14,7 +14,7 @@ main ─────────────────────────
          │
          └─ feature/elections-design-and-ops-docs ───────▶ (PR #29, awaiting Ágúst review)
                            │
-                           └─ feature/[NEW-BRANCH-NAME] ──▶ (new branch for next work)
+                           └─ feature/security-hardening ─▶ (current: security improvements)
 ```
 
 ---
@@ -28,8 +28,18 @@ main ─────────────────────────
 
 ### feature/elections-design-and-ops-docs (PR #29)
 - 🔄 Status: **Awaiting Ágúst review**
-- Contains: Events + Elections + S2S + Documentation (88 commits)
+- Contains: Events + Elections + S2S + Documentation (89 commits)
 - Will be merged using: **Squash and merge** (same as PR #28)
+
+### feature/security-hardening (Current)
+- ✅ Created: Oct 12, 2025
+- 🔨 Status: **Active development**
+- Based on: `feature/elections-design-and-ops-docs`
+- Purpose: Security improvements (issues #30-33)
+  - Rate limiting for Cloud Functions (#31)
+  - CSRF protection verification (#33)
+  - Idempotency for user creation (#32)
+  - Firestore security rules review (#30)
 
 ---
 
@@ -173,7 +183,13 @@ git push -u origin feature/your-feature-name
 - Created: Oct 10, 2025
 - Status: Awaiting Ágúst review
 - Planned method: **Squash and merge**
-- Contains: 88 commits → will become 1 commit
+- Contains: 89 commits → will become 1 commit
+
+### feature/security-hardening
+- Created: Oct 12, 2025
+- Branched from: `feature/elections-design-and-ops-docs`
+- Purpose: Security improvements (#30-33)
+- Status: Active development
 
 ---
 
