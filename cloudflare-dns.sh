@@ -13,8 +13,10 @@ set -e
 # CONFIGURATION
 # ============================================================================
 
-# Domain Configuration (UPDATE THIS)
-DOMAIN="${CLOUDFLARE_DOMAIN:-sosialistaflokkurinn.is}"
+# Domain Configuration
+# DECISION (Oct 12, 2025): Use si-xj.org (developer has full access, already on Cloudflare)
+# Can migrate to sosialistaflokkurinn.is or xj.is later if party decides
+DOMAIN="${CLOUDFLARE_DOMAIN:-si-xj.org}"
 ZONE_ID=""  # Will be fetched automatically
 
 # GCP Cloud Run Service URLs (Production)
