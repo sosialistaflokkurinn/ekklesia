@@ -165,7 +165,6 @@ tmp/
 !docs/status/SECURITY_HARDENING_PLAN.md
 !docs/guides/SECRET_MANAGER.md
 !docs/security/CLOUDFLARE_SETUP.md
-!docs/security/CLOUDFLARE_AUTOMATION.md
 !members/README.md
 
 # GitHub templates (tracked)
