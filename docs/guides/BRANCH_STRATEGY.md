@@ -35,6 +35,7 @@ main ─────────────────────────
 - ✅ Created: Oct 12, 2025
 - 🔨 Status: **Active development**
 - Based on: `feature/elections-design-and-ops-docs`
+- Planned method: **Squash and merge** (when ready for PR)
 - Purpose: Security improvements (issues #30-33)
   - Rate limiting for Cloud Functions (#31)
   - CSRF protection verification (#33)
@@ -163,10 +164,11 @@ git push -u origin feature/your-feature-name
 ```
 
 ### Key Points
-- ✅ **Always use "Squash and merge"** for PRs to main
+- ✅ **Always use "Squash and merge"** for ALL PRs to main
 - ✅ **Branch names** should be descriptive
 - ✅ **Can branch before PR #29 merges** - no problem!
-- ✅ **Each PR** gets squashed to one commit
+- ✅ **Each PR** gets squashed to one commit (consistent history)
+- ✅ **feature/security-hardening** will also use "Squash and merge"
 
 ---
 
@@ -185,11 +187,13 @@ git push -u origin feature/your-feature-name
 - Planned method: **Squash and merge**
 - Contains: 89 commits → will become 1 commit
 
-### feature/security-hardening
+### feature/security-hardening (Future PR)
 - Created: Oct 12, 2025
 - Branched from: `feature/elections-design-and-ops-docs`
 - Purpose: Security improvements (#30-33)
+- Planned method: **Squash and merge**
 - Status: Active development
+- Will create PR to main when ready
 
 ---
 
