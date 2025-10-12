@@ -103,11 +103,15 @@
     </div>
 
     <script type="module">
+        import { R } from '/i18n/strings-loader.js';
         import { requireAuth, signOut } from '/js/auth.js';
         import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
-        const PRODUCTION_API = 'https://events-service-521240388393.europe-west2.run.app';
-        const ELECTIONS_API = 'https://elections-service-521240388393.europe-west2.run.app';
+        // Wait for strings to load
+        await R.load('is');
+
+        const PRODUCTION_API = R.string.config_api_events;
+        const ELECTIONS_API = R.string.config_api_elections;
         const auth = getAuth();
         let currentUser = null;
 
@@ -120,17 +124,17 @@
             const userInfo = document.getElementById('user-info');
 
             if (user) {
-                authBadge.textContent = '✓ Auðkenndur';
+                authBadge.textContent = R.string.test_auth_authenticated;
                 authBadge.className = 'status-badge status-authenticated';
 
                 user.getIdTokenResult().then(idTokenResult => {
-                    const kennitala = idTokenResult.claims.kennitala || 'Ekki tiltækt';
-                    const isMember = idTokenResult.claims.isMember ? '✓ Já' : '✗ Nei';
+                    const kennitala = idTokenResult.claims.kennitala || R.string.test_auth_not_available;
+                    const isMember = idTokenResult.claims.isMember ? R.string.test_auth_yes : R.string.test_auth_no;
                     userInfo.innerHTML = `
                         <div class="user-details">
-                            <div><strong>UID:</strong> ${user.uid}</div>
-                            <div><strong>Kennitala:</strong> ${kennitala}</div>
-                            <div><strong>Félagsaðild:</strong> ${isMember}</div>
+                            <div><strong>${R.string.test_auth_uid}</strong> ${user.uid}</div>
+                            <div><strong>${R.string.test_auth_kennitala}</strong> ${kennitala}</div>
+                            <div><strong>${R.string.test_auth_membership}</strong> ${isMember}</div>
                         </div>
                     `;
                     enableButtons(true);
@@ -146,7 +150,7 @@
         }
 
         async function getIdToken() {
-            if (!currentUser) throw new Error('Not authenticated');
+            if (!currentUser) throw new Error(R.string.test_error_not_authenticated);
             return await currentUser.getIdToken();
         }
 
@@ -222,7 +226,7 @@
                 const answer = document.getElementById('vote-answer').value;
 
                 if (!votingToken) {
-                    showResult('result-vote', { error: 'Vinsamlegast sláðu inn atkvæðismerki' }, true);
+                    showResult('result-vote', { error: R.string.test_5_error_no_token }, true);
                     return;
                 }
 

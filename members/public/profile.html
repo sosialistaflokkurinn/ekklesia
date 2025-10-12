@@ -68,8 +68,11 @@
   </div>
 
   <script type="module">
-    import { R } from '/i18n/R.js';
+    import { R } from '/i18n/strings-loader.js';
     import { requireAuth, signOut, getUserData } from '/js/auth.js';
+
+    // Wait for strings to load
+    await R.load('is');
 
     // Set page title
     document.title = R.string.page_title_profile;
