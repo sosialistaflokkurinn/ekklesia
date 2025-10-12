@@ -1,0 +1,226 @@
+# Ekklesia Platform - Git Ignore Template
+# Copy this to .gitignore and customize for local development
+# Setup: cp .gitignore.example .gitignore
+# DO NOT commit .gitignore to git (it's in this file's ignore rules)
+
+###################
+# Security & Secrets
+###################
+
+# Environment files with secrets
+.env
+.env.local
+.env.*.local
+*.env
+!*.env.example
+
+# OAuth/OIDC credentials
+*client_secret*
+*CLIENT_SECRET*
+*service-account*.json
+*serviceAccount*.json
+
+# GCP credentials
+.gcloud/
+gcloud-*.json
+
+###################
+# Python
+###################
+
+# Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+.Python
+venv/
+env/
+ENV/
+.venv/
+
+# Package management
+*.egg
+*.egg-info/
+.eggs/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Type checking & linting
+.mypy_cache/
+.ruff_cache/
+.pytype/
+
+###################
+# Node.js / JavaScript
+###################
+
+# Dependencies
+node_modules/
+jspm_packages/
+
+# Build output
+dist/
+build/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Lock files (team preference: choose to track or ignore)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+###################
+# Firebase
+###################
+
+# Firebase cache
+.firebase/
+*.cache
+
+# Firebase debug logs
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+database-debug.log
+pubsub-debug.log
+
+###################
+# General Development
+###################
+
+# Logs
+*.log
+!docs/**/*.log
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+###################
+# Database
+###################
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-shm
+*.db-wal
+
+###################
+# Backup & Temp
+###################
+
+*.backup
+*.bak
+*.orig
+*.tmp
+*.swp
+temp/
+tmp/
+*~.nib
+
+###################
+# Documentation Strategy
+###################
+
+# Documentation (local only - use DOCUMENTATION_MAP.md to find files)
+# Strategy: Track only essential docs, keep development docs local
+*.md
+
+# Essential documentation (tracked)
+!DOCUMENTATION_MAP.md
+!README.md
+!docs/SYSTEM_ARCHITECTURE_OVERVIEW.md
+!docs/design/EVENTS_SERVICE_MVP.md
+!docs/design/ELECTIONS_SERVICE_MVP.md
+!docs/status/CURRENT_PRODUCTION_STATUS.md
+!docs/status/SECURITY_HARDENING_PLAN.md
+!docs/guides/SECRET_MANAGER.md
+!docs/security/CLOUDFLARE_SETUP.md
+!docs/security/CLOUDFLARE_AUTOMATION.md
+!members/README.md
+
+# GitHub templates (tracked)
+!.github/
+!.github/**/*.md
+!.github/ISSUE_TEMPLATE/*.md
+
+###################
+# Scripts & Tools
+###################
+
+# Shell scripts (local only - available on request)
+*.sh
+!.github/workflows/*.sh
+!scripts/*.sh
+
+# Python validation (tracked - needed for CI)
+# validate_documentation_map.py is tracked
+
+###################
+# Git Configuration
+###################
+
+# Git ignore files (keep local only)
+.gitignore
+.gitignore-*
+
+###################
+# Claude Code Settings
+###################
+
+# Claude Code (local only - personal AI settings)
+.code-rules
+.claude/
+
+###################
+# Project-Specific
+###################
+
+# Archive and legacy directories (not for production)
+archive/
+
+# Sensitive data files
+members/data/kennitalas.txt
+
+# Legacy directories (if they exist)
+template/
+usr/
+
+###################
+# Comments & Notes
+###################
+
+# This file serves as a template. After copying to .gitignore:
+# 1. Uncomment lock file patterns if your team decides to track them
+# 2. Add any local tools or editors you use
+# 3. Add any project-specific temporary directories
+# 4. Never commit your local .gitignore back to the repository
