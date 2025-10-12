@@ -112,6 +112,24 @@ def handleKenniAuth(req: https_fn.Request):
 - ⚠️ Requires custom domain (can't proxy `*.run.app` directly)
 - ⚠️ DNS propagation time (24-48 hours)
 - ⚠️ Must update OAuth redirect URIs to use new domain
+- 🔴 **CRITICAL**: Direct Cloud Run URLs remain accessible - must implement origin protection
+
+**⚠️ IMPORTANT**: Cloudflare only protects traffic that goes through Cloudflare. Attackers can bypass protection by hitting the direct Cloud Run URLs:
+
+```
+Direct URLs (Still Exposed):
+❌ https://elections-service-521240388393.europe-west2.run.app
+❌ https://events-service-521240388393.europe-west2.run.app
+❌ https://handlekenniauth-521240388393.europe-west2.run.app
+❌ https://verifymembership-521240388393.europe-west2.run.app
+```
+
+**Solution**: Implement application-level IP filtering to only accept traffic from Cloudflare IP ranges.
+
+**See**: [docs/security/CLOUDFLARE_BYPASS_PROTECTION.md](../security/CLOUDFLARE_BYPASS_PROTECTION.md) for complete mitigation strategy (includes Node.js and Python middleware).
+
+**Effort**: 2-3 hours (one-time implementation, reuse across all services)
+**Cost**: $0 (code change only)
 
 #### Option B: Firebase App Check (If No Custom Domain)
 ```javascript
