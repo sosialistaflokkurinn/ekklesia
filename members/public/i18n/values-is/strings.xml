@@ -168,10 +168,10 @@
     <string name="config_kenni_client_id">@sosi-kosningakerfi.is/rafr-nt-kosningakerfi-s-s</string>
     <string name="config_oauth_scopes">openid profile national_id email phone_number</string>
 
-    <!-- API endpoints -->
-    <string name="config_api_handle_auth">https://handlekenniauth-ymzrguoifa-nw.a.run.app</string>
-    <string name="config_api_events">https://events-service-521240388393.europe-west2.run.app</string>
-    <string name="config_api_elections">https://elections-service-521240388393.europe-west2.run.app</string>
+    <!-- API endpoints (Cloudflare domains for security) -->
+    <string name="config_api_handle_auth">https://auth.si-xj.org</string>
+    <string name="config_api_events">https://api.si-xj.org</string>
+    <string name="config_api_elections">https://vote.si-xj.org</string>
 
     <!-- Paths -->
     <string name="path_dashboard">/dashboard.html</string>
