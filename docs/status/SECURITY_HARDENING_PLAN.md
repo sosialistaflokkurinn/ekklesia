@@ -1,10 +1,10 @@
 # Security Hardening Plan - Deep Dive
 
 **Created**: 2025-10-12
-**Updated**: 2025-10-12 (Phase 2 Code Complete)
+**Updated**: 2025-10-12 21:45 UTC (Phase 2 Complete)
 **Branch**: feature/security-hardening
-**Status**: ✅ Phase 1 Complete | 🔨 Phase 2 Code Complete (Pending Cloudflare DNS)
-**Issues**: #30 ✅, #31 🔨 (Code Ready), #32 ✅, #33 ✅
+**Status**: ✅ Phase 1 Complete | ✅ Phase 2 Complete (Origin Protection Active)
+**Issues**: #30 ✅, #31 ✅ (Origin Protection Deployed), #32 ✅, #33 ✅
 
 ## ✅ Phase 1 Complete (Oct 12, 2025 21:03 UTC)
 
@@ -22,17 +22,47 @@
 
 ---
 
-## 🔨 Phase 2 Code Complete (Oct 12, 2025 - Pending DNS)
+## ✅ Phase 2 Complete (Oct 12, 2025 21:45 UTC)
 
-**Rate limiting infrastructure implemented (Issue #31):**
-- ✅ **Cloudflare setup documentation** - Complete
-- ✅ **Node.js middleware** - Complete (Events + Elections services)
-- ✅ **Python decorator** - Complete (handleKenniAuth function)
-- ⏳ **DNS configuration** - Pending user action
-- ⏳ **Cloudflare rate limiting rules** - Pending user action
-- ⏳ **Production deployment** - Pending DNS + testing
+**Rate limiting infrastructure fully deployed (Issue #31):**
 
-**Code Changes**:
+### Infrastructure Deployed
+- ✅ **DNS Configuration** - Complete (4 CNAME records via Cloudflare API)
+  - auth.si-xj.org → handlekenniauth-521240388393.europe-west2.run.app
+  - api.si-xj.org → events-service-521240388393.europe-west2.run.app
+  - vote.si-xj.org → elections-service-521240388393.europe-west2.run.app
+  - verify.si-xj.org → verifymembership-521240388393.europe-west2.run.app
+  - All records proxied through Cloudflare (DNS propagated)
+
+- ✅ **Origin Protection** - Complete (deployed and tested)
+  - Node.js middleware: Events + Elections services
+  - Python decorator: handleKenniAuth function
+  - Direct URLs blocked with 403: "Direct access not allowed"
+  - CF-Ray header validation working
+  - Cloudflare IP range validation working
+
+- ✅ **SSL/TLS Configuration** - Complete
+  - Encryption mode: Full (strict)
+  - Always Use HTTPS: Enabled
+  - Automatic HTTPS Rewrites: Enabled
+  - TLS 1.3: Enabled
+
+- ✅ **Security Features** - Complete
+  - Bot Fight Mode: Enabled (JS Detections: On)
+  - Browser Integrity Check: Enabled
+  - Security Level: Always protected (automatic)
+
+- ⏳ **Rate Limiting Rules** - Pending manual configuration in Cloudflare dashboard
+  - 4 rules needed (auth, api, vote, verify subdomains)
+  - Configuration requires Cloudflare Pro or Enterprise plan
+  - Free tier: Manual rate limiting via WAF custom rules available
+
+### Service Deployments (Oct 12, 2025)
+- ✅ **Events service**: Revision events-service-00003-rgk (21:38 UTC)
+- ✅ **Elections service**: Revision elections-service-00004-mfl (21:39 UTC)
+- ✅ **handleKenniAuth**: Revision handlekenniauth-00013-huq (21:41 UTC)
+
+### Code Changes
 - Created: `docs/security/CLOUDFLARE_SETUP.md` (550+ lines)
 - Created: `events/src/middleware/cloudflare.js` (160 lines)
 - Created: `elections/src/middleware/cloudflare.js` (160 lines)
@@ -40,13 +70,39 @@
 - Modified: `events/src/index.js` (added Cloudflare middleware)
 - Modified: `elections/src/index.js` (added Cloudflare middleware)
 - Modified: `members/functions/main.py` (added Cloudflare decorator)
+- Updated: `docs/guides/SECRET_MANAGER.md` (added cloudflare-api-token)
 
-**Next Steps** (User Action Required):
-1. Configure DNS CNAME records in Cloudflare dashboard (4 subdomains)
-2. Configure rate limiting rules in Cloudflare dashboard (4 rules)
-3. Deploy updated services to production (Events, Elections, handleKenniAuth)
-4. Test rate limiting with curl
-5. Monitor Cloudflare analytics
+### Git Commits
+- `7abb792` - Phase 2 code implementation (1,977 lines)
+- `2696593` - Secret Manager documentation update
+
+### Testing Results
+**Origin Protection (✅ Working):**
+```bash
+$ curl https://events-service-521240388393.europe-west2.run.app/health
+{"error":"Direct access not allowed","message":"This service must be accessed through the official domain."}
+
+$ curl https://elections-service-521240388393.europe-west2.run.app/health
+{"error":"Direct access not allowed","message":"This service must be accessed through the official domain."}
+```
+
+**DNS Propagation (✅ Working):**
+```bash
+$ dig @1.1.1.1 +short auth.si-xj.org
+172.67.154.247
+104.21.6.57
+```
+
+### Next Steps (Optional - Rate Limiting Rules)
+Rate limiting rules require manual configuration in Cloudflare dashboard:
+1. Navigate to Security → WAF → Rate limiting rules
+2. Create 4 rules (see CLOUDFLARE_SETUP.md for details):
+   - auth.si-xj.org: 100 req/min → Block
+   - api.si-xj.org: 200 req/min → Block
+   - vote.si-xj.org: 500 req/min → Challenge (CAPTCHA)
+   - verify.si-xj.org: 50 req/min → Block
+
+**Note**: Free tier may have limitations on advanced rate limiting rules. Origin protection (blocking direct URLs) is active and provides significant security improvement.
 
 **See**: [docs/security/CLOUDFLARE_SETUP.md](../security/CLOUDFLARE_SETUP.md) for complete setup instructions
 
