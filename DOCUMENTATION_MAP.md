@@ -112,7 +112,7 @@
 - ✅ SHA-256 token hashing with one-time use enforcement
 - ✅ Audit logging (no PII)
 - ✅ Complete deployment in 1 day
-- 📄 Documentation: `docs/status/ELECTIONS_SERVICE_DEPLOYMENT.md`
+- 📄 Documentation: `archive/deployments/ELECTIONS_SERVICE_DEPLOYMENT.md`
 
 **Oct 9, 2025 - Events Service MVP Deployed to Production**
 - ✅ Database migration complete (election + voting_tokens tables)
@@ -122,13 +122,13 @@
 - ✅ Production test page with CSS components
 - ✅ Integrated with Members dashboard
 - ✅ Complete deployment in 1 day (4 phases)
-- 📄 Documentation: `docs/status/EVENTS_SERVICE_TESTING_LOG.md`
+- 📄 Documentation: `archive/testing-logs/EVENTS_SERVICE_TESTING_LOG.md`
 
 **Oct 9, 2025 - Database Security Hardening**
 - ✅ pgaudit extension enabled (Cloud SQL audit logging)
 - ✅ Backup retention extended (7 → 30 days)
 - ✅ Security posture documented
-- 📄 Documentation: `docs/status/DATABASE_SECURITY_HARDENING.md`
+- 📄 Documentation: `archive/deployments/DATABASE_SECURITY_HARDENING.md`
 
 **Oct 8, 2025 - Membership Verification Complete**
 - ✅ Kennitala normalization implemented (handles hyphen variants)
@@ -152,7 +152,7 @@
 - ✅ Members service operational with Firebase auth
 - ✅ ZITADEL infrastructure decommissioned
 - ✅ Cost savings: $135/month → $7-10/month
-- 📄 Documentation: `docs/status/FIREBASE_MIGRATION_STATUS.md`
+- 📄 Documentation: `archive/migrations/FIREBASE_MIGRATION_STATUS.md`
 
 ---
 
