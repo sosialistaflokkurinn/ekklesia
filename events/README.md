@@ -1,7 +1,7 @@
 # Events Service (`Atburðir`)
 
 **Status**: ✅ Production Deployed (Oct 9, 2025)
-**Production URL**: https://events-service-521240388393.europe-west2.run.app
+**Production URL**: https://events-service-ymzrguoifa-nw.a.run.app
 **Architecture**: Option A (Standalone) - No Elections service dependency
 **Purpose**: Election administration and voting token issuance
 

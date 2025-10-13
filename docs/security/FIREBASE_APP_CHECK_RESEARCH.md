@@ -4,14 +4,14 @@
 **Authors**: Ekklesia Security Team
 **Date**: October 13, 2025
 **Version**: 1.0
-**Status**: ✅ Production Implementation Complete
+**Status**: ✅ Production Implementation Complete (Members Service Only - Oct 13, 2025)
 **Project**: Ekklesia E-Democracy Platform (ekklesia-prod-10-2025)
 
 ---
 
 ## Abstract
 
-This paper presents a comprehensive analysis of Firebase App Check implementation for securing Cloud Run services in a cost-sensitive e-democracy platform. We examine the security architecture, implementation challenges, cost-benefit analysis, and provide empirical evidence from production deployment. Our findings demonstrate that Firebase App Check provides a viable, zero-cost security layer for low-to-medium traffic applications, with specific constraints and trade-offs that must be understood for successful deployment.
+This paper presents a comprehensive analysis of Firebase App Check implementation for securing Cloud Functions (Members service) in a cost-sensitive e-democracy platform. We examine the security architecture, implementation challenges, cost-benefit analysis, and provide empirical evidence from production deployment. Our findings demonstrate that Firebase App Check provides a viable, zero-cost security layer for low-to-medium traffic applications, with specific constraints and trade-offs that must be understood for successful deployment.
 
 **Key Contributions**:
 1. Detailed analysis of Firebase App Check as a security mechanism for Cloud Run
@@ -69,7 +69,8 @@ This paper addresses the following questions:
 
 **In Scope**:
 - Firebase App Check with reCAPTCHA Enterprise
-- Cloud Run and Cloud Functions (Python 3.11, Node.js 18)
+- Cloud Functions (Python 3.11): ✅ Implemented (Members service)
+- Cloud Run (Node.js 18): ❌ NOT implemented yet (Events/Elections services)
 - CORS configuration for App Check tokens
 - Client-side token acquisition and transmission
 - Cost analysis of alternative approaches
@@ -1136,6 +1137,11 @@ curl -v "https://idp.kenni.is/oidc/token"
 - `handlekenniauth-00002-mum`: Environment variable fix (still broken)
 - `handlekenniauth-00003-nus`: **Production revision** (working)
 
+**Deployment Status by Service**:
+- **Members Service**: ✅ Fully deployed (Oct 13, 2025) - App Check active in monitoring mode
+- **Events Service**: ❌ NOT deployed - Middleware exists (`events/src/middleware/appCheck.js`) but not integrated
+- **Elections Service**: ❌ NOT deployed - No App Check code exists yet
+
 ### 9.2 Production Configuration
 
 **Firebase App Check**:
@@ -1412,7 +1418,7 @@ This paper presented:
 **Medium-term (1-2 months)**:
 1. ⏸️ **Implement server-side token validation** (Python Cloud Functions, Node.js Cloud Run)
 2. ⏸️ **Enable enforcement mode** (reject requests without valid tokens)
-3. ⏸️ **Add Events and Elections services** to App Check (currently Members only)
+3. ⏸️ **Add Events and Elections services to App Check** (currently Members only - middleware exists for Events but not integrated)
 4. ⏸️ **Load testing with App Check** (300 votes/sec spike scenario)
 
 **Long-term (3-6 months)**:
@@ -1497,7 +1503,7 @@ import {
 
 // Firebase configuration (public config, safe to expose)
 const firebaseConfig = {
-  apiKey: "AIzaSyDOIXOh47SWjGfPYWOhFojrr86jRgYzI9s",
+  apiKey: "AIzaSyBsDqnt8G54VAANlucQpI20r3Sw1p2Bcp4",
   authDomain: "ekklesia-prod-10-2025.firebaseapp.com",
   projectId: "ekklesia-prod-10-2025",
   storageBucket: "ekklesia-prod-10-2025.firebasestorage.app",
