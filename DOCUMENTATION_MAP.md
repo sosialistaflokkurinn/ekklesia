@@ -86,7 +86,22 @@
 
 ### 📋 Recent Milestones (October 2025)
 
-**Oct 12, 2025 - Security Hardening Complete (Phase 1 & 2)**
+**Oct 13, 2025 - Firebase App Check Implementation Complete**
+- ✅ **App Check Deployment**: reCAPTCHA Enterprise integration for Members service
+  - Zero-cost security layer (within 10K free tier)
+  - Client-side attestation (bot detection, origin validation)
+  - CORS configuration for App Check tokens
+  - Monitoring mode (1-2 weeks before enforcement)
+  - Performance impact: +145 ms first login (cached thereafter)
+- ✅ **Comprehensive Documentation**: Academic research paper created
+  - 62-page technical analysis (FIREBASE_APP_CHECK_RESEARCH.md)
+  - Cost-benefit analysis (vs Cloudflare Pro, Cloud LB)
+  - Threat model assessment (appropriate for risk profile)
+  - Implementation guide with all code listings
+  - Lessons learned and deployment troubleshooting
+- 📄 Documentation: `docs/security/FIREBASE_APP_CHECK_RESEARCH.md` (replaces 3 legacy docs)
+
+**Oct 12, 2025 - Security Hardening Complete (Phase 1-3)**
 - ✅ **Phase 1**: Firestore Security Rules deployed (#30)
 - ✅ **Phase 1**: CSRF Protection deployed (#33)
 - ✅ **Phase 1**: Idempotency Fix deployed (#32)
@@ -201,9 +216,16 @@ ekklesia/
 │   │   ├── MEMBERS_OIDC_SPEC.md      ⚠️ Legacy (ZITADEL-based)
 │   │   └── members-oidc-v1.0.md      ⚠️ Legacy (ZITADEL-based)
 │   │
-│   ├── security/                     🔒 Security documentation & plans
-│   │   ├── CLOUDFLARE_SETUP.md       🌐 Cloudflare configuration guide
-│   │   └── CLOUDFLARE_DNS_FIX_PLAN.md 📋 DNS fix implementation plan (40 min)
+│   ├── security/                     🔒 **ONE DOCUMENT - Everything you need**
+│   │   └── FIREBASE_APP_CHECK_RESEARCH.md 📚 Comprehensive research paper (67K, 62 pages)
+│   │       • Complete technical analysis and architecture
+│   │       • Cost-benefit analysis ($0 vs alternatives)
+│   │       • Threat model and security assessment
+│   │       • Step-by-step implementation guide
+│   │       • All code listings (copy-paste ready)
+│   │       • Deployment troubleshooting
+│   │       • Production metrics and results
+│   │       • (All other security docs archived - see archive/security/)
 │   │
 │   ├── guides/                       📖 Implementation guides
 │   │   ├── GITHUB_MCP_GUIDE.md       GitHub MCP integration

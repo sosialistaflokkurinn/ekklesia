@@ -2,6 +2,7 @@ const express = require('express');
 const crypto = require('crypto');
 const pool = require('../config/database');
 const authenticateS2S = require('../middleware/s2sAuth');
+const { verifyAppCheckOptional } = require('../middleware/appCheck');
 const { logAudit } = require('../services/auditService');
 
 const router = express.Router();
@@ -134,9 +135,13 @@ router.get('/s2s/results', authenticateS2S, async (req, res) => {
 // =====================================================
 // POST /api/vote
 // Headers: Authorization: Bearer <token-from-events>
+//         X-Firebase-AppCheck: <app-check-token> (optional, monitored)
 // Body: { answer: 'yes' | 'no' | 'abstain' }
+//
+// Security: Firebase App Check verification (monitor-only mode)
+// After 1-2 days of monitoring, switch to verifyAppCheck for enforcement
 
-router.post('/vote', async (req, res) => {
+router.post('/vote', verifyAppCheckOptional, async (req, res) => {
   const startTime = Date.now();
 
   // Extract token from Authorization header
@@ -254,8 +259,11 @@ router.post('/vote', async (req, res) => {
 // =====================================================
 // GET /api/token-status
 // Headers: Authorization: Bearer <token-from-events>
+//         X-Firebase-AppCheck: <app-check-token> (optional, monitored)
+//
+// Security: Firebase App Check verification (monitor-only mode)
 
-router.get('/token-status', async (req, res) => {
+router.get('/token-status', verifyAppCheckOptional, async (req, res) => {
   // Extract token from Authorization header
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {

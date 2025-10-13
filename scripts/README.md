@@ -4,6 +4,48 @@ This directory contains automation scripts for managing the Ekklesia platform in
 
 ## Available Scripts
 
+### 🔧 disable-cloudflare-proxy.sh
+
+**Purpose**: Disable Cloudflare proxy (orange cloud → grey cloud) for Cloud Run compatibility.
+
+**Background**: Cloud Run services only accept their native `*.run.app` hostnames in the Host header. When Cloudflare proxy forwards requests with custom domain hostnames, Cloud Run returns 404. DNS-only mode (grey cloud) resolves this by sending the native hostname.
+
+**Quick Start**:
+```bash
+./scripts/disable-cloudflare-proxy.sh
+```
+
+**What It Does**:
+1. Fetches all 4 DNS record IDs from Cloudflare API
+2. Updates each record: `proxied: true` → `proxied: false`
+3. Waits 60 seconds for DNS propagation
+4. Verifies DNS resolution (should show Cloud Run IPs, not Cloudflare IPs)
+5. Tests HTTP access (should work or show origin protection)
+
+**Expected Output**:
+```
+✓ All records updated to DNS-only mode (grey cloud)
+✓ DNS propagation complete
+✓ auth.si-xj.org: Resolves to 34.x.x.x
+✓ api.si-xj.org: Resolves to 34.x.x.x
+✓ verify.si-xj.org: Resolves to 34.x.x.x
+✓ vote.si-xj.org: Resolves to 34.x.x.x
+✓ HTTP tests: 200 OK or 403 (origin protection)
+```
+
+**Prerequisites**:
+- Cloudflare API token with DNS edit permissions
+- Zone ID for si-xj.org
+- `jq` installed: `sudo dnf install jq`
+
+**Timeline**: 2-3 minutes total
+
+**Security Note**: Origin protection middleware remains active (CF-Ray + IP validation).
+
+**Documentation**: See [docs/security/CLOUDFLARE_HOST_HEADER_INVESTIGATION.md](../docs/security/CLOUDFLARE_HOST_HEADER_INVESTIGATION.md)
+
+---
+
 ### 🔒 cloudflare-setup.sh
 
 **Purpose**: Automate complete Cloudflare configuration for all Ekklesia services.

@@ -465,13 +465,13 @@ After deployment:
 
 **Before**:
 ```sql
-SELECT * FROM voting_tokens WHERE kennitala = '200978-3589';
+SELECT * FROM voting_tokens WHERE kennitala = 'XXXXXX-XXXX';
 -- Result: 1 row (expired: expires_at = '2025-10-12 12:00:00')
 ```
 
 **After Request**:
 ```sql
-SELECT * FROM voting_tokens WHERE kennitala = '200978-3589';
+SELECT * FROM voting_tokens WHERE kennitala = 'XXXXXX-XXXX';
 -- Result: 1 row (new token: expires_at = '2025-10-14 00:10:00')
 ```
 
@@ -621,7 +621,7 @@ PGPASSWORD='***REMOVED***' \
 psql -h 127.0.0.1 -p 5433 -U postgres -d postgres -c \
 "SELECT kennitala, token_hash, issued_at, expires_at, voted
  FROM public.voting_tokens
- WHERE kennitala = '200978-3589';"
+ WHERE kennitala = 'XXXXXX-XXXX';"
 ```
 
 ### View Recent Errors

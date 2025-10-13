@@ -28,10 +28,11 @@
 
   <script type="module">
     import { R } from '/i18n/strings-loader.js';
-    import { getCurrentUser, auth } from '/js/auth.js';
+    import { getCurrentUser, auth, appCheck } from '/js/auth.js';
     import { signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
     import { getApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
     import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js';
+    import { getToken as getAppCheckToken } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app-check.js';
 
     // Wait for strings to load
     await R.load('is');
@@ -94,10 +95,24 @@
           throw new Error(R.string.error_missing_pkce);
         }
 
+        // Get App Check token for enhanced security
+        let appCheckTokenResponse;
+        try {
+          appCheckTokenResponse = await getAppCheckToken(appCheck, false);
+          console.log('✅ App Check token obtained for handleKenniAuth');
+        } catch (error) {
+          console.warn('⚠️ App Check token unavailable, continuing without it:', error);
+        }
+
         // Call Cloud Function to exchange code for token
+        const headers = { 'Content-Type': 'application/json' };
+        if (appCheckTokenResponse) {
+          headers['X-Firebase-AppCheck'] = appCheckTokenResponse.token;
+        }
+
         const response = await fetch(R.string.config_api_handle_auth, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: headers,
           body: JSON.stringify({
             kenniAuthCode: authCode,
             pkceCodeVerifier: pkceVerifier

@@ -104,7 +104,7 @@
 
     <script type="module">
         import { R } from '/i18n/strings-loader.js';
-        import { requireAuth, signOut } from '/js/auth.js';
+        import { requireAuth, signOut, authenticatedFetch } from '/js/auth.js';
         import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
         // Wait for strings to load
@@ -179,10 +179,7 @@
 
         document.getElementById('btn-election').addEventListener('click', async () => {
             try {
-                const token = await getIdToken();
-                const response = await fetch(`${PRODUCTION_API}/api/election`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                const response = await authenticatedFetch(`${PRODUCTION_API}/api/election`);
                 const data = await response.json();
                 showResult('result-election', data, !response.ok);
             } catch (error) {
@@ -192,13 +189,8 @@
 
         document.getElementById('btn-request-token').addEventListener('click', async () => {
             try {
-                const token = await getIdToken();
-                const response = await fetch(`${PRODUCTION_API}/api/request-token`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
+                const response = await authenticatedFetch(`${PRODUCTION_API}/api/request-token`, {
+                    method: 'POST'
                 });
                 const data = await response.json();
                 showResult('result-request-token', data, !response.ok);
@@ -209,10 +201,7 @@
 
         document.getElementById('btn-my-status').addEventListener('click', async () => {
             try {
-                const token = await getIdToken();
-                const response = await fetch(`${PRODUCTION_API}/api/my-status`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                const response = await authenticatedFetch(`${PRODUCTION_API}/api/my-status`);
                 const data = await response.json();
                 showResult('result-my-status', data, !response.ok);
             } catch (error) {
@@ -252,10 +241,7 @@
 
         document.getElementById('btn-results').addEventListener('click', async () => {
             try {
-                const token = await getIdToken();
-                const response = await fetch(`${PRODUCTION_API}/api/results`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                const response = await authenticatedFetch(`${PRODUCTION_API}/api/results`);
                 const data = await response.json();
                 showResult('result-results', data, !response.ok);
             } catch (error) {
