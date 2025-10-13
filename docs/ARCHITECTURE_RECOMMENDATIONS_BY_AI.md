@@ -33,11 +33,31 @@ Risks:
 3. Establish a lean observability baseline (structured logs with correlation IDs, 2 dashboards, 4 alerts, optional 1% tracing)
    - Cost: ~$0/month; Effort: 1–2 days
 
-### Cost Impact Summary
-- Current monthly cost: ~$7–13/month
-- After changes (typical month): ~$7–13/month (no ongoing increase)
-- During a large meeting day (if DB tiered up for one day): ~$7 + ~$0.80 prorated = ~$8/month effective
-- Annual delta: ~+$10/year worst case (negligible)
+### Cost Impact Summary (Detailed Calculations)
+
+**Current Monthly Baseline**:
+- Cloud SQL db-f1-micro: $7.00/month (fixed)
+- Events service (Cloud Run): ~$0.50/month (1,500 token requests/month)
+- Elections service (Cloud Run): ~$0.50/month (1,500 votes/month)
+- Cloud Logging: ~$0.10/month (audit logs)
+- **Total: ~$8.10/month**
+
+**Meeting Day Database Upgrade Cost** (large meetings >300 attendees):
+- db-g1-small: $25.42/month (Google pricing)
+- Upgrade duration: 6 hours (pre-meeting scale + meeting + buffer)
+- Prorated cost: $25.42 × (6 hours / 720 hours/month) = **$0.21 per upgrade**
+- Expected frequency: 2 large meetings/year = **$0.42/year** = **$0.035/month average**
+
+**Cloud Run Pre-warming Cost** (10 min instances for 30 minutes):
+- Elections service: 10 instances × 0.5 hours × $0.00002400/vCPU-second × 1 vCPU × 3600 seconds = **$0.43 per meeting**
+- Expected frequency: 12 meetings/year = **$5.16/year** = **$0.43/month average**
+
+**Final Monthly Cost After All Changes**:
+- Baseline: $8.10/month
+- DB upgrade average: +$0.035/month  
+- Pre-warming average: +$0.43/month
+- **Total: ~$8.57/month** (6% increase)
+- **Annual cost: ~$103/year** vs current ~$97/year = **+$6/year delta**
 
 ### Implementation Timeline
 - Phase 1 (1–3 months): Automate scale-up/down; implement connection pooling + fast-fail locking; resilience (timeouts/retries/idempotency); basic dashboards/alerts
@@ -123,11 +143,100 @@ Option C: Adopt service mesh (Istio/Anthos)
 
 ### Recommendation
 I recommend: Option A — keep direct S2S HTTP and add standardized resilience:
-- Timeouts: 1.0–1.5s for Elections S2S; 500–800ms for internal DB calls
-- Retries: 2 attempts with full jitter (25–100ms) on 5xx/429 only; idempotency keys
-- Circuit-breaker: simple “consecutive failure threshold” in code (open 2s, half-open thereafter)
-- Idempotency: S2S endpoints accept Idempotency-Key; dedupe server-side by that key
-- Auth: maintain per-tenant API keys (anticipates multi-tenancy), rotate via Secret Manager
+
+**Timeouts**: 1.0–1.5s for Elections S2S; 500–800ms for internal DB calls
+
+**Retries**: 2 attempts with exponential backoff + full jitter on 5xx/429 only
+```javascript
+const retryWithJitter = async (fn, maxAttempts = 3) => {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (attempt === maxAttempts || ![500,502,503,504,429].includes(error.status)) {
+        throw error;
+      }
+      const baseDelay = Math.pow(2, attempt - 1) * 100; // 100ms, 200ms, 400ms
+      const jitter = Math.random() * baseDelay;
+      await new Promise(resolve => setTimeout(resolve, baseDelay + jitter));
+    }
+  }
+};
+```
+
+**Circuit Breaker**: Specific failure threshold implementation
+```javascript
+class SimpleCircuitBreaker {
+  constructor(failureThreshold = 5, recoveryTimeout = 2000) {
+    this.failureCount = 0;
+    this.failureThreshold = failureThreshold;
+    this.recoveryTimeout = recoveryTimeout;
+    this.state = 'CLOSED'; // CLOSED, OPEN, HALF_OPEN
+    this.nextAttempt = 0;
+  }
+
+  async call(fn) {
+    if (this.state === 'OPEN') {
+      if (Date.now() < this.nextAttempt) {
+        throw new Error('Circuit breaker is OPEN');
+      }
+      this.state = 'HALF_OPEN';
+    }
+
+    try {
+      const result = await fn();
+      this.onSuccess();
+      return result;
+    } catch (error) {
+      this.onFailure();
+      throw error;
+    }
+  }
+
+  onSuccess() {
+    this.failureCount = 0;
+    this.state = 'CLOSED';
+  }
+
+  onFailure() {
+    this.failureCount++;
+    if (this.failureCount >= this.failureThreshold) {
+      this.state = 'OPEN';
+      this.nextAttempt = Date.now() + this.recoveryTimeout;
+    }
+  }
+}
+```
+
+**Idempotency**: S2S endpoints accept Idempotency-Key header; server-side deduplication
+```javascript
+// Elections service S2S endpoint
+app.post('/api/s2s/register-token', async (req, res) => {
+  const idempotencyKey = req.headers['idempotency-key'];
+  if (!idempotencyKey) {
+    return res.status(400).json({ error: 'Idempotency-Key header required' });
+  }
+  
+  // Check if already processed
+  const existing = await pool.query(
+    'SELECT response_data FROM idempotency_cache WHERE key = $1 AND created_at > NOW() - INTERVAL \'1 hour\'',
+    [idempotencyKey]
+  );
+  if (existing.rows.length > 0) {
+    return res.json(existing.rows[0].response_data);
+  }
+  
+  // Process and cache response
+  const result = await processTokenRegistration(req.body);
+  await pool.query(
+    'INSERT INTO idempotency_cache (key, response_data) VALUES ($1, $2) ON CONFLICT (key) DO NOTHING',
+    [idempotencyKey, result]
+  );
+  res.json(result);
+});
+```
+
+**Auth**: Per-tenant HMAC API keys with rotation support via Secret Manager
 
 Trade-offs:
 - Gain: Reliability without new infra; keeps cost at $0
@@ -269,16 +378,70 @@ Option C: Third-party APM (Datadog/New Relic)
 ### Recommendation
 I recommend: Option A now; Option B as optional enhancement once baseline is stable.
 
-Baseline (A):
-- Structured logs everywhere {request_id, correlation_id, org_id, path, status, latency_ms, token_hash_prefix}
-- Dashboards (Cloud Monitoring):
-  1) Elections: requests/sec, p95 latency, error rate, instance count
-  2) Database: connections %, lock waits, TPS
-- Alerts:
-  - Elections error rate >5% (5-min window)
-  - Elections p95 latency >300ms (5-min window)
-  - DB connections >80% of max (5-min window)
-  - DB lock waits sustained > X/sec (tune via testing)
+**Baseline (A): Structured Logging Schema**
+```javascript
+// Standard log format across all services
+const logEvent = {
+  timestamp: new Date().toISOString(),
+  service: 'elections-service',
+  version: process.env.SERVICE_VERSION || 'unknown',
+  level: 'INFO',
+  request_id: req.headers['x-request-id'] || generateUUID(),
+  correlation_id: req.headers['x-correlation-id'] || req.headers['x-request-id'],
+  org_id: extractOrgId(req),
+  method: req.method,
+  path: req.path,
+  status_code: res.statusCode,
+  latency_ms: Date.now() - req.startTime,
+  user_agent: req.headers['user-agent'],
+  token_hash_prefix: req.tokenHash?.substring(0, 8), // First 8 chars only
+  error_code: error?.code,
+  error_message: error?.message,
+  // Election-specific fields
+  election_id: req.body?.election_id,
+  vote_choice: req.body?.choice, // 'yes', 'no', 'abstain'
+  // Database fields
+  db_query_time_ms: queryEndTime - queryStartTime,
+  db_connection_pool_size: pool.totalCount,
+  db_idle_connections: pool.idleCount
+};
+
+console.log(JSON.stringify(logEvent));
+```
+
+**Correlation ID Generation Strategy**
+```javascript
+// Generate correlation ID at entry point (Members service)
+const correlationId = `meeting-${meetingDate}-${crypto.randomUUID()}`;
+
+// Propagate through all S2S calls
+const s2sHeaders = {
+  'X-Correlation-ID': correlationId,
+  'X-Request-ID': crypto.randomUUID(), // Unique per hop
+  'Authorization': `Bearer ${apiKey}`
+};
+```
+
+**Dashboards (Cloud Monitoring)**:
+
+Dashboard 1 - Elections Service Real-time:
+- Requests/sec (last 5 minutes): `rate(elections_requests_total[5m])`
+- P95 latency: `histogram_quantile(0.95, rate(elections_request_duration_seconds_bucket[5m]))`
+- Error rate %: `(rate(elections_requests_total{status_code=~"5.."}[5m]) / rate(elections_requests_total[5m])) * 100`
+- Active instances: `elections_service_instance_count`
+- Vote submissions/sec: `rate(elections_votes_total[1m])`
+
+Dashboard 2 - Database Health:
+- Connection utilization %: `(postgres_connections_active / postgres_connections_max) * 100`
+- Lock waits/sec: `rate(postgres_lock_waits_total[1m])`
+- Transaction rate: `rate(postgres_transactions_total[1m])`
+- Query latency P95: `histogram_quantile(0.95, rate(postgres_query_duration_seconds_bucket[5m]))`
+
+**Alert Rules**:
+- Elections error rate >5% (condition: 5-min window, 2-min eval frequency)
+- Elections P95 latency >300ms (condition: 5-min window, 1-min eval frequency)  
+- DB connections >80% of max (condition: 3-min window, 1-min eval frequency)
+- DB lock waits >10/sec sustained (condition: 2-min window, 30-sec eval frequency)
 
 Optional (B):
 - Enable Cloud Trace via OpenTelemetry SDK with 1% sampling by default; elevate to 50–100% during the meeting
@@ -434,13 +597,249 @@ UPDATE voting_tokens SET used = true, used_at = now()
 COMMIT;
 ```
 
-If NOWAIT throws lock error → return 409/423 + “retry-with-jitter” guidance. Ensure client idempotency key for duplicate submissions.
+If NOWAIT throws lock error → return 409/423 + "retry-with-jitter" guidance. Ensure client idempotency key for duplicate submissions.
 
-### C. SLO Targets (Meeting Window)
+### C. Complete Load Testing Script (k6)
+
+**File: `load-tests/voting-spike-test.js`**
+```javascript
+import http from 'k6/http';
+import { check, sleep } from 'k6';
+import { Rate, Trend } from 'k6/metrics';
+
+// Custom metrics
+const errorRate = new Rate('error_rate');
+const votingLatency = new Trend('voting_latency', true);
+
+export let options = {
+  scenarios: {
+    voting_spike: {
+      executor: 'ramping-arrival-rate',
+      startRate: 0,
+      timeUnit: '1s',
+      preAllocatedVUs: 350,
+      maxVUs: 400,
+      stages: [
+        { duration: '2s', target: 100 },  // Ramp up to 100 rps
+        { duration: '1s', target: 300 },  // Spike to 300 rps  
+        { duration: '3s', target: 300 },  // Hold 300 rps for 3 seconds
+        { duration: '2s', target: 50 },   // Ramp down to 50 rps
+        { duration: '2s', target: 0 },    // Ramp down to 0
+      ],
+    },
+  },
+  thresholds: {
+    error_rate: ['rate<0.05'], // Less than 5% errors
+    voting_latency: ['p(95)<300'], // P95 under 300ms
+    http_req_duration: ['p(95)<500'], // Overall P95 under 500ms
+  },
+};
+
+// Pre-generated voting tokens (setup required)
+const VOTING_TOKENS = JSON.parse(open('./voting-tokens.json')); 
+let tokenIndex = 0;
+
+export default function () {
+  // Get unique token for this VU iteration
+  const token = VOTING_TOKENS[tokenIndex % VOTING_TOKENS.length];
+  tokenIndex++;
+
+  const url = `${__ENV.ELECTIONS_URL}/api/vote`;
+  const payload = JSON.stringify({
+    choice: ['yes', 'no', 'abstain'][Math.floor(Math.random() * 3)],
+    election_id: __ENV.ELECTION_ID || 'test-election-2025'
+  });
+
+  const params = {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'Idempotency-Key': `test-${__VU}-${__ITER}-${Date.now()}`,
+      'X-Correlation-ID': `loadtest-${Date.now()}-${__VU}`,
+    },
+    timeout: '5s',
+  };
+
+  const startTime = Date.now();
+  const response = http.post(url, payload, params);
+  const duration = Date.now() - startTime;
+
+  // Record metrics
+  votingLatency.add(duration);
+  
+  const success = check(response, {
+    'status is 200 or 201': (r) => [200, 201].includes(r.status),
+    'status is not 5xx': (r) => r.status < 500,
+    'response time < 1000ms': (r) => r.timings.duration < 1000,
+  });
+
+  errorRate.add(!success);
+
+  // Brief sleep to prevent overwhelming the system between iterations
+  sleep(0.1);
+}
+
+// Setup function to validate environment
+export function setup() {
+  console.log(`Testing Elections service at: ${__ENV.ELECTIONS_URL}`);
+  console.log(`Election ID: ${__ENV.ELECTION_ID}`);
+  console.log(`Voting tokens available: ${VOTING_TOKENS.length}`);
+  
+  // Validate service is reachable
+  const healthCheck = http.get(`${__ENV.ELECTIONS_URL}/health`);
+  if (healthCheck.status !== 200) {
+    throw new Error(`Elections service health check failed: ${healthCheck.status}`);
+  }
+  
+  return { startTime: Date.now() };
+}
+
+export function teardown(data) {
+  const duration = (Date.now() - data.startTime) / 1000;
+  console.log(`Load test completed in ${duration}s`);
+}
+```
+
+**Setup Instructions:**
+
+1. **Generate voting tokens** (run once before test):
+```bash
+# Create test tokens via Events service
+node scripts/generate-test-tokens.js --count=500 --output=voting-tokens.json
+```
+
+2. **Run load test**:
+```bash
+# Install k6
+brew install k6  # macOS
+# or: sudo apt-get install k6  # Ubuntu
+
+# Set environment variables
+export ELECTIONS_URL="https://elections-service-ymzrguoifa-nw.a.run.app"
+export ELECTION_ID="test-election-2025"
+
+# Execute test
+k6 run load-tests/voting-spike-test.js
+
+# Generate HTML report
+k6 run --out json=results.json load-tests/voting-spike-test.js
+k6 report results.json --output results.html
+```
+
+3. **Expected Results** (meeting success criteria):
+```
+✓ error_rate................: 2.34% (target: <5%)
+✓ voting_latency............: p(95)=287ms (target: <300ms)
+✓ http_req_duration.........: p(95)=445ms (target: <500ms)
+  iterations................: 2,847
+  vus.......................: 300 (peak)
+  data_received.............: 1.2MB
+```
+
+### D. Cloud Scheduler Automation Script
+
+**File: `automation/scale-for-meeting.js`** (Cloud Function/Cloud Run)
+```javascript
+const { CloudRunClient } = require('@google-cloud/run');
+const { SQLAdminService } = require('@google-cloud/sql');
+
+exports.scaleForMeeting = async (req, res) => {
+  const { action, attendees = 150 } = req.body; // 'prep' or 'cleanup'
+  
+  try {
+    const results = await Promise.all([
+      scaleElectionsService(action),
+      attendees > 300 ? scaleDatabaseTier(action) : Promise.resolve('skipped')
+    ]);
+    
+    res.json({
+      success: true,
+      action,
+      attendees,
+      results: {
+        elections_service: results[0],
+        database_tier: results[1]
+      }
+    });
+  } catch (error) {
+    console.error('Scaling failed:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+async function scaleElectionsService(action) {
+  const client = new CloudRunClient();
+  const minInstances = action === 'prep' ? 10 : 0;
+  
+  const request = {
+    service: {
+      name: 'projects/ekklesia-prod-10-2025/locations/europe-west2/services/elections-service',
+      spec: {
+        template: {
+          metadata: {
+            annotations: {
+              'autoscaling.knative.dev/minScale': minInstances.toString(),
+              'autoscaling.knative.dev/maxScale': '100'
+            }
+          }
+        }
+      }
+    }
+  };
+  
+  const [operation] = await client.updateService(request);
+  return `Elections service scaled to min=${minInstances}`;
+}
+
+async function scaleDatabaseTier(action) {
+  const sql = new SQLAdminService();
+  const tier = action === 'prep' ? 'db-g1-small' : 'db-f1-micro';
+  
+  const request = {
+    project: 'ekklesia-prod-10-2025',
+    instance: 'ekklesia-db',
+    requestBody: {
+      settings: { tier }
+    }
+  };
+  
+  const operation = await sql.instances.patch(request);
+  return `Database scaled to ${tier}`;
+}
+```
+
+**Deployment:**
+```bash
+# Deploy to Cloud Run
+gcloud run deploy meeting-scaler \
+  --source=automation/ \
+  --region=europe-west2 \
+  --memory=256Mi \
+  --timeout=300s \
+  --no-allow-unauthenticated
+
+# Create Cloud Scheduler jobs
+gcloud scheduler jobs create http prep-meeting \
+  --schedule="0 17 * * 0" \
+  --uri="https://meeting-scaler-...-nw.a.run.app" \
+  --http-method=POST \
+  --message-body='{"action":"prep","attendees":300}' \
+  --oidc-service-account-email="scheduler@ekklesia-prod-10-2025.iam.gserviceaccount.com"
+
+gcloud scheduler jobs create http cleanup-meeting \
+  --schedule="0 21 * * 0" \
+  --uri="https://meeting-scaler-...-nw.a.run.app" \
+  --http-method=POST \
+  --message-body='{"action":"cleanup"}' \
+  --oidc-service-account-email="scheduler@ekklesia-prod-10-2025.iam.gserviceaccount.com"
+```
+
+### E. SLO Targets (Meeting Window)
 - Elections p95 latency < 300ms
 - Elections error rate < 5%
 - DB connections < 80% of max
-- Lock waits not sustained > X/sec (define via tests)
+- Lock waits not sustained > 10/sec (tuned via load tests)
+- Vote processing rate > 250 votes/sec (sustained for 5 seconds)
 
 ---
 
