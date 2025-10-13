@@ -101,6 +101,14 @@ function cloudflareOnly(req, res, next) {
     return next();
   }
 
+  // TEMPORARY: Allow direct access from Firebase Hosting until Cloudflare DNS is fixed
+  // TODO: Remove this once Cloudflare DNS records are updated
+  const origin = req.headers['origin'] || '';
+  if (origin.includes('firebase') || origin.includes('web.app') || origin.includes('firebaseapp.com')) {
+    console.log(`INFO: Allowing Firebase Hosting access (temporary): ${origin}`);
+    return next();
+  }
+
   // Check if request came through Cloudflare (most reliable check)
   // CF-Ray header is unique to Cloudflare and cannot be spoofed easily
   const cfRay = req.headers['cf-ray'];

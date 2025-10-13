@@ -103,6 +103,12 @@ def cloudflare_only(func: Callable) -> Callable:
     """
     @wraps(func)
     def wrapper(req: https_fn.Request):
+        # Always allow OPTIONS preflight requests (required for CORS)
+        # The actual function will handle CORS headers
+        if req.method == 'OPTIONS':
+            print(f"INFO: Allowing OPTIONS preflight request for CORS")
+            return func(req)
+
         # Get client IP from headers
         # CF-Connecting-IP is the most reliable (set by Cloudflare)
         client_ip = (
@@ -114,6 +120,13 @@ def cloudflare_only(func: Callable) -> Callable:
         # Allow localhost for local development/testing
         if client_ip in ['127.0.0.1', '::1', 'localhost', '0.0.0.0']:
             print(f"INFO: Allowing localhost access for development: {client_ip}")
+            return func(req)
+
+        # TEMPORARY: Allow direct access until Cloudflare DNS is fixed
+        # TODO: Remove this once Cloudflare DNS records are updated
+        origin = req.headers.get('Origin', '')
+        if 'firebase' in origin or 'web.app' in origin or 'firebaseapp.com' in origin:
+            print(f"INFO: Allowing Firebase Hosting access (temporary): {origin}")
             return func(req)
 
         # Check if request came through Cloudflare (most reliable check)
