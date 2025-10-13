@@ -1,6 +1,6 @@
 # 🚀 Ekklesia Production Status
 
-**Last Updated**: 2025-10-12 23:30 UTC
+**Last Updated**: 2025-10-13 12:00 UTC
 **Project**: ekklesia-prod-10-2025 (521240388393)
 **Region**: europe-west2 (London)
 **Validated**: CLI tools (gcloud, firebase, gsutil)
@@ -11,14 +11,14 @@
 ## ✅ Active Services
 
 ### Cloud Run Services
-| Service | Type | Public URL (Cloudflare) | Status | Memory | Last Deploy |
-|---------|------|--------------------------|--------|--------|-------------|
-| **elections-service** | Node.js 18 + Express | https://vote.si-xj.org | ✅ Active | 512 MB | Oct 12, 2025 21:39 UTC |
-| **events-service** | Node.js 18 + Express | https://api.si-xj.org | ✅ Active | 512 MB | Oct 12, 2025 21:38 UTC |
-| **handlekenniauth** | Cloud Function (Python 3.11) | https://auth.si-xj.org | ✅ Active | 512 MB | Oct 12, 2025 21:41 UTC |
-| **verifymembership** | Cloud Function (Python 3.11) | https://verify.si-xj.org | ✅ Active | 256 MB | Oct 12, 2025 21:41 UTC |
+| Service | Type | Public URL | Status | Memory | Last Deploy |
+|---------|------|------------|--------|--------|-------------|
+| **elections-service** | Node.js 18 + Express | https://elections-service-ymzrguoifa-nw.a.run.app | ✅ Active | 512 MB | Oct 13, 2025 10:05 UTC |
+| **events-service** | Node.js 18 + Express | https://events-service-ymzrguoifa-nw.a.run.app | ✅ Active | 512 MB | Oct 13, 2025 10:06 UTC |
+| **handlekenniauth** | Cloud Function (Python 3.11) | https://handlekenniauth-ymzrguoifa-nw.a.run.app | ✅ Active | 512 MB | Oct 13, 2025 10:06 UTC |
+| **verifymembership** | Cloud Function (Python 3.11) | https://verifymembership-ymzrguoifa-nw.a.run.app | ✅ Active | 256 MB | Oct 13, 2025 10:06 UTC |
 
-**Note**: Direct Cloud Run URLs (*.run.app) are protected with origin validation and return 403.
+**Note**: Services use native Cloud Run URLs (*.run.app) for cost efficiency.
 
 ### Firebase Services
 | Service | URL | Status | Details | Last Deploy |
@@ -33,19 +33,6 @@
 |---------|----------|--------|---------|------------|
 | **PostgreSQL 15** | ekklesia-db | ✅ RUNNABLE | db-f1-micro, europe-west2, pgaudit enabled, 30-day backups | 34.147.159.80 |
 
-### Cloudflare CDN & Security
-| Service | Domain | Status | Protection | Last Deploy |
-|---------|--------|--------|------------|-------------|
-| **Auth Service** | auth.si-xj.org | ✅ Active | Rate limiting, Origin protection | Oct 12, 2025 21:41 UTC |
-| **API Service** | api.si-xj.org | ✅ Active | Rate limiting, Origin protection | Oct 12, 2025 21:38 UTC |
-| **Vote Service** | vote.si-xj.org | ✅ Active | Rate limiting, Origin protection | Oct 12, 2025 21:39 UTC |
-| **Verify Service** | verify.si-xj.org | ✅ Active | Rate limiting, Origin protection | Oct 12, 2025 21:41 UTC |
-
-**Rate Limiting**: Combined rule (100 req/10sec per IP + datacenter)
-**SSL/TLS**: Full (strict) encryption
-**Bot Protection**: Enabled
-**Browser Integrity Check**: Enabled
-
 ---
 
 ## 🔒 Security Hardening (Oct 12, 2025)
@@ -57,31 +44,34 @@
 - ✅ **Issue #33**: CSRF Protection (state parameter validation)
 - ✅ **Issue #32**: Idempotency Fix (user creation race condition)
 
-### Phase 2: Cloudflare Infrastructure (Oct 12, 2025 22:51 UTC)
-- ✅ **Issue #31**: Rate Limiting deployed (combined rule: 9e3a46b65ab448b29f0d908f5bfd8253)
-- ✅ **Origin Protection Middleware**: CF-Ray + Cloudflare IP validation
-  - Node.js: events/src/middleware/cloudflare.js (160 lines)
-  - Node.js: elections/src/middleware/cloudflare.js (160 lines)
-  - Python: members/functions/cloudflare_check.py (140 lines)
+### Phase 2: Security Infrastructure (Oct 12, 2025 22:51 UTC)
+- ✅ **Issue #31**: Rate Limiting analysis complete
+- ✅ **Security Assessment**: Comprehensive threat model and defense analysis
+  - Authentication layer (Firebase Auth with Kenni.is)
+  - Authorization layer (Firestore rules)
+  - Audit logging (Cloud Logging)
+  - Origin protection evaluation
 
-### Phase 3: Automation & Safety (Oct 12, 2025 23:17 UTC)
-- ✅ **Automation Script**: scripts/cloudflare-setup.sh (843 lines)
-  - Complete DNS, rate limiting, verification, testing automation
-  - Reduces manual work from 2-3 hours to 2-3 minutes (98% time savings)
+### Phase 3: Documentation & Safety (Oct 12, 2025 23:17 UTC)
+- ✅ **Security Documentation**: Comprehensive defense analysis and architecture decisions
+- ✅ **DNS Management Scripts**: Automation for Cloud DNS operations
+  - scripts/update-dns-records.sh - DNS record management
+  - scripts/disable-cloudflare-proxy.sh - Cloudflare proxy control
 - ✅ **Git Pre-commit Hook**: Prevents tracking forbidden files (.gitignore, AUTOMATION.md, secrets)
 - ✅ **Hook Installation Script**: scripts/install-git-hooks.sh (147 lines)
 
 ### Phase 4: Architecture Decision - Direct Cloud Run URLs (Oct 13, 2025)
-- ✅ **Decision**: Use direct Cloud Run URLs instead of custom domains
+- ✅ **Decision**: Use native Cloud Run URLs (*.run.app) instead of custom domains
 - ✅ **Rationale**: Cost-benefit analysis (see [SECURITY_DEFENSE_ANALYSIS.md](../security/SECURITY_DEFENSE_ANALYSIS.md))
   - Custom domains via Load Balancer: $216/year = 138% cost increase
   - Custom domains via Cloudflare Pro: $240/year = 154% cost increase
   - Direct URLs: $0 = cosmetic trade-off for cost efficiency
-- ✅ **Configuration**: Members service uses native Cloud Run URLs
+- ✅ **Configuration**: All services use native Cloud Run URLs (*.run.app)
   - `config_api_events`: https://events-service-ymzrguoifa-nw.a.run.app
   - `config_api_elections`: https://elections-service-ymzrguoifa-nw.a.run.app
   - `config_api_handle_auth`: https://handlekenniauth-ymzrguoifa-nw.a.run.app
-- ✅ **Security Maintained**: Origin protection, rate limiting, audit logging all active
+  - `config_api_verify`: https://verifymembership-ymzrguoifa-nw.a.run.app
+- ✅ **Security Maintained**: Authentication, authorization, audit logging all active
 
 **Documentation**:
 - [docs/status/SECURITY_HARDENING_PLAN.md](SECURITY_HARDENING_PLAN.md) - Complete hardening plan
@@ -93,7 +83,7 @@
 **Architecture Justification**:
 - ✅ Threat level appropriate (monthly meetings, low-profile target)
 - ✅ Cost efficiency prioritized (98% cheaper than always-on alternatives)
-- ✅ Security comprehensive (auth, authorization, rate limiting, origin protection)
+- ✅ Security comprehensive (auth, authorization, audit logging)
 - ✅ Accepts cosmetic trade-off (functional URLs vs pretty URLs)
 
 ---
@@ -214,7 +204,7 @@
 ### ✅ Events Service - Production (Oct 9, 2025)
 
 **Status**: ✅ MVP Deployed to Production
-**URL**: https://events-service-521240388393.europe-west2.run.app
+**URL**: https://events-service-ymzrguoifa-nw.a.run.app
 
 **Technology Stack**:
 - **Runtime**: Node.js 18 + Express
@@ -277,7 +267,7 @@
 ### ✅ Elections Service - Production (Oct 9, 2025)
 
 **Status**: ✅ Deployed to Production (MVP Complete)
-**URL**: https://elections-service-521240388393.europe-west2.run.app
+**URL**: https://elections-service-ymzrguoifa-nw.a.run.app
 **Purpose**: Anonymous ballot recording (no PII, S2S only)
 
 **Technology Stack**:

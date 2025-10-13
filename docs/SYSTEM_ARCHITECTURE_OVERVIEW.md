@@ -144,7 +144,7 @@ The voting system consists of three main components:
 
 **Implementation**: Node.js election administration service deployed to Cloud Run
 
-- **Production URL**: https://events-service-521240388393.europe-west2.run.app
+- **Production URL**: https://events-service-ymzrguoifa-nw.a.run.app
 - **Test Page**: https://ekklesia-prod-10-2025.web.app/test-events.html
 - **Technology**: Node.js 18 + Express + Cloud SQL PostgreSQL 15
 - **Database**: Cloud SQL PostgreSQL 15 (ekklesia-db instance)
@@ -159,7 +159,7 @@ The voting system consists of three main components:
 - ✅ Token storage with audit trail (kennitala → token_hash)
 - ✅ Firebase JWT authentication
 - ✅ 5 API endpoints (health, election, request-token, my-status, my-token)
-- ⏸️ S2S token registration with Elections service (Phase 5)
+- ✅ S2S token registration with Elections service (Phase 5 Complete, Oct 10, 2025)
 
 **Production Test Results** (Oct 9, 2025):
 - Health check: ✅ Passing
@@ -182,7 +182,7 @@ The voting system consists of three main components:
 ### Elections System (`Kosningar`) - ✅ Production (Oct 9, 2025)
 
 **Status**: ✅ MVP Deployed to Production
-**URL**: https://elections-service-521240388393.europe-west2.run.app
+**URL**: https://elections-service-ymzrguoifa-nw.a.run.app
 
 - **Purpose**: Anonymous ballot recording (no PII, no member authentication)
 - **Technology**: Node.js + Express + PostgreSQL

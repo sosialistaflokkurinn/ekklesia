@@ -15,8 +15,8 @@ Regnhlífarverkefni fyrir kosningakerfi Sósíalistaflokksins ásamt meðlima og
 | Service | Technology | Status | URL |
 |---------|-----------|--------|-----|
 | **Members** (Meðlimir) | Firebase + Python Functions | ✅ Production | https://ekklesia-prod-10-2025.web.app |
-| **Events** (Atburðir) | Node.js + Cloud Run | ✅ Production | https://events-service-521240388393.europe-west2.run.app |
-| **Elections** (Kosningar) | Node.js + Cloud Run | ✅ Production | https://elections-service-521240388393.europe-west2.run.app |
+| **Events** (Atburðir) | Node.js + Cloud Run | ✅ Production | https://events-service-ymzrguoifa-nw.a.run.app |
+| **Elections** (Kosningar) | Node.js + Cloud Run | ✅ Production | https://elections-service-ymzrguoifa-nw.a.run.app |
 
 ### Architecture
 
@@ -126,4 +126,4 @@ cd ekklesia
 
 ---
 
-**Last Updated**: October 12, 2025
+**Last Updated**: October 13, 2025

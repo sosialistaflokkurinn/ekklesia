@@ -1,7 +1,7 @@
 # 🗺️ Ekklesia Platform - Master Documentation Map
 
-**Version**: 6.1.0
-**Last Updated**: 2025-10-11
+**Version**: 6.2.0
+**Last Updated**: 2025-10-13
 **Status**: ✅ Phase 5 Complete - Full Voting System Operational (Members ✅ + Events ✅ + Elections ✅)
 
 ---
@@ -64,8 +64,8 @@
 | **handleKenniAuth** | ✅ Production | Cloud Function (512 MB) |
 | **verifyMembership** | ✅ Production | Cloud Function (256 MB) |
 | **Members Service** | ✅ Production | Firebase-based (kennitala auth) |
-| **Events Service** | ✅ Production | https://events-service-521240388393.europe-west2.run.app |
-| **Elections Service** | ✅ Production | https://elections-service-521240388393.europe-west2.run.app |
+| **Events Service** | ✅ Production | https://events-service-ymzrguoifa-nw.a.run.app |
+| **Elections Service** | ✅ Production | https://elections-service-ymzrguoifa-nw.a.run.app |
 | **Cloud SQL** | ✅ Production | ekklesia-db (PostgreSQL 15, 2 schemas) |
 
 **Cost**: ~$7-13/month (Members $0, Events $0-3, Elections $0-3, Cloud SQL ~$7)
@@ -86,12 +86,15 @@
 
 ### 📋 Recent Milestones (October 2025)
 
-**Oct 13, 2025 - Firebase App Check Implementation Complete**
-- ✅ **App Check Deployment**: reCAPTCHA Enterprise integration for Members service
-  - Zero-cost security layer (within 10K free tier)
+**Oct 13, 2025 - Firebase App Check Implementation (Members Service Only)**
+- ✅ **App Check Deployment**: reCAPTCHA Enterprise integration for **Members service**
+  - Members: Full client-side implementation (token acquisition + transmission)
+  - Events: Middleware created (`verifyAppCheckOptional`) but NOT actively enforcing
+  - Elections: NOT implemented yet (planned for future)
+  - Zero-cost security layer for Members (within 10K free tier)
   - Client-side attestation (bot detection, origin validation)
   - CORS configuration for App Check tokens
-  - Monitoring mode (1-2 weeks before enforcement)
+  - Status: Members in monitoring mode (1-2 weeks before enforcement)
   - Performance impact: +145 ms first login (cached thereafter)
 - ✅ **Comprehensive Documentation**: Academic research paper created
   - 62-page technical analysis (FIREBASE_APP_CHECK_RESEARCH.md)
