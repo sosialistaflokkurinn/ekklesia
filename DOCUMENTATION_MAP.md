@@ -201,6 +201,10 @@ ekklesia/
 │   │   ├── MEMBERS_OIDC_SPEC.md      ⚠️ Legacy (ZITADEL-based)
 │   │   └── members-oidc-v1.0.md      ⚠️ Legacy (ZITADEL-based)
 │   │
+│   ├── security/                     🔒 Security documentation & plans
+│   │   ├── CLOUDFLARE_SETUP.md       🌐 Cloudflare configuration guide
+│   │   └── CLOUDFLARE_DNS_FIX_PLAN.md 📋 DNS fix implementation plan (40 min)
+│   │
 │   ├── guides/                       📖 Implementation guides
 │   │   ├── GITHUB_MCP_GUIDE.md       GitHub MCP integration
 │   │   ├── MEMBERS_DEPLOYMENT_GUIDE.md       Members service deployment
