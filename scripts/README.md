@@ -220,6 +220,127 @@ export CF_ZONE_ID="your-zone"
 
 ---
 
+### 🔐 get-secret.sh
+
+**Purpose**: Retrieve secrets from Google Cloud Secret Manager.
+
+**Quick Start**:
+```bash
+./scripts/get-secret.sh postgres-password
+./scripts/get-secret.sh elections-s2s-api-key
+```
+
+**What It Does**:
+- Retrieves the latest version of a secret from Secret Manager
+- Outputs secret value to stdout (for use in scripts/pipelines)
+- Returns non-zero exit code if secret doesn't exist
+
+**Available Secrets**:
+- `postgres-password` - PostgreSQL database password
+- `elections-s2s-api-key` - Elections service API key
+- `kenni-client-secret` - Kenni.is OAuth client secret
+- `cloudflare-api-token` - Cloudflare API token
+
+**Example Usage**:
+```bash
+# Store in variable
+DB_PASSWORD=$(./scripts/get-secret.sh postgres-password)
+
+# Use directly
+psql -h 127.0.0.1 -p 5433 -U postgres -d postgres \
+  --password="$(./scripts/get-secret.sh postgres-password)"
+```
+
+**Prerequisites**: Authenticated with gcloud (`gcloud auth login`)
+
+---
+
+### 🗄️ psql-cloud.sh
+
+**Purpose**: Connect to PostgreSQL database via Cloud SQL Proxy with automatic password retrieval.
+
+**Quick Start**:
+```bash
+# Query database
+./scripts/psql-cloud.sh -c "SELECT COUNT(*) FROM elections.ballots;"
+
+# List tables
+./scripts/psql-cloud.sh -c "\dt elections.*"
+
+# Execute SQL file
+./scripts/psql-cloud.sh -f reset-election.sql
+
+# Interactive psql session
+./scripts/psql-cloud.sh
+```
+
+**What It Does**:
+1. Retrieves postgres-password from Secret Manager
+2. Sets PGPASSWORD environment variable
+3. Connects to database via Cloud SQL Proxy (127.0.0.1:5433)
+4. Passes all arguments to `psql` command
+
+**Prerequisites**:
+- Cloud SQL Proxy running on port 5433
+- Authenticated with gcloud (`gcloud auth login`)
+
+**Connection Details**:
+- Host: 127.0.0.1 (Cloud SQL Proxy)
+- Port: 5433
+- Database: postgres
+- User: postgres
+- Password: Retrieved from Secret Manager automatically
+
+**Security Benefits**:
+- ✅ No password in command history
+- ✅ No password in scripts/config files
+- ✅ Automatic credential rotation support
+- ✅ Audit trail via Secret Manager access logs
+
+---
+
+### 🌍 load-env.sh
+
+**Purpose**: Load all secrets from Secret Manager into environment variables.
+
+**Quick Start**:
+```bash
+# Source the script (must use 'source' or '.')
+source ./scripts/load-env.sh
+
+# Now use environment variables
+echo $PGPASSWORD
+echo $ELECTIONS_API_KEY
+echo $CLOUDFLARE_TOKEN
+```
+
+**What It Does**:
+- Retrieves all secrets from Secret Manager
+- Exports them as environment variables
+- Displays confirmation with character counts (not actual values)
+
+**Exported Variables**:
+- `PGPASSWORD` - PostgreSQL database password
+- `ELECTIONS_API_KEY` - Elections service API key
+- `CLOUDFLARE_TOKEN` - Cloudflare API token
+
+**Example Workflow**:
+```bash
+# Load environment
+source ./scripts/load-env.sh
+
+# Use database directly
+psql -h 127.0.0.1 -p 5433 -U postgres -d postgres -c "SELECT 1;"
+
+# Use API key
+curl -H "Authorization: Bearer $ELECTIONS_API_KEY" \
+  https://elections-service-....run.app/api/s2s/results
+```
+
+**Note**: This script must be **sourced**, not executed directly, otherwise variables won't persist in your shell.
+
+---
+
 ## Script Development Guidelines
 
 When creating new scripts for this directory:
