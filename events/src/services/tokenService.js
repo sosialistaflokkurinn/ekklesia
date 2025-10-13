@@ -40,8 +40,10 @@ async function checkEligibility(election, kennitala) {
     if (token.voted) {
       errors.push('You have already voted in this election');
     } else if (now > expiresAt) {
-      errors.push('Your previous voting token has expired. Please request a new one.');
-      // Note: In production, expired tokens should be cleaned up
+      // Expired token - delete it and allow new token issuance
+      console.log(`INFO: Deleting expired token for kennitala ${kennitala.substring(0, 7)}****`);
+      await query('DELETE FROM voting_tokens WHERE id = $1', [token.id]);
+      // Don't add to errors - allow new token to be issued
     } else {
       errors.push('Voting token already issued. Use GET /api/my-token to retrieve it.');
     }

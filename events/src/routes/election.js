@@ -72,6 +72,14 @@ router.post('/request-token', authenticate, async (req, res) => {
       });
     }
 
+    if (error.message.includes('expired')) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: error.message,
+        hint: 'Your previous token has expired. The database should allow you to request a new one.'
+      });
+    }
+
     if (error.message.includes('not currently active')) {
       return res.status(403).json({
         error: 'Forbidden',
