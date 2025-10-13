@@ -82,7 +82,7 @@
   - 300 votes/second spike test
   - Cloud Run auto-scaling verification
   - Database connection pool testing
-  - See: `docs/USAGE_CONTEXT.md`
+  - See: `docs/USAGE_CONTEXT.md`, `docs/ARCHITECTURE_DESIGN_PHASE6.md`
 
 ### 📋 Recent Milestones (October 2025)
 
@@ -287,6 +287,7 @@ ekklesia/
 
 | Document | Purpose | Status |
 |----------|---------|--------|
+| `ARCHITECTURE_DESIGN_PHASE6.md` | Phase 6 architecture design (5 challenges, ADRs, roadmap) | ✅ Current (Oct 13) |
 | `SYSTEM_ARCHITECTURE_OVERVIEW.md` | Primary architectural vision (3-service architecture) | ✅ Active (Oct 10) |
 | `USAGE_CONTEXT.md` | Load patterns and capacity planning (300 votes/sec) | ✅ Active (Oct 9) |
 | `OPERATIONAL_PROCEDURES.md` | Meeting day operations manual (scaling, monitoring) | ✅ Active (Oct 9) |
@@ -506,12 +507,13 @@ ekklesia/
 2. Review: `archive/docs/docs-2025-10-13/docs/design/EVENTS_SERVICE_MVP.md` (Events service)
 3. Review: `archive/docs/docs-2025-10-13/docs/design/ELECTIONS_SERVICE_MVP.md` (Elections service)
 4. Setup: `archive/docs/docs-2025-10-13/docs/guides/MEMBERS_DEPLOYMENT_GUIDE.md` (deployment)
+5. Study: `docs/ARCHITECTURE_DESIGN_PHASE6.md` (Phase 6 design and roadmap)
 
 **Current Work:**
 - Members Service (Production): `members/`
 - Events Service (Production): `events/`
 - Elections Service (Production): `elections/`
-- Phase 6 (Next): Load testing (see `docs/USAGE_CONTEXT.md`)
+- Phase 6 (Next): Load testing (see `docs/USAGE_CONTEXT.md`, `docs/ARCHITECTURE_DESIGN_PHASE6.md`)
 
 ### 🚀 **DevOps - Deploying & Operating**
 
@@ -538,7 +540,8 @@ ekklesia/
 2. Review: `archive/docs/docs-2025-10-13/docs/design/EVENTS_SERVICE_MVP.md` (Events service design)
 3. Review: `archive/docs/docs-2025-10-13/docs/design/ELECTIONS_SERVICE_MVP.md` (Elections service design)
 4. Study: `docs/USAGE_CONTEXT.md` (load patterns and capacity planning)
-5. Study: `archive/docs/docs-2025-10-13/docs/status/PHASE_5_INTEGRATION_COMPLETE.md` (S2S integration)
+5. Study: `docs/ARCHITECTURE_DESIGN_PHASE6.md` (Phase 6 design and roadmap)
+6. Study: `archive/docs/docs-2025-10-13/docs/status/PHASE_5_INTEGRATION_COMPLETE.md` (S2S integration)
 
 **Daily Work:**
 - Architecture: `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md`
@@ -680,8 +683,8 @@ ekklesia/
 
 ---
 
-**Document Version**: 6.1.0
-**Last Reviewed**: 2025-10-11
-**Changes**: Documentation cleanup complete - 5 files archived, code audit added, archive structure organized
-**Validated With**: gcloud CLI, firebase CLI, gsutil (production infrastructure)
-**Next Review**: 2026-01-11 (Quarterly)
+**Document Version**: 6.2.0
+**Last Reviewed**: 2025-10-13
+**Changes**: Added Phase 6 architecture design doc and linked throughout; validated all references
+**Validated With**: validate_documentation_map.py
+**Next Review**: 2026-01-13 (Quarterly)
