@@ -83,11 +83,13 @@
     <!-- Personal information -->
     <string name="section_personal_info">Persónuupplýsingar</string>
     <string name="label_name">Nafn</string>
+    <string name="label_display_name">Nafn</string>
     <string name="label_kennitala">Kennitala</string>
     <string name="label_email">Netfang</string>
     <string name="label_phone">Símanúmer</string>
     <string name="label_uid">Notandaauðkenni</string>
     <string name="label_status">Staða</string>
+    <string name="membership_status">Félagastaða</string>
 
     <!-- Placeholders -->
     <string name="placeholder_dash">-</string>
