@@ -188,6 +188,7 @@ ekklesia/
 │   │   ├── PHASE_5_INTEGRATION_COMPLETE.md     ✅ Phase 5 integration documentation
 │   │   ├── PR28_AGUST_COMPLETE_REVIEW.md       ✅ PR #28 review (23 comments)
 │   │   ├── CODE_AUDIT_2025-10-11_REVISED.md    📋 Code audit (Oct 11)
+│   │   ├── DEBUGGING_2025-10-13_CORS_AND_TOKEN_ERRORS.md  🐛 Debug session (CORS & tokens)
 │   │   ├── AUDIT_SUMMARY.md                    📋 Audit executive summary
 │   │   ├── CLEANUP_PLAN.md                     📋 Documentation cleanup plan
 │   │   └── README.md                           📖 Status docs guide
