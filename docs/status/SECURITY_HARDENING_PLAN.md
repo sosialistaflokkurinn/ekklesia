@@ -256,22 +256,39 @@ Direct URLs (Still Exposed):
 **Cost**: $0 (code change only)
 
 #### Option B: Firebase App Check (If No Custom Domain)
-```javascript
-// Pros: Free, no domain needed, works with *.run.app
-// Cons: Client-side only, bypass-able, less effective than Cloudflare
-// Timeline: 1-2 hours
 
-// Enable App Check for Cloud Functions
+**Status**: 🟡 In Progress (reCAPTCHA key created, console setup pending)
+
+**reCAPTCHA Enterprise Key**:
+- Site Key: `6LfDgOgrAAAAAIKly84yNibZNZsEGD31PnFQLYpM`
+- Display Name: `ekklesia-app-check`
+- Type: Score-based (reCAPTCHA v3, invisible)
+- Domains: `ekklesia-prod-10-2025.web.app`, `ekklesia-prod-10-2025.firebaseapp.com`, `localhost`
+- Created: 2025-10-13
+
+**Implementation**:
+```javascript
 // members/public/index.html
 import { initializeApp } from 'firebase/app';
-import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'firebase/app-check';
 
 const app = initializeApp(firebaseConfig);
 const appCheck = initializeAppCheck(app, {
-  provider: new ReCaptchaV3Provider('YOUR-RECAPTCHA-SITE-KEY'),
+  provider: new ReCaptchaEnterpriseProvider('6LfDgOgrAAAAAIKly84yNibZNZsEGD31PnFQLYpM'),
   isTokenAutoRefreshEnabled: true
 });
 ```
+
+**Next Steps**:
+1. Complete Firebase Console setup (register app with App Check)
+2. Enable App Check for Cloud Functions (handleKenniAuth, verifyMembership)
+3. Update client code with App Check SDK
+4. Deploy and test
+
+**See**: [docs/security/FIREBASE_APP_CHECK_SETUP.md](../security/FIREBASE_APP_CHECK_SETUP.md) for complete guide
+
+**Timeline**: 1 hour (console + code + testing)
+**Cost**: $0 (free tier, 1M assessments/month)
 
 #### Option C: Cloud Armor (NOT Recommended - More Expensive)
 ```bash

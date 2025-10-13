@@ -2,7 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const electionRoutes = require('./routes/election');
-const { cloudflareOnly } = require('./middleware/cloudflare');
+// const { cloudflareOnly } = require('./middleware/cloudflare');
+const { verifyAppCheckOptional } = require('./middleware/appCheck');
 
 /**
  * Events Service (Atburðir)
@@ -13,9 +14,10 @@ const { cloudflareOnly } = require('./middleware/cloudflare');
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// Security: Cloudflare origin protection
-// Blocks direct access to Cloud Run URL, only allows traffic from Cloudflare
-app.use(cloudflareOnly);
+// Security: Cloudflare origin protection - DISABLED (Oct 13, 2025)
+// Reason: Using direct Cloud Run URLs, not Cloudflare proxy
+// Replaced with Firebase App Check for origin protection (Oct 13, 2025)
+// app.use(cloudflareOnly);
 
 // Middleware
 app.use(cors({
@@ -34,7 +36,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Health check endpoint
+// Health check endpoint (no App Check required)
 app.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
@@ -43,6 +45,11 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+
+// Security: Firebase App Check verification (monitor-only mode)
+// After 1-2 days of monitoring, switch to verifyAppCheck for enforcement
+// See: docs/security/FIREBASE_APP_CHECK_IMPLEMENTATION.md Phase 5
+app.use('/api', verifyAppCheckOptional);
 
 // API routes
 app.use('/api', electionRoutes);

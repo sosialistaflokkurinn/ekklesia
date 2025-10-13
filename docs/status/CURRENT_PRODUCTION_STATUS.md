@@ -59,17 +59,10 @@
 
 ### Phase 2: Cloudflare Infrastructure (Oct 12, 2025 22:51 UTC)
 - ✅ **Issue #31**: Rate Limiting deployed (combined rule: 9e3a46b65ab448b29f0d908f5bfd8253)
-- ✅ **DNS Configuration**: 4 CNAME records via Cloudflare API
-  - auth.si-xj.org → handlekenniauth (Origin protection: ✅)
-  - api.si-xj.org → events-service (Origin protection: ✅)
-  - vote.si-xj.org → elections-service (Origin protection: ✅)
-  - verify.si-xj.org → verifymembership (Origin protection: ✅)
 - ✅ **Origin Protection Middleware**: CF-Ray + Cloudflare IP validation
   - Node.js: events/src/middleware/cloudflare.js (160 lines)
   - Node.js: elections/src/middleware/cloudflare.js (160 lines)
   - Python: members/functions/cloudflare_check.py (140 lines)
-- ✅ **SSL/TLS**: Full (strict) encryption mode
-- ✅ **Bot Protection**: JavaScript Detections enabled
 
 ### Phase 3: Automation & Safety (Oct 12, 2025 23:17 UTC)
 - ✅ **Automation Script**: scripts/cloudflare-setup.sh (843 lines)
@@ -78,17 +71,30 @@
 - ✅ **Git Pre-commit Hook**: Prevents tracking forbidden files (.gitignore, AUTOMATION.md, secrets)
 - ✅ **Hook Installation Script**: scripts/install-git-hooks.sh (147 lines)
 
+### Phase 4: Architecture Decision - Direct Cloud Run URLs (Oct 13, 2025)
+- ✅ **Decision**: Use direct Cloud Run URLs instead of custom domains
+- ✅ **Rationale**: Cost-benefit analysis (see [SECURITY_DEFENSE_ANALYSIS.md](../security/SECURITY_DEFENSE_ANALYSIS.md))
+  - Custom domains via Load Balancer: $216/year = 138% cost increase
+  - Custom domains via Cloudflare Pro: $240/year = 154% cost increase
+  - Direct URLs: $0 = cosmetic trade-off for cost efficiency
+- ✅ **Configuration**: Members service uses native Cloud Run URLs
+  - `config_api_events`: https://events-service-ymzrguoifa-nw.a.run.app
+  - `config_api_elections`: https://elections-service-ymzrguoifa-nw.a.run.app
+  - `config_api_handle_auth`: https://handlekenniauth-ymzrguoifa-nw.a.run.app
+- ✅ **Security Maintained**: Origin protection, rate limiting, audit logging all active
+
 **Documentation**:
 - [docs/status/SECURITY_HARDENING_PLAN.md](SECURITY_HARDENING_PLAN.md) - Complete hardening plan
 - [docs/security/CLOUDFLARE_SETUP.md](../security/CLOUDFLARE_SETUP.md) - Cloudflare infrastructure guide
+- [docs/security/SECURITY_DEFENSE_ANALYSIS.md](../security/SECURITY_DEFENSE_ANALYSIS.md) - Security assessment & architecture decisions
+- [docs/security/CLOUDFLARE_HOST_HEADER_INVESTIGATION.md](../security/CLOUDFLARE_HOST_HEADER_INVESTIGATION.md) - Technical investigation
 - [scripts/README.md](../../scripts/README.md) - Automation scripts guide
 
-**Testing Results**:
-- ✅ Origin protection working (direct URLs blocked with 403)
-- ✅ DNS propagation complete (all 4 domains resolving)
-- ✅ Rate limiting active (100 req/10sec per IP)
-- ✅ SSL/TLS encryption verified
-- ✅ Pre-commit hook tested and blocking forbidden files
+**Architecture Justification**:
+- ✅ Threat level appropriate (monthly meetings, low-profile target)
+- ✅ Cost efficiency prioritized (98% cheaper than always-on alternatives)
+- ✅ Security comprehensive (auth, authorization, rate limiting, origin protection)
+- ✅ Accepts cosmetic trade-off (functional URLs vs pretty URLs)
 
 ---
 

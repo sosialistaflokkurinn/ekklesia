@@ -26,7 +26,7 @@ options.set_global_options(region="europe-west2")
 CORS_HEADERS = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Firebase-AppCheck',
     'Access-Control-Max-Age': '3600',
 }
 
@@ -333,8 +333,8 @@ def verifyMembership(req: https_fn.CallableRequest) -> dict:
         ]
 
         # Normalize kennitala for comparison (remove hyphen if present)
-        # File format: 2009783589 (no hyphen)
-        # Token format: may be 200978-3589 (with hyphen) or 2009783589 (without)
+        # File format: DDMMYYXXXX (no hyphen)
+        # Token format: may be DDMMYY-XXXX (with hyphen) or DDMMYYXXXX (without)
         kennitala_normalized = kennitala.replace('-', '')
 
         # Check membership status
