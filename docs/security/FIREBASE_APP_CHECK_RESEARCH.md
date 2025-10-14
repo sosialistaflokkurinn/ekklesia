@@ -46,7 +46,7 @@ This paper presents a comprehensive analysis of Firebase App Check implementatio
 
 ### 1.1 Problem Statement
 
-The Ekklesia platform provides secure electronic voting for organizational meetings of Samstaða (Icelandic Social Democratic Party). The system faces unique security challenges:
+The Ekklesia platform provides secure electronic voting for organizational meetings of Sósíalistaflokkur Íslands (Socialist Party of Iceland). The system faces unique security challenges:
 
 1. **High security requirements**: Democratic processes require vote integrity and anonymity
 2. **Extreme cost constraints**: Monthly budget of $7-13 (non-profit organization)
@@ -1822,7 +1822,7 @@ mv docs/security/FIREBASE_APP_CHECK_*.md archive/security/
 ## Acknowledgments
 
 This research and implementation were conducted by the Ekklesia Security Team in collaboration with:
-- **Samstaða** (Icelandic Social Democratic Party) - Project sponsor
+- **Sósíalistaflokkur Íslands** (Socialist Party of Iceland) - Project sponsor
 - **Kenni.is** - National eID provider
 - **Google Cloud** - Infrastructure provider
 - **Firebase** - Application platform
