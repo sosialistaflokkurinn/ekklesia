@@ -138,7 +138,7 @@ Effort & priority
 ### 4) Multi-Tenancy & Growth
 
 Current state
-- Single org (Samstaða). Architecture logically separates concerns; no explicit tenant isolation yet.
+- Single org (Sósíalistaflokkurinn). Architecture logically separates concerns; no explicit tenant isolation yet.
 
 Options evaluated
 - A) Logical multi-tenancy (single DB, org_id column everywhere, RLS policies, per-tenant API keys/secrets, tenant-aware logging/metrics).

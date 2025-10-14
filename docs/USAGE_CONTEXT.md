@@ -9,7 +9,7 @@
 
 ## Overview
 
-The Ekklesia voting system is designed for **organizational meetings** (board meetings, member assemblies, etc.) held by Samstaða (Icelandic Social Democratic Party). Understanding the usage context is critical for:
+The Ekklesia voting system is designed for **organizational meetings** (board meetings, member assemblies, etc.) held by Sósíalistaflokkur Íslands (Socialist Party of Iceland). Understanding the usage context is critical for:
 
 - **Capacity planning** (Cloud Run scaling)
 - **Database connection pooling** (PostgreSQL)
