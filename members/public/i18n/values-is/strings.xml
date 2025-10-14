@@ -13,7 +13,7 @@
     <string name="app_name">Sósíalistaflokkurinn</string>
     <string name="page_title">Innskráning - Sósíalistaflokkurinn</string>
     <string name="page_title_dashboard">Mín síða - Sósíalistaflokkurinn</string>
-    <string name="page_title_profile">Prófíll - Sósíalistaflokkurinn</string>
+    <string name="page_title_profile">Aðgangur - Sósíalistaflokkurinn</string>
     <string name="page_title_test_events">Prófunarkosning 2025 - Sósíalistaflokkurinn</string>
 
     <!-- ========================================== -->
@@ -27,22 +27,22 @@
     <!-- Authentication status -->
     <string name="status_authenticated">Innskráð(ur)</string>
     <string name="status_not_authenticated">Ekki innskráð(ur)</string>
-    <string name="status_authenticating">Staðfesti auðkenningu...</string>
-    <string name="status_verifying_membership">Staðfesti félagsaðild...</string>
+    <string name="status_authenticating">Auðkennir...</string>
+    <string name="status_verifying_membership">Kannar aðild...</string>
 
     <!-- Login errors -->
-    <string name="error_missing_pkce">Missing PKCE verifier</string>
-    <string name="error_authentication_failed">Authentication failed</string>
+    <string name="error_missing_pkce">Vantar PKCE-sannprófara</string>
+    <string name="error_authentication_failed">Auðkenning mistókst</string>
     <string name="error_authentication">Villa við auðkenningu: %s</string>
     <string name="error_csrf_title">Villa</string>
-    <string name="error_csrf_message">Öryggisvillaog: CSRF árásvörn virk. Vinsamlegast reyndu aftur.</string>
+    <string name="error_csrf_message">Öryggisvilla: CSRF-vörn virk. Vinsamlegast reyndu aftur.</string>
 
     <!-- ========================================== -->
     <!-- NAVIGATION -->
     <!-- ========================================== -->
     <string name="nav_brand">Sósíalistaflokkurinn</string>
     <string name="nav_dashboard">Mín síða</string>
-    <string name="nav_profile">Prófíll</string>
+    <string name="nav_profile">Aðgangur</string>
     <string name="nav_events">Atburðir</string>
     <string name="nav_voting">Kosningar</string>
     <string name="nav_logout">Útskrá</string>
@@ -50,14 +50,14 @@
     <!-- ========================================== -->
     <!-- DASHBOARD PAGE (dashboard.html) -->
     <!-- ========================================== -->
-    <string name="dashboard_welcome">Velkomin(n)</string>
+    <string name="dashboard_welcome">Sæll/Sæl</string>
     <string name="dashboard_welcome_user">%s, %s!</string>
     <string name="dashboard_subtitle">Félagasvæði Sósíalistaflokksins</string>
     <string name="dashboard_default_name">félagi</string>
 
     <!-- Quick links -->
     <string name="quick_links_title">Flýtileiðir</string>
-    <string name="quick_links_profile_label">Prófíll</string>
+    <string name="quick_links_profile_label">Aðgangur</string>
     <string name="quick_links_profile_desc">Skoða mínar upplýsingar</string>
     <string name="quick_links_events_label">Atburðir</string>
     <string name="quick_links_events_desc">Prófunarkosning 2025</string>
@@ -67,17 +67,17 @@
     <!-- Membership status -->
     <string name="membership_title">Félagastaða</string>
     <string name="membership_loading">Hleð inn...</string>
-    <string name="membership_active">✓ staðfest aðild</string>
-    <string name="membership_inactive">Ekki félag</string>
-    <string name="membership_not_verified">Ekki staðfest</string>
-    <string name="membership_verifying">Staðfesti félagsaðild...</string>
+    <string name="membership_active">✓ Gild aðild</string>
+    <string name="membership_inactive">Ekki félagi</string>
+    <string name="membership_not_verified">Óstaðfest</string>
+    <string name="membership_verifying">Kannar aðild...</string>
     <string name="membership_verification_failed">Villa við staðfestingu</string>
     <string name="btn_verify_membership">Staðfesta félagsaðild</string>
 
     <!-- ========================================== -->
     <!-- PROFILE PAGE (profile.html) -->
     <!-- ========================================== -->
-    <string name="profile_title">Prófíll</string>
+    <string name="profile_title">Aðgangur</string>
     <string name="profile_subtitle">Mínar upplýsingar</string>
 
     <!-- Personal information -->
@@ -103,9 +103,9 @@
 
     <!-- Authentication status -->
     <string name="test_auth_title">Auðkenning</string>
-    <string name="test_auth_not_authenticated">Ekki auðkenndur</string>
+    <string name="test_auth_not_authenticated">Ekki auðkennd/ur</string>
     <string name="test_auth_authenticated">✓ Auðkenndur</string>
-    <string name="test_auth_uid">UID:</string>
+    <string name="test_auth_uid">Auðkenni:</string>
     <string name="test_auth_kennitala">Kennitala:</string>
     <string name="test_auth_membership">Félagsaðild:</string>
     <string name="test_auth_yes">✓ Já</string>
@@ -120,30 +120,30 @@
     <string name="test_1_title">1. Heilsuathugun (engin auðkenning)</string>
     <string name="test_1_button">GET /health</string>
 
-    <string name="test_2_title">2. Sækja kosningaupplýsingar</string>
+    <string name="test_2_title">2. Sækja upplýsingar um kosningu</string>
     <string name="test_2_button">GET /api/election</string>
 
-    <string name="test_3_title">3. Biðja um atkvæðismerki</string>
+    <string name="test_3_title">3. Biðja um atkvæðalykil</string>
     <string name="test_3_button">POST /api/request-token</string>
 
     <string name="test_4_title">4. Athuga þátttökustöðu</string>
     <string name="test_4_button">GET /api/my-status</string>
 
-    <string name="test_5_title">5. Kjósa (Elections Service)</string>
+    <string name="test_5_title">5. Kjósa (Kosningaþjónusta)</string>
     <string name="test_5_button">POST /api/vote (Elections Service)</string>
-    <string name="test_5_token_label">Atkvæðismerki:</string>
-    <string name="test_5_token_placeholder">Límdu atkvæðismerkið hér</string>
+    <string name="test_5_token_label">Atkvæðalykill:</string>
+    <string name="test_5_token_placeholder">Límdu atkvæðalykilinn hér</string>
     <string name="test_5_answer_label">Svar:</string>
     <string name="test_5_answer_yes">Já</string>
     <string name="test_5_answer_no">Nei</string>
     <string name="test_5_answer_abstain">Sitja hjá</string>
-    <string name="test_5_error_no_token">Vinsamlegast sláðu inn atkvæðismerki</string>
+    <string name="test_5_error_no_token">Vinsamlegast sláðu inn atkvæðalykil</string>
 
     <string name="test_6_title">6. Niðurstöður</string>
     <string name="test_6_button">GET /api/results</string>
 
     <!-- Test errors -->
-    <string name="test_error_not_authenticated">Not authenticated</string>
+    <string name="test_error_not_authenticated">Ekki auðkennd/ur</string>
 
     <!-- ========================================== -->
     <!-- COMMON / SHARED STRINGS -->
@@ -156,11 +156,11 @@
     <!-- ========================================== -->
     <!-- CONSOLE LOG MESSAGES (for debugging) -->
     <!-- ========================================== -->
-    <string name="log_membership_verified">Membership verified during login</string>
-    <string name="log_membership_verify_failed">Membership verification during login failed:</string>
-    <string name="log_authentication_error">Authentication error:</string>
-    <string name="log_csrf_failed">CSRF check failed: state mismatch</string>
-    <string name="log_membership_verification_error">Membership verification error:</string>
+    <string name="log_membership_verified">Aðild staðfest við innskráningu</string>
+    <string name="log_membership_verify_failed">Staðfesting aðildar mistókst við innskráningu:</string>
+    <string name="log_authentication_error">Villa við auðkenningu:</string>
+    <string name="log_csrf_failed">CSRF-athugun mistókst: ósamræmi í stöðu</string>
+    <string name="log_membership_verification_error">Villa við staðfestingu aðildar:</string>
 
     <!-- ========================================== -->
     <!-- CONFIGURATION (not translated) -->
