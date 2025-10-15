@@ -27,8 +27,11 @@ app.use(cors({
   credentials: true
 }));
 
-// Body parser
-app.use(express.json());
+// Body parser with size limit (prevent DoS attacks)
+app.use(express.json({
+  limit: '5kb',
+  strict: true
+}));
 
 // Request logging (development only)
 if (process.env.NODE_ENV !== 'production') {
@@ -73,6 +76,14 @@ app.use((req, res) => {
 
 // Error handler
 app.use((err, req, res, next) => {
+  // Handle payload too large errors
+  if (err.type === 'entity.too.large') {
+    return res.status(413).json({
+      error: 'Payload Too Large',
+      message: 'Request body must be under 5kb'
+    });
+  }
+
   console.error('[Error]', err);
   res.status(500).json({
     error: 'Internal Server Error',
