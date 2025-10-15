@@ -366,6 +366,7 @@ ekklesia/
 | Document | Purpose | Status |
 |----------|---------|--------|
 | `docs/prompts/BRANCH_DIFF_DOCUMENTATION_AUDIT.md` | Checklist prompt for auditing documentation changes in PR diffs | ✅ Current (Oct 15) |
+| `docs/prompts/COMPARE_FIREBASE_TO_SECURITY_BRANCHES.md` | Branch comparison workflow for firebase-auth → security-hardening review | ✅ Current (Oct 15) |
 
 ### �📝 Future Plans
 
