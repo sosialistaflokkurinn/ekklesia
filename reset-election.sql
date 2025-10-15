@@ -1,10 +1,13 @@
 -- Reset Election Data for Testing
 -- Run this script to allow testing the voting flow again
 --
--- Usage:
--- PGPASSWORD='***REMOVED***' psql -h 127.0.0.1 -p 5433 -U postgres -d postgres -f reset-election.sql
+-- Usage (recommended - retrieves password from Secret Manager):
+-- ./scripts/psql-cloud.sh -f reset-election.sql
 --
--- Or via Cloud Console SQL editor
+-- Alternative (manual password retrieval):
+-- PGPASSWORD=$(./scripts/get-secret.sh postgres-password) psql -h 127.0.0.1 -p 5433 -U postgres -d postgres -f reset-election.sql
+--
+-- Or via Cloud Console SQL editor (authenticated via console)
 
 BEGIN;
 
