@@ -13,7 +13,7 @@
 
 **Pattern**:
 - Draft 5 responses at a time
-- Present batch to user for review
+- Present batch to user for reviGraphQLew
 - User approves with "samþykkt" → Post immediately
 - Move to next batch
 

@@ -12,11 +12,11 @@
   <!-- Navigation -->
   <nav class="nav-header">
     <div class="nav-container">
-      <a href="/dashboard.html" class="nav-brand">Sósíalistaflokkurinn</a>
+      <a href="/dashboard.html" class="nav-brand" id="nav-brand">Loading...</a>
       <div class="nav-links">
-        <a href="/dashboard.html" class="nav-link active" id="nav-dashboard">Mín síða</a>
-        <a href="/profile.html" class="nav-link" id="nav-profile">Prófíll</a>
-        <a href="#" class="nav-link nav-logout" id="nav-logout">Útskrá</a>
+        <a href="/dashboard.html" class="nav-link active" id="nav-dashboard">Loading...</a>
+        <a href="/profile.html" class="nav-link" id="nav-profile">Loading...</a>
+        <a href="#" class="nav-link nav-logout" id="nav-logout">Loading...</a>
       </div>
     </div>
   </nav>
@@ -25,145 +25,43 @@
   <div class="page-container">
     <!-- Welcome Card -->
     <div class="card welcome-card">
-      <h2 class="card-title" id="welcome-title">Velkomin(n)</h2>
+      <h2 class="card-title" id="welcome-title">Loading...</h2>
       <p class="card-content">
-        <span id="welcome-message">Félagasvæði Sósíalistaflokksins</span>
+        <span id="welcome-message">Loading...</span>
       </p>
     </div>
 
     <!-- Quick Links -->
     <div class="card">
-      <h3 class="card-title">Flýtileiðir</h3>
+      <h3 class="card-title" id="quick-links-title">Loading...</h3>
       <div class="info-grid">
         <a href="/profile.html" class="info-item" style="text-decoration: none; cursor: pointer;">
-          <div class="info-label">Prófíll</div>
-          <div class="info-value">Skoða mínar upplýsingar</div>
+          <div class="info-label" id="quick-link-profile-label">Loading...</div>
+          <div class="info-value" id="quick-link-profile-desc">Loading...</div>
         </a>
         <a href="/test-events.html" class="info-item" style="text-decoration: none; cursor: pointer;">
-          <div class="info-label">Atburðir</div>
-          <div class="info-value">Prófunarkosning 2025</div>
+          <div class="info-label" id="quick-link-events-label">Loading...</div>
+          <div class="info-value" id="quick-link-events-desc">Loading...</div>
         </a>
         <div class="info-item" style="opacity: 0.5;">
-          <div class="info-label">Kosningar</div>
-          <div class="info-value">Væntanlegt</div>
+          <div class="info-label" id="quick-link-voting-label">Loading...</div>
+          <div class="info-value" id="quick-link-voting-desc">Loading...</div>
         </div>
       </div>
     </div>
 
     <!-- Member Status -->
     <div class="card" id="membership-card">
-      <h3 class="card-title">Félagastaða</h3>
+      <h3 class="card-title" id="membership-title">Loading...</h3>
       <div class="card-content" id="membership-status">
-        Hleð inn...
+        Loading...
       </div>
       <div id="verify-button-container" style="margin-top: var(--spacing-md); display: none;">
-        <button class="btn" id="verify-membership-btn">Staðfesta félagsaðild</button>
+        <button class="btn" id="verify-membership-btn">Loading...</button>
       </div>
     </div>
   </div>
 
-  <script type="module">
-    import { R } from '/i18n/strings-loader.js';
-    import { requireAuth, signOut, getUserData } from '/js/auth.js';
-    import { getApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-    import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js';
-
-    // Wait for strings to load
-    await R.load('is');
-
-    // Get existing Firebase app instance (already initialized in auth.js)
-    const app = getApp();
-    const functions = getFunctions(app, R.string.config_firebase_region);
-
-    // Set page title
-    document.title = R.string.page_title_dashboard;
-
-    // Update static strings
-    document.getElementById('nav-dashboard').textContent = R.string.nav_dashboard;
-    document.getElementById('nav-profile').textContent = R.string.nav_profile;
-    document.getElementById('nav-logout').textContent = R.string.nav_logout;
-
-    // Auth guard - redirect if not authenticated
-    const user = await requireAuth();
-
-    // Get user data
-    const userData = await getUserData(user);
-
-    // Update welcome message
-    const displayName = userData.displayName || R.string.dashboard_default_name;
-    document.getElementById('welcome-title').textContent =
-      R.format(R.string.dashboard_welcome_user, R.string.dashboard_welcome, displayName);
-
-    // Update membership status
-    const membershipCard = document.getElementById('membership-status');
-    const verifyButtonContainer = document.getElementById('verify-button-container');
-
-    function updateMembershipUI(isMember) {
-      if (isMember) {
-        membershipCard.innerHTML = `
-          <div style="color: var(--color-success-text); font-weight: 500;">
-            ✓ ${R.string.membership_active}
-          </div>
-        `;
-        verifyButtonContainer.style.display = 'none';
-      } else {
-        membershipCard.innerHTML = `
-          <div style="color: var(--color-gray-600);">
-            ${R.string.membership_not_verified}
-          </div>
-        `;
-        verifyButtonContainer.style.display = 'block';
-      }
-    }
-
-    updateMembershipUI(userData.isMember);
-
-    // Verify membership handler
-    document.getElementById('verify-membership-btn').addEventListener('click', async () => {
-      const btn = document.getElementById('verify-membership-btn');
-      btn.disabled = true;
-      btn.textContent = R.string.membership_verifying;
-
-      try {
-        const verifyMembership = httpsCallable(functions, 'verifyMembership');
-        const result = await verifyMembership();
-
-        if (result.data.isMember) {
-          membershipCard.innerHTML = `
-            <div style="color: var(--color-success-text); font-weight: 500;">
-              ✓ ${R.string.membership_active}
-            </div>
-          `;
-          verifyButtonContainer.style.display = 'none';
-
-          // Refresh user data to get updated claims
-          await user.getIdToken(true);
-        } else {
-          membershipCard.innerHTML = `
-            <div style="color: var(--color-error-text);">
-              ${R.string.membership_inactive}
-            </div>
-          `;
-          btn.disabled = false;
-          btn.textContent = R.string.btn_verify_membership;
-        }
-      } catch (error) {
-        console.error('Membership verification error:', error);
-        membershipCard.innerHTML = `
-          <div style="color: var(--color-error-text);">
-            ${R.string.membership_verification_failed}: ${error.message}
-          </div>
-        `;
-        btn.disabled = false;
-        btn.textContent = R.string.btn_verify_membership;
-      }
-    });
-
-    // Logout handler
-    document.getElementById('nav-logout').addEventListener('click', async (e) => {
-      e.preventDefault();
-      await signOut();
-    });
-  </script>
+  <script type="module" src="/js/dashboard.new.js"></script>
 </body>
 </html>

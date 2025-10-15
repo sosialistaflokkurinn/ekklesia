@@ -26,6 +26,12 @@ class StringsLoader {
    * @returns {Promise<Object>} - Parsed strings object
    */
   async load(locale = 'is') {
+    // Check if already loaded for this locale
+    if (this.loaded && this.currentLocale === locale) {
+      console.log(`✓ Using cached strings for locale: ${locale} (${Object.keys(this.strings).length} strings)`);
+      return this.strings;
+    }
+
     this.currentLocale = locale;
     const xmlPath = `/i18n/values-${locale}/strings.xml`;
 
@@ -211,10 +217,7 @@ export const R = {
   isLoaded: () => stringsLoader.loaded
 };
 
-// Auto-load default locale on import
-// This ensures strings are available immediately
-const autoLoad = R.load('is').catch(err => {
-  console.error('Failed to auto-load strings:', err);
-});
-
+// Lazy loading only - no auto-load
+// Pages call R.load() via initSession(), which caches the result
+// This avoids double-fetch on first page load
 export default R;

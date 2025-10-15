@@ -13,9 +13,6 @@ import firebase_admin
 from firebase_admin import initialize_app, auth, firestore
 from firebase_functions import https_fn, options
 
-# Import Cloudflare protection decorator
-from cloudflare_check import cloudflare_only
-
 # --- SETUP ---
 if not firebase_admin._apps:
     initialize_app()
@@ -71,7 +68,6 @@ def validate_kennitala(kennitala: str) -> bool:
 # --- CLOUD FUNCTIONS ---
 
 @https_fn.on_request()
-@cloudflare_only
 def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
     """
     Handle Kenni.is OAuth code exchange with PKCE

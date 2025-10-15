@@ -3,7 +3,6 @@ const express = require('express');
 const cors = require('cors');
 
 const electionsRouter = require('./routes/elections');
-// const { cloudflareOnly } = require('./middleware/cloudflare');
 
 const app = express();
 const PORT = process.env.PORT || 8081;
@@ -11,11 +10,6 @@ const PORT = process.env.PORT || 8081;
 // =====================================================
 // Middleware
 // =====================================================
-
-// Security: Cloudflare origin protection - DISABLED (Oct 13, 2025)
-// Reason: Using direct Cloud Run URLs, not Cloudflare proxy
-// Will be replaced with Firebase App Check for origin protection
-// app.use(cloudflareOnly);
 
 // CORS configuration
 const corsOrigins = process.env.CORS_ORIGINS

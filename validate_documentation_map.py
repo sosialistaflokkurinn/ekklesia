@@ -37,6 +37,10 @@ DEFAULT_SCAN_DIRS = (
     "archive",
 )
 
+DEFAULT_IGNORE_DIRS = (
+    "archive",
+)
+
 # File suffixes that we consider part of documentation for the purposes of
 # coverage. Extend this tuple if you need to track additional formats.
 DOC_SUFFIXES = (".md", ".markdown", ".mdx", ".rst", ".txt", ".sh")
@@ -99,17 +103,25 @@ def extract_paths(markdown: str) -> Set[Path]:
     return candidates
 
 
-def collect_repository_docs(root: Path, directories: Iterable[str]) -> Set[Path]:
+def collect_repository_docs(root: Path, directories: Iterable[str], ignored: Set[str]) -> Set[Path]:
     """Return all documentation files under the given directories."""
 
     discovered: Set[Path] = set()
     for relative_dir in directories:
         base = root / relative_dir
+        top_level = relative_dir.split("/", 1)[0]
+        if top_level in ignored:
+            continue
         if not base.exists():
             continue
         for path in base.rglob("*"):
             parts = path.parts
-            if any(part in EXCLUDE_PARTS or part.endswith(".dist-info") for part in parts):
+            if any(
+                part in EXCLUDE_PARTS
+                or part.endswith(".dist-info")
+                or part in ignored
+                for part in parts
+            ):
                 continue
             if path.is_file() and path.suffix in DOC_SUFFIXES:
                 discovered.add(path.relative_to(root))
@@ -143,6 +155,12 @@ def main() -> None:
         default=DEFAULT_SCAN_DIRS,
         help="Directories to scan for documentation coverage",
     )
+    parser.add_argument(
+        "--ignore",
+        nargs="*",
+        default=DEFAULT_IGNORE_DIRS,
+        help="Top-level directories to ignore when scanning for documentation coverage",
+    )
     args = parser.parse_args()
 
     repo_root = Path.cwd()
@@ -152,6 +170,8 @@ def main() -> None:
 
     markdown = map_path.read_text(encoding="utf-8")
     referenced_paths = extract_paths(markdown)
+
+    ignored_dirs = {Path(dir_path).parts[0] for dir_path in args.ignore}
 
     missing = []
     suggestions = {}
@@ -163,7 +183,7 @@ def main() -> None:
         if suggestion is not None:
             suggestions[path] = suggestion
 
-    discovered_docs = collect_repository_docs(repo_root, args.scan)
+    discovered_docs = collect_repository_docs(repo_root, args.scan, ignored_dirs)
     unlisted = sorted(discovered_docs - referenced_paths)
 
     print("=== Documentation Map Validation ===")

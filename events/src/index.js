@@ -2,7 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const electionRoutes = require('./routes/election');
-// const { cloudflareOnly } = require('./middleware/cloudflare');
 const { verifyAppCheckOptional } = require('./middleware/appCheck');
 
 /**
@@ -13,11 +12,6 @@ const { verifyAppCheckOptional } = require('./middleware/appCheck');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
-
-// Security: Cloudflare origin protection - DISABLED (Oct 13, 2025)
-// Reason: Using direct Cloud Run URLs, not Cloudflare proxy
-// Replaced with Firebase App Check for origin protection (Oct 13, 2025)
-// app.use(cloudflareOnly);
 
 // Middleware
 app.use(cors({
