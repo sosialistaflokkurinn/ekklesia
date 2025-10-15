@@ -3,220 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Innskráning - Sósíalistaflokkurinn</title>
+  <title>Loading...</title>
   <link rel="stylesheet" href="/styles/global.css">
   <link rel="stylesheet" href="/styles/components/login.css">
 </head>
 <body>
   <div class="container">
-    <h1 id="login-title">Innskráning</h1>
-    <p class="subtitle" id="login-subtitle">Félagar Sósíalistaflokksins</p>
+    <h1 id="login-title">Loading...</h1>
+    <p class="subtitle" id="login-subtitle">Loading...</p>
 
     <div id="status" class="status not-authenticated">
-      <span id="status-text">Ekki innskráð(ur)</span>
+      <span id="status-text">Loading...</span>
     </div>
 
     <div id="auth-buttons">
-      <button class="btn" id="login-btn">
-        Skrá inn með Kenni.is
+      <button class="btn" id="btn-login">
+        Loading...
       </button>
       <p style="color: var(--color-gray-500); font-size: 14px; margin-top: var(--spacing-sm);">
-        <span id="login-description">Auðkenning með rafrænum skilríkjum</span>
+        <span id="login-description">Loading...</span>
       </p>
     </div>
+
+    <div id="login-error" style="display: none; color: var(--color-error-text); margin-top: var(--spacing-md);"></div>
   </div>
 
-  <script type="module">
-    import { R } from '/i18n/strings-loader.js';
-    import { getCurrentUser, auth, appCheck } from '/js/auth.js';
-    import { signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-    import { getApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-    import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js';
-    import { getToken as getAppCheckToken } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app-check.js';
-
-    // Wait for strings to load
-    await R.load('is');
-
-    // Get existing Firebase app instance (already initialized in auth.js)
-    const app = getApp();
-    const functions = getFunctions(app, R.string.config_firebase_region);
-
-    // Set page title and strings
-    document.title = R.string.page_title;
-    document.getElementById('login-title').textContent = R.string.login_title;
-    document.getElementById('login-subtitle').textContent = R.string.login_subtitle;
-    document.getElementById('status-text').textContent = R.string.status_not_authenticated;
-    document.getElementById('login-btn').textContent = R.string.btn_login;
-    document.getElementById('login-description').textContent = R.string.btn_login_description;
-
-    // Kenni.is configuration (from strings.xml)
-    const KENNI_IS_ISSUER_URL = R.string.config_kenni_issuer;
-    const KENNI_IS_CLIENT_ID = R.string.config_kenni_client_id;
-    const KENNI_IS_REDIRECT_URI = window.location.origin + '/'; // Root URL registered with Kenni.is
-
-    // Base64 URL encode
-    function base64URLEncode(buffer) {
-      const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
-      return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-    }
-
-    // SHA-256 hash
-    async function sha256(buffer) {
-      return await crypto.subtle.digest('SHA-256', buffer);
-    }
-
-    // Generate PKCE challenge
-    async function generatePKCE() {
-      const array = new Uint8Array(32);
-      crypto.getRandomValues(array);
-      const verifier = base64URLEncode(array);
-
-      const encoder = new TextEncoder();
-      const data = encoder.encode(verifier);
-      const hash = await sha256(data);
-      const challenge = base64URLEncode(hash);
-
-      return { verifier, challenge };
-    }
-
-    // Handle OAuth callback
-    async function handleOAuthCallback(authCode) {
-      const statusEl = document.getElementById('status');
-      const statusTextEl = document.getElementById('status-text');
-      const authButtonsEl = document.getElementById('auth-buttons');
-
-      statusEl.className = 'status authenticating';
-      statusTextEl.textContent = R.string.status_authenticating;
-      authButtonsEl.style.display = 'none';
-
-      try {
-        const pkceVerifier = sessionStorage.getItem('pkce_code_verifier');
-        if (!pkceVerifier) {
-          throw new Error(R.string.error_missing_pkce);
-        }
-
-        // Get App Check token for enhanced security
-        let appCheckTokenResponse;
-        try {
-          appCheckTokenResponse = await getAppCheckToken(appCheck, false);
-          console.log('✅ App Check token obtained for handleKenniAuth');
-        } catch (error) {
-          console.warn('⚠️ App Check token unavailable, continuing without it:', error);
-        }
-
-        // Call Cloud Function to exchange code for token
-        const headers = { 'Content-Type': 'application/json' };
-        if (appCheckTokenResponse) {
-          headers['X-Firebase-AppCheck'] = appCheckTokenResponse.token;
-        }
-
-        const response = await fetch(R.string.config_api_handle_auth, {
-          method: 'POST',
-          headers: headers,
-          body: JSON.stringify({
-            kenniAuthCode: authCode,
-            pkceCodeVerifier: pkceVerifier
-          })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || R.string.error_authentication_failed);
-        }
-
-        // Sign in to Firebase with custom token
-        await signInWithCustomToken(auth, data.customToken);
-
-        // Clear PKCE verifier
-        sessionStorage.removeItem('pkce_code_verifier');
-
-        // Automatically verify membership after login
-        statusTextEl.textContent = R.string.status_verifying_membership;
-        try {
-          const verifyMembership = httpsCallable(functions, 'verifyMembership');
-          await verifyMembership();
-          console.log(R.string.log_membership_verified);
-        } catch (verifyError) {
-          console.warn(R.string.log_membership_verify_failed, verifyError);
-          // Continue to dashboard even if verification fails
-        }
-
-        // Redirect to dashboard
-        window.location.href = R.string.path_dashboard;
-      } catch (error) {
-        console.error(R.string.log_authentication_error, error);
-        statusEl.className = 'status error';
-        statusTextEl.textContent = R.format(R.string.error_authentication, error.message);
-        authButtonsEl.style.display = 'block';
-      }
-    }
-
-    // Initialize page
-    (async () => {
-      // Check if this is an OAuth callback (has ?code parameter)
-      const urlParams = new URLSearchParams(window.location.search);
-      const authCode = urlParams.get('code');
-      const returnedState = urlParams.get('state');
-
-      if (authCode) {
-        // Validate CSRF state parameter
-        const storedState = sessionStorage.getItem('oauth_state');
-        if (!storedState || returnedState !== storedState) {
-          statusEl.textContent = R.string.error_csrf_title;
-          statusTextEl.textContent = R.string.error_csrf_message;
-          statusTextEl.style.color = 'red';
-          console.error(R.string.log_csrf_failed);
-          sessionStorage.removeItem('oauth_state');
-          sessionStorage.removeItem('pkce_code_verifier');
-          return;
-        }
-
-        // State validated - clean up and proceed
-        sessionStorage.removeItem('oauth_state');
-
-        // OAuth callback - handle authentication
-        await handleOAuthCallback(authCode);
-        return;
-      }
-
-      // Check if already authenticated
-      const user = await getCurrentUser();
-      if (user) {
-        // Already logged in - redirect to dashboard
-        window.location.href = R.string.path_dashboard;
-      }
-    })();
-
-    // Generate CSRF state parameter
-    function generateState() {
-      const array = new Uint8Array(32);
-      crypto.getRandomValues(array);
-      return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
-    }
-
-    // Sign in with Kenni.is
-    document.getElementById('login-btn').addEventListener('click', async () => {
-      const { verifier, challenge } = await generatePKCE();
-      sessionStorage.setItem('pkce_code_verifier', verifier);
-
-      // Generate and store CSRF state parameter
-      const state = generateState();
-      sessionStorage.setItem('oauth_state', state);
-
-      const params = new URLSearchParams({
-        client_id: KENNI_IS_CLIENT_ID,
-        redirect_uri: KENNI_IS_REDIRECT_URI,
-        response_type: 'code',
-        scope: R.string.config_oauth_scopes,
-        code_challenge: challenge,
-        code_challenge_method: 'S256',
-        state: state,  // Add CSRF protection
-      });
-
-      const authUrl = `${KENNI_IS_ISSUER_URL}/oidc/auth?${params.toString()}`;
-      window.location.assign(authUrl);
-    });
-  </script>
+  <script type="module" src="/js/login.new.js"></script>
 </body>
 </html>

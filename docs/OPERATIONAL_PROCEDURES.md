@@ -1,7 +1,7 @@
 # Ekklesia Operational Procedures - Meeting Day
 
 **Document Type**: Operations Manual
-**Last Updated**: 2025-10-09
+**Last Updated**: 2025-10-15
 **Status**: ✅ Active - Required for Meeting Operations
 **Purpose**: Step-by-step procedures for preparing, running, and shutting down the system for meetings
 
@@ -16,6 +16,19 @@ The Ekklesia system is designed for **infrequent, high-load events** (monthly me
 3. **Cost optimization** after meetings (scale down, pause services)
 
 **Philosophy**: It's **completely justified** to manually prepare the system before meetings and scale down afterward. Monthly meetings don't require 24/7 high availability.
+
+## Recent Validation (Oct 15, 2025)
+
+✅ **End-to-end voting flow validated** in production:
+- All three services working together
+- Complete voting flow (authentication → token → vote → results)
+- Anonymous voting verified
+- One-time token enforcement working
+- Performance excellent (<500ms response times)
+
+**See**: [docs/testing/END_TO_END_VOTING_FLOW_TEST.md](testing/END_TO_END_VOTING_FLOW_TEST.md)
+
+**Conclusion**: System is production-ready for first meeting. Load testing remains (300 votes/sec spike).
 
 ---
 
@@ -89,16 +102,16 @@ gcloud sql operations list \
 
 ```bash
 # Check Events service
-curl -s https://events-service-521240388393.europe-west2.run.app/health | jq
+curl -s https://events-service-ymzrguoifa-nw.a.run.app/health | jq
 
-# Check Elections service (should return 503 if not deployed yet)
-# curl -s https://elections-service-521240388393.europe-west2.run.app/health | jq
+# Check Elections service
+curl -s https://elections-service-ymzrguoifa-nw.a.run.app/health | jq
 
 # Check Members service
 curl -s https://ekklesia-prod-10-2025.web.app/
 ```
 
-**Expected**: All services return 200 OK
+**Expected**: All services return 200 OK (JSON for APIs, HTML for hosting)
 
 #### Step 4: Open Monitoring Dashboard
 
@@ -310,6 +323,22 @@ Annual Cost: $84-120/year
 **Savings**: $4,320/year (98% cost reduction)
 
 **Trade-off**: 30 minutes of manual prep before meetings (justified!)
+
+## Implementation Checklist
+
+### Before First Large Meeting (500 attendees)
+
+- [x] End-to-end voting flow test (✅ Oct 15, 2025)
+- [ ] Load test Elections service (300 votes/sec)
+- [ ] Configure Cloud Run: `--max-instances 100 --startup-cpu-boost`
+- [ ] Configure connection pooling: 2 connections per instance
+- [ ] Implement `FOR UPDATE NOWAIT` (fail-fast locking)
+- [ ] Implement 503 retry logic (connection pool exhaustion)
+- [ ] Set up monitoring dashboard (request rate, error rate, latency)
+- [ ] Set up alerts (error rate >10%, connections >80%)
+- [ ] Test database upgrade path (db-f1-micro → db-g1-small)
+- [ ] Document retry strategy for users (if vote fails, retry)
+- [ ] Test end-to-end with 50 concurrent users (smaller test)
 
 ---
 

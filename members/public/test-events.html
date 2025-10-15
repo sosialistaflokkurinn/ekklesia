@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prófunarkosning 2025 - Sósíalistaflokkurinn</title>
+    <title>Loading...</title>
     <link rel="stylesheet" href="/styles/global.css">
     <link rel="stylesheet" href="/styles/components/nav.css">
     <link rel="stylesheet" href="/styles/components/page.css">
@@ -13,11 +13,11 @@
     <!-- Navigation -->
     <nav class="nav-header">
         <div class="nav-container">
-            <a href="/dashboard.html" class="nav-brand">Sósíalistaflokkurinn</a>
+            <a href="/dashboard.html" class="nav-brand" id="nav-brand">Loading...</a>
             <div class="nav-links">
-                <a href="/dashboard.html" class="nav-link">Mín síða</a>
-                <a href="/profile.html" class="nav-link">Prófíll</a>
-                <a href="#" class="nav-link nav-logout" id="nav-logout">Útskrá</a>
+                <a href="/dashboard.html" class="nav-link" id="nav-dashboard">Loading...</a>
+                <a href="/profile.html" class="nav-link" id="nav-profile">Loading...</a>
+                <a href="#" class="nav-link nav-logout" id="nav-logout">Loading...</a>
             </div>
         </div>
     </nav>
@@ -26,231 +26,82 @@
     <div class="page-container">
         <!-- Title Card -->
         <div class="card">
-            <h1 class="event-title">🚀 Prófunarkosning 2025</h1>
+            <h1 class="event-title" id="event-title">Loading...</h1>
         </div>
 
         <!-- Authentication Status Card -->
         <div class="card">
-            <h2 class="card-title">Auðkenning</h2>
+            <h2 class="card-title" id="auth-title">Loading...</h2>
             <div class="auth-status">
-                <span class="status-badge status-unauthenticated" id="auth-badge">Ekki auðkenndur</span>
+                <span class="status-badge status-unauthenticated" id="auth-badge">Loading...</span>
             </div>
             <div class="card-content" id="user-info"></div>
         </div>
 
         <!-- API Test Card -->
         <div class="card">
-            <h2 class="card-title">API Prófanir</h2>
+            <h2 class="card-title" id="api-title">Loading...</h2>
             <div class="api-info">
-                <strong>Framleiðsluumhverfi:</strong> https://events-service-521240388393.europe-west2.run.app
+                <strong id="api-env-label">Loading...</strong> <span id="api-env-url">Loading...</span>
             </div>
 
             <!-- Health Check -->
             <div class="test-section">
-                <h3 class="test-title">1. Heilsuathugun (engin auðkenning)</h3>
-                <button class="btn" id="btn-health">GET /health</button>
+                <h3 class="test-title" id="test-1-title">Loading...</h3>
+                <button class="btn" id="btn-health">Loading...</button>
                 <pre class="test-result" id="result-health"></pre>
             </div>
 
             <!-- Get Election -->
             <div class="test-section">
-                <h3 class="test-title">2. Sækja kosningaupplýsingar</h3>
-                <button class="btn" id="btn-election" disabled>GET /api/election</button>
+                <h3 class="test-title" id="test-2-title">Loading...</h3>
+                <button class="btn" id="btn-election" disabled>Loading...</button>
                 <pre class="test-result" id="result-election"></pre>
             </div>
 
             <!-- Request Token -->
             <div class="test-section">
-                <h3 class="test-title">3. Biðja um atkvæðismerki</h3>
-                <button class="btn" id="btn-request-token" disabled>POST /api/request-token</button>
+                <h3 class="test-title" id="test-3-title">Loading...</h3>
+                <button class="btn" id="btn-request-token" disabled>Loading...</button>
                 <pre class="test-result" id="result-request-token"></pre>
             </div>
 
             <!-- Check Status -->
             <div class="test-section">
-                <h3 class="test-title">4. Athuga þátttökustöðu</h3>
-                <button class="btn" id="btn-my-status" disabled>GET /api/my-status</button>
+                <h3 class="test-title" id="test-4-title">Loading...</h3>
+                <button class="btn" id="btn-my-status" disabled>Loading...</button>
                 <pre class="test-result" id="result-my-status"></pre>
             </div>
 
             <!-- Vote -->
             <div class="test-section">
-                <h3 class="test-title">5. Kjósa (Elections Service)</h3>
+                <h3 class="test-title" id="test-5-title">Loading...</h3>
                 <div style="margin-bottom: 10px;">
-                    <label style="display: block; margin-bottom: 5px;"><strong>Atkvæðismerki:</strong></label>
-                    <input type="text" id="voting-token" placeholder="Límdu atkvæðismerkið hér"
+                    <label style="display: block; margin-bottom: 5px;"><strong id="test-5-token-label">Loading...</strong></label>
+                    <input type="text" id="voting-token" placeholder="Loading..."
                            style="width: 100%; padding: 8px; font-family: monospace; margin-bottom: 10px;">
                 </div>
                 <div style="margin-bottom: 10px;">
-                    <label style="display: block; margin-bottom: 5px;"><strong>Svar:</strong></label>
+                    <label style="display: block; margin-bottom: 5px;"><strong id="test-5-answer-label">Loading...</strong></label>
                     <select id="vote-answer" style="padding: 8px; width: 100%; margin-bottom: 10px;">
-                        <option value="yes">Já</option>
-                        <option value="no">Nei</option>
-                        <option value="abstain">Sitja hjá</option>
+                        <option value="yes" id="answer-yes">Loading...</option>
+                        <option value="no" id="answer-no">Loading...</option>
+                        <option value="abstain" id="answer-abstain">Loading...</option>
                     </select>
                 </div>
-                <button class="btn" id="btn-vote">POST /api/vote (Elections Service)</button>
+                <button class="btn" id="btn-vote">Loading...</button>
                 <pre class="test-result" id="result-vote"></pre>
             </div>
 
             <!-- Results -->
             <div class="test-section">
-                <h3 class="test-title">6. Niðurstöður</h3>
-                <button class="btn" id="btn-results" disabled>GET /api/results</button>
+                <h3 class="test-title" id="test-6-title">Loading...</h3>
+                <button class="btn" id="btn-results" disabled>Loading...</button>
                 <pre class="test-result" id="result-results"></pre>
             </div>
         </div>
     </div>
 
-    <script type="module">
-        import { R } from '/i18n/strings-loader.js';
-        import { requireAuth, signOut, authenticatedFetch } from '/js/auth.js';
-        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-
-        // Wait for strings to load
-        await R.load('is');
-
-        const PRODUCTION_API = R.string.config_api_events;
-        const ELECTIONS_API = R.string.config_api_elections;
-        const auth = getAuth();
-        let currentUser = null;
-
-        // Auth guard
-        currentUser = await requireAuth();
-
-        // Update auth UI
-        function updateAuthUI(user) {
-            const authBadge = document.getElementById('auth-badge');
-            const userInfo = document.getElementById('user-info');
-
-            if (user) {
-                authBadge.textContent = R.string.test_auth_authenticated;
-                authBadge.className = 'status-badge status-authenticated';
-
-                user.getIdTokenResult().then(idTokenResult => {
-                    const kennitala = idTokenResult.claims.kennitala || R.string.test_auth_not_available;
-                    const isMember = idTokenResult.claims.isMember ? R.string.test_auth_yes : R.string.test_auth_no;
-                    userInfo.innerHTML = `
-                        <div class="user-details">
-                            <div><strong>${R.string.test_auth_uid}</strong> ${user.uid}</div>
-                            <div><strong>${R.string.test_auth_kennitala}</strong> ${kennitala}</div>
-                            <div><strong>${R.string.test_auth_membership}</strong> ${isMember}</div>
-                        </div>
-                    `;
-                    enableButtons(true);
-                });
-            }
-        }
-
-        function enableButtons(enabled) {
-            document.getElementById('btn-election').disabled = !enabled;
-            document.getElementById('btn-request-token').disabled = !enabled;
-            document.getElementById('btn-my-status').disabled = !enabled;
-            document.getElementById('btn-results').disabled = !enabled;
-        }
-
-        async function getIdToken() {
-            if (!currentUser) throw new Error(R.string.test_error_not_authenticated);
-            return await currentUser.getIdToken();
-        }
-
-        function showResult(elementId, data, isError = false) {
-            const element = document.getElementById(elementId);
-            element.className = isError ? 'test-result test-error' : 'test-result test-success';
-            element.textContent = JSON.stringify(data, null, 2);
-            element.style.display = 'block';
-        }
-
-        // Event Handlers
-        document.getElementById('nav-logout').addEventListener('click', async (e) => {
-            e.preventDefault();
-            await signOut();
-        });
-
-        document.getElementById('btn-health').addEventListener('click', async () => {
-            try {
-                const response = await fetch(`${PRODUCTION_API}/health`);
-                const data = await response.json();
-                showResult('result-health', data);
-            } catch (error) {
-                showResult('result-health', { error: error.message }, true);
-            }
-        });
-
-        document.getElementById('btn-election').addEventListener('click', async () => {
-            try {
-                const response = await authenticatedFetch(`${PRODUCTION_API}/api/election`);
-                const data = await response.json();
-                showResult('result-election', data, !response.ok);
-            } catch (error) {
-                showResult('result-election', { error: error.message }, true);
-            }
-        });
-
-        document.getElementById('btn-request-token').addEventListener('click', async () => {
-            try {
-                const response = await authenticatedFetch(`${PRODUCTION_API}/api/request-token`, {
-                    method: 'POST'
-                });
-                const data = await response.json();
-                showResult('result-request-token', data, !response.ok);
-            } catch (error) {
-                showResult('result-request-token', { error: error.message }, true);
-            }
-        });
-
-        document.getElementById('btn-my-status').addEventListener('click', async () => {
-            try {
-                const response = await authenticatedFetch(`${PRODUCTION_API}/api/my-status`);
-                const data = await response.json();
-                showResult('result-my-status', data, !response.ok);
-            } catch (error) {
-                showResult('result-my-status', { error: error.message }, true);
-            }
-        });
-
-        document.getElementById('btn-vote').addEventListener('click', async () => {
-            try {
-                const votingToken = document.getElementById('voting-token').value.trim();
-                const answer = document.getElementById('vote-answer').value;
-
-                if (!votingToken) {
-                    showResult('result-vote', { error: R.string.test_5_error_no_token }, true);
-                    return;
-                }
-
-                const response = await fetch(`${ELECTIONS_API}/api/vote`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${votingToken}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ answer })
-                });
-                const data = await response.json();
-                showResult('result-vote', data, !response.ok);
-
-                // If vote succeeded, clear the token field
-                if (response.ok) {
-                    document.getElementById('voting-token').value = '';
-                }
-            } catch (error) {
-                showResult('result-vote', { error: error.message }, true);
-            }
-        });
-
-        document.getElementById('btn-results').addEventListener('click', async () => {
-            try {
-                const response = await authenticatedFetch(`${PRODUCTION_API}/api/results`);
-                const data = await response.json();
-                showResult('result-results', data, !response.ok);
-            } catch (error) {
-                showResult('result-results', { error: error.message }, true);
-            }
-        });
-
-        // Initialize
-        updateAuthUI(currentUser);
-    </script>
+    <script type="module" src="/js/test-events.new.js"></script>
 </body>
 </html>

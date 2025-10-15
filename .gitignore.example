@@ -24,6 +24,15 @@
 .gcloud/
 gcloud-*.json
 
+# Firebase service account keys
+firebase-adminsdk-*.json
+
+# API keys and tokens
+*api-key*.txt
+*api_key*.json
+*token*.txt
+!docs/**/*token*.txt
+
 ###################
 # Python
 ###################
@@ -40,22 +49,27 @@ venv/
 env/
 ENV/
 .venv/
+.virtualenv/
 
 # Package management
 *.egg
 *.egg-info/
 .eggs/
+pip-log.txt
+pip-delete-this-directory.txt
 
 # Testing
 .pytest_cache/
 .coverage
 htmlcov/
 .tox/
+.nox/
 
 # Type checking & linting
 .mypy_cache/
 .ruff_cache/
 .pytype/
+.pyre/
 
 ###################
 # Node.js / JavaScript
@@ -81,6 +95,9 @@ lerna-debug.log*
 # yarn.lock
 # pnpm-lock.yaml
 
+# ESLint cache
+.eslintcache
+
 ###################
 # Firebase
 ###################
@@ -95,6 +112,9 @@ firestore-debug.log
 ui-debug.log
 database-debug.log
 pubsub-debug.log
+
+# Firebase emulator data
+.firebase/emulator-data/
 
 ###################
 # General Development
@@ -112,6 +132,7 @@ pubsub-debug.log
 .Trashes
 ehthumbs.db
 Thumbs.db
+desktop.ini
 
 # Editor files
 *.swp
@@ -121,6 +142,7 @@ Thumbs.db
 .idea/
 *.sublime-project
 *.sublime-workspace
+*.code-workspace
 
 ###################
 # Database
@@ -134,6 +156,10 @@ Thumbs.db
 *.db-shm
 *.db-wal
 
+# PostgreSQL dumps
+*.sql.gz
+*.dump
+
 ###################
 # Backup & Temp
 ###################
@@ -146,22 +172,27 @@ Thumbs.db
 temp/
 tmp/
 *~.nib
+.temp/
+.tmp/
 
 ###################
 # Documentation Strategy
 ###################
 
 # Documentation (local only - use DOCUMENTATION_MAP.md to find files)
-# Strategy: Track only essential docs, keep development docs local
+# Strategy: Track Markdown in core documentation directories, ignore ad-hoc notes
 *.md
 
 # Essential documentation (tracked)
 !DOCUMENTATION_MAP.md
 !README.md
-!docs/SYSTEM_ARCHITECTURE_OVERVIEW.md
-!docs/design/EVENTS_SERVICE_MVP.md
-!docs/status/CURRENT_PRODUCTION_STATUS.md
-!members/README.md
+
+# Core documentation directories (tracked)
+!docs/**/*.md
+!members/**/*.md
+!events/**/*.md
+!elections/**/*.md
+!scripts/**/*.md
 
 # GitHub templates (tracked)
 !.github/
@@ -175,6 +206,9 @@ tmp/
 # Shell scripts (local only - available on request)
 *.sh
 !.github/workflows/*.sh
+!events/deploy.sh
+!elections/deploy.sh
+!scripts/*.sh
 
 # Python validation (tracked - needed for CI)
 # validate_documentation_map.py is tracked
@@ -187,6 +221,10 @@ tmp/
 .gitignore
 .gitignore-*
 
+# Git hooks (local configuration)
+.git/hooks/*
+!.git/hooks/*.sample
+
 ###################
 # Claude Code Settings
 ###################
@@ -195,19 +233,50 @@ tmp/
 .code-rules
 .claude/
 
+# AI prompts (tracked for team sharing)
+!docs/prompts/**/*.md
+
+###################
+# Docker & Containers
+###################
+
+# Docker files (if used locally)
+docker-compose.override.yml
+.dockerignore.local
+
+###################
+# Cloud SQL Proxy
+###################
+
+# Cloud SQL Proxy binary
+cloud-sql-proxy
+cloud-sql-proxy.exe
+cloud-sql-proxy-*
+
 ###################
 # Project-Specific
 ###################
 
-# Archive and legacy directories (not for production)
+# Archive directories (historical reference only, not for production)
 archive/
 
 # Sensitive data files
 members/data/kennitalas.txt
+kennitalas.txt
 
 # Legacy directories (if they exist)
 template/
 usr/
+
+# Test data (local only)
+test-data/
+test-*.json
+test-*.csv
+
+# Local development overrides
+*.local.js
+*.local.json
+!settings.local.json
 
 ###################
 # Comments & Notes
@@ -218,3 +287,4 @@ usr/
 # 2. Add any local tools or editors you use
 # 3. Add any project-specific temporary directories
 # 4. Never commit your local .gitignore back to the repository
+# 5. Review security patterns regularly (especially secrets)
