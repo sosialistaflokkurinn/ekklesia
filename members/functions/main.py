@@ -245,12 +245,12 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
             raise Exception("No id_token in response from Kenni.is")
 
         # Step 2: Verify and decode the ID token from Kenni.is
-    log_json("info", "Verifying ID token from Kenni.is", correlationId=correlation_id)
-    jwks_client = get_kenni_is_jwks_client(issuer_url)
+        log_json("info", "Verifying ID token from Kenni.is", correlationId=correlation_id)
+        jwks_client = get_kenni_is_jwks_client(issuer_url)
 
-    # Log cache statistics (Issue #63)
-    cache_stats = get_jwks_cache_stats()
-    log_json("debug", "JWKS cache stats", correlationId=correlation_id, **cache_stats)
+        # Log cache statistics (Issue #63)
+        cache_stats = get_jwks_cache_stats()
+        log_json("debug", "JWKS cache stats", correlationId=correlation_id, **cache_stats)
 
         signing_key = jwks_client.get_signing_key_from_jwt(kenni_is_id_token)
         decoded_kenni_token = jwt.decode(
@@ -276,7 +276,7 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
 
         normalized_kennitala = normalize_kennitala(national_id)
 
-    log_json("info", "Verified Kenni.is token", userName=full_name, kennitala=f"{normalized_kennitala[:7]}****", correlationId=correlation_id)
+        log_json("info", "Verified Kenni.is token", userName=full_name, kennitala=f"{normalized_kennitala[:7]}****", correlationId=correlation_id)
 
         # Step 4: Create or get existing user from Firestore
         db = firestore.client()
