@@ -556,6 +556,70 @@ Display user information in a responsive grid layout.
 
 ---
 
+### Debug Log (`.debug-log`)
+
+**Block**: `.debug-log`
+**Elements**: `.debug-log__entry`, `.debug-log__timestamp`
+**Modifiers**: `.debug-log__entry--success`, `.debug-log__entry--error`, `.debug-log__entry--info`
+
+Debug logging component for development and testing pages.
+
+#### Structure
+```html
+<div class="debug-log">
+  <div class="debug-log__entry debug-log__entry--success">
+    <span class="debug-log__timestamp">10:15:23</span>
+    Success message
+  </div>
+  <div class="debug-log__entry debug-log__entry--error">
+    <span class="debug-log__timestamp">10:15:24</span>
+    Error message
+  </div>
+  <div class="debug-log__entry debug-log__entry--info">
+    <span class="debug-log__timestamp">10:15:25</span>
+    Info message
+  </div>
+</div>
+```
+
+#### CSS
+```css
+.debug-log { /* Block */
+  background: var(--color-gray-800);
+  color: var(--color-gray-400);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-lg);
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.debug-log__entry { /* Element */
+  margin: var(--spacing-xs) 0;
+  padding: var(--spacing-xs) 0;
+  border-bottom: 1px solid var(--color-gray-700);
+}
+
+.debug-log__timestamp { /* Element */
+  color: var(--color-gray-500);
+}
+
+.debug-log__entry--success { /* Modifier */
+  color: var(--color-success);
+}
+
+.debug-log__entry--error { /* Modifier */
+  color: var(--color-error);
+}
+
+.debug-log__entry--info { /* Modifier */
+  color: var(--color-info);
+}
+```
+
+---
+
 ## Best Practices
 
 ### When to Use BEM vs Utilities
