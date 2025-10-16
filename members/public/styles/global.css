@@ -104,3 +104,50 @@ body {
   margin-bottom: 30px;
   font-size: 14px;
 }
+
+/* Clickable item - for links styled as cards/items */
+.clickable {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Disabled/inactive state */
+.disabled {
+  opacity: 0.5;
+}
+
+/* Hidden by default */
+.hidden {
+  display: none;
+}
+
+/* Spacing utilities */
+.margin-top-sm {
+  margin-top: var(--spacing-sm);
+}
+
+.margin-top-md {
+  margin-top: var(--spacing-md);
+}
+
+.margin-bottom-xs {
+  margin-bottom: var(--spacing-xs);
+}
+
+.margin-bottom-sm {
+  margin-bottom: var(--spacing-sm);
+}
+
+.margin-bottom-md {
+  margin-bottom: var(--spacing-md);
+}
+
+/* Text utilities */
+.text-muted {
+  color: var(--color-gray-500);
+  font-size: 14px;
+}
+
+.text-error {
+  color: var(--color-error-text);
+}
