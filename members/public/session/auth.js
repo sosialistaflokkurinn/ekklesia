@@ -88,7 +88,8 @@ export async function getUserData(user) {
     kennitala: idTokenResult.claims.kennitala || null,
     email: idTokenResult.claims.email || null,
     phoneNumber: idTokenResult.claims.phoneNumber || null,
-    isMember: idTokenResult.claims.isMember || false
+    isMember: idTokenResult.claims.isMember || false,
+    roles: Array.isArray(idTokenResult.claims.roles) ? idTokenResult.claims.roles : []
   };
 }
 

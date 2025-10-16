@@ -36,6 +36,11 @@ echo -e "\n${YELLOW}Retrieving secrets from Secret Manager...${NC}"
 DB_PASSWORD=$(gcloud secrets versions access latest --secret=postgres-password)
 S2S_API_KEY=$(gcloud secrets versions access 2 --secret=elections-s2s-api-key)
 
+# Admin configuration (for developer reset endpoint)
+# Firebase UID for Guðröður Atli Jónsson (gudrodur@gmail.com)
+ADMIN_RESET_ENABLED="true"
+ALLOWED_RESET_UIDS="wElbKqQ8mLfYmxhpiUGAnv0vx2g1"  # Comma-separated UIDs for multiple developers
+
 # Build and push image to Container Registry
 echo -e "\n${YELLOW}Building and pushing Docker image...${NC}"
 gcloud builds submit --tag ${IMAGE_NAME} .
@@ -54,7 +59,7 @@ gcloud run deploy ${SERVICE_NAME} \
   --timeout 60s \
   --port 8080 \
   --add-cloudsql-instances ekklesia-prod-10-2025:europe-west2:ekklesia-db \
-  --set-env-vars "NODE_ENV=production,FIREBASE_PROJECT_ID=ekklesia-prod-10-2025,DATABASE_HOST=/cloudsql/ekklesia-prod-10-2025:europe-west2:ekklesia-db,DATABASE_PORT=5432,DATABASE_NAME=postgres,DATABASE_USER=postgres,DATABASE_PASSWORD=${DB_PASSWORD},ELECTIONS_SERVICE_URL=https://elections-service-521240388393.europe-west2.run.app,S2S_API_KEY=${S2S_API_KEY}"
+  --set-env-vars "NODE_ENV=production,FIREBASE_PROJECT_ID=ekklesia-prod-10-2025,DATABASE_HOST=/cloudsql/ekklesia-prod-10-2025:europe-west2:ekklesia-db,DATABASE_PORT=5432,DATABASE_NAME=postgres,DATABASE_USER=postgres,DATABASE_PASSWORD=${DB_PASSWORD},ELECTIONS_SERVICE_URL=https://elections-service-521240388393.europe-west2.run.app,S2S_API_KEY=${S2S_API_KEY},ADMIN_RESET_ENABLED=${ADMIN_RESET_ENABLED},ALLOWED_RESET_UIDS=${ALLOWED_RESET_UIDS}"
 
 # Get service URL
 SERVICE_URL=$(gcloud run services describe ${SERVICE_NAME} \

@@ -143,6 +143,17 @@
     <string name="test_6_title">6. Niðurstöður</string>
     <string name="test_6_button">GET /api/results</string>
 
+  <!-- Reset section (developer-only) -->
+  <string name="test_7_title">7. Endursetja kosningar (þróunaraðilar)</string>
+  <string name="test_7_warning">⚠️ Aðeins fyrir prófanir. Þessi aðgerð getur hreinsað öll atkvæði og atkvæðalykla. Notið með varúð.</string>
+  <string name="test_7_scope_label">Umfang:</string>
+  <string name="test_7_scope_mine">Aðeins minn aðgangur (eyðir mínum atkvæðalykli)</string>
+  <string name="test_7_scope_all">Allt (hreinsar öll atkvæði og lykla)</string>
+  <string name="test_7_confirm_label">Staðfesting:</string>
+  <string name="test_7_confirm_placeholder">Sláðu inn "RESET ALL" til að staðfesta</string>
+  <string name="test_7_button">Endursetja</string>
+  <string name="test_7_error_confirm">Þú verður að slá inn nákvæmlega "RESET ALL" til að staðfesta heildar endursetningu.</string>
+
     <!-- Test errors -->
     <string name="test_error_not_authenticated">Ekki auðkennd/ur</string>
 

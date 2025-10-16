@@ -53,11 +53,12 @@ async function authenticate(req, res, next) {
       });
     }
 
-    // Attach user info to request
+    // Attach user info to request (include roles array if present)
     req.user = {
       uid,
       kennitala,
-      isMember
+      isMember,
+      roles: Array.isArray(decodedToken.roles) ? decodedToken.roles : []
     };
 
     next();
