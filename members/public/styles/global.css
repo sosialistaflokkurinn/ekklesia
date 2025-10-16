@@ -88,22 +88,7 @@ body {
   padding: 20px;
 }
 
-.container {
-  background: white;
-  border-radius: var(--radius-xl);
-  padding: var(--spacing-xl);
-  max-width: 600px;
-  width: 100%;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-}
-
 /* === Utility Classes === */
-
-.subtitle {
-  color: var(--color-gray-500);
-  margin-bottom: 30px;
-  font-size: 14px;
-}
 
 /* Clickable item - for links styled as cards/items */
 .u-clickable {

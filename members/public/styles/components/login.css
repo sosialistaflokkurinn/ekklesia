@@ -1,44 +1,62 @@
 /**
- * Login Component Styles
+ * Login Component Styles (Canonical BEM)
  *
- * Bespoke styles for the authentication/login page.
- * Includes status indicators, buttons, user info display, and debug logging.
+ * Block: .login (login page container)
+ * Elements: .login__subtitle, .login__status, .login__buttons
+ * Modifiers: .login__status--authenticated, .login__status--error
  */
+
+/* === Login Block === */
+
+.login {
+  background: white;
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-xl);
+  max-width: 600px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.login__subtitle {
+  color: var(--color-gray-500);
+  margin-bottom: 30px;
+  font-size: 14px;
+}
 
 /* === Status Indicator === */
 
-.status {
+.login__status {
   padding: var(--spacing-md);
   border-radius: var(--radius-lg);
   margin-bottom: 20px;
   font-weight: 500;
 }
 
-.status.authenticated {
+.login__status--authenticated {
   background: var(--color-success-bg);
   color: var(--color-success-text);
   border-left: 4px solid var(--color-success-border);
 }
 
-.status.not-authenticated {
+.login__status--not-authenticated {
   background: var(--color-error-bg);
   color: var(--color-error-text);
   border-left: 4px solid var(--color-error-border);
 }
 
-.status.authenticating {
+.login__status--authenticating {
   background: var(--color-info-bg);
   color: var(--color-info-text);
   border-left: 4px solid var(--color-info-border);
 }
 
-.status.error {
+.login__status--error {
   background: var(--color-error-bg);
   color: var(--color-error-text);
   border-left: 4px solid var(--color-error-border);
 }
 
-/* === Buttons === */
+/* === Buttons (BEM Block) === */
 
 .btn {
   display: inline-block;
@@ -66,28 +84,12 @@
   cursor: not-allowed;
 }
 
-.btn.btn--secondary {
+.btn--secondary {
   background: var(--color-error-border);
 }
 
-.btn.btn--secondary:hover {
+.btn--secondary:hover {
   background: #c53030;
-}
-
-/* === User Info Box === */
-
-.info-box {
-  background: var(--color-info-bg);
-  border-left: 4px solid var(--color-info-border);
-  padding: var(--spacing-md);
-  margin-bottom: 20px;
-  border-radius: var(--radius-sm);
-}
-
-.info-box p {
-  margin: var(--spacing-xs) 0;
-  color: var(--color-info-text);
-  font-size: 14px;
 }
 
 /* === Debug Log === */
