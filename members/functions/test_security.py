@@ -1,8 +1,14 @@
-import pytest
 from datetime import datetime, timezone
 
 # Import from package path
-from .main import _rate_limit_bucket_id, validate_auth_input
+try:
+    # Prefer pure helpers (no external deps)
+    from .security_utils import _rate_limit_bucket_id, validate_auth_input
+except ImportError:
+    # When executed directly, adjust path and import absolute
+    import sys, os
+    sys.path.insert(0, os.path.dirname(__file__))
+    from security_utils import _rate_limit_bucket_id, validate_auth_input
 
 
 def test_rate_limit_bucket_id():
@@ -34,16 +40,36 @@ def test_validate_auth_input_valid():
 
 
 def test_validate_auth_input_too_long():
-    with pytest.raises(ValueError, match="Auth code too long"):
+    try:
         validate_auth_input("a" * 501, "ok")
+        raise AssertionError("Expected ValueError for long auth code")
+    except ValueError as e:
+        assert "Auth code too long" in str(e)
 
-    with pytest.raises(ValueError, match="PKCE verifier too long"):
+    try:
         validate_auth_input("ok", "a" * 201)
+        raise AssertionError("Expected ValueError for long verifier")
+    except ValueError as e:
+        assert "PKCE verifier too long" in str(e)
 
 
 def test_validate_auth_input_missing():
-    with pytest.raises(ValueError, match="Auth code required"):
+    try:
         validate_auth_input("", "ok")
+        raise AssertionError("Expected ValueError for missing auth code")
+    except ValueError as e:
+        assert "Auth code required" in str(e)
 
-    with pytest.raises(ValueError, match="PKCE verifier required"):
+    try:
         validate_auth_input("ok", "")
+        raise AssertionError("Expected ValueError for missing verifier")
+    except ValueError as e:
+        assert "PKCE verifier required" in str(e)
+
+
+if __name__ == "__main__":
+    test_rate_limit_bucket_id()
+    test_validate_auth_input_valid()
+    test_validate_auth_input_too_long()
+    test_validate_auth_input_missing()
+    print("ALL TESTS PASSED")

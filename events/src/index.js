@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const electionRoutes = require('./routes/election');
+const adminRouter = require('./routes/admin');
 const { verifyAppCheckOptional } = require('./middleware/appCheck');
 
 /**
@@ -52,6 +53,8 @@ app.use('/api', verifyAppCheckOptional);
 
 // API routes
 app.use('/api', electionRoutes);
+// Admin-only routes (developer testing only)
+app.use('/api/admin', adminRouter);
 
 // 404 handler
 app.use((req, res) => {
@@ -95,6 +98,7 @@ app.listen(PORT, () => {
   console.log('  GET  /api/my-status      - Check participation status');
   console.log('  GET  /api/my-token       - Retrieve token (disabled in MVP)');
   console.log('  GET  /api/results        - Get results (Phase 2)');
+  console.log('  POST /api/admin/reset-election (admin only)');
   console.log('='.repeat(50));
 });
 

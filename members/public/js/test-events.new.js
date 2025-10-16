@@ -53,7 +53,18 @@ const TEST_EVENTS_ELEMENTS = [
   'result-vote',
   'result-results',
   'voting-token',
-  'vote-answer'
+  'vote-answer',
+  // Reset section
+  'test-7-title',
+  'test-7-warning',
+  'test-7-scope-label',
+  'test-7-scope-mine',
+  'test-7-scope-all',
+  'test-7-confirm-label',
+  'btn-reset-election',
+  'result-reset',
+  'reset-scope',
+  'reset-confirm'
 ];
 
 /**
@@ -102,6 +113,20 @@ function updateTestEventsStrings(strings) {
 
   setTextContent('test-6-title', strings.test_6_title, 'test events page');
   setTextContent('btn-results', strings.test_6_button, 'test events page');
+
+  // Reset section
+  setTextContent('test-7-title', strings.test_7_title, 'test events page');
+  setTextContent('test-7-warning', strings.test_7_warning, 'test events page');
+  setTextContent('test-7-scope-label', strings.test_7_scope_label, 'test events page');
+  setTextContent('test-7-scope-mine', strings.test_7_scope_mine, 'test events page');
+  setTextContent('test-7-scope-all', strings.test_7_scope_all, 'test events page');
+  setTextContent('test-7-confirm-label', strings.test_7_confirm_label, 'test events page');
+  setTextContent('btn-reset-election', strings.test_7_button, 'test events page');
+
+  const resetConfirm = document.getElementById('reset-confirm');
+  if (resetConfirm) {
+    resetConfirm.placeholder = strings.test_7_confirm_placeholder;
+  }
 
   // Set placeholder for voting token input
   const votingTokenInput = document.getElementById('voting-token');
@@ -156,6 +181,7 @@ function enableButtons(enabled) {
   setDisabled('btn-request-token', !enabled, 'test events');
   setDisabled('btn-my-status', !enabled, 'test events');
   setDisabled('btn-results', !enabled, 'test events');
+  setDisabled('btn-reset-election', !enabled, 'test events');
 }
 
 /**
@@ -269,6 +295,32 @@ function setupAPITestHandlers(productionApi, electionsApi, strings) {
       showResult('result-results', { error: error.message }, true);
     }
   });
+
+  // Admin Reset
+  document.getElementById('btn-reset-election').addEventListener('click', async () => {
+    try {
+      const scopeEl = getElementByIdSafe('reset-scope', 'test events');
+      const confirmEl = getElementByIdSafe('reset-confirm', 'test events');
+      const scope = scopeEl.value;
+      const confirmText = confirmEl.value.trim();
+
+      // For full reset, require exact phrase
+      if (scope === 'all' && confirmText !== 'RESET ALL') {
+        showResult('result-reset', { error: strings.test_7_error_confirm }, true);
+        return;
+      }
+
+      const response = await authenticatedFetch(`${productionApi}/api/admin/reset-election`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scope, confirm: confirmText })
+      });
+      const data = await response.json();
+      showResult('result-reset', data, !response.ok);
+    } catch (error) {
+      showResult('result-reset', { error: error.message }, true);
+    }
+  });
 }
 
 /**
@@ -291,7 +343,29 @@ async function init() {
     // Update page-specific UI
     updateTestEventsStrings(strings);
     updateAuthUI(userData, strings);
+
+    // Enable common buttons always after auth
     enableButtons(true);
+
+    // Gate admin reset section by role (developer only)
+    try {
+      const resetSectionTitle = document.getElementById('test-7-title');
+      const resetButton = document.getElementById('btn-reset-election');
+      const hasDeveloperRole = Array.isArray(userData.roles) && userData.roles.includes('developer');
+      if (!hasDeveloperRole) {
+        // Hide the entire section by collapsing elements
+        if (resetSectionTitle) {
+          const section = resetSectionTitle.closest('.test-section');
+          if (section) section.style.display = 'none';
+        }
+      } else {
+        // Ensure reset button is enabled for devs
+        if (resetButton) resetButton.disabled = false;
+      }
+    } catch (e) {
+      // Non-fatal UI gating error; continue without exposing controls
+      console.warn('Role-gating error:', e);
+    }
 
     // Get API URLs from config
     const productionApi = strings.config_api_events;
