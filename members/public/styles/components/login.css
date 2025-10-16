@@ -3,7 +3,11 @@
  *
  * Block: .login (login page container)
  * Elements: .login__subtitle, .login__status
- * Modifiers: .login__status--authenticated, .login__status--not-authenticated, .login__status--authenticating, .login__status--error
+ * Modifiers:
+ *   .login__status--authenticated
+ *   .login__status--not-authenticated
+ *   .login__status--authenticating
+ *   .login__status--error
  */
 
 /* === Login Block === */
