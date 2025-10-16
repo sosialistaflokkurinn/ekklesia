@@ -28,12 +28,25 @@ if not firebase_admin._apps:
 options.set_global_options(region="europe-west2")
 
 # --- CONSTANTS ---
-CORS_HEADERS = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Firebase-AppCheck, X-Request-ID, X-Correlation-ID',
-    'Access-Control-Max-Age': '3600',
-}
+def _get_allowed_origin(req_origin: Optional[str]) -> str:
+    allowlist = os.getenv('CORS_ALLOWED_ORIGINS', '*')
+    if allowlist == '*':
+        return '*'
+    allowed = [o.strip() for o in allowlist.split(',') if o.strip()]
+    if req_origin and req_origin in allowed:
+        return req_origin
+    # Default to first allowed origin for preflight when origin is absent
+    return allowed[0] if allowed else '*'
+
+
+def _cors_headers_for_origin(origin: str) -> dict:
+    return {
+        'Access-Control-Allow-Origin': origin,
+        'Vary': 'Origin',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Firebase-AppCheck, X-Request-ID, X-Correlation-ID',
+        'Access-Control-Max-Age': '3600',
+    }
 
 # --- HELPER FUNCTIONS ---
 
@@ -178,11 +191,13 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
 
     # Handle CORS preflight requests
     if req.method == 'OPTIONS':
-        return https_fn.Response("", status=204, headers=CORS_HEADERS)
+        origin = _get_allowed_origin(req.headers.get('Origin'))
+        return https_fn.Response("", status=204, headers=_cors_headers_for_origin(origin))
 
     # Ensure the method is POST
     if req.method != "POST":
-        return https_fn.Response("Invalid request method.", status=405, headers=CORS_HEADERS)
+        origin = _get_allowed_origin(req.headers.get('Origin'))
+        return https_fn.Response("Invalid request method.", status=405, headers=_cors_headers_for_origin(origin))
 
     # Rate limiting check (Issue #62)
     # Get client IP (Cloud Run provides real IP in X-Forwarded-For)
@@ -192,10 +207,11 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
 
     if not check_rate_limit(ip_address):
         log_json("warn", "Auth rate limited", ip=ip_address, correlationId=correlation_id)
+        origin = _get_allowed_origin(req.headers.get('Origin'))
         return https_fn.Response(json.dumps({"error": "Too many authentication attempts. Please try again in 10 minutes."}),
                                   status=429,
                                   mimetype="application/json",
-                                  headers={**CORS_HEADERS, 'Retry-After': '600'})
+                                  headers={**_cors_headers_for_origin(origin), 'Retry-After': '600'})
 
     # Validate incoming data
     try:
@@ -209,10 +225,12 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
     except ValueError as e:
         # Input validation failed
         log_json("info", "Auth input validation failed", error=str(e), correlationId=correlation_id)
-        return https_fn.Response(json.dumps({"error": str(e)}), status=400, mimetype="application/json", headers=CORS_HEADERS)
+        origin = _get_allowed_origin(req.headers.get('Origin'))
+        return https_fn.Response(json.dumps({"error": str(e)}), status=400, mimetype="application/json", headers=_cors_headers_for_origin(origin))
     except Exception as e:
         log_json("info", "Invalid JSON payload", error=str(e), correlationId=correlation_id)
-        return https_fn.Response(json.dumps({"error": "Invalid JSON"}), status=400, mimetype="application/json", headers=CORS_HEADERS)
+        origin = _get_allowed_origin(req.headers.get('Origin'))
+        return https_fn.Response(json.dumps({"error": "Invalid JSON"}), status=400, mimetype="application/json", headers=_cors_headers_for_origin(origin))
 
     # Main OAuth flow
     try:
@@ -367,20 +385,18 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
         }
 
         log_json("info", "Created custom token", uid=auth_uid, correlationId=correlation_id)
-        return https_fn.Response(
-            json.dumps(response_data),
-            status=200,
-            mimetype="application/json",
-            headers=CORS_HEADERS
-        )
+        origin = _get_allowed_origin(req.headers.get('Origin'))
+        return https_fn.Response(json.dumps(response_data), status=200, mimetype="application/json", headers=_cors_headers_for_origin(origin))
 
     except requests.exceptions.HTTPError as e:
         body = e.response.text if getattr(e, 'response', None) else 'No response'
         log_json("error", "HTTP error during token exchange", error=str(e), responseBody=sanitize_fields({'body': body})['body'], correlationId=correlation_id)
-        return https_fn.Response("Token exchange failed", status=502, headers=CORS_HEADERS)
+        origin = _get_allowed_origin(req.headers.get('Origin'))
+        return https_fn.Response("Token exchange failed", status=502, headers=_cors_headers_for_origin(origin))
     except Exception as e:
         log_json("error", "Unhandled error in handleKenniAuth", error=str(e), correlationId=correlation_id)
-        return https_fn.Response("An internal error occurred", status=500, headers=CORS_HEADERS)
+        origin = _get_allowed_origin(req.headers.get('Origin'))
+        return https_fn.Response("An internal error occurred", status=500, headers=_cors_headers_for_origin(origin))
 
 
 @https_fn.on_call()
