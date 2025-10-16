@@ -38,8 +38,8 @@ CORS_HEADERS = {
 # --- HELPER FUNCTIONS ---
 
 def get_kenni_is_jwks_client(issuer_url: str):
-    """TTL-based cached JWKS client (see utils: util_jwks)"""
-    return get_jwks_client_cached_ttl(issuer_url, ttl_seconds=3600)
+    """TTL-based cached JWKS client (see utils: util_jwks). TTL configurable via JWKS_CACHE_TTL_SECONDS."""
+    return get_jwks_client_cached_ttl(issuer_url)
 
 def normalize_kennitala(kennitala: str) -> str:
     """Normalize kennitala format to DDMMYY-XXXX"""
@@ -66,7 +66,12 @@ def validate_kennitala(kennitala: str) -> bool:
     return bool(re.match(pattern, kennitala))
 
 def _rate_limit_bucket_id(ip_address: str, now: datetime, window_minutes: int) -> str:
-    """Create a stable document id for the (ip, window) bucket."""
+    """Create a stable document id for the (ip, window) bucket.
+
+    Documents naturally age out: each doc id encodes the time bucket and window size.
+    As time advances into a new bucket, the previous bucket is never read again, so
+    old docs become orphaned without needing an explicit cleanup job.
+    """
     window_seconds = window_minutes * 60
     bucket = int(now.timestamp()) // window_seconds
     return f"{ip_address}:{bucket}:{window_minutes}m"
