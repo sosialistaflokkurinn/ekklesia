@@ -238,6 +238,63 @@ Error text color (orange/red).
 
 ## Component Classes (BEM Blocks)
 
+### Login (`.login`)
+
+**Block**: `.login` (login page container)
+**Elements**: `.login__subtitle`, `.login__status`
+**Modifiers**: `.login__status--authenticated`, `.login__status--not-authenticated`, `.login__status--authenticating`, `.login__status--error`
+
+The login page uses a dedicated `.login` block instead of the generic `.container` class to provide proper BEM scoping and avoid namespace collisions.
+
+#### Structure
+```html
+<div class="login">
+  <h1>Welcome</h1>
+  <p class="login__subtitle">Please log in to continue</p>
+
+  <div class="login__status login__status--not-authenticated">
+    <span>Not authenticated</span>
+  </div>
+
+  <button class="btn">Login</button>
+</div>
+```
+
+#### CSS
+```css
+.login { /* Block */
+  background: white;
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-xl);
+  max-width: 600px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.login__subtitle { /* Element */
+  color: var(--color-gray-500);
+  margin-bottom: 30px;
+  font-size: 14px;
+}
+
+.login__status { /* Element */
+  padding: var(--spacing-md);
+  border-radius: var(--radius-lg);
+  margin-bottom: 20px;
+}
+
+.login__status--authenticated { /* Modifier */
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+}
+
+.login__status--not-authenticated { /* Modifier */
+  background: var(--color-error-bg);
+  color: var(--color-error-text);
+}
+```
+
+---
+
 ### Navigation (`.nav`)
 
 **Block**: `.nav`
