@@ -1,7 +1,9 @@
 import time
+import os
 import requests
 import jwt
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Optional
+from .utils_logging import log_json
 
 # Simple TTL cache for JWKS clients keyed by issuer URL
 # Structure: { issuer_url: (PyJWKClient, expires_at, hits, misses) }
@@ -12,7 +14,11 @@ def _now() -> float:
     return time.time()
 
 
-def get_jwks_client_cached_ttl(issuer_url: str, ttl_seconds: int = 3600) -> jwt.PyJWKClient:
+DEFAULT_TTL = int(os.getenv('JWKS_CACHE_TTL_SECONDS', '3600'))
+
+
+def get_jwks_client_cached_ttl(issuer_url: str, ttl_seconds: Optional[int] = None) -> jwt.PyJWKClient:
+    ttl = ttl_seconds if ttl_seconds is not None else DEFAULT_TTL
     global _cache
     info = _cache.get(issuer_url)
     headers = {'User-Agent': 'Mozilla/5.0'}
@@ -23,6 +29,12 @@ def get_jwks_client_cached_ttl(issuer_url: str, ttl_seconds: int = 3600) -> jwt.
             # Cache hit
             _cache[issuer_url] = (client, expires_at, hits + 1, misses)
             return client
+        else:
+            # Expired; log and refresh
+            try:
+                log_json("info", "JWKS cache expired, refreshing", issuer=issuer_url)
+            except Exception:
+                pass
 
     # Cache miss or expired
     oidc_config_url = f"{issuer_url}/.well-known/openid-configuration"
@@ -31,7 +43,7 @@ def get_jwks_client_cached_ttl(issuer_url: str, ttl_seconds: int = 3600) -> jwt.
     jwks_uri = resp.json()["jwks_uri"]
 
     client = jwt.PyJWKClient(jwks_uri, headers=headers)
-    _cache[issuer_url] = (client, _now() + ttl_seconds, 0 if info is None else info[2], (0 if info is None else info[3]) + 1)
+    _cache[issuer_url] = (client, _now() + ttl, 0 if info is None else info[2], (0 if info is None else info[3]) + 1)
     return client
 
 
