@@ -1,17 +1,17 @@
 /* Events Test Page Component Styles */
 
-.--event-title {
+.event-title {
     color: var(--color-primary);
     font-size: 2rem;
     margin: 0;
     padding: 0;
 }
 
-.--auth-status {
+.auth-status {
     margin: var(--spacing-md) 0;
 }
 
-.--status-badge {
+.status-badge {
     display: inline-block;
     padding: var(--spacing-xs) var(--spacing-sm);
     border-radius: 4px;
@@ -19,17 +19,17 @@
     font-size: 0.9rem;
 }
 
-.--status--authenticated {
+.status-authenticated {
     background-color: var(--color-success-bg);
     color: var(--color-success-text);
 }
 
-.--status--unauthenticated {
+.status-unauthenticated {
     background-color: var(--color-error-bg);
     color: var(--color-error-text);
 }
 
-.--user-details {
+.user-details {
     margin-top: var(--spacing-md);
     padding: var(--spacing-md);
     background-color: var(--color-gray-50);
@@ -37,11 +37,11 @@
     line-height: 1.6;
 }
 
-.--user-details div {
+.user-details div {
     margin-bottom: var(--spacing-xs);
 }
 
-.--api-info {
+.api-info {
     padding: var(--spacing-md);
     background-color: #e7f3ff;
     border-left: 4px solid #0066cc;
@@ -49,25 +49,25 @@
     margin-bottom: var(--spacing-lg);
 }
 
-.--test-section {
+.test-section {
     margin-top: var(--spacing-lg);
     padding-top: var(--spacing-lg);
     border-top: 1px solid var(--color-gray-200);
 }
 
-.--test-section:first-child {
+.test-section:first-child {
     margin-top: 0;
     padding-top: 0;
     border-top: none;
 }
 
-.--test-title {
+.test-title {
     color: var(--color-text);
     font-size: 1.2rem;
     margin-bottom: var(--spacing-md);
 }
 
-.--test-result {
+.test-result {
     display: none;
     margin-top: var(--spacing-md);
     padding: var(--spacing-md);
@@ -81,28 +81,28 @@
     line-height: 1.4;
 }
 
-.--test-result--success {
+.test-success {
     border-left-color: var(--color-success-text);
     background-color: var(--color-success-bg);
 }
 
-.--test-result--error {
+.test-error {
     border-left-color: var(--color-error-text);
     background-color: var(--color-error-bg);
 }
 
 /* Form elements */
-.--form-group {
+.form-group {
     margin-bottom: 10px;
 }
 
-.--form-label {
+.form-label {
     display: block;
     margin-bottom: 5px;
     font-weight: 600;
 }
 
-.--form-input {
+.form-input {
     width: 100%;
     padding: 8px;
     margin-bottom: 10px;
@@ -111,11 +111,11 @@
     font-family: inherit;
 }
 
-.--form-input--monospace {
+.form-input-monospace {
     font-family: monospace;
 }
 
-.--form-select {
+.form-select {
     width: 100%;
     padding: 8px;
     margin-bottom: 10px;
