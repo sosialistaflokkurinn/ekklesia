@@ -11,93 +11,93 @@
 </head>
 <body class="authenticated">
     <!-- Navigation -->
-    <nav class="nav-header">
-        <div class="nav-container">
-            <a href="/dashboard.html" class="nav-brand" id="nav-brand">Loading...</a>
-            <div class="nav-links">
-                <a href="/dashboard.html" class="nav-link" id="nav-dashboard">Loading...</a>
-                <a href="/profile.html" class="nav-link" id="nav-profile">Loading...</a>
-                <a href="#" class="nav-link nav-logout" id="nav-logout">Loading...</a>
+    <nav class="--header">
+        <div class="--container">
+            <a href="/dashboard.html" class="--brand" id="nav-brand">Loading...</a>
+            <div class="--links">
+                <a href="/dashboard.html" class="--link" id="nav-dashboard">Loading...</a>
+                <a href="/profile.html" class="--link" id="nav-profile">Loading...</a>
+                <a href="#" class="--link --link--logout" id="nav-logout">Loading...</a>
             </div>
         </div>
     </nav>
 
     <!-- Page Content -->
-    <div class="page-container">
+    <div class="--page-container">
         <!-- Title Card -->
-        <div class="card">
-            <h1 class="event-title" id="event-title">Loading...</h1>
+        <div class="--card">
+            <h1 class="--event-title" id="event-title">Loading...</h1>
         </div>
 
         <!-- Authentication Status Card -->
-        <div class="card">
-            <h2 class="card-title" id="auth-title">Loading...</h2>
-            <div class="auth-status">
-                <span class="status-badge status-unauthenticated" id="auth-badge">Loading...</span>
+        <div class="--card">
+            <h2 class="--card__title" id="auth-title">Loading...</h2>
+            <div class="--auth-status">
+                <span class="--status-badge --status--unauthenticated" id="auth-badge">Loading...</span>
             </div>
-            <div class="card-content" id="user-info"></div>
+            <div class="--card__content" id="user-info"></div>
         </div>
 
         <!-- API Test Card -->
-        <div class="card">
-            <h2 class="card-title" id="api-title">Loading...</h2>
-            <div class="api-info">
+        <div class="--card">
+            <h2 class="--card__title" id="api-title">Loading...</h2>
+            <div class="--api-info">
                 <strong id="api-env-label">Loading...</strong> <span id="api-env-url">Loading...</span>
             </div>
 
             <!-- Health Check -->
-            <div class="test-section">
-                <h3 class="test-title" id="test-1-title">Loading...</h3>
-                <button class="btn" id="btn-health">Loading...</button>
-                <pre class="test-result" id="result-health"></pre>
+            <div class="--test-section">
+                <h3 class="--test-title" id="test-1-title">Loading...</h3>
+                <button class="--btn" id="btn-health">Loading...</button>
+                <pre class="--test-result" id="result-health"></pre>
             </div>
 
             <!-- Get Election -->
-            <div class="test-section">
-                <h3 class="test-title" id="test-2-title">Loading...</h3>
-                <button class="btn" id="btn-election" disabled>Loading...</button>
-                <pre class="test-result" id="result-election"></pre>
+            <div class="--test-section">
+                <h3 class="--test-title" id="test-2-title">Loading...</h3>
+                <button class="--btn" id="btn-election" disabled>Loading...</button>
+                <pre class="--test-result" id="result-election"></pre>
             </div>
 
             <!-- Request Token -->
-            <div class="test-section">
-                <h3 class="test-title" id="test-3-title">Loading...</h3>
-                <button class="btn" id="btn-request-token" disabled>Loading...</button>
-                <pre class="test-result" id="result-request-token"></pre>
+            <div class="--test-section">
+                <h3 class="--test-title" id="test-3-title">Loading...</h3>
+                <button class="--btn" id="btn-request-token" disabled>Loading...</button>
+                <pre class="--test-result" id="result-request-token"></pre>
             </div>
 
             <!-- Check Status -->
-            <div class="test-section">
-                <h3 class="test-title" id="test-4-title">Loading...</h3>
-                <button class="btn" id="btn-my-status" disabled>Loading...</button>
-                <pre class="test-result" id="result-my-status"></pre>
+            <div class="--test-section">
+                <h3 class="--test-title" id="test-4-title">Loading...</h3>
+                <button class="--btn" id="btn-my-status" disabled>Loading...</button>
+                <pre class="--test-result" id="result-my-status"></pre>
             </div>
 
             <!-- Vote -->
-            <div class="test-section">
-                <h3 class="test-title" id="test-5-title">Loading...</h3>
-                <div class="form-group">
-                    <label class="form-label"><strong id="test-5-token-label">Loading...</strong></label>
+            <div class="--test-section">
+                <h3 class="--test-title" id="test-5-title">Loading...</h3>
+                <div class="--form-group">
+                    <label class="--form-label"><strong id="test-5-token-label">Loading...</strong></label>
                     <input type="text" id="voting-token" placeholder="Loading..."
-                           class="form-input form-input-monospace">
+                           class="--form-input --form-input--monospace">
                 </div>
-                <div class="form-group">
-                    <label class="form-label"><strong id="test-5-answer-label">Loading...</strong></label>
-                    <select id="vote-answer" class="form-select">
+                <div class="--form-group">
+                    <label class="--form-label"><strong id="test-5-answer-label">Loading...</strong></label>
+                    <select id="vote-answer" class="--form-select">
                         <option value="yes" id="answer-yes">Loading...</option>
                         <option value="no" id="answer-no">Loading...</option>
                         <option value="abstain" id="answer-abstain">Loading...</option>
                     </select>
                 </div>
-                <button class="btn" id="btn-vote">Loading...</button>
-                <pre class="test-result" id="result-vote"></pre>
+                <button class="--btn" id="btn-vote">Loading...</button>
+                <pre class="--test-result" id="result-vote"></pre>
             </div>
 
             <!-- Results -->
-            <div class="test-section">
-                <h3 class="test-title" id="test-6-title">Loading...</h3>
-                <button class="btn" id="btn-results" disabled>Loading...</button>
-                <pre class="test-result" id="result-results"></pre>
+            <div class="--test-section">
+                <h3 class="--test-title" id="test-6-title">Loading...</h3>
+                <button class="--btn" id="btn-results" disabled>Loading...</button>
+                <pre class="--test-result" id="result-results"></pre>
             </div>
         </div>
     </div>
