@@ -8,12 +8,18 @@ import os
 import json
 import requests
 import jwt
-import functools
 from datetime import datetime, timedelta, timezone
+import uuid
+from typing import Optional
 
 import firebase_admin
 from firebase_admin import initialize_app, auth, firestore
 from firebase_functions import https_fn, options
+from google.cloud import firestore as gcf
+
+# Local utilities (no firebase_admin side-effects)
+from .utils_logging import log_json, sanitize_fields
+from .util_jwks import get_jwks_client_cached_ttl, get_jwks_cache_stats
 
 # --- SETUP ---
 if not firebase_admin._apps:
@@ -25,37 +31,15 @@ options.set_global_options(region="europe-west2")
 CORS_HEADERS = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Firebase-AppCheck',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Firebase-AppCheck, X-Request-ID, X-Correlation-ID',
     'Access-Control-Max-Age': '3600',
 }
 
 # --- HELPER FUNCTIONS ---
 
-@functools.lru_cache(maxsize=128)
-def get_jwks_client_cached(issuer_url: str):
-    """
-    Get JWKS client for verifying Kenni.is ID tokens (cached)
-
-    Uses LRU cache with 1-hour TTL to avoid fetching JWKS on every request.
-    This saves ~500ms latency and reduces dependency on Kenni.is availability.
-
-    Issue #63: Cache JWKS client to improve performance
-    """
-    oidc_config_url = f"{issuer_url}/.well-known/openid-configuration"
-    try:
-        headers = {'User-Agent': 'Mozilla/5.0'}
-        print(f"[CACHE MISS] Fetching JWKS for {issuer_url}")
-        config_response = requests.get(oidc_config_url, headers=headers)
-        config_response.raise_for_status()
-        jwks_uri = config_response.json()["jwks_uri"]
-        return jwt.PyJWKClient(jwks_uri, headers=headers)
-    except Exception as e:
-        print(f"CRITICAL: Failed to get JWKS client: {e}")
-        raise
-
 def get_kenni_is_jwks_client(issuer_url: str):
-    """Legacy wrapper for cached JWKS client (backward compatibility)"""
-    return get_jwks_client_cached(issuer_url)
+    """TTL-based cached JWKS client (see utils: util_jwks)"""
+    return get_jwks_client_cached_ttl(issuer_url, ttl_seconds=3600)
 
 def normalize_kennitala(kennitala: str) -> str:
     """Normalize kennitala format to DDMMYY-XXXX"""
@@ -81,61 +65,60 @@ def validate_kennitala(kennitala: str) -> bool:
     pattern = r'^\d{6}-?\d{4}$'
     return bool(re.match(pattern, kennitala))
 
-def check_rate_limit(ip_address: str, max_attempts: int = 5, window_minutes: int = 10) -> bool:
+def _rate_limit_bucket_id(ip_address: str, now: datetime, window_minutes: int) -> str:
+    """Create a stable document id for the (ip, window) bucket."""
+    window_seconds = window_minutes * 60
+    bucket = int(now.timestamp()) // window_seconds
+    return f"{ip_address}:{bucket}:{window_minutes}m"
+
+
+def check_rate_limit(ip_address: Optional[str], max_attempts: int = 5, window_minutes: int = 10) -> bool:
     """
-    Check if IP address has exceeded rate limit.
+    Transactional IP-based rate limit: 5 attempts / 10 minutes (configurable).
 
-    Uses Firestore to track authentication attempts per IP address.
-    Limits: 5 attempts per 10 minutes (configurable).
+    Uses a Firestore transaction to check-and-increment a counter in a time-bucketed document,
+    minimizing lost updates under concurrency.
 
-    Args:
-        ip_address: Client IP address
-        max_attempts: Maximum attempts allowed (default: 5)
-        window_minutes: Time window in minutes (default: 10)
-
-    Returns:
-        True if request is allowed, False if rate limited
-
-    Issue #62: Add rate limiting to handleKenniAuth function
+    Returns True if allowed; False if limited.
     """
+    if not ip_address:
+        # If we can't determine IP, err on the safe side but log it.
+        log_json("warn", "Missing IP address for rate limiting; allowing request")
+        return True
+
     db = firestore.client()
-    rate_limit_ref = db.collection('rate_limits').document(ip_address)
-
-    # Use actual datetime object (not SERVER_TIMESTAMP sentinel)
     now = datetime.now(timezone.utc)
-    window_start = now - timedelta(minutes=window_minutes)
+    doc_id = _rate_limit_bucket_id(ip_address, now, window_minutes)
+    ref = db.collection('rate_limits').document(doc_id)
 
-    doc = rate_limit_ref.get()
+    @gcf.transactional
+    def _attempt(transaction) -> bool:
+        snapshot = ref.get(transaction=transaction)
+        if snapshot.exists:
+            data = snapshot.to_dict() or {}
+            count = int(data.get('count', 0))
+            if count >= max_attempts:
+                return False
+            transaction.update(ref, {
+                'count': count + 1,
+                'updatedAt': firestore.SERVER_TIMESTAMP,
+                'ip': ip_address,
+            })
+            return True
+        else:
+            transaction.set(ref, {
+                'count': 1,
+                'createdAt': firestore.SERVER_TIMESTAMP,
+                'updatedAt': firestore.SERVER_TIMESTAMP,
+                'windowMinutes': window_minutes,
+                'ip': ip_address,
+            })
+            return True
 
-    if doc.exists:
-        data = doc.to_dict()
-        attempts = data.get('attempts', [])
-
-        # Filter attempts within time window
-        recent_attempts = [
-            datetime.fromisoformat(attempt_time)
-            for attempt_time in attempts
-            if datetime.fromisoformat(attempt_time) > window_start
-        ]
-
-        if len(recent_attempts) >= max_attempts:
-            print(f"[RATE LIMIT] IP {ip_address} exceeded {max_attempts} attempts in {window_minutes} minutes")
-            return False  # Rate limited
-
-        # Add current attempt
-        recent_attempts.append(now)
-        rate_limit_ref.update({
-            'attempts': [dt.isoformat() for dt in recent_attempts],
-            'last_attempt': now.isoformat()
-        })
-    else:
-        # First attempt from this IP
-        rate_limit_ref.set({
-            'attempts': [now.isoformat()],
-            'last_attempt': now.isoformat()
-        })
-
-    return True  # Request allowed
+    allowed = _attempt(db.transaction())
+    if not allowed:
+        log_json("warn", "Rate limit exceeded", ip=ip_address, windowMinutes=window_minutes, maxAttempts=max_attempts)
+    return allowed
 
 def validate_auth_input(kenni_auth_code: str, pkce_code_verifier: str) -> bool:
     """
@@ -185,17 +168,16 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
     6. Returns custom token to frontend for sign-in
     """
 
+    # Extract correlation id for structured logs
+    correlation_id = req.headers.get('X-Correlation-ID') or req.headers.get('X-Request-ID') or str(uuid.uuid4())
+
     # Handle CORS preflight requests
     if req.method == 'OPTIONS':
         return https_fn.Response("", status=204, headers=CORS_HEADERS)
 
     # Ensure the method is POST
     if req.method != "POST":
-        return https_fn.Response(
-            "Invalid request method.",
-            status=405,
-            headers=CORS_HEADERS
-        )
+        return https_fn.Response("Invalid request method.", status=405, headers=CORS_HEADERS)
 
     # Rate limiting check (Issue #62)
     # Get client IP (Cloud Run provides real IP in X-Forwarded-For)
@@ -204,14 +186,11 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
         ip_address = ip_address.split(',')[0].strip()
 
     if not check_rate_limit(ip_address):
-        return https_fn.Response(
-            json.dumps({
-                "error": "Too many authentication attempts. Please try again in 10 minutes."
-            }),
-            status=429,
-            mimetype="application/json",
-            headers={**CORS_HEADERS, 'Retry-After': '600'}
-        )
+        log_json("warn", "Auth rate limited", ip=ip_address, correlationId=correlation_id)
+        return https_fn.Response(json.dumps({"error": "Too many authentication attempts. Please try again in 10 minutes."}),
+                                  status=429,
+                                  mimetype="application/json",
+                                  headers={**CORS_HEADERS, 'Retry-After': '600'})
 
     # Validate incoming data
     try:
@@ -224,19 +203,11 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
 
     except ValueError as e:
         # Input validation failed
-        return https_fn.Response(
-            json.dumps({"error": str(e)}),
-            status=400,
-            mimetype="application/json",
-            headers=CORS_HEADERS
-        )
+        log_json("info", "Auth input validation failed", error=str(e), correlationId=correlation_id)
+        return https_fn.Response(json.dumps({"error": str(e)}), status=400, mimetype="application/json", headers=CORS_HEADERS)
     except Exception as e:
-        return https_fn.Response(
-            json.dumps({"error": f"Invalid JSON: {str(e)}"}),
-            status=400,
-            mimetype="application/json",
-            headers=CORS_HEADERS
-        )
+        log_json("info", "Invalid JSON payload", error=str(e), correlationId=correlation_id)
+        return https_fn.Response(json.dumps({"error": "Invalid JSON"}), status=400, mimetype="application/json", headers=CORS_HEADERS)
 
     # Main OAuth flow
     try:
@@ -261,7 +232,7 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
             'code_verifier': pkce_code_verifier  # ← Critical for PKCE!
         }
 
-        print(f"INFO: Exchanging authorization code for tokens...")
+        log_json("info", "Exchanging authorization code for tokens", correlationId=correlation_id)
         token_response = requests.post(
             token_url,
             data=payload,
@@ -274,12 +245,12 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
             raise Exception("No id_token in response from Kenni.is")
 
         # Step 2: Verify and decode the ID token from Kenni.is
-        print(f"INFO: Verifying ID token from Kenni.is...")
-        jwks_client = get_kenni_is_jwks_client(issuer_url)
+    log_json("info", "Verifying ID token from Kenni.is", correlationId=correlation_id)
+    jwks_client = get_kenni_is_jwks_client(issuer_url)
 
-        # Log cache statistics (Issue #63)
-        cache_info = get_jwks_client_cached.cache_info()
-        print(f"[CACHE STATS] Hits: {cache_info.hits}, Misses: {cache_info.misses}, Size: {cache_info.currsize}")
+    # Log cache statistics (Issue #63)
+    cache_stats = get_jwks_cache_stats()
+    log_json("debug", "JWKS cache stats", correlationId=correlation_id, **cache_stats)
 
         signing_key = jwks_client.get_signing_key_from_jwt(kenni_is_id_token)
         decoded_kenni_token = jwt.decode(
@@ -305,7 +276,7 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
 
         normalized_kennitala = normalize_kennitala(national_id)
 
-        print(f"INFO: Successfully verified Kenni.is token for: {full_name} ({normalized_kennitala[:7]}****)")
+    log_json("info", "Verified Kenni.is token", userName=full_name, kennitala=f"{normalized_kennitala[:7]}****", correlationId=correlation_id)
 
         # Step 4: Create or get existing user from Firestore
         db = firestore.client()
@@ -318,7 +289,7 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
             # User already exists
             user_doc = existing_users[0]
             auth_uid = user_doc.id
-            print(f"INFO: User profile for kennitala {normalized_kennitala[:7]}**** already exists with UID {auth_uid}")
+            log_json("info", "User profile exists", uid=auth_uid, kennitala=f"{normalized_kennitala[:7]}****", correlationId=correlation_id)
 
             # Update last login and sync email/phone from Kenni.is
             update_data = {
@@ -334,12 +305,12 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
             users_ref.document(auth_uid).update(update_data)
         else:
             # Create new user (with race condition handling)
-            print(f"INFO: Creating new user for kennitala {normalized_kennitala[:7]}****")
+            log_json("info", "Creating new user", kennitala=f"{normalized_kennitala[:7]}****", correlationId=correlation_id)
 
             try:
                 new_user = auth.create_user(display_name=full_name)
                 auth_uid = new_user.uid
-                print(f"INFO: Created new Firebase Auth user with UID: {auth_uid}")
+                log_json("info", "Created Firebase Auth user", uid=auth_uid, correlationId=correlation_id)
 
                 # Create user profile in Firestore
                 user_profile_data = {
@@ -354,22 +325,22 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
                     'lastLogin': firestore.SERVER_TIMESTAMP
                 }
                 db.collection('users').document(auth_uid).set(user_profile_data)
-                print(f"INFO: Created Firestore user profile at /users/{auth_uid}")
+                log_json("info", "Created Firestore user profile", path=f"/users/{auth_uid}", correlationId=correlation_id)
 
             except Exception as e:
                 # Handle race condition: user created by concurrent request
                 error_message = str(e)
                 if 'already exists' in error_message.lower() or 'uid_already_exists' in error_message.lower():
-                    print(f"WARN: User already exists (race condition detected), retrying query for kennitala {normalized_kennitala[:7]}****")
+                    log_json("warn", "User already exists; race condition; retrying", kennitala=f"{normalized_kennitala[:7]}****", correlationId=correlation_id)
                     # Retry query to find the user created by concurrent request
                     query = users_ref.where('kennitala', '==', normalized_kennitala).limit(1)
                     existing_users = list(query.stream())
                     if existing_users:
                         auth_uid = existing_users[0].id
-                        print(f"INFO: Found existing user after race condition: {auth_uid}")
+                        log_json("info", "Found existing user after race condition", uid=auth_uid, correlationId=correlation_id)
                     else:
                         # This shouldn't happen, but handle it gracefully
-                        print(f"ERROR: Race condition unresolved - user exists but not found in Firestore")
+                        log_json("error", "Race condition unresolved - user exists but not found in Firestore", correlationId=correlation_id)
                         raise Exception("User creation race condition could not be resolved")
                 else:
                     # Re-raise if it's a different error
@@ -390,7 +361,7 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
             "uid": auth_uid
         }
 
-        print(f"INFO: Successfully created custom token for UID: {auth_uid}")
+        log_json("info", "Created custom token", uid=auth_uid, correlationId=correlation_id)
         return https_fn.Response(
             json.dumps(response_data),
             status=200,
@@ -399,22 +370,12 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
         )
 
     except requests.exceptions.HTTPError as e:
-        print(f"ERROR: HTTP error during token exchange: {str(e)}")
-        print(f"ERROR: Response: {e.response.text if e.response else 'No response'}")
-        return https_fn.Response(
-            f"Token exchange failed: {str(e)}",
-            status=500,
-            headers=CORS_HEADERS
-        )
+        body = e.response.text if getattr(e, 'response', None) else 'No response'
+        log_json("error", "HTTP error during token exchange", error=str(e), responseBody=sanitize_fields({'body': body})['body'], correlationId=correlation_id)
+        return https_fn.Response("Token exchange failed", status=502, headers=CORS_HEADERS)
     except Exception as e:
-        print(f"ERROR in handleKenniAuth: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return https_fn.Response(
-            f"An internal error occurred: {str(e)}",
-            status=500,
-            headers=CORS_HEADERS
-        )
+        log_json("error", "Unhandled error in handleKenniAuth", error=str(e), correlationId=correlation_id)
+        return https_fn.Response("An internal error occurred", status=500, headers=CORS_HEADERS)
 
 
 @https_fn.on_call()
@@ -449,7 +410,7 @@ def verifyMembership(req: https_fn.CallableRequest) -> dict:
         blob = bucket.blob('kennitalas.txt')
 
         if not blob.exists():
-            print(f"WARN: kennitalas.txt not found in storage bucket {bucket_name}")
+            log_json("warn", "kennitalas.txt not found", bucket=bucket_name)
             return {'isMember': False, 'verified': False}
 
         contents = blob.download_as_text()
@@ -487,7 +448,7 @@ def verifyMembership(req: https_fn.CallableRequest) -> dict:
         }
 
     except Exception as e:
-        print(f"ERROR: Error verifying membership: {str(e)}")
+        log_json("error", "Error verifying membership", error=str(e))
         raise https_fn.HttpsError(
             code=https_fn.FunctionsErrorCode.INTERNAL,
             message="Failed to verify membership"
