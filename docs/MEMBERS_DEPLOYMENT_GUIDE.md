@@ -28,6 +28,22 @@ gcloud functions deploy handleKenniAuth \
   --set-env-vars JWKS_CACHE_TTL_SECONDS=3600
 ```
 
+### CORS_ALLOWED_ORIGINS
+- Purpose: Comma-separated allowlist of origins for CORS responses
+- Default: `*` (allows any origin)
+- Recommended:
+  - Production: explicit domains, e.g. `https://ekklesia-prod-10-2025.web.app,https://members.example.com`
+  - Staging/dev: include staging hosts
+- Deployment example:
+
+```bash
+gcloud functions deploy handleKenniAuth \
+  --gen2 --runtime=python311 --region=europe-west2 \
+  --entry-point=handleKenniAuth --trigger-http --allow-unauthenticated \
+  --source=members/functions \
+  --set-env-vars JWKS_CACHE_TTL_SECONDS=3600,CORS_ALLOWED_ORIGINS="https://ekklesia-prod-10-2025.web.app,https://members.example.com"
+```
+
 ### Future variables (planned)
 - RATE_LIMIT_MAX_ATTEMPTS
 - RATE_LIMIT_WINDOW_MINUTES
@@ -41,6 +57,7 @@ gcloud functions deploy handleKenniAuth \
 - Example log messages to look for:
   - `Exchanging authorization code for tokens`
   - `JWKS cache expired, refreshing`
+  - Rate limiting warnings: `Auth rate limited`
 
 ## Troubleshooting
 
@@ -54,3 +71,7 @@ gcloud functions deploy handleKenniAuth \
 ## Notes
 - Rate limiting uses time-bucketed transactional counters; old bucket documents naturally age out without manual cleanup.
 - JWKS cache TTL is configurable via env var for each environment.
+
+## CI
+
+A lightweight CI workflow runs helper unit tests on push/PR (`.github/workflows/test-functions.yml`).
