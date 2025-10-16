@@ -2,8 +2,8 @@
  * Login Component Styles (Canonical BEM)
  *
  * Block: .login (login page container)
- * Elements: .login__subtitle, .login__status, .login__buttons
- * Modifiers: .login__status--authenticated, .login__status--error
+ * Elements: .login__subtitle, .login__status
+ * Modifiers: .login__status--authenticated, .login__status--not-authenticated, .login__status--authenticating, .login__status--error
  */
 
 /* === Login Block === */
@@ -106,28 +106,28 @@
   margin-top: 20px;
 }
 
-.debug-log .debug-log__entry {
+.debug-log__entry {
   margin: var(--spacing-xs) 0;
   padding: var(--spacing-xs) 0;
   border-bottom: 1px solid var(--color-gray-700);
 }
 
-.debug-log .debug-log__entry:last-child {
+.debug-log__entry:last-child {
   border-bottom: none;
 }
 
-.debug-log .debug-log__timestamp {
+.debug-log__timestamp {
   color: var(--color-gray-500);
 }
 
-.debug-log .success {
+.debug-log__entry--success {
   color: var(--color-success);
 }
 
-.debug-log .error {
+.debug-log__entry--error {
   color: var(--color-error);
 }
 
-.debug-log .info {
+.debug-log__entry--info {
   color: var(--color-info);
 }
