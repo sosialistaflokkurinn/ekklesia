@@ -88,7 +88,7 @@ body {
   padding: 20px;
 }
 
-.container {
+.--container {
   background: white;
   border-radius: var(--radius-xl);
   padding: var(--spacing-xl);
@@ -99,55 +99,55 @@ body {
 
 /* === Utility Classes === */
 
-.subtitle {
+.--subtitle {
   color: var(--color-gray-500);
   margin-bottom: 30px;
   font-size: 14px;
 }
 
 /* Clickable item - for links styled as cards/items */
-.clickable {
+.--clickable {
   text-decoration: none;
   cursor: pointer;
 }
 
 /* Disabled/inactive state */
-.disabled {
+.--disabled {
   opacity: 0.5;
 }
 
 /* Hidden by default */
-.hidden {
+.--hidden {
   display: none;
 }
 
 /* Spacing utilities */
-.margin-top-sm {
+.--margin-top-sm {
   margin-top: var(--spacing-sm);
 }
 
-.margin-top-md {
+.--margin-top-md {
   margin-top: var(--spacing-md);
 }
 
-.margin-bottom-xs {
+.--margin-bottom-xs {
   margin-bottom: var(--spacing-xs);
 }
 
-.margin-bottom-sm {
+.--margin-bottom-sm {
   margin-bottom: var(--spacing-sm);
 }
 
-.margin-bottom-md {
+.--margin-bottom-md {
   margin-bottom: var(--spacing-md);
 }
 
 /* Text utilities */
-.text-muted {
+.--text-muted {
   color: var(--color-gray-500);
   font-size: 14px;
 }
 
-.text-error {
+.--text-error {
   color: var(--color-error-text);
 }

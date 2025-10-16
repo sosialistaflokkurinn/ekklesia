@@ -4,13 +4,13 @@
  * Shared navigation bar for authenticated pages
  */
 
-.nav-header {
+.--header {
   background: var(--color-primary);
   padding: var(--spacing-md) var(--spacing-xl);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.nav-container {
+.--container {
   max-width: 1200px;
   margin: 0 auto;
   display: flex;
@@ -18,20 +18,20 @@
   align-items: center;
 }
 
-.nav-brand {
+.--brand {
   color: white;
   font-size: 20px;
   font-weight: 600;
   text-decoration: none;
 }
 
-.nav-links {
+.--links {
   display: flex;
   gap: var(--spacing-lg);
   align-items: center;
 }
 
-.nav-link {
+.--link {
   color: white;
   text-decoration: none;
   padding: var(--spacing-sm) var(--spacing-md);
@@ -39,32 +39,32 @@
   transition: background 0.2s;
 }
 
-.nav-link:hover {
+.--link:hover {
   background: var(--color-primary-dark);
 }
 
-.nav-link.active {
+.--link.active {
   background: rgba(255, 255, 255, 0.2);
   font-weight: 500;
 }
 
-.nav-logout {
+.--link--logout {
   background: rgba(255, 255, 255, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-.nav-logout:hover {
+.--link--logout:hover {
   background: rgba(255, 255, 255, 0.3);
 }
 
 /* Mobile responsive */
 @media (max-width: 768px) {
-  .nav-container {
+  .--container {
     flex-direction: column;
     gap: var(--spacing-md);
   }
 
-  .nav-links {
+  .--links {
     flex-wrap: wrap;
     justify-content: center;
   }
