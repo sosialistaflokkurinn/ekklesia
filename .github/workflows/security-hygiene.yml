@@ -40,20 +40,7 @@ jobs:
             echo "⚠️ Found critical security issues open >48 hours:"
             echo "$CRITICAL_ISSUES" | while read -r issue; do
               echo "  - Issue #$issue"
-              
-              gh issue comment "$issue" -b "⚠️ **Automated Security Alert**
-
-This critical security issue has been open for over 48 hours.
-
-**Required Actions:**
-- [ ] Immediate triage and assignment
-- [ ] Set timeline for resolution
-- [ ] Update stakeholders on status
-
-**Escalation:** Critical security issues should be resolved within 48 hours per security policy.
-
----
-_Automated weekly security hygiene check_"
+              gh issue comment "$issue" --body $'## ⚠️ Automated Security Alert\n\nThis critical security issue has been open for over 48 hours.\n\n**Required Actions:**\n- [ ] Immediate triage and assignment\n- [ ] Set timeline for resolution\n- [ ] Update stakeholders on status\n\n**Escalation:** Critical security issues should be resolved within 48 hours per security policy.\n\n***\n*Automated weekly security hygiene check*'
             done
           else
             echo "✅ No critical security issues open >48 hours"
@@ -78,20 +65,7 @@ _Automated weekly security hygiene check_"
             echo "⚠️ Found blocked issues without explanation:"
             echo "$BLOCKED_ISSUES" | while read -r issue; do
               echo "  - Issue #$issue"
-              
-              gh issue comment "$issue" -b "⚠️ **Issue Hygiene Check**
-
-This issue is marked as \"Blocked\" but has no comments explaining what is blocking progress.
-
-**Please document:**
-- What dependency/decision/resource is blocking this?
-- Who can unblock it?
-- Expected timeline for unblocking?
-
-If no longer blocked, please remove the \"Blocked\" label.
-
----
-_Automated weekly security hygiene check_"
+              gh issue comment "$issue" --body $'## ⚠️ Issue Hygiene Check\n\nThis issue is marked as \'Blocked\' but has no comments explaining what is blocking progress.\n\n**Please document:**\n- What dependency/decision/resource is blocking this?\n- Who can unblock it?\n- Expected timeline for unblocking?\n\nIf no longer blocked, please remove the \'Blocked\' label.\n\n***\n*Automated weekly security hygiene check*'
             done
           else
             echo "✅ All blocked issues have explanations"
@@ -116,21 +90,7 @@ _Automated weekly security hygiene check_"
             echo "⚠️ Found security issues without priority:"
             echo "$NO_PRIORITY" | while read -r issue; do
               echo "  - Issue #$issue"
-              
-              gh issue comment "$issue" -b "⚠️ **Missing Priority Label**
-
-This security issue is missing a priority label.
-
-**Please add one of:**
-- \`Priority: Critical\` - Exploitable vulnerability, must fix before production
-- \`Priority: High\` - Significant security risk, fix soon
-- \`Priority: Medium\` - Security improvement, should fix
-- \`Priority: Low\` - Security hardening, nice to have
-
-Without priority, this issue may be overlooked in triage.
-
----
-_Automated weekly security hygiene check_"
+              gh issue comment "$issue" --body $'## ⚠️ Missing Priority Label\n\nThis security issue is missing a priority label.\n\n**Please add one of:**\n- `Priority: Critical` - Exploitable vulnerability, must fix before production\n- `Priority: High` - Significant security risk, fix soon\n- `Priority: Medium` - Security improvement, should fix\n- `Priority: Low` - Security hardening, nice to have\n\nWithout priority, this issue may be overlooked in triage.\n\n***\n*Automated weekly security hygiene check*'
             done
           else
             echo "✅ All security issues have priority labels"
@@ -157,22 +117,7 @@ _Automated weekly security hygiene check_"
             echo "⚠️ Found closed security issues without verification:"
             echo "$UNVERIFIED" | while read -r issue; do
               echo "  - Issue #$issue"
-              
-              gh issue comment "$issue" -b "⚠️ **Security Verification Missing**
-
-This security issue was closed but has not been verified with test evidence.
-
-**Required for security fixes:**
-- [ ] Add test demonstrating the fix
-- [ ] Verify in production (if deployed)
-- [ ] Add \`Verified\` label once confirmed
-
-**Documentation:**
-- Test evidence can be: automated test, manual test report, production logs
-- See: \`tests/security/\` for examples
-
----
-_Automated weekly security hygiene check_"
+              gh issue comment "$issue" --body $'## ⚠️ Security Verification Missing\n\nThis security issue was closed but has not been verified with test evidence.\n\n**Required for security fixes:**\n- [ ] Add test demonstrating the fix\n- [ ] Verify in production (if deployed)\n- [ ] Add `Verified` label once confirmed\n\n**Documentation:**\n- Test evidence can be: automated test, manual test report, production logs\n- See: `tests/security/` for examples\n\n***\n*Automated weekly security hygiene check*'
             done
           else
             echo "✅ All closed security issues are verified or recently closed"
