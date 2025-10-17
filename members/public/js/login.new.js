@@ -157,6 +157,8 @@ async function handleCallback(authCode) {
 
     const headers = {
       'Content-Type': 'application/json',
+      // Provide a client-generated correlation id to help trace in logs
+      'X-Request-ID': generateRandomString(20)
     };
 
     // Include App Check token if available
@@ -174,8 +176,18 @@ async function handleCallback(authCode) {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`handleKenniAuth failed: ${response.status} ${errorText}`);
+      let errMsg = `${response.status}`;
+      try {
+        const errJson = await response.json();
+        const cid = errJson.correlationId ? ` (cid: ${errJson.correlationId})` : '';
+        errMsg = `${response.status} ${errJson.error || 'ERROR'}${cid} - ${errJson.message || ''}`;
+      } catch (_) {
+        const errorText = await response.text();
+        const cidHeader = response.headers.get('X-Correlation-ID');
+        const cid = cidHeader ? ` (cid: ${cidHeader})` : '';
+        errMsg = `${response.status}${cid} ${errorText}`;
+      }
+      throw new Error(`handleKenniAuth failed: ${errMsg}`);
     }
 
     const result = await response.json();

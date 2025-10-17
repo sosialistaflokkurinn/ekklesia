@@ -45,6 +45,7 @@ def _cors_headers_for_origin(origin: str) -> dict:
         'Vary': 'Origin',
         'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Firebase-AppCheck, X-Request-ID, X-Correlation-ID',
+        'Access-Control-Expose-Headers': 'X-Correlation-ID',
         'Access-Control-Max-Age': '3600',
     }
 
@@ -173,6 +174,56 @@ def validate_auth_input(kenni_auth_code: str, pkce_code_verifier: str) -> bool:
 # --- CLOUD FUNCTIONS ---
 
 @https_fn.on_request()
+def healthz(req: https_fn.Request) -> https_fn.Response:
+    """Basic health and config sanity endpoint.
+
+    Returns presence (not values) of required env vars and JWKS cache stats.
+    Always includes X-Correlation-ID and proper CORS.
+    """
+    correlation_id = req.headers.get('X-Correlation-ID') or req.headers.get('X-Request-ID') or str(uuid.uuid4())
+    origin = _get_allowed_origin(req.headers.get('Origin'))
+
+    if req.method == 'OPTIONS':
+        return https_fn.Response("", status=204, headers={**_cors_headers_for_origin(origin), 'X-Correlation-ID': correlation_id})
+
+    # Only allow GET for health checks
+    if req.method != 'GET':
+        return https_fn.Response(
+            json.dumps({"error": "METHOD_NOT_ALLOWED", "message": "Use GET", "correlationId": correlation_id}),
+            status=405,
+            mimetype="application/json",
+            headers={**_cors_headers_for_origin(origin), 'X-Correlation-ID': correlation_id},
+        )
+
+    env_keys = [
+        "KENNI_IS_ISSUER_URL",
+        "KENNI_IS_CLIENT_ID",
+        "KENNI_IS_CLIENT_SECRET",
+        "KENNI_IS_REDIRECT_URI",
+        "FIREBASE_STORAGE_BUCKET",
+    ]
+    env_status = {k: bool(os.environ.get(k)) for k in env_keys}
+
+    # Include JWKS cache stats (no secrets)
+    issuer_url = os.environ.get("KENNI_IS_ISSUER_URL", "")
+    cache_stats = get_jwks_cache_stats()
+
+    body = {
+        "ok": True,
+        "env": env_status,
+        "jwks": cache_stats,
+        "issuerConfigured": bool(issuer_url),
+        "correlationId": correlation_id,
+    }
+
+    return https_fn.Response(
+        json.dumps(body),
+        status=200,
+        mimetype="application/json",
+        headers={**_cors_headers_for_origin(origin), 'X-Correlation-ID': correlation_id},
+    )
+
+@https_fn.on_request()
 def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
     """
     Handle Kenni.is OAuth code exchange with PKCE
@@ -192,12 +243,15 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
     # Handle CORS preflight requests
     if req.method == 'OPTIONS':
         origin = _get_allowed_origin(req.headers.get('Origin'))
-        return https_fn.Response("", status=204, headers=_cors_headers_for_origin(origin))
+        return https_fn.Response("", status=204, headers={**_cors_headers_for_origin(origin), 'X-Correlation-ID': correlation_id})
 
     # Ensure the method is POST
     if req.method != "POST":
         origin = _get_allowed_origin(req.headers.get('Origin'))
-        return https_fn.Response("Invalid request method.", status=405, headers=_cors_headers_for_origin(origin))
+        return https_fn.Response(json.dumps({"error": "METHOD_NOT_ALLOWED", "message": "Invalid request method.", "correlationId": correlation_id}),
+                                  status=405,
+                                  mimetype="application/json",
+                                  headers={**_cors_headers_for_origin(origin), 'X-Correlation-ID': correlation_id})
 
     # Rate limiting check (Issue #62)
     # Get client IP (Cloud Run provides real IP in X-Forwarded-For)
@@ -208,10 +262,10 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
     if not check_rate_limit(ip_address):
         log_json("warn", "Auth rate limited", ip=ip_address, correlationId=correlation_id)
         origin = _get_allowed_origin(req.headers.get('Origin'))
-        return https_fn.Response(json.dumps({"error": "Too many authentication attempts. Please try again in 10 minutes."}),
+        return https_fn.Response(json.dumps({"error": "RATE_LIMITED", "message": "Too many authentication attempts. Please try again in 10 minutes.", "correlationId": correlation_id}),
                                   status=429,
                                   mimetype="application/json",
-                                  headers={**_cors_headers_for_origin(origin), 'Retry-After': '600'})
+                                  headers={**_cors_headers_for_origin(origin), 'Retry-After': '600', 'X-Correlation-ID': correlation_id})
 
     # Validate incoming data
     try:
@@ -226,11 +280,22 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
         # Input validation failed
         log_json("info", "Auth input validation failed", error=str(e), correlationId=correlation_id)
         origin = _get_allowed_origin(req.headers.get('Origin'))
-        return https_fn.Response(json.dumps({"error": str(e)}), status=400, mimetype="application/json", headers=_cors_headers_for_origin(origin))
+        return https_fn.Response(
+            json.dumps({"error": "INVALID_INPUT", "message": str(e), "correlationId": correlation_id}),
+            status=400,
+            mimetype="application/json",
+            headers={**_cors_headers_for_origin(origin), 'X-Correlation-ID': correlation_id},
+        )
     except Exception as e:
+        # JSON parsing or unexpected input shape
         log_json("info", "Invalid JSON payload", error=str(e), correlationId=correlation_id)
         origin = _get_allowed_origin(req.headers.get('Origin'))
-        return https_fn.Response(json.dumps({"error": "Invalid JSON"}), status=400, mimetype="application/json", headers=_cors_headers_for_origin(origin))
+        return https_fn.Response(
+            json.dumps({"error": "INVALID_JSON", "message": "Invalid JSON", "correlationId": correlation_id}),
+            status=400,
+            mimetype="application/json",
+            headers={**_cors_headers_for_origin(origin), 'X-Correlation-ID': correlation_id},
+        )
 
     # Main OAuth flow
     try:
@@ -240,8 +305,16 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
         client_secret = os.environ.get("KENNI_IS_CLIENT_SECRET")
         redirect_uri = os.environ.get("KENNI_IS_REDIRECT_URI")
 
-        if not all([issuer_url, client_id, client_secret, redirect_uri]):
-            raise Exception("Missing Kenni.is configuration in environment variables")
+        missing = [
+            name for name, val in [
+                ("KENNI_IS_ISSUER_URL", issuer_url),
+                ("KENNI_IS_CLIENT_ID", client_id),
+                ("KENNI_IS_CLIENT_SECRET", client_secret),
+                ("KENNI_IS_REDIRECT_URI", redirect_uri),
+            ] if not val
+        ]
+        if missing:
+            raise Exception(f"Missing environment variables: {', '.join(missing)}")
 
         token_url = f"{issuer_url}/oidc/token"
 
@@ -370,12 +443,22 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
                     raise
 
         # Step 5: Create Firebase custom token with all claims
-        custom_claims = {'kennitala': normalized_kennitala}
+        # Read existing custom claims from Firebase Auth (includes roles set by admin)
+        try:
+            existing_user = auth.get_user(auth_uid)
+            existing_custom_claims = existing_user.custom_claims or {}
+        except Exception as e:
+            log_json("warn", "Could not read existing custom claims", error=str(e), uid=auth_uid)
+            existing_custom_claims = {}
+
+        # Merge new claims with existing claims (preserve roles, etc.)
+        custom_claims = {**existing_custom_claims, 'kennitala': normalized_kennitala}
         if email:
             custom_claims['email'] = email
         if phone_number:
             custom_claims['phoneNumber'] = phone_number
 
+        log_json("debug", "Creating custom token with claims", uid=auth_uid, claims=sanitize_fields(custom_claims))
         custom_token = auth.create_custom_token(auth_uid, developer_claims=custom_claims)
 
         # Step 6: Return custom token to frontend
@@ -386,17 +469,38 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
 
         log_json("info", "Created custom token", uid=auth_uid, correlationId=correlation_id)
         origin = _get_allowed_origin(req.headers.get('Origin'))
-        return https_fn.Response(json.dumps(response_data), status=200, mimetype="application/json", headers=_cors_headers_for_origin(origin))
+        return https_fn.Response(
+            json.dumps(response_data),
+            status=200,
+            mimetype="application/json",
+            headers={**_cors_headers_for_origin(origin), 'X-Correlation-ID': correlation_id},
+        )
 
     except requests.exceptions.HTTPError as e:
         body = e.response.text if getattr(e, 'response', None) else 'No response'
         log_json("error", "HTTP error during token exchange", error=str(e), responseBody=sanitize_fields({'body': body})['body'], correlationId=correlation_id)
         origin = _get_allowed_origin(req.headers.get('Origin'))
-        return https_fn.Response("Token exchange failed", status=502, headers=_cors_headers_for_origin(origin))
+        return https_fn.Response(json.dumps({"error": "TOKEN_EXCHANGE_FAILED", "message": "Token exchange failed", "correlationId": correlation_id}),
+                                  status=502,
+                                  mimetype="application/json",
+                                  headers={**_cors_headers_for_origin(origin), 'X-Correlation-ID': correlation_id})
     except Exception as e:
+        # Detect configuration error and surface missing env vars explicitly
+        msg = str(e)
+        if msg.startswith("Missing environment variables:"):
+            log_json("error", "Configuration error in handleKenniAuth", error=msg, correlationId=correlation_id)
+            origin = _get_allowed_origin(req.headers.get('Origin'))
+            return https_fn.Response(json.dumps({
+                "error": "CONFIG_MISSING",
+                "message": msg,
+                "correlationId": correlation_id
+            }), status=500, mimetype="application/json", headers={**_cors_headers_for_origin(origin), 'X-Correlation-ID': correlation_id})
         log_json("error", "Unhandled error in handleKenniAuth", error=str(e), correlationId=correlation_id)
         origin = _get_allowed_origin(req.headers.get('Origin'))
-        return https_fn.Response("An internal error occurred", status=500, headers=_cors_headers_for_origin(origin))
+        return https_fn.Response(json.dumps({"error": "INTERNAL", "message": "An internal error occurred", "correlationId": correlation_id}),
+                                  status=500,
+                                  mimetype="application/json",
+                                  headers={**_cors_headers_for_origin(origin), 'X-Correlation-ID': correlation_id})
 
 
 @https_fn.on_call()

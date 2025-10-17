@@ -1,6 +1,11 @@
 # Roles and Permissions (RBAC)
 
-This document defines the roles for the Ekklesia platform and maps them to responsibilities and permissions across services. The goal is to follow the principle of least privilege, keep operational actions auditable, and make it easy to reason about who can do what.
+**Classification**: Public - Architecture
+**Sensitive Operations**: See internal documentation
+
+This document defines the roles for the Ekklesia platform at a high level. The goal is to follow the principle of least privilege, keep operational actions auditable, and make it easy to reason about who can do what.
+
+**NOTE**: Detailed role assignment procedures and operational runbooks are maintained separately for authorized administrators only.
 
 ## Role definitions
 
@@ -75,34 +80,17 @@ Future admin:
   - Frontend: read via ID token (`getIdTokenResult()`) and expose to UI for gating.
   - Backend: verify ID token server-side and read roles array for authorization checks.
 
-## How to assign roles (recommended approach)
+## How to assign roles
 
-- Use Firebase Admin SDK to set custom claims:
-  1) Identify the target user's UID (from Members service or Firebase Console).
-  2) Merge roles with existing claims (do not overwrite `isMember`, `kennitala`).
+Roles are assigned via Firebase custom claims using admin tooling.
 
-- Example (Node.js snippet):
+**Operational guidance**:
+- Keep the set of `developer` users very small and audited quarterly
+- Prefer `meeting_election_manager` for day-to-day election operations
+- `event_manager` manages non-voting event content/configuration
+- All role assignments must be logged and approved
 
-```js
-// Assign roles to a user (requires service account with admin privileges)
-const admin = require('firebase-admin');
-admin.initializeApp();
-
-async function setUserRoles(uid, roles) {
-  const user = await admin.auth().getUser(uid);
-  const current = user.customClaims || {};
-  const next = { ...current, roles: Array.from(new Set([...(current.roles || []), ...roles])) };
-  await admin.auth().setCustomUserClaims(uid, next);
-  console.log(`Updated roles for ${uid}:`, next.roles);
-}
-
-// Usage: setUserRoles('UID_HERE', ['developer']);
-```
-
-Operational guidance:
-- Keep the set of `developer` users very small and audited.
-- Prefer `meeting_election_manager` for day-to-day election operations.
-- `event_manager` manages non-voting event content/configuration.
+**Implementation details**: See internal operations documentation for authorized administrators.
 
 ## Enforcement patterns (implementation outline)
 

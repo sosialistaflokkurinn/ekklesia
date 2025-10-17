@@ -349,16 +349,29 @@ async function init() {
 
     // Gate admin reset section by role (developer only)
     try {
+      console.log('=== RBAC Debug ===');
+      console.log('userData:', userData);
+      console.log('userData.roles:', userData.roles);
+      console.log('Is array?', Array.isArray(userData.roles));
+
       const resetSectionTitle = document.getElementById('test-7-title');
       const resetButton = document.getElementById('btn-reset-election');
       const hasDeveloperRole = Array.isArray(userData.roles) && userData.roles.includes('developer');
+
+      console.log('hasDeveloperRole:', hasDeveloperRole);
+
       if (!hasDeveloperRole) {
+        console.log('❌ No developer role - hiding section');
         // Hide the entire section by collapsing elements
         if (resetSectionTitle) {
           const section = resetSectionTitle.closest('.test-section');
-          if (section) section.style.display = 'none';
+          if (section) {
+            section.style.display = 'none';
+            console.log('Section hidden');
+          }
         }
       } else {
+        console.log('✅ Developer role found - showing section');
         // Ensure reset button is enabled for devs
         if (resetButton) resetButton.disabled = false;
       }

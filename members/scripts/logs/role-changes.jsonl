@@ -1,0 +1,2 @@
+{"severity":"INFO","message":"User roles updated","uid":"wElbKqQ8mLfYmxhpiUGAnv0vx2g1","roles_before":[],"roles_after":["developer"],"added":["developer"],"removed":[],"performed_by":"gudro","host":"fedora","timestamp":"2025-10-16T20:13:11.762Z"}
+{"severity":"INFO","message":"User roles updated","uid":"wElbKqQ8mLfYmxhpiUGAnv0vx2g1","roles_before":["developer"],"roles_after":["developer"],"added":["developer"],"removed":[],"performed_by":"gudro","host":"fedora","timestamp":"2025-10-16T20:22:33.516Z"}

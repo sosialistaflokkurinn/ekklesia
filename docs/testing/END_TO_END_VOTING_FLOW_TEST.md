@@ -23,14 +23,14 @@ The test followed the member journey from authentication through to results, exe
 
 - **Identity Provider**: Kenni.is (PKCE flow)
 - **Firebase User ID**: `wElbKqQ8mLfYmxhpiUGAnv0vx2g1`
-- **Kennitala**: `200978-3589`
+- **Kennitala**: `XXXXXX-XXXX` (sanitized)
 - **Membership Status**: `true`
 - **Custom Token Claims**:
 
 ```json
 {
   "uid": "wElbKqQ8mLfYmxhpiUGAnv0vx2g1",
-  "kennitala": "200978-3589",
+  "kennitala": "XXXXXX-XXXX",
   "isMember": true,
   "auth_time": "2025-10-15T19:44:51Z"
 }

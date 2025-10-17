@@ -3,6 +3,28 @@ const { pool, query } = require('../config/database');
 const authenticate = require('../middleware/auth');
 const { requireRole } = require('../middleware/roles');
 
+/**
+ * In-memory rate limiter for admin operations.
+ * LIMITATIONS:
+ * - Per-instance state (not shared across Cloud Run instances)
+ * - Lost on instance restart
+ * - Potential unbounded growth without cleanup
+ * ACCEPTABLE FOR:
+ * - Low-frequency operations (e.g., monthly)
+ * - Trusted internal users (not public-facing)
+ * UPGRADE PATH:
+ * - Use Firestore/Redis for global, durable rate limiting
+ */
+const lastResetByUid = new Map();
+// Periodic cleanup of stale entries older than 24h
+setInterval(() => {
+  const now = Date.now();
+  const staleBefore = now - (24 * 60 * 60 * 1000);
+  for (const [uid, ts] of lastResetByUid.entries()) {
+    if (ts < staleBefore) lastResetByUid.delete(uid);
+  }
+}, 60 * 60 * 1000).unref?.(); // avoid keeping process alive solely for timer
+
 // Developer-only admin router
 const router = express.Router();
 
@@ -36,7 +58,7 @@ router.post('/reset-election', authenticate, requireRole('developer'), async (re
       });
     }
 
-    const scope = (req.body && req.body.scope) || 'all';
+  const scope = (req.body && req.body.scope) || 'all';
     const confirm = (req.body && req.body.confirm) || '';
 
     // Prepare result object
@@ -47,6 +69,38 @@ router.post('/reset-election', authenticate, requireRole('developer'), async (re
       after: {},
       actions: []
     };
+
+    // Rate limit for full reset to avoid accidental repeats
+    if (scope === 'all') {
+      let minIntervalSec = Number.parseInt(process.env.ADMIN_RESET_MIN_INTERVAL_SEC ?? '300', 10);
+      if (!Number.isFinite(minIntervalSec) || minIntervalSec < 0) {
+        console.error('Invalid ADMIN_RESET_MIN_INTERVAL_SEC; falling back to default 300s');
+        minIntervalSec = 300;
+      }
+      // Cap to 1 day to avoid accidental extreme throttling due to typos
+      if (minIntervalSec > 86400) {
+        console.warn(`ADMIN_RESET_MIN_INTERVAL_SEC too high (${minIntervalSec}); capping to 86400s`);
+        minIntervalSec = 86400;
+      }
+      const now = Date.now();
+      const last = lastResetByUid.get(uid) || 0;
+      const elapsed = Math.floor((now - last) / 1000);
+      if (elapsed < minIntervalSec) {
+        const retryAfter = minIntervalSec - elapsed;
+        console.warn(JSON.stringify({
+          level: 'warn',
+          message: 'Admin reset rate-limited',
+          performed_by: uid,
+          retry_after_sec: retryAfter,
+          timestamp: new Date().toISOString()
+        }));
+        return res.status(429).json({
+          error: 'Too Many Requests',
+          message: `Please wait ${retryAfter}s before attempting another full reset`,
+          retryAfter
+        });
+      }
+    }
 
     const client = await pool.connect();
     try {
@@ -66,7 +120,31 @@ router.post('/reset-election', authenticate, requireRole('developer'), async (re
         // Delete only this user's token in Events service
         const delMine = await client.query('DELETE FROM public.voting_tokens WHERE kennitala = $1', [kennitala]);
         result.actions.push({ action: 'delete_events_token_for_user', kennitala });
+        console.log(JSON.stringify({
+          level: 'info',
+          message: 'Admin reset - user scope',
+          action: 'mine',
+          performed_by: uid,
+          kennitala_masked: kennitala ? `${kennitala.substring(0,7)}****` : null,
+          timestamp: new Date().toISOString()
+        }));
       } else if (scope === 'all') {
+        // Production guardrail: block destructive reset unless explicitly allowed
+        const isProd = (process.env.NODE_ENV || '').toLowerCase() === 'production';
+        const prodAllowed = (process.env.PRODUCTION_RESET_ALLOWED || '').toLowerCase() === 'true';
+        if (isProd && !prodAllowed) {
+          await client.query('ROLLBACK');
+          console.warn(JSON.stringify({
+            level: 'warn',
+            message: 'Blocked full reset in production (guardrail)',
+            performed_by: uid,
+            timestamp: new Date().toISOString()
+          }));
+          return res.status(403).json({
+            error: 'Forbidden',
+            message: 'Full reset is blocked in production. Set PRODUCTION_RESET_ALLOWED=true to enable (with strict controls).'
+          });
+        }
         // Full reset requires explicit confirmation phrase
         if (confirm !== 'RESET ALL') {
           await client.query('ROLLBACK');
@@ -83,6 +161,16 @@ router.post('/reset-election', authenticate, requireRole('developer'), async (re
         // Clear Events service tokens (safe; tokens are not PII)
         await client.query('DELETE FROM public.voting_tokens');
         result.actions.push({ action: 'delete_all_events_tokens', table: 'public.voting_tokens' });
+
+        const alertPayload = {
+          level: 'warn',
+          message: 'Admin reset - FULL RESET executed',
+          performed_by: uid,
+          before_counts: result.before,
+          after_counts: {},
+          timestamp: new Date().toISOString()
+        };
+        console.warn(JSON.stringify(alertPayload));
       } else {
         await client.query('ROLLBACK');
         return res.status(400).json({
@@ -101,7 +189,21 @@ router.post('/reset-election', authenticate, requireRole('developer'), async (re
         elections_ballots: afterElectionsBallots.rows[0].cnt
       };
 
+      // Emit completion log with final counts
+      console.warn(JSON.stringify({
+        level: 'info',
+        message: 'Admin reset completed',
+        performed_by: uid,
+        final_counts: result.after,
+        timestamp: new Date().toISOString()
+      }));
+
       await client.query('COMMIT');
+
+      // Update in-memory rate limit timestamp for full reset
+      if (scope === 'all') {
+        lastResetByUid.set(uid, Date.now());
+      }
 
       return res.json({
         success: true,
