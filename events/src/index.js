@@ -15,12 +15,19 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 
 // Middleware
+// CORS configuration - only allow known origins in production
+const corsOrigins = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',').map(s => s.trim()).filter(Boolean) : [
+  'https://ekklesia-prod-10-2025.web.app',
+  'https://ekklesia-prod-10-2025.firebaseapp.com',
+  'http://localhost:3000'
+];
+
+if (process.env.NODE_ENV === 'production' && (corsOrigins.length === 0 || corsOrigins.includes('*'))) {
+  console.warn('WARNING: CORS origins are not properly restricted in production. Review CORS_ORIGINS environment variable.');
+}
+
 app.use(cors({
-  origin: [
-    'https://ekklesia-prod-10-2025.web.app',
-    'https://ekklesia-prod-10-2025.firebaseapp.com',
-    'http://localhost:3000'
-  ],
+  origin: corsOrigins,
   credentials: true
 }));
 

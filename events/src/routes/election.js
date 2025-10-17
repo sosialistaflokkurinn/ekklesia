@@ -54,6 +54,9 @@ router.post('/request-token', authenticate, async (req, res) => {
     // Issue token
     const result = await issueVotingToken(election, kennitala);
 
+    // Security: ensure tokens are never cacheable by clients or intermediary proxies
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private, max-age=0');
+
     res.json({
       success: true,
       token: result.token,
@@ -66,6 +69,7 @@ router.post('/request-token', authenticate, async (req, res) => {
 
     // Handle specific errors
     if (error.message.includes('already')) {
+      res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private, max-age=0');
       return res.status(409).json({
         error: 'Conflict',
         message: error.message
@@ -73,6 +77,7 @@ router.post('/request-token', authenticate, async (req, res) => {
     }
 
     if (error.message.includes('expired')) {
+      res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private, max-age=0');
       return res.status(400).json({
         error: 'Bad Request',
         message: error.message,
@@ -81,12 +86,14 @@ router.post('/request-token', authenticate, async (req, res) => {
     }
 
     if (error.message.includes('not currently active')) {
+      res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private, max-age=0');
       return res.status(403).json({
         error: 'Forbidden',
         message: error.message
       });
     }
 
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private, max-age=0');
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to issue voting token'
