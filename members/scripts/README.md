@@ -6,12 +6,18 @@ Helper scripts for managing the Members service (Firebase Authentication, custom
 
 ## set-user-roles.js
 
-Assign roles to users via Firebase custom claims.
+Assign or remove roles for users via Firebase custom claims.
 
 ### Usage
 
+Positional (quick add):
 ```bash
 node set-user-roles.js <UID> <role1> [role2] [role3]
+```
+
+Flags (add/remove/project):
+```bash
+node set-user-roles.js --uid <UID> --add <role> [--add <role>] [--remove <role>] [--project <PROJECT_ID>]
 ```
 
 ### Examples
@@ -21,9 +27,9 @@ node set-user-roles.js <UID> <role1> [role2] [role3]
 node set-user-roles.js abc123xyz developer
 ```
 
-**Assign multiple roles**:
+**Assign and remove roles**:
 ```bash
-node set-user-roles.js def456uvw meeting_election_manager member
+node set-user-roles.js --uid def456uvw --add meeting_election_manager --remove member
 ```
 
 ### Available Roles
@@ -91,13 +97,13 @@ $ node set-user-roles.js abc123xyz developer
 
 Current user: gudrodur@example.com
 Current claims: {
-  "kennitala": "200978-3589",
+  "kennitala": "XXXXXX-XXXX",
   "isMember": true
 }
 
 ✅ Roles updated successfully!
 New claims: {
-  "kennitala": "200978-3589",
+  "kennitala": "XXXXXX-XXXX",
   "isMember": true,
   "roles": ["developer"]
 }

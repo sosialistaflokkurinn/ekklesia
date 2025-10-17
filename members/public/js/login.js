@@ -53,6 +53,16 @@ async function generatePKCE() {
 }
 
 /**
+ * Generate a short random request ID for correlation
+ * @returns {string}
+ */
+function generateRequestId() {
+  const array = new Uint8Array(16);
+  crypto.getRandomValues(array);
+  return Array.from(array, b => b.toString(16).padStart(2, '0')).join('');
+}
+
+/**
  * Generate CSRF state parameter
  *
  * @returns {string} Random hex string
@@ -94,7 +104,7 @@ async function handleOAuthCallback(authCode, functions) {
     }
 
     // Call Cloud Function to exchange code for token
-    const headers = { 'Content-Type': 'application/json' };
+    const headers = { 'Content-Type': 'application/json', 'X-Request-ID': generateRequestId() };
     if (appCheckTokenResponse) {
       headers['X-Firebase-AppCheck'] = appCheckTokenResponse.token;
     }
@@ -108,11 +118,20 @@ async function handleOAuthCallback(authCode, functions) {
       })
     });
 
-    const data = await response.json();
-
     if (!response.ok) {
-      throw new Error(data.error || R.string.error_authentication_failed);
+      // Try to surface structured error details including correlation ID
+      try {
+        const errJson = await response.json();
+        const cid = errJson.correlationId ? ` (cid: ${errJson.correlationId})` : '';
+        const msg = `${errJson.error || 'ERROR'}${cid}${errJson.message ? ` - ${errJson.message}` : ''}`;
+        throw new Error(msg);
+      } catch (_) {
+        const txt = await response.text();
+        throw new Error(`${response.status} ${txt}`);
+      }
     }
+
+    const data = await response.json();
 
     // Sign in to Firebase with custom token
     await signInWithCustomToken(auth, data.customToken);
@@ -227,7 +246,8 @@ async function init() {
   // Kenni.is configuration
   const KENNI_IS_ISSUER_URL = R.string.config_kenni_issuer;
   const KENNI_IS_CLIENT_ID = R.string.config_kenni_client_id;
-  const KENNI_IS_REDIRECT_URI = window.location.origin + '/';
+  // Use configured redirect URI (must exactly match IdP + backend env)
+  const KENNI_IS_REDIRECT_URI = R.string.config_kenni_redirect_uri;
 
   // Check if this is an OAuth callback
   const urlParams = new URLSearchParams(window.location.search);
