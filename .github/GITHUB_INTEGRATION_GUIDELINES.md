@@ -329,22 +329,356 @@ await Promise.allSettled(
 
 ---
 
+## Error Handling & Recovery
+
+### Pattern 1: Validate Before Acting (gh CLI)
+
+```bash
+#!/bin/bash
+set -euo pipefail
+
+update_issue_safely() {
+  local issue_num=$1
+  local label=$2
+  
+  # 1. Check if issue exists
+  if ! gh issue view "$issue_num" &>/dev/null; then
+    echo "❌ Error: Issue #$issue_num does not exist"
+    return 1
+  fi
+  
+  # 2. Check if issue is open
+  local state=$(gh issue view "$issue_num" --json state -q .state)
+  if [ "$state" != "OPEN" ]; then
+    echo "⚠️ Warning: Issue #$issue_num is $state (skipping)"
+    return 0
+  fi
+  
+  # 3. Check if label already exists
+  local has_label=$(gh issue view "$issue_num" --json labels -q ".labels[] | select(.name == \"$label\") | .name")
+  if [ -n "$has_label" ]; then
+    echo "✓ Issue #$issue_num already has label '$label'"
+    return 0
+  fi
+  
+  # 4. Apply label
+  if gh issue edit "$issue_num" --add-label "$label"; then
+    echo "✅ Added '$label' to #$issue_num"
+    return 0
+  else
+    echo "❌ Failed to add label to #$issue_num"
+    return 1
+  fi
+}
+
+# Usage with error tracking
+FAILED=()
+for issue in 35 38 40; do
+  if ! update_issue_safely "$issue" "Priority: High"; then
+    FAILED+=("$issue")
+  fi
+done
+
+if [ ${#FAILED[@]} -gt 0 ]; then
+  echo "❌ Failed issues: ${FAILED[*]}"
+  exit 1
+fi
+```
+
+### Pattern 2: Partial Failure Handling (GraphQL)
+
+```bash
+#!/bin/bash
+# Handle GraphQL partial errors
+
+QUERY='query {
+  issue1: repository(owner: "owner", name: "repo") {
+    issue(number: 35) { id }
+  }
+  issue2: repository(owner: "owner", name: "repo") {
+    issue(number: 999) { id }  # Doesn't exist
+  }
+}'
+
+RESULT=$(gh api graphql -f query="$QUERY" 2>&1)
+
+# Check for errors in response
+if echo "$RESULT" | jq -e '.errors' >/dev/null 2>&1; then
+  echo "⚠️ GraphQL returned partial errors:"
+  echo "$RESULT" | jq -r '.errors[] | "  - \(.path | join("/")): \(.message)"'
+  
+  # Extract successful results
+  echo "$RESULT" | jq -r '.data | to_entries[] | select(.value != null) | .key'
+fi
+```
+
+### Pattern 3: Retry Logic with Exponential Backoff
+
+```bash
+#!/bin/bash
+retry_with_backoff() {
+  local max_attempts=3
+  local timeout=1
+  local attempt=1
+  local exitCode=0
+  
+  while [ $attempt -le $max_attempts ]; do
+    if "$@"; then
+      return 0
+    fi
+    
+    exitCode=$?
+    
+    if [ $attempt -lt $max_attempts ]; then
+      echo "⚠️ Attempt $attempt failed. Retrying in ${timeout}s..."
+      sleep $timeout
+      timeout=$((timeout * 2))  # Exponential backoff
+    fi
+    
+    attempt=$((attempt + 1))
+  done
+  
+  echo "❌ All $max_attempts attempts failed"
+  return $exitCode
+}
+
+# Usage
+retry_with_backoff gh issue comment 35 -b "Verification complete"
+```
+
+### Pattern 4: Rollback Strategy
+
+```bash
+#!/bin/bash
+# Save state before bulk operation
+
+BACKUP_FILE="/tmp/issues-backup-$(date +%Y%m%d-%H%M%S).json"
+
+# 1. Backup current state
+echo "📦 Backing up current state..."
+gh api graphql -f query='
+  query {
+    repository(owner: "owner", name: "repo") {
+      issues(first: 100, labels: ["Security"]) {
+        nodes {
+          number
+          title
+          labels(first: 10) {
+            nodes { name }
+          }
+        }
+      }
+    }
+  }
+' > "$BACKUP_FILE"
+
+# 2. Perform bulk operation
+echo "🔄 Updating issues..."
+if ! ./bulk-update.sh; then
+  echo "❌ Update failed! Restore from: $BACKUP_FILE"
+  
+  # 3. Rollback (restore original labels)
+  jq -r '.data.repository.issues.nodes[] | 
+    @json "\(.number) \(.labels.nodes | map(.name) | join(","))"' \
+    "$BACKUP_FILE" | \
+  while IFS=' ' read -r issue_num labels; do
+    echo "↩️ Restoring #$issue_num labels: $labels"
+    # Remove all labels then add original ones
+    gh issue edit "$issue_num" --remove-label "$(gh issue view $issue_num --json labels -q '.labels[].name' | tr '\n' ',')"
+    IFS=',' read -ra LABEL_ARRAY <<< "$labels"
+    for label in "${LABEL_ARRAY[@]}"; do
+      gh issue edit "$issue_num" --add-label "$label"
+    done
+  done
+  
+  exit 1
+fi
+
+echo "✅ Update complete. Backup saved to: $BACKUP_FILE"
+```
+
+## Testing Strategy
+
+### Approach 1: Dry-Run Mode
+
+```bash
+#!/bin/bash
+DRY_RUN=${DRY_RUN:-true}  # Default to dry-run
+
+update_issue() {
+  local issue_num=$1
+  local label=$2
+  
+  if [ "$DRY_RUN" = "true" ]; then
+    echo "🔍 [DRY-RUN] Would add '$label' to #$issue_num"
+    # Validate that command would work
+    gh issue view "$issue_num" >/dev/null 2>&1 && echo "  ✓ Issue exists"
+    return 0
+  else
+    echo "✏️ Adding '$label' to #$issue_num"
+    gh issue edit "$issue_num" --add-label "$label"
+  fi
+}
+
+# Usage:
+# DRY_RUN=true ./script.sh   # Test mode
+# DRY_RUN=false ./script.sh  # Actually execute
+```
+
+### Approach 2: Test in GraphQL Explorer First
+
+Before running bulk GraphQL operations:
+
+1. **Open GraphQL Explorer**: https://docs.github.com/en/graphql/overview/explorer
+2. **Test query with small dataset**:
+   ```graphql
+   query {
+     repository(owner: "sosialistaflokkurinn", name: "ekklesia") {
+       issue(number: 35) {
+         id
+         number
+         title
+         labels(first: 5) {
+           nodes { name }
+         }
+       }
+     }
+   }
+   ```
+3. **Verify mutation syntax** before running in production
+4. **Test on dedicated test issue** (create issue #999 as "Test Issue - OK to modify")
+
+### Approach 3: Test Issue Pattern
+
+```bash
+#!/bin/bash
+# Create a test issue for validating operations
+
+TEST_ISSUE=$(gh issue create \
+  --title "[TEST] Label Management Test" \
+  --body "This issue is for testing label operations. Safe to close." \
+  --label "test" \
+  --json number -q .number)
+
+echo "Created test issue #$TEST_ISSUE"
+
+# Test your operations on this issue
+./bulk-label-update.sh "$TEST_ISSUE"
+
+# Verify results
+gh issue view "$TEST_ISSUE" --json labels -q '.labels[].name'
+
+# Clean up
+gh issue close "$TEST_ISSUE"
+```
+
+## Rate Limit Handling
+
+### Check Quota Before Bulk Operations
+
+```bash
+#!/bin/bash
+check_rate_limit() {
+  local resource=$1  # "core" or "graphql"
+  
+  local limit=$(gh api rate_limit --jq ".resources.$resource")
+  local remaining=$(echo "$limit" | jq -r .remaining)
+  local reset=$(echo "$limit" | jq -r .reset)
+  local reset_time=$(date -d "@$reset" '+%Y-%m-%d %H:%M:%S')
+  
+  echo "📊 Rate Limit Status ($resource):"
+  echo "  Remaining: $remaining / $(echo "$limit" | jq -r .limit)"
+  echo "  Resets at: $reset_time"
+  
+  if [ "$remaining" -lt 100 ]; then
+    echo "⚠️ WARNING: Low quota! Only $remaining requests remaining."
+    read -p "Continue anyway? (y/N) " -n 1 -r
+    echo
+    [[ ! $REPLY =~ ^[Yy]$ ]] && return 1
+  fi
+  
+  return 0
+}
+
+# Usage
+check_rate_limit "graphql" || exit 1
+./bulk-graphql-operation.sh
+```
+
+### Smart Rate Limiting
+
+```bash
+#!/bin/bash
+# Add delays between requests to stay under limits
+
+REQUESTS_PER_MINUTE=30  # Conservative limit
+DELAY=$((60 / REQUESTS_PER_MINUTE))
+
+for issue in {1..100}; do
+  gh issue edit "$issue" --add-label "Reviewed"
+  sleep "$DELAY"  # Throttle requests
+done
+```
+
 ## Tools & Libraries
 
 ### GitHub CLI
 - **Installation:** `brew install gh` or `apt install gh`
 - **Docs:** https://cli.github.com/manual/
 - **Auth:** `gh auth login`
+- **Rate Limits:** 5,000 requests/hour (authenticated)
 
 ### GitHub API (Node.js)
 - **Library:** `@octokit/rest` (REST) or `@octokit/graphql` (GraphQL)
 - **Install:** `npm install @octokit/rest`
 - **Docs:** https://octokit.github.io/rest.js/
+- **Rate Limits:** 5,000 requests/hour (authenticated), 60/hour (unauthenticated)
 
 ### GitHub API (Python)
 - **Library:** `PyGithub`
 - **Install:** `pip install PyGithub`
 - **Docs:** https://pygithub.readthedocs.io/
+
+### GitHub MCP Tools (Model Context Protocol)
+
+**Status:** Recommended for AI-assisted workflows when available
+
+GitHub MCP tools provide structured interfaces for AI assistants to interact with GitHub. When available, they offer:
+
+✅ **Advantages:**
+- Built-in validation and error handling
+- Consistent audit trail
+- Type-safe operations
+- Integrated retry logic
+- Better logging
+
+⚠️ **Availability:**
+- Depends on VSCode MCP configuration
+- Check: `mcp list | grep github` or verify in `.vscode/settings.json`
+- Fallback to `gh` CLI if unavailable
+
+📝 **Usage Pattern:**
+```bash
+# Check if MCP tools are available
+if mcp list 2>/dev/null | grep -q "github"; then
+  echo "✅ Using GitHub MCP tools"
+  # Use MCP-based workflow
+else
+  echo "⚠️ MCP tools not available, using gh CLI"
+  # Fallback to gh CLI
+fi
+```
+
+**When MCP tools should be preferred:**
+- AI assistant performing operations
+- Need audit trail of AI actions
+- Complex multi-step operations
+- Operations requiring validation
+
+**Fallback strategy:**
+- Always have `gh` CLI alternative
+- Document both approaches in scripts
+- Test fallback path regularly
 
 ---
 
@@ -359,10 +693,274 @@ Before writing a GitHub integration script, answer these questions:
 - [ ] Do I need rollback capability? (Yes → API)
 - [ ] Is this part of CI/CD? (Yes → API)
 - [ ] Do I need complex queries? (Yes → GraphQL API)
+- [ ] Have I tested with dry-run mode? (Required before bulk operations)
+- [ ] Have I implemented error handling? (Required for production)
+- [ ] Have I checked rate limits? (Required for bulk operations)
 
 **If 3+ answers point to API:** Use GitHub API  
 **If 3+ answers point to CLI:** Use `gh` CLI  
 **If mixed:** Start with CLI for prototyping, migrate to API if recurring
+
+---
+
+## Workflow Integration
+
+### Pre-commit Hook: Validate Issue References
+
+```bash
+#!/bin/bash
+# .git/hooks/commit-msg
+
+# Extract issue numbers from commit message
+COMMIT_MSG_FILE=$1
+ISSUES=$(grep -oE '#[0-9]+' "$COMMIT_MSG_FILE" | tr -d '#' | sort -u)
+
+if [ -z "$ISSUES" ]; then
+  # No issue references, allow commit
+  exit 0
+fi
+
+echo "🔍 Validating issue references..."
+
+INVALID=()
+for issue in $ISSUES; do
+  if ! gh issue view "$issue" &>/dev/null; then
+    INVALID+=("$issue")
+    echo "  ❌ Issue #$issue does not exist"
+  else
+    # Check if issue is closed
+    state=$(gh issue view "$issue" --json state -q .state)
+    if [ "$state" = "CLOSED" ]; then
+      echo "  ⚠️ Issue #$issue is closed"
+    else
+      echo "  ✅ Issue #$issue exists"
+    fi
+  fi
+done
+
+if [ ${#INVALID[@]} -gt 0 ]; then
+  echo ""
+  echo "❌ Commit references non-existent issues: ${INVALID[*]}"
+  echo "Please fix issue numbers or use 'git commit --no-verify' to bypass"
+  exit 1
+fi
+
+echo "✅ All issue references valid"
+exit 0
+```
+
+**Installation:**
+```bash
+cp .git/hooks/commit-msg.sample .git/hooks/commit-msg
+chmod +x .git/hooks/commit-msg
+# Edit to add validation logic above
+```
+
+### GitHub Actions: Auto-label PRs Based on Files
+
+```yaml
+# .github/workflows/auto-label-pr.yml
+name: Auto-label Pull Requests
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  auto-label:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Label based on changed files
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          
+          # Get changed files
+          CHANGED_FILES=$(gh pr diff $PR_NUMBER --name-only)
+          
+          # Security-related files
+          if echo "$CHANGED_FILES" | grep -qE '(security|auth|crypto|token)'; then
+            gh pr edit $PR_NUMBER --add-label "Security"
+            echo "✅ Added Security label"
+          fi
+          
+          # Documentation changes
+          if echo "$CHANGED_FILES" | grep -qE '\.(md|txt)$'; then
+            gh pr edit $PR_NUMBER --add-label "Documentation"
+            echo "✅ Added Documentation label"
+          fi
+          
+          # Test changes
+          if echo "$CHANGED_FILES" | grep -qE '(test|spec)\.(js|py)$'; then
+            gh pr edit $PR_NUMBER --add-label "Testing"
+            echo "✅ Added Testing label"
+          fi
+          
+          # Database migrations
+          if echo "$CHANGED_FILES" | grep -qE 'migrations/'; then
+            gh pr edit $PR_NUMBER --add-label "Database"
+            gh pr edit $PR_NUMBER --add-label "Requires Review"
+            echo "✅ Added Database + Requires Review labels"
+          fi
+```
+
+### GitHub Actions: Issue Hygiene Bot
+
+```yaml
+# .github/workflows/issue-hygiene.yml
+name: Issue Hygiene
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'  # Every Monday at 9 AM
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  hygiene:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    
+    steps:
+      - name: Check stale security issues
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Find security issues open > 30 days without "Verified" label
+          gh issue list \
+            --label "Security" \
+            --state open \
+            --json number,createdAt,labels \
+            --jq '.[] | select(
+              (.createdAt | fromdateiso8601) < (now - 2592000) and
+              ([.labels[].name] | contains(["Verified"]) | not)
+            ) | .number' | \
+          while read -r issue; do
+            gh issue comment "$issue" -b "⚠️ **Security Issue Hygiene**
+
+This security issue has been open for over 30 days without verification.
+
+**Required Actions:**
+- [ ] Add test evidence demonstrating the fix
+- [ ] Add \`Verified\` label once testing complete
+- [ ] Close issue if no longer relevant
+
+cc @security-team"
+            
+            gh issue edit "$issue" --add-label "Needs Verification"
+            echo "✅ Reminded on issue #$issue"
+          done
+      
+      - name: Check issues without priority
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Find open issues without Priority label
+          gh issue list \
+            --state open \
+            --json number,labels \
+            --jq '.[] | select(
+              [.labels[].name | startswith("Priority:")] | any | not
+            ) | .number' | \
+          while read -r issue; do
+            gh issue comment "$issue" -b "⚠️ This issue is missing a priority label.
+
+Please add one of:
+- \`Priority: High\` - Critical security or blocking issues
+- \`Priority: Medium\` - Important improvements
+- \`Priority: Low\` - Nice-to-have enhancements"
+            
+            echo "✅ Requested priority for issue #$issue"
+          done
+```
+
+### Issue Template with Required Labels
+
+```yaml
+# .github/ISSUE_TEMPLATE/security.yml
+name: Security Issue
+description: Report a security vulnerability or concern
+title: "[Security] "
+labels: ["Security", "Needs Triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Security Issue Report
+        Please provide details about the security concern.
+  
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How critical is this issue?
+      options:
+        - Critical (exploitable vulnerability)
+        - High (significant security risk)
+        - Medium (security improvement)
+        - Low (security hardening)
+    validations:
+      required: true
+  
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Detailed description of the security issue
+    validations:
+      required: true
+  
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Security Checklist
+      options:
+        - label: I have not publicly disclosed this issue
+          required: true
+        - label: This affects production systems
+          required: false
+```
+
+### Milestone Automation
+
+```bash
+#!/bin/bash
+# scripts/auto-milestone.sh
+# Auto-assign issues to milestones based on labels
+
+MILESTONE="Security Hardening - Q4 2025"
+
+# Find security issues without milestone
+gh issue list \
+  --label "Security" \
+  --label "Priority: High" \
+  --state open \
+  --json number,milestone \
+  --jq '.[] | select(.milestone == null) | .number' | \
+while read -r issue; do
+  # Check if milestone exists
+  if ! gh api "repos/:owner/:repo/milestones" --jq ".[].title" | grep -q "^$MILESTONE$"; then
+    echo "Creating milestone: $MILESTONE"
+    gh api "repos/:owner/:repo/milestones" -X POST \
+      -f title="$MILESTONE" \
+      -f description="Security improvements and vulnerability fixes"
+  fi
+  
+  # Assign to milestone
+  gh issue edit "$issue" --milestone "$MILESTONE"
+  echo "✅ Added #$issue to milestone: $MILESTONE"
+done
+```
 
 ---
 
