@@ -1,0 +1,208 @@
+name: Weekly Security Hygiene
+
+# Run every Monday at 9 AM Iceland time (UTC +0 in winter, +1 in summer)
+# Using UTC 9 AM = 9 AM GMT (close enough for Iceland)
+on:
+  schedule:
+    - cron: '0 9 * * 1'  # Every Monday at 9 AM UTC
+  workflow_dispatch:  # Allow manual trigger
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  security-audit:
+    runs-on: ubuntu-latest
+    name: Automated Security Checks
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Check critical security issues
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "🔐 Checking critical security issues..."
+          
+          # Find Critical security issues open > 48 hours
+          CRITICAL_ISSUES=$(gh issue list \
+            --label "Priority: Critical" \
+            --label "Security" \
+            --state open \
+            --json number,title,createdAt \
+            --jq '.[] | select(
+              (.createdAt | fromdateiso8601) < (now - 172800)
+            ) | .number')
+          
+          if [ -n "$CRITICAL_ISSUES" ]; then
+            echo "⚠️ Found critical security issues open >48 hours:"
+            echo "$CRITICAL_ISSUES" | while read -r issue; do
+              echo "  - Issue #$issue"
+              
+              gh issue comment "$issue" -b "⚠️ **Automated Security Alert**
+
+This critical security issue has been open for over 48 hours.
+
+**Required Actions:**
+- [ ] Immediate triage and assignment
+- [ ] Set timeline for resolution
+- [ ] Update stakeholders on status
+
+**Escalation:** Critical security issues should be resolved within 48 hours per security policy.
+
+---
+_Automated weekly security hygiene check_"
+            done
+          else
+            echo "✅ No critical security issues open >48 hours"
+          fi
+      
+      - name: Check blocked issues without explanation
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "🚧 Checking blocked issues..."
+          
+          # Find blocked issues without recent comments explaining blocker
+          BLOCKED_ISSUES=$(gh issue list \
+            --label "Blocked" \
+            --state open \
+            --json number,comments \
+            --jq '.[] | select(
+              .comments | length == 0
+            ) | .number')
+          
+          if [ -n "$BLOCKED_ISSUES" ]; then
+            echo "⚠️ Found blocked issues without explanation:"
+            echo "$BLOCKED_ISSUES" | while read -r issue; do
+              echo "  - Issue #$issue"
+              
+              gh issue comment "$issue" -b "⚠️ **Issue Hygiene Check**
+
+This issue is marked as \"Blocked\" but has no comments explaining what is blocking progress.
+
+**Please document:**
+- What dependency/decision/resource is blocking this?
+- Who can unblock it?
+- Expected timeline for unblocking?
+
+If no longer blocked, please remove the \"Blocked\" label.
+
+---
+_Automated weekly security hygiene check_"
+            done
+          else
+            echo "✅ All blocked issues have explanations"
+          fi
+      
+      - name: Check security issues without priority
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "📊 Checking security issues without priority..."
+          
+          # Find Security issues without Priority label
+          NO_PRIORITY=$(gh issue list \
+            --label "Security" \
+            --state open \
+            --json number,title,labels \
+            --jq '.[] | select(
+              [.labels[].name | select(startswith("Priority:"))] | length == 0
+            ) | .number')
+          
+          if [ -n "$NO_PRIORITY" ]; then
+            echo "⚠️ Found security issues without priority:"
+            echo "$NO_PRIORITY" | while read -r issue; do
+              echo "  - Issue #$issue"
+              
+              gh issue comment "$issue" -b "⚠️ **Missing Priority Label**
+
+This security issue is missing a priority label.
+
+**Please add one of:**
+- \`Priority: Critical\` - Exploitable vulnerability, must fix before production
+- \`Priority: High\` - Significant security risk, fix soon
+- \`Priority: Medium\` - Security improvement, should fix
+- \`Priority: Low\` - Security hardening, nice to have
+
+Without priority, this issue may be overlooked in triage.
+
+---
+_Automated weekly security hygiene check_"
+            done
+          else
+            echo "✅ All security issues have priority labels"
+          fi
+      
+      - name: Check closed security issues without verification
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "✔️ Checking closed security issues..."
+          
+          # Find closed Security issues without "Verified" label
+          # Only check issues closed in last 30 days
+          UNVERIFIED=$(gh issue list \
+            --label "Security" \
+            --state closed \
+            --json number,title,labels,closedAt \
+            --jq '.[] | select(
+              (.closedAt | fromdateiso8601) > (now - 2592000) and
+              ([.labels[].name] | contains(["Verified"]) | not)
+            ) | .number')
+          
+          if [ -n "$UNVERIFIED" ]; then
+            echo "⚠️ Found closed security issues without verification:"
+            echo "$UNVERIFIED" | while read -r issue; do
+              echo "  - Issue #$issue"
+              
+              gh issue comment "$issue" -b "⚠️ **Security Verification Missing**
+
+This security issue was closed but has not been verified with test evidence.
+
+**Required for security fixes:**
+- [ ] Add test demonstrating the fix
+- [ ] Verify in production (if deployed)
+- [ ] Add \`Verified\` label once confirmed
+
+**Documentation:**
+- Test evidence can be: automated test, manual test report, production logs
+- See: \`tests/security/\` for examples
+
+---
+_Automated weekly security hygiene check_"
+            done
+          else
+            echo "✅ All closed security issues are verified or recently closed"
+          fi
+      
+      - name: Summary report
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo ""
+          echo "=================================================="
+          echo "Weekly Security Hygiene Report"
+          echo "=================================================="
+          echo ""
+          
+          CRITICAL_COUNT=$(gh issue list --label "Priority: Critical" --label "Security" --state open --json number --jq 'length')
+          HIGH_COUNT=$(gh issue list --label "Priority: High" --label "Security" --state open --json number --jq 'length')
+          BLOCKED_COUNT=$(gh issue list --label "Blocked" --state open --json number --jq 'length')
+          
+          echo "📊 Security Issue Status:"
+          echo "  - Critical (open): $CRITICAL_COUNT"
+          echo "  - High (open): $HIGH_COUNT"
+          echo "  - Blocked: $BLOCKED_COUNT"
+          echo ""
+          
+          if [ "$CRITICAL_COUNT" -gt 0 ]; then
+            echo "⚠️ Action required: $CRITICAL_COUNT critical security issues"
+          else
+            echo "✅ No critical security issues"
+          fi
+          
+          echo ""
+          echo "Full report: https://github.com/${{ github.repository }}/issues?q=is:issue+label:Security"
