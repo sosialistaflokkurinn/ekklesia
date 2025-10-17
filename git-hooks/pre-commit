@@ -1,0 +1,147 @@
+#!/bin/bash
+# Pre-commit hook to prevent committing secrets
+# Installation: cp git-hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+
+set -e
+
+echo "🔍 Running Ekklesia pre-commit checks..."
+
+# --- 1. Check for political identity (existing check) ---
+echo "🏴 Checking political identity in staged files..."
+
+# Get list of staged files
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM)
+
+if [ -z "$STAGED_FILES" ]; then
+  echo "✅ No staged files to check"
+  exit 0
+fi
+
+# Check for Icelandic political identity mentions
+REQUIRED_PATTERNS=(
+  "Sósíalistaflokk"
+  "Socialist"
+)
+
+FOUND=false
+for file in $STAGED_FILES; do
+  if [ -f "$file" ]; then
+    for pattern in "${REQUIRED_PATTERNS[@]}"; do
+      if grep -qi "$pattern" "$file" 2>/dev/null; then
+        FOUND=true
+        break 2
+      fi
+    done
+  fi
+done
+
+if [ "$FOUND" = false ]; then
+  # Check if this is just a config/test file change
+  if ! echo "$STAGED_FILES" | grep -qE '\.(json|ya?ml|txt|md)$'; then
+    echo "⚠️ Warning: No political identity found in code files"
+    echo "   This is OK for internal/infrastructure code"
+  fi
+fi
+
+echo "✅ Pre-commit checks passed"
+
+# --- 2. Check for exposed secrets (NEW) ---
+echo "🔐 Scanning for exposed secrets..."
+
+# Patterns that might indicate secrets
+SECRET_PATTERNS=(
+  # Database passwords
+  'password.*=.*[A-Za-z0-9+/]{20,}'
+  'PASSWORD.*=.*[A-Za-z0-9+/]{20,}'
+  'PGPASSWORD.*=.*[A-Za-z0-9+/]{20,}'
+  'DB_PASS.*=.*[A-Za-z0-9+/]{20,}'
+  
+  # API keys
+  'api[_-]?key.*=.*[A-Za-z0-9+/]{20,}'
+  'API[_-]?KEY.*=.*[A-Za-z0-9+/]{20,}'
+  'secret[_-]?key.*=.*[A-Za-z0-9+/]{20,}'
+  
+  # GCP credentials
+  'private_key.*BEGIN.*PRIVATE.*KEY'
+  'credentials.*{.*private_key'
+  
+  # Generic secrets
+  'token.*=.*[A-Za-z0-9+/]{32,}'
+  'secret.*=.*[A-Za-z0-9+/]{32,}'
+  
+  # Connection strings with passwords
+  'postgres://.*:[^@]*@'
+  'mysql://.*:[^@]*@'
+)
+
+# Files to exclude from secret scanning
+EXCLUDE_PATTERNS=(
+  '\.md$'          # Markdown documentation
+  '\.txt$'         # Text files (may contain examples)
+  'test.*\.py$'    # Test files
+  'test.*\.js$'    # Test files
+  '\.json$'        # JSON config (usually env var references)
+  '\.ya?ml$'       # YAML config (usually env var references)
+  'package-lock'   # Dependency lock files
+  'requirements'   # Python requirements
+)
+
+SECRETS_FOUND=false
+
+for file in $STAGED_FILES; do
+  # Skip excluded files
+  SKIP=false
+  for exclude in "${EXCLUDE_PATTERNS[@]}"; do
+    if echo "$file" | grep -qE "$exclude"; then
+      SKIP=true
+      break
+    fi
+  done
+  
+  if [ "$SKIP" = true ]; then
+    continue
+  fi
+  
+  # Check if file exists (might be deleted)
+  if [ ! -f "$file" ]; then
+    continue
+  fi
+  
+  # Scan for secret patterns
+  for pattern in "${SECRET_PATTERNS[@]}"; do
+    if grep -EHn "$pattern" "$file" 2>/dev/null; then
+      SECRETS_FOUND=true
+      echo ""
+      echo "⚠️ Potential secret detected in: $file"
+      echo "   Pattern: $pattern"
+    fi
+  done
+done
+
+if [ "$SECRETS_FOUND" = true ]; then
+  echo ""
+  echo "❌ Commit blocked: Potential secrets detected!"
+  echo ""
+  echo "Please review the matched lines above."
+  echo ""
+  echo "If these are NOT secrets:"
+  echo "  - Move to environment variables (Secret Manager)"
+  echo "  - Use placeholder values in examples"
+  echo "  - Document in comments why this is safe"
+  echo ""
+  echo "If you're SURE these are safe:"
+  echo "  git commit --no-verify"
+  echo ""
+  echo "Related: Issue #48 (database password exposure incident)"
+  exit 1
+fi
+
+echo "✅ No secrets detected in staged files"
+
+# --- 3. Check commit message for political identity ---
+echo "🏴 Checking commit message for political identity..."
+
+# This check runs in commit-msg hook, but we can prepare for it
+# (commit-msg hook will run after this pre-commit hook)
+
+exit 0
