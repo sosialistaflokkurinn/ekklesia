@@ -469,38 +469,43 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
 
         log_json("info", "Created custom token", uid=auth_uid, correlationId=correlation_id)
         origin = _get_allowed_origin(req.headers.get('Origin'))
+        # Ensure token-bearing responses are not cached by browsers or intermediaries
+        headers = {**_cors_headers_for_origin(origin), 'X-Correlation-ID': correlation_id, 'Cache-Control': 'no-store, no-cache, must-revalidate, private, max-age=0'}
         return https_fn.Response(
             json.dumps(response_data),
             status=200,
             mimetype="application/json",
-            headers={**_cors_headers_for_origin(origin), 'X-Correlation-ID': correlation_id},
+            headers=headers,
         )
 
     except requests.exceptions.HTTPError as e:
         body = e.response.text if getattr(e, 'response', None) else 'No response'
         log_json("error", "HTTP error during token exchange", error=str(e), responseBody=sanitize_fields({'body': body})['body'], correlationId=correlation_id)
-        origin = _get_allowed_origin(req.headers.get('Origin'))
-        return https_fn.Response(json.dumps({"error": "TOKEN_EXCHANGE_FAILED", "message": "Token exchange failed", "correlationId": correlation_id}),
-                                  status=502,
-                                  mimetype="application/json",
-                                  headers={**_cors_headers_for_origin(origin), 'X-Correlation-ID': correlation_id})
+    origin = _get_allowed_origin(req.headers.get('Origin'))
+    headers = {**_cors_headers_for_origin(origin), 'X-Correlation-ID': correlation_id, 'Cache-Control': 'no-store, no-cache, must-revalidate, private, max-age=0'}
+    return https_fn.Response(json.dumps({"error": "TOKEN_EXCHANGE_FAILED", "message": "Token exchange failed", "correlationId": correlation_id}),
+                  status=502,
+                  mimetype="application/json",
+                  headers=headers)
     except Exception as e:
         # Detect configuration error and surface missing env vars explicitly
         msg = str(e)
         if msg.startswith("Missing environment variables:"):
             log_json("error", "Configuration error in handleKenniAuth", error=msg, correlationId=correlation_id)
             origin = _get_allowed_origin(req.headers.get('Origin'))
+            headers = {**_cors_headers_for_origin(origin), 'X-Correlation-ID': correlation_id, 'Cache-Control': 'no-store, no-cache, must-revalidate, private, max-age=0'}
             return https_fn.Response(json.dumps({
                 "error": "CONFIG_MISSING",
                 "message": msg,
                 "correlationId": correlation_id
-            }), status=500, mimetype="application/json", headers={**_cors_headers_for_origin(origin), 'X-Correlation-ID': correlation_id})
+            }), status=500, mimetype="application/json", headers=headers)
         log_json("error", "Unhandled error in handleKenniAuth", error=str(e), correlationId=correlation_id)
-        origin = _get_allowed_origin(req.headers.get('Origin'))
-        return https_fn.Response(json.dumps({"error": "INTERNAL", "message": "An internal error occurred", "correlationId": correlation_id}),
-                                  status=500,
-                                  mimetype="application/json",
-                                  headers={**_cors_headers_for_origin(origin), 'X-Correlation-ID': correlation_id})
+    origin = _get_allowed_origin(req.headers.get('Origin'))
+    headers = {**_cors_headers_for_origin(origin), 'X-Correlation-ID': correlation_id, 'Cache-Control': 'no-store, no-cache, must-revalidate, private, max-age=0'}
+    return https_fn.Response(json.dumps({"error": "INTERNAL", "message": "An internal error occurred", "correlationId": correlation_id}),
+                  status=500,
+                  mimetype="application/json",
+                  headers=headers)
 
 
 @https_fn.on_call()
