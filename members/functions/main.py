@@ -477,6 +477,14 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
         if phone_number:
             custom_claims['phoneNumber'] = phone_number
 
+        # Persist merged claims back to Firebase Auth (ensures roles survive future logins)
+        try:
+            auth.set_custom_user_claims(auth_uid, custom_claims)
+            log_json("debug", "Persisted custom claims to Firebase Auth", uid=auth_uid, claims=sanitize_fields(custom_claims))
+        except Exception as e:
+            log_json("error", "Failed to persist custom claims to Firebase Auth", error=str(e), uid=auth_uid)
+            # Continue anyway - custom token will still work for this session
+
         log_json("debug", "Creating custom token with claims", uid=auth_uid, claims=sanitize_fields(custom_claims))
         custom_token = auth.create_custom_token(auth_uid, developer_claims=custom_claims)
 
