@@ -97,7 +97,7 @@ app.listen(PORT, () => {
   console.log(`Health check: http://localhost:${PORT}/health`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`Firebase Project: ${process.env.FIREBASE_PROJECT_ID || 'ekklesia-prod-10-2025'}`);
-  console.log(`Database: ${process.env.DATABASE_HOST || '34.147.159.80'}:${process.env.DATABASE_PORT || '5432'}`);
+  console.log(`Database: ${process.env.DATABASE_HOST || '127.0.0.1'}:${process.env.DATABASE_PORT || '5433'}`);
   console.log('='.repeat(50));
   console.log('API Endpoints:');
   console.log('  GET  /api/election       - Get current election');
