@@ -56,7 +56,21 @@ gcloud run deploy ${SERVICE_NAME} \
   --concurrency 50 \
   --port 8081 \
   --add-cloudsql-instances ekklesia-prod-10-2025:europe-west2:ekklesia-db \
-  --set-env-vars "NODE_ENV=production,DATABASE_HOST=/cloudsql/ekklesia-prod-10-2025:europe-west2:ekklesia-db,DATABASE_PORT=5432,DATABASE_NAME=postgres,DATABASE_USER=postgres,DATABASE_PASSWORD=${DB_PASSWORD},DATABASE_POOL_MIN=2,DATABASE_POOL_MAX=5,DATABASE_POOL_IDLE_TIMEOUT=30000,DATABASE_POOL_CONNECTION_TIMEOUT=2000,S2S_API_KEY=${S2S_API_KEY},CORS_ORIGINS=https://ekklesia-prod-10-2025.web.app,https://ekklesia-prod-10-2025.firebaseapp.com,LOG_LEVEL=info,ELECTION_TITLE=Prófunarkosning 2025,ELECTION_QUESTION=Do you support this proposal?"
+  --set-env-vars "NODE_ENV=production" \
+  --set-env-vars "DATABASE_HOST=/cloudsql/ekklesia-prod-10-2025:europe-west2:ekklesia-db" \
+  --set-env-vars "DATABASE_PORT=5432" \
+  --set-env-vars "DATABASE_NAME=postgres" \
+  --set-env-vars "DATABASE_USER=postgres" \
+  --set-env-vars "DATABASE_PASSWORD=${DB_PASSWORD}" \
+  --set-env-vars "DATABASE_POOL_MIN=2" \
+  --set-env-vars "DATABASE_POOL_MAX=5" \
+  --set-env-vars "DATABASE_POOL_IDLE_TIMEOUT=30000" \
+  --set-env-vars "DATABASE_POOL_CONNECTION_TIMEOUT=2000" \
+  --set-env-vars "S2S_API_KEY=${S2S_API_KEY}" \
+  --update-env-vars "CORS_ORIGINS=https://ekklesia-prod-10-2025.web.app^https://ekklesia-prod-10-2025.firebaseapp.com" \
+  --set-env-vars "LOG_LEVEL=info" \
+  --set-env-vars "ELECTION_TITLE=Prófunarkosning 2025" \
+  --set-env-vars "ELECTION_QUESTION=Do you support this proposal?"
 
 # Get service URL
 SERVICE_URL=$(gcloud run services describe ${SERVICE_NAME} \
