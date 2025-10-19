@@ -28,15 +28,31 @@ if not firebase_admin._apps:
 options.set_global_options(region="europe-west2")
 
 # --- CONSTANTS ---
+DEFAULT_ALLOWED_ORIGINS = [
+    'https://ekklesia-prod-10-2025.web.app',
+    'https://ekklesia-prod-10-2025.firebaseapp.com',
+    'http://localhost:3000'
+]
+
+
+def _parse_allowed_origins() -> list[str]:
+    allowlist_env = os.getenv('CORS_ALLOWED_ORIGINS', '').strip()
+    if not allowlist_env:
+        return DEFAULT_ALLOWED_ORIGINS
+    if allowlist_env == '*':
+        return ['*']
+    allowed = [origin.strip() for origin in allowlist_env.split(',') if origin.strip()]
+    return allowed if allowed else DEFAULT_ALLOWED_ORIGINS
+
+
 def _get_allowed_origin(req_origin: Optional[str]) -> str:
-    allowlist = os.getenv('CORS_ALLOWED_ORIGINS', '*')
-    if allowlist == '*':
+    allowed = _parse_allowed_origins()
+    if '*' in allowed:
         return '*'
-    allowed = [o.strip() for o in allowlist.split(',') if o.strip()]
     if req_origin and req_origin in allowed:
         return req_origin
-    # Default to first allowed origin for preflight when origin is absent
-    return allowed[0] if allowed else '*'
+    # Default to first allowed origin for preflight when origin is absent or not allowed
+    return allowed[0]
 
 
 def _cors_headers_for_origin(origin: str) -> dict:
@@ -481,31 +497,38 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
     except requests.exceptions.HTTPError as e:
         body = e.response.text if getattr(e, 'response', None) else 'No response'
         log_json("error", "HTTP error during token exchange", error=str(e), responseBody=sanitize_fields({'body': body})['body'], correlationId=correlation_id)
-    origin = _get_allowed_origin(req.headers.get('Origin'))
-    headers = {**_cors_headers_for_origin(origin), 'X-Correlation-ID': correlation_id, 'Cache-Control': 'no-store, no-cache, must-revalidate, private, max-age=0'}
-    return https_fn.Response(json.dumps({"error": "TOKEN_EXCHANGE_FAILED", "message": "Token exchange failed", "correlationId": correlation_id}),
-                  status=502,
-                  mimetype="application/json",
-                  headers=headers)
+        origin = _get_allowed_origin(req.headers.get('Origin'))
+        headers = {**_cors_headers_for_origin(origin), 'X-Correlation-ID': correlation_id, 'Cache-Control': 'no-store, no-cache, must-revalidate, private, max-age=0'}
+        return https_fn.Response(
+            json.dumps({"error": "TOKEN_EXCHANGE_FAILED", "message": "Token exchange failed", "correlationId": correlation_id}),
+            status=502,
+            mimetype="application/json",
+            headers=headers
+        )
     except Exception as e:
         # Detect configuration error and surface missing env vars explicitly
         msg = str(e)
+        origin = _get_allowed_origin(req.headers.get('Origin'))
+        headers = {**_cors_headers_for_origin(origin), 'X-Correlation-ID': correlation_id, 'Cache-Control': 'no-store, no-cache, must-revalidate, private, max-age=0'}
         if msg.startswith("Missing environment variables:"):
             log_json("error", "Configuration error in handleKenniAuth", error=msg, correlationId=correlation_id)
-            origin = _get_allowed_origin(req.headers.get('Origin'))
-            headers = {**_cors_headers_for_origin(origin), 'X-Correlation-ID': correlation_id, 'Cache-Control': 'no-store, no-cache, must-revalidate, private, max-age=0'}
-            return https_fn.Response(json.dumps({
-                "error": "CONFIG_MISSING",
-                "message": msg,
-                "correlationId": correlation_id
-            }), status=500, mimetype="application/json", headers=headers)
+            return https_fn.Response(
+                json.dumps({
+                    "error": "CONFIG_MISSING",
+                    "message": msg,
+                    "correlationId": correlation_id
+                }),
+                status=500,
+                mimetype="application/json",
+                headers=headers
+            )
         log_json("error", "Unhandled error in handleKenniAuth", error=str(e), correlationId=correlation_id)
-    origin = _get_allowed_origin(req.headers.get('Origin'))
-    headers = {**_cors_headers_for_origin(origin), 'X-Correlation-ID': correlation_id, 'Cache-Control': 'no-store, no-cache, must-revalidate, private, max-age=0'}
-    return https_fn.Response(json.dumps({"error": "INTERNAL", "message": "An internal error occurred", "correlationId": correlation_id}),
-                  status=500,
-                  mimetype="application/json",
-                  headers=headers)
+        return https_fn.Response(
+            json.dumps({"error": "INTERNAL", "message": "An internal error occurred", "correlationId": correlation_id}),
+            status=500,
+            mimetype="application/json",
+            headers=headers
+        )
 
 
 @https_fn.on_call()

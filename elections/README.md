@@ -40,20 +40,22 @@ npm install
 # 2. Start Cloud SQL Proxy (in separate terminal)
 ~/bin/cloud-sql-proxy ekklesia-prod-10-2025:europe-west2:ekklesia-db --port 5433
 
-# 3. Get database password
+# 3. (Optional) Export database password manually
 export DB_PASSWORD=$(gcloud secrets versions access latest \
   --secret=postgres-password \
   --project=ekklesia-prod-10-2025)
 
-# 4. Run database migrations
-export PGPASSWORD=$DB_PASSWORD
-psql -h 127.0.0.1 -p 5433 -U postgres -d postgres \
-  -f migrations/001_initial_schema.sql
+# 4. Run database migrations (helper script fetches password + uses proxy)
+./scripts/psql-cloud.sh -f migrations/001_initial_schema.sql
+```
 
+> ℹ️ `scripts/psql-cloud.sh` automatically retrieves the password from Secret Manager and connects through the proxy. If you must hit the public IP directly, add `sslmode=require` because the instance now enforces TLS.
+
+```bash
 # 5. Create .env file
 cp .env.example .env
 # Edit .env and add:
-#   DATABASE_PASSWORD=<from step 3>
+#   DATABASE_PASSWORD=<from step 3 or Secret Manager>
 #   S2S_API_KEY=<generate with: openssl rand -hex 32>
 
 # 6. Start server

@@ -212,6 +212,10 @@ Secret Manager:
 kenni-client-secret
 ```
 
+**CORS**:
+
+- `CORS_ALLOWED_ORIGINS`: Comma-separated list of allowed origins for Cloud Functions responses. Defaults to `https://ekklesia-prod-10-2025.web.app, https://ekklesia-prod-10-2025.firebaseapp.com, http://localhost:3000` to align with Firebase Hosting and local tooling.
+
 ### Firebase Configuration
 
 - **Project**: ekklesia-prod-10-2025
