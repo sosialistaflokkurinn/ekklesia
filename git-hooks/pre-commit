@@ -56,18 +56,25 @@ SECRET_PATTERNS=(
   'PGPASSWORD.*=.*[A-Za-z0-9+/]{20,}'
   'DB_PASS.*=.*[A-Za-z0-9+/]{20,}'
   
-  # API keys
-  'api[_-]?key.*=.*[A-Za-z0-9+/]{20,}'
-  'API[_-]?KEY.*=.*[A-Za-z0-9+/]{20,}'
-  'secret[_-]?key.*=.*[A-Za-z0-9+/]{20,}'
+  # API keys and tokens (including Cloudflare)
+  'api[_-]?key.*=.*[A-Za-z0-9_-]{20,}'
+  'API[_-]?KEY.*=.*[A-Za-z0-9_-]{20,}'
+  'secret[_-]?key.*=.*[A-Za-z0-9_-]{20,}'
+  'CF_API_TOKEN.*=.*[A-Za-z0-9_-]{20,}'
+  'CLOUDFLARE.*TOKEN.*=.*[A-Za-z0-9_-]{20,}'
   
   # GCP credentials
   'private_key.*BEGIN.*PRIVATE.*KEY'
   'credentials.*{.*private_key'
   
-  # Generic secrets
-  'token.*=.*[A-Za-z0-9+/]{32,}'
-  'secret.*=.*[A-Za-z0-9+/]{32,}'
+  # Generic secrets and tokens
+  'token.*=.*[A-Za-z0-9_-]{32,}'
+  'secret.*=.*[A-Za-z0-9_-]{32,}'
+  'TOKEN.*=.*[A-Za-z0-9_-]{32,}'
+  
+  # Cloudflare Zone IDs (32 char hex)
+  'CF_ZONE_ID.*=.*[a-f0-9]{32}'
+  'ZONE_ID.*=.*[a-f0-9]{32}'
   
   # Connection strings with passwords
   'postgres://.*:[^@]*@'
