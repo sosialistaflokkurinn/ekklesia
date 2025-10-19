@@ -9,6 +9,85 @@ This guide documents best practices for managing GitHub issues and labels in the
 
 ---
 
+## Issue Metadata Checklist (Required)
+
+Always complete the sidebar metadata in GitHub when creating or triaging an issue so downstream automations, dashboards, and audits stay accurate.
+
+1. Assign a clear owner. Use `Assign to Copilot` when an agent is expected to execute the work; otherwise pick the responsible engineer.
+2. Set the `Type` field (Bug, Task, Epic, Story, etc.), apply the core labels for domain/security, and add exactly one `Priority:` label so the issue lands in the right queues.
+3. Add the issue to the `Kosningakerfi Sósíalistaflokksins` project and choose the correct status column (`Backlog`, `Ready`, `In progress`, `In review`, `Done`).
+4. Set the active milestone (e.g. `Phase 6: Functions Security Hardening`) so phase burndown reports remain accurate; update this when phases rotate.
+5. Link relationships (`blocks`, `blocked by`, `relates to`) to capture dependencies, especially for cross-service security hardening items.
+6. Under `Development`, select the appropriate mode (`Code with agent mode` for AI-led fixes, otherwise create or link the working branch) before work starts.
+
+### Managing Required Metadata (CLI Cheatsheet)
+
+These examples assume the repository is `sosialistaflokkurinn/ekklesia`. Adjust IDs as needed.
+
+**Type**
+- List available issue types to capture the node IDs:
+
+```bash
+gh api graphql -f query='query { repository(owner:"sosialistaflokkurinn", name:"ekklesia") { issueTypes(first:10) { nodes { id name } } } }'
+```
+
+- Look up an issue node ID (replace `50` with the issue number you are updating):
+
+```bash
+gh api graphql -f query='query { repository(owner:"sosialistaflokkurinn", name:"ekklesia") { issue(number: 50) { id } } }'
+```
+
+- Set the type programmatically (example sets the issue to `Task`):
+
+```bash
+gh api graphql -f query='mutation { updateIssueIssueType(input: { issueId: "ISSUE_NODE_ID", issueTypeId: "TASK_TYPE_ID" }) { issue { number issueType { name } } } }'
+```
+
+**Projects and Status**
+- Add an issue to the Phase 6 board:
+
+```bash
+gh project item-add 1 --owner sosialistaflokkurinn --url https://github.com/sosialistaflokkurinn/ekklesia/issues/50
+```
+
+- Retrieve the project item ID so status/priority can be updated:
+
+```bash
+gh project item-list 1 --owner sosialistaflokkurinn --limit 200 --format json \
+  | jq '.items[] | select(.content.number==50) | .id'
+```
+
+- Apply status/priority using the GraphQL field IDs (`PVTSSF_lADOAiQNe84BC_tuzg1C03s` for status, `PVTSSF_lADOAiQNe84BC_tuzg1C1F8` for priority). Example marks an item `Done` with priority `P1`:
+
+```bash
+ITEM_ID="<project-item-id>"
+gh api graphql -f query='mutation { updateProjectV2ItemFieldValue(input: { projectId: "PVT_kwDOAiQNe84BC_tu", itemId: "'"$ITEM_ID"'", fieldId: "PVTSSF_lADOAiQNe84BC_tuzg1C03s", value: { singleSelectOptionId: "98236657" } }) { projectV2Item { id } } }'
+gh api graphql -f query='mutation { updateProjectV2ItemFieldValue(input: { projectId: "PVT_kwDOAiQNe84BC_tu", itemId: "'"$ITEM_ID"'", fieldId: "PVTSSF_lADOAiQNe84BC_tuzg1C1F8", value: { singleSelectOptionId: "0a877460" } }) { projectV2Item { id } } }'
+```
+
+**Milestone**
+- Use the CLI to set or change milestones without opening the browser:
+
+```bash
+gh issue edit 50 --milestone "Phase 6: Functions Security Hardening"
+```
+
+**Relationships**
+- Convert an issue into a sub-issue so the sidebar shows `Parent` automatically:
+
+```bash
+PARENT_ID=$(gh api graphql -f query='query { repository(owner:"sosialistaflokkurinn", name:"ekklesia") { issue(number: 86) { id } } }' --jq '.data.repository.issue.id')
+CHILD_ID=$(gh api graphql -f query='query { repository(owner:"sosialistaflokkurinn", name:"ekklesia") { issue(number: 50) { id } } }' --jq '.data.repository.issue.id')
+gh api graphql -f query='mutation { addSubIssue(input: { issueId: "'"$PARENT_ID"'", subIssueId: "'"$CHILD_ID"'" }) { issue { number } subIssue { number } } }'
+```
+
+- Detach a sub-issue if it no longer belongs under the parent:
+
+```bash
+gh api graphql -f query='mutation { removeSubIssue(input: { issueId: "'"$PARENT_ID"'", subIssueId: "'"$CHILD_ID"'" }) { issue { number } } }'
+```
+
+
 ## Tools Comparison: `gh issue` vs `gh api` vs **MCP Tools**
 
 ### 🤖 When to Use GitHub MCP Tools (Preferred)
