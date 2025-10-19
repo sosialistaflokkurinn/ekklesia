@@ -432,19 +432,23 @@ async function submitVote(token, answer) {
 - ✅ Removed password from file (commit 80b6009)
 - ✅ Updated usage instructions to use Secret Manager
 - ✅ Created Issue #48 for password rotation
+- ✅ Rotated database password in Secret Manager (version 5, 2025-10-19)
+- ✅ Updated Cloud SQL user password
+- ✅ Restarted Cloud Run services (events-service-00011-7rw, elections-service-00010-lzw)
+- ✅ Verified services healthy with new credentials
 
-**Immediate Requirements**:
-1. **Rotate database password** (before merging PR#29)
-2. **Update Secret Manager** with new password
-3. **Restart Cloud Run services** (pick up new password)
-4. **Verify services healthy** with new credentials
+**Password Rotation Details** (completed 2025-10-19):
+1. ✅ **Rotated database password** - Secret Manager version 5 created at 2025-10-19T01:53:15
+2. ✅ **Updated Secret Manager** - Old password: `Ab6/l...` → New password: `ZmUmD...`
+3. ✅ **Restarted Cloud Run services** - Both services deployed with latest secret version
+4. ✅ **Verified services healthy** - Both `/health` endpoints returning 200 OK
 
 **Related Issue**: [#48 - CRITICAL: Rotate database password (exposed in git history)](https://github.com/sosialistaflokkurinn/ekklesia/issues/48)
 
 **Status**:
 - File fix: ✅ Complete (commit 80b6009)
-- Password rotation: ⏳ **REQUIRED BEFORE MERGE**
-- Priority: 🔴 **CRITICAL - Must complete before merging to main**
+- Password rotation: ✅ **COMPLETE** (2025-10-19)
+- Priority: ✅ **RESOLVED - No longer blocks merge**
 
 ---
 
@@ -459,12 +463,12 @@ async function submitVote(token, answer) {
 ---
 
 **Index Created**: 2025-10-15
-**Index Updated**: 2025-10-15 (all responses added)
+**Index Updated**: 2025-10-19 (password rotation completed)
 **PR Status**: Open (awaiting review approval)
 **Review Completion**: ✅ 100% (11/11 comments answered)
-**Implementation Status**: 50% already complete, 2 high-priority items + 1 CRITICAL security fix before production
+**Implementation Status**: 50% already complete, 2 high-priority items remaining
 
-**⚠️ MERGE BLOCKER**: Issue #48 (database password rotation) MUST be completed before merging to main
+**✅ MERGE BLOCKER RESOLVED**: Issue #48 (database password rotation) completed on 2025-10-19
 
 ---
 
@@ -496,9 +500,32 @@ async function submitVote(token, answer) {
 - Issue #45: Token idempotency ✅
 - Issue #46: Queue architecture ✅
 - Issue #47: Stronger S2S auth ✅
-- Issue #48: Password rotation ✅ (merge blocker)
+- Issue #48: Password rotation ✅ (completed 2025-10-19)
 
 **Full Report**: [PR29_AUDIT_REPORT.md](PR29_AUDIT_REPORT.md)
 
 **Audit Duration**: ~15 minutes
 **Response Accuracy**: ✅ 100% (11/11 verified accurate)
+
+---
+
+### 2025-10-19: Password Rotation Completed
+
+**Action**: Database password rotation for security issue #48
+
+**Method**: Automated rotation via Secret Manager + Cloud Run service restart
+
+**Results**:
+- ✅ **Secret Manager**: Password rotated to version 5 (2025-10-19T01:53:15)
+- ✅ **Cloud SQL**: User password updated successfully
+- ✅ **Cloud Run Services**: Both services restarted with new credentials
+  - events-service: revision 00011-7rw (2025-10-19T02:01:24)
+  - elections-service: revision 00010-lzw (2025-10-19T02:03:09)
+- ✅ **Health Verification**: Both services responding 200 OK on /health endpoints
+- ✅ **Merge Blocker**: Resolved - PR#29 no longer blocked by security issue
+
+**Security Impact**:
+- Old password (exposed in git history): `***REMOVED***`
+- New password: Secured in Secret Manager (not visible in git history)
+- Database access with old credentials: Now disabled
+- Production security posture: Restored ✅
