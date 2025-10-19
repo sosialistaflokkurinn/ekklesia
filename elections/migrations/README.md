@@ -47,7 +47,7 @@ psql -h 34.147.159.80 -U postgres -d postgres \
 
 ### 001_initial_schema.sql
 
-**Status**: ✅ Ready
+**Status**: ✅ Applied
 **Created**: 2025-10-09
 **Purpose**: Initial Elections service schema
 
@@ -63,6 +63,26 @@ psql -h 34.147.159.80 -U postgres -d postgres \
 - Foreign key to ensure token exists before ballot
 - Timestamp rounding (nearest minute for anonymity)
 - Indexes for performance (used flag, answer counts)
+
+### 002_elections_table.sql
+
+**Status**: ✅ Ready
+**Created**: 2025-10-19
+**Purpose**: Election metadata and lifecycle management for admin endpoints
+
+**Tables**:
+- `elections.elections` - Election metadata, configuration, and lifecycle status
+
+**Key Features**:
+- Election lifecycle management (draft → published → paused → closed → archived)
+- Soft delete support for drafts (deleted status)
+- JSONB answers array (flexible answer options, min 2 required)
+- Audit fields (created_by, created_at, updated_at)
+- Lifecycle timestamps (published_at, closed_at, archived_at, deleted_at)
+- Auto-updating updated_at trigger
+- Comprehensive indexes for status queries, creator lookup, chronological ordering
+- Status validation CHECK constraint
+- RBAC integration (created_by stores Firebase UID)
 
 ---
 
@@ -81,10 +101,11 @@ WHERE schema_name = 'elections';
 ```sql
 SELECT table_name
 FROM information_schema.tables
-WHERE table_schema = 'elections';
+WHERE table_schema = 'elections'
+ORDER BY table_name;
 ```
 
-**Expected**: `voting_tokens`, `ballots`, `audit_log`
+**Expected**: `audit_log`, `ballots`, `elections`, `voting_tokens`
 
 ### Check Indexes
 
