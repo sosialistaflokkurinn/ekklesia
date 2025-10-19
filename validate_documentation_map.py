@@ -190,7 +190,10 @@ def main() -> None:
     print(f"Map file: {map_path}")
     print(f"Referenced paths found: {len(referenced_paths)}")
 
+    has_errors = False
+
     if missing:
+        has_errors = True
         print("\nMissing files referenced in the map:")
         for path in missing:
             if suggestion := suggestions.get(path):
@@ -201,11 +204,16 @@ def main() -> None:
         print("\nAll referenced files were found.")
 
     if unlisted:
+        has_errors = True
         print("\nDocumentation files not referenced in the map:")
         for path in unlisted:
             print(f"  - {path}")
     else:
         print("\nNo unlisted documentation files detected in the scanned directories.")
+
+    if has_errors:
+        # Signal failure so CI or hooks can block merges until the map is updated.
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

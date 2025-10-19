@@ -188,7 +188,7 @@ ekklesia/
 │   │   └── README.md                           📖 Status docs guide
 │   │       • Full history archived at `archive/docs/docs-2025-10-13/docs/status/`
 │   │
-│   ├── security/                     � Security runbooks & research
+│   ├── security/                     🔐 Security runbooks & research
 │   │   ├── CREDENTIAL_MIGRATION_PLAN.md        Credentials migration strategy
 │   │   └── FIREBASE_APP_CHECK_RESEARCH.md      📚 Comprehensive research paper (67K, 62 pages)
 │   │       • All other security docs archived at `archive/research/security/`
@@ -368,11 +368,11 @@ ekklesia/
 | `docs/prompts/BRANCH_DIFF_DOCUMENTATION_AUDIT.md` | Checklist prompt for auditing documentation changes in PR diffs | ✅ Current (Oct 15) |
 | `docs/prompts/COMPARE_FIREBASE_TO_SECURITY_BRANCHES.md` | Branch comparison workflow for firebase-auth → security-hardening review | ✅ Current (Oct 15) |
 
-### �📝 Future Plans
+### 📝 Future Plans
 
 | Document | Purpose | Status | Estimated Effort |
 |----------|---------|--------|------------------|
-| `archive/docs/docs-2025-10-13/docs/plans/GOOGLE_AUTH_LINKING_PLAN.md` | Migrate to Google login after Kenni.is | � Archived snapshot (Oct 13) | 2-3 days |
+| `archive/docs/docs-2025-10-13/docs/plans/GOOGLE_AUTH_LINKING_PLAN.md` | Migrate to Google login after Kenni.is | 📦 Archived snapshot (Oct 13) | 2-3 days |
 
 ### 📦 Archived Documentation
 
@@ -387,7 +387,7 @@ ekklesia/
  - `archive/docs/docs-2025-10-13/docs/status/DEBUGGING_2025-10-13_CORS_AND_TOKEN_ERRORS.md` - Debug session log (CORS & tokens)
  - `archive/docs/docs-2025-10-13/docs/status/CLOUDFLARE_SETUP_PLAN.md` - Cloudflare setup plan
 
-**ZITADEL-era documents** (deprecated Oct 6-/home/gudro/Development/projects/ekklesia/validate_documentation_map.py7, 2025):
+**ZITADEL-era documents** (deprecated Oct 6-7, 2025):
 - `archive/docs/docs-2025-10-13/legacy-docs-2025-10-03/TECHNICAL_SOLUTION.md` - ZITADEL architecture
 - `archive/docs/docs-2025-10-13/legacy-docs-2025-10-03/HYBRID_ARCHITECTURE.md` - OIDC Bridge design
 - `archive/docs/docs-2025-10-13/legacy-docs-2025-10-03/GCP_MIGRATION_PLAN.md` - Original GCP migration plan
@@ -409,7 +409,7 @@ ekklesia/
 | `docs/reviews/PR28_AUDIT_REPORT.md` | Post-merge audit report for PR #28 | ✅ Current |
 | `docs/reviews/PR29_AUDIT_REPORT.md` | Post-merge audit report for PR #29 | ✅ Current |
 
-**Note**: Individual review responses are st/home/gudro/Development/projects/ekklesia/validate_documentation_map.pyored locally in `/tmp/batch*_response_*.md` during review campaigns.
+**Note**: Individual review responses are stored locally in `/tmp/batch*_response_*.md` during review campaigns.
 
 ### 🔗 Integration Documentation
 
