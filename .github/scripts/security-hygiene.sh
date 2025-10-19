@@ -168,4 +168,6 @@ else
 fi
 
 echo ""
-echo "Full report: https://github.com/${GITHUB_REPOSITORY}/issues?q=is:issue+label:Security"
+if [ -n "${GITHUB_REPOSITORY:-}" ]; then
+  echo "Full report: https://github.com/${GITHUB_REPOSITORY}/issues?q=is:issue+label:Security"
+fi
