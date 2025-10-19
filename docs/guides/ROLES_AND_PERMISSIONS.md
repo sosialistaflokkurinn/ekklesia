@@ -34,8 +34,36 @@ Notes:
 ## Permission matrix (current services)
 
 Legend:
-- ✓ allowed
+- ✅ allowed
+- ❌ forbidden
 - — not applicable / not required by role
+
+### Admin Actions Permission Matrix
+
+| Action | Endpoint | developer | meeting_election_manager | event_manager | member |
+|--------|----------|-----------|--------------------------|---------------|---------|
+| **Election Lifecycle** | | | | | |
+| Create election (draft) | POST /api/admin/elections | ✅ | ✅ | ❌ | ❌ |
+| Edit draft election | PATCH /api/admin/elections/:id/draft | ✅ | ✅ | ❌ | ❌ |
+| Publish election | POST /api/admin/elections/:id/publish | ✅ | ✅ | ❌ | ❌ |
+| Pause election | POST /api/admin/elections/:id/pause | ✅ | ✅ | ❌ | ❌ |
+| Resume election | POST /api/admin/elections/:id/resume | ✅ | ✅ | ❌ | ❌ |
+| Close election | POST /api/admin/elections/:id/close | ✅ | ✅ | ❌ | ❌ |
+| Archive election | POST /api/admin/elections/:id/archive | ✅ | ✅ | ❌ | ❌ |
+| Delete draft (soft) | DELETE /api/admin/elections/:id | ✅ | ❌ | ❌ | ❌ |
+| **Metadata Management** | | | | | |
+| Edit election metadata | PATCH /api/admin/elections/:id/metadata | ✅ | ✅ | ✅ | ❌ |
+| **Viewing & Monitoring** | | | | | |
+| List elections (admin) | GET /api/admin/elections | ✅ | ✅ | ✅ | ❌ |
+| Preview election detail | GET /api/admin/elections/:id | ✅ | ✅ | ✅ | ❌ |
+| **Developer Operations** | | | | | |
+| Reset election data | POST /api/admin/reset-election | ✅ | ❌ | ❌ | ❌ |
+
+**Notes**:
+- **developer**: Full access to all admin operations including destructive actions
+- **meeting_election_manager**: Can manage full election lifecycle (create → close → archive) but cannot delete or reset
+- **event_manager**: Can only edit metadata (title, description, dates) - no lifecycle control
+- **member**: No admin access (public endpoints only)
 
 ### Members service (Cloud Functions)
 - handleKenniAuth (OAuth/PKCE sign-in): member (no special role required beyond authentication)
@@ -43,33 +71,35 @@ Legend:
 - Admin actions: none exposed currently
 
 ### Events service (Node/Express)
-Public (with Firebase auth):
-- GET /api/election: member ✓
-- POST /api/request-token: member ✓
-- GET /api/my-status: member ✓
-- GET /api/my-token: member ✓ (returns guidance in MVP)
-- GET /api/results: member ✓ (graceful if Elections unavailable)
+**Public (with Firebase auth)**:
+- GET /api/election: member ✅
+- POST /api/request-token: member ✅
+- GET /api/my-status: member ✅
+- GET /api/my-token: member ✅ (returns guidance in MVP)
+- GET /api/results: member ✅ (graceful if Elections unavailable)
 
-Admin (developer tooling):
-- POST /api/admin/reset-election: developer ✓
+**Admin (role-protected)**:
+- POST /api/admin/reset-election: `requireRole('developer')`
   - Scope "mine": delete caller's Events token only (safe)
   - Scope "all": truncate Elections ballots/tokens and clear Events tokens (destructive; confirmation required)
-
-Future (recommended):
-- POST /api/admin/open-election: meeting_election_manager ✓
-- POST /api/admin/close-election: meeting_election_manager ✓
-- PATCH /api/admin/election/:id (metadata/schedule): meeting_election_manager or event_manager (based on boundary)
+- POST /api/admin/elections: `requireAnyRoles(['developer', 'meeting_election_manager'])`
+- PATCH /api/admin/elections/:id/draft: `requireAnyRoles(['developer', 'meeting_election_manager'])`
+- POST /api/admin/elections/:id/publish: `requireAnyRoles(['developer', 'meeting_election_manager'])`
+- POST /api/admin/elections/:id/close: `requireAnyRoles(['developer', 'meeting_election_manager'])`
+- PATCH /api/admin/elections/:id/metadata: `requireAnyRoles(['developer', 'meeting_election_manager', 'event_manager'])`
+- GET /api/admin/elections: `requireAnyRoles(['developer', 'meeting_election_manager', 'event_manager'])`
+- DELETE /api/admin/elections/:id: `requireRole('developer')`
 
 ### Elections service (Node/Express)
-Public voting:
+**Public voting**:
 - POST /api/vote: token-based (no roles)
 - GET /api/token-status: token-based (no roles)
 
-S2S (secured by X-API-Key):
+**S2S (secured by X-API-Key)**:
 - POST /api/s2s/register-token: Events → Elections (no roles)
 - GET  /api/s2s/results: Events → Elections (no roles)
 
-Future admin:
+**Future admin**:
 - Protected admin endpoints (e.g., audit exports, sealed results) guarded by roles (developer/meeting_election_manager) with additional audit logging.
 
 ## Storage and propagation of roles
