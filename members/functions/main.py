@@ -125,6 +125,7 @@ def check_rate_limit(ip_address: Optional[str], max_attempts: int = 5, window_mi
     now = datetime.now(timezone.utc)
     doc_id = _rate_limit_bucket_id(ip_address, now, window_minutes)
     ref = db.collection('rate_limits').document(doc_id)
+    expires_at = now + timedelta(minutes=window_minutes)
 
     @gcf.transactional
     def _attempt(transaction) -> bool:
@@ -137,6 +138,7 @@ def check_rate_limit(ip_address: Optional[str], max_attempts: int = 5, window_mi
             transaction.update(ref, {
                 'count': count + 1,
                 'updatedAt': firestore.SERVER_TIMESTAMP,
+                'expiresAt': expires_at,
                 'ip': ip_address,
             })
             return True
@@ -146,6 +148,7 @@ def check_rate_limit(ip_address: Optional[str], max_attempts: int = 5, window_mi
                 'createdAt': firestore.SERVER_TIMESTAMP,
                 'updatedAt': firestore.SERVER_TIMESTAMP,
                 'windowMinutes': window_minutes,
+                'expiresAt': expires_at,
                 'ip': ip_address,
             })
             return True

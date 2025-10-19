@@ -70,6 +70,14 @@ Legend:
 - verify membership: member
 - Admin actions: none exposed currently
 
+### Members portal (Upcoming: Epic #87 Phase 2)
+- `/elections` list: visible to authenticated members; contents filtered by eligibility data supplied by Events API (#65).
+- `/elections/:id` detail view: member read-only; references eligibility explanation derived from this guide.
+- `/roles` page (#68):
+  - Renders a trimmed version of the matrix above for self-service transparency.
+  - Surfaces contact guidance for requesting elevated roles (links to internal ops docs).
+  - References Phase 5 admin tooling once endpoints (#71-#79) are deployed.
+
 ### Events service (Node/Express)
 **Public (with Firebase auth)**:
 - GET /api/election: member ✅
@@ -149,3 +157,5 @@ Roles are assigned via Firebase custom claims using admin tooling.
 - Gate the test page’s reset section by `developer` role.
 - Provide a small CLI script for setting roles (or documented `node` one-liner).
 - Add basic unit tests for role middleware.
+- Publish member-facing summary snippets for `/roles` page (#68) once Phase 2 UI lands.
+- Document admin role request workflow alongside the new weekly membership sync (#88-#92).

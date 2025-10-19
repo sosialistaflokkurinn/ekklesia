@@ -109,6 +109,23 @@
 
 ---
 
+## 📈 Upcoming Phase 5 Enhancements (Oct–Nov 2025)
+
+**Target milestone**: Phase 5 – Events and Elections Services (due Nov 15, 2025)
+
+- **Member election discovery (Epic #87)**
+  - Dynamic eligible elections listing and detail views in Members UI (`/elections`, `/elections/:id`).
+  - Roles & permissions guide surfaced directly in-app once #68 ships.
+- **Admin election lifecycle (Epic #24)**
+  - RBAC-protected admin endpoints (#71-#79) publishing to Cloud Run after schema migration (#84).
+  - Audit logging format and eligibility schema updates tracked in #80-#82.
+- **Documentation updates in progress**
+  - `docs/guides/ROLES_AND_PERMISSIONS.md` expanded with election-specific capabilities.
+  - `docs/guides/INDEX.md` now references the roles guide for support teams.
+  - Member production status will capture election catalogue metrics once the sync pipeline launches (#88-#92).
+
+**Next verification window**: Begin staging validations the week of Oct 27 after database migration smoke tests conclude.
+
 ## 🧪 End-to-End Testing
 
 ### Complete Voting Flow Test (Oct 15, 2025) ✅
