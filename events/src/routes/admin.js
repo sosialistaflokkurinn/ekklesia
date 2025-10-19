@@ -1,7 +1,7 @@
 const express = require('express');
 const { pool, query } = require('../config/database');
 const authenticate = require('../middleware/auth');
-const { requireRole } = require('../middleware/roles');
+const { requireRole, requireAnyRoles, attachCorrelationId } = require('../middleware/roles');
 
 /**
  * In-memory rate limiter for admin operations.
@@ -25,8 +25,18 @@ setInterval(() => {
   }
 }, 60 * 60 * 1000).unref?.(); // avoid keeping process alive solely for timer
 
-// Developer-only admin router
+// Admin router with base authentication
 const router = express.Router();
+
+// Apply base middleware to ALL admin routes
+// 1. Attach correlation ID for request tracing
+router.use(attachCorrelationId);
+
+// 2. Require authentication for all admin endpoints
+router.use(authenticate);
+
+// 3. Require at least one admin role (fail-secure default)
+router.use(requireAnyRoles(['developer', 'meeting_election_manager', 'event_manager']));
 
 // Helper: check if admin reset is enabled and caller is allowed
 function isResetAllowed(uid) {
@@ -44,10 +54,11 @@ function isResetAllowed(uid) {
 /**
  * POST /api/admin/reset-election
  * Body: { scope: 'all' | 'mine', confirm?: string }
- * Auth: Firebase ID token (authenticate middleware)
+ * Auth: Firebase ID token (applied at router level)
+ * Role: developer only (destructive operation)
  * Guards: ADMIN_RESET_ENABLED=true and uid in ALLOWED_RESET_UIDS
  */
-router.post('/reset-election', authenticate, requireRole('developer'), async (req, res) => {
+router.post('/reset-election', requireRole('developer'), async (req, res) => {
   try {
     const { uid, kennitala } = req.user || {};
 
@@ -228,6 +239,603 @@ router.post('/reset-election', authenticate, requireRole('developer'), async (re
     return res.status(500).json({
       error: 'Internal Server Error',
       message: 'Unexpected error'
+    });
+  }
+});
+
+// ============================================================================
+// Election Management Endpoints (Issues #71-#79)
+// ============================================================================
+
+/**
+ * GET /api/admin/elections
+ * List all elections with optional filtering
+ * Role: developer, meeting_election_manager, event_manager (read-only)
+ * Issue: #78
+ */
+router.get('/elections', requireAnyRoles(['developer', 'meeting_election_manager', 'event_manager']), async (req, res) => {
+  try {
+    const { status, limit = 50, offset = 0 } = req.query;
+
+    let sql = 'SELECT id, title, description, status, created_at, updated_at, created_by FROM elections.elections';
+    const params = [];
+
+    if (status) {
+      sql += ' WHERE status = $1';
+      params.push(status);
+    }
+
+    sql += ' ORDER BY created_at DESC LIMIT $' + (params.length + 1) + ' OFFSET $' + (params.length + 2);
+    params.push(parseInt(limit), parseInt(offset));
+
+    const result = await query(sql, params);
+
+    console.log(JSON.stringify({
+      level: 'info',
+      message: 'List elections',
+      correlation_id: req.correlationId,
+      performed_by: req.user?.uid,
+      count: result.rows.length,
+      status_filter: status || 'all',
+      timestamp: new Date().toISOString()
+    }));
+
+    return res.json({
+      elections: result.rows,
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+      count: result.rows.length
+    });
+  } catch (error) {
+    console.error('[Admin] List elections error:', error);
+    return res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to list elections',
+      correlation_id: req.correlationId
+    });
+  }
+});
+
+/**
+ * GET /api/admin/elections/:id
+ * Get election details (preview)
+ * Role: developer, meeting_election_manager, event_manager (read-only)
+ * Issue: #79
+ */
+router.get('/elections/:id', requireAnyRoles(['developer', 'meeting_election_manager', 'event_manager']), async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await query(
+      'SELECT * FROM elections.elections WHERE id = $1',
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Election not found',
+        correlation_id: req.correlationId
+      });
+    }
+
+    console.log(JSON.stringify({
+      level: 'info',
+      message: 'Preview election',
+      correlation_id: req.correlationId,
+      performed_by: req.user?.uid,
+      election_id: id,
+      timestamp: new Date().toISOString()
+    }));
+
+    return res.json(result.rows[0]);
+  } catch (error) {
+    console.error('[Admin] Preview election error:', error);
+    return res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to fetch election',
+      correlation_id: req.correlationId
+    });
+  }
+});
+
+/**
+ * POST /api/admin/elections
+ * Create new election (draft status)
+ * Role: developer, meeting_election_manager
+ * Issue: #71
+ */
+router.post('/elections', requireAnyRoles(['developer', 'meeting_election_manager']), async (req, res) => {
+  try {
+    const { title, description, question, answers } = req.body;
+    const uid = req.user?.uid;
+
+    // Validation
+    if (!title || !question || !Array.isArray(answers) || answers.length < 2) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Missing required fields: title, question, answers (min 2)',
+        correlation_id: req.correlationId
+      });
+    }
+
+    const result = await query(
+      `INSERT INTO elections.elections (title, description, question, answers, status, created_by, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, 'draft', $5, NOW(), NOW())
+       RETURNING *`,
+      [title, description || '', question, JSON.stringify(answers), uid]
+    );
+
+    console.log(JSON.stringify({
+      level: 'info',
+      message: 'Election created',
+      correlation_id: req.correlationId,
+      performed_by: uid,
+      election_id: result.rows[0].id,
+      title,
+      timestamp: new Date().toISOString()
+    }));
+
+    return res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('[Admin] Create election error:', error);
+    return res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to create election',
+      correlation_id: req.correlationId
+    });
+  }
+});
+
+/**
+ * PATCH /api/admin/elections/:id/draft
+ * Edit draft election
+ * Role: developer, meeting_election_manager
+ * Issue: #72
+ */
+router.patch('/elections/:id/draft', requireAnyRoles(['developer', 'meeting_election_manager']), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, description, question, answers } = req.body;
+    const uid = req.user?.uid;
+
+    // Check if election exists and is in draft status
+    const existing = await query(
+      'SELECT status FROM elections.elections WHERE id = $1',
+      [id]
+    );
+
+    if (existing.rows.length === 0) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Election not found',
+        correlation_id: req.correlationId
+      });
+    }
+
+    if (existing.rows[0].status !== 'draft') {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Can only edit elections in draft status',
+        current_status: existing.rows[0].status,
+        correlation_id: req.correlationId
+      });
+    }
+
+    // Build dynamic update query
+    const updates = [];
+    const params = [id];
+    let paramCount = 1;
+
+    if (title) {
+      updates.push(`title = $${++paramCount}`);
+      params.push(title);
+    }
+    if (description !== undefined) {
+      updates.push(`description = $${++paramCount}`);
+      params.push(description);
+    }
+    if (question) {
+      updates.push(`question = $${++paramCount}`);
+      params.push(question);
+    }
+    if (answers) {
+      updates.push(`answers = $${++paramCount}`);
+      params.push(JSON.stringify(answers));
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'No fields to update',
+        correlation_id: req.correlationId
+      });
+    }
+
+    updates.push('updated_at = NOW()');
+
+    const result = await query(
+      `UPDATE elections.elections SET ${updates.join(', ')} WHERE id = $1 RETURNING *`,
+      params
+    );
+
+    console.log(JSON.stringify({
+      level: 'info',
+      message: 'Draft election updated',
+      correlation_id: req.correlationId,
+      performed_by: uid,
+      election_id: id,
+      updated_fields: Object.keys(req.body),
+      timestamp: new Date().toISOString()
+    }));
+
+    return res.json(result.rows[0]);
+  } catch (error) {
+    console.error('[Admin] Edit draft election error:', error);
+    return res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to update election',
+      correlation_id: req.correlationId
+    });
+  }
+});
+
+/**
+ * PATCH /api/admin/elections/:id/metadata
+ * Edit election metadata only (title, description)
+ * Role: developer, meeting_election_manager, event_manager
+ * Note: event_manager can only edit metadata, not lifecycle
+ */
+router.patch('/elections/:id/metadata', requireAnyRoles(['developer', 'meeting_election_manager', 'event_manager']), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, description } = req.body;
+    const uid = req.user?.uid;
+
+    if (!title && description === undefined) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Must provide title or description to update',
+        correlation_id: req.correlationId
+      });
+    }
+
+    const updates = [];
+    const params = [id];
+    let paramCount = 1;
+
+    if (title) {
+      updates.push(`title = $${++paramCount}`);
+      params.push(title);
+    }
+    if (description !== undefined) {
+      updates.push(`description = $${++paramCount}`);
+      params.push(description);
+    }
+
+    updates.push('updated_at = NOW()');
+
+    const result = await query(
+      `UPDATE elections.elections SET ${updates.join(', ')} WHERE id = $1 RETURNING *`,
+      params
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Election not found',
+        correlation_id: req.correlationId
+      });
+    }
+
+    console.log(JSON.stringify({
+      level: 'info',
+      message: 'Election metadata updated',
+      correlation_id: req.correlationId,
+      performed_by: uid,
+      election_id: id,
+      updated_fields: Object.keys(req.body),
+      timestamp: new Date().toISOString()
+    }));
+
+    return res.json(result.rows[0]);
+  } catch (error) {
+    console.error('[Admin] Update metadata error:', error);
+    return res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to update election metadata',
+      correlation_id: req.correlationId
+    });
+  }
+});
+
+/**
+ * POST /api/admin/elections/:id/publish
+ * Publish election (draft → published)
+ * Role: developer, meeting_election_manager
+ * Issue: #73
+ */
+router.post('/elections/:id/publish', requireAnyRoles(['developer', 'meeting_election_manager']), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const uid = req.user?.uid;
+
+    const result = await query(
+      `UPDATE elections.elections
+       SET status = 'published', published_at = NOW(), updated_at = NOW()
+       WHERE id = $1 AND status = 'draft'
+       RETURNING *`,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Election not found or not in draft status',
+        correlation_id: req.correlationId
+      });
+    }
+
+    console.warn(JSON.stringify({
+      level: 'warn',
+      message: 'Election published',
+      correlation_id: req.correlationId,
+      performed_by: uid,
+      election_id: id,
+      title: result.rows[0].title,
+      timestamp: new Date().toISOString()
+    }));
+
+    return res.json(result.rows[0]);
+  } catch (error) {
+    console.error('[Admin] Publish election error:', error);
+    return res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to publish election',
+      correlation_id: req.correlationId
+    });
+  }
+});
+
+/**
+ * POST /api/admin/elections/:id/close
+ * Close election (published → closed)
+ * Role: developer, meeting_election_manager
+ * Issue: #74
+ */
+router.post('/elections/:id/close', requireAnyRoles(['developer', 'meeting_election_manager']), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const uid = req.user?.uid;
+
+    const result = await query(
+      `UPDATE elections.elections
+       SET status = 'closed', closed_at = NOW(), updated_at = NOW()
+       WHERE id = $1 AND status IN ('published', 'paused')
+       RETURNING *`,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Election not found or not in published/paused status',
+        correlation_id: req.correlationId
+      });
+    }
+
+    console.warn(JSON.stringify({
+      level: 'warn',
+      message: 'Election closed',
+      correlation_id: req.correlationId,
+      performed_by: uid,
+      election_id: id,
+      title: result.rows[0].title,
+      timestamp: new Date().toISOString()
+    }));
+
+    return res.json(result.rows[0]);
+  } catch (error) {
+    console.error('[Admin] Close election error:', error);
+    return res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to close election',
+      correlation_id: req.correlationId
+    });
+  }
+});
+
+/**
+ * POST /api/admin/elections/:id/pause
+ * Pause election (published → paused)
+ * Role: developer, meeting_election_manager
+ * Issue: #75
+ */
+router.post('/elections/:id/pause', requireAnyRoles(['developer', 'meeting_election_manager']), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const uid = req.user?.uid;
+
+    const result = await query(
+      `UPDATE elections.elections
+       SET status = 'paused', updated_at = NOW()
+       WHERE id = $1 AND status = 'published'
+       RETURNING *`,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Election not found or not in published status',
+        correlation_id: req.correlationId
+      });
+    }
+
+    console.warn(JSON.stringify({
+      level: 'warn',
+      message: 'Election paused',
+      correlation_id: req.correlationId,
+      performed_by: uid,
+      election_id: id,
+      title: result.rows[0].title,
+      timestamp: new Date().toISOString()
+    }));
+
+    return res.json(result.rows[0]);
+  } catch (error) {
+    console.error('[Admin] Pause election error:', error);
+    return res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to pause election',
+      correlation_id: req.correlationId
+    });
+  }
+});
+
+/**
+ * POST /api/admin/elections/:id/resume
+ * Resume election (paused → published)
+ * Role: developer, meeting_election_manager
+ * Issue: #75
+ */
+router.post('/elections/:id/resume', requireAnyRoles(['developer', 'meeting_election_manager']), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const uid = req.user?.uid;
+
+    const result = await query(
+      `UPDATE elections.elections
+       SET status = 'published', updated_at = NOW()
+       WHERE id = $1 AND status = 'paused'
+       RETURNING *`,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Election not found or not in paused status',
+        correlation_id: req.correlationId
+      });
+    }
+
+    console.warn(JSON.stringify({
+      level: 'warn',
+      message: 'Election resumed',
+      correlation_id: req.correlationId,
+      performed_by: uid,
+      election_id: id,
+      title: result.rows[0].title,
+      timestamp: new Date().toISOString()
+    }));
+
+    return res.json(result.rows[0]);
+  } catch (error) {
+    console.error('[Admin] Resume election error:', error);
+    return res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to resume election',
+      correlation_id: req.correlationId
+    });
+  }
+});
+
+/**
+ * POST /api/admin/elections/:id/archive
+ * Archive election (closed → archived)
+ * Role: developer, meeting_election_manager
+ * Issue: #76
+ */
+router.post('/elections/:id/archive', requireAnyRoles(['developer', 'meeting_election_manager']), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const uid = req.user?.uid;
+
+    const result = await query(
+      `UPDATE elections.elections
+       SET status = 'archived', archived_at = NOW(), updated_at = NOW()
+       WHERE id = $1 AND status = 'closed'
+       RETURNING *`,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Election not found or not in closed status',
+        correlation_id: req.correlationId
+      });
+    }
+
+    console.log(JSON.stringify({
+      level: 'info',
+      message: 'Election archived',
+      correlation_id: req.correlationId,
+      performed_by: uid,
+      election_id: id,
+      title: result.rows[0].title,
+      timestamp: new Date().toISOString()
+    }));
+
+    return res.json(result.rows[0]);
+  } catch (error) {
+    console.error('[Admin] Archive election error:', error);
+    return res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to archive election',
+      correlation_id: req.correlationId
+    });
+  }
+});
+
+/**
+ * DELETE /api/admin/elections/:id
+ * Soft delete draft election
+ * Role: developer only (destructive operation)
+ * Issue: #77
+ */
+router.delete('/elections/:id', requireRole('developer'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const uid = req.user?.uid;
+
+    const result = await query(
+      `UPDATE elections.elections
+       SET status = 'deleted', deleted_at = NOW(), updated_at = NOW()
+       WHERE id = $1 AND status = 'draft'
+       RETURNING *`,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Election not found or not in draft status (only drafts can be deleted)',
+        correlation_id: req.correlationId
+      });
+    }
+
+    console.warn(JSON.stringify({
+      level: 'warn',
+      message: 'Draft election deleted',
+      correlation_id: req.correlationId,
+      performed_by: uid,
+      election_id: id,
+      title: result.rows[0].title,
+      timestamp: new Date().toISOString()
+    }));
+
+    return res.json({
+      message: 'Election draft deleted successfully',
+      election: result.rows[0]
+    });
+  } catch (error) {
+    console.error('[Admin] Delete election error:', error);
+    return res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to delete election',
+      correlation_id: req.correlationId
     });
   }
 });
