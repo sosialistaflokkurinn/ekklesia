@@ -419,7 +419,7 @@ async function submitVote(token, answer) {
 
 **Problem**: Production database password hardcoded in `reset-election.sql` line 5:
 ```sql
--- PGPASSWORD='***REMOVED***' psql ...
+-- PGPASSWORD='[REDACTED_PASSWORD]' psql ...
 ```
 
 **Security Risks**:
@@ -439,7 +439,7 @@ async function submitVote(token, answer) {
 
 **Password Rotation Details** (completed 2025-10-19):
 1. ✅ **Rotated database password** - Secret Manager version 5 created at 2025-10-19T01:53:15
-2. ✅ **Updated Secret Manager** - Old password: `Ab6/l...` → New password: `ZmUmD...`
+2. ✅ **Updated Secret Manager** - Old password: `[REDACTED]` → New password: `[REDACTED]`
 3. ✅ **Restarted Cloud Run services** - Both services deployed with latest secret version
 4. ✅ **Verified services healthy** - Both `/health` endpoints returning 200 OK
 
