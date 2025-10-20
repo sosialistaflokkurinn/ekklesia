@@ -198,20 +198,6 @@ body {
   background: var(--color-primary);
   color: white;
   border: 1px solid rgba(0, 0, 0, 0.08);
-  padding-left: calc(var(--spacing-lg) + 28px);
-}
-
-.btn--outline::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: var(--spacing-md);
-  width: 18px;
-  height: 18px;
-  transform: translateY(-50%);
-  background-color: var(--color-accent-gold);
-  -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%3E%3Cpath%20fill='%23000'%20d='M12%2017.27%2018.18%2021l-1.64-7.03L22%209.24l-7.19-.61L12%202%209.19%208.63%202%209.24l5.46%204.73L5.82%2021z'/%3E%3C/svg%3E");
-  mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%3E%3Cpath%20fill='%23000'%20d='M12%2017.27%2018.18%2021l-1.64-7.03L22%209.24l-7.19-.61L12%202%209.19%208.63%202%209.24l5.46%204.73L5.82%2021z'/%3E%3C/svg%3E");
 }
 
 .btn--outline:hover:not(:disabled) {
