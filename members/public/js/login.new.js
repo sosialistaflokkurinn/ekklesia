@@ -158,7 +158,7 @@ async function startLogin(config) {
 async function handleCallback(authCode) {
   try {
     // Show loading indicator for the duration of token exchange (3-10 seconds)
-    setLoadingState(true, R.string('status_authenticating'));
+    setLoadingState(true, R.string.status_authenticating);
 
     // Get stored PKCE verifier and CSRF state
     const verifier = sessionStorage.getItem('pkce_verifier');
