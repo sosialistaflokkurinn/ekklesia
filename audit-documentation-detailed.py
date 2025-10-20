@@ -55,8 +55,9 @@ class DetailedDocumentationAudit:
             return
         
         # Extract all code blocks
-        # Updated to include css, typescript, ts, etc.
-        pattern = r'```(?:bash|shell|sh|javascript|js|node|python|py|sql|json|yaml|yml|css|html|xml|typescript|ts)?\n(.*?)```'
+        # Updated to include proper language support for Ekklesia tech stack:
+        # Python, JavaScript, Shell, SQL, JSON, YAML, CSS, HTML, XML, GraphQL
+        pattern = r'```(?:bash|shell|sh|javascript|js|node|python|py|sql|json|yaml|yml|css|html|xml|graphql|gql)?\n(.*?)```'
         matches = re.finditer(pattern, content, re.DOTALL)
         
         blocks_in_file = []
