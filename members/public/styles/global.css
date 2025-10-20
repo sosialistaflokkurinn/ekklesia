@@ -139,3 +139,102 @@ body {
 .u-text-error {
   color: var(--color-error-text);
 }
+
+/* === Buttons (Global Component) === */
+
+.btn {
+  display: inline-block;
+  padding: 12px var(--spacing-lg);
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+}
+
+.btn:hover {
+  background: var(--color-primary-dark);
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.btn:disabled {
+  background: var(--color-gray-300);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 2px;
+}
+
+/* Button Variants */
+
+.btn--secondary {
+  background: var(--color-error-border);
+}
+
+.btn--secondary:hover {
+  background: #c53030;
+}
+
+.btn--danger {
+  background: #a51616;
+}
+
+.btn--danger:hover {
+  background: #7d0f0f;
+}
+
+.btn--outline {
+  position: relative;
+  background: var(--color-primary);
+  color: white;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding-left: calc(var(--spacing-lg) + 28px);
+}
+
+.btn--outline::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: var(--spacing-md);
+  width: 18px;
+  height: 18px;
+  transform: translateY(-50%);
+  background-color: var(--color-accent-gold);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%3E%3Cpath%20fill='%23000'%20d='M12%2017.27%2018.18%2021l-1.64-7.03L22%209.24l-7.19-.61L12%202%209.19%208.63%202%209.24l5.46%204.73L5.82%2021z'/%3E%3C/svg%3E");
+  mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%3E%3Cpath%20fill='%23000'%20d='M12%2017.27%2018.18%2021l-1.64-7.03L22%209.24l-7.19-.61L12%202%209.19%208.63%202%209.24l5.46%204.73L5.82%2021z'/%3E%3C/svg%3E");
+}
+
+.btn--outline:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+  border-color: rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 12px rgba(183, 28, 28, 0.22);
+  transform: translateY(-1px);
+}
+
+.btn--outline:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 2px;
+}
+
+.btn--outline:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 3px 10px rgba(183, 28, 28, 0.2);
+}
+
+/* Login Form Button Modifier - Full Width */
+.btn--full-width {
+  width: 100%;
+  justify-content: center;
+  margin-bottom: var(--spacing-md);
+}
+

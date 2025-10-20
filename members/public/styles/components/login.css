@@ -60,12 +60,10 @@
   border-left: 4px solid var(--color-error-border);
 }
 
-/* === Buttons (BEM Block) === */
+/* === Buttons (uses global .btn with modifiers) === */
 
-.login .btn {
+.login .btn--full-width {
   width: 100%;
-  justify-content: center;
-  margin-bottom: 12px;
   font-size: 16px;
 }
 
