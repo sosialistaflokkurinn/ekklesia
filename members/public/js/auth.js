@@ -107,7 +107,8 @@ export async function getUserData(user) {
     kennitala: idTokenResult.claims.kennitala,
     email: idTokenResult.claims.email,
     phoneNumber: idTokenResult.claims.phoneNumber,
-    isMember: idTokenResult.claims.isMember || false
+    isMember: idTokenResult.claims.isMember || false,
+    roles: idTokenResult.claims.roles || []
   };
 }
 
