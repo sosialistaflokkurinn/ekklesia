@@ -149,11 +149,18 @@ git gc --prune=now --aggressive
 ### Verify Purge Success
 
 ```bash
-# Search for any remaining password fragments (should return empty)
+# Search for any remaining password fragments in the rewritten history
+# After force-push to GitHub, all team members should verify:
 git log --all --source -S 'Ab6/lTT' -- .
 git log --all --source -S 'Vladimir Ilyich' -- .
 
-# Both should return: "no matches found"
+# Expected result: Only HISTORY_PURGE_PLAN.md should appear (this document itself)
+# If HISTORY_PURGE_PLAN.md is the ONLY result, the purge succeeded!
+
+# To verify HISTORY_PURGE_PLAN.md is the only match:
+git log --all --source -S 'Ab6/lTT' -- . | grep -v "HISTORY_PURGE_PLAN"
+
+# If this command returns nothing, purge is complete and verified.
 ```
 
 ---
