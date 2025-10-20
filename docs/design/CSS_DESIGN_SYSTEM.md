@@ -89,6 +89,7 @@ This document describes the CSS design system for the Ekklesia Members Service, 
 ```css
 --color-primary: #d32f2f        /* Main brand red */
 --color-primary-dark: #b71c1c   /* Darker red for hover states */
+--color-accent-gold: #f3b41b    /* Socialist star accent */
 ```
 
 #### Status Colors
@@ -512,13 +513,15 @@ Display user information in a responsive grid layout.
 ### Button (`.btn`)
 
 **Block**: `.btn`
-**Modifiers**: `.btn--secondary`
+**Modifiers**: `.btn--secondary`, `.btn--outline`, `.btn--danger`
 
 #### Structure
 ```html
 <button class="btn">Primary Button</button>
 <button class="btn btn--secondary">Secondary Button</button>
 <button class="btn" disabled>Disabled Button</button>
+<button class="btn btn--outline">Membership Verify</button>
+<button class="btn btn--danger">Danger Button</button>
 ```
 
 #### CSS
@@ -551,6 +554,33 @@ Display user information in a responsive grid layout.
 
 .btn--secondary:hover {
   background: #c53030;
+}
+
+.btn--outline { /* Modifier */
+  position: relative;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding-left: calc(var(--spacing-lg) + 28px);
+}
+
+.btn--outline::before { /* Socialist star accent */
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: var(--spacing-md);
+  width: 18px;
+  height: 18px;
+  background-color: var(--color-accent-gold);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z'/%3E%3C/svg%3E");
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z'/%3E%3C/svg%3E");
+  transform: translateY(-50%);
+}
+
+.btn--danger { /* Modifier */
+  background: #a51616;
+}
+
+.btn--danger:hover {
+  background: #7d0f0f;
 }
 ```
 

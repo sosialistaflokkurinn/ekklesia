@@ -62,38 +62,11 @@
 
 /* === Buttons (BEM Block) === */
 
-.btn {
-  display: inline-block;
-  padding: 12px var(--spacing-lg);
-  background: var(--color-primary);
-  color: white;
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  text-decoration: none;
-  transition: background 0.2s;
+.login .btn {
   width: 100%;
-  text-align: center;
+  justify-content: center;
   margin-bottom: 12px;
-}
-
-.btn:hover {
-  background: var(--color-primary-dark);
-}
-
-.btn:disabled {
-  background: var(--color-gray-300);
-  cursor: not-allowed;
-}
-
-.btn--secondary {
-  background: var(--color-error-border);
-}
-
-.btn--secondary:hover {
-  background: #c53030;
+  font-size: 16px;
 }
 
 /* === Debug Log === */

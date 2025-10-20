@@ -80,7 +80,7 @@ export async function getCurrentUser() {
 export async function getUserData(user) {
   if (!user) return null;
 
-  const idTokenResult = await user.getIdTokenResult();
+  const idTokenResult = await user.getIdTokenResult(true);
 
   return {
     uid: user.uid,

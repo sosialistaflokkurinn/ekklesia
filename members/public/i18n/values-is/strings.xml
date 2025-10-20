@@ -51,8 +51,11 @@
     <!-- ========================================== -->
     <!-- DASHBOARD PAGE (dashboard.html) -->
     <!-- ========================================== -->
-    <string name="dashboard_welcome">Sæll/Sæl</string>
-    <string name="dashboard_welcome_user">%s, %s!</string>
+  <string name="dashboard_welcome_male">Sæll, kæri félagi %s!</string>
+  <string name="dashboard_welcome_female">Sæl, kæri félagi %s!</string>
+  <string name="dashboard_welcome_neutral">Sæl, kæri félagi %s!</string>
+  <string name="dashboard_welcome">Sæll/Sæl</string>
+  <string name="dashboard_welcome_user">%s, %s!</string>
     <string name="dashboard_subtitle">Félagasvæði Sósíalistaflokksins</string>
     <string name="dashboard_default_name">félagi</string>
 
@@ -74,6 +77,12 @@
     <string name="membership_verifying">Kannar aðild...</string>
     <string name="membership_verification_failed">Villa við staðfestingu</string>
     <string name="btn_verify_membership">Staðfesta félagsaðild</string>
+  <string name="btn_verify_membership_again">Endurstaðfesta félagsaðild</string>
+    <string name="dashboard_roles_label">Hlutverk</string>
+    <string name="role_badge_developer">Forritari</string>
+    <string name="role_badge_meeting_election_manager">Fundar- og kosningastjóri</string>
+    <string name="role_badge_event_manager">Viðburðastjóri</string>
+    <string name="role_badge_member">Félagi</string>
 
     <!-- ========================================== -->
     <!-- PROFILE PAGE (profile.html) -->

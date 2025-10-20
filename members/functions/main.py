@@ -41,7 +41,8 @@ def _parse_allowed_origins() -> list[str]:
         return DEFAULT_ALLOWED_ORIGINS
     if allowlist_env == '*':
         return ['*']
-    allowed = [origin.strip() for origin in allowlist_env.split(',') if origin.strip()]
+    normalized = allowlist_env.replace(';', ',')
+    allowed = [origin.strip() for origin in normalized.split(',') if origin.strip()]
     return allowed if allowed else DEFAULT_ALLOWED_ORIGINS
 
 
@@ -434,7 +435,6 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
                     'email': email,
                     'phoneNumber': phone_number,
                     'photoURL': None,
-                    'role': 'user',
                     'isMember': False,  # Will be verified separately
                     'createdAt': firestore.SERVER_TIMESTAMP,
                     'lastLogin': firestore.SERVER_TIMESTAMP
@@ -599,11 +599,20 @@ def verifyMembership(req: https_fn.CallableRequest) -> dict:
             'membershipVerifiedAt': firestore.SERVER_TIMESTAMP
         })
 
-        # Update custom claims
-        auth.set_custom_user_claims(req.auth.uid, {
-            'kennitala': kennitala,
-            'isMember': is_member
-        })
+        # Update custom claims while preserving roles and other attributes
+        try:
+            existing_custom_claims = auth.get_user(req.auth.uid).custom_claims or {}
+        except Exception as e:
+            log_json("warn", "Could not read existing custom claims during membership verification", error=str(e), uid=req.auth.uid)
+            existing_custom_claims = {}
+
+        merged_claims = {**existing_custom_claims, 'kennitala': kennitala, 'isMember': is_member}
+
+        try:
+            auth.set_custom_user_claims(req.auth.uid, merged_claims)
+            log_json("debug", "Persisted merged custom claims after membership verification", uid=req.auth.uid, claims=sanitize_fields(merged_claims))
+        except Exception as e:
+            log_json("error", "Failed to persist custom claims during membership verification", error=str(e), uid=req.auth.uid)
 
         return {
             'isMember': is_member,
