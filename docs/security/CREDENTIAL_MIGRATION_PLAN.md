@@ -37,9 +37,9 @@ Currently, [.claude/settings.local.json](../../.claude/settings.local.json) cont
 ### Hardcoded Credentials in settings.local.json
 
 **Lines with embedded secrets**:
-1. **postgres-password** (`***REMOVED***`): Lines 7-76, 80 (20+ occurrences)
-2. **elections-s2s-api-key** (`18049af1...`): Line 44
-3. **cloudflare-api-token** (3 tokens): Lines 124-145
+1. **postgres-password** (`[REDACTED_PASSWORD]`): Lines 7-76, 80 (20+ occurrences)
+2. **elections-s2s-api-key** (redacted): Line 44
+3. **cloudflare-api-token** (redacted): Lines 124-145
 
 ---
 

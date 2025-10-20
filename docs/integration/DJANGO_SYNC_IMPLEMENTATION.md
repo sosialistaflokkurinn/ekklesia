@@ -276,15 +276,14 @@ exports.syncMemberList = functions
     const startTime = Date.now();
 
     // Configuration
-    const DJANGO_API_URL = 'http://172.105.71.207/api/members/kennitalas/';
+    const DJANGO_API_URL = 'https://172.105.71.207/api/members/kennitalas/';
 
-    // Get Django API token from Secret Manager
-    const [version] = await admin
-      .securityAdmin()
-      .accessSecretVersion({
-        name: 'projects/ekklesia-prod-10-2025/secrets/django-api-token/versions/latest',
-      });
-    const DJANGO_TOKEN = version.payload.data.toString('utf8');
+    // Get Django API token from Secret Manager (using @google-cloud/secret-manager)
+    const { SecretManagerServiceClient } = require('@google-cloud/secret-manager');
+    const secretClient = new SecretManagerServiceClient();
+    const secretName = 'projects/ekklesia-prod-10-2025/secrets/django-api-token/versions/latest';
+    const [{ payload: { data } }] = await secretClient.accessSecretVersion({ name: secretName });
+    const DJANGO_TOKEN = data.toString('utf8');
 
     try {
       console.log('[SYNC] Starting weekly member list sync...');
@@ -588,6 +587,10 @@ user = User.objects.get(username='ekklesia_sync')
 Token.objects.filter(user=user).delete()  # Delete old token
 token = Token.objects.create(user=user)
 print(f"New token: {token.key}")
+
+# ⚠️ SECURITY NOTE: Do NOT log, commit, or share this token.
+# Store only in Secret Manager. Anyone with this token can authenticate
+# to the Django API on behalf of the sync service.
 ```
 
 Update Secret Manager:

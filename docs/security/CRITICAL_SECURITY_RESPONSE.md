@@ -24,7 +24,7 @@ Responded to critical security review of issues #41-#50 with immediate action on
 ### Status: Script Created, Manual Execution Required
 
 **Problem:**
-- Database password `***REMOVED***` exposed in git history
+- Database password `[REDACTED]` exposed in git history
 - Discovered 2025-10-15, not rotated for 2 days
 
 **Solution Implemented:**
@@ -121,7 +121,7 @@ gcloud run services update handlekenniauth \
 
 ❌ **Blocked:**
 ```python
-PASSWORD = "***REMOVED***"
+PASSWORD = "[REDACTED]"
 ```
 
 ✅ **Allowed:**
@@ -168,7 +168,7 @@ git commit -m "test"
 
 ### Features
 
-**Schedule:** Every Monday at 9 AM UTC (Iceland time)
+**Schedule:** Every Monday at 9 AM UTC (which is always 9 AM in Iceland, as Iceland does not observe daylight saving time)
 
 **Checks Performed:**
 

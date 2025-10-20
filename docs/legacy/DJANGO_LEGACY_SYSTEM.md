@@ -44,7 +44,7 @@ The legacy Django system (`sfi_felagakerfi_live`) is the **current source of tru
 - **Type**: PostgreSQL
 - **Database Name**: `socialism`
 - **User**: `socialism`
-- **Password**: `***REMOVED***` (stored in Django settings)
+- **Password**: `[PASSWORD_IN_SETTINGS]` (stored in Django settings)
 - **Authentication**: Peer authentication (Unix socket)
 - **Access**: `sudo -u postgres psql socialism`
 
