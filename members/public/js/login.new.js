@@ -83,6 +83,31 @@ function hideError() {
 }
 
 /**
+ * Control loading state visibility during authentication
+ *
+ * Shows/hides the overlay spinner and updates accessibility attributes.
+ * This provides visual feedback during the 3-10 second token exchange.
+ *
+ * @param {boolean} isLoading - Show (true) or hide (false) loading indicator
+ * @param {string} [message] - Optional custom message (defaults to "Auðkennir...")
+ */
+function setLoadingState(isLoading, message = null) {
+  const loadingEl = getElementByIdSafe('auth-loading', 'login page');
+  const messageEl = getElementByIdSafe('loading-message', 'login page');
+  
+  if (isLoading) {
+    loadingEl.classList.add('is-active');
+    loadingEl.setAttribute('aria-busy', 'true');
+    if (message) {
+      messageEl.textContent = message;
+    }
+  } else {
+    loadingEl.classList.remove('is-active');
+    loadingEl.setAttribute('aria-busy', 'false');
+  }
+}
+
+/**
  * Start OAuth login flow
  *
  * Generates PKCE challenge and redirects to Kenni.is.
@@ -132,6 +157,9 @@ async function startLogin(config) {
  */
 async function handleCallback(authCode) {
   try {
+    // Show loading indicator for the duration of token exchange (3-10 seconds)
+    setLoadingState(true, R.string('status_authenticating'));
+
     // Get stored PKCE verifier and CSRF state
     const verifier = sessionStorage.getItem('pkce_verifier');
     const storedState = sessionStorage.getItem('csrf_state');
@@ -218,9 +246,12 @@ async function handleCallback(authCode) {
     sessionStorage.removeItem('pkce_verifier');
     sessionStorage.removeItem('csrf_state');
 
-    // Redirect to dashboard
+    // ← Loading state automatically cleared on redirect
     window.location.href = '/dashboard.html';
   } catch (error) {
+    // Hide loading indicator on error
+    setLoadingState(false);
+    
     console.error('OAuth callback error:', error);
     showError(R.format(R.string.error_authentication, error.message));
 
