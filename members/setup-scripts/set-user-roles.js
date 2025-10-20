@@ -14,7 +14,7 @@
  * - Do NOT commit service account keys. Use environment variables/Secret Manager.
  */
 
-const admin = require('firebase-admin');
+import admin from 'firebase-admin';
 
 function parseArgs() {
   const args = process.argv.slice(2);
