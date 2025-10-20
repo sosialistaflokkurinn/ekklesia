@@ -1,4 +1,7 @@
-# GITHUB_PROJECT_MANAGEMENT.md – Guide Summary (Oct 14, 2025)
+# GITHUB_PROJECT_MANAGEMENT.md – Guide Summary
+
+**Last Updated:** 2025-10-20  
+**Status:** ✅ Current
 
 This guide is a complete, production-tested reference for managing the Kosningakerfi Sósíalistaflokksins project board using GitHub CLI and API. It now includes:
 

@@ -19,8 +19,8 @@ Completed automated setup for Phase 5 validation (ticket #84): applied database 
 **Status**: Committed and pushed
 
 - Moved 6 GitHub guides to `docs/guides/github/` subdirectory
-- Updated [docs/guides/INDEX.md](docs/guides/INDEX.md): 13 guides organized in 4 categories
-- Created [docs/testing/ADMIN_RESET_CHECKLIST.md](docs/testing/ADMIN_RESET_CHECKLIST.md): Step-by-step validation playbook
+- Updated [docs/guides/INDEX.md](../guides/INDEX.md): 13 guides organized in 4 categories
+- Created [docs/testing/ADMIN_RESET_CHECKLIST.md](../testing/ADMIN_RESET_CHECKLIST.md): Step-by-step validation playbook
 
 **Verification**:
 ```bash
@@ -36,7 +36,7 @@ git log --oneline feature/security-hardening | head -3
 **Commit**: `3353bed`
 **Status**: Applied to production + committed
 
-**Migration File**: [events/migrations/003_seed_october_2025_election.sql](events/migrations/003_seed_october_2025_election.sql)
+**Migration File**: [events/migrations/003_seed_october_2025_election.sql](../../events/migrations/003_seed_october_2025_election.sql)
 
 **Process**:
 ```bash
@@ -63,7 +63,7 @@ voting_ends_at: 2025-10-20 21:00:00+00
 -- Clean state for Phase 5 validation
 ```
 
-**Documentation Updated**: [events/migrations/README.md](events/migrations/README.md) marked migration 003 as applied (2025-10-19 19:44 UTC)
+**Documentation Updated**: [events/migrations/README.md](../../events/migrations/README.md) marked migration 003 as applied (2025-10-19 19:44 UTC)
 
 ---
 
@@ -186,7 +186,7 @@ gcloud logging read \
 ## ⚠️ Outstanding Work (Required)
 
 ### Priority 1: Update Test Report
-**File**: [docs/testing/ADMIN_RESET_TEST_REPORT.md](docs/testing/ADMIN_RESET_TEST_REPORT.md)
+**File**: [docs/testing/ADMIN_RESET_TEST_REPORT.md](../testing/ADMIN_RESET_TEST_REPORT.md)
 **Status**: ❌ **Not updated with fresh test evidence**
 
 **Required Changes**:
@@ -200,10 +200,10 @@ gcloud logging read \
 **Action**:
 ```bash
 # Manual edit required
-vim docs/testing/ADMIN_RESET_TEST_REPORT.md
+vim ../testing/ADMIN_RESET_TEST_REPORT.md
 
 # Commit when done
-git add docs/testing/ADMIN_RESET_TEST_REPORT.md
+git add ../testing/ADMIN_RESET_TEST_REPORT.md
 git commit -m "test: rerun admin reset validation against October 2025 seed data
 
 Fresh test evidence for Phase 5 ticket #84 (issues #71-#79).
@@ -221,11 +221,11 @@ git push origin feature/security-hardening
 ```bash
 git status
 # Changes not staged for commit:
-#   modified:   docs/guides/ROLES_AND_PERMISSIONS.md
+#   modified:   ../guides/ROLES_AND_PERMISSIONS.md
 #   modified:   docs/status/CURRENT_PRODUCTION_STATUS.md
 #   modified:   members/functions/main.py
 # Untracked files:
-#   docs/guides/MCP_SERVERS.md
+#   ../guides/MCP_SERVERS.md
 #   scripts/link-subissues.sh
 #   scripts/update-issue-metadata.sh
 #   "tore fields ttls update expiresAt --collection-group=rate_limits --enable-ttl"
@@ -246,7 +246,7 @@ git status
 **Action Required**:
 1. **DELETE accidental file first** (see alert above)
 2. **Review remaining files**: Determine if changes should be committed or discarded
-3. **`docs/guides/ROLES_AND_PERMISSIONS.md`**: Check diff - may contain session updates
+3. **`../guides/ROLES_AND_PERMISSIONS.md`**: Check diff - may contain session updates
 4. **`members/functions/main.py`**: Check if any code was modified during debugging
 5. **Commit or discard**:
    ```bash
@@ -275,7 +275,7 @@ git status
 3. Delete the `role` field (string)
 4. Keep Firebase Auth custom claims unchanged (already correct)
 
-**Reference**: See [ROLES_AND_PERMISSIONS.md](docs/guides/ROLES_AND_PERMISSIONS.md) lines 113-119:
+**Reference**: See [ROLES_AND_PERMISSIONS.md](../guides/ROLES_AND_PERMISSIONS.md) lines 113-119:
 > Source of truth: Firebase Auth custom claims on the user record.
 
 ---
@@ -396,7 +396,7 @@ ps aux | grep -E 'cloud.*sql.*proxy' | grep -v grep
 - ❌ Setting `roles` in **Firestore** `users` collection (not read by auth system)
 - ✅ Setting `roles` in **Firebase Auth** `customAttributes` (correct source of truth)
 
-**Code Reference**: [members/functions/main.py:467-481](members/functions/main.py#L467-L481)
+**Code Reference**: [members/functions/main.py:467-481](../../members/functions/main.py#L467-L481)
 
 ---
 
@@ -489,13 +489,13 @@ psql -h 127.0.0.1 -p 5432 -U postgres -d postgres
 
 8. ⏳ **RECOMMENDED**: Document role assignment procedure
    - Create `scripts/set_user_role.sh` wrapper around Identity Toolkit API
-   - Add to [ROLES_AND_PERMISSIONS.md](docs/guides/ROLES_AND_PERMISSIONS.md) "How to assign roles" section (line 121)
+   - Add to [ROLES_AND_PERMISSIONS.md](../guides/ROLES_AND_PERMISSIONS.md) "How to assign roles" section (line 121)
    - Satisfies TODO on line 158: "Provide a small CLI script for setting roles"
 
 9. ⏳ **RECOMMENDED**: Improve audit log structure
    - Ensure `correlation_id` is logged in all admin operations
    - Add structured fields (`before`, `after`, `scope`) to all log entries
-   - Update [AUDIT_LOGGING.md](docs/guides/AUDIT_LOGGING.md) with examples
+   - Update [AUDIT_LOGGING.md](../guides/AUDIT_LOGGING.md) with examples
 
 ---
 

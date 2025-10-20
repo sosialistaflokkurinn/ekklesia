@@ -476,7 +476,7 @@ async function submitVote(token, answer) {
 
 ### 2025-10-15: Full Response Audit Completed
 
-**Auditor**: Claude (using verification checklist from [GITHUB_PR_REVIEW_REPLY_WORKFLOW.md](../guides/GITHUB_PR_REVIEW_REPLY_WORKFLOW.md))
+**Auditor**: Claude (using verification checklist from [GITHUB_PR_REVIEW_REPLY_WORKFLOW.md](../guides/github/GITHUB_PR_REVIEW_REPLY_WORKFLOW.md))
 
 **Method**: Verification against current code on HEAD (feature/security-hardening branch)
 

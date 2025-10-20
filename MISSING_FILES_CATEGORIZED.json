@@ -1,0 +1,28 @@
+{
+  "npm_packages": [
+    "commander",
+    "k6/metrics",
+    "k6/http",
+    "firebase-admin/app-check",
+    "k6",
+    "firebase-admin"
+  ],
+  "example_files": [
+    "./voting-tokens.json",
+    "*.md",
+    "/tmp/admin_reset_audit_logs.js",
+    "/tmp/responses.md",
+    "docs/[^)]*\\.md",
+    "/tmp/unresolved_comments.js",
+    "*INDEX*.md",
+    "*MAP*.md",
+    "docs/**/*.md",
+    "/tmp/rotate-password.sh"
+  ],
+  "local_modules": [
+    "node-fetch",
+    "index.js",
+    "firebase-functions",
+    "firebase/app-check"
+  ]
+}

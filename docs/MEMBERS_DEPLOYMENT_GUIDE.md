@@ -1,5 +1,8 @@
 # Members Service Deployment Guide
 
+**Last Updated:** 2025-10-20  
+**Status:** ✅ Current
+
 This guide documents the deployment configuration, environment variables, and troubleshooting tips for the Members Cloud Functions.
 
 ## Environment Variables

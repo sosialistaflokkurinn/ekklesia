@@ -348,7 +348,7 @@ For each response:
 **Commits Verified**: 1 (80b6009 - password removal)
 **Issues Verified**: 5 (all exist and correctly described)
 
-**Methodology**: [GITHUB_PR_REVIEW_REPLY_WORKFLOW.md](../guides/GITHUB_PR_REVIEW_REPLY_WORKFLOW.md) - Pre-Response Verification Checklist
+**Methodology**: [GITHUB_PR_REVIEW_REPLY_WORKFLOW.md](../guides/github/GITHUB_PR_REVIEW_REPLY_WORKFLOW.md) - Pre-Response Verification Checklist
 
 ---
 

@@ -1,5 +1,8 @@
 # Admin Alerts (Cloud Logging)
 
+**Last Updated:** 2025-10-20  
+**Status:** ✅ Current
+
 Goal: Alert when a destructive reset (scope=all) is executed.
 
 ## Log pattern
@@ -65,19 +68,22 @@ Rate limit triggered (optional):
 
 ```bash
 gcloud monitoring policies create \
-YAML-based deployment (recommended):
+	--display-name="NOTICE: Admin reset rate-limited" \
+	--conditions="displayName=Rate-limit log match,conditionMonitoringQueryLanguage=fetch cloud_run_revision | filter jsonPayload.message=\"Admin reset rate-limited\" | group_by [], [value:count()] | every 5m, duration=0s, comparison=COMPARISON_GT, thresholdValue=0" \
+	--notification-channels="projects/$(gcloud config get-value project)/notificationChannels/YOUR_CHANNEL_ID"
+```
+
+## YAML-based deployment (recommended):
 
 1) Edit the YAML to replace PROJECT_ID and CHANNEL_ID:
 	- docs/guides/alerts/full-reset-executed.yaml
 	- docs/guides/alerts/full-reset-blocked.yaml
 	- docs/guides/alerts/admin-rate-limited.yaml
+
 2) Apply with gcloud:
+
 ```bash
 gcloud monitoring policies create --policy-from-file=docs/guides/alerts/full-reset-executed.yaml
 gcloud monitoring policies create --policy-from-file=docs/guides/alerts/full-reset-blocked.yaml
 gcloud monitoring policies create --policy-from-file=docs/guides/alerts/admin-rate-limited.yaml
-```
-	--display-name="NOTICE: Admin reset rate-limited" \
-	--conditions="displayName=Rate-limit log match,conditionMonitoringQueryLanguage=fetch cloud_run_revision | filter jsonPayload.message=\"Admin reset rate-limited\" | group_by [], [value:count()] | every 5m, duration=0s, comparison=COMPARISON_GT, thresholdValue=0" \
-	--notification-channels="projects/$(gcloud config get-value project)/notificationChannels/YOUR_CHANNEL_ID"
 ```
