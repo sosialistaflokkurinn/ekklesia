@@ -25,7 +25,6 @@ import { setTextContent, setInnerHTML, addEventListener, setDisabled, validateEl
  */
 const DASHBOARD_ELEMENTS = [
   'welcome-title',
-  'welcome-message',
   'quick-links-title',
   'quick-link-profile-label',
   'quick-link-profile-desc',
@@ -36,7 +35,8 @@ const DASHBOARD_ELEMENTS = [
   'membership-title',
   'membership-status',
   'verify-membership-btn',
-  'verify-button-container'
+  'verify-button-container',
+  'role-badges'
 ];
 
 /**
@@ -61,9 +61,6 @@ function updateDashboardStrings(strings) {
   // Set page title
   document.title = strings.page_title_dashboard;
 
-  // Update welcome message
-  setTextContent('welcome-message', strings.dashboard_subtitle, 'dashboard');
-
   // Update quick links
   setTextContent('quick-links-title', strings.quick_links_title, 'dashboard');
   setTextContent('quick-link-profile-label', strings.quick_links_profile_label, 'dashboard');
@@ -77,6 +74,26 @@ function updateDashboardStrings(strings) {
   setTextContent('membership-title', strings.membership_title, 'dashboard');
   setTextContent('membership-status', strings.membership_loading, 'dashboard');
   setTextContent('verify-membership-btn', strings.btn_verify_membership, 'dashboard');
+  setInnerHTML('role-badges', '', 'dashboard');
+}
+
+function buildWelcomeMessage(displayName, strings) {
+  const fallbackName = strings.dashboard_default_name;
+  const rawName = (displayName || fallbackName).trim();
+  const parts = rawName.split(/\s+/);
+  const lastPart = parts.length ? parts[parts.length - 1] : '';
+  const normalizedLast = lastPart
+    ? lastPart.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()
+    : '';
+
+  let template = strings.dashboard_welcome_neutral;
+  if (normalizedLast.endsWith('son')) {
+    template = strings.dashboard_welcome_male;
+  } else if (normalizedLast.endsWith('dottir')) {
+    template = strings.dashboard_welcome_female;
+  }
+
+  return R.format(template, rawName);
 }
 
 /**
@@ -116,7 +133,46 @@ function updateMembershipUI(isMember, strings) {
   setInnerHTML('membership-status', html, 'dashboard');
 
   const verifyButtonContainer = document.getElementById('verify-button-container');
-  verifyButtonContainer.style.display = isMember ? 'none' : 'block';
+  verifyButtonContainer.style.display = 'block';
+
+  const buttonLabel = isMember ? strings.btn_verify_membership_again : strings.btn_verify_membership;
+  setTextContent('verify-membership-btn', buttonLabel, 'dashboard');
+  setDisabled('verify-membership-btn', false, 'dashboard');
+}
+
+function renderRoleBadges(roles, strings) {
+  const normalizedRoles = Array.isArray(roles) ? roles.filter(Boolean) : [];
+  if (normalizedRoles.length === 0) {
+    return '';
+  }
+
+  const badges = normalizedRoles.map((role) => {
+    const key = `role_badge_${role}`;
+    const label = strings[key] || role;
+    return `<span class="role-badge">${label}</span>`;
+  }).join('');
+
+  return `
+    <span class="role-badges__label">${strings.dashboard_roles_label}</span>
+    <div class="role-badges__list">${badges}</div>
+  `;
+}
+
+function updateRoleBadges(roles, strings) {
+  const container = document.getElementById('role-badges');
+  if (!container) {
+    return;
+  }
+
+  const html = renderRoleBadges(roles, strings);
+  if (!html) {
+    container.innerHTML = '';
+    container.classList.add('u-hidden');
+    return;
+  }
+
+  container.innerHTML = html;
+  container.classList.remove('u-hidden');
 }
 
 /**
@@ -146,11 +202,12 @@ async function verifyMembership(user, strings) {
       `;
       setInnerHTML('membership-status', html, 'dashboard');
 
-      const verifyButtonContainer = document.getElementById('verify-button-container');
-      verifyButtonContainer.style.display = 'none';
+      // Refresh user data to get updated claims and update role badges
+      const refreshed = await user.getIdTokenResult(true);
+      updateRoleBadges(refreshed.claims.roles, strings);
 
-      // Refresh user data to get updated claims
-      await user.getIdToken(true);
+      setDisabled('verify-membership-btn', false, 'dashboard');
+  setTextContent('verify-membership-btn', strings.btn_verify_membership_again, 'dashboard');
 
       return true;
     } else {
@@ -162,7 +219,11 @@ async function verifyMembership(user, strings) {
       setInnerHTML('membership-status', html, 'dashboard');
 
       setDisabled('verify-membership-btn', false, 'dashboard');
-      setTextContent('verify-membership-btn', strings.btn_verify_membership, 'dashboard');
+  setTextContent('verify-membership-btn', strings.btn_verify_membership, 'dashboard');
+
+      // Refresh token to ensure any downgraded claims propagate
+      const refreshed = await user.getIdTokenResult(true);
+      updateRoleBadges(refreshed.claims.roles, strings);
 
       return false;
     }
@@ -177,7 +238,15 @@ async function verifyMembership(user, strings) {
     setInnerHTML('membership-status', html, 'dashboard');
 
     setDisabled('verify-membership-btn', false, 'dashboard');
-    setTextContent('verify-membership-btn', strings.btn_verify_membership, 'dashboard');
+      setTextContent('verify-membership-btn', strings.btn_verify_membership, 'dashboard');
+
+    // Ensure claims stay in sync even after error
+    try {
+      const refreshed = await user.getIdTokenResult(true);
+      updateRoleBadges(refreshed.claims.roles, strings);
+    } catch (refreshError) {
+      console.warn('Failed to refresh claims after verification error', refreshError);
+    }
 
     throw error;
   }
@@ -222,12 +291,14 @@ async function init() {
     updateDashboardStrings(strings);
 
     // Update welcome message with user's name
-    const displayName = userData.displayName || strings.dashboard_default_name;
-    const welcomeText = R.format(strings.dashboard_welcome_user, strings.dashboard_welcome, displayName);
-    setTextContent('welcome-title', welcomeText, 'dashboard');
+  const welcomeText = buildWelcomeMessage(userData.displayName, strings);
+  setTextContent('welcome-title', welcomeText, 'dashboard');
 
     // Update membership status UI
     updateMembershipUI(userData.isMember, strings);
+
+    // Show role badges for elevated users
+    updateRoleBadges(userData.roles, strings);
 
     // Setup membership verification handler
     setupMembershipVerification(user, strings);

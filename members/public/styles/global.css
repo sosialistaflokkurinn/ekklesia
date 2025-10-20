@@ -34,6 +34,9 @@ h1 {
   --color-primary: #d32f2f;
   --color-primary-dark: #b71c1c;
 
+  /* Accent */
+  --color-accent-gold: #f3b41b;
+
   /* Status colors */
   --color-success-bg: #c6f6d5;
   --color-success-text: #22543d;
