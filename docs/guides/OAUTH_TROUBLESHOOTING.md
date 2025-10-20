@@ -1,5 +1,8 @@
 # OAuth Troubleshooting Guide
 
+**Last Updated:** 2025-10-20  
+**Status:** ✅ Current
+
 This guide helps you diagnose and fix OAuth login issues with Kenni.is quickly using correlation IDs and the health check endpoint.
 
 ## What you need

@@ -350,8 +350,8 @@ Create batch file, show to user, post after approval.
 
 ## 🔗 Related Documentation
 
-- [GITHUB_PR_REVIEW_REPLY_WORKFLOW.md](GITHUB_PR_REVIEW_REPLY_WORKFLOW.md) - Technical implementation
-- [GITHUB_PR_MANAGEMENT.md](GITHUB_PR_MANAGEMENT.md) - General PR management
+- [GITHUB_PR_REVIEW_REPLY_WORKFLOW.md](github/GITHUB_PR_REVIEW_REPLY_WORKFLOW.md) - Technical implementation
+- [GITHUB_PR_MANAGEMENT.md](github/GITHUB_PR_MANAGEMENT.md) - General PR management
 
 ---
 

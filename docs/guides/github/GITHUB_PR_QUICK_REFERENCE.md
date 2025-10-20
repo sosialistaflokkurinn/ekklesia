@@ -1,5 +1,8 @@
 # GitHub PR Quick Reference Card
 
+**Last Updated:** 2025-10-20  
+**Status:** ✅ Current
+
 **Quick commands for managing PRs with `gh` CLI**
 
 ## Most Common Commands
