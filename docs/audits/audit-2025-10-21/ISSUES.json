@@ -1,0 +1,383 @@
+{
+  "broken_links": [],
+  "inaccurate_code_references": [],
+  "outdated_config": [],
+  "missing_files": [],
+  "placeholder_content": [
+    {
+      "file": "docs/SCRIPT_IMPROVEMENTS_APPLIED.md",
+      "type": "placeholder_content",
+      "line": 61,
+      "content": "placeholders = ['TODO', 'TBD', 'Coming soon', 'FIXME', 'XXX', '...', '< to be completed']",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/SCRIPT_IMPROVEMENTS_APPLIED.md",
+      "type": "placeholder_content",
+      "line": 66,
+      "content": "placeholders = ['TODO', 'TBD', 'FIXME', 'XXX']",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/audits/ARCHIVE-INFLATED-CLAIMS/COMPLETE_DELIVERABLES.md",
+      "type": "placeholder_content",
+      "line": 349,
+      "content": "- **Phase 3**: TBD (optional)",
+      "placeholder": "TBD",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/audits/ARCHIVE-INFLATED-CLAIMS/CORRECTION_SUMMARY.md",
+      "type": "placeholder_content",
+      "line": 116,
+      "content": "Updated todo list with realistic Phase 2 planning:",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/audits/ARCHIVE-INFLATED-CLAIMS/HONEST_ASSESSMENT.md",
+      "type": "placeholder_content",
+      "line": 117,
+      "content": "\u2705 **Finding incomplete sections (TODO, TBD, FIXME)**",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/audits/ARCHIVE-INFLATED-CLAIMS/HONEST_ASSESSMENT.md",
+      "type": "placeholder_content",
+      "line": 251,
+      "content": "- Phase 3: If Phase 2 needed (TBD)",
+      "placeholder": "TBD",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/audits/ARCHIVE-INFLATED-CLAIMS/REALITY_CHECK.md",
+      "type": "placeholder_content",
+      "line": 94,
+      "content": "- Identifies incomplete sections (TODO, TBD, FIXME)",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/audits/CORRECTION_PACKAGE_INDEX.md",
+      "type": "placeholder_content",
+      "line": 101,
+      "content": "- \u2705 TODO section (Phase 2.5 fixes needed)",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/audits/DOCUMENTATION_CORRECTION_NOTICE.md",
+      "type": "placeholder_content",
+      "line": 146,
+      "content": "- Each method has TODO section pointing to Phase 2.5 requirements",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/audits/FINAL_COMPLETION_SUMMARY.md",
+      "type": "placeholder_content",
+      "line": 26,
+      "content": "- TODO sections pointing to Phase 2.5 requirements",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/audits/SCRIPT_FIX_VERIFICATION.md",
+      "type": "placeholder_content",
+      "line": 125,
+      "content": "placeholders = ['TODO', 'TBD', 'FIXME', 'XXX', '...']",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/audits/SCRIPT_FIX_VERIFICATION.md",
+      "type": "placeholder_content",
+      "line": 138,
+      "content": "placeholders = ['TODO', 'TBD', 'FIXME', 'XXX']",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/audits/SCRIPT_FIX_VERIFICATION.md",
+      "type": "placeholder_content",
+      "line": 142,
+      "content": "# Only matches whole words: TODO, not todoList",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/audits/SCRIPT_FIX_VERIFICATION.md",
+      "type": "placeholder_content",
+      "line": 577,
+      "content": "- \u2705 Placeholder/TODO finding",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/audits/audit-2025-10-21/AUDIT_EXECUTIVE_SUMMARY.md",
+      "type": "placeholder_content",
+      "line": 96,
+      "content": "The audit flagged 11 files for containing \"TODO\" or \"TBD\" references. **Analysis shows all are legit",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/audits/audit-2025-10-21/AUDIT_EXECUTIVE_SUMMARY.md",
+      "type": "placeholder_content",
+      "line": 99,
+      "content": "- References to TODO comments in security reviews (legitimate findings)",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/audits/audit-2025-10-21/AUDIT_EXECUTIVE_SUMMARY.md",
+      "type": "placeholder_content",
+      "line": 170,
+      "content": "- Create quarterly review cycle for \"TBD\" items",
+      "placeholder": "TBD",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/audits/audit-2025-10-21/COMPREHENSIVE_AUDIT_REPORT.md",
+      "type": "placeholder_content",
+      "line": 24,
+      "content": "4. **Placeholder Content:** Only 11 files with legitimate \"TODO\" or \"TBD\" in context (not content ga",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/audits/audit-2025-10-21/COMPREHENSIVE_AUDIT_REPORT.md",
+      "type": "placeholder_content",
+      "line": 75,
+      "content": "8. \u2705 No actual placeholder content (TODO/TBD) outside of legitimate context",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/audits/audit-2025-10-21/COMPREHENSIVE_AUDIT_REPORT.md",
+      "type": "placeholder_content",
+      "line": 110,
+      "content": "These files contain legitimate \"TODO\" or \"TBD\" references in proper context (not content gaps):",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/audits/audit-2025-10-21/COMPREHENSIVE_AUDIT_REPORT.md",
+      "type": "placeholder_content",
+      "line": 113,
+      "content": "- Line 559: \"Cost: TBD if adopted\" (legitimate - cost estimation pending)",
+      "placeholder": "TBD",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/audits/audit-2025-10-21/COMPREHENSIVE_AUDIT_REPORT.md",
+      "type": "placeholder_content",
+      "line": 125,
+      "content": "- References \"TODO comment\" (legitimate audit finding, not documentation gap)",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/audits/audit-2025-10-21/COMPREHENSIVE_AUDIT_REPORT.md",
+      "type": "placeholder_content",
+      "line": 129,
+      "content": "- References \"TODO comments\" from code review (legitimate context)",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/audits/audit-2025-10-21/COMPREHENSIVE_AUDIT_REPORT.md",
+      "type": "placeholder_content",
+      "line": 133,
+      "content": "- References \"TODO kennitalas\" (legitimate - records issue context)",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/audits/audit-2025-10-21/COMPREHENSIVE_AUDIT_REPORT.md",
+      "type": "placeholder_content",
+      "line": 137,
+      "content": "- References \"TODO comment only\" (legitimate - documents improperly closed issue)",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/audits/audit-2025-10-21/COMPREHENSIVE_AUDIT_REPORT.md",
+      "type": "placeholder_content",
+      "line": 145,
+      "content": "- References \"TODO on line 158\" (legitimate - references actual code TODO)",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/audits/audit-2025-10-21/COMPREHENSIVE_AUDIT_REPORT.md",
+      "type": "placeholder_content",
+      "line": 279,
+      "content": "- Create quarterly review cycle for \"Cost: TBD\" items in architecture docs",
+      "placeholder": "TBD",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/audits/audit-2025-10-21/VERIFICATION_LOG.md",
+      "type": "placeholder_content",
+      "line": 20,
+      "content": "- {'file': 'docs/SCRIPT_IMPROVEMENTS_APPLIED.md', 'type': 'placeholder_content', 'line': 61, 'conten",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/audits/audit-2025-10-21/VERIFICATION_LOG.md",
+      "type": "placeholder_content",
+      "line": 21,
+      "content": "- {'file': 'docs/SCRIPT_IMPROVEMENTS_APPLIED.md', 'type': 'placeholder_content', 'line': 66, 'conten",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/audits/audit-2025-10-21/VERIFICATION_LOG.md",
+      "type": "placeholder_content",
+      "line": 22,
+      "content": "- {'file': 'docs/audits/CORRECTION_SUMMARY.md', 'type': 'placeholder_content', 'line': 116, 'content",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/audits/audit-2025-10-21/VERIFICATION_LOG.md",
+      "type": "placeholder_content",
+      "line": 23,
+      "content": "- {'file': 'docs/audits/HONEST_ASSESSMENT.md', 'type': 'placeholder_content', 'line': 117, 'content'",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/audits/audit-2025-10-21/VERIFICATION_LOG.md",
+      "type": "placeholder_content",
+      "line": 24,
+      "content": "- {'file': 'docs/audits/HONEST_ASSESSMENT.md', 'type': 'placeholder_content', 'line': 251, 'content'",
+      "placeholder": "TBD",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/design/ARCHITECTURE_RECOMMENDATIONS.md",
+      "type": "placeholder_content",
+      "line": 559,
+      "content": "- Effort: 0.5 day (evaluation); Cost: TBD if adopted",
+      "placeholder": "TBD",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/reviews/PR28_AUDIT_REPORT.md",
+      "type": "placeholder_content",
+      "line": 134,
+      "content": "**Expected**: TODO comment + restricted origin list",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/reviews/PR28_AUDIT_REPORT.md",
+      "type": "placeholder_content",
+      "line": 136,
+      "content": "**Referenced In**: Response #20 (TODO for Domain Update)",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/security/CRITICAL_ACTIONS_LOG.md",
+      "type": "placeholder_content",
+      "line": 154,
+      "content": "**Lesson Learned:** Don't close security issues with TODO comments - create proper tracking issues",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/security/ISSUES_31-40_SECURITY_REVIEW_RESPONSE.md",
+      "type": "placeholder_content",
+      "line": 60,
+      "content": "**Original Status:** Closed (incorrectly - only TODO added)",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/security/ISSUES_31-40_SECURITY_REVIEW_RESPONSE.md",
+      "type": "placeholder_content",
+      "line": 241,
+      "content": "| #37 | TODO kennitalas | \u2705 Closed | Low | None needed |",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/security/ISSUES_41-50_CRITICAL_REVIEW.md",
+      "type": "placeholder_content",
+      "line": 202,
+      "content": "| Documentation | Minimal (TODO comment only) | Excellent (detailed) |",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/security/ISSUES_41-50_CRITICAL_REVIEW.md",
+      "type": "placeholder_content",
+      "line": 209,
+      "content": "- Issue #38 was closed **prematurely** with only a TODO comment, not actual fix",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/security/ISSUES_41-50_CRITICAL_REVIEW.md",
+      "type": "placeholder_content",
+      "line": 245,
+      "content": "- #38 closed with \"TODO\" only",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/security/ISSUES_41-50_CRITICAL_REVIEW.md",
+      "type": "placeholder_content",
+      "line": 296,
+      "content": "This issue supersedes #38, which was closed prematurely with only a TODO comment.",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/security/ISSUES_41-50_CRITICAL_REVIEW.md",
+      "type": "placeholder_content",
+      "line": 303,
+      "content": "This issue was closed with only a TODO comment (no actual fix).",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/security/ISSUES_41-50_CRITICAL_REVIEW.md",
+      "type": "placeholder_content",
+      "line": 326,
+      "content": "# TODO: Add custom domain when available:",
+      "placeholder": "TODO",
+      "severity": "medium"
+    },
+    {
+      "file": "docs/status/SESSION_2025-10-19_Phase5_Validation_Prep.md",
+      "type": "placeholder_content",
+      "line": 493,
+      "content": "- Satisfies TODO on line 158: \"Provide a small CLI script for setting roles\"",
+      "placeholder": "TODO",
+      "severity": "medium"
+    }
+  ],
+  "schema_mismatches": [],
+  "contradictions": [],
+  "formatting_issues": [],
+  "endpoint_mismatches": [],
+  "config_mismatches": [],
+  "endpoint_validation_failure": [
+    {
+      "file": "members/functions/main.py",
+      "type": "documented_function_not_deployed",
+      "function": "healthz",
+      "severity": "high"
+    }
+  ],
+  "configuration_validation_failure": [],
+  "database_validation_failure": []
+}
