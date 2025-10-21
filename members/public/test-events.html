@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prófunarkosning 2025 - Sósíalistaflokkurinn</title>
+    <link rel="stylesheet" href="/styles/global.css">
+    <link rel="stylesheet" href="/styles/components/nav.css">
+    <link rel="stylesheet" href="/styles/components/page.css">
+    <link rel="stylesheet" href="/styles/components/events-test.css">
+</head>
+<body class="authenticated">
+    <!-- Navigation -->
+    <nav class="nav-header">
+        <div class="nav-container">
+            <a href="/dashboard.html" class="nav-brand">Sósíalistaflokkurinn</a>
+            <div class="nav-links">
+                <a href="/dashboard.html" class="nav-link">Mín síða</a>
+                <a href="/profile.html" class="nav-link">Prófíll</a>
+                <a href="#" class="nav-link nav-logout" id="nav-logout">Útskrá</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="page-container">
+        <!-- Title Card -->
+        <div class="card">
+            <h1 class="event-title">🚀 Prófunarkosning 2025</h1>
+        </div>
+
+        <!-- Authentication Status Card -->
+        <div class="card">
+            <h2 class="card-title">Auðkenning</h2>
+            <div class="auth-status">
+                <span class="status-badge status-unauthenticated" id="auth-badge">Ekki auðkenndur</span>
+            </div>
+            <div class="card-content" id="user-info"></div>
+        </div>
+
+        <!-- API Test Card -->
+        <div class="card">
+            <h2 class="card-title">API Prófanir</h2>
+            <div class="api-info">
+                <strong>Framleiðsluumhverfi:</strong> https://events-service-521240388393.europe-west2.run.app
+            </div>
+
+            <!-- Health Check -->
+            <div class="test-section">
+                <h3 class="test-title">1. Heilsuathugun (engin auðkenning)</h3>
+                <button class="btn" id="btn-health">GET /health</button>
+                <pre class="test-result" id="result-health"></pre>
+            </div>
+
+            <!-- Get Election -->
+            <div class="test-section">
+                <h3 class="test-title">2. Sækja kosningaupplýsingar</h3>
+                <button class="btn" id="btn-election" disabled>GET /api/election</button>
+                <pre class="test-result" id="result-election"></pre>
+            </div>
+
+            <!-- Request Token -->
+            <div class="test-section">
+                <h3 class="test-title">3. Biðja um atkvæðismerki</h3>
+                <button class="btn" id="btn-request-token" disabled>POST /api/request-token</button>
+                <pre class="test-result" id="result-request-token"></pre>
+            </div>
+
+            <!-- Check Status -->
+            <div class="test-section">
+                <h3 class="test-title">4. Athuga þátttökustöðu</h3>
+                <button class="btn" id="btn-my-status" disabled>GET /api/my-status</button>
+                <pre class="test-result" id="result-my-status"></pre>
+            </div>
+
+            <!-- Vote -->
+            <div class="test-section">
+                <h3 class="test-title">5. Kjósa (Elections Service)</h3>
+                <div style="margin-bottom: 10px;">
+                    <label style="display: block; margin-bottom: 5px;"><strong>Atkvæðismerki:</strong></label>
+                    <input type="text" id="voting-token" placeholder="Límdu atkvæðismerkið hér"
+                           style="width: 100%; padding: 8px; font-family: monospace; margin-bottom: 10px;">
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <label style="display: block; margin-bottom: 5px;"><strong>Svar:</strong></label>
+                    <select id="vote-answer" style="padding: 8px; width: 100%; margin-bottom: 10px;">
+                        <option value="yes">Já</option>
+                        <option value="no">Nei</option>
+                        <option value="abstain">Sitja hjá</option>
+                    </select>
+                </div>
+                <button class="btn" id="btn-vote">POST /api/vote (Elections Service)</button>
+                <pre class="test-result" id="result-vote"></pre>
+            </div>
+
+            <!-- Results -->
+            <div class="test-section">
+                <h3 class="test-title">6. Niðurstöður</h3>
+                <button class="btn" id="btn-results" disabled>GET /api/results</button>
+                <pre class="test-result" id="result-results"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { requireAuth, signOut } from '/js/auth.js';
+        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+        const PRODUCTION_API = 'https://events-service-521240388393.europe-west2.run.app';
+        const ELECTIONS_API = 'https://elections-service-521240388393.europe-west2.run.app';
+        const auth = getAuth();
+        let currentUser = null;
+
+        // Auth guard
+        currentUser = await requireAuth();
+
+        // Update auth UI
+        function updateAuthUI(user) {
+            const authBadge = document.getElementById('auth-badge');
+            const userInfo = document.getElementById('user-info');
+
+            if (user) {
+                authBadge.textContent = '✓ Auðkenndur';
+                authBadge.className = 'status-badge status-authenticated';
+
+                user.getIdTokenResult().then(idTokenResult => {
+                    const kennitala = idTokenResult.claims.kennitala || 'Ekki tiltækt';
+                    const isMember = idTokenResult.claims.isMember ? '✓ Já' : '✗ Nei';
+                    userInfo.innerHTML = `
+                        <div class="user-details">
+                            <div><strong>UID:</strong> ${user.uid}</div>
+                            <div><strong>Kennitala:</strong> ${kennitala}</div>
+                            <div><strong>Félagsaðild:</strong> ${isMember}</div>
+                        </div>
+                    `;
+                    enableButtons(true);
+                });
+            }
+        }
+
+        function enableButtons(enabled) {
+            document.getElementById('btn-election').disabled = !enabled;
+            document.getElementById('btn-request-token').disabled = !enabled;
+            document.getElementById('btn-my-status').disabled = !enabled;
+            document.getElementById('btn-results').disabled = !enabled;
+        }
+
+        async function getIdToken() {
+            if (!currentUser) throw new Error('Not authenticated');
+            return await currentUser.getIdToken();
+        }
+
+        function showResult(elementId, data, isError = false) {
+            const element = document.getElementById(elementId);
+            element.className = isError ? 'test-result test-error' : 'test-result test-success';
+            element.textContent = JSON.stringify(data, null, 2);
+            element.style.display = 'block';
+        }
+
+        // Event Handlers
+        document.getElementById('nav-logout').addEventListener('click', async (e) => {
+            e.preventDefault();
+            await signOut();
+        });
+
+        document.getElementById('btn-health').addEventListener('click', async () => {
+            try {
+                const response = await fetch(`${PRODUCTION_API}/health`);
+                const data = await response.json();
+                showResult('result-health', data);
+            } catch (error) {
+                showResult('result-health', { error: error.message }, true);
+            }
+        });
+
+        document.getElementById('btn-election').addEventListener('click', async () => {
+            try {
+                const token = await getIdToken();
+                const response = await fetch(`${PRODUCTION_API}/api/election`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                showResult('result-election', data, !response.ok);
+            } catch (error) {
+                showResult('result-election', { error: error.message }, true);
+            }
+        });
+
+        document.getElementById('btn-request-token').addEventListener('click', async () => {
+            try {
+                const token = await getIdToken();
+                const response = await fetch(`${PRODUCTION_API}/api/request-token`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                showResult('result-request-token', data, !response.ok);
+            } catch (error) {
+                showResult('result-request-token', { error: error.message }, true);
+            }
+        });
+
+        document.getElementById('btn-my-status').addEventListener('click', async () => {
+            try {
+                const token = await getIdToken();
+                const response = await fetch(`${PRODUCTION_API}/api/my-status`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                showResult('result-my-status', data, !response.ok);
+            } catch (error) {
+                showResult('result-my-status', { error: error.message }, true);
+            }
+        });
+
+        document.getElementById('btn-vote').addEventListener('click', async () => {
+            try {
+                const votingToken = document.getElementById('voting-token').value.trim();
+                const answer = document.getElementById('vote-answer').value;
+
+                if (!votingToken) {
+                    showResult('result-vote', { error: 'Vinsamlegast sláðu inn atkvæðismerki' }, true);
+                    return;
+                }
+
+                const response = await fetch(`${ELECTIONS_API}/api/vote`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${votingToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ answer })
+                });
+                const data = await response.json();
+                showResult('result-vote', data, !response.ok);
+
+                // If vote succeeded, clear the token field
+                if (response.ok) {
+                    document.getElementById('voting-token').value = '';
+                }
+            } catch (error) {
+                showResult('result-vote', { error: error.message }, true);
+            }
+        });
+
+        document.getElementById('btn-results').addEventListener('click', async () => {
+            try {
+                const token = await getIdToken();
+                const response = await fetch(`${PRODUCTION_API}/api/results`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                showResult('result-results', data, !response.ok);
+            } catch (error) {
+                showResult('result-results', { error: error.message }, true);
+            }
+        });
+
+        // Initialize
+        updateAuthUI(currentUser);
+    </script>
+</body>
+</html>

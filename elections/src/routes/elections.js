@@ -1,0 +1,306 @@
+const express = require('express');
+const crypto = require('crypto');
+const pool = require('../config/database');
+const authenticateS2S = require('../middleware/s2sAuth');
+const { logAudit } = require('../services/auditService');
+
+const router = express.Router();
+
+// =====================================================
+// S2S Endpoint: Register Voting Token
+// =====================================================
+// Called by Events service when member requests token
+// POST /api/s2s/register-token
+// Body: { token_hash: string }
+// Headers: X-API-Key: <shared-secret>
+
+router.post('/s2s/register-token', authenticateS2S, async (req, res) => {
+  const startTime = Date.now();
+  const { token_hash } = req.body;
+
+  // Validate input
+  if (!token_hash) {
+    await logAudit('register_token', false, { error: 'Missing token_hash' });
+    return res.status(400).json({
+      error: 'Bad Request',
+      message: 'Missing token_hash in request body'
+    });
+  }
+
+  // Validate token hash format (SHA-256 = 64 hex chars)
+  if (!/^[a-f0-9]{64}$/.test(token_hash)) {
+    await logAudit('register_token', false, { error: 'Invalid token_hash format', token_hash });
+    return res.status(400).json({
+      error: 'Bad Request',
+      message: 'Invalid token_hash format (must be 64 hex characters)'
+    });
+  }
+
+  try {
+    // Insert token (duplicate will fail due to PRIMARY KEY constraint)
+    await pool.query(
+      'INSERT INTO voting_tokens (token_hash) VALUES ($1)',
+      [token_hash]
+    );
+
+    const duration = Date.now() - startTime;
+    await logAudit('register_token', true, { token_hash, duration_ms: duration });
+
+    res.status(201).json({
+      success: true,
+      token_hash,
+      message: 'Token registered successfully'
+    });
+
+  } catch (error) {
+    const duration = Date.now() - startTime;
+
+    // Check if duplicate token
+    if (error.code === '23505') { // PostgreSQL unique violation
+      await logAudit('register_token', false, { error: 'Token already registered', token_hash, duration_ms: duration });
+      return res.status(409).json({
+        error: 'Conflict',
+        message: 'Token already registered'
+      });
+    }
+
+    console.error('[S2S] Register token error:', error);
+    await logAudit('register_token', false, { error: error.message, token_hash, duration_ms: duration });
+
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to register token'
+    });
+  }
+});
+
+// =====================================================
+// S2S Endpoint: Get Results
+// =====================================================
+// Called by Events service to fetch election results
+// GET /api/s2s/results
+// Headers: X-API-Key: <shared-secret>
+
+router.get('/s2s/results', authenticateS2S, async (req, res) => {
+  const startTime = Date.now();
+
+  try {
+    // Count ballots by answer
+    const result = await pool.query(`
+      SELECT
+        answer,
+        COUNT(*) as count
+      FROM ballots
+      GROUP BY answer
+      ORDER BY answer
+    `);
+
+    // Build results object
+    const results = {
+      yes: 0,
+      no: 0,
+      abstain: 0
+    };
+
+    result.rows.forEach(row => {
+      results[row.answer] = parseInt(row.count, 10);
+    });
+
+    const totalBallots = results.yes + results.no + results.abstain;
+    const duration = Date.now() - startTime;
+
+    await logAudit('fetch_results', true, { total_ballots: totalBallots, duration_ms: duration });
+
+    res.json({
+      total_ballots: totalBallots,
+      results,
+      election_title: process.env.ELECTION_TITLE || 'Prófunarkosning 2025'
+    });
+
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    console.error('[S2S] Get results error:', error);
+    await logAudit('fetch_results', false, { error: error.message, duration_ms: duration });
+
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to fetch results'
+    });
+  }
+});
+
+// =====================================================
+// Public Endpoint: Submit Ballot
+// =====================================================
+// POST /api/vote
+// Headers: Authorization: Bearer <token-from-events>
+// Body: { answer: 'yes' | 'no' | 'abstain' }
+
+router.post('/vote', async (req, res) => {
+  const startTime = Date.now();
+
+  // Extract token from Authorization header
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    await logAudit('record_ballot', false, { error: 'Missing authorization token' });
+    return res.status(401).json({
+      error: 'Unauthorized',
+      message: 'Missing or invalid Authorization header'
+    });
+  }
+
+  const token = authHeader.split('Bearer ')[1];
+  const { answer } = req.body;
+
+  // Validate answer
+  if (!answer || !['yes', 'no', 'abstain'].includes(answer)) {
+    await logAudit('record_ballot', false, { error: 'Invalid answer', answer });
+    return res.status(400).json({
+      error: 'Bad Request',
+      message: 'Invalid answer. Must be yes, no, or abstain'
+    });
+  }
+
+  // Hash token (SHA-256)
+  const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+  // Database transaction (atomic ballot submission)
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    // Check token exists and not used (with row lock for concurrent votes)
+    const tokenResult = await client.query(
+      'SELECT used FROM voting_tokens WHERE token_hash = $1 FOR UPDATE NOWAIT',
+      [tokenHash]
+    );
+
+    if (tokenResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      const duration = Date.now() - startTime;
+      await logAudit('record_ballot', false, { error: 'Token not registered', token_hash: tokenHash, duration_ms: duration });
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Token not registered'
+      });
+    }
+
+    if (tokenResult.rows[0].used) {
+      await client.query('ROLLBACK');
+      const duration = Date.now() - startTime;
+      await logAudit('record_ballot', false, { error: 'Token already used', token_hash: tokenHash, duration_ms: duration });
+      return res.status(409).json({
+        error: 'Conflict',
+        message: 'Token already used'
+      });
+    }
+
+    // Insert ballot (timestamp rounded to nearest minute for anonymity)
+    const ballotResult = await client.query(`
+      INSERT INTO ballots (token_hash, answer, submitted_at)
+      VALUES ($1, $2, date_trunc('minute', NOW()))
+      RETURNING id
+    `, [tokenHash, answer]);
+
+    const ballotId = ballotResult.rows[0].id;
+
+    // Mark token as used
+    await client.query(
+      'UPDATE voting_tokens SET used = TRUE, used_at = NOW() WHERE token_hash = $1',
+      [tokenHash]
+    );
+
+    await client.query('COMMIT');
+
+    const duration = Date.now() - startTime;
+    await logAudit('record_ballot', true, { token_hash: tokenHash, answer, duration_ms: duration });
+
+    res.status(201).json({
+      success: true,
+      ballot_id: ballotId,
+      message: 'Vote recorded successfully'
+    });
+
+  } catch (error) {
+    await client.query('ROLLBACK');
+    const duration = Date.now() - startTime;
+
+    // Check if lock timeout (FOR UPDATE NOWAIT failed)
+    if (error.code === '55P03') { // Lock not available
+      console.warn('[Vote] Lock contention detected for token:', tokenHash.substring(0, 8));
+      await logAudit('record_ballot', false, { error: 'Lock contention', token_hash: tokenHash, duration_ms: duration });
+      return res.status(503).json({
+        error: 'Service Temporarily Unavailable',
+        message: 'Please retry in a moment',
+        retryAfter: 1  // seconds
+      });
+    }
+
+    console.error('[Vote] Ballot submission error:', error);
+    await logAudit('record_ballot', false, { error: error.message, token_hash: tokenHash, duration_ms: duration });
+
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to record vote'
+    });
+
+  } finally {
+    client.release();
+  }
+});
+
+// =====================================================
+// Public Endpoint: Check Token Status
+// =====================================================
+// GET /api/token-status
+// Headers: Authorization: Bearer <token-from-events>
+
+router.get('/token-status', async (req, res) => {
+  // Extract token from Authorization header
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({
+      error: 'Unauthorized',
+      message: 'Missing or invalid Authorization header'
+    });
+  }
+
+  const token = authHeader.split('Bearer ')[1];
+
+  // Hash token
+  const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+  try {
+    // Check token exists
+    const result = await pool.query(
+      'SELECT used, registered_at FROM voting_tokens WHERE token_hash = $1',
+      [tokenHash]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Token not registered'
+      });
+    }
+
+    const tokenData = result.rows[0];
+
+    res.json({
+      valid: true,
+      used: tokenData.used,
+      registered_at: tokenData.registered_at,
+      election_title: process.env.ELECTION_TITLE || 'Prófunarkosning 2025',
+      election_question: process.env.ELECTION_QUESTION || 'Do you support this proposal?'
+    });
+
+  } catch (error) {
+    console.error('[Token Status] Error:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to check token status'
+    });
+  }
+});
+
+module.exports = router;
