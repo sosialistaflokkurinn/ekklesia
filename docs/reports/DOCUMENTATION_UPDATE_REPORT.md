@@ -80,7 +80,7 @@ Moved all files to their correct subdirectories following PR #29 structure:
 | Architecture docs | `docs/design/` | Design reference |
 | Deployment guide | `docs/setup/` | Setup procedures |
 | Operational docs | `docs/maintenance/` | Maintenance procedures |
-| Usage context | `docs/guides/` | Reference guides |
+| Usage context | `docs/development/guides/` | Reference guides |
 
 ### Step 6: Staged and Committed ✅
 ```bash
@@ -165,7 +165,7 @@ docs/audits/LINK_VALIDATION_REPORT_2025-10-20.md (179 lines - placed in audits)
 
 ### Usage Documentation (1 file, 530 lines)
 ```
-docs/guides/USAGE_CONTEXT.md (530 lines)
+docs/development/guides/USAGE_CONTEXT.md (530 lines)
 ```
 
 ---

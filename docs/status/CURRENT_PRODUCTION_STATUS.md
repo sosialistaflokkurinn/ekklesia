@@ -120,8 +120,8 @@
   - RBAC-protected admin endpoints (#71-#79) publishing to Cloud Run after schema migration (#84).
   - Audit logging format and eligibility schema updates tracked in #80-#82.
 - **Documentation updates in progress**
-  - `docs/guides/ROLES_AND_PERMISSIONS.md` expanded with election-specific capabilities.
-  - `docs/guides/INDEX.md` now references the roles guide for support teams.
+  - `docs/development/guides/ROLES_AND_PERMISSIONS.md` expanded with election-specific capabilities.
+  - `docs/development/guides/INDEX.md` now references the roles guide for support teams.
   - Member production status will capture election catalogue metrics once the sync pipeline launches (#88-#92).
 
 **Next verification window**: Begin staging validations the week of Oct 27 after database migration smoke tests conclude.

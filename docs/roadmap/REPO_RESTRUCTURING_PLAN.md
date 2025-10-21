@@ -92,7 +92,7 @@ The Ekklesia repository is transitioning from Phase 4 (security hardening MVP) t
 ### What Needs Improvement
 ❌ Documentation scattered across 8+ categories without clear ownership
 ❌ No feature-branch documentation (hard to onboard on specific features)
-❌ Mixed concerns in `/docs/guides/` (git, github, admin, troubleshooting)
+❌ Mixed concerns in `/docs/development/guides/` (git, github, admin, troubleshooting)
 ❌ No clear "getting started" path for new developers
 ❌ Design docs separate from feature tracking
 ❌ Testing documentation not co-located with tests
@@ -588,7 +588,7 @@ After restructuring:
 ## 📖 Related Documentation
 
 - **Current structure**: `/home/gudro/Development/projects/ekklesia/`
-- **Multi-agent workflow**: `docs/guides/workflows/MULTI_AGENT_WORKFLOW.md`
+- **Multi-agent workflow**: `docs/development/guides/workflows/MULTI_AGENT_WORKFLOW.md`
 - **Open issues**: GitHub issues #24, #43, #87 (major features)
 - **Phase roadmap**: `docs/roadmap/` (overall project timeline)
 

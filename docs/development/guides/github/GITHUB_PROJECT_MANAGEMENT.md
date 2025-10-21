@@ -859,4 +859,4 @@ All 34 items now have priorities (P0/P1/P2) and proper status (Backlog/Ready/In 
 **Related Guides**:
 - [GITHUB_PR_MANAGEMENT.md](GITHUB_PR_MANAGEMENT.md) - Pull request workflow
 - [GITHUB_PR_QUICK_REFERENCE.md](GITHUB_PR_QUICK_REFERENCE.md) - Quick command reference
-- [BRANCH_STRATEGY.md](../../archive/docs/docs-2025-10-13/docs/guides/BRANCH_STRATEGY.md) - Branching strategy
+- [BRANCH_STRATEGY.md](../../archive/docs/docs-2025-10-13/docs/development/guides/BRANCH_STRATEGY.md) - Branching strategy

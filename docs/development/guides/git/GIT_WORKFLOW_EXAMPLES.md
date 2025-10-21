@@ -27,11 +27,11 @@ root/package.json
 
 ### Documentation Example Files (14 files)
 ```
-docs/guides/ADMIN_ALERTS.md
-docs/guides/AUDIT_LOGGING.md
-docs/guides/MFA_ENFORCEMENT.md
-docs/guides/OAUTH_TROUBLESHOOTING.md
-docs/guides/ROLES_AND_PERMISSIONS.md
+docs/development/guides/ADMIN_ALERTS.md
+docs/development/guides/AUDIT_LOGGING.md
+docs/development/guides/MFA_ENFORCEMENT.md
+docs/development/guides/OAUTH_TROUBLESHOOTING.md
+docs/development/guides/ROLES_AND_PERMISSIONS.md
 docs/testing/ADMIN_RESET_CHECKLIST.md
 docs/testing/ADMIN_RESET_TEST_REPORT.md
 docs/testing/END_TO_END_VOTING_FLOW_TEST.md
@@ -69,8 +69,8 @@ Let's verify - **MOST ARE ACTUALLY THERE**:
 cd /home/gudro/Development/projects/ekklesia
 
 # Documentation files - check if they exist
-find . -name "ADMIN_ALERTS.md"  # Should be at docs/guides/ADMIN_ALERTS.md
-find . -name "AUDIT_LOGGING.md"  # Should be at docs/guides/AUDIT_LOGGING.md
+find . -name "ADMIN_ALERTS.md"  # Should be at docs/development/guides/ADMIN_ALERTS.md
+find . -name "AUDIT_LOGGING.md"  # Should be at docs/development/guides/AUDIT_LOGGING.md
 
 # Module files
 find . -name "server.js"          # Should be at tools/legacy/server.js
@@ -100,10 +100,10 @@ Before PR #29:
   └─ docs/ADMIN_ALERTS.md (you edited it)
 
 After PR #29:
-  └─ docs/guides/ADMIN_ALERTS.md (file moved)
+  └─ docs/development/guides/ADMIN_ALERTS.md (file moved)
 
 During PR #34 rebase:
-  - Git saw: docs/ADMIN_ALERTS.md (your edit) vs docs/guides/ADMIN_ALERTS.md (new location)
+  - Git saw: docs/ADMIN_ALERTS.md (your edit) vs docs/development/guides/ADMIN_ALERTS.md (new location)
   - Conflict!
   - You resolved as: accept their version (keep move)
   - Result: Your edits lost in dangling commit
@@ -128,13 +128,13 @@ git checkout recovery/admin-alerts -- docs/ADMIN_ALERTS.md
 less docs/ADMIN_ALERTS.md
 
 # 6. Move to correct location and merge with current version
-cp docs/ADMIN_ALERTS.md docs/guides/ADMIN_ALERTS.md
+cp docs/ADMIN_ALERTS.md docs/development/guides/ADMIN_ALERTS.md
 
 # 7. Review the merged result
-git diff docs/guides/ADMIN_ALERTS.md
+git diff docs/development/guides/ADMIN_ALERTS.md
 
 # 8. If good, stage it
-git add docs/guides/ADMIN_ALERTS.md
+git add docs/development/guides/ADMIN_ALERTS.md
 
 # 9. Commit
 git commit -m "recover: restore edits to ADMIN_ALERTS.md"
@@ -190,7 +190,7 @@ git commit -m "recover: restore NPM script files"
 **Your situation:**
 ```
 One dangling commit has multiple files you need:
-  - docs/guides/OAUTH_TROUBLESHOOTING.md (edits)
+  - docs/development/guides/OAUTH_TROUBLESHOOTING.md (edits)
   - members/scripts/audit-mfa.js (new file)
   - scripts/get-secret.sh (modified)
 
@@ -208,7 +208,7 @@ git branch recovery/multi-file 2e1b0237c7c82ae89369fc4762d7911ffee38727
 git diff main recovery/multi-file --stat
 
 # 3. Review specific files
-git diff main recovery/multi-file -- docs/guides/OAUTH_TROUBLESHOOTING.md
+git diff main recovery/multi-file -- docs/development/guides/OAUTH_TROUBLESHOOTING.md
 git diff main recovery/multi-file -- members/scripts/audit-mfa.js
 git diff main recovery/multi-file -- scripts/get-secret.sh
 
@@ -217,7 +217,7 @@ git cherry-pick recovery/multi-file
 # If conflicts: resolve, then git cherry-pick --continue
 
 # 4. Option B: Cherry-pick specific files
-git checkout recovery/multi-file -- docs/guides/OAUTH_TROUBLESHOOTING.md
+git checkout recovery/multi-file -- docs/development/guides/OAUTH_TROUBLESHOOTING.md
 git checkout recovery/multi-file -- members/scripts/audit-mfa.js
 git checkout recovery/multi-file -- scripts/get-secret.sh
 git add .
@@ -376,7 +376,7 @@ docs/audits/
 ├── reviews/ (recovered structure)
 └── sessions/ (recovered structure)
 
-docs/guides/
+docs/development/guides/
 ├── ADMIN_ALERTS.md (original PR #29 or YOUR edits)
 └── (other guides)
 
@@ -417,7 +417,7 @@ git status
 
 # 2. Your files are in right location
 ls -la docs/audits/  # should have your files
-ls -la docs/guides/  # should have guides
+ls -la docs/development/guides/  # should have guides
 ls -la scripts/      # should have scripts
 
 # 3. Your edits are there (sample check)
