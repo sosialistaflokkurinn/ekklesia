@@ -23,10 +23,27 @@ const pool = new Pool({
   ssl: false
 });
 
-// Pool error handler
+// Pool error handler (graceful degradation)
 pool.on('error', (err, client) => {
-  console.error('Unexpected error on idle client', err);
-  process.exit(-1);
+  console.error('Unexpected error on idle client:', {
+    error: err.message,
+    code: err.code,
+    timestamp: new Date().toISOString()
+  });
+
+  // Let pool handle transient errors - removes bad connections automatically
+  // Only exit for unrecoverable errors (database completely down)
+  if (err.code === 'ECONNREFUSED' || err.code === '57P03') {
+    // Database is unreachable - exit and let Cloud Run restart with backoff
+    console.error('[FATAL] Database unreachable, exiting...');
+    setTimeout(() => process.exit(1), 1000); // Give time to flush logs
+  }
+
+  // For other errors (network blips, idle connection timeouts, etc.):
+  // - Pool will automatically remove bad connections
+  // - New connections will be created on demand
+  // - Service continues serving requests
+  // - Cloud Run health checks will catch if pool completely fails
 });
 
 // Pool connection handler (log in development)

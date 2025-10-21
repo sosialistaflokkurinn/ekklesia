@@ -1,7 +1,7 @@
 # Events Service (`Atburðir`)
 
 **Status**: ✅ Production Deployed (Oct 9, 2025)
-**Production URL**: https://events-service-521240388393.europe-west2.run.app
+**Production URL**: https://events-service-ymzrguoifa-nw.a.run.app
 **Architecture**: Option A (Standalone) - No Elections service dependency
 **Purpose**: Election administration and voting token issuance
 
@@ -188,10 +188,10 @@ Get election results
      --project=ekklesia-prod-10-2025
    ```
 
-4. Update `.env`:
+4. Update `.env` (local development uses the Cloud SQL Auth Proxy on 127.0.0.1:5433):
    ```env
-   DATABASE_HOST=34.147.159.80
-   DATABASE_PORT=5432
+   DATABASE_HOST=127.0.0.1
+   DATABASE_PORT=5433
    DATABASE_NAME=postgres
    DATABASE_USER=postgres
    DATABASE_PASSWORD=<from-secret-manager>
@@ -200,17 +200,26 @@ Get election results
    NODE_ENV=development
    ```
 
-5. Run migrations (if not already applied):
+5. Start the Cloud SQL Auth Proxy in a separate terminal (requires gcloud CLI 420+):
    ```bash
-   PGPASSWORD='<password>' psql -h 34.147.159.80 -U postgres -d postgres < migrations/001_initial_schema.sql
+   cloud-sql-proxy \
+     --port 5433 \
+     ekklesia-prod-10-2025:europe-west2:ekklesia-db
    ```
 
-6. Start development server:
+6. Run migrations (if not already applied):
+   ```bash
+   ./scripts/psql-cloud.sh -f migrations/001_initial_schema.sql
+   ```
+    > ℹ️ The helper script automatically retrieves the password from Secret Manager and uses the proxy. If you
+    > must connect directly to the public IP, add `sslmode=require` to your `psql` command because the instance now enforces TLS.
+
+7. Start development server:
    ```bash
    npm run dev
    ```
 
-7. Test health endpoint:
+8. Test health endpoint:
    ```bash
    curl http://localhost:8080/health
    ```

@@ -40,8 +40,10 @@ async function checkEligibility(election, kennitala) {
     if (token.voted) {
       errors.push('You have already voted in this election');
     } else if (now > expiresAt) {
-      errors.push('Your previous voting token has expired. Please request a new one.');
-      // Note: In production, expired tokens should be cleaned up
+      // Expired token - delete it and allow new token issuance
+      console.log(`INFO: Deleting expired token for kennitala ${kennitala.substring(0, 7)}****`);
+      await query('DELETE FROM voting_tokens WHERE id = $1', [token.id]);
+      // Don't add to errors - allow new token to be issued
     } else {
       errors.push('Voting token already issued. Use GET /api/my-token to retrieve it.');
     }
@@ -78,11 +80,28 @@ async function issueVotingToken(election, kennitala) {
     )
   );
 
-  // Store token in database
-  await query(`
+  // Store token in database (idempotent - handles double-clicks)
+  const result = await query(`
     INSERT INTO voting_tokens (kennitala, token_hash, expires_at)
     VALUES ($1, $2, $3)
+    ON CONFLICT (kennitala) DO NOTHING
+    RETURNING id, token_hash
   `, [kennitala, tokenHash, expiresAt]);
+
+  // If conflict (token already exists), fetch existing token
+  if (result.rowCount === 0) {
+    console.log('Token already exists for kennitala, returning existing token');
+    const existing = await query(`
+      SELECT token_hash FROM voting_tokens WHERE kennitala = $1
+    `, [kennitala]);
+
+    if (existing.rowCount === 0) {
+      throw new Error('Token conflict but existing token not found (database inconsistency)');
+    }
+
+    // Return existing token (idempotent behavior)
+    return existing.rows[0].token_hash;
+  }
 
   console.log('Voting token issued:', { kennitala, expiresAt });
 

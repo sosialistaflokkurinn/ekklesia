@@ -2,6 +2,7 @@ const express = require('express');
 const crypto = require('crypto');
 const pool = require('../config/database');
 const authenticateS2S = require('../middleware/s2sAuth');
+const { verifyAppCheckOptional } = require('../middleware/appCheck');
 const { logAudit } = require('../services/auditService');
 
 const router = express.Router();
@@ -20,7 +21,7 @@ router.post('/s2s/register-token', authenticateS2S, async (req, res) => {
 
   // Validate input
   if (!token_hash) {
-    await logAudit('register_token', false, { error: 'Missing token_hash' });
+    logAudit('register_token', false, { error: 'Missing token_hash' });
     return res.status(400).json({
       error: 'Bad Request',
       message: 'Missing token_hash in request body'
@@ -29,7 +30,7 @@ router.post('/s2s/register-token', authenticateS2S, async (req, res) => {
 
   // Validate token hash format (SHA-256 = 64 hex chars)
   if (!/^[a-f0-9]{64}$/.test(token_hash)) {
-    await logAudit('register_token', false, { error: 'Invalid token_hash format', token_hash });
+    logAudit('register_token', false, { error: 'Invalid token_hash format', token_hash });
     return res.status(400).json({
       error: 'Bad Request',
       message: 'Invalid token_hash format (must be 64 hex characters)'
@@ -44,7 +45,7 @@ router.post('/s2s/register-token', authenticateS2S, async (req, res) => {
     );
 
     const duration = Date.now() - startTime;
-    await logAudit('register_token', true, { token_hash, duration_ms: duration });
+    logAudit('register_token', true, { token_hash, duration_ms: duration });
 
     res.status(201).json({
       success: true,
@@ -57,7 +58,7 @@ router.post('/s2s/register-token', authenticateS2S, async (req, res) => {
 
     // Check if duplicate token
     if (error.code === '23505') { // PostgreSQL unique violation
-      await logAudit('register_token', false, { error: 'Token already registered', token_hash, duration_ms: duration });
+      logAudit('register_token', false, { error: 'Token already registered', token_hash, duration_ms: duration });
       return res.status(409).json({
         error: 'Conflict',
         message: 'Token already registered'
@@ -65,7 +66,7 @@ router.post('/s2s/register-token', authenticateS2S, async (req, res) => {
     }
 
     console.error('[S2S] Register token error:', error);
-    await logAudit('register_token', false, { error: error.message, token_hash, duration_ms: duration });
+    logAudit('register_token', false, { error: error.message, token_hash, duration_ms: duration });
 
     res.status(500).json({
       error: 'Internal Server Error',
@@ -108,8 +109,7 @@ router.get('/s2s/results', authenticateS2S, async (req, res) => {
 
     const totalBallots = results.yes + results.no + results.abstain;
     const duration = Date.now() - startTime;
-
-    await logAudit('fetch_results', true, { total_ballots: totalBallots, duration_ms: duration });
+    logAudit('fetch_results', true, { total_ballots: totalBallots, duration_ms: duration });
 
     res.json({
       total_ballots: totalBallots,
@@ -120,7 +120,7 @@ router.get('/s2s/results', authenticateS2S, async (req, res) => {
   } catch (error) {
     const duration = Date.now() - startTime;
     console.error('[S2S] Get results error:', error);
-    await logAudit('fetch_results', false, { error: error.message, duration_ms: duration });
+    logAudit('fetch_results', false, { error: error.message, duration_ms: duration });
 
     res.status(500).json({
       error: 'Internal Server Error',
@@ -134,15 +134,19 @@ router.get('/s2s/results', authenticateS2S, async (req, res) => {
 // =====================================================
 // POST /api/vote
 // Headers: Authorization: Bearer <token-from-events>
+//         X-Firebase-AppCheck: <app-check-token> (optional, monitored)
 // Body: { answer: 'yes' | 'no' | 'abstain' }
+//
+// Security: Firebase App Check verification (monitor-only mode)
+// After 1-2 days of monitoring, switch to verifyAppCheck for enforcement
 
-router.post('/vote', async (req, res) => {
+router.post('/vote', verifyAppCheckOptional, async (req, res) => {
   const startTime = Date.now();
 
   // Extract token from Authorization header
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    await logAudit('record_ballot', false, { error: 'Missing authorization token' });
+    logAudit('record_ballot', false, { error: 'Missing authorization token' });
     return res.status(401).json({
       error: 'Unauthorized',
       message: 'Missing or invalid Authorization header'
@@ -154,7 +158,7 @@ router.post('/vote', async (req, res) => {
 
   // Validate answer
   if (!answer || !['yes', 'no', 'abstain'].includes(answer)) {
-    await logAudit('record_ballot', false, { error: 'Invalid answer', answer });
+    logAudit('record_ballot', false, { error: 'Invalid answer', answer });
     return res.status(400).json({
       error: 'Bad Request',
       message: 'Invalid answer. Must be yes, no, or abstain'
@@ -178,7 +182,7 @@ router.post('/vote', async (req, res) => {
     if (tokenResult.rows.length === 0) {
       await client.query('ROLLBACK');
       const duration = Date.now() - startTime;
-      await logAudit('record_ballot', false, { error: 'Token not registered', token_hash: tokenHash, duration_ms: duration });
+      logAudit('record_ballot', false, { error: 'Token not registered', token_hash: tokenHash, duration_ms: duration });
       return res.status(404).json({
         error: 'Not Found',
         message: 'Token not registered'
@@ -188,7 +192,7 @@ router.post('/vote', async (req, res) => {
     if (tokenResult.rows[0].used) {
       await client.query('ROLLBACK');
       const duration = Date.now() - startTime;
-      await logAudit('record_ballot', false, { error: 'Token already used', token_hash: tokenHash, duration_ms: duration });
+      logAudit('record_ballot', false, { error: 'Token already used', token_hash: tokenHash, duration_ms: duration });
       return res.status(409).json({
         error: 'Conflict',
         message: 'Token already used'
@@ -213,7 +217,7 @@ router.post('/vote', async (req, res) => {
     await client.query('COMMIT');
 
     const duration = Date.now() - startTime;
-    await logAudit('record_ballot', true, { token_hash: tokenHash, answer, duration_ms: duration });
+    logAudit('record_ballot', true, { token_hash: tokenHash, answer, duration_ms: duration });
 
     res.status(201).json({
       success: true,
@@ -228,7 +232,7 @@ router.post('/vote', async (req, res) => {
     // Check if lock timeout (FOR UPDATE NOWAIT failed)
     if (error.code === '55P03') { // Lock not available
       console.warn('[Vote] Lock contention detected for token:', tokenHash.substring(0, 8));
-      await logAudit('record_ballot', false, { error: 'Lock contention', token_hash: tokenHash, duration_ms: duration });
+      logAudit('record_ballot', false, { error: 'Lock contention', token_hash: tokenHash, duration_ms: duration });
       return res.status(503).json({
         error: 'Service Temporarily Unavailable',
         message: 'Please retry in a moment',
@@ -237,7 +241,7 @@ router.post('/vote', async (req, res) => {
     }
 
     console.error('[Vote] Ballot submission error:', error);
-    await logAudit('record_ballot', false, { error: error.message, token_hash: tokenHash, duration_ms: duration });
+    logAudit('record_ballot', false, { error: error.message, token_hash: tokenHash, duration_ms: duration });
 
     res.status(500).json({
       error: 'Internal Server Error',
@@ -254,8 +258,11 @@ router.post('/vote', async (req, res) => {
 // =====================================================
 // GET /api/token-status
 // Headers: Authorization: Bearer <token-from-events>
+//         X-Firebase-AppCheck: <app-check-token> (optional, monitored)
+//
+// Security: Firebase App Check verification (monitor-only mode)
 
-router.get('/token-status', async (req, res) => {
+router.get('/token-status', verifyAppCheckOptional, async (req, res) => {
   // Extract token from Authorization header
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {

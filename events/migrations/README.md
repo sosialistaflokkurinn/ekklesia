@@ -29,6 +29,19 @@ Remove Elections service integration field (Option A: Standalone):
 
 **Note**: This migration is optional - the field is nullable and unused in MVP.
 
+### 003_seed_october_2025_election.sql (✅ Applied: 2025-10-19 19:44 UTC)
+Seed deterministic election data for October 2025 integration tests:
+- Clears previous seed state (`election` and `voting_tokens` tables)
+- Inserts October 2025 rehearsal election with fixed UUID/timeline
+- Ensures repeatable validation runs for Phase 5 ticket #84
+- **Election ID**: `b322b1fd-83f6-4ff8-9ac5-1e5c6efa8b84`
+- **Title**: "Kannanleik kosning October 2025"
+- **Status**: published
+- **Voting period**: 2025-10-18 09:00 UTC → 2025-10-20 21:00 UTC
+
+**Applied using**: Cloud SQL Proxy + local `psql` client with PGPASSWORD from Secret Manager
+**Run after**: `001_initial_schema.sql` (required) and `002_remove_elections_service_id.sql` (if applicable)
+
 ## How We Actually Ran Migrations (2025-10-09)
 
 **Method Used**: Direct `psql` from local machine (gcloud CLI + psql installed)

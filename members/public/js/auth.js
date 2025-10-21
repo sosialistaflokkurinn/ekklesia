@@ -10,6 +10,11 @@ import {
   onAuthStateChanged as firebaseOnAuthStateChanged,
   signOut as firebaseSignOut
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import {
+  initializeAppCheck,
+  ReCaptchaEnterpriseProvider,
+  getToken as getAppCheckToken
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app-check.js';
 
 // Firebase configuration
 const firebaseConfig = {
@@ -24,6 +29,22 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+
+// Initialize Firebase App Check with reCAPTCHA Enterprise
+// Site Key: 6LfDgOgrAAAAAIKly84yNibZNZsEGD31PnFQLYpM
+// See: docs/security/FIREBASE_APP_CHECK_SETUP.md
+let appCheck = null;
+try {
+  appCheck = initializeAppCheck(app, {
+    provider: new ReCaptchaEnterpriseProvider('6LfDgOgrAAAAAIKly84yNibZNZsEGD31PnFQLYpM'),
+    isTokenAutoRefreshEnabled: true  // Automatically refresh tokens
+  });
+  console.log('✅ Firebase App Check initialized (reCAPTCHA Enterprise)');
+} catch (error) {
+  console.warn('⚠️ Firebase App Check initialization failed (will degrade gracefully):', error);
+}
+
+export { appCheck };
 
 /**
  * Auth Guard - Redirect to login if not authenticated
@@ -86,6 +107,64 @@ export async function getUserData(user) {
     kennitala: idTokenResult.claims.kennitala,
     email: idTokenResult.claims.email,
     phoneNumber: idTokenResult.claims.phoneNumber,
-    isMember: idTokenResult.claims.isMember || false
+    isMember: idTokenResult.claims.isMember || false,
+    roles: idTokenResult.claims.roles || []
   };
+}
+
+/**
+ * Get Firebase App Check token
+ * @returns {Promise<string|null>} App Check token or null if unavailable
+ */
+async function getAppCheckTokenValue() {
+  if (!appCheck) {
+    console.warn('App Check not initialized, requests will not include App Check token');
+    return null;
+  }
+
+  try {
+    const tokenResponse = await getAppCheckToken(appCheck);
+    return tokenResponse.token;
+  } catch (error) {
+    console.error('Failed to get App Check token:', error);
+    // Degrade gracefully - return null instead of throwing
+    return null;
+  }
+}
+
+/**
+ * Make authenticated API request with Firebase ID token and App Check token
+ * @param {string} url - API endpoint URL
+ * @param {object} options - Fetch options (method, body, headers, etc.)
+ * @returns {Promise<Response>} Fetch response
+ */
+export async function authenticatedFetch(url, options = {}) {
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  // Get Firebase ID token
+  const idToken = await user.getIdToken();
+
+  // Get App Check token (may be null if App Check not available)
+  const appCheckToken = await getAppCheckTokenValue();
+
+  // Build headers
+  const headers = {
+    'Authorization': `Bearer ${idToken}`,
+    'Content-Type': 'application/json',
+    ...options.headers,
+  };
+
+  // Add App Check token if available
+  if (appCheckToken) {
+    headers['X-Firebase-AppCheck'] = appCheckToken;
+  }
+
+  // Make request
+  return fetch(url, {
+    ...options,
+    headers,
+  });
 }

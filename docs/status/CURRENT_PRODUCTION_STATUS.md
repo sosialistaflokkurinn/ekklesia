@@ -1,21 +1,24 @@
 # 🚀 Ekklesia Production Status
 
-**Last Updated**: 2025-10-09 20:55 UTC
+**Last Updated**: 2025-10-15 21:30 UTC
 **Project**: ekklesia-prod-10-2025 (521240388393)
 **Region**: europe-west2 (London)
-**Validated**: CLI tools (gcloud, firebase, gsutil)
+**Validated**: ✅ CLI tools (gcloud, gsutil) - Oct 15, 2025
+**Security Status**: ✅ Phase 1-4 Hardening Complete + Production Improvements (Oct 15, 2025)
 
 ---
 
 ## ✅ Active Services
 
 ### Cloud Run Services
-| Service | Type | URL | Status | Memory | Last Deploy |
-|---------|------|-----|--------|--------|-------------|
-| **elections-service** | Node.js 18 + Express | https://elections-service-521240388393.europe-west2.run.app | ✅ Active | 512 MB | Oct 9, 2025 20:52 UTC |
-| **events-service** | Node.js 18 + Express | https://events-service-521240388393.europe-west2.run.app | ✅ Active | 512 MB | Oct 9, 2025 13:01 UTC |
-| **handlekenniauth** | Cloud Function (Python 3.11) | https://handlekenniauth-ymzrguoifa-nw.a.run.app | ✅ Active | 512 MB | Oct 8, 2025 10:08 UTC |
-| **verifymembership** | Cloud Function (Python 3.11) | https://verifymembership-ymzrguoifa-nw.a.run.app | ✅ Active | 256 MB | Oct 8, 2025 12:30 UTC |
+| Service | Type | Public URL | Status | Memory | Concurrency | Last Deploy |
+|---------|------|------------|--------|--------|-------------|-------------|
+| **elections-service** | Node.js 18 + Express | https://elections-service-ymzrguoifa-nw.a.run.app | ✅ Active | 512 MB | 50 | Oct 13, 2025 10:06 UTC |
+| **events-service** | Node.js 18 + Express | https://events-service-ymzrguoifa-nw.a.run.app | ✅ Active | 512 MB | 80 | Oct 13, 2025 10:05 UTC |
+| **handlekenniauth** | Cloud Function (Python 3.11) | https://handlekenniauth-ymzrguoifa-nw.a.run.app | ✅ Active | 512 MB | 1 | Oct 13, 2025 11:54 UTC |
+| **verifymembership** | Cloud Function (Python 3.11) | https://verifymembership-ymzrguoifa-nw.a.run.app | ✅ Active | 256 MB | 1 | Oct 8, 2025 12:30 UTC |
+
+**Note**: Services use native Cloud Run URLs (*.run.app) for cost efficiency.
 
 ### Firebase Services
 | Service | URL | Status | Details | Last Deploy |
@@ -30,11 +33,140 @@
 |---------|----------|--------|---------|------------|
 | **PostgreSQL 15** | ekklesia-db | ✅ RUNNABLE | db-f1-micro, europe-west2, pgaudit enabled, 30-day backups | 34.147.159.80 |
 
+#### ✅ Members Service (Firebase Hosting)
+
+- ✅ Frontend Architecture Refactor Complete (Oct 15, 2025)
+  - ES6 modules with Firebase SDK v10.7.1 (no global firebase object)
+  - Centralized i18n (R.string pattern, zero hardcoded strings)
+  - Reusable UI utilities (`ui/dom.js`, `ui/nav.js`)
+  - Pure session management (`session/init.js`, `session/auth.js`)
+  - App Check security restored (`X-Firebase-AppCheck` header)
+  - Post-login membership refresh (`verifyMembership` Cloud Function)
+  - `.new.js` module files are the active codebase (legacy scripts pending removal)
+
+---
+
+## 🔒 Security Hardening
+
+**Status**: ✅ Phase 1-4 Complete + Production Improvements (Oct 15, 2025)
+
+### Phase 1: Critical Fixes (Oct 12, 2025 21:03 UTC)
+- ✅ **Issue #30**: Firestore Security Rules deployed
+- ✅ **Issue #33**: CSRF Protection (state parameter validation)
+- ✅ **Issue #32**: Idempotency Fix (user creation race condition)
+
+### Phase 2: Security Infrastructure (Oct 12, 2025 22:51 UTC)
+- ✅ **Issue #31**: Rate Limiting analysis complete
+- ✅ **Security Assessment**: Comprehensive threat model and defense analysis
+  - Authentication layer (Firebase Auth with Kenni.is)
+  - Authorization layer (Firestore rules)
+  - Audit logging (Cloud Logging)
+  - Origin protection evaluation
+
+### Phase 3: Documentation & Safety (Oct 12, 2025 23:17 UTC)
+- ✅ **Security Documentation**: Comprehensive defense analysis and architecture decisions
+- ✅ **DNS Management Scripts**: Automation for Cloud DNS operations
+  - scripts/update-dns-records.sh - DNS record management
+  - scripts/disable-cloudflare-proxy.sh - Cloudflare proxy control
+- ✅ **Git Pre-commit Hook**: Prevents tracking forbidden files (.gitignore, AUTOMATION.md, secrets)
+- ✅ **Hook Installation Script**: scripts/install-git-hooks.sh (147 lines)
+
+### Phase 4: Architecture Decision - Direct Cloud Run URLs (Oct 13, 2025)
+- ✅ **Decision**: Use native Cloud Run URLs (*.run.app) instead of custom domains
+- ✅ **Rationale**: Cost-benefit analysis (see [SECURITY_DEFENSE_ANALYSIS.md](../security/SECURITY_DEFENSE_ANALYSIS.md))
+  - Custom domains via Load Balancer: $216/year = 138% cost increase
+  - Custom domains via Cloudflare Pro: $240/year = 154% cost increase
+  - Direct URLs: $0 = cosmetic trade-off for cost efficiency
+- ✅ **Configuration**: All services use native Cloud Run URLs (*.run.app)
+  - `config_api_events`: https://events-service-ymzrguoifa-nw.a.run.app
+  - `config_api_elections`: https://elections-service-ymzrguoifa-nw.a.run.app
+  - `config_api_handle_auth`: https://handlekenniauth-ymzrguoifa-nw.a.run.app
+  - `config_api_verify`: https://verifymembership-ymzrguoifa-nw.a.run.app
+- ✅ **Security Maintained**: Authentication, authorization, audit logging all active
+
+**Documentation**:
+- [docs/status/SECURITY_HARDENING_PLAN.md](SECURITY_HARDENING_PLAN.md) - Complete hardening plan
+- [docs/security/CLOUDFLARE_SETUP.md](../security/CLOUDFLARE_SETUP.md) - Cloudflare infrastructure guide
+- [docs/security/SECURITY_DEFENSE_ANALYSIS.md](../security/SECURITY_DEFENSE_ANALYSIS.md) - Security assessment & architecture decisions
+- [docs/security/CLOUDFLARE_HOST_HEADER_INVESTIGATION.md](../security/CLOUDFLARE_HOST_HEADER_INVESTIGATION.md) - Technical investigation
+- [scripts/README.md](../../scripts/README.md) - Automation scripts guide
+
+**Architecture Justification**:
+- ✅ Threat level appropriate (monthly meetings, low-profile target)
+- ✅ Cost efficiency prioritized (98% cheaper than always-on alternatives)
+- ✅ Security comprehensive (auth, authorization, audit logging)
+- ✅ Accepts cosmetic trade-off (functional URLs vs pretty URLs)
+
+### Phase 5: Production Stability Improvements (Oct 15, 2025)
+- ✅ **Issue #55**: Graceful database pool error handling (deployed)
+- ✅ **Issue #53**: Token issuance idempotency (deployed)
+- ✅ **Issue #56**: S2S authentication hardening (deployed)
+- ✅ **Issue #58**: Request body size limits (partial - 5kb limit deployed)
+
+**Issues Closed**: #53, #55, #56  
+**Issues Partial**: #58 (async audit + error sanitization deferred)  
+**Remaining**: #51, #52, #54, #57 (Phase 6)
+
+---
+
+## 📈 Upcoming Phase 5 Enhancements (Oct–Nov 2025)
+
+**Target milestone**: Phase 5 – Events and Elections Services (due Nov 15, 2025)
+
+- **Member election discovery (Epic #87)**
+  - Dynamic eligible elections listing and detail views in Members UI (`/elections`, `/elections/:id`).
+  - Roles & permissions guide surfaced directly in-app once #68 ships.
+- **Admin election lifecycle (Epic #24)**
+  - RBAC-protected admin endpoints (#71-#79) publishing to Cloud Run after schema migration (#84).
+  - Audit logging format and eligibility schema updates tracked in #80-#82.
+- **Documentation updates in progress**
+  - `docs/guides/ROLES_AND_PERMISSIONS.md` expanded with election-specific capabilities.
+  - `docs/guides/INDEX.md` now references the roles guide for support teams.
+  - Member production status will capture election catalogue metrics once the sync pipeline launches (#88-#92).
+
+**Next verification window**: Begin staging validations the week of Oct 27 after database migration smoke tests conclude.
+
+## 🧪 End-to-End Testing
+
+### Complete Voting Flow Test (Oct 15, 2025) ✅
+
+**Test Environment**: Production services  
+**Test Page**: https://ekklesia-prod-10-2025.web.app/test-events.html  
+**Detailed Log**: [docs/testing/END_TO_END_VOTING_FLOW_TEST.md](../testing/END_TO_END_VOTING_FLOW_TEST.md)
+
+**Results**: All stages successful
+1. ✅ Authentication (Kenni.is → Firebase custom token)
+2. ✅ Health Check (Events service healthy)
+3. ✅ Election Info (Prófunarkosning 2025, voting open)
+4. ✅ Token Request (414dbc1d…, 24h expiry)
+5. ✅ Status Check (token issued, can vote)
+6. ✅ Vote Submission (ballot ID: 89c53f97…, anonymous)
+7. ✅ Results (2 ballots, 2 yes, 0 no, 0 abstain)
+
+**Verified**:
+- ✅ Three-service architecture working end-to-end
+- ✅ Anonymous voting (ballot ID returned, no PII)
+- ✅ One-time token enforcement (second vote: 409 Conflict)
+- ✅ Token expiry (24 hours)
+- ✅ Audit trail (Events logs token issuance, Elections logs vote)
+
+**Significance**: First successful production test of complete voting flow.
+
 ---
 
 ## 🏗️ Architecture
 
-### Current Implementation (Oct 8, 2025)
+### Current Implementation (Oct 15, 2025)
+**Members Service Frontend (Oct 15, 2025)**:
+- ES6 modules with modular Firebase SDK v10.7.1 (no global firebase object)
+- Centralized Firebase service layer (`firebase/app.js`)
+- Centralized i18n loader (`i18n/strings-loader.js`, zero hardcoded strings)
+- Reusable UI utilities (`ui/dom.js`, `ui/nav.js`)
+- Pure session management (`session/init.js`, `session/auth.js`)
+- App Check enforcement restored (`X-Firebase-AppCheck` header)
+- Post-login membership refresh (invokes `verifyMembership` on successful login)
+- Active code lives in `.new.js` modules (legacy scripts staged for removal)
+
 **Members Service: Firebase + Kenni.is Direct PKCE**
 
 ```
@@ -100,7 +232,7 @@
 
 ## 🚀 Services Status
 
-### ✅ Members Service - Production (Oct 6-8, 2025)
+### ✅ Members Service - Production (Oct 6-15, 2025)
 
 **Technology Stack**:
 - **Hosting**: Firebase Hosting (Static HTML/CSS/JS)
@@ -120,6 +252,15 @@
 - ✅ Icelandic language UI (i18n/R.string pattern)
 - ✅ Socialist red color theme
 - ✅ Multi-page portal (index, dashboard, profile, test)
+
+**Frontend Architecture (Oct 15, 2025)**:
+- ES6 module-based pages located in `members/public/js/*.new.js`
+- Modular Firebase SDK v10.7.1 via `members/public/firebase/app.js`
+- Shared DOM + navigation helpers (`members/public/ui/dom.js`, `members/public/ui/nav.js`)
+- Pure session lifecycle management (`members/public/session/init.js`, `members/public/session/auth.js`)
+- App Check protection restored (`X-Firebase-AppCheck` on sensitive calls)
+- Post-login membership refresh (invokes `verifyMembership` Cloud Function)
+- Legacy `.js` files retained for rollback only; `.new.js` modules are the active codebase
 
 **URLs**:
 - Production: https://ekklesia-prod-10-2025.web.app
@@ -148,7 +289,7 @@
 ### ✅ Events Service - Production (Oct 9, 2025)
 
 **Status**: ✅ MVP Deployed to Production
-**URL**: https://events-service-521240388393.europe-west2.run.app
+**URL**: https://events-service-ymzrguoifa-nw.a.run.app
 
 **Technology Stack**:
 - **Runtime**: Node.js 18 + Express
@@ -211,7 +352,7 @@
 ### ✅ Elections Service - Production (Oct 9, 2025)
 
 **Status**: ✅ Deployed to Production (MVP Complete)
-**URL**: https://elections-service-521240388393.europe-west2.run.app
+**URL**: https://elections-service-ymzrguoifa-nw.a.run.app
 **Purpose**: Anonymous ballot recording (no PII, S2S only)
 
 **Technology Stack**:
@@ -289,10 +430,15 @@
 
 ## 🔑 Secrets (Secret Manager)
 
-### Active Secrets
-| Secret | Purpose | Used By | Status |
-|--------|---------|---------|--------|
-| `kenni-client-secret` | Kenni.is OAuth client secret | handleKenniAuth | ✅ Active |
+### Active Secrets (Verified Oct 15, 2025)
+| Secret | Purpose | Used By | Created | Status |
+|--------|---------|---------|---------|--------|
+| `kenni-client-secret` | Kenni.is OAuth client secret | handleKenniAuth | Oct 1, 2025 | ✅ Active |
+| `postgres-password` | Cloud SQL database password | Events, Elections | Oct 9, 2025 | ✅ Active |
+| `elections-s2s-api-key` | S2S authentication key | Events ↔ Elections | Oct 9, 2025 | ✅ Active |
+| `cloudflare-api-token` | Cloudflare API (archived infra) | N/A | Oct 12, 2025 | 🗄️ Archived |
+
+**Total Active Secrets**: 4 (3 in use, 1 archived)
 
 ### Cleanup Complete (Oct 8, 2025)
 **Deleted 12 deprecated secrets**:

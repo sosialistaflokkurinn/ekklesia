@@ -1,0 +1,26 @@
+name: Weekly Security Hygiene
+
+# Run every Monday at 9 AM Iceland time (UTC +0 in winter, +1 in summer)
+# Using UTC 9 AM = 9 AM GMT (close enough for Iceland)
+on:
+  schedule:
+    - cron: '0 9 * * 1'  # Every Monday at 9 AM UTC
+  workflow_dispatch:  # Allow manual trigger
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  security-audit:
+    runs-on: ubuntu-latest
+    name: Automated Security Checks
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Run security hygiene checks
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash .github/scripts/security-hygiene.sh

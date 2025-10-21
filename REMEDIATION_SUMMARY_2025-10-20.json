@@ -1,0 +1,229 @@
+{
+  "overview": {
+    "total_issues": 79,
+    "broken_examples": 27,
+    "missing_files": 32,
+    "api_mismatches": 18,
+    "warnings": 2,
+    "total_files_scanned": 51,
+    "code_blocks_analyzed": 662
+  },
+  "broken_examples_by_type": {
+    "Unmatched ' quotes": [
+      "OPERATIONAL_PROCEDURES.md",
+      "design/CSS_DESIGN_SYSTEM.md",
+      "design/CSS_DESIGN_SYSTEM.md",
+      "design/CSS_DESIGN_SYSTEM.md",
+      "design/CSS_DESIGN_SYSTEM.md",
+      "design/CSS_DESIGN_SYSTEM.md",
+      "guides/MFA_ENFORCEMENT.md",
+      "guides/PRIVATE_OPS_REPO.md",
+      "guides/github/GITHUB_ISSUE_LABEL_MANAGEMENT.md",
+      "guides/github/GITHUB_ISSUE_LABEL_MANAGEMENT.md",
+      "guides/github/GITHUB_PR_MANAGEMENT.md",
+      "guides/github/GITHUB_PR_REVIEW_REPLY_WORKFLOW.md",
+      "guides/github/GITHUB_PR_REVIEW_REPLY_WORKFLOW.md",
+      "guides/github/GITHUB_PR_REVIEW_REPLY_WORKFLOW.md",
+      "guides/github/GITHUB_PR_REVIEW_REPLY_WORKFLOW.md",
+      "integration/DJANGO_SYNC_IMPLEMENTATION.md",
+      "integration/DJANGO_SYNC_IMPLEMENTATION.md",
+      "prompts/COMPARE_FIREBASE_TO_SECURITY_BRANCHES.md",
+      "prompts/COMPARE_FIREBASE_TO_SECURITY_BRANCHES.md",
+      "security/FIREBASE_APP_CHECK_RESEARCH.md",
+      "security/ISSUES_41-50_CRITICAL_REVIEW.md",
+      "testing/ADMIN_RESET_CHECKLIST.md",
+      "testing/ADMIN_RESET_TEST_REPORT.md"
+    ],
+    "Unmatched () brackets": [
+      "guides/ADMIN_ALERTS.md",
+      "prompts/COMPARE_FIREBASE_TO_SECURITY_BRANCHES.md",
+      "prompts/COMPARE_FIREBASE_TO_SECURITY_BRANCHES.md"
+    ],
+    "Unmatched {} brackets": [
+      "reviews/PR28_AUDIT_REPORT.md"
+    ]
+  },
+  "api_mismatches_by_file": {
+    "OPERATIONAL_PROCEDURES.md": [
+      {
+        "type": "GraphQL",
+        "issue": "Query without opening brace",
+        "line": 366
+      }
+    ],
+    "guides/github/GITHUB_ISSUE_LABEL_MANAGEMENT.md": [
+      {
+        "type": "GraphQL",
+        "issue": "Invalid field syntax",
+        "line": 42
+      },
+      {
+        "type": "GraphQL",
+        "issue": "Invalid field syntax",
+        "line": 62
+      },
+      {
+        "type": "GraphQL",
+        "issue": "Invalid field syntax",
+        "line": 78
+      },
+      {
+        "type": "GraphQL",
+        "issue": "Invalid field syntax",
+        "line": 86
+      },
+      {
+        "type": "GraphQL",
+        "issue": "Query without opening brace",
+        "line": 503
+      }
+    ],
+    "guides/github/GITHUB_PROJECT_MANAGEMENT.md": [
+      {
+        "type": "GraphQL",
+        "issue": "Invalid field syntax",
+        "line": 145
+      },
+      {
+        "type": "GraphQL",
+        "issue": "Invalid field syntax",
+        "line": 175
+      },
+      {
+        "type": "GraphQL",
+        "issue": "Invalid field syntax",
+        "line": 203
+      },
+      {
+        "type": "GraphQL",
+        "issue": "Invalid field syntax",
+        "line": 322
+      },
+      {
+        "type": "GraphQL",
+        "issue": "Invalid field syntax",
+        "line": 350
+      },
+      {
+        "type": "GraphQL",
+        "issue": "Invalid field syntax",
+        "line": 467
+      }
+    ],
+    "guides/github/GITHUB_PR_MANAGEMENT.md": [
+      {
+        "type": "GraphQL",
+        "issue": "Invalid field syntax",
+        "line": 184
+      }
+    ],
+    "guides/github/GITHUB_PR_REVIEW_REPLY_WORKFLOW.md": [
+      {
+        "type": "GraphQL",
+        "issue": "Invalid field syntax",
+        "line": 122
+      },
+      {
+        "type": "GraphQL",
+        "issue": "Invalid field syntax",
+        "line": 161
+      }
+    ],
+    "integration/DJANGO_SYNC_IMPLEMENTATION.md": [
+      {
+        "type": "GraphQL",
+        "issue": "Invalid field syntax",
+        "line": 31
+      }
+    ],
+    "reviews/PR28_AUDIT_REPORT.md": [
+      {
+        "type": "GraphQL",
+        "issue": "Query without opening brace",
+        "line": 231
+      }
+    ],
+    "reviews/PR29_REVIEW_INDEX.md": [
+      {
+        "type": "GraphQL",
+        "issue": "Query without opening brace",
+        "line": 191
+      }
+    ]
+  },
+  "missing_files_by_type": {
+    "npm_packages": [
+      "k6",
+      "firebase-admin/app-check",
+      "firebase-admin",
+      "k6/metrics",
+      "k6/http",
+      "commander"
+    ],
+    "example_files": [
+      "*MAP*.md",
+      "/tmp/responses.md",
+      "/tmp/admin_reset_audit_logs.js",
+      "./voting-tokens.json",
+      "*INDEX*.md",
+      "/tmp/unresolved_comments.js",
+      "/tmp/rotate-password.sh",
+      "docs/**/*.md",
+      "*.md"
+    ],
+    "local_modules": [
+      "index.js",
+      "firebase/app-check",
+      "node-fetch",
+      "docs/[^)]*\\.md",
+      "firebase-functions"
+    ]
+  },
+  "remediation_priority": {
+    "CRITICAL": [
+      {
+        "file": "guides/github/GITHUB_PR_REVIEW_REPLY_WORKFLOW.md",
+        "issues": 10
+      },
+      {
+        "file": "prompts/COMPARE_FIREBASE_TO_SECURITY_BRANCHES.md",
+        "issues": 8
+      },
+      {
+        "file": "guides/github/GITHUB_ISSUE_LABEL_MANAGEMENT.md",
+        "issues": 7
+      },
+      {
+        "file": "integration/DJANGO_SYNC_IMPLEMENTATION.md",
+        "issues": 7
+      },
+      {
+        "file": "guides/github/GITHUB_PROJECT_MANAGEMENT.md",
+        "issues": 6
+      },
+      {
+        "file": "design/CSS_DESIGN_SYSTEM.md",
+        "issues": 5
+      }
+    ],
+    "HIGH": [
+      {
+        "file": "guides/MFA_ENFORCEMENT.md",
+        "issues": 4
+      },
+      {
+        "file": "security/FIREBASE_APP_CHECK_RESEARCH.md",
+        "issues": 4
+      },
+      {
+        "file": "ARCHITECTURE_RECOMMENDATIONS.md",
+        "issues": 4
+      },
+      {
+        "file": "guides/PRIVATE_OPS_REPO.md",
+        "issues": 3
+      }
+    ],
+    "MEDIUM": []
+  }
+}
