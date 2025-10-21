@@ -1,0 +1,249 @@
+{
+  "broken_examples": [],
+  "missing_files": [
+    {
+      "doc": "ARCHITECTURE_RECOMMENDATIONS.md",
+      "line": 605,
+      "file_ref": "./voting-tokens.json",
+      "code_snippet": "import http from 'k6/http';\nimport { check, sleep } from 'k6';\nimport { Rate, Trend } from 'k6/metri"
+    },
+    {
+      "doc": "ARCHITECTURE_RECOMMENDATIONS.md",
+      "line": 605,
+      "file_ref": "k6/http",
+      "code_snippet": "import http from 'k6/http';\nimport { check, sleep } from 'k6';\nimport { Rate, Trend } from 'k6/metri"
+    },
+    {
+      "doc": "ARCHITECTURE_RECOMMENDATIONS.md",
+      "line": 605,
+      "file_ref": "k6",
+      "code_snippet": "import http from 'k6/http';\nimport { check, sleep } from 'k6';\nimport { Rate, Trend } from 'k6/metri"
+    },
+    {
+      "doc": "ARCHITECTURE_RECOMMENDATIONS.md",
+      "line": 605,
+      "file_ref": "k6/metrics",
+      "code_snippet": "import http from 'k6/http';\nimport { check, sleep } from 'k6';\nimport { Rate, Trend } from 'k6/metri"
+    },
+    {
+      "doc": "USAGE_CONTEXT.md",
+      "line": 323,
+      "file_ref": "k6/http",
+      "code_snippet": "// k6 load test example\nimport http from 'k6/http';\n\nexport let options = {\n  stages: [\n    { durati"
+    },
+    {
+      "doc": "guides/MFA_ENFORCEMENT.md",
+      "line": 32,
+      "file_ref": "firebase-admin",
+      "code_snippet": "// Pseudocode, keep real script in private ops repo\nconst admin = require('firebase-admin');\nadmin.i"
+    },
+    {
+      "doc": "guides/MFA_ENFORCEMENT.md",
+      "line": 142,
+      "file_ref": "firebase-admin",
+      "code_snippet": "const admin = require('firebase-admin');\n\nasync function generateRecoveryCodes(uid) {\n  const user ="
+    },
+    {
+      "doc": "guides/MFA_ENFORCEMENT.md",
+      "line": 199,
+      "file_ref": "firebase-admin",
+      "code_snippet": "const admin = require('firebase-admin');\n\nasync function checkMfaCompliance(usersFile) {\n  const use"
+    },
+    {
+      "doc": "guides/PRIVATE_OPS_REPO.md",
+      "line": 315,
+      "file_ref": "firebase-admin",
+      "code_snippet": "cat > scripts/firebase/enforce-mfa.js << 'EOF'\n#!/usr/bin/env node\n\n/**\n * Enforce MFA for elevated "
+    },
+    {
+      "doc": "guides/PRIVATE_OPS_REPO.md",
+      "line": 315,
+      "file_ref": "commander",
+      "code_snippet": "cat > scripts/firebase/enforce-mfa.js << 'EOF'\n#!/usr/bin/env node\n\n/**\n * Enforce MFA for elevated "
+    },
+    {
+      "doc": "guides/github/GITHUB_PR_REVIEW_REPLY_WORKFLOW.md",
+      "line": 366,
+      "file_ref": "/tmp/unresolved_comments.js",
+      "code_snippet": "# Group by file\ncat /tmp/unresolved_comments.json | jq -r '\n  group_by(.file) |\n  map({file: .[0].fi"
+    },
+    {
+      "doc": "guides/github/GITHUB_PR_REVIEW_REPLY_WORKFLOW.md",
+      "line": 398,
+      "file_ref": "/tmp/responses.md",
+      "code_snippet": "# Show drafts to user\ncat /tmp/responses.md"
+    },
+    {
+      "doc": "guides/github/GITHUB_PR_REVIEW_REPLY_WORKFLOW.md",
+      "line": 423,
+      "file_ref": "/tmp/unresolved_comments.js",
+      "code_snippet": "# If you saved the original comments earlier:\ncat /tmp/unresolved_comments.json | jq -r '.[] | selec"
+    },
+    {
+      "doc": "guides/github/GITHUB_PR_REVIEW_REPLY_WORKFLOW.md",
+      "line": 430,
+      "file_ref": "/tmp/unresolved_comments.js",
+      "code_snippet": "# Save original text to file\ncat /tmp/unresolved_comments.json | jq -r '.[] | select(.id == COMMENT_"
+    },
+    {
+      "doc": "integration/DJANGO_SYNC_IMPLEMENTATION.md",
+      "line": 246,
+      "file_ref": "firebase-functions",
+      "code_snippet": "/**\n * syncMemberList - Weekly sync of member kennitalas from Django to Firebase\n *\n * Triggered by:"
+    },
+    {
+      "doc": "integration/DJANGO_SYNC_IMPLEMENTATION.md",
+      "line": 246,
+      "file_ref": "firebase-admin",
+      "code_snippet": "/**\n * syncMemberList - Weekly sync of member kennitalas from Django to Firebase\n *\n * Triggered by:"
+    },
+    {
+      "doc": "integration/DJANGO_SYNC_IMPLEMENTATION.md",
+      "line": 246,
+      "file_ref": "node-fetch",
+      "code_snippet": "/**\n * syncMemberList - Weekly sync of member kennitalas from Django to Firebase\n *\n * Triggered by:"
+    },
+    {
+      "doc": "integration/DJANGO_SYNC_IMPLEMENTATION.md",
+      "line": 390,
+      "file_ref": "index.js",
+      "code_snippet": "{\n  \"name\": \"sync-member-list\",\n  \"version\": \"1.0.0\",\n  \"description\": \"Weekly sync of member kennit"
+    },
+    {
+      "doc": "integration/DJANGO_TO_EKKLESIA_MIGRATION.md",
+      "line": 206,
+      "file_ref": "firebase-admin",
+      "code_snippet": "// functions/migrate-django-to-firestore.js\n\nconst admin = require('firebase-admin');\nconst fetch = "
+    },
+    {
+      "doc": "integration/DJANGO_TO_EKKLESIA_MIGRATION.md",
+      "line": 206,
+      "file_ref": "node-fetch",
+      "code_snippet": "// functions/migrate-django-to-firestore.js\n\nconst admin = require('firebase-admin');\nconst fetch = "
+    },
+    {
+      "doc": "prompts/BRANCH_DIFF_DOCUMENTATION_AUDIT.md",
+      "line": 152,
+      "file_ref": "*.md",
+      "code_snippet": "# List archive directory structure\ntree /home/gudro/Development/projects/ekklesia/archive -L 3\n\n# Or"
+    },
+    {
+      "doc": "prompts/BRANCH_DIFF_DOCUMENTATION_AUDIT.md",
+      "line": 406,
+      "file_ref": "*MAP*.md",
+      "code_snippet": "# Look for documentation map/index\nfind /home/gudro/Development/projects/ekklesia -name \"*MAP*.md\" -"
+    },
+    {
+      "doc": "prompts/BRANCH_DIFF_DOCUMENTATION_AUDIT.md",
+      "line": 406,
+      "file_ref": "*INDEX*.md",
+      "code_snippet": "# Look for documentation map/index\nfind /home/gudro/Development/projects/ekklesia -name \"*MAP*.md\" -"
+    },
+    {
+      "doc": "prompts/COMPARE_FIREBASE_TO_SECURITY_BRANCHES.md",
+      "line": 455,
+      "file_ref": "docs/[^)]*\\.md",
+      "code_snippet": "# Find all .md files in docs/ that aren't in the map\ncomm -13 \\\n  <(grep -o 'docs/[^)]*\\.md' DOCUMEN"
+    },
+    {
+      "doc": "prompts/COMPARE_FIREBASE_TO_SECURITY_BRANCHES.md",
+      "line": 455,
+      "file_ref": "docs/**/*.md",
+      "code_snippet": "# Find all .md files in docs/ that aren't in the map\ncomm -13 \\\n  <(grep -o 'docs/[^)]*\\.md' DOCUMEN"
+    },
+    {
+      "doc": "prompts/COMPARE_FIREBASE_TO_SECURITY_BRANCHES.md",
+      "line": 925,
+      "file_ref": "docs/[^)]*\\.md",
+      "code_snippet": "# Run validation\npython validate_documentation_map.py\n\n# Find undocumented files\ncomm -13 \\\n  <(grep"
+    },
+    {
+      "doc": "prompts/COMPARE_FIREBASE_TO_SECURITY_BRANCHES.md",
+      "line": 925,
+      "file_ref": "docs/**/*.md",
+      "code_snippet": "# Run validation\npython validate_documentation_map.py\n\n# Find undocumented files\ncomm -13 \\\n  <(grep"
+    },
+    {
+      "doc": "security/CRITICAL_SECURITY_RESPONSE.md",
+      "line": 250,
+      "file_ref": "/tmp/rotate-password.sh",
+      "code_snippet": "# Review script\ncat /tmp/rotate-password.sh\n\n# Execute (requires gcloud admin permissions)\n/tmp/rota"
+    },
+    {
+      "doc": "security/FIREBASE_APP_CHECK_RESEARCH.md",
+      "line": 515,
+      "file_ref": "firebase/app-check",
+      "code_snippet": "import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'firebase/app-check';\n\nconst appChec"
+    },
+    {
+      "doc": "security/FIREBASE_APP_CHECK_RESEARCH.md",
+      "line": 576,
+      "file_ref": "firebase-admin/app-check",
+      "code_snippet": "const { AppCheck } = require('firebase-admin/app-check');\n\napp.post('/api/endpoint', async (req, res"
+    },
+    {
+      "doc": "security/FIREBASE_APP_CHECK_RESEARCH.md",
+      "line": 1793,
+      "file_ref": "firebase/app-check",
+      "code_snippet": "import { getToken as getAppCheckToken } from 'firebase/app-check';\n\nconst appCheckToken = await getA"
+    },
+    {
+      "doc": "testing/ADMIN_RESET_CHECKLIST.md",
+      "line": 191,
+      "file_ref": "/tmp/admin_reset_audit_logs.js",
+      "code_snippet": "# Get logs for the last 10 minutes\ngcloud logging read \"\n  resource.type=cloud_run_revision\n  AND re"
+    }
+  ],
+  "api_mismatches": [
+    {
+      "doc": "CRITICAL_REVIEW_RESPONSE.md",
+      "line": 376,
+      "type": "GraphQL",
+      "issue": "Query without opening brace",
+      "code_snippet": "---\n\n### 3. MCP Tool Documentation \ud83d\udd34 \u2192 \u2705 RESOLVED\n\n**Added:**\n- MCP tools overview with pros/cons\n- "
+    },
+    {
+      "doc": "OPERATIONAL_PROCEDURES.md",
+      "line": 366,
+      "type": "GraphQL",
+      "issue": "Query without opening brace",
+      "code_snippet": "# Cloud Run Console (Elections service)\nhttps://console.cloud.google.com/run/detail/europe-west2/ele"
+    },
+    {
+      "doc": "guides/github/GITHUB_ISSUE_LABEL_MANAGEMENT.md",
+      "line": 503,
+      "type": "GraphQL",
+      "issue": "Query without opening brace",
+      "code_snippet": "**Benefits:**\n- Easy to query: `startswith(\"Priority:\")`\n- Visual grouping in UI\n- Clear hierarchy\n\n"
+    },
+    {
+      "doc": "reviews/PR28_AUDIT_REPORT.md",
+      "line": 231,
+      "type": "GraphQL",
+      "issue": "Query without opening brace",
+      "code_snippet": "# members/functions/main.py:232-249\nexcept Exception as e:\n    if 'already exists' in error_message."
+    },
+    {
+      "doc": "reviews/PR29_REVIEW_INDEX.md",
+      "line": 191,
+      "type": "GraphQL",
+      "issue": "Query without opening brace",
+      "code_snippet": "await query(`\n  INSERT INTO voting_tokens (kennitala, token_hash, expires_at)\n  VALUES ($1, $2, $3)\n"
+    }
+  ],
+  "warnings": [
+    {
+      "doc": "guides/OAUTH_TROUBLESHOOTING.md",
+      "line": 34,
+      "type": "gcloud",
+      "message": "Invalid or missing region specification"
+    },
+    {
+      "doc": "integration/DJANGO_SYNC_IMPLEMENTATION.md",
+      "line": 450,
+      "type": "gcloud",
+      "message": "gcloud functions command incomplete"
+    }
+  ],
+  "total_blocks": 663
+}
