@@ -59,6 +59,7 @@ tmp/
 !README.md
 !docs/SYSTEM_ARCHITECTURE_OVERVIEW.md
 !docs/EVENTS_SERVICE_MVP.md
+!docs/roadmap/REPO_RESTRUCTURING_PLAN.md
 !.github/ISSUE_TEMPLATE/*.md
 
 # Scripts (local only - available on request)
