@@ -3,128 +3,69 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Prófíll - Sósíalistaflokkurinn</title>
+  <title>Loading...</title>
   <link rel="stylesheet" href="/styles/global.css">
   <link rel="stylesheet" href="/styles/components/nav.css">
   <link rel="stylesheet" href="/styles/components/page.css">
 </head>
 <body class="authenticated">
   <!-- Navigation -->
-  <nav class="nav-header">
-    <div class="nav-container">
-      <a href="/dashboard.html" class="nav-brand">Sósíalistaflokkurinn</a>
-      <div class="nav-links">
-        <a href="/dashboard.html" class="nav-link" id="nav-dashboard">Mín síða</a>
-        <a href="/profile.html" class="nav-link active" id="nav-profile">Prófíll</a>
-        <a href="#" class="nav-link nav-logout" id="nav-logout">Útskrá</a>
+  <nav class="nav">
+    <div class="nav__container">
+      <a href="/dashboard.html" class="nav__brand" id="nav-brand">Loading...</a>
+      <div class="nav__links">
+        <a href="/dashboard.html" class="nav__link" id="nav-dashboard">Loading...</a>
+        <a href="/profile.html" class="nav__link nav__link--active" id="nav-profile">Loading...</a>
+        <a href="#" class="nav__link nav__link--logout" id="nav-logout">Loading...</a>
       </div>
     </div>
   </nav>
 
   <!-- Page Content -->
-  <div class="page-container">
-    <div class="page-header">
-      <h1 class="page-title" id="page-title">Prófíll</h1>
-      <p class="page-subtitle" id="page-subtitle">Mínar upplýsingar</p>
+  <div class="page__container">
+    <div class="page__header">
+      <h1 class="page__title" id="profile-title">Loading...</h1>
     </div>
 
     <!-- User Information -->
     <div class="card">
-      <h3 class="card-title">Persónuupplýsingar</h3>
+      <h3 class="card__title" id="section-personal-info">Loading...</h3>
       <div class="info-grid">
-        <div class="info-item">
-          <div class="info-label" id="label-name">Nafn</div>
-          <div class="info-value" id="value-name">-</div>
+        <div class="info-grid__item">
+          <div class="info-grid__label" id="label-name">Loading...</div>
+          <div class="info-grid__value" id="value-name">-</div>
         </div>
-        <div class="info-item">
-          <div class="info-label" id="label-kennitala">Kennitala</div>
-          <div class="info-value" id="value-kennitala">-</div>
+        <div class="info-grid__item">
+          <div class="info-grid__label" id="label-kennitala">Loading...</div>
+          <div class="info-grid__value" id="value-kennitala">-</div>
         </div>
-        <div class="info-item">
-          <div class="info-label" id="label-email">Netfang</div>
-          <div class="info-value" id="value-email">-</div>
+        <div class="info-grid__item">
+          <div class="info-grid__label" id="label-email">Loading...</div>
+          <div class="info-grid__value" id="value-email">-</div>
         </div>
-        <div class="info-item">
-          <div class="info-label" id="label-phone">Símanúmer</div>
-          <div class="info-value" id="value-phone">-</div>
+        <div class="info-grid__item">
+          <div class="info-grid__label" id="label-phone">Loading...</div>
+          <div class="info-grid__value" id="value-phone">-</div>
         </div>
       </div>
     </div>
 
     <!-- Membership Status -->
     <div class="card">
-      <h3 class="card-title" id="membership-title">Félagastaða</h3>
+      <h3 class="card__title" id="membership-title">Loading...</h3>
       <div class="info-grid">
-        <div class="info-item">
-          <div class="info-label">Staða</div>
-          <div class="info-value" id="membership-status">-</div>
+        <div class="info-grid__item">
+          <div class="info-grid__label" id="label-status">Loading...</div>
+          <div class="info-grid__value" id="membership-status">-</div>
         </div>
-        <div class="info-item">
-          <div class="info-label">Notandaauðkenni</div>
-          <div class="info-value" id="value-uid">-</div>
+        <div class="info-grid__item">
+          <div class="info-grid__label" id="label-uid">Loading...</div>
+          <div class="info-grid__value" id="value-uid">-</div>
         </div>
       </div>
     </div>
   </div>
 
-  <script type="module">
-    import { R } from '/i18n/R.js';
-    import { requireAuth, signOut, getUserData } from '/js/auth.js';
-
-    // Set page title
-    document.title = R.string.page_title_profile;
-
-    // Update static strings
-    document.getElementById('page-title').textContent = R.string.profile_title;
-    document.getElementById('page-subtitle').textContent = R.string.profile_subtitle;
-    document.getElementById('nav-dashboard').textContent = R.string.nav_dashboard;
-    document.getElementById('nav-profile').textContent = R.string.nav_profile;
-    document.getElementById('nav-logout').textContent = R.string.nav_logout;
-    document.getElementById('membership-title').textContent = R.string.membership_status;
-
-    // Labels
-    document.getElementById('label-name').textContent = R.string.label_display_name;
-    document.getElementById('label-kennitala').textContent = R.string.label_kennitala;
-    document.getElementById('label-email').textContent = R.string.label_email;
-    document.getElementById('label-phone').textContent = R.string.label_phone;
-
-    // Auth guard - redirect if not authenticated
-    const user = await requireAuth();
-
-    // Get user data
-    const userData = await getUserData(user);
-
-    // Update user information
-    document.getElementById('value-name').textContent =
-      userData.displayName || R.string.placeholder_not_available;
-
-    document.getElementById('value-kennitala').textContent =
-      userData.kennitala || R.string.placeholder_not_found;
-
-    document.getElementById('value-email').textContent =
-      userData.email || R.string.placeholder_not_available;
-
-    document.getElementById('value-phone').textContent =
-      userData.phoneNumber || R.string.placeholder_not_available;
-
-    document.getElementById('value-uid').textContent = userData.uid;
-
-    // Membership status
-    const membershipStatus = document.getElementById('membership-status');
-    if (userData.isMember) {
-      membershipStatus.textContent = R.string.membership_active;
-      membershipStatus.style.color = 'var(--color-success-text)';
-      membershipStatus.style.fontWeight = '500';
-    } else {
-      membershipStatus.textContent = R.string.membership_inactive;
-      membershipStatus.style.color = 'var(--color-gray-600)';
-    }
-
-    // Logout handler
-    document.getElementById('nav-logout').addEventListener('click', async (e) => {
-      e.preventDefault();
-      await signOut();
-    });
-  </script>
+  <script type="module" src="/js/profile.new.js"></script>
 </body>
 </html>

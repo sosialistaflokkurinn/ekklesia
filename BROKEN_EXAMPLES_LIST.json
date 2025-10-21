@@ -1,0 +1,170 @@
+{
+  "Unmatched ' quotes": [
+    {
+      "doc": "OPERATIONAL_PROCEDURES.md",
+      "line": 171,
+      "issue": "Unmatched ' quotes",
+      "code_snippet": "# If connection pool issue, scale up database NOW\ngcloud sql instances patch ekklesia-db \\\n  --tier="
+    },
+    {
+      "doc": "design/CSS_DESIGN_SYSTEM.md",
+      "line": 649,
+      "issue": "Unmatched ' quotes",
+      "code_snippet": "---\n\n## Best Practices\n\n### When to Use BEM vs Utilities\n\n\u2705 **Use BEM for**:\n- Components (navigatio"
+    },
+    {
+      "doc": "design/CSS_DESIGN_SYSTEM.md",
+      "line": 699,
+      "issue": "Unmatched ' quotes",
+      "code_snippet": "---\n\n## Migration from Old Naming\n\n### Old \u2192 New Mapping\n\n**Utility classes** (now with `.u-` prefix"
+    },
+    {
+      "doc": "design/CSS_DESIGN_SYSTEM.md",
+      "line": 738,
+      "issue": "Unmatched ' quotes",
+      "code_snippet": "\u274c **Don't omit block names**:"
+    },
+    {
+      "doc": "design/CSS_DESIGN_SYSTEM.md",
+      "line": 745,
+      "issue": "Unmatched ' quotes",
+      "code_snippet": "\u274c **Don't mix naming conventions**:"
+    },
+    {
+      "doc": "design/CSS_DESIGN_SYSTEM.md",
+      "line": 753,
+      "issue": "Unmatched ' quotes",
+      "code_snippet": "\u274c **Don't confuse utilities with CSS variables**:"
+    },
+    {
+      "doc": "guides/MFA_ENFORCEMENT.md",
+      "line": 115,
+      "issue": "Unmatched ' quotes",
+      "code_snippet": "# SMS MFA requires additional Firebase configuration\ngcloud firebase:projects:list\n\n# Set SMS provid"
+    },
+    {
+      "doc": "guides/PRIVATE_OPS_REPO.md",
+      "line": 315,
+      "issue": "Unmatched ' quotes",
+      "code_snippet": "cat > scripts/firebase/enforce-mfa.js << 'EOF'\n#!/usr/bin/env node\n\n/**\n * Enforce MFA for elevated "
+    },
+    {
+      "doc": "guides/github/GITHUB_ISSUE_LABEL_MANAGEMENT.md",
+      "line": 503,
+      "issue": "Unmatched ' quotes",
+      "code_snippet": "**Benefits:**\n- Easy to query: `startswith(\"Priority:\")`\n- Visual grouping in UI\n- Clear hierarchy\n\n"
+    },
+    {
+      "doc": "guides/github/GITHUB_ISSUE_LABEL_MANAGEMENT.md",
+      "line": 756,
+      "issue": "Unmatched ' quotes",
+      "code_snippet": "---\n\n## Decision Matrix: Which Tool to Use?\n\n| Scenario | MCP Tools | `gh issue` | `gh api` | Custom"
+    },
+    {
+      "doc": "guides/github/GITHUB_PR_MANAGEMENT.md",
+      "line": 172,
+      "issue": "Unmatched ' quotes",
+      "code_snippet": "# View PR's project status\ngh pr view 29 --json projectItems\n\n# Example output:\n# \"projectItems\": [{"
+    },
+    {
+      "doc": "guides/github/GITHUB_PR_REVIEW_REPLY_WORKFLOW.md",
+      "line": 26,
+      "issue": "Unmatched ' quotes",
+      "code_snippet": "# This OVERWRITES the reviewer's comment! \u274c\ngh api repos/OWNER/REPO/pulls/comments/COMMENT_ID \\\n  --"
+    },
+    {
+      "doc": "guides/github/GITHUB_PR_REVIEW_REPLY_WORKFLOW.md",
+      "line": 291,
+      "issue": "Unmatched ' quotes",
+      "code_snippet": "# Check if there's already an issue for this\ngh issue list --search \"keyword from comment\" --json nu"
+    },
+    {
+      "doc": "guides/github/GITHUB_PR_REVIEW_REPLY_WORKFLOW.md",
+      "line": 473,
+      "issue": "Unmatched ' quotes",
+      "code_snippet": "### DON'T \u274c\n\n1. **Never use `--method PATCH`** on review comments"
+    },
+    {
+      "doc": "guides/github/GITHUB_PR_REVIEW_REPLY_WORKFLOW.md",
+      "line": 481,
+      "issue": "Unmatched ' quotes",
+      "code_snippet": "2. **Don't post without saving originals first**\n   - Always backup comment data before any operatio"
+    },
+    {
+      "doc": "integration/DJANGO_SYNC_IMPLEMENTATION.md",
+      "line": 182,
+      "issue": "Unmatched ' quotes",
+      "code_snippet": "# In Django shell\nfrom django.contrib.auth.models import User\nfrom rest_framework.authtoken.models i"
+    },
+    {
+      "doc": "integration/DJANGO_SYNC_IMPLEMENTATION.md",
+      "line": 450,
+      "issue": "Unmatched ' quotes",
+      "code_snippet": "# Trigger sync manually (don't wait for Monday 3 AM)\ngcloud scheduler jobs run firebase-schedule-syn"
+    },
+    {
+      "doc": "prompts/COMPARE_FIREBASE_TO_SECURITY_BRANCHES.md",
+      "line": 378,
+      "issue": "Unmatched ' quotes",
+      "code_snippet": "# List archive directory structure\nfind /home/gudro/Development/projects/ekklesia/archive -type d -m"
+    },
+    {
+      "doc": "prompts/COMPARE_FIREBASE_TO_SECURITY_BRANCHES.md",
+      "line": 455,
+      "issue": "Unmatched ' quotes",
+      "code_snippet": "# Find all .md files in docs/ that aren't in the map\ncomm -13 \\\n  <(grep -o 'docs/[^)]*\\.md' DOCUMEN"
+    },
+    {
+      "doc": "security/FIREBASE_APP_CHECK_RESEARCH.md",
+      "line": 967,
+      "issue": "Unmatched ' quotes",
+      "code_snippet": "**Why This Works**:\n- Gen 2 Cloud Functions **are** Cloud Run services internally\n- But they use a s"
+    },
+    {
+      "doc": "security/ISSUES_41-50_CRITICAL_REVIEW.md",
+      "line": 443,
+      "issue": "Unmatched ' quotes",
+      "code_snippet": "- \u2705 Good: Benefits clearly articulated\n\n**Weaknesses:**\n- \u26a0\ufe0f Missing: Module boundaries not clearly "
+    },
+    {
+      "doc": "testing/ADMIN_RESET_CHECKLIST.md",
+      "line": 62,
+      "issue": "Unmatched ' quotes",
+      "code_snippet": "// Get current user's ID token\nfirebase.auth().currentUser.getIdToken(true).then(token => {\n  consol"
+    },
+    {
+      "doc": "testing/ADMIN_RESET_TEST_REPORT.md",
+      "line": 76,
+      "issue": "Unmatched ' quotes",
+      "code_snippet": "**Expected Behavior**:\n- \u2705 RBAC middleware allows access (user has `developer` role)\n- \u2705 Delete user"
+    }
+  ],
+  "Unmatched () brackets": [
+    {
+      "doc": "guides/ADMIN_ALERTS.md",
+      "line": 69,
+      "issue": "Unmatched () brackets",
+      "code_snippet": "gcloud monitoring policies create \\\nYAML-based deployment (recommended):\n\n1) Edit the YAML to replac"
+    },
+    {
+      "doc": "prompts/COMPARE_FIREBASE_TO_SECURITY_BRANCHES.md",
+      "line": 455,
+      "issue": "Unmatched () brackets",
+      "code_snippet": "# Find all .md files in docs/ that aren't in the map\ncomm -13 \\\n  <(grep -o 'docs/[^)]*\\.md' DOCUMEN"
+    },
+    {
+      "doc": "prompts/COMPARE_FIREBASE_TO_SECURITY_BRANCHES.md",
+      "line": 925,
+      "issue": "Unmatched () brackets",
+      "code_snippet": "# Run validation\npython validate_documentation_map.py\n\n# Find undocumented files\ncomm -13 \\\n  <(grep"
+    }
+  ],
+  "Unmatched {} brackets": [
+    {
+      "doc": "reviews/PR28_AUDIT_REPORT.md",
+      "line": 183,
+      "issue": "Unmatched {} brackets",
+      "code_snippet": "// members/firestore.rules:24-26\nmatch /users/{userId} {\n  allow read: if isOwner(userId);  // \u2705 Onl"
+    }
+  ]
+}

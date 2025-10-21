@@ -1,0 +1,45 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function hasValidKennitala() {
+      return isAuthenticated() &&
+             request.auth.token.kennitala != null &&
+             request.auth.token.kennitala.matches('^[0-9]{6}-?[0-9]{4}$');
+    }
+
+    // Users collection
+    match /users/{userId} {
+      // Read: Only own profile
+      allow read: if isOwner(userId);
+
+      // Create: Only Cloud Functions (via Admin SDK)
+      // Admin SDK bypasses these rules, so this blocks direct client access
+      allow create: if false;
+
+      // Update: Only own profile, limited fields
+      // Users can only update their photo URL and last login timestamp
+      allow update: if isOwner(userId) &&
+                       request.resource.data.diff(resource.data)
+                         .affectedKeys()
+                         .hasOnly(['photoURL', 'lastLogin']);
+
+      // Delete: Never allowed (soft delete via admin only)
+      allow delete: if false;
+    }
+
+    // Default: Deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -8,24 +8,31 @@ const pool = require('../config/database');
  * @param {boolean} success - Whether action succeeded
  * @param {object} details - Additional details (no PII allowed)
  */
-async function logAudit(action, success, details = {}) {
+function logAudit(action, success, details = {}) {
+  let sanitizedDetails;
+
   try {
     // Sanitize details to ensure no PII
-    const sanitizedDetails = sanitizeDetails(details);
-
-    await pool.query(
-      'INSERT INTO audit_log (action, success, details) VALUES ($1, $2, $3)',
-      [action, success, sanitizedDetails]
-    );
-
-    // Log to console in development
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('[Audit]', action, success ? '✓' : '✗', sanitizedDetails);
-    }
+    sanitizedDetails = sanitizeDetails(details);
   } catch (error) {
-    // Don't fail the request if audit logging fails
-    console.error('[Audit] Failed to log audit event:', error.message);
+    console.error('[Audit] Failed to sanitize audit details:', error.message);
+    sanitizedDetails = { error: 'sanitization_failed' };
   }
+
+  // Fire-and-forget insert so request handlers do not block on logging
+  pool.query(
+    'INSERT INTO audit_log (action, success, details) VALUES ($1, $2, $3)',
+    [action, success, sanitizedDetails]
+  )
+    .then(() => {
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('[Audit]', action, success ? '✓' : '✗', sanitizedDetails);
+      }
+    })
+    .catch((error) => {
+      // Don't fail the request if audit logging fails
+      console.error('[Audit] Failed to log audit event:', error.message);
+    });
 }
 
 /**

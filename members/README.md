@@ -12,7 +12,7 @@
 
 ### What's Running
 
-- **Firebase Hosting**: Static HTML from `public/` (test.html)
+- **Firebase Hosting**: Static HTML from `public/` (dashboard.html, profile.html, test.html, test-events.html)
 - **Cloud Functions** (Python 3.11, 2nd gen):
   - `handleKenniAuth` - OAuth token exchange with Kenni.is
   - `verifyMembership` - Kennitala verification against membership list
@@ -178,12 +178,16 @@ The `members/auth/` directory contains the original Node.js/ZITADEL implementati
 ### Security Features
 
 - ✅ OAuth 2.0 PKCE (RFC 7636) - Public client flow
-- ✅ State parameter for CSRF protection
+- ✅ State parameter for CSRF protection (Issue #33, Oct 12, 2025)
 - ✅ Nonce for replay attack prevention
 - ✅ Firebase custom tokens with verified claims
 - ✅ Kennitala verification against membership list
 - ✅ Secure HTTPS-only communication
-- ✅ Firebase security rules for Firestore
+- ✅ Firebase security rules for Firestore (Issue #30, Oct 12, 2025)
+- ✅ Idempotency protection for user creation (Issue #32, Oct 12, 2025)
+- ✅ Cloudflare rate limiting - 100 req/10sec per IP (Issue #31, Oct 12, 2025)
+- ✅ Origin protection - CF-Ray header + Cloudflare IP validation (Oct 12, 2025)
+- ✅ SSL/TLS Full (strict) encryption via Cloudflare
 
 ---
 
@@ -208,6 +212,10 @@ Secret Manager:
 kenni-client-secret
 ```
 
+**CORS**:
+
+- `CORS_ALLOWED_ORIGINS`: Comma-separated list of allowed origins for Cloud Functions responses. Defaults to `https://ekklesia-prod-10-2025.web.app, https://ekklesia-prod-10-2025.firebaseapp.com, http://localhost:3000` to align with Firebase Hosting and local tooling.
+
 ### Firebase Configuration
 
 - **Project**: ekklesia-prod-10-2025
@@ -221,7 +229,10 @@ kenni-client-secret
 ## Endpoints
 
 ### Firebase Hosting (Static)
+- `GET /dashboard.html` - Member dashboard (main page after login)
+- `GET /profile.html` - User profile page
 - `GET /test.html` - OAuth test page with Kenni.is integration
+- `GET /test-events.html` - Events service integration test page
 
 ### Cloud Functions (API)
 - `POST handleKenniAuth` - OAuth token exchange
@@ -239,7 +250,7 @@ kenni-client-secret
 ## Documentation
 
 **Current Implementation**:
-- [../CURRENT_PRODUCTION_STATUS.md](../CURRENT_PRODUCTION_STATUS.md) - Infrastructure status
+- [../docs/status/CURRENT_PRODUCTION_STATUS.md](../docs/status/CURRENT_PRODUCTION_STATUS.md) - Infrastructure status
 - [../docs/SYSTEM_ARCHITECTURE_OVERVIEW.md](../docs/SYSTEM_ARCHITECTURE_OVERVIEW.md) - System architecture
 
 **Local Documentation** (not in git):
@@ -340,7 +351,7 @@ See `functions/requirements.txt`:
 
 ## Project
 
-- **Organization**: Samstaða (Icelandic Social Democratic Party)
+- **Organization**: Sósíalistaflokkur Íslands (Socialist Party of Iceland)
 - **Repository**: https://github.com/sosialistaflokkurinn/ekklesia
 - **Platform**: Ekklesia e-democracy platform
 - **Project**: ekklesia-prod-10-2025
@@ -362,4 +373,4 @@ See `functions/requirements.txt`:
 ---
 
 **Production Account**: gudrodur@sosialistaflokkurinn.is
-**Last Updated**: 2025-10-08
+**Last Updated**: 2025-10-12

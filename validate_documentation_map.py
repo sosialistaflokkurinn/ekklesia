@@ -37,6 +37,10 @@ DEFAULT_SCAN_DIRS = (
     "archive",
 )
 
+DEFAULT_IGNORE_DIRS = (
+    "archive",
+)
+
 # File suffixes that we consider part of documentation for the purposes of
 # coverage. Extend this tuple if you need to track additional formats.
 DOC_SUFFIXES = (".md", ".markdown", ".mdx", ".rst", ".txt", ".sh")
@@ -45,6 +49,21 @@ INLINE_CODE_PATTERN = re.compile(r"`([^`]+)`")
 PATH_PATTERN = re.compile(r"(?<![\w./-])(docs|members|events|elections|archive)/[\w./-]+")
 
 EXCLUDE_PARTS = {"node_modules", "venv", ".venv", "__pycache__", "site-packages"}
+
+# Directory moves (Oct 13, 2025 archive re-organisation)
+# When DOCUMENTATION_MAP.md references an old path, suggest the new location.
+PATH_ALIASES = (
+    (Path("archive/documentation"), Path("archive/docs/docs-2025-10-13/legacy-docs-2025-10-03")),
+    (Path("archive/docs-2025-10-13"), Path("archive/docs/docs-2025-10-13")),
+    (Path("archive/deployments"), Path("archive/ops/deployments")),
+    (Path("archive/testing-logs"), Path("archive/ops/testing-logs")),
+    (Path("archive/audits"), Path("archive/ops/audits")),
+    (Path("archive/migrations"), Path("archive/ops/migrations")),
+    (Path("archive/security"), Path("archive/research/security")),
+    (Path("archive/ekklesia-platform-evaluation"), Path("archive/projects/ekklesia-platform-evaluation")),
+    (Path("archive/members-service"), Path("archive/projects/members-service")),
+    (Path("archive/zitadel-legacy"), Path("archive/projects/zitadel-legacy")),
+)
 
 
 def extract_paths(markdown: str) -> Set[Path]:
@@ -84,21 +103,43 @@ def extract_paths(markdown: str) -> Set[Path]:
     return candidates
 
 
-def collect_repository_docs(root: Path, directories: Iterable[str]) -> Set[Path]:
+def collect_repository_docs(root: Path, directories: Iterable[str], ignored: Set[str]) -> Set[Path]:
     """Return all documentation files under the given directories."""
 
     discovered: Set[Path] = set()
     for relative_dir in directories:
         base = root / relative_dir
+        top_level = relative_dir.split("/", 1)[0]
+        if top_level in ignored:
+            continue
         if not base.exists():
             continue
         for path in base.rglob("*"):
             parts = path.parts
-            if any(part in EXCLUDE_PARTS or part.endswith(".dist-info") for part in parts):
+            if any(
+                part in EXCLUDE_PARTS
+                or part.endswith(".dist-info")
+                or part in ignored
+                for part in parts
+            ):
                 continue
             if path.is_file() and path.suffix in DOC_SUFFIXES:
                 discovered.add(path.relative_to(root))
     return discovered
+
+
+def remap_legacy_path(path: Path, root: Path) -> Path | None:
+    """Return a suggested new path if the reference maps to a moved archive location."""
+
+    for old_prefix, new_prefix in PATH_ALIASES:
+        try:
+            relative = path.relative_to(old_prefix)
+        except ValueError:
+            continue
+        candidate = new_prefix / relative
+        if (root / candidate).exists():
+            return candidate
+    return None
 
 
 def main() -> None:
@@ -114,6 +155,12 @@ def main() -> None:
         default=DEFAULT_SCAN_DIRS,
         help="Directories to scan for documentation coverage",
     )
+    parser.add_argument(
+        "--ignore",
+        nargs="*",
+        default=DEFAULT_IGNORE_DIRS,
+        help="Top-level directories to ignore when scanning for documentation coverage",
+    )
     args = parser.parse_args()
 
     repo_root = Path.cwd()
@@ -124,28 +171,49 @@ def main() -> None:
     markdown = map_path.read_text(encoding="utf-8")
     referenced_paths = extract_paths(markdown)
 
-    missing = sorted(path for path in referenced_paths if not (repo_root / path).exists())
+    ignored_dirs = {Path(dir_path).parts[0] for dir_path in args.ignore}
 
-    discovered_docs = collect_repository_docs(repo_root, args.scan)
+    missing = []
+    suggestions = {}
+    for path in sorted(referenced_paths):
+        if (repo_root / path).exists():
+            continue
+        missing.append(path)
+        suggestion = remap_legacy_path(path, repo_root)
+        if suggestion is not None:
+            suggestions[path] = suggestion
+
+    discovered_docs = collect_repository_docs(repo_root, args.scan, ignored_dirs)
     unlisted = sorted(discovered_docs - referenced_paths)
 
     print("=== Documentation Map Validation ===")
     print(f"Map file: {map_path}")
     print(f"Referenced paths found: {len(referenced_paths)}")
 
+    has_errors = False
+
     if missing:
+        has_errors = True
         print("\nMissing files referenced in the map:")
         for path in missing:
-            print(f"  - {path}")
+            if suggestion := suggestions.get(path):
+                print(f"  - {path} (moved to {suggestion})")
+            else:
+                print(f"  - {path}")
     else:
         print("\nAll referenced files were found.")
 
     if unlisted:
+        has_errors = True
         print("\nDocumentation files not referenced in the map:")
         for path in unlisted:
             print(f"  - {path}")
     else:
         print("\nNo unlisted documentation files detected in the scanned directories.")
+
+    if has_errors:
+        # Signal failure so CI or hooks can block merges until the map is updated.
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":
