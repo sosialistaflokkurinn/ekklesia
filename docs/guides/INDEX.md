@@ -1,23 +1,89 @@
-# INDEX.md – Guides Overview
+# Guides Index
 
-**Last Updated:** 2025-10-20  
+**Last Updated:** 2025-10-21  
 **Status:** ✅ Current
 
-This index provides a quick reference and summary for all documentation in `docs/guides`. Each entry includes a one-liner summary and a direct link to the guide.
+Comprehensive reference for all operational guides organized by category.
 
-# INDEX.md – Guides Overview
+## Guide Categories
 
-**Last Updated:** 2025-10-20  
-**Status:** ✅ Current
-
-This index provides a quick reference and summary for all documentation in `docs/guides`. Each entry includes a one-liner summary and a direct link to the guide.
+- **[Admin Guides](admin/)** - Administrative operations (alerts, logging, MFA, permissions)
+- **[Infrastructure](infrastructure/)** - Infrastructure and ops documentation
+- **[Troubleshooting](troubleshooting/)** - Debugging and issue resolution
+- **[Workflows](workflows/)** - Processes and workflow documentation
+- **[Git Guides](git/)** - Git workflows and development
+- **[GitHub Guides](github/)** - GitHub management and integration
 
 ## Table of Contents
 
-1. [Development & Integration](#development--integration)
-2. [GitHub Management](#github-management)
-3. [Security & Operations](#security--operations)
-4. [Access Control](#access-control)
+1. [Administrative Operations](#administrative-operations)
+2. [Infrastructure & Operations](#infrastructure--operations)
+3. [Troubleshooting & Support](#troubleshooting--support)
+4. [Workflow & Process Documentation](#workflow--process-documentation)
+5. [Developer Guides](#developer-guides)
+
+---
+
+## Administrative Operations
+
+### Admin Alerts
+**Location:** [admin/ADMIN_ALERTS.md](admin/ADMIN_ALERTS.md)  
+**Summary:** Alert configuration and monitoring for administrators
+
+- Alert setup and configuration
+- Referenced alert definitions in [admin/alerts/](admin/alerts/)
+
+### Audit Logging
+**Location:** [admin/AUDIT_LOGGING.md](admin/AUDIT_LOGGING.md)  
+**Summary:** Audit logging setup and procedures
+
+### MFA Enforcement
+**Location:** [admin/MFA_ENFORCEMENT.md](admin/MFA_ENFORCEMENT.md)  
+**Summary:** Multi-factor authentication enforcement policies
+
+### Roles and Permissions
+**Location:** [admin/ROLES_AND_PERMISSIONS.md](admin/ROLES_AND_PERMISSIONS.md)  
+**Summary:** System roles and permission structure
+
+---
+
+## Infrastructure & Operations
+
+### Private Operations Repository
+**Location:** [infrastructure/PRIVATE_OPS_REPO.md](infrastructure/PRIVATE_OPS_REPO.md)  
+**Summary:** Guide to the private operations repository setup and usage
+
+---
+
+## Troubleshooting & Support
+
+### OAuth Troubleshooting
+**Location:** [troubleshooting/OAUTH_TROUBLESHOOTING.md](troubleshooting/OAUTH_TROUBLESHOOTING.md)  
+**Summary:** Common OAuth issues and resolution procedures
+
+---
+
+## Workflow & Process Documentation
+
+### Usage Context
+**Location:** [workflows/USAGE_CONTEXT.md](workflows/USAGE_CONTEXT.md)  
+**Summary:** Context for system usage and integration patterns
+
+### Campaign Learnings (PR29)
+**Location:** [workflows/PR29_CAMPAIGN_LEARNINGS.md](workflows/PR29_CAMPAIGN_LEARNINGS.md)  
+**Summary:** Learnings and best practices from PR29 campaign
+
+---
+
+## Developer Guides
+
+### Git Guides
+**Location:** [git/](git/)  
+Available guides in this directory for git workflows
+
+### GitHub Guides
+**Location:** [github/](github/)  
+Available guides for GitHub management and integration
 
 ---
 
