@@ -76,6 +76,9 @@ async function init() {
     // Initialize authenticated page
     await initAuthenticatedPage();
 
+    // Update elections navigation link (page-specific)
+    document.getElementById('nav-voting').textContent = R.string.nav_voting;
+
     // Get election ID from URL
     const params = new URLSearchParams(window.location.search);
     const electionId = params.get('id');
@@ -104,7 +107,7 @@ async function loadElection(electionId) {
     const election = await getElectionById(electionId);
     currentElection = election;
 
-    document.title = `${election.title} - Sósíalistaflokkurinn`;
+    document.title = `${election.title} - ${R.string.app_name}`;
 
     // Display election
     displayElection(election);
