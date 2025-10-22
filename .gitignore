@@ -28,6 +28,12 @@ npm-debug.log*
 *.key.json
 cloud-sql-proxy*
 
+# Cloud SQL proxy connection directories (temp artifacts)
+# Pattern: instance-name:region:database-name
+*:europe-west*:*
+*:us-central*:*
+*:asia-*:*
+
 # Archives (local only)
 archive/
 audits/

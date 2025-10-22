@@ -771,7 +771,7 @@ firebase deploy --only hosting --project=ekklesia-prod-10-2025
 
 #### Step 6: Update Server Code (main.py)
 
-**File**: `/home/gudro/Development/projects/ekklesia/members/functions/main.py`
+**File**: `/home/gudro/Development/projects/ekklesia/services/members/functions/main.py`
 
 **Update CORS Headers** (line 29):
 ```python
@@ -785,7 +785,7 @@ CORS_HEADERS = {
 
 **Deploy** (using correct method - see §7.2):
 ```bash
-cd /home/gudro/Development/projects/ekklesia/members/functions
+cd /home/gudro/Development/projects/ekklesia/services/members/functions
 
 gcloud functions deploy handlekenniauth \
   --gen2 \
@@ -1139,7 +1139,7 @@ curl -v "https://idp.kenni.is/oidc/token"
 
 **Deployment Status by Service**:
 - **Members Service**: ✅ Fully deployed (Oct 13, 2025) - App Check active in monitoring mode
-- **Events Service**: ❌ NOT deployed - Middleware exists (`events/src/middleware/appCheck.js`) but not integrated
+- **Events Service**: ❌ NOT deployed - Middleware exists (`services/events/src/middleware/appCheck.js`) but not integrated
 - **Elections Service**: ❌ NOT deployed - No App Check code exists yet
 
 ### 9.2 Production Configuration
@@ -1589,7 +1589,7 @@ async function handleOAuthCallback() {
 
 #### Appendix C: Server-Side CORS Configuration
 
-**File**: `members/functions/main.py` (lines 26-88)
+**File**: `services/members/functions/main.py` (lines 26-88)
 
 ```python
 import os

@@ -25,7 +25,7 @@ gcloud functions deploy handleKenniAuth \
   --entry-point=handleKenniAuth \
   --trigger-http \
   --allow-unauthenticated \
-  --source=members/functions \
+  --source=services/members/functions \
   --timeout=60s \
   --memory=512MB \
   --set-env-vars JWKS_CACHE_TTL_SECONDS=3600
@@ -43,7 +43,7 @@ gcloud functions deploy handleKenniAuth \
 gcloud functions deploy handleKenniAuth \
   --gen2 --runtime=python311 --region=europe-west2 \
   --entry-point=handleKenniAuth --trigger-http --allow-unauthenticated \
-  --source=members/functions \
+  --source=services/members/functions \
   --set-env-vars JWKS_CACHE_TTL_SECONDS=3600,CORS_ALLOWED_ORIGINS="https://ekklesia-prod-10-2025.web.app,https://members.example.com"
 ```
 
