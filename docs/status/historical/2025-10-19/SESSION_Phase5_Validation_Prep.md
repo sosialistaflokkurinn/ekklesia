@@ -4,6 +4,10 @@
 **Branch**: `feature/security-hardening`
 **Status**: ⚠️ **Partially Complete** - Manual steps required
 
+> **Note**: This is a historical document from before the repository restructuring (2025-10-21).
+> Path references use the old structure (e.g., `members/` instead of `services/members/`).
+> For current paths, see the [Repository Structure](../../../DIRECTORY.md).
+
 ---
 
 ## Executive Summary

@@ -51,7 +51,7 @@ gcloud secrets versions list postgres-password --project=ekklesia-prod-10-2025
 **Problem:** Issue marked "Blocked" with no explanation
 
 **Discovery:**
-- Investigated code: `members/functions/main.py` lines 30-42
+- Investigated code: `services/members/functions/main.py` lines 30-42
 - Found CORS allowlist ALREADY IMPLEMENTED correctly
 - Issue: Environment variable defaults to `'*'` if not set
 
@@ -117,9 +117,9 @@ CORS_ALLOWED_ORIGINS=https://ekklesia-prod-10-2025.web.app,https://ekklesia-prod
 - ⏳ Deployment pending
 
 **Changes:**
-- `events/src/index.js` - Added Cache-Control to token responses
-- `events/src/routes/election.js` - Added Cache-Control to auth token responses
-- `members/functions/main.py` - Added Cache-Control + CORS warning
+- `services/events/src/index.js` - Added Cache-Control to token responses
+- `services/events/src/routes/election.js` - Added Cache-Control to auth token responses
+- `services/members/functions/main.py` - Added Cache-Control + CORS warning
 
 **Header Added:**
 ```
@@ -347,9 +347,9 @@ Per security policy, closed security issues MUST include:
 
 **2. Deploy Cache-Control Fix (30 minutes)**
 ```bash
-cd events && gcloud run deploy events-service --source . --region=europe-west2 --project=ekklesia-prod-10-2025
-cd elections && gcloud run deploy elections-service --source . --region=europe-west2 --project=ekklesia-prod-10-2025
-cd members/functions && gcloud functions deploy handlekenniauth --gen2 --region=europe-west2 --project=ekklesia-prod-10-2025
+cd services/events && gcloud run deploy events-service --source . --region=europe-west2 --project=ekklesia-prod-10-2025
+cd services/elections && gcloud run deploy elections-service --source . --region=europe-west2 --project=ekklesia-prod-10-2025
+cd services/members/functions && gcloud functions deploy handlekenniauth --gen2 --region=europe-west2 --project=ekklesia-prod-10-2025
 ```
 
 **3. Provide Verification Evidence**

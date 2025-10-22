@@ -80,7 +80,7 @@ Frontend user interfaces for Ekklesia.
 
 ### `apps/members-portal/` (Planned)
 **Members Portal UI**
-- Current Location: `services/members/public/` (will consolidate)
+- Current Location: `apps/members-portal/` (will consolidate)
 - Purpose: Member dashboard, profile, election discovery, voting interface
 - Technology: HTML5, ES6 JavaScript, CSS3 (BEM methodology)
 - Hosted: Firebase Hosting (ekklesia-prod-10-2025.web.app)

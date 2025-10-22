@@ -33,7 +33,7 @@
 
 **Implementation (Commit 1851fb6):**
 ```javascript
-// events/src/routes/election.js
+// services/services/events/src/routes/election.js
 res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private, max-age=0');
 ```
 
@@ -63,7 +63,7 @@ curl -I https://events-prod.../api/request-token
 
 **Implementation (Commit 1851fb6):**
 ```javascript
-// events/src/index.js
+// services/services/events/src/index.js
 const corsOrigins = process.env.CORS_ORIGINS ? 
   process.env.CORS_ORIGINS.split(',') : [
     'https://ekklesia-prod-10-2025.web.app',
@@ -89,7 +89,7 @@ if (process.env.NODE_ENV === 'production' && corsOrigins.includes('*')) {
 **Verification:**
 - Repository search: No `'Access-Control-Allow-Origin': '*'` in runtime code
 - Only found in docs/audit files (safe)
-- members/functions/main.py uses dynamic allowlist via `_get_allowed_origin()`
+- services/members/functions/main.py uses dynamic allowlist via `_get_allowed_origin()`
 
 ---
 
@@ -205,9 +205,9 @@ if (process.env.NODE_ENV === 'production' && corsOrigins.includes('*')) {
 
 ### Code Changes (Commit 1851fb6)
 ```
-events/src/routes/election.js - Added Cache-Control headers
-events/src/index.js - CORS whitelist + production warning
-members/functions/main.py - Added Cache-Control to auth responses
+services/events/src/routes/election.js - Added Cache-Control headers
+services/events/src/index.js - CORS whitelist + production warning
+services/members/functions/main.py - Added Cache-Control to auth responses
 ```
 
 ### Test Documentation (Commit 71e4512)
