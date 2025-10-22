@@ -15,11 +15,14 @@ jobs:
   security-audit:
     runs-on: ubuntu-latest
     name: Automated Security Checks
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      
+
+      - name: Install jq (required for JSON parsing)
+        run: apt-get update && apt-get install -y jq
+
       - name: Run security hygiene checks
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
