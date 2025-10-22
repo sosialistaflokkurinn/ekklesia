@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kosning - Sósíalistaflokkurinn</title>
+  <link rel="stylesheet" href="/styles/global.css">
+  <link rel="stylesheet" href="/styles/elections.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar__container">
+      <a href="/dashboard.html" class="navbar__brand" id="nav-brand">Sósíalistaflokkurinn</a>
+      <ul class="navbar__menu">
+        <li><a href="/dashboard.html" id="nav-dashboard">Mín síða</a></li>
+        <li><a href="/profile.html" id="nav-profile">Aðgangur</a></li>
+        <li><a href="/elections.html" id="nav-voting">Kosningar</a></li>
+        <li><button id="btn-logout" class="btn btn--text">Útskrá</button></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- Back Button -->
+    <div class="election-header">
+      <a href="/elections.html" class="btn btn--text back-button">← Til baka</a>
+    </div>
+
+    <!-- Loading State -->
+    <div id="election-loading" class="election-loading u-hidden">
+      <div class="spinner"></div>
+      <p id="loading-message">Hleð inn kosningum...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="election-error" class="election-error u-hidden">
+      <p id="error-message">Villa við að hlaða kosningum</p>
+      <a href="/elections.html" class="btn btn--primary">Til baka á kosningar</a>
+    </div>
+
+    <!-- Election Detail Container -->
+    <section id="election-detail" class="election-detail u-hidden">
+
+      <!-- Election Title & Metadata -->
+      <div class="election-detail__header">
+        <h1 id="election-title">Kosning</h1>
+        <p id="election-question" class="election-detail__question"></p>
+        <div class="election-detail__meta">
+          <span id="election-status" class="election-detail__status"></span>
+          <span id="election-date" class="election-detail__date"></span>
+        </div>
+      </div>
+
+      <!-- Voting Section (if active) -->
+      <section id="voting-section" class="voting-section u-hidden">
+        <h2>Kjóstu nú</h2>
+        <form id="vote-form" class="vote-form">
+          <div id="vote-options" class="vote-options"></div>
+          <button type="submit" id="submit-vote-btn" class="btn btn--primary">Kjósa</button>
+        </form>
+      </section>
+
+      <!-- Already Voted Section (if voted) -->
+      <section id="already-voted-section" class="already-voted-section u-hidden">
+        <div class="already-voted-message">
+          <p>✓ Þú hefur þegar kosið í þessari kosningum.</p>
+        </div>
+      </section>
+
+      <!-- Upcoming Section -->
+      <section id="upcoming-section" class="upcoming-section u-hidden">
+        <div class="upcoming-message">
+          <p id="upcoming-text">Kosningin mynda opna fyrir atkvæðagreiðslu fyrr seinna.</p>
+        </div>
+      </section>
+
+      <!-- Results Section (if closed) -->
+      <section id="results-section" class="results-section u-hidden">
+        <h2>Niðurstöður</h2>
+        <div id="results-container" class="results-container"></div>
+      </section>
+
+    </section>
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div id="confirm-modal" class="modal u-hidden">
+    <div class="modal__content">
+      <h2>Staðfestu atkvæði</h2>
+      <p id="confirm-message">Ertu viss um að þú viljir kjósa?</p>
+      <div class="modal__buttons">
+        <button id="confirm-cancel" class="btn btn--secondary">Aflýsa</button>
+        <button id="confirm-submit" class="btn btn--primary">Staðfesta</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div id="success-modal" class="modal u-hidden">
+    <div class="modal__content">
+      <h2>✓ Atkvæði skráð</h2>
+      <p>Þinn atkvæði hefur verið skráð með góðum árangri.</p>
+      <div class="modal__buttons">
+        <a href="/elections.html" class="btn btn--primary">Til baka á kosningar</a>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/js/election-detail.js"></script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kosningar - Sósíalistaflokkurinn</title>
+  <link rel="stylesheet" href="/styles/global.css">
+  <link rel="stylesheet" href="/styles/elections.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar__container">
+      <a href="/dashboard.html" class="navbar__brand" id="nav-brand">Sósíalistaflokkurinn</a>
+      <ul class="navbar__menu">
+        <li><a href="/dashboard.html" id="nav-dashboard">Mín síða</a></li>
+        <li><a href="/profile.html" id="nav-profile">Aðgangur</a></li>
+        <li><a href="/elections.html" id="nav-voting" class="active">Kosningar</a></li>
+        <li><button id="btn-logout" class="btn btn--text">Útskrá</button></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container">
+    <section class="elections-section">
+      <div class="elections-header">
+        <h1 id="elections-title">Kosningar</h1>
+        <p id="elections-subtitle">Kjóstu í opnum kosningum</p>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div class="elections-filters">
+        <button class="filter-btn active" data-filter="all" id="filter-all">
+          Allar
+          <span class="filter-count" id="count-all">0</span>
+        </button>
+        <button class="filter-btn" data-filter="active" id="filter-active">
+          Virkar
+          <span class="filter-count" id="count-active">0</span>
+        </button>
+        <button class="filter-btn" data-filter="upcoming" id="filter-upcoming">
+          Væntanlegar
+          <span class="filter-count" id="count-upcoming">0</span>
+        </button>
+        <button class="filter-btn" data-filter="closed" id="filter-closed">
+          Lokkaðar
+          <span class="filter-count" id="count-closed">0</span>
+        </button>
+      </div>
+
+      <!-- Loading State -->
+      <div id="elections-loading" class="elections-loading u-hidden">
+        <div class="spinner"></div>
+        <p id="loading-message">Hleð inn kosningum...</p>
+      </div>
+
+      <!-- Error State -->
+      <div id="elections-error" class="elections-error u-hidden">
+        <p id="error-message">Villa við að hlaða kosningum</p>
+        <button id="retry-button" class="btn btn--primary">Reyna aftur</button>
+      </div>
+
+      <!-- Empty State -->
+      <div id="elections-empty" class="elections-empty u-hidden">
+        <p id="empty-message">Engar kosningar fundust</p>
+      </div>
+
+      <!-- Elections Container -->
+      <div id="elections-list" class="elections-list"></div>
+    </section>
+  </div>
+
+  <script type="module" src="/js/elections.js"></script>
+</body>
+</html>

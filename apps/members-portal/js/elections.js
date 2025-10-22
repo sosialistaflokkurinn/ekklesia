@@ -1,0 +1,254 @@
+/**
+ * Elections List Page
+ *
+ * Displays all elections a member can vote in.
+ * - Active elections: Can vote now
+ * - Upcoming elections: Will open for voting soon
+ * - Closed elections: Results available
+ *
+ * Filter by status using tabs.
+ */
+
+import { initAuthenticatedPage } from './page-init.js';
+import { R } from '../i18n/strings-loader.js';
+import { getElections } from './api/elections-api.js';
+
+// State
+let currentFilter = 'all';
+let allElections = [];
+let electionCounts = {
+  all: 0,
+  active: 0,
+  upcoming: 0,
+  closed: 0
+};
+
+/**
+ * Initialize elections list page
+ */
+async function init() {
+  try {
+    // Load i18n strings
+    await R.load('is');
+
+    // Initialize authenticated page (header, navigation, auth check)
+    await initAuthenticatedPage();
+
+    // Update page titles
+    document.title = R.string.page_title_test_events || 'Kosningar - Sósíalistaflokkurinn';
+    document.getElementById('elections-title').textContent = R.string.nav_voting || 'Kosningar';
+    document.getElementById('elections-subtitle').textContent = R.string.quick_links_voting_desc || 'Kjóstu í opnum kosningum';
+    document.getElementById('loading-message').textContent = R.string.loading || 'Hleð inn...';
+    document.getElementById('empty-message').textContent = 'Engar kosningar fundust';
+    document.getElementById('error-message').textContent = R.string.error_generic || 'Villa';
+
+    // Setup filter buttons
+    setupFilters();
+
+    // Load elections
+    await loadElections();
+
+  } catch (error) {
+    console.error('Error initializing elections page:', error);
+    showError(R.string.error_generic || 'Villa við að hlaða kosningum');
+  }
+}
+
+/**
+ * Setup filter button event listeners
+ */
+function setupFilters() {
+  const filterButtons = document.querySelectorAll('.filter-btn');
+
+  filterButtons.forEach(button => {
+    button.addEventListener('click', (e) => {
+      // Update active state
+      document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+      e.target.closest('.filter-btn').classList.add('active');
+
+      // Update current filter and reload display
+      currentFilter = e.target.closest('.filter-btn').dataset.filter;
+      displayElections(allElections);
+    });
+  });
+
+  // Retry button
+  const retryButton = document.getElementById('retry-button');
+  if (retryButton) {
+    retryButton.addEventListener('click', loadElections);
+  }
+}
+
+/**
+ * Load elections from API (or mock)
+ */
+async function loadElections() {
+  try {
+    showLoading();
+
+    // Fetch elections
+    allElections = await getElections();
+
+    // Calculate counts by status
+    electionCounts = {
+      all: allElections.length,
+      active: allElections.filter(e => e.status === 'active').length,
+      upcoming: allElections.filter(e => e.status === 'upcoming').length,
+      closed: allElections.filter(e => e.status === 'closed').length
+    };
+
+    // Update filter count badges
+    document.getElementById('count-all').textContent = electionCounts.all;
+    document.getElementById('count-active').textContent = electionCounts.active;
+    document.getElementById('count-upcoming').textContent = electionCounts.upcoming;
+    document.getElementById('count-closed').textContent = electionCounts.closed;
+
+    // Display elections
+    displayElections(allElections);
+
+    hideLoading();
+
+  } catch (error) {
+    console.error('Error loading elections:', error);
+    showError(R.string.error_generic || 'Villa við að hlaða kosningum');
+  }
+}
+
+/**
+ * Display elections (filtered by current filter)
+ */
+function displayElections(elections) {
+  const container = document.getElementById('elections-list');
+  container.innerHTML = '';
+
+  // Filter elections
+  let filtered = elections;
+  if (currentFilter !== 'all') {
+    filtered = elections.filter(e => e.status === currentFilter);
+  }
+
+  // Show empty state if no elections
+  if (filtered.length === 0) {
+    showEmpty();
+    hideLoading();
+    return;
+  }
+
+  hideEmpty();
+
+  // Create election cards
+  filtered.forEach(election => {
+    const card = createElectionCard(election);
+    container.appendChild(card);
+  });
+}
+
+/**
+ * Create election card element
+ */
+function createElectionCard(election) {
+  const card = document.createElement('div');
+  card.className = 'election-card';
+  card.style.cursor = 'pointer';
+
+  // Status badge
+  const statusClass = `status-${election.status}`;
+  let statusText = '';
+  if (election.status === 'active') {
+    statusText = 'Virk';
+  } else if (election.status === 'upcoming') {
+    statusText = 'Væntanleg';
+  } else if (election.status === 'closed') {
+    statusText = 'Lokuð';
+  }
+
+  // Already voted indicator
+  let votedHTML = '';
+  if (election.has_voted) {
+    votedHTML = '<div class="election-voted">✓ Þú hefur kosið</div>';
+  }
+
+  card.innerHTML = `
+    <div class="election-card__header">
+      <h3 class="election-card__title">${escapeHTML(election.title)}</h3>
+      <span class="election-card__status ${statusClass}">${statusText}</span>
+    </div>
+    <p class="election-card__question">${escapeHTML(election.question)}</p>
+    ${votedHTML}
+    <div class="election-card__footer">
+      <span class="election-card__date">${formatDate(election.voting_starts_at)}</span>
+      <span class="election-card__cta">Skoðaðu kosninguna →</span>
+    </div>
+  `;
+
+  // Click to navigate to election detail
+  card.addEventListener('click', () => {
+    window.location.href = `/election-detail.html?id=${election.id}`;
+  });
+
+  return card;
+}
+
+/**
+ * Show loading state
+ */
+function showLoading() {
+  document.getElementById('elections-loading').classList.remove('u-hidden');
+  document.getElementById('elections-error').classList.add('u-hidden');
+  document.getElementById('elections-empty').classList.add('u-hidden');
+  document.getElementById('elections-list').innerHTML = '';
+}
+
+/**
+ * Hide loading state
+ */
+function hideLoading() {
+  document.getElementById('elections-loading').classList.add('u-hidden');
+}
+
+/**
+ * Show error state
+ */
+function showError(message) {
+  document.getElementById('elections-error').classList.remove('u-hidden');
+  document.getElementById('error-message').textContent = message;
+  document.getElementById('elections-loading').classList.add('u-hidden');
+  document.getElementById('elections-empty').classList.add('u-hidden');
+  document.getElementById('elections-list').innerHTML = '';
+}
+
+/**
+ * Show empty state
+ */
+function showEmpty() {
+  document.getElementById('elections-empty').classList.remove('u-hidden');
+  document.getElementById('elections-error').classList.add('u-hidden');
+  document.getElementById('elections-loading').classList.add('u-hidden');
+}
+
+/**
+ * Utility: Escape HTML to prevent XSS
+ */
+function escapeHTML(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+/**
+ * Utility: Format date for display
+ */
+function formatDate(dateString) {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('is-IS', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', init);
