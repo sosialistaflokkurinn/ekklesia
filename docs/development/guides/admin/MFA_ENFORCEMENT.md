@@ -47,10 +47,6 @@ MFA Setup Instructions (Send to users):
 - In account security settings, add a second factor (TOTP or SMS)
 - Confirm recovery codes are stored securely
 
-Change Management:
-- Use two-person review for any removal of developer role
-- Track actions in a private ticket
-
 References:
 - Firebase Admin SDK Multi-factor Auth
 - Security Policy (SECURITY.md)
@@ -299,7 +295,6 @@ async function enforceCompliance(report) {
 - [ ] Monthly audit completed and documented
 - [ ] Non-compliant users notified within 24 hours
 - [ ] Recovery codes verified for each user
-- [ ] Audit log contains two-person approval for any role changes
 - [ ] Next audit scheduled
 
 ---

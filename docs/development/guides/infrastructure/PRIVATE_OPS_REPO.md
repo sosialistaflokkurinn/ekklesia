@@ -32,7 +32,6 @@ ekklesia-ops/
     README.md                    # Store in Secret Manager; do not commit
   policies/
     access-controls.md
-    two-person-approval.md
 ```
 
 Best Practices:
@@ -181,24 +180,6 @@ echo "your-secret-value" | gcloud secrets create my-secret --data-file=-
 ```
 EOF
 
-cat > policies/two-person-approval.md << 'EOF'
-# Two-Person Approval Policy
-
-**Required for:** Any destructive operation (reset, delete, role removal)
-
-**Process:**
-1. Author creates PR with clear justification
-2. First reviewer approves (different team member)
-3. Second reviewer approves (different team member from first)
-4. Author merges to main
-5. Author runs operation from main branch
-6. Both reviewers verify completion in logs
-
-**Exceptions:** None. This is mandatory.
-
-**Audit Trail:** All approvals logged with timestamps and comments.
-EOF
-
 git add .gitignore README.md policies/
 git commit -m "Initial ops repo setup with policies"
 git push origin main
@@ -213,7 +194,7 @@ Create `runbooks/elections/reset-election.sql`:
 ```bash
 cat > runbooks/elections/reset-election.sql << 'EOF'
 -- DESTRUCTIVE: Full election reset
--- Use with extreme caution. Requires 2-person approval.
+-- Use with extreme caution.
 -- Last executed: 2025-10-16 by [operator name]
 
 BEGIN;
@@ -318,10 +299,9 @@ cat > scripts/firebase/enforce-mfa.js << 'EOF'
 
 /**
  * Enforce MFA for elevated roles
- * 
+ *
  * Usage: node enforce-mfa.js --project=ekklesia-prod-10-2025
- * 
- * REQUIRES: Two-person approval before execution
+ *
  * AUDIT TRAIL: All actions logged to Cloud Logging
  */
 
@@ -497,12 +477,7 @@ chmod +x policies/quarterly-access-audit.sh
    - Use Application Default Credentials (ADC)
    - Never commit `.env` files or JSON credentials
 
-2. **Require 2-person approval for all destructive operations**
-   - Code review + 1 additional approval
-   - Separate merge from execution
-   - Document both approvers in audit log
-
-3. **Limit repository members**
+2. **Limit repository members**
    - Only active SRE team members
    - Quarterly re-certification of access
    - Immediate removal when role changes
@@ -540,7 +515,6 @@ git commit -m "Add MFA enforcement script
 - Requires --dry-run flag before execution
 - All actions logged to Cloud Logging
 
-Two-person approval required before merge.
 Requires 2025-10-16 security review completion."
 
 # 5. Push and create PR

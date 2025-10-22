@@ -1,15 +1,32 @@
-# Ekklesia Current Production Status
+# Ekklesia Current Development Status
 
 **Last Updated:** 2025-10-22
-**Status:** 🟢 Stable Infrastructure | 🟡 Phase 5 Ready for Implementation
+**Status:** 🟡 Development Phase - Infrastructure Ready
 **Current Phase:** 5 - Feature Development & Deployment Planning
 **Target Completion:** November 2025
 
 ---
 
+## ⚠️ Development Context
+
+**Important:** Ekklesia is currently **under active development** and is NOT in production use.
+
+### Infrastructure vs System Status
+- **GCP Infrastructure**: Production-grade tools (ekklesia-prod-10-2025 project)
+  - Using production Firebase, Cloud Run, Cloud SQL for development/testing
+  - Reason: Kenni.is OAuth requires production setup for testing (no sandbox mode available)
+- **System Status**: Development phase (no live users, no real elections)
+  - All testing is developmental
+  - No production data or real user activity
+  - Safe to experiment and iterate
+
+**Target**: First production use planned when Phase 5 is complete and tested (TBD)
+
+---
+
 ## Executive Summary
 
-Ekklesia infrastructure is **stable and production-ready**. Phase 4 completed all foundational services:
+Ekklesia infrastructure is **stable and ready for development**. Phase 4 completed all foundational services:
 - Elections Service MVP ✅
 - Events Service MVP ✅
 - Members Service with Firebase authentication ✅
@@ -21,7 +38,7 @@ Ekklesia infrastructure is **stable and production-ready**. Phase 4 completed al
 
 ---
 
-## Production System Status
+## Development System Status
 
 ### Services (All Operational)
 
@@ -62,7 +79,7 @@ Ekklesia infrastructure is **stable and production-ready**. Phase 4 completed al
 - ✅ Schema structure designed
 - ⏳ Migration SQL: `services/elections/migrations/004_move_to_elections_schema.sql`
 - ⏳ Dry-run verification needed (see checklist below)
-- ⏳ Production deployment pending Phase 5 start
+- ⏳ Deployment to development environment pending Phase 5 start
 
 ---
 
