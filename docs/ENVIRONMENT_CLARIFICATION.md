@@ -75,12 +75,14 @@ Kenni.is (Iceland's National eID system) **requires production-grade infrastruct
 ### What We DON'T Have (System)
 
 ❌ **No Production Use:**
-- No live users (no real members voting)
+- **URL is unlisted** (not publicly shared with members)
+- No official announcement or communication to members
 - No real elections (all testing is developmental)
-- No production data (test data only)
-- No public announcement of availability
+- Only developers know about and use the system for testing
 - No service-level agreements (SLAs)
 - No 24/7 on-call support
+
+**Important Note:** The system uses **production Kenni.is authentication** (real Icelandic eID), so anyone with an Icelandic eID *could* technically login if they knew the URL. However, the URL is intentionally unlisted and only shared with developers for testing purposes.
 
 **System is under active development.**
 
@@ -135,19 +137,21 @@ Kenni.is (Iceland's National eID system) **requires production-grade infrastruct
 
 ### How We Prevent Accidents
 
-Even though we're using production infrastructure, we have safeguards:
+Even though we're using production infrastructure and real authentication, we have safeguards:
 
-1. **No Real User Data**
-   - All test accounts are developer accounts
-   - All elections are test elections
-   - All votes are test votes
+1. **No Real Elections**
+   - All elections are test elections (non-binding)
+   - All votes are developmental testing
    - Database can be reset at any time
+   - No real decision-making happening
 
-2. **No Public Announcement**
+2. **URL is Unlisted**
    - Members are not told the system exists
-   - No public URL shared with members
-   - No marketing or communication
-   - System is invitation-only for developers
+   - URL not shared publicly or in official communications
+   - No marketing or announcements
+   - Only developers know the URL for testing
+
+**Note:** The system uses production Kenni.is OAuth, so any Icelandic citizen *could* login with their real eID if they discovered the URL. However, since there are no real elections and the URL is intentionally unlisted, there's no impact if someone accidentally finds it.
 
 3. **Reversible Operations**
    - Database migrations can be rolled back
@@ -253,7 +257,9 @@ Even though we're using production infrastructure, we have safeguards:
 |--------|--------|
 | **Infrastructure** | Production-grade (reliable, secure, expensive) |
 | **System** | Under development (testing, iterating, not ready) |
-| **Users** | Developers only (no real members voting) |
+| **Authentication** | Production Kenni.is OAuth (real Icelandic eID) |
+| **Accessibility** | Unlisted URL (not publicly shared) |
+| **Usage** | Developer testing only (no official member communication) |
 | **Data** | Test data only (can be reset at any time) |
 | **Elections** | Test elections (non-binding, for development) |
 | **Timeline** | Phase 5 development → UAT → Production use |

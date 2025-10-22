@@ -14,11 +14,15 @@
 ### Infrastructure vs System Status
 - **GCP Infrastructure**: Production-grade tools (ekklesia-prod-10-2025 project)
   - Using production Firebase, Cloud Run, Cloud SQL for development/testing
+  - Production Kenni.is OAuth (real Icelandic eID authentication)
   - Reason: Kenni.is OAuth requires production setup for testing (no sandbox mode available)
-- **System Status**: Development phase (no live users, no real elections)
-  - All testing is developmental
-  - No production data or real user activity
+- **System Status**: Development phase (unlisted URL, testing only)
+  - URL is unlisted (not publicly shared with members)
+  - Only developers know about and use the system for testing
+  - All elections are test elections (non-binding)
   - Safe to experiment and iterate
+
+**Important:** Anyone with an Icelandic eID *could* technically login if they knew the URL, but the URL is intentionally unlisted and only shared with developers.
 
 **Target**: First production use planned when Phase 5 is complete and tested (TBD)
 
