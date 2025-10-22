@@ -22,7 +22,7 @@ By end of Week 1:
 - ✅ All admin endpoints implemented and tested
 - ✅ Audit logging functional
 - ✅ Ready for Epic #43 (Membership Sync) integration
-- ✅ Ready for Epic #87 (Member UI) integration
+- ✅ Can leverage Epic #87 frontend structure for admin UI
 
 ---
 
@@ -280,28 +280,34 @@ By end of Week 1:
 
 ### Friday - Integration & Sprint Close
 
-**Objective**: Prepare for Epic #43 integration and close out Week 1
+**Objective**: Prepare for Epic #43 integration and leverage Epic #87 foundation
 
 **Tasks**:
 
-1. **Integration Readiness** (1.5 hours)
+1. **Epic #87 Pattern Review** (1 hour)
+   - Review `apps/members-portal/` structure
+   - Study i18n system (R.string pattern in `i18n/values-is/strings.xml`)
+   - Review BEM CSS methodology (`styles/elections.css`)
+   - Note API client patterns (`js/api/elections-api.js`) for admin UI
+
+2. **Epic #43 Integration Planning** (1 hour)
    - Review Epic #43 (Membership Sync) requirements
-   - Identify dependencies: Does Epic #24 need Epic #43 data?
-   - Plan handoff: How do endpoints communicate?
+   - Identify dependencies with membership data
+   - Plan coordination for member eligibility checks
    - Document assumptions about membership table structure
 
-2. **Documentation** (1.5 hours)
+3. **Documentation** (1.5 hours)
    - Update [PHASE_5_OVERVIEW.md](../../roadmap/PHASE_5_OVERVIEW.md)
    - Document Week 1 completion
    - Create Week 2 plan
    - Update epic status in EPIC_24_ADMIN_LIFECYCLE.md
 
-3. **Code Review Preparation** (1 hour)
+4. **Code Review Preparation** (1 hour)
    - Ensure all code follows project style guide
    - Run linter and fix issues
    - Prepare commit messages
 
-4. **Deploy to Dev** (30 min)
+5. **Deploy to Dev** (30 min)
    ```bash
    # Merge all Week 1 changes to dev environment
    git push origin feature/epic-24-admin-lifecycle
@@ -492,10 +498,16 @@ curl -X POST http://localhost:8080/api/admin/elections \
 ## Next Steps (Week 2 Preview)
 
 After Week 1, you'll move to:
-1. **API Integration with Frontend** (Epic #87)
+1. **Admin UI Development** - Leverage Epic #87's `apps/members-portal/` structure
 2. **Membership Sync Service** (Epic #43) - May start in parallel
 3. **Full Integration Testing**
 4. **Load Testing & Optimization**
+
+**Epic #87 Foundation Available:**
+- Frontend: `apps/members-portal/`
+- i18n: R.string pattern ready (add admin strings to `values-is/strings.xml`)
+- CSS: BEM methodology established (follow `elections.css` patterns)
+- API patterns: Follow `elections-api.js` structure for admin API client
 
 The API you build this week will be the foundation for everything else.
 

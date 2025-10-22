@@ -16,11 +16,13 @@ Epic #24 implements the complete admin lifecycle for elections - allowing admini
 Currently, the system has:
 - ✅ Members authentication (Kenni.is + Firebase)
 - ✅ Voting infrastructure (Elections service)
+- ✅ Member election discovery UI (Epic #87 - complete)
+- ✅ Frontend structure (`apps/members-portal/`)
+- ✅ i18n system (R.string pattern)
 - ❌ **No admin interface for election lifecycle**
-- ❌ **No way to create elections**
-- ❌ **No way to manage election timing**
+- ❌ **No way to create/manage elections**
 
-This means elections must be created manually in the database. Phase 5 requires a complete admin API.
+Epic #24 builds on Epic #87's foundation to add admin capabilities.
 
 ---
 
@@ -170,8 +172,11 @@ match /admins/{document=**} {
    - Test audit logging
    - Load testing with 300+ members
 
-### Phase 5c: UI & Documentation (Week 3-4)
-1. **Admin Web UI** (if time permits)
+### Phase 5c: Admin UI & Documentation (Week 3-4)
+1. **Admin Web UI** (leverages Epic #87 structure)
+   - Location: `apps/members-portal/admin/`
+   - Uses established i18n system (R.string pattern)
+   - Follows BEM CSS methodology
    - Dashboard showing all elections
    - Create/Edit election forms
    - Election status and statistics
@@ -185,11 +190,18 @@ match /admins/{document=**} {
 
 ## Related Epics
 
-| Epic | Title | Dependency | Status |
-|------|-------|-----------|--------|
-| #87 | Member Election Discovery | **Depends on #24** | Planned |
-| #43 | Membership Sync (Django) | **Depends on #24** | Planned |
-| #88 | Token Generation for Elections | **Depends on #24** | Planned |
+| Epic | Title | Relationship | Status |
+|------|-------|-------------|--------|
+| #87 | Member Election Discovery | ✅ Complete - Provides frontend foundation | Merged to main |
+| #43 | Membership Sync (Django) | Parallel development | In planning |
+| #88 | Token Generation for Elections | Part of #24 implementation | Planned |
+
+**Epic #87 Foundation Available:**
+- Frontend structure: `apps/members-portal/`
+- i18n system: R.string pattern (75 strings)
+- BEM CSS methodology established
+- Elections API client patterns (`js/api/elections-api.js`)
+- Mock API structure for development
 
 ---
 
