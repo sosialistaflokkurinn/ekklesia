@@ -58,16 +58,16 @@ async function init() {
  * Setup filter button event listeners
  */
 function setupFilters() {
-  const filterButtons = document.querySelectorAll('.filter-btn');
+  const filterButtons = document.querySelectorAll('.elections__filter-btn');
 
   filterButtons.forEach(button => {
     button.addEventListener('click', (e) => {
       // Update active state
-      document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-      e.target.closest('.filter-btn').classList.add('active');
+      document.querySelectorAll('.elections__filter-btn').forEach(btn => btn.classList.remove('elections__filter-btn--active'));
+      e.target.closest('.elections__filter-btn').classList.add('elections__filter-btn--active');
 
       // Update current filter and reload display
-      currentFilter = e.target.closest('.filter-btn').dataset.filter;
+      currentFilter = e.target.closest('.elections__filter-btn').dataset.filter;
       displayElections(allElections);
     });
   });
@@ -118,7 +118,7 @@ async function loadElections() {
  * Display elections (filtered by current filter)
  */
 function displayElections(elections) {
-  const container = document.getElementById('elections-list');
+  const container = document.querySelector('.elections__list');
   container.innerHTML = '';
 
   // Filter elections
@@ -148,11 +148,11 @@ function displayElections(elections) {
  */
 function createElectionCard(election) {
   const card = document.createElement('div');
-  card.className = 'election-card';
+  card.className = 'elections__card';
   card.style.cursor = 'pointer';
 
   // Status badge
-  const statusClass = `status-${election.status}`;
+  const statusClass = `elections__status-badge--${election.status}`;
   let statusText = '';
   if (election.status === 'active') {
     statusText = 'Virk';
@@ -165,19 +165,19 @@ function createElectionCard(election) {
   // Already voted indicator
   let votedHTML = '';
   if (election.has_voted) {
-    votedHTML = '<div class="election-voted">✓ Þú hefur kosið</div>';
+    votedHTML = '<div class="elections__card-voted">✓ Þú hefur kosið</div>';
   }
 
   card.innerHTML = `
-    <div class="election-card__header">
-      <h3 class="election-card__title">${escapeHTML(election.title)}</h3>
-      <span class="election-card__status ${statusClass}">${statusText}</span>
+    <div class="elections__card-header">
+      <h3 class="elections__card-title">${escapeHTML(election.title)}</h3>
+      <span class="elections__status-badge ${statusClass}">${statusText}</span>
     </div>
-    <p class="election-card__question">${escapeHTML(election.question)}</p>
+    <p class="elections__card-question">${escapeHTML(election.question)}</p>
     ${votedHTML}
-    <div class="election-card__footer">
-      <span class="election-card__date">${formatDate(election.voting_starts_at)}</span>
-      <span class="election-card__cta">Skoðaðu kosninguna →</span>
+    <div class="elections__card-footer">
+      <span class="elections__card-date">${formatDate(election.voting_starts_at)}</span>
+      <span class="elections__card-cta">Skoðaðu kosninguna →</span>
     </div>
   `;
 
@@ -196,7 +196,7 @@ function showLoading() {
   document.getElementById('elections-loading').classList.remove('u-hidden');
   document.getElementById('elections-error').classList.add('u-hidden');
   document.getElementById('elections-empty').classList.add('u-hidden');
-  document.getElementById('elections-list').innerHTML = '';
+  document.querySelector('.elections__list').innerHTML = '';
 }
 
 /**
@@ -214,7 +214,7 @@ function showError(message) {
   document.getElementById('error-message').textContent = message;
   document.getElementById('elections-loading').classList.add('u-hidden');
   document.getElementById('elections-empty').classList.add('u-hidden');
-  document.getElementById('elections-list').innerHTML = '';
+  document.querySelector('.elections__list').innerHTML = '';
 }
 
 /**

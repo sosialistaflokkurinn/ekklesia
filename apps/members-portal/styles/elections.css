@@ -1,39 +1,44 @@
 /**
- * Elections Styling
+ * Elections Styling (BEM Methodology)
  *
  * Responsive design for election discovery and voting pages.
  * - Mobile-first approach
  * - Tablet and desktop responsive
- * - Dark status indicators
+ * - Status badge indicators
  * - Confirmation and success modals
+ *
+ * Block: .elections (elections list page)
+ * Block: .voting (voting form)
+ * Block: .results (results display)
+ * Block: .modal (confirmation/success modals)
  */
 
 /* ========================================== */
-/* ELECTIONS LIST PAGE (elections.html) */
+/* ELECTIONS LIST PAGE (.elections) */
 /* ========================================== */
 
-.elections-section {
+.elections {
   padding: 2rem 0;
 }
 
-.elections-header {
+.elections__header {
   margin-bottom: 2rem;
   text-align: center;
 }
 
-.elections-header h1 {
+.elections__header h1 {
   font-size: 2rem;
   margin-bottom: 0.5rem;
   color: #333;
 }
 
-.elections-header p {
+.elections__header p {
   font-size: 1rem;
   color: #666;
 }
 
 /* Filter Tabs */
-.elections-filters {
+.elections__filters {
   display: flex;
   gap: 0.5rem;
   margin-bottom: 2rem;
@@ -42,7 +47,7 @@
   overflow-x: auto;
 }
 
-.filter-btn {
+.elections__filter-btn {
   padding: 0.75rem 1.5rem;
   background: none;
   border: none;
@@ -56,16 +61,16 @@
   bottom: -2px; /* Overlap bottom border */
 }
 
-.filter-btn:hover {
+.elections__filter-btn:hover {
   color: #333;
 }
 
-.filter-btn.active {
+.elections__filter-btn--active {
   color: #CC0000;
   border-bottom-color: #CC0000;
 }
 
-.filter-count {
+.elections__filter-count {
   display: inline-block;
   background: #f0f0f0;
   color: #666;
@@ -75,13 +80,13 @@
   margin-left: 0.5rem;
 }
 
-.filter-btn.active .filter-count {
+.elections__filter-btn--active .elections__filter-count {
   background: #CC0000;
   color: white;
 }
 
-/* Elections List */
-.elections-list {
+/* Elections List Container */
+.elections__list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1.5rem;
@@ -89,7 +94,7 @@
 }
 
 /* Election Card */
-.election-card {
+.elections__card {
   background: white;
   border: 1px solid #ddd;
   border-radius: 8px;
@@ -102,20 +107,20 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.election-card:hover {
+.elections__card:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   border-color: #CC0000;
   transform: translateY(-2px);
 }
 
-.election-card__header {
+.elections__card-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 1rem;
 }
 
-.election-card__title {
+.elections__card-title {
   font-size: 1.1rem;
   font-weight: 600;
   color: #333;
@@ -124,7 +129,7 @@
   line-height: 1.4;
 }
 
-.election-card__status {
+.elections__status-badge {
   padding: 0.4rem 0.8rem;
   border-radius: 4px;
   font-size: 0.75rem;
@@ -135,22 +140,22 @@
   white-space: nowrap;
 }
 
-.status-active {
+.elections__status-badge--active {
   background: #e8f5e9;
   color: #2e7d32;
 }
 
-.status-upcoming {
+.elections__status-badge--upcoming {
   background: #fff3e0;
   color: #e65100;
 }
 
-.status-closed {
+.elections__status-badge--closed {
   background: #f5f5f5;
   color: #424242;
 }
 
-.election-card__question {
+.elections__card-question {
   color: #666;
   font-size: 0.95rem;
   line-height: 1.5;
@@ -158,7 +163,7 @@
   flex-grow: 1;
 }
 
-.election-voted {
+.elections__card-voted {
   background: #e8f5e9;
   color: #2e7d32;
   padding: 0.5rem 0.75rem;
@@ -167,7 +172,7 @@
   font-weight: 500;
 }
 
-.election-card__footer {
+.elections__card-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -176,18 +181,25 @@
   font-size: 0.85rem;
 }
 
-.election-card__date {
+.elections__card-date {
   color: #999;
 }
 
-.election-card__cta {
+.elections__card-cta {
   color: #CC0000;
   font-weight: 600;
 }
 
-/* Loading State */
-.elections-loading,
-.election-loading {
+/* Loading, Error, Empty States */
+.elections__loading,
+.elections__error,
+.elections__empty {
+  padding: 2rem;
+  text-align: center;
+  border-radius: 8px;
+}
+
+.elections__loading {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -210,39 +222,30 @@
   100% { transform: rotate(360deg); }
 }
 
-.elections-loading p,
-.election-loading p {
+.elections__loading p {
   color: #666;
   font-size: 1rem;
 }
 
-/* Error State */
-.elections-error,
-.election-error {
-  padding: 2rem;
+.elections__error {
   background: #ffebee;
   border: 1px solid #ef5350;
-  border-radius: 8px;
-  text-align: center;
 }
 
-.elections-error p,
-.election-error p {
+.elections__error p {
   color: #c62828;
   margin: 0 0 1rem 0;
   font-size: 1rem;
 }
 
-/* Empty State */
-.elections-empty {
-  padding: 3rem 2rem;
-  text-align: center;
+.elections__empty {
   color: #999;
   font-size: 1.1rem;
+  padding: 3rem 2rem;
 }
 
 /* ========================================== */
-/* ELECTION DETAIL PAGE (election-detail.html) */
+/* ELECTION DETAIL PAGE */
 /* ========================================== */
 
 .election-header {
@@ -304,17 +307,17 @@
   text-transform: uppercase;
 }
 
-.election-detail__status.status-active {
+.election-detail__status--active {
   background: #e8f5e9;
   color: #2e7d32;
 }
 
-.election-detail__status.status-upcoming {
+.election-detail__status--upcoming {
   background: #fff3e0;
   color: #e65100;
 }
 
-.election-detail__status.status-closed {
+.election-detail__status--closed {
   background: #f5f5f5;
   color: #424242;
 }
@@ -324,31 +327,34 @@
   font-size: 0.95rem;
 }
 
-/* Voting Section */
-.voting-section {
+/* ========================================== */
+/* VOTING SECTION (.voting) */
+/* ========================================== */
+
+.voting {
   margin: 2rem 0;
 }
 
-.voting-section h2 {
+.voting h2 {
   font-size: 1.3rem;
   margin-bottom: 1.5rem;
   color: #333;
 }
 
-.vote-form {
+.voting__form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.vote-options {
+.voting__options {
   display: flex;
   flex-direction: column;
   gap: 1rem;
   margin-bottom: 1rem;
 }
 
-.vote-option {
+.voting__option {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -360,31 +366,31 @@
   background: white;
 }
 
-.vote-option:hover {
+.voting__option:hover {
   border-color: #CC0000;
   background: #fafafa;
 }
 
-.vote-option input[type="radio"] {
+.voting__option input[type="radio"] {
   width: 20px;
   height: 20px;
   cursor: pointer;
   accent-color: #CC0000;
 }
 
-.vote-option span {
+.voting__option-label {
   font-size: 1rem;
   color: #333;
   flex-grow: 1;
 }
 
-.vote-option input:checked + span {
+.voting__option input:checked + .voting__option-label {
   font-weight: 600;
   color: #CC0000;
 }
 
 /* Already Voted Message */
-.already-voted-message {
+.elections__already-voted {
   background: #e8f5e9;
   border: 1px solid #4caf50;
   border-radius: 6px;
@@ -396,7 +402,7 @@
 }
 
 /* Upcoming Election Message */
-.upcoming-message {
+.elections__upcoming {
   background: #fff3e0;
   border: 1px solid #ffa726;
   border-radius: 6px;
@@ -407,59 +413,62 @@
   margin: 2rem 0;
 }
 
-/* Results Section */
-.results-section {
+/* ========================================== */
+/* RESULTS SECTION (.results) */
+/* ========================================== */
+
+.results {
   margin: 2rem 0;
 }
 
-.results-section h2 {
+.results h2 {
   font-size: 1.3rem;
   margin-bottom: 1.5rem;
   color: #333;
 }
 
-.results-container {
+.results__container {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
-.result-item {
+.results__item {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.result-header {
+.results__item-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.result-label {
+.results__item-label {
   font-weight: 500;
   color: #333;
 }
 
-.result-percentage {
+.results__item-percentage {
   font-weight: 600;
   color: #CC0000;
 }
 
-.result-bar {
+.results__bar {
   height: 24px;
   background: #f0f0f0;
   border-radius: 4px;
   overflow: hidden;
 }
 
-.result-bar__fill {
+.results__bar-fill {
   height: 100%;
   background: linear-gradient(90deg, #CC0000, #FF6B6B);
   transition: width 0.5s ease;
 }
 
-.result-count {
+.results__votes {
   font-size: 0.85rem;
   color: #999;
 }
@@ -515,12 +524,12 @@
   line-height: 1.5;
 }
 
-.modal__buttons {
+.modal__actions {
   display: flex;
   gap: 1rem;
 }
 
-.modal__buttons .btn {
+.modal__actions .btn {
   flex: 1;
 }
 
@@ -538,7 +547,7 @@
 
 /* Tablet (481px - 768px) */
 @media (min-width: 481px) {
-  .elections-list {
+  .elections__list {
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   }
 
@@ -550,11 +559,11 @@
 
 /* Desktop (769px+) */
 @media (min-width: 769px) {
-  .elections-list {
+  .elections__list {
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   }
 
-  .elections-filters {
+  .elections__filters {
     flex-wrap: nowrap;
   }
 
@@ -563,33 +572,33 @@
     margin: 0 auto;
   }
 
-  .election-card__footer {
+  .elections__card-footer {
     flex-direction: row;
   }
 
-  .modal__buttons {
+  .modal__actions {
     flex-direction: row;
   }
 }
 
 /* Large Desktop (1024px+) */
 @media (min-width: 1024px) {
-  .elections-list {
+  .elections__list {
     grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
   }
 
-  .elections-section {
+  .elections {
     padding: 3rem 0;
   }
 }
 
 /* Small Mobile (max 480px) */
 @media (max-width: 480px) {
-  .elections-list {
+  .elections__list {
     grid-template-columns: 1fr;
   }
 
-  .election-header h1 {
+  .elections__header h1 {
     font-size: 1.5rem;
   }
 
@@ -597,12 +606,12 @@
     font-size: 1.4rem;
   }
 
-  .elections-filters {
+  .elections__filters {
     gap: 0;
     margin-bottom: 1.5rem;
   }
 
-  .filter-btn {
+  .elections__filter-btn {
     flex: 1;
     padding: 0.5rem;
     font-size: 0.85rem;
@@ -610,20 +619,20 @@
     bottom: -1px;
   }
 
-  .filter-count {
+  .elections__filter-count {
     display: none;
   }
 
-  .election-card {
+  .elections__card {
     padding: 1rem;
   }
 
-  .election-card__header {
+  .elections__card-header {
     flex-direction: column;
     align-items: flex-start;
   }
 
-  .election-card__status {
+  .elections__status-badge {
     align-self: flex-start;
   }
 
@@ -631,11 +640,11 @@
     padding: 1.5rem;
   }
 
-  .modal__buttons {
+  .modal__actions {
     flex-direction: column;
   }
 
-  .modal__buttons .btn {
+  .modal__actions .btn {
     flex: none;
   }
 }

@@ -27,15 +27,15 @@
     </div>
 
     <!-- Loading State -->
-    <div id="election-loading" class="election-loading u-hidden">
+    <div id="election-loading" class="elections__loading u-hidden">
       <div class="spinner"></div>
       <p id="loading-message">Hleð inn kosningum...</p>
     </div>
 
     <!-- Error State -->
-    <div id="election-error" class="election-error u-hidden">
+    <div id="election-error" class="elections__error u-hidden">
       <p id="error-message">Villa við að hlaða kosningum</p>
-      <a href="/elections.html" class="btn btn--primary">Til baka á kosningar</a>
+      <a href="/elections.html" class="btn">Til baka á kosningar</a>
     </div>
 
     <!-- Election Detail Container -->
@@ -52,32 +52,28 @@
       </div>
 
       <!-- Voting Section (if active) -->
-      <section id="voting-section" class="voting-section u-hidden">
+      <section id="voting-section" class="voting u-hidden">
         <h2>Kjóstu nú</h2>
-        <form id="vote-form" class="vote-form">
-          <div id="vote-options" class="vote-options"></div>
-          <button type="submit" id="submit-vote-btn" class="btn btn--primary">Kjósa</button>
+        <form id="vote-form" class="voting__form">
+          <div id="vote-options" class="voting__options"></div>
+          <button type="submit" id="submit-vote-btn" class="btn">Kjósa</button>
         </form>
       </section>
 
       <!-- Already Voted Section (if voted) -->
-      <section id="already-voted-section" class="already-voted-section u-hidden">
-        <div class="already-voted-message">
-          <p>✓ Þú hefur þegar kosið í þessari kosningum.</p>
-        </div>
+      <section id="already-voted-section" class="elections__already-voted u-hidden">
+        <p>✓ Þú hefur þegar kosið í þessari kosningum.</p>
       </section>
 
       <!-- Upcoming Section -->
-      <section id="upcoming-section" class="upcoming-section u-hidden">
-        <div class="upcoming-message">
-          <p id="upcoming-text">Kosningin mynda opna fyrir atkvæðagreiðslu fyrr seinna.</p>
-        </div>
+      <section id="upcoming-section" class="elections__upcoming u-hidden">
+        <p id="upcoming-text">Kosningin mynda opna fyrir atkvæðagreiðslu fyrr seinna.</p>
       </section>
 
       <!-- Results Section (if closed) -->
-      <section id="results-section" class="results-section u-hidden">
+      <section id="results-section" class="results u-hidden">
         <h2>Niðurstöður</h2>
-        <div id="results-container" class="results-container"></div>
+        <div id="results-container" class="results__container"></div>
       </section>
 
     </section>
@@ -88,9 +84,9 @@
     <div class="modal__content">
       <h2>Staðfestu atkvæði</h2>
       <p id="confirm-message">Ertu viss um að þú viljir kjósa?</p>
-      <div class="modal__buttons">
+      <div class="modal__actions">
         <button id="confirm-cancel" class="btn btn--secondary">Aflýsa</button>
-        <button id="confirm-submit" class="btn btn--primary">Staðfesta</button>
+        <button id="confirm-submit" class="btn">Staðfesta</button>
       </div>
     </div>
   </div>
@@ -100,8 +96,8 @@
     <div class="modal__content">
       <h2>✓ Atkvæði skráð</h2>
       <p>Þinn atkvæði hefur verið skráð með góðum árangri.</p>
-      <div class="modal__buttons">
-        <a href="/elections.html" class="btn btn--primary">Til baka á kosningar</a>
+      <div class="modal__actions">
+        <a href="/elections.html" class="btn">Til baka á kosningar</a>
       </div>
     </div>
   </div>

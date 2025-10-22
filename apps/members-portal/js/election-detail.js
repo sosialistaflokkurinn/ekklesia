@@ -88,7 +88,7 @@ function displayElection(election) {
 
   // Update status and date
   const statusText = election.status === 'active' ? 'Virk' : election.status === 'upcoming' ? 'Væntanleg' : 'Lokuð';
-  const statusClass = `status-${election.status}`;
+  const statusClass = `election-detail__status--${election.status}`;
   document.getElementById('election-status').textContent = statusText;
   document.getElementById('election-status').className = `election-detail__status ${statusClass}`;
   document.getElementById('election-date').textContent = formatDate(election.voting_starts_at);
@@ -122,7 +122,7 @@ function showVotingSection(election) {
   // Create radio buttons for each answer
   election.answers.forEach(answer => {
     const label = document.createElement('label');
-    label.className = 'vote-option';
+    label.className = 'voting__option';
 
     const radio = document.createElement('input');
     radio.type = 'radio';
@@ -131,6 +131,7 @@ function showVotingSection(election) {
     radio.required = true;
 
     const labelText = document.createElement('span');
+    labelText.className = 'voting__option-label';
     labelText.textContent = answer.text;
 
     label.appendChild(radio);
@@ -234,17 +235,17 @@ async function showResults(electionId) {
 
     answersWithPercent.forEach(answer => {
       const resultItem = document.createElement('div');
-      resultItem.className = 'result-item';
+      resultItem.className = 'results__item';
 
       resultItem.innerHTML = `
-        <div class="result-header">
-          <span class="result-label">${escapeHTML(answer.text)}</span>
-          <span class="result-percentage">${answer.percentage}%</span>
+        <div class="results__item-header">
+          <span class="results__item-label">${escapeHTML(answer.text)}</span>
+          <span class="results__item-percentage">${answer.percentage}%</span>
         </div>
-        <div class="result-bar">
-          <div class="result-bar__fill" style="width: ${answer.percentage}%"></div>
+        <div class="results__bar">
+          <div class="results__bar-fill" style="width: ${answer.percentage}%"></div>
         </div>
-        <span class="result-count">${answer.count} atkvæði</span>
+        <span class="results__votes">${answer.count} atkvæði</span>
       `;
 
       resultsContainer.appendChild(resultItem);

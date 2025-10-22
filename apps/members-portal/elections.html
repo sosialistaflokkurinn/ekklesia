@@ -21,51 +21,51 @@
   </nav>
 
   <div class="container">
-    <section class="elections-section">
-      <div class="elections-header">
+    <section class="elections">
+      <div class="elections__header">
         <h1 id="elections-title">Kosningar</h1>
         <p id="elections-subtitle">Kjóstu í opnum kosningum</p>
       </div>
 
       <!-- Filter Tabs -->
-      <div class="elections-filters">
-        <button class="filter-btn active" data-filter="all" id="filter-all">
+      <div class="elections__filters">
+        <button class="elections__filter-btn elections__filter-btn--active" data-filter="all" id="filter-all">
           Allar
-          <span class="filter-count" id="count-all">0</span>
+          <span class="elections__filter-count" id="count-all">0</span>
         </button>
-        <button class="filter-btn" data-filter="active" id="filter-active">
+        <button class="elections__filter-btn" data-filter="active" id="filter-active">
           Virkar
-          <span class="filter-count" id="count-active">0</span>
+          <span class="elections__filter-count" id="count-active">0</span>
         </button>
-        <button class="filter-btn" data-filter="upcoming" id="filter-upcoming">
+        <button class="elections__filter-btn" data-filter="upcoming" id="filter-upcoming">
           Væntanlegar
-          <span class="filter-count" id="count-upcoming">0</span>
+          <span class="elections__filter-count" id="count-upcoming">0</span>
         </button>
-        <button class="filter-btn" data-filter="closed" id="filter-closed">
+        <button class="elections__filter-btn" data-filter="closed" id="filter-closed">
           Lokkaðar
-          <span class="filter-count" id="count-closed">0</span>
+          <span class="elections__filter-count" id="count-closed">0</span>
         </button>
       </div>
 
       <!-- Loading State -->
-      <div id="elections-loading" class="elections-loading u-hidden">
+      <div id="elections-loading" class="elections__loading u-hidden">
         <div class="spinner"></div>
         <p id="loading-message">Hleð inn kosningum...</p>
       </div>
 
       <!-- Error State -->
-      <div id="elections-error" class="elections-error u-hidden">
+      <div id="elections-error" class="elections__error u-hidden">
         <p id="error-message">Villa við að hlaða kosningum</p>
-        <button id="retry-button" class="btn btn--primary">Reyna aftur</button>
+        <button id="retry-button" class="btn">Reyna aftur</button>
       </div>
 
       <!-- Empty State -->
-      <div id="elections-empty" class="elections-empty u-hidden">
+      <div id="elections-empty" class="elections__empty u-hidden">
         <p id="empty-message">Engar kosningar fundust</p>
       </div>
 
       <!-- Elections Container -->
-      <div id="elections-list" class="elections-list"></div>
+      <div id="elections-list" class="elections__list"></div>
     </section>
   </div>
 
