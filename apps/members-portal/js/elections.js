@@ -35,12 +35,21 @@ async function init() {
     await initAuthenticatedPage();
 
     // Update page titles
-    document.title = R.string.page_title_test_events || 'Kosningar - Sósíalistaflokkurinn';
-    document.getElementById('elections-title').textContent = R.string.nav_voting || 'Kosningar';
-    document.getElementById('elections-subtitle').textContent = R.string.quick_links_voting_desc || 'Kjóstu í opnum kosningum';
-    document.getElementById('loading-message').textContent = R.string.loading || 'Hleð inn...';
-    document.getElementById('empty-message').textContent = 'Engar kosningar fundust';
-    document.getElementById('error-message').textContent = R.string.error_generic || 'Villa';
+    document.title = R.string.page_title_elections;
+    document.getElementById('elections-title').textContent = R.string.elections_title;
+    document.getElementById('elections-subtitle').textContent = R.string.elections_subtitle;
+    document.getElementById('loading-message').textContent = R.string.loading_elections;
+    document.getElementById('empty-message').textContent = R.string.empty_no_elections;
+    document.getElementById('error-message').textContent = R.string.error_load_elections;
+
+    // Update filter button labels
+    document.getElementById('filter-all-text').textContent = R.string.filter_all;
+    document.getElementById('filter-active-text').textContent = R.string.filter_active;
+    document.getElementById('filter-upcoming-text').textContent = R.string.filter_upcoming;
+    document.getElementById('filter-closed-text').textContent = R.string.filter_closed;
+
+    // Update retry button
+    document.getElementById('retry-button').textContent = R.string.btn_retry;
 
     // Setup filter buttons
     setupFilters();
@@ -50,7 +59,7 @@ async function init() {
 
   } catch (error) {
     console.error('Error initializing elections page:', error);
-    showError(R.string.error_generic || 'Villa við að hlaða kosningum');
+    showError(R.string.error_load_elections);
   }
 }
 
@@ -110,7 +119,7 @@ async function loadElections() {
 
   } catch (error) {
     console.error('Error loading elections:', error);
-    showError(R.string.error_generic || 'Villa við að hlaða kosningum');
+    showError(R.string.error_load_elections);
   }
 }
 
@@ -155,17 +164,17 @@ function createElectionCard(election) {
   const statusClass = `elections__status-badge--${election.status}`;
   let statusText = '';
   if (election.status === 'active') {
-    statusText = 'Virk';
+    statusText = R.string.status_active;
   } else if (election.status === 'upcoming') {
-    statusText = 'Væntanleg';
+    statusText = R.string.status_upcoming;
   } else if (election.status === 'closed') {
-    statusText = 'Lokuð';
+    statusText = R.string.status_closed;
   }
 
   // Already voted indicator
   let votedHTML = '';
   if (election.has_voted) {
-    votedHTML = '<div class="elections__card-voted">✓ Þú hefur kosið</div>';
+    votedHTML = `<div class="elections__card-voted">${R.string.election_card_voted}</div>`;
   }
 
   card.innerHTML = `
@@ -177,7 +186,7 @@ function createElectionCard(election) {
     ${votedHTML}
     <div class="elections__card-footer">
       <span class="elections__card-date">${formatDate(election.voting_starts_at)}</span>
-      <span class="elections__card-cta">Skoðaðu kosninguna →</span>
+      <span class="elections__card-cta">${R.string.election_card_cta}</span>
     </div>
   `;
 

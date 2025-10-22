@@ -18,12 +18,60 @@ let currentElection = null;
 let pendingAnswer = null;
 
 /**
+ * Update all static HTML text with R.string values
+ */
+function updateHTMLStrings() {
+  // Page title (will be overridden with election title later)
+  document.getElementById('page-title').textContent = R.string.page_title_election_detail;
+
+  // Back link
+  document.getElementById('back-link').textContent = R.string.election_detail_back_link;
+
+  // Loading message
+  document.getElementById('loading-message').textContent = R.string.loading_election_detail;
+
+  // Error messages
+  document.getElementById('error-message').textContent = R.string.error_load_election_detail;
+  document.getElementById('error-back-link').textContent = R.string.btn_back_to_elections;
+
+  // Election title (placeholder, will be replaced with API data)
+  document.getElementById('election-title').textContent = R.string.election_detail_title;
+
+  // Voting section
+  document.getElementById('voting-title').textContent = R.string.voting_section_title;
+  document.getElementById('submit-vote-btn').textContent = R.string.btn_vote;
+
+  // Already voted section
+  document.getElementById('already-voted-msg').textContent = R.string.msg_already_voted;
+
+  // Upcoming section
+  document.getElementById('upcoming-text').textContent = R.string.msg_upcoming_election;
+
+  // Results section
+  document.getElementById('results-title').textContent = R.string.results_title;
+
+  // Confirmation modal
+  document.getElementById('confirm-title').textContent = R.string.modal_confirm_title;
+  document.getElementById('confirm-message').textContent = R.string.modal_confirm_message;
+  document.getElementById('confirm-cancel-text').textContent = R.string.btn_cancel;
+  document.getElementById('confirm-submit-text').textContent = R.string.btn_confirm;
+
+  // Success modal
+  document.getElementById('success-title').textContent = R.string.modal_success_title;
+  document.getElementById('success-message').textContent = R.string.modal_success_message;
+  document.getElementById('success-back-link').textContent = R.string.btn_back_to_elections;
+}
+
+/**
  * Initialize election detail page
  */
 async function init() {
   try {
     // Load i18n strings
     await R.load('is');
+
+    // Update all static HTML text with R.string values
+    updateHTMLStrings();
 
     // Initialize authenticated page
     await initAuthenticatedPage();
@@ -33,7 +81,7 @@ async function init() {
     const electionId = params.get('id');
 
     if (!electionId) {
-      showError('Engin kosning er valin');
+      showError(R.string.error_no_election_selected);
       return;
     }
 
@@ -42,7 +90,7 @@ async function init() {
 
   } catch (error) {
     console.error('Error initializing election detail page:', error);
-    showError(R.string.error_generic || 'Villa við að hlaða kosningum');
+    showError(R.string.error_load_election_detail);
   }
 }
 
@@ -65,7 +113,7 @@ async function loadElection(electionId) {
 
   } catch (error) {
     console.error('Error loading election:', error);
-    showError(R.string.error_generic || 'Villa við að hlaða kosningum');
+    showError(R.string.error_load_election_detail);
   }
 }
 
@@ -87,7 +135,14 @@ function displayElection(election) {
   document.getElementById('election-question').textContent = election.question;
 
   // Update status and date
-  const statusText = election.status === 'active' ? 'Virk' : election.status === 'upcoming' ? 'Væntanleg' : 'Lokuð';
+  let statusText = '';
+  if (election.status === 'active') {
+    statusText = R.string.status_active;
+  } else if (election.status === 'upcoming') {
+    statusText = R.string.status_upcoming;
+  } else if (election.status === 'closed') {
+    statusText = R.string.status_closed;
+  }
   const statusClass = `election-detail__status--${election.status}`;
   document.getElementById('election-status').textContent = statusText;
   document.getElementById('election-status').className = `election-detail__status ${statusClass}`;
@@ -211,7 +266,7 @@ async function confirmVote() {
 
   } catch (error) {
     console.error('Error submitting vote:', error);
-    showError(R.string.error_generic || 'Villa við að skrá atkvæði');
+    showError(R.string.error_submit_vote);
   }
 }
 
@@ -245,7 +300,7 @@ async function showResults(electionId) {
         <div class="results__bar">
           <div class="results__bar-fill" style="width: ${answer.percentage}%"></div>
         </div>
-        <span class="results__votes">${answer.count} atkvæði</span>
+        <span class="results__votes">${R.format(R.string.results_votes, answer.count)}</span>
       `;
 
       resultsContainer.appendChild(resultItem);
@@ -255,7 +310,7 @@ async function showResults(electionId) {
 
   } catch (error) {
     console.error('Error loading results:', error);
-    showError(R.string.error_generic || 'Villa við að hlaða niðurstöðum');
+    showError(R.string.error_load_results);
   }
 }
 

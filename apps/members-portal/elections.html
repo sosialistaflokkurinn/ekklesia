@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kosningar - Sósíalistaflokkurinn</title>
+  <title id="page-title">Kosningar - Sósíalistaflokkurinn</title>
   <link rel="stylesheet" href="/styles/global.css">
   <link rel="stylesheet" href="/styles/elections.css">
 </head>
@@ -30,19 +30,19 @@
       <!-- Filter Tabs -->
       <div class="elections__filters">
         <button class="elections__filter-btn elections__filter-btn--active" data-filter="all" id="filter-all">
-          Allar
+          <span id="filter-all-text">Allar</span>
           <span class="elections__filter-count" id="count-all">0</span>
         </button>
         <button class="elections__filter-btn" data-filter="active" id="filter-active">
-          Virkar
+          <span id="filter-active-text">Virkar</span>
           <span class="elections__filter-count" id="count-active">0</span>
         </button>
         <button class="elections__filter-btn" data-filter="upcoming" id="filter-upcoming">
-          Væntanlegar
+          <span id="filter-upcoming-text">Væntanlegar</span>
           <span class="elections__filter-count" id="count-upcoming">0</span>
         </button>
         <button class="elections__filter-btn" data-filter="closed" id="filter-closed">
-          Lokkaðar
+          <span id="filter-closed-text">Lokkaðar</span>
           <span class="elections__filter-count" id="count-closed">0</span>
         </button>
       </div>
