@@ -125,7 +125,8 @@ Choose your path based on your role:
 
 | Document | Purpose | Audience |
 |----------|---------|----------|
-| [CURRENT_PRODUCTION_STATUS.md](./status/CURRENT_PRODUCTION_STATUS.md) | Live system status | All |
+| [CURRENT_DEVELOPMENT_STATUS.md](./status/CURRENT_DEVELOPMENT_STATUS.md) | Current system status | All |
+| [ENVIRONMENT_CLARIFICATION.md](./ENVIRONMENT_CLARIFICATION.md) | Production tools vs development system | All |
 | [SYSTEM_ARCHITECTURE_OVERVIEW.md](./architecture/SYSTEM_ARCHITECTURE_OVERVIEW.md) | How the system works | Developers, Architects |
 | [Multi-Agent Workflow](./development/guides/workflows/MULTI_AGENT_WORKFLOW.md) | Development process | Developers, Project Managers |
 | [Security Defense Analysis](./security/) | Security hardening | Security, DevOps |
@@ -135,8 +136,8 @@ Choose your path based on your role:
 
 ## 🚦 Status & Roadmap
 
-- **Current Phase**: Phase 5 - Events & Elections Services (Nov 2025)
-- **Status Page**: [CURRENT_PRODUCTION_STATUS.md](./status/CURRENT_PRODUCTION_STATUS.md)
+- **Current Phase**: Phase 5 - Feature Development (Nov 2025)
+- **Status Page**: [CURRENT_DEVELOPMENT_STATUS.md](./status/CURRENT_DEVELOPMENT_STATUS.md)
 - **Roadmap**: [Roadmap Directory](./roadmap/)
 - **Open Issues**: [GitHub Issues](https://github.com/sosialistaflokkurinn/ekklesia/issues)
 

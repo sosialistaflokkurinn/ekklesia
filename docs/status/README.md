@@ -4,13 +4,13 @@ Current system status and historical incidents organized by date.
 
 ## Quick Access
 
-- **[Current Production Status](CURRENT_PRODUCTION_STATUS.md)** - Latest system status
+- **[Current Development Status](CURRENT_DEVELOPMENT_STATUS.md)** - Latest system status
 - **[Ongoing Work](ongoing/)** - Active checklists and in-progress items
 - **[Historical Incidents](historical/)** - Dated incidents and status changes
 
 ## Overview
 
-**Current Status:** See [CURRENT_PRODUCTION_STATUS.md](CURRENT_PRODUCTION_STATUS.md)
+**Current Status:** See [CURRENT_DEVELOPMENT_STATUS.md](CURRENT_DEVELOPMENT_STATUS.md)
 
 ### Active Work
 - [ongoing/ELECTIONS_SCHEMA_MIGRATION_CHECKLIST.md](ongoing/ELECTIONS_SCHEMA_MIGRATION_CHECKLIST.md) - Schema migration progress
@@ -27,9 +27,9 @@ Current system status and historical incidents organized by date.
 
 ## Active Documents
 
-### Production Status
-- **[CURRENT_PRODUCTION_STATUS.md](CURRENT_PRODUCTION_STATUS.md)** - Production infrastructure and services
-  - Last Updated: Oct 9, 2025
+### Development Status
+- **[CURRENT_DEVELOPMENT_STATUS.md](CURRENT_DEVELOPMENT_STATUS.md)** - Development system infrastructure and services
+  - Last Updated: Oct 22, 2025
   - Status: ✅ Living document, updated regularly
 
 ### Integration & Milestones

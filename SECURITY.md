@@ -19,11 +19,11 @@
 **Automated scanning:**
 
 - Enable GitHub secret scanning (repo settings)
-- Use tools like `gitleaks` in CI:
-  ```bash
-  gitleaks detect --source . --no-git --redact
-  ```
-- Add a workflow to fail PRs if secrets/PII are detected
+- Use pre-commit hooks to scan for secrets before commits:
+  - Installation: `cp scripts/git-hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit`
+  - Scans for: database passwords, API keys, GCP credentials, tokens, connection strings
+  - Blocks commits if secrets are detected (can bypass with `--no-verify` if needed)
+- Weekly security hygiene checks via GitHub Actions (`.github/workflows/security-hygiene.yml`)
 
 **Reporting:**
 
