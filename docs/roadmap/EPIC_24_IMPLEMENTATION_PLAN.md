@@ -29,13 +29,13 @@
 ## 📚 Related Documentation
 
 ### Read Before Starting:
-- [docs/guides/ROLES_AND_PERMISSIONS.md](../guides/ROLES_AND_PERMISSIONS.md) - Current RBAC model and role definitions
+- [docs/development/guides/ROLES_AND_PERMISSIONS.md](../guides/ROLES_AND_PERMISSIONS.md) - Current RBAC model and role definitions
 - [docs/SYSTEM_ARCHITECTURE_OVERVIEW.md](../SYSTEM_ARCHITECTURE_OVERVIEW.md) - System architecture and service interactions
 - [docs/design/EVENTS_SERVICE_MVP.md](../design/EVENTS_SERVICE_MVP.md) - Events service design and current state
 - [docs/DATABASE_REFERENCE.md](../DATABASE_REFERENCE.md) - Database schema reference
 
 ### Will Be Created:
-- `docs/guides/AUDIT_LOGGING.md` - Audit log format and query patterns (Issue #82)
+- `docs/development/guides/AUDIT_LOGGING.md` - Audit log format and query patterns (Issue #82)
 - `docs/api/ADMIN_ENDPOINTS.md` - Admin API endpoint documentation (Issues #71-79)
 
 ### Testing Reference:
@@ -51,7 +51,7 @@
 - **#83** - RBAC policy finalization & enforcement - A12 (3h) ⚠️ **START HERE**
   - Implement `requireRole()` and `requireAnyRoles()` middleware
   - Apply to all admin endpoints
-  - Document role permissions matrix in `docs/guides/ROLES_AND_PERMISSIONS.md`
+  - Document role permissions matrix in `docs/development/guides/ROLES_AND_PERMISSIONS.md`
 
 ---
 
@@ -313,8 +313,8 @@ Epic #24 is complete when:
   - [ ] 10 error scenario tests
   - [ ] Performance test (100 elections < 5s)
 - [ ] **Documentation complete:**
-  - [ ] `docs/guides/ROLES_AND_PERMISSIONS.md` updated (RBAC matrix)
-  - [ ] `docs/guides/AUDIT_LOGGING.md` created (log format + examples)
+  - [ ] `docs/development/guides/ROLES_AND_PERMISSIONS.md` updated (RBAC matrix)
+  - [ ] `docs/development/guides/AUDIT_LOGGING.md` created (log format + examples)
   - [ ] API documentation for 11 admin endpoints
 - [ ] **Production deployment successful**
 - [ ] **At least one real election created via admin API**
