@@ -265,8 +265,8 @@ Updates:
 
 ## Key Decisions & Trade-offs
 
-### Decision 1: Keep Frontend in services/members/public/
-- **Decision**: Maintain Firebase standard structure (services/members/public/)
+### Decision 1: Keep Frontend in apps/members-portal/
+- **Decision**: Maintain Firebase standard structure (apps/members-portal/)
 - **Rationale**: Firebase conventions, zero risk to deployment
 - **Alternative Considered**: Separate to apps/members-portal/
 - **Why Not**: Would break Firebase CLI expectations, 6-8 hours for unclear benefit
