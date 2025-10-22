@@ -154,22 +154,22 @@ Ekklesia infrastructure is **stable and ready for development**. Phase 4 complet
   - Audit logging
   - Manual sync trigger for admins
 
-**Epic #87: Member Election Discovery & Voting Interface**
-- **Branch:** `archive/epic-87-election-discovery-2025-10-22` (archived)
-- **Status:** ✅ Complete - Merged to main
+**Epic #87: Member Election Discovery & Voting Interface** ✅
+- **Status:** Complete - Merged to main (2025-10-22)
 - **Documentation:** [EPIC_87_ELECTION_DISCOVERY.md](../features/election-voting/EPIC_87_ELECTION_DISCOVERY.md)
 - **Scope:** Member-facing UI for discovering and voting in elections
-- **Timeline:** Completed 2025-10-22
+- **Commits:**
+  - 84979cf8 - refactor(epic-87): convert CSS to BEM methodology
+  - 0f1e480f - chore: remove Gitleaks in favor of pre-commit hooks
+  - 8e9b371f - feat(epic-87): add i18n support using R.string pattern
+  - d736ffbc - fix(epic-87): update nav-voting text and use R.string.app_name
 - **Delivered:**
-  - Frontend separation to `apps/members-portal/`
-  - i18n system with R.string pattern (75 strings)
-  - BEM CSS methodology (650 lines)
-  - Elections API client and mock API
-  - /elections list page (responsive)
-  - /elections/:id detail page with voting form
-  - Vote submission flow
-  - Results display
-  - Error handling and retry logic
+  - Frontend structure: `apps/members-portal/` (complete)
+  - i18n system: R.string pattern with 39 new election strings
+  - CSS: BEM methodology fully applied (650 lines)
+  - API client: Elections API integration
+  - Pages: /elections list and /elections/:id detail with voting
+  - Error handling, loading states, and retry logic
 
 ### Implementation Dependencies
 
@@ -278,11 +278,11 @@ ekklesia/
 
 **Git Status:**
 - Current Branch: `main`
-- Last Commit: `70d6a45` (path updates, 2025-10-22)
+- Latest Commit: `768089da` (Phase 5 overview update, 2025-10-22)
 - Feature Branches (Phase 5):
   - `feature/epic-24-admin-lifecycle` ✅ Remote & local
   - `feature/epic-43-membership-sync` ✅ Remote & local
-  - `feature/epic-87-election-discovery` ✅ Remote & local
+  - `feature/epic-87-election-discovery` ✅ Merged to main (2025-10-22)
 
 ---
 
@@ -478,6 +478,7 @@ For issues or blockers:
 
 ---
 
-**Status Last Verified:** 2025-10-22 10:00 UTC
+**Status Last Verified:** 2025-10-22 14:45 UTC
 **Next Status Update Due:** 2025-10-29
-**Phase 5 Target Start:** 2025-11-03
+**Phase 5 Status:** Epic #87 Complete ✅ - Epic #24 Ready to Start
+**Phase 5 Target Start:** Week of 2025-11-03
