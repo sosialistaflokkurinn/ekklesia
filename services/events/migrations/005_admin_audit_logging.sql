@@ -10,22 +10,32 @@ BEGIN;
 -- ELECTIONS TABLE EXTENSIONS
 -- =============================================================================
 -- Add admin-specific columns for election lifecycle management and auditing
+-- Note: Use separate ADD COLUMN statements (PostgreSQL requirement)
 
-ALTER TABLE IF EXISTS elections.elections ADD COLUMN IF NOT EXISTS (
-    admin_id VARCHAR(255),                    -- Firebase UID of admin who created election
-    status VARCHAR(50) DEFAULT 'draft',       -- Admin-controlled status: draft, published, open, closed, paused, archived, deleted
-    voting_start_time TIMESTAMP,              -- When voting is opened
-    voting_end_time TIMESTAMP,                -- When voting is closed
-    published_at TIMESTAMP,                   -- When published to members
-    closed_at TIMESTAMP,                      -- When voting was closed
-    archived_at TIMESTAMP,                    -- When archived
-    deleted_at TIMESTAMP,                     -- Soft delete timestamp
-    created_by VARCHAR(255) NOT NULL          -- Firebase UID of creator
-);
+ALTER TABLE elections.elections
+  ADD COLUMN IF NOT EXISTS admin_id VARCHAR(255),
+  ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'draft',
+  ADD COLUMN IF NOT EXISTS voting_start_time TIMESTAMP,
+  ADD COLUMN IF NOT EXISTS voting_end_time TIMESTAMP,
+  ADD COLUMN IF NOT EXISTS published_at TIMESTAMP,
+  ADD COLUMN IF NOT EXISTS closed_at TIMESTAMP,
+  ADD COLUMN IF NOT EXISTS archived_at TIMESTAMP,
+  ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP,
+  ADD COLUMN IF NOT EXISTS created_by VARCHAR(255);
 
--- Add check constraint for status values
-ALTER TABLE elections.elections ADD CONSTRAINT IF NOT EXISTS
-    valid_admin_status CHECK (status IN ('draft', 'published', 'open', 'closed', 'paused', 'archived', 'deleted'));
+-- Add check constraint for status values (compatible with PostgreSQL < 15)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'valid_admin_status'
+      AND conrelid = 'elections.elections'::regclass
+  ) THEN
+    ALTER TABLE elections.elections
+      ADD CONSTRAINT valid_admin_status
+      CHECK (status IN ('draft', 'published', 'open', 'closed', 'paused', 'archived', 'deleted'));
+  END IF;
+END $$;
 
 -- Create indexes for common queries
 CREATE INDEX IF NOT EXISTS idx_elections_status ON elections.elections(status);
@@ -38,22 +48,41 @@ CREATE INDEX IF NOT EXISTS idx_elections_voting_period ON elections.elections(vo
 -- VOTING TOKENS TABLE EXTENSIONS
 -- =============================================================================
 -- Add election_id and usage tracking columns
+-- Note: election_id type must match elections.elections(id) type (INTEGER or UUID)
 
-ALTER TABLE IF EXISTS elections.voting_tokens ADD COLUMN IF NOT EXISTS (
-    election_id VARCHAR(36),                  -- Foreign key to elections.id
-    member_id VARCHAR(255),                   -- Optional: member ID for tracking
-    used BOOLEAN DEFAULT FALSE,               -- Whether token was used to cast vote
-    created_at TIMESTAMP DEFAULT NOW()        -- Token creation timestamp
-);
+ALTER TABLE elections.voting_tokens
+  ADD COLUMN IF NOT EXISTS election_id INTEGER,
+  ADD COLUMN IF NOT EXISTS member_id VARCHAR(255),
+  ADD COLUMN IF NOT EXISTS used BOOLEAN DEFAULT FALSE,
+  ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW();
 
--- Add foreign key constraint for election_id
-ALTER TABLE elections.voting_tokens ADD CONSTRAINT IF NOT EXISTS
-    fk_voting_tokens_election_id FOREIGN KEY (election_id)
-    REFERENCES elections.elections(id) ON DELETE CASCADE;
+-- Add foreign key constraint for election_id (compatible with PostgreSQL < 15)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'fk_voting_tokens_election_id'
+      AND conrelid = 'elections.voting_tokens'::regclass
+  ) THEN
+    ALTER TABLE elections.voting_tokens
+      ADD CONSTRAINT fk_voting_tokens_election_id
+      FOREIGN KEY (election_id) REFERENCES elections.elections(id) ON DELETE CASCADE;
+  END IF;
+END $$;
 
--- Create unique constraint for one-time use
-ALTER TABLE elections.voting_tokens ADD CONSTRAINT IF NOT EXISTS
-    unique_election_member_token UNIQUE (election_id, member_id);
+-- Create unique constraint for one-time use (compatible with PostgreSQL < 15)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'unique_election_member_token'
+      AND conrelid = 'elections.voting_tokens'::regclass
+  ) THEN
+    ALTER TABLE elections.voting_tokens
+      ADD CONSTRAINT unique_election_member_token
+      UNIQUE (election_id, member_id);
+  END IF;
+END $$;
 
 -- Create indexes for query optimization
 CREATE INDEX IF NOT EXISTS idx_voting_tokens_election_id ON elections.voting_tokens(election_id);
@@ -74,7 +103,7 @@ CREATE TABLE IF NOT EXISTS elections.admin_audit_log (
     performed_by VARCHAR(255) NOT NULL,       -- Firebase UID of admin
 
     -- Election reference
-    election_id VARCHAR(36),                  -- FK to elections.id
+    election_id INTEGER,                      -- FK to elections.id (must match elections table type)
     election_title VARCHAR(255),              -- Snapshot of election title for audit trail
 
     -- Change tracking
@@ -110,7 +139,7 @@ CREATE TABLE IF NOT EXISTS elections.ballots (
     id SERIAL PRIMARY KEY,
 
     -- Election reference
-    election_id VARCHAR(36) NOT NULL,        -- FK to elections.id
+    election_id INTEGER NOT NULL,            -- FK to elections.id (must match elections table type)
 
     -- Vote data
     answer VARCHAR(255) NOT NULL,             -- Selected answer/choice
