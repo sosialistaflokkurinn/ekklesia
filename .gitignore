@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+venv/
+env/
+
+# Node
+node_modules/
+npm-debug.log*
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+
+# Firebase
+*.log
+.firebase/
+
+# Environment
+.env
+.env.*
+
+# Google Cloud
+*.key.json
+cloud-sql-proxy*
+
+# Archives (local only)
+archive/
+audits/
+
+# ALLOW ALL DOCUMENTATION
+!docs/
+!docs/**/*.md
+!docs/**/*.MD
+!README.md
+!DIRECTORY.md
+!**/*.md
+
+# Keep some scripts local
+validate_documentation_map.py

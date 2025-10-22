@@ -1,4 +1,23 @@
-# Status Documents
+# Status Documentation
+
+Current system status and historical incidents organized by date.
+
+## Quick Access
+
+- **[Current Production Status](CURRENT_PRODUCTION_STATUS.md)** - Latest system status
+- **[Ongoing Work](ongoing/)** - Active checklists and in-progress items
+- **[Historical Incidents](historical/)** - Dated incidents and status changes
+
+## Overview
+
+**Current Status:** See [CURRENT_PRODUCTION_STATUS.md](CURRENT_PRODUCTION_STATUS.md)
+
+### Active Work
+- [ongoing/ELECTIONS_SCHEMA_MIGRATION_CHECKLIST.md](ongoing/ELECTIONS_SCHEMA_MIGRATION_CHECKLIST.md) - Schema migration progress
+
+### Historical
+- [historical/2025-10-16/](historical/2025-10-16/) - October 16 incident
+- [historical/2025-10-19/](historical/2025-10-19/) - October 19 session preparation Documents
 
 **Purpose**: Current, actively-referenced status documents
 

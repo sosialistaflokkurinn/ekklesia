@@ -33,11 +33,11 @@ Regnhlífarverkefni fyrir kosningakerfi Sósíalistaflokksins ásamt meðlima og
 **Master Index**: [DOCUMENTATION_MAP.md](DOCUMENTATION_MAP.md) - Complete documentation map
 
 **Quick Links**:
-- [System Architecture](docs/SYSTEM_ARCHITECTURE_OVERVIEW.md) - Overall system design
-- [Current Status](docs/status/CURRENT_PRODUCTION_STATUS.md) - Production infrastructure
-- [Members Service](members/README.md) - Authentication and membership
-- [Events Service Design](docs/design/EVENTS_SERVICE_MVP.md) - Token issuance
-- [Elections Service Design](docs/design/ELECTIONS_SERVICE_MVP.md) - Anonymous voting
+- [Documentation Hub](docs/README.md) - All documentation
+- [Directory & Structure](DIRECTORY.md) - Repository structure guide
+- [System Architecture](docs/architecture/SYSTEM_ARCHITECTURE_OVERVIEW.md) - Overall system design
+- [Current Status](docs/features/election-voting/production-status.md) - Production infrastructure
+- [Services](services/) - Member, Events, and Elections services
 
 ---
 
@@ -89,6 +89,18 @@ Regnhlífarverkefni fyrir kosningakerfi Sósíalistaflokksins ásamt meðlima og
 - gcloud CLI
 - PostgreSQL client (psql)
 
+### Repository Structure
+
+```
+ekklesia/
+├── services/           # Backend services (Members, Events, Elections)
+├── docs/               # Complete documentation (start: docs/README.md)
+├── testing/            # Test infrastructure and reports
+├── scripts/            # Deployment and utility scripts
+├── infrastructure/     # Infrastructure-as-Code configs
+└── [config files]
+```
+
 ### Quick Start
 
 ```bash
@@ -96,7 +108,8 @@ Regnhlífarverkefni fyrir kosningakerfi Sósíalistaflokksins ásamt meðlima og
 git clone https://github.com/sosialistaflokkurinn/ekklesia.git
 cd ekklesia
 
-# See DOCUMENTATION_MAP.md for service-specific setup guides
+# For new developers: Read docs/README.md for learning paths
+# For service-specific setup: See services/{members|events|elections}/README.md
 ```
 
 ---
@@ -126,4 +139,5 @@ cd ekklesia
 
 ---
 
-**Last Updated**: October 13, 2025
+**Last Updated**: October 21, 2025 (Restructured for Phase 5+ growth)
+**Repository Status**: ✅ Restructured for scalability - Ready for Phase 5 development
