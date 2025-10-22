@@ -840,4 +840,413 @@ router.delete('/elections/:id', requireRole('developer'), async (req, res) => {
   }
 });
 
+// ============================================================================
+// Election Statistics & Query Endpoints (Issues #88-#92)
+// ============================================================================
+
+/**
+ * POST /api/admin/elections/:id/open
+ * Open voting (published → open, generate voting tokens)
+ * Role: developer, meeting_election_manager
+ * Issue: #88
+ *
+ * Actions:
+ * 1. Transition election from published to open status
+ * 2. Generate voting tokens for all eligible members
+ * 3. Record token generation timestamp
+ * 4. Log audit event
+ */
+router.post('/elections/:id/open', requireAnyRoles(['developer', 'meeting_election_manager']), async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { id } = req.params;
+    const uid = req.user?.uid;
+
+    await client.query('BEGIN');
+
+    // Step 1: Verify election exists and is in published status
+    const electionResult = await client.query(
+      'SELECT id, status, title FROM elections.elections WHERE id = $1',
+      [id]
+    );
+
+    if (electionResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Election not found',
+        correlation_id: req.correlationId
+      });
+    }
+
+    const election = electionResult.rows[0];
+    if (election.status !== 'published') {
+      await client.query('ROLLBACK');
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: `Election must be in published status to open voting. Current status: ${election.status}`,
+        correlation_id: req.correlationId
+      });
+    }
+
+    // Step 2: Transition election to open status
+    const updatedElection = await client.query(
+      `UPDATE elections.elections
+       SET status = 'open', voting_start_time = NOW(), updated_at = NOW()
+       WHERE id = $1
+       RETURNING *`,
+      [id]
+    );
+
+    // Step 3: Generate voting tokens for eligible members
+    // NOTE: This assumes a members table exists with eligible voters
+    // For now, we generate a fixed number of tokens (configurable)
+    const tokenCount = parseInt(req.body?.member_count || '0');
+
+    let tokensGenerated = 0;
+    if (tokenCount > 0) {
+      // Fetch eligible members and generate tokens
+      const membersResult = await client.query(
+        `SELECT id, kennitala FROM members.members
+         WHERE status = 'active' AND kennitala IS NOT NULL
+         LIMIT $1`,
+        [tokenCount]
+      );
+
+      tokensGenerated = membersResult.rows.length;
+
+      // Generate token for each member
+      for (const member of membersResult.rows) {
+        const crypto = require('crypto');
+        const tokenBytes = crypto.randomBytes(32);
+        const tokenHash = crypto.createHash('sha256').update(tokenBytes).digest('hex');
+
+        await client.query(
+          `INSERT INTO elections.voting_tokens (election_id, member_id, kennitala, token_hash, issued_at, expires_at)
+           VALUES ($1, $2, $3, $4, NOW(), NOW() + INTERVAL '24 hours')
+           ON CONFLICT (election_id, member_id) DO NOTHING`,
+          [id, member.id, member.kennitala, tokenHash]
+        );
+      }
+    }
+
+    // Step 4: Log audit event
+    console.warn(JSON.stringify({
+      level: 'warn',
+      message: 'Election opened for voting',
+      correlation_id: req.correlationId,
+      performed_by: uid,
+      election_id: id,
+      election_title: election.title,
+      tokens_generated: tokensGenerated,
+      timestamp: new Date().toISOString()
+    }));
+
+    await client.query('COMMIT');
+
+    return res.json({
+      message: 'Election opened for voting',
+      election: updatedElection.rows[0],
+      tokens_generated: tokensGenerated
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('[Admin] Open election error:', error);
+    return res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to open election for voting',
+      correlation_id: req.correlationId
+    });
+  } finally {
+    client.release();
+  }
+});
+
+/**
+ * GET /api/admin/elections/:id/status
+ * Get election current status and statistics
+ * Role: developer, meeting_election_manager, event_manager
+ * Issue: #89
+ *
+ * Returns:
+ * - Election metadata
+ * - Current status
+ * - Voting period info
+ * - Member counts (eligible, voted, not voted)
+ * - Token generation time
+ * - Last updated timestamp
+ */
+router.get('/elections/:id/status', requireAnyRoles(['developer', 'meeting_election_manager', 'event_manager']), async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Fetch election with token stats
+    const result = await query(
+      `SELECT
+        e.id,
+        e.title,
+        e.description,
+        e.status,
+        e.created_at,
+        e.updated_at,
+        e.voting_start_time,
+        e.voting_end_time,
+        e.published_at,
+        e.closed_at,
+        (SELECT COUNT(*) FROM elections.voting_tokens WHERE election_id = e.id) as total_tokens,
+        (SELECT COUNT(*) FROM elections.voting_tokens WHERE election_id = e.id AND used = true) as tokens_used,
+        (SELECT COUNT(*) FROM elections.voting_tokens WHERE election_id = e.id AND used = false) as tokens_unused
+       FROM elections.elections e
+       WHERE e.id = $1`,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Election not found',
+        correlation_id: req.correlationId
+      });
+    }
+
+    const election = result.rows[0];
+
+    console.log(JSON.stringify({
+      level: 'info',
+      message: 'Election status queried',
+      correlation_id: req.correlationId,
+      performed_by: req.user?.uid,
+      election_id: id,
+      status: election.status,
+      timestamp: new Date().toISOString()
+    }));
+
+    return res.json({
+      election: {
+        id: election.id,
+        title: election.title,
+        description: election.description,
+        status: election.status,
+        created_at: election.created_at,
+        updated_at: election.updated_at,
+        voting_period: {
+          start: election.voting_start_time,
+          end: election.voting_end_time,
+          published_at: election.published_at,
+          closed_at: election.closed_at
+        }
+      },
+      token_statistics: {
+        total: parseInt(election.total_tokens) || 0,
+        used: parseInt(election.tokens_used) || 0,
+        unused: parseInt(election.tokens_unused) || 0,
+        participation_rate: election.total_tokens > 0
+          ? ((parseInt(election.tokens_used) / parseInt(election.total_tokens)) * 100).toFixed(2) + '%'
+          : 'N/A'
+      }
+    });
+  } catch (error) {
+    console.error('[Admin] Election status error:', error);
+    return res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to fetch election status',
+      correlation_id: req.correlationId
+    });
+  }
+});
+
+/**
+ * GET /api/admin/elections/:id/results
+ * Get election results and vote distribution
+ * Role: developer, meeting_election_manager, event_manager
+ * Issue: #90
+ *
+ * Returns:
+ * - Question text
+ * - Vote counts by answer
+ * - Percentage breakdown
+ * - Total votes cast
+ * - Eligible voters
+ * - Participation rate
+ */
+router.get('/elections/:id/results', requireAnyRoles(['developer', 'meeting_election_manager', 'event_manager']), async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Fetch election details
+    const electionResult = await query(
+      `SELECT id, title, question, answers, status FROM elections.elections WHERE id = $1`,
+      [id]
+    );
+
+    if (electionResult.rows.length === 0) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Election not found',
+        correlation_id: req.correlationId
+      });
+    }
+
+    const election = electionResult.rows[0];
+    const answers = JSON.parse(election.answers || '[]');
+
+    // Fetch vote counts from Elections service (ballots table)
+    const resultsResult = await query(
+      `SELECT answer, COUNT(*) as vote_count
+       FROM elections.ballots
+       WHERE election_id = $1
+       GROUP BY answer
+       ORDER BY vote_count DESC`,
+      [id]
+    );
+
+    const votesByAnswer = {};
+    let totalVotes = 0;
+
+    // Initialize all answers with 0
+    answers.forEach(answer => {
+      votesByAnswer[answer] = 0;
+    });
+
+    // Populate actual vote counts
+    resultsResult.rows.forEach(row => {
+      votesByAnswer[row.answer] = parseInt(row.vote_count);
+      totalVotes += parseInt(row.vote_count);
+    });
+
+    // Calculate participation rate
+    const tokenResult = await query(
+      `SELECT COUNT(*) as total FROM elections.voting_tokens WHERE election_id = $1`,
+      [id]
+    );
+    const eligibleVoters = parseInt(tokenResult.rows[0].total) || 0;
+    const participationRate = eligibleVoters > 0 ? ((totalVotes / eligibleVoters) * 100).toFixed(2) : 0;
+
+    console.log(JSON.stringify({
+      level: 'info',
+      message: 'Election results queried',
+      correlation_id: req.correlationId,
+      performed_by: req.user?.uid,
+      election_id: id,
+      total_votes: totalVotes,
+      timestamp: new Date().toISOString()
+    }));
+
+    return res.json({
+      election: {
+        id: election.id,
+        title: election.title,
+        question: election.question,
+        status: election.status
+      },
+      results: {
+        total_votes: totalVotes,
+        eligible_voters: eligibleVoters,
+        participation_rate: `${participationRate}%`,
+        answers: answers.map(answer => ({
+          text: answer,
+          votes: votesByAnswer[answer],
+          percentage: totalVotes > 0 ? ((votesByAnswer[answer] / totalVotes) * 100).toFixed(2) + '%' : '0%'
+        }))
+      }
+    });
+  } catch (error) {
+    console.error('[Admin] Election results error:', error);
+    return res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to fetch election results',
+      correlation_id: req.correlationId
+    });
+  }
+});
+
+/**
+ * GET /api/admin/elections/:id/tokens
+ * Get voting token distribution statistics
+ * Role: developer, meeting_election_manager, event_manager
+ * Issue: #91
+ *
+ * Returns:
+ * - Total tokens generated
+ * - Tokens used (ballots cast)
+ * - Tokens unused
+ * - Tokens expired
+ * - Distribution timeline
+ */
+router.get('/elections/:id/tokens', requireAnyRoles(['developer', 'meeting_election_manager', 'event_manager']), async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Verify election exists
+    const electionResult = await query(
+      'SELECT id, title, status FROM elections.elections WHERE id = $1',
+      [id]
+    );
+
+    if (electionResult.rows.length === 0) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Election not found',
+        correlation_id: req.correlationId
+      });
+    }
+
+    const election = electionResult.rows[0];
+
+    // Fetch token statistics
+    const tokenStats = await query(
+      `SELECT
+        COUNT(*) as total,
+        SUM(CASE WHEN used = true THEN 1 ELSE 0 END) as used,
+        SUM(CASE WHEN used = false THEN 1 ELSE 0 END) as unused,
+        SUM(CASE WHEN expires_at < NOW() THEN 1 ELSE 0 END) as expired,
+        MIN(issued_at) as first_issued,
+        MAX(issued_at) as last_issued,
+        AVG(EXTRACT(EPOCH FROM (expires_at - issued_at))) as avg_expiration_seconds
+       FROM elections.voting_tokens
+       WHERE election_id = $1`,
+      [id]
+    );
+
+    const stats = tokenStats.rows[0];
+
+    console.log(JSON.stringify({
+      level: 'info',
+      message: 'Token distribution queried',
+      correlation_id: req.correlationId,
+      performed_by: req.user?.uid,
+      election_id: id,
+      total_tokens: parseInt(stats.total) || 0,
+      timestamp: new Date().toISOString()
+    }));
+
+    return res.json({
+      election: {
+        id: election.id,
+        title: election.title,
+        status: election.status
+      },
+      token_distribution: {
+        total: parseInt(stats.total) || 0,
+        used: parseInt(stats.used) || 0,
+        unused: parseInt(stats.unused) || 0,
+        expired: parseInt(stats.expired) || 0,
+        usage_rate: stats.total > 0 ? ((parseInt(stats.used) / parseInt(stats.total)) * 100).toFixed(2) + '%' : '0%'
+      },
+      token_timeline: {
+        first_issued: stats.first_issued,
+        last_issued: stats.last_issued,
+        avg_expiration_hours: stats.avg_expiration_seconds ? (parseInt(stats.avg_expiration_seconds) / 3600).toFixed(2) : 'N/A'
+      }
+    });
+  } catch (error) {
+    console.error('[Admin] Token distribution error:', error);
+    return res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to fetch token distribution',
+      correlation_id: req.correlationId
+    });
+  }
+});
+
 module.exports = router;
