@@ -15,4 +15,4 @@ jobs:
           python-version: '3.11'
       - name: Run helper unit tests
         run: |
-          python3 members/functions/test_security.py
+          python3 services/members/functions/test_security.py

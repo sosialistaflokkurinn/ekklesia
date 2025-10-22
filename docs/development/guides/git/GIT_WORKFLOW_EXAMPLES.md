@@ -12,14 +12,14 @@ Based on the REMEDIATION_PHASE audit, these were identified as missing:
 
 ### NPM Package References (11 files)
 ```
-members/setup-scripts/package.json
-members/setup-scripts/package-lock.json
-elections/package.json
-elections/migrations/package.json
-events/package.json
-events/migrations/package.json
-members/functions/package.json
-members/public/package.json
+services/members/setup-scripts/package.json
+services/members/setup-scripts/package-lock.json
+services/elections/package.json
+services/elections/migrations/package.json
+services/events/package.json
+services/events/migrations/package.json
+services/members/functions/package.json
+services/members/public/package.json
 scripts/package.json
 docs/package.json
 root/package.json

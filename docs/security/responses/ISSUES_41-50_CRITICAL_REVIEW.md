@@ -202,7 +202,7 @@ Password accidentally committed to reset-election.sql
 | Documentation | Minimal (TODO comment only) | Excellent (detailed) |
 | Action Plan | None | Full implementation |
 | Blocked | No | Yes ❌ (unexplained) |
-| Code Location | `members/functions/main.py:24` | Same |
+| Code Location | `services/members/functions/main.py:24` | Same |
 | Impact Analysis | Missing | Complete |
 
 **Assessment:**
@@ -311,7 +311,7 @@ Related: #50"
 
 **Code change** (30 minutes):
 ```python
-# members/functions/main.py
+# services/members/functions/main.py
 
 # Current (WRONG):
 CORS_HEADERS = {
@@ -435,7 +435,7 @@ Good technical debt tracking for maintainability improvement.
 - ✅ Good: Single responsibility (refactoring only)
 - ✅ Excellent: Proposed structure is well-thought-out:
   ```
-  members/functions/
+  services/members/functions/
     main.py (50 lines - entry point only)
     auth/kenni_flow.py
     membership/verification.py
@@ -838,7 +838,7 @@ Good code quality improvement (DRY principle).
 
 **Current Code:**
 ```python
-# members/functions/main.py:338 (verifyMembership)
+# services/members/functions/main.py:338 (verifyMembership)
 kennitala_normalized = kennitala.replace('-', '')  # Manual normalization
 ```
 
@@ -853,7 +853,7 @@ kennitala_normalized = normalize_kennitala(kennitala)
 
 Simple refactor, can be done immediately:
 ```python
-# members/functions/main.py
+# services/members/functions/main.py
 
 # Import at top of file (if not already imported)
 from util_kennitala import normalize_kennitala

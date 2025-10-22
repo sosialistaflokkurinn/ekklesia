@@ -283,7 +283,7 @@ cat > runbooks/members/rotate-keys.md << 'EOF'
    gcloud functions deploy handleKenniAuth \
      --gen2 \
      --runtime python311 \
-     --update-build-config-source-location /home/gudro/Development/projects/ekklesia/members/functions
+     --update-build-config-source-location /home/gudro/Development/projects/ekklesia/services/members/functions
    ```
 
 5. **Verify functionality**

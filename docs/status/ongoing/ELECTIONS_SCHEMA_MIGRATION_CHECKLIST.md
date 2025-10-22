@@ -9,12 +9,12 @@
   psql "$DEV_CONN_URI" -c "SELECT schemaname, tablename, indexname FROM pg_indexes WHERE schemaname IN ('public','elections') ORDER BY schemaname, tablename;"
   psql "$DEV_CONN_URI" -c "SELECT conname, contype, conrelid::regclass FROM pg_constraint WHERE connamespace IN ('public'::regnamespace, 'elections'::regnamespace) ORDER BY conrelid::regclass::text, conname;"
   ```
-- [ ] Save output to `archive/ops/testing-logs/elections-schema-dryrun-$(date +%Y%m%d).log`.
+- [ ] Save output to `docs/audits/current/supplementary/elections-schema-dryrun-$(date +%Y%m%d).log` (or create in `/tmp` if no archive directory exists).
 
 ## Execution
 - [ ] Run migration SQL locally:
   ```bash
-  psql "$DEV_CONN_URI" -f events/migrations/004_move_to_elections_schema.sql
+  psql "$DEV_CONN_URI" -f services/events/migrations/004_move_to_elections_schema.sql
   ```
 - [ ] Confirm zero errors and transaction committed.
 

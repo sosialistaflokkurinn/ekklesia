@@ -283,7 +283,7 @@ git show HEAD:$FILE_PATH | cat -n | sed -n "$((LINE-10)),$((LINE+10))p"
    ```bash
    # If claiming "X returns 404"
    # Actually check the code path
-   grep -r "404" elections/src/routes/
+   grep -r "404" services/elections/src/routes/
    ```
 
 ### Step 4: Cross-Reference with Issues
