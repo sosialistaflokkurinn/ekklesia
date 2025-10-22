@@ -14,16 +14,33 @@
     }
   ],
   "hosting": {
-    "public": "public",
+    "public": "../../apps/members-portal",
     "ignore": [
       "firebase.json",
       "**/.*",
-      "**/node_modules/**"
+      "**/node_modules/**",
+      "**/*.md",
+      "**/test-*.html"
     ],
     "rewrites": [
       {
-        "source": "**",
-        "destination": "/index.html"
+        "source": "/handleKenniAuth",
+        "function": "handleKenniAuth"
+      },
+      {
+        "source": "/verifyMembership",
+        "function": "verifyMembership"
+      }
+    ],
+    "headers": [
+      {
+        "source": "**/*.@(js|css)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=3600"
+          }
+        ]
       }
     ]
   },

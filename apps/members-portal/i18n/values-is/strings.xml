@@ -204,4 +204,79 @@
 
     <!-- Firebase region -->
     <string name="config_firebase_region">europe-west2</string>
+
+    <!-- ========================================== -->
+    <!-- ELECTIONS UI (Epic #87) -->
+    <!-- ========================================== -->
+
+    <!-- Page titles -->
+    <string name="page_title_elections">Kosningar - Sósíalistaflokkurinn</string>
+    <string name="page_title_election_detail">Kosning - Sósíalistaflokkurinn</string>
+
+    <!-- Elections list page -->
+    <string name="elections_title">Kosningar</string>
+    <string name="elections_subtitle">Kjóstu í opnum kosningum</string>
+
+    <!-- Filter tabs -->
+    <string name="filter_all">Allar</string>
+    <string name="filter_active">Virkar</string>
+    <string name="filter_upcoming">Væntanlegar</string>
+    <string name="filter_closed">Lokkaðar</string>
+
+    <!-- Status badges -->
+    <string name="status_active">Virk</string>
+    <string name="status_upcoming">Væntanleg</string>
+    <string name="status_closed">Lokuð</string>
+
+    <!-- Election card -->
+    <string name="election_card_voted">✓ Þú hefur kosið</string>
+    <string name="election_card_cta">Skoðaðu kosninguna →</string>
+
+    <!-- Loading states -->
+    <string name="loading_elections">Hleð inn kosningum...</string>
+    <string name="loading_election_detail">Hleð inn kosningum...</string>
+
+    <!-- Error states -->
+    <string name="error_load_elections">Villa við að hlaða kosningum</string>
+    <string name="error_load_election_detail">Villa við að hlaða kosningum</string>
+    <string name="error_no_election_selected">Engin kosning er valin</string>
+    <string name="error_submit_vote">Villa við að skrá atkvæði</string>
+    <string name="error_load_results">Villa við að hlaða niðurstöðum</string>
+
+    <!-- Empty states -->
+    <string name="empty_no_elections">Engar kosningar fundust</string>
+
+    <!-- Buttons -->
+    <string name="btn_retry">Reyna aftur</string>
+    <string name="btn_back">Til baka</string>
+    <string name="btn_back_to_elections">Til baka á kosningar</string>
+    <string name="btn_vote_now">Kjósa núna</string>
+    <string name="btn_vote">Kjósa</string>
+    <string name="btn_cancel">Aflýsa</string>
+    <string name="btn_confirm">Staðfesta</string>
+
+    <!-- Election detail page -->
+    <string name="election_detail_title">Kosning</string>
+    <string name="election_detail_back_link">← Til baka</string>
+
+    <!-- Voting section -->
+    <string name="voting_section_title">Kjóstu nú</string>
+
+    <!-- Already voted section -->
+    <string name="msg_already_voted">✓ Þú hefur þegar kosið í þessari kosningum.</string>
+
+    <!-- Upcoming section -->
+    <string name="msg_upcoming_election">Kosningin mynda opna fyrir atkvæðagreiðslu fyrr seinna.</string>
+
+    <!-- Results section -->
+    <string name="results_title">Niðurstöður</string>
+    <string name="results_votes">%s atkvæði</string>
+
+    <!-- Confirmation modal -->
+    <string name="modal_confirm_title">Staðfestu atkvæði</string>
+    <string name="modal_confirm_message">Ertu viss um að þú viljir kjósa?</string>
+
+    <!-- Success modal -->
+    <string name="modal_success_title">✓ Atkvæði skráð</string>
+    <string name="modal_success_message">Þinn atkvæði hefur verið skráð með góðum árangri.</string>
 </resources>

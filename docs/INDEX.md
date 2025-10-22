@@ -95,7 +95,8 @@ For full list and details, see [Audits & Reviews](./audits/INDEX.md).
 
 ### 👨‍💼 Project Manager
 - [Project Overview](../DOCUMENTATION_MAP.md)
-- [Current Production Status](./status/CURRENT_PRODUCTION_STATUS.md)
+- [Current Development Status](./status/CURRENT_DEVELOPMENT_STATUS.md)
+- [Environment Clarification](./ENVIRONMENT_CLARIFICATION.md)
 - [Phase Planning](./ARCHITECTURE_DESIGN_PHASE6.md)
 
 ### 👨‍💻 Developer

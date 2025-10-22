@@ -164,7 +164,7 @@ Password accidentally committed to reset-election.sql
 - [ ] reset-election.sql should use $PGPASSWORD env var, not hardcoded value
 
 **Prevention:**
-1. Add pre-commit hook using `detect-secrets` or `gitleaks`
+1. Add pre-commit hook (already implemented in `scripts/git-hooks/pre-commit`)
 2. Update reset-election.sql to use environment variables
 3. Add to documentation: "Never hardcode secrets, use Secret Manager"
 4. Consider: Secret scanning in GitHub Actions

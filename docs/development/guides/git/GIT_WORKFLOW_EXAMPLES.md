@@ -19,7 +19,7 @@ services/elections/migrations/package.json
 services/events/package.json
 services/events/migrations/package.json
 services/members/functions/package.json
-services/members/public/package.json
+apps/members-portal/package.json
 scripts/package.json
 docs/package.json
 root/package.json
