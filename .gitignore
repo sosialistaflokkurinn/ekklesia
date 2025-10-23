@@ -13,6 +13,12 @@ npm-debug.log*
 .idea/
 *.swp
 
+# Backup files
+*.backup
+*.bak
+*.old
+*~
+
 # Claude Code settings (contains secrets and MCP server config)
 .claude/
 
@@ -22,6 +28,9 @@ npm-debug.log*
 # Firebase
 *.log
 .firebase/
+
+# Firebase public symlink (points to apps/members-portal)
+services/members/public
 
 # Environment
 .env

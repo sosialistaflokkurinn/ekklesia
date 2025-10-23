@@ -4,8 +4,8 @@ Lightweight sanity checks for utility modules (no network calls).
 Run locally: python3 -m members.functions.dev_sanity
 """
 
-from .utils_logging import log_json, sanitize_fields
-from .util_jwks import get_jwks_cache_stats
+from utils_logging import log_json, sanitize_fields
+from util_jwks import get_jwks_cache_stats
 
 
 def main():

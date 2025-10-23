@@ -1,0 +1,9 @@
+{
+  "name": "ekklesia-member-scripts",
+  "version": "1.0.0",
+  "description": "Admin scripts for Ekklesia member management",
+  "private": true,
+  "dependencies": {
+    "firebase-admin": "^12.0.0"
+  }
+}

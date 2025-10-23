@@ -51,7 +51,7 @@ CREATE INDEX IF NOT EXISTS idx_elections_voting_period ON elections.elections(vo
 -- Note: election_id type must match elections.elections(id) type (INTEGER or UUID)
 
 ALTER TABLE elections.voting_tokens
-  ADD COLUMN IF NOT EXISTS election_id INTEGER,
+  ADD COLUMN IF NOT EXISTS election_id UUID,
   ADD COLUMN IF NOT EXISTS member_id VARCHAR(255),
   ADD COLUMN IF NOT EXISTS used BOOLEAN DEFAULT FALSE,
   ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW();
@@ -103,7 +103,7 @@ CREATE TABLE IF NOT EXISTS elections.admin_audit_log (
     performed_by VARCHAR(255) NOT NULL,       -- Firebase UID of admin
 
     -- Election reference
-    election_id INTEGER,                      -- FK to elections.id (must match elections table type)
+    election_id UUID,                         -- FK to elections.id (must match elections table type)
     election_title VARCHAR(255),              -- Snapshot of election title for audit trail
 
     -- Change tracking
@@ -139,7 +139,7 @@ CREATE TABLE IF NOT EXISTS elections.ballots (
     id SERIAL PRIMARY KEY,
 
     -- Election reference
-    election_id INTEGER NOT NULL,            -- FK to elections.id (must match elections table type)
+    election_id UUID NOT NULL,               -- FK to elections.id (must match elections table type)
 
     -- Vote data
     answer VARCHAR(255) NOT NULL,             -- Selected answer/choice
