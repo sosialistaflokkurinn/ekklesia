@@ -90,30 +90,41 @@ main() {
         log_success "Added .claude/ to .gitignore"
     fi
 
-    # Prompt for credentials
+    # Check if secrets are already loaded from environment
     log_info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    log_info "Enter credentials (or leave empty to skip)"
+    log_info "Credentials Status:"
 
-    # GitHub Token
-    read -sp "GitHub Personal Access Token: " GITHUB_TOKEN || true
-    echo
-    if [[ -n "$GITHUB_TOKEN" ]]; then
-        validate_github_token "$GITHUB_TOKEN"
-        export GITHUB_TOKEN
-        log_success "GitHub token validated"
+    if [[ -z "$GITHUB_TOKEN" ]]; then
+        log_warning "⚠️  GITHUB_TOKEN not set in environment"
+        log_info "    Set it before running this script:"
+        log_info "    export GITHUB_TOKEN=\"ghp_xxxx...\""
+        echo
+        read -sp "GitHub Personal Access Token (or leave empty): " GITHUB_TOKEN || true
+        echo
+        if [[ -n "$GITHUB_TOKEN" ]]; then
+            validate_github_token "$GITHUB_TOKEN"
+            export GITHUB_TOKEN
+            log_warning "⚠️  WARNING: Token will be stored as \${GITHUB_TOKEN} env var"
+            log_info "    To use safely, set env var before next login:"
+            log_info "    export GITHUB_TOKEN=\"$GITHUB_TOKEN\""
+        fi
     else
-        log_warning "GitHub token skipped (will use \$GITHUB_TOKEN env var)"
+        log_success "✅ GITHUB_TOKEN already set in environment"
     fi
 
-    # PostgreSQL Password
-    read -sp "PostgreSQL Password: " PGPASSWORD || true
-    echo
-    if [[ -n "$PGPASSWORD" ]]; then
-        validate_postgres_password "$PGPASSWORD"
-        export PGPASSWORD
-        log_success "PostgreSQL password set"
+    if [[ -z "$PGPASSWORD" ]]; then
+        log_warning "⚠️  PGPASSWORD not set in environment"
+        log_info "    Load it from GCP: source ./scripts/deployment/load-env.sh"
+        echo
+        read -sp "PostgreSQL Password (or leave empty): " PGPASSWORD || true
+        echo
+        if [[ -n "$PGPASSWORD" ]]; then
+            validate_postgres_password "$PGPASSWORD"
+            export PGPASSWORD
+            log_warning "⚠️  WARNING: Password will be stored as \${PGPASSWORD} env var"
+        fi
     else
-        log_warning "PostgreSQL password skipped (will use \$PGPASSWORD env var)"
+        log_success "✅ PGPASSWORD already set in environment (from GCP)"
     fi
 
     # PostgreSQL Host (optional)
@@ -193,22 +204,20 @@ main() {
 }
 EOF
 
-    # Replace placeholders if credentials were provided
-    if [[ -n "$GITHUB_TOKEN" ]]; then
-        sed -i "s|\${GITHUB_TOKEN}|$GITHUB_TOKEN|g" "$SETTINGS_FILE"
-    fi
-
-    if [[ -n "$PGPASSWORD" ]]; then
-        sed -i "s|\${PGPASSWORD}|$PGPASSWORD|g" "$SETTINGS_FILE"
-    fi
-
-    # Replace PostgreSQL connection details
+    # IMPORTANT: Always use environment variables, never hardcode secrets!
+    # Only replace PostgreSQL connection details (not passwords)
     sed -i "s|\"PG_HOST\": \"127.0.0.1\"|\"PG_HOST\": \"$PG_HOST\"|g" "$SETTINGS_FILE"
     sed -i "s|\"PG_PORT\": \"5432\"|\"PG_PORT\": \"$PG_PORT\"|g" "$SETTINGS_FILE"
     sed -i "s|\"PG_USER\": \"postgres\"|\"PG_USER\": \"$PG_USER\"|g" "$SETTINGS_FILE"
     sed -i "s|\"PG_DATABASE\": \"postgres\"|\"PG_DATABASE\": \"$PG_DATABASE\"|g" "$SETTINGS_FILE"
 
     log_success "Created $SETTINGS_FILE"
+    log_info ""
+    log_info "🔒 Security Notice:"
+    log_info "   • \${GITHUB_TOKEN} - loaded from environment at runtime"
+    log_info "   • \${PGPASSWORD} - loaded from environment at runtime"
+    log_info "   • Secrets are NEVER written to disk"
+    log_info ""
 
     # Verify .gitignore
     log_info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
