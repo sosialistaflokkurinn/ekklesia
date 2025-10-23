@@ -31,6 +31,7 @@
 
 **References:**
 - [GitHub secret scanning](https://docs.github.com/en/code-security/secret-scanning/about-secret-scanning)
+- [Gitleaks](https://github.com/gitleaks/gitleaks)
 
 ---
 Last updated: 2025-10-16# Security Policy
