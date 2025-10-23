@@ -33,6 +33,7 @@ export async function initI18n() {
  *
  * Updates the navigation bar elements (brand, dashboard, profile, events, voting, logout)
  * with localized strings from R.string.
+ * Also sets ARIA labels for hamburger menu and data attributes for dynamic label toggling.
  */
 export function updateNavigation() {
   document.getElementById('nav-brand').textContent = R.string.nav_brand;
@@ -41,6 +42,28 @@ export function updateNavigation() {
   document.getElementById('nav-events').textContent = R.string.nav_events;
   document.getElementById('nav-voting').textContent = R.string.nav_voting;
   document.getElementById('nav-logout').textContent = R.string.nav_logout;
+
+  // Set ARIA labels for hamburger menu button (FIX #5: i18n localization)
+  const hamburger = document.getElementById('nav-hamburger');
+  const closeBtn = document.getElementById('nav-close');
+
+  if (hamburger) {
+    // Set initial ARIA label (drawer is closed initially)
+    const openLabel = R.string.nav_hamburger_open || 'Opna valmynd';
+    hamburger.setAttribute('aria-label', openLabel);
+
+    // Store labels in data attributes for dynamic toggling in nav.js
+    hamburger.setAttribute('data-open-label', openLabel);
+
+    const closeLabel = R.string.nav_hamburger_close || 'Loka valmynd';
+    hamburger.setAttribute('data-close-label', closeLabel);
+  }
+
+  if (closeBtn) {
+    // Close button aria-label (FIX #5: i18n localization)
+    const closeLabel = R.string.nav_hamburger_close || 'Loka valmynd';
+    closeBtn.setAttribute('aria-label', closeLabel);
+  }
 }
 
 /**

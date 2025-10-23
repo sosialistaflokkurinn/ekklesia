@@ -41,7 +41,9 @@
   background: none;
   border: none;
   cursor: pointer;
-  padding: 10px;
+  padding: 12px;
+  min-width: 48px;
+  min-height: 48px;
   z-index: 1001;
   position: relative;
 }
@@ -235,11 +237,11 @@
   }
 }
 
-/* Small Mobile (≤400px) - Full width drawer */
+/* Small Mobile (≤400px) - Keep drawer at 280px instead of full width */
 @media (max-width: 400px) {
   .nav__drawer {
-    width: 100%;
-    max-width: 100%;
+    width: 280px;
+    max-width: 280px;
   }
 }
 
