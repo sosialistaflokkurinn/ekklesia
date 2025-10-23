@@ -678,7 +678,7 @@ router.post('/elections/:id/publish', requireAnyRoles(['developer', 'meeting_ele
 
 /**
  * POST /api/admin/elections/:id/close
- * Close election (published → closed)
+ * Close election (published/open → closed)
  * Role: developer, meeting_election_manager
  * Issue: #74
  */
@@ -690,7 +690,7 @@ router.post('/elections/:id/close', requireAnyRoles(['developer', 'meeting_elect
     const result = await query(
       `UPDATE elections.elections
        SET status = 'closed', closed_at = NOW(), updated_at = NOW()
-       WHERE id = $1 AND status IN ('published', 'paused')
+       WHERE id = $1 AND status IN ('published', 'open', 'paused')
        RETURNING *`,
       [id]
     );
@@ -698,7 +698,7 @@ router.post('/elections/:id/close', requireAnyRoles(['developer', 'meeting_elect
     if (result.rows.length === 0) {
       return res.status(400).json({
         error: 'Bad Request',
-        message: 'Election not found or not in published/paused status',
+        message: 'Election not found or not in published/open/paused status',
         correlation_id: req.correlationId
       });
     }
