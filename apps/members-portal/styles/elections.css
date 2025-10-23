@@ -29,12 +29,12 @@
 .elections__header h1 {
   font-size: 2rem;
   margin-bottom: 0.5rem;
-  color: #333;
+  color: var(--color-gray-800);
 }
 
 .elections__header p {
   font-size: 1rem;
-  color: #666;
+  color: var(--color-gray-600);
 }
 
 /* Filter Tabs */
@@ -42,7 +42,7 @@
   display: flex;
   gap: 0.5rem;
   margin-bottom: 2rem;
-  border-bottom: 2px solid #eee;
+  border-bottom: 2px solid var(--color-border-light);
   flex-wrap: wrap;
   overflow-x: auto;
 }
@@ -52,7 +52,7 @@
   background: none;
   border: none;
   border-bottom: 3px solid transparent;
-  color: #666;
+  color: var(--color-gray-600);
   cursor: pointer;
   font-weight: 500;
   transition: all 0.3s;
@@ -62,18 +62,18 @@
 }
 
 .elections__filter-btn:hover {
-  color: #333;
+  color: var(--color-gray-800);
 }
 
 .elections__filter-btn--active {
-  color: #CC0000;
-  border-bottom-color: #CC0000;
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
 }
 
 .elections__filter-count {
   display: inline-block;
-  background: #f0f0f0;
-  color: #666;
+  background: var(--color-border-lighter);
+  color: var(--color-gray-600);
   padding: 0.25rem 0.5rem;
   border-radius: 12px;
   font-size: 0.85rem;
@@ -81,8 +81,8 @@
 }
 
 .elections__filter-btn--active .elections__filter-count {
-  background: #CC0000;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-white);
 }
 
 /* Elections List Container */
@@ -95,8 +95,8 @@
 
 /* Election Card */
 .elections__card {
-  background: white;
-  border: 1px solid #ddd;
+  background: var(--color-white);
+  border: 1px solid var(--color-border-medium);
   border-radius: 8px;
   padding: 1.5rem;
   cursor: pointer;
@@ -104,12 +104,12 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-md);
 }
 
 .elections__card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border-color: #CC0000;
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-primary);
   transform: translateY(-2px);
 }
 
@@ -123,7 +123,7 @@
 .elections__card-title {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #333;
+  color: var(--color-gray-800);
   margin: 0;
   flex: 1;
   line-height: 1.4;
@@ -141,22 +141,22 @@
 }
 
 .elections__status-badge--active {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: var(--color-success-bg);
+  color: var(--color-success-border);
 }
 
 .elections__status-badge--upcoming {
-  background: #fff3e0;
-  color: #e65100;
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
 }
 
 .elections__status-badge--closed {
-  background: #f5f5f5;
-  color: #424242;
+  background: var(--color-gray-50);
+  color: var(--color-gray-700);
 }
 
 .elections__card-question {
-  color: #666;
+  color: var(--color-gray-600);
   font-size: 0.95rem;
   line-height: 1.5;
   margin: 0;
@@ -164,8 +164,8 @@
 }
 
 .elections__card-voted {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: var(--color-success-bg);
+  color: var(--color-success-border);
   padding: 0.5rem 0.75rem;
   border-radius: 4px;
   font-size: 0.85rem;
@@ -177,16 +177,16 @@
   justify-content: space-between;
   align-items: center;
   padding-top: 0.5rem;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--color-border-lighter);
   font-size: 0.85rem;
 }
 
 .elections__card-date {
-  color: #999;
+  color: var(--color-gray-500);
 }
 
 .elections__card-cta {
-  color: #CC0000;
+  color: var(--color-primary);
   font-weight: 600;
 }
 
@@ -211,8 +211,8 @@
 .spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #CC0000;
+  border: 4px solid var(--color-gray-50);
+  border-top: 4px solid var(--color-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -223,23 +223,23 @@
 }
 
 .elections__loading p {
-  color: #666;
+  color: var(--color-gray-600);
   font-size: 1rem;
 }
 
 .elections__error {
-  background: #ffebee;
-  border: 1px solid #ef5350;
+  background: var(--color-gray-50);
+  border: 1px solid var(--color-primary);
 }
 
 .elections__error p {
-  color: #c62828;
+  color: var(--color-primary-dark);
   margin: 0 0 1rem 0;
   font-size: 1rem;
 }
 
 .elections__empty {
-  color: #999;
+  color: var(--color-gray-500);
   font-size: 1.1rem;
   padding: 3rem 2rem;
 }
@@ -253,7 +253,7 @@
 }
 
 .back-button {
-  color: #666;
+  color: var(--color-gray-600);
   text-decoration: none;
   display: inline-flex;
   align-items: center;
@@ -263,31 +263,31 @@
 }
 
 .back-button:hover {
-  color: #CC0000;
+  color: var(--color-primary);
 }
 
 .election-detail {
-  background: white;
+  background: var(--color-white);
   border-radius: 8px;
   padding: 2rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-md);
 }
 
 .election-detail__header {
   margin-bottom: 2rem;
-  border-bottom: 2px solid #f0f0f0;
+  border-bottom: 2px solid var(--color-border-lighter);
   padding-bottom: 1.5rem;
 }
 
 .election-detail__header h1 {
   font-size: 1.8rem;
-  color: #333;
+  color: var(--color-gray-800);
   margin: 0 0 0.5rem 0;
 }
 
 .election-detail__question {
   font-size: 1.1rem;
-  color: #666;
+  color: var(--color-gray-600);
   line-height: 1.6;
   margin: 0 0 1rem 0;
 }
@@ -308,22 +308,22 @@
 }
 
 .election-detail__status--active {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: var(--color-success-bg);
+  color: var(--color-success-border);
 }
 
 .election-detail__status--upcoming {
-  background: #fff3e0;
-  color: #e65100;
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
 }
 
 .election-detail__status--closed {
-  background: #f5f5f5;
-  color: #424242;
+  background: var(--color-gray-50);
+  color: var(--color-gray-700);
 }
 
 .election-detail__date {
-  color: #999;
+  color: var(--color-gray-500);
   font-size: 0.95rem;
 }
 
@@ -338,7 +338,7 @@
 .voting h2 {
   font-size: 1.3rem;
   margin-bottom: 1.5rem;
-  color: #333;
+  color: var(--color-gray-800);
 }
 
 .voting__form {
@@ -359,56 +359,56 @@
   align-items: center;
   gap: 0.75rem;
   padding: 1rem;
-  border: 2px solid #eee;
+  border: 2px solid var(--color-border-light);
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.3s;
-  background: white;
+  background: var(--color-white);
 }
 
 .voting__option:hover {
-  border-color: #CC0000;
-  background: #fafafa;
+  border-color: var(--color-primary);
+  background: var(--color-gray-50);
 }
 
 .voting__option input[type="radio"] {
   width: 20px;
   height: 20px;
   cursor: pointer;
-  accent-color: #CC0000;
+  accent-color: var(--color-primary);
 }
 
 .voting__option-label {
   font-size: 1rem;
-  color: #333;
+  color: var(--color-gray-800);
   flex-grow: 1;
 }
 
 .voting__option input:checked + .voting__option-label {
   font-weight: 600;
-  color: #CC0000;
+  color: var(--color-primary);
 }
 
 /* Already Voted Message */
 .elections__already-voted {
-  background: #e8f5e9;
-  border: 1px solid #4caf50;
+  background: var(--color-success-bg);
+  border: 1px solid var(--color-success);
   border-radius: 6px;
   padding: 1.5rem;
   text-align: center;
-  color: #2e7d32;
+  color: var(--color-success-border);
   font-size: 1.1rem;
   margin: 2rem 0;
 }
 
 /* Upcoming Election Message */
 .elections__upcoming {
-  background: #fff3e0;
-  border: 1px solid #ffa726;
+  background: var(--color-warning-bg);
+  border: 1px solid var(--color-warning-border);
   border-radius: 6px;
   padding: 1.5rem;
   text-align: center;
-  color: #e65100;
+  color: var(--color-warning-text);
   font-size: 1.1rem;
   margin: 2rem 0;
 }
@@ -424,7 +424,7 @@
 .results h2 {
   font-size: 1.3rem;
   margin-bottom: 1.5rem;
-  color: #333;
+  color: var(--color-gray-800);
 }
 
 .results__container {
@@ -447,30 +447,30 @@
 
 .results__item-label {
   font-weight: 500;
-  color: #333;
+  color: var(--color-gray-800);
 }
 
 .results__item-percentage {
   font-weight: 600;
-  color: #CC0000;
+  color: var(--color-primary);
 }
 
 .results__bar {
   height: 24px;
-  background: #f0f0f0;
+  background: var(--color-border-lighter);
   border-radius: 4px;
   overflow: hidden;
 }
 
 .results__bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #CC0000, #FF6B6B);
+  background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light));
   transition: width 0.5s ease;
 }
 
 .results__votes {
   font-size: 0.85rem;
-  color: #999;
+  color: var(--color-gray-500);
 }
 
 /* ========================================== */
@@ -483,7 +483,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--overlay-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -492,12 +492,12 @@
 }
 
 .modal__content {
-  background: white;
+  background: var(--color-white);
   border-radius: 8px;
   padding: 2rem;
   max-width: 400px;
   width: 100%;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-xl);
   animation: slideUp 0.3s ease;
 }
 
@@ -515,11 +515,11 @@
 .modal__content h2 {
   font-size: 1.3rem;
   margin: 0 0 1rem 0;
-  color: #333;
+  color: var(--color-gray-800);
 }
 
 .modal__content p {
-  color: #666;
+  color: var(--color-gray-600);
   margin: 0 0 1.5rem 0;
   line-height: 1.5;
 }
