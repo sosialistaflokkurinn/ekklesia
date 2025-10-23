@@ -1,0 +1,433 @@
+/**
+ * Events Styling (BEM Methodology)
+ *
+ * Responsive design for organizational events page.
+ * - Mobile-first approach
+ * - Tablet and desktop responsive
+ * - Event cards with materials, elections, speakers
+ * - Tab filtering (upcoming/past)
+ *
+ * Block: .events (events list page)
+ * Block: .event (individual event card)
+ */
+
+/* ========================================== */
+/* EVENTS PAGE (.events) */
+/* ========================================== */
+
+.events {
+  padding: 0;
+}
+
+.events__header {
+  margin-bottom: var(--spacing-xl);
+}
+
+.events__header h1 {
+  font-size: 32px;
+  color: var(--color-gray-800);
+  margin-bottom: var(--spacing-sm);
+}
+
+.events__header p {
+  font-size: 16px;
+  color: var(--color-gray-500);
+}
+
+/* Filter Tabs */
+.events__tabs {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+  background: white;
+  padding: var(--spacing-md);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.events__tab {
+  flex: 1;
+  padding: 12px var(--spacing-lg);
+  background: white;
+  color: var(--color-gray-600);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.events__tab:hover {
+  background: var(--color-gray-50);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.events__tab--active {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+}
+
+.events__tab--active:hover {
+  background: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
+}
+
+/* Loading, Error, Empty States */
+.events__loading,
+.events__error,
+.events__empty {
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.events__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  gap: 1rem;
+}
+
+.events__loading .spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--color-gray-50);
+  border-top: 4px solid var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.events__loading p {
+  color: var(--color-gray-600);
+  font-size: 1rem;
+  margin: 0;
+}
+
+.events__error {
+  text-align: center;
+}
+
+.events__error p {
+  color: var(--color-primary-dark);
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+}
+
+.events__empty {
+  text-align: center;
+  color: var(--color-gray-500);
+  font-size: 1.1rem;
+  padding: 3rem 2rem;
+}
+
+.events__empty p {
+  margin: 0;
+}
+
+/* Events List Container */
+.events__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+/* ========================================== */
+/* EVENT CARD (.event) */
+/* ========================================== */
+
+.event {
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.3s ease;
+}
+
+.event:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.event__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.event__title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-gray-800);
+  margin-bottom: var(--spacing-sm);
+  margin: 0;
+}
+
+.event__subtitle {
+  font-size: 14px;
+  color: var(--color-gray-600);
+  margin-top: var(--spacing-xs);
+  font-weight: normal;
+}
+
+.event__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.event__badge--info {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: rgb(37, 99, 235);
+}
+
+.event__content {
+  color: var(--color-gray-600);
+}
+
+.event__datetime,
+.event__location,
+.event__description,
+.event__section,
+.event__notes,
+.event__metadata {
+  margin-bottom: var(--spacing-md);
+}
+
+.event__date,
+.event__time,
+.event__location {
+  font-size: 14px;
+  color: var(--color-gray-700);
+  margin-bottom: var(--spacing-xs);
+}
+
+.event__description {
+  color: var(--color-gray-600);
+  line-height: 1.6;
+}
+
+.event__section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-gray-800);
+  margin-bottom: var(--spacing-sm);
+}
+
+.event__agenda {
+  margin-left: var(--spacing-lg);
+  color: var(--color-gray-600);
+  padding-left: var(--spacing-md);
+}
+
+.event__agenda li {
+  margin-bottom: var(--spacing-xs);
+  line-height: 1.5;
+}
+
+.event__notes {
+  padding: var(--spacing-md);
+  background: var(--color-gray-50);
+  border-left: 3px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  color: var(--color-gray-700);
+}
+
+.event__metadata {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.event__meta-item {
+  font-size: 14px;
+  color: var(--color-gray-600);
+}
+
+.event__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+}
+
+.event__links .btn {
+  flex: 1;
+  min-width: 200px;
+  text-align: center;
+  text-decoration: none;
+}
+
+/* ========================================== */
+/* EVENT ELECTIONS SECTION (.event__elections) */
+/* ========================================== */
+
+.event__elections {
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: rgba(59, 130, 246, 0.05);
+  border-left: 3px solid rgb(59, 130, 246);
+  border-radius: var(--radius-sm);
+}
+
+.event__elections-list {
+  margin-top: var(--spacing-sm);
+}
+
+.event__election-item {
+  margin-bottom: var(--spacing-sm);
+}
+
+.event__election-item:last-child {
+  margin-bottom: 0;
+}
+
+.event__election-link {
+  display: block;
+  padding: var(--spacing-sm);
+  background: white;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  color: var(--color-gray-800);
+  transition: background 0.2s;
+}
+
+.event__election-link:hover {
+  background: var(--color-gray-50);
+}
+
+.event__election-link strong {
+  color: rgb(37, 99, 235);
+}
+
+.event__election-link p {
+  margin-top: var(--spacing-xs);
+  font-size: 14px;
+  color: var(--color-gray-600);
+  margin-bottom: 0;
+}
+
+/* ========================================== */
+/* EVENT MATERIALS SECTION (.event__materials) */
+/* ========================================== */
+
+.event__materials {
+  margin-bottom: var(--spacing-md);
+}
+
+.event__materials-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+}
+
+.event__material-link {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--spacing-xs) var(--spacing-md);
+  background: white;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  color: var(--color-gray-700);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.event__material-link:hover {
+  background: var(--color-gray-50);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* ========================================== */
+/* RESPONSIVE DESIGN */
+/* ========================================== */
+
+/* Small Mobile (max 480px) */
+@media (max-width: 480px) {
+  .events__header h1 {
+    font-size: 24px;
+  }
+
+  .event {
+    padding: var(--spacing-lg);
+  }
+
+  .event__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .event__links {
+    flex-direction: column;
+  }
+
+  .event__links .btn {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .event__materials-list {
+    flex-direction: column;
+  }
+
+  .event__material-link {
+    width: 100%;
+  }
+
+  .events__tabs {
+    gap: 0;
+  }
+
+  .events__tab {
+    padding: var(--spacing-sm);
+    font-size: 14px;
+  }
+}
+
+/* Tablet (481px - 768px) */
+@media (min-width: 481px) {
+  .events__header h1 {
+    font-size: 32px;
+  }
+}
+
+/* Desktop (769px+) */
+@media (min-width: 769px) {
+  .events {
+    padding: 0;
+  }
+
+  .events__header h1 {
+    font-size: 36px;
+  }
+}
+
+/* Large Desktop (1024px+) */
+@media (min-width: 1024px) {
+  .events {
+    padding: 0;
+  }
+}

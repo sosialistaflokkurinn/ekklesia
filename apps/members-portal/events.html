@@ -4,9 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title id="page-title">Loading...</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="stylesheet" href="/styles/global.css">
   <link rel="stylesheet" href="/styles/components/nav.css">
   <link rel="stylesheet" href="/styles/components/page.css">
+  <link rel="stylesheet" href="/styles/events.css">
 </head>
 <body class="authenticated">
   <!-- Navigation -->
@@ -44,51 +46,43 @@
 
   <!-- Page Content -->
   <div class="page__container">
-    <div class="page__header">
-      <h1 class="page__title" id="events-title">Loading...</h1>
-      <p class="page__subtitle" id="events-subtitle">Loading...</p>
-    </div>
+    <section class="events">
+      <div class="events__header">
+        <h1 id="events-title">Loading...</h1>
+        <p id="events-subtitle">Loading...</p>
+      </div>
 
-    <!-- Filter Tabs -->
-    <div class="card">
-      <div class="tabs">
-        <button class="tabs__item tabs__item--active" data-filter="upcoming" id="tab-upcoming">
+      <!-- Filter Tabs -->
+      <div class="events__tabs">
+        <button class="events__tab events__tab--active" data-filter="upcoming" id="tab-upcoming">
           <span id="tab-upcoming-label">Loading...</span>
         </button>
-        <button class="tabs__item" data-filter="past" id="tab-past">
+        <button class="events__tab" data-filter="past" id="tab-past">
           <span id="tab-past-label">Loading...</span>
         </button>
       </div>
-    </div>
 
-    <!-- Loading State -->
-    <div id="loading-state" class="card">
-      <div class="card__content u-text-center">
+      <!-- Loading State -->
+      <div id="events-loading" class="events__loading u-hidden">
         <div class="spinner"></div>
         <p id="loading-message">Loading...</p>
       </div>
-    </div>
 
-    <!-- Error State -->
-    <div id="error-state" class="card u-hidden">
-      <div class="card__content">
-        <div class="message message--error">
-          <p id="error-message">Loading...</p>
-        </div>
+      <!-- Error State -->
+      <div id="events-error" class="events__error u-hidden">
+        <p id="error-message">Loading...</p>
       </div>
-    </div>
 
-    <!-- Empty State -->
-    <div id="empty-state" class="card u-hidden">
-      <div class="card__content u-text-center">
+      <!-- Empty State -->
+      <div id="events-empty" class="events__empty u-hidden">
         <p id="empty-message">Loading...</p>
       </div>
-    </div>
 
-    <!-- Events List -->
-    <div id="events-list" class="u-hidden">
-      <!-- Events will be dynamically inserted here -->
-    </div>
+      <!-- Events List -->
+      <div id="events-list" class="events__list u-hidden">
+        <!-- Events will be dynamically inserted here -->
+      </div>
+    </section>
   </div>
 
   <script type="module" src="/js/events.js"></script>

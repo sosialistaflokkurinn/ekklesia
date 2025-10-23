@@ -399,6 +399,94 @@ The login page uses a dedicated `.login` block instead of the generic `.containe
 
 ---
 
+### Tabs (`.tabs`)
+
+**Block**: `.tabs`
+**Elements**: `.tabs__item`
+**Modifiers**: `.tabs__item--active`
+
+Filter tabs for switching between content views (e.g., upcoming/past events).
+
+#### Structure
+```html
+<div class="tabs">
+  <button class="tabs__item tabs__item--active" data-filter="upcoming">
+    <span>Væntanlegir</span>
+  </button>
+  <button class="tabs__item" data-filter="past">
+    <span>Liðnir</span>
+  </button>
+</div>
+```
+
+#### CSS
+```css
+.tabs { /* Block */
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 2px solid var(--color-border-light);
+}
+
+.tabs__item { /* Element */
+  background: none;
+  border: none;
+  padding: var(--spacing-sm) var(--spacing-md);
+  cursor: pointer;
+  color: var(--color-gray-600);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.tabs__item:hover {
+  color: var(--color-gray-700);
+}
+
+.tabs__item--active { /* Modifier */
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  font-weight: 600;
+}
+```
+
+**Usage Example** (events.html):
+```html
+<div class="tabs">
+  <button id="tab-upcoming" class="tabs__item tabs__item--active" data-filter="upcoming">
+    <span id="tab-upcoming-label">Væntanlegir</span>
+  </button>
+  <button id="tab-past" class="tabs__item" data-filter="past">
+    <span id="tab-past-label">Liðnir</span>
+  </button>
+</div>
+
+<div id="events-list" class="events-list u-hidden">
+  <!-- Events will be rendered here -->
+</div>
+```
+
+**JavaScript Integration**:
+```javascript
+addEventListener('tab-upcoming', 'click', () => {
+  switchFilter(FILTERS.UPCOMING);
+});
+
+function switchFilter(filter) {
+  const upcomingTab = document.getElementById('tab-upcoming');
+  const pastTab = document.getElementById('tab-past');
+
+  if (filter === FILTERS.UPCOMING) {
+    upcomingTab?.classList.add('tabs__item--active');
+    pastTab?.classList.remove('tabs__item--active');
+  } else {
+    upcomingTab?.classList.remove('tabs__item--active');
+    pastTab?.classList.add('tabs__item--active');
+  }
+}
+```
+
+---
+
 ### Info Grid (`.info-grid`)
 
 **Block**: `.info-grid`

@@ -56,6 +56,24 @@ const MOCK_ELECTIONS = [
       { id: '3c', text: 'Sitja hjá' }
     ],
     has_voted: true
+  },
+
+  // Election 4: Board Election (upcoming - at October meeting)
+  {
+    id: 'test-election-1',
+    title: 'Val á framkvæmdastjórn 2025-2026',
+    question: 'Hver á að sitja í framkvæmdastjórn fyrir starfsárið 2025-2026?',
+    status: 'upcoming',
+    voting_starts_at: new Date('2025-10-25T19:00:00Z').toISOString(), // October 25, 2025 at 7 PM
+    voting_ends_at: new Date('2025-10-25T21:00:00Z').toISOString(), // October 25, 2025 at 9 PM
+    answers: [
+      { id: 'test-1a', text: 'Guðrún Jónsdóttir' },
+      { id: 'test-1b', text: 'Sigurður Pétursson' },
+      { id: 'test-1c', text: 'Anna María Sigurðardóttir' },
+      { id: 'test-1d', text: 'Jón Helgason' },
+      { id: 'test-1e', text: 'Hrefna Ólafsdóttir' }
+    ],
+    has_voted: false
   }
 ];
 

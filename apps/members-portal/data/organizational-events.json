@@ -1,0 +1,87 @@
+[
+  {
+    "id": "fb-1855034428765297",
+    "title": "Tölum um íslenskukennslu innflytjenda",
+    "date": "2025-10-23",
+    "time": "19:30",
+    "doorOpen": "19:30",
+    "location": "Hverfisgata 105, 101 Reykjavík",
+    "type": "discussion",
+    "format": "hybrid",
+    "description": "Gígja Svavarsdóttir framkvæmdastjóri Dósaverksmiðjunnar, tungumálaskóla, flytur erindi. Umræður á eftir. Hver er staða íslenskukennslu fyrir innflytjendur? Í öðrum OECD ríkjum býr um 60% innflytjenda yfir færni í tungumáli móttökulands en á Íslandi er það aðeins um 20%! Má þjóðin við boðuðum niðurskurði ríkisstjórnarinnar til íslenskukennslu? Er viljandi verið að jaðarsertja innflytjendur? Hvað getum við gert betur?",
+    "speaker": "Gígja Svavarsdóttir",
+    "moderator": "Hallfríður þórarinsdóttir",
+    "refreshments": true,
+    "zoomLink": "https://us06web.zoom.us/j/84379251229",
+    "facebookEvent": "https://www.facebook.com/events/1855034428765297/",
+    "attendance": {
+      "responded": 92,
+      "going": 20,
+      "interested": 72
+    },
+    "status": "upcoming"
+  },
+  {
+    "id": "fb-826717913054955",
+    "title": "Félagsfundur Sósíalistaflokks Íslands",
+    "date": "2025-10-25",
+    "time": "11:00",
+    "doorOpen": "10:30",
+    "location": "Hverfisgata 105, 101 Reykjavík",
+    "type": "member-meeting",
+    "format": "hybrid",
+    "description": "Boðað er til félagsfundar Sósíalistaflokks Íslands 25. október á Hverfisgötu 105. Húsið opnar klukkan 10:30 og fundurinn hefst stundvíslega klukkan 11:00. Boðið er upp á að taka þátt í gegnum Zoom að vanda og mun það einnig opna klukkan 10:30 svo tími gefist til að staðfesta skráningu í félagatal.",
+    "agenda": [
+      "Framkvæmdastjórn segir frá starfinu",
+      "Málefnastjórn segir frá starfinu",
+      "Kosningastjórn segir frá starfinu",
+      "Sagt frá starfi svæðisfélaga",
+      "Önnur mál"
+    ],
+    "duration": "1.5 klst",
+    "refreshments": true,
+    "zoomLink": "https://us06web.zoom.us/j/81393822626",
+    "facebookEvent": "https://www.facebook.com/events/826717913054955",
+    "notes": "Mikilvægt er að vera stundvís af virðingu við aðra fundargesti. Léttar veitingar verða í boði og öll framlög vel þegin.",
+    "elections": [
+      {
+        "id": "test-election-1",
+        "title": "Val á framkvæmdastjórn 2025-2026",
+        "description": "Kosning í framkvæmdastjórn fyrir næsta starfsár"
+      }
+    ],
+    "materials": {
+      "agenda": "/documents/felagsfundur-oct-2025-agenda.pdf",
+      "minutes": "/documents/felagsfundur-oct-2025-fundargerð.pdf"
+    },
+    "status": "upcoming"
+  },
+  {
+    "id": "fb-1203122055172612",
+    "title": "Tölum um húsnæðismál",
+    "subtitle": "Jón Ferdinand Estherarson fjallar um húsnæðismálin",
+    "date": "2025-09-25",
+    "time": "20:00",
+    "doorOpen": "19:30",
+    "endTime": "21:30",
+    "location": "Sósíalistaflokkur Íslands, Hverfisgötu 105, Reykjavík",
+    "type": "discussion",
+    "format": "hybrid",
+    "description": "Í boði kosningastjórnar Sósíalistaflokksins flytur Jón Ferdínand Estherarson, stjórnmálasagnfræðingur og rannsóknarblaðamaður erindi um hörmungarnar á íslenskum húsnæðismarkaði. Umræður á eftir.",
+    "speaker": "Jón Ferdinand Estherarson",
+    "speakerTitle": "Stjórnmálasagnfræðingur og rannsóknarblaðamaður",
+    "moderator": "Birna Gunnlaugsdóttir",
+    "organizers": ["Birna Gunnlaugsdóttir", "Markús Candi"],
+    "duration": "1.5 klst",
+    "refreshments": true,
+    "zoomLink": "https://us06web.zoom.us/j/85179030082",
+    "facebookEvent": "https://www.facebook.com/events/1203122055172612/",
+    "notes": "Verið hjartanlega velkomin, jafnt flokksfólk sem og utanflokks.",
+    "attendance": {
+      "responded": 121,
+      "going": 47,
+      "interested": 74
+    },
+    "status": "past"
+  }
+]

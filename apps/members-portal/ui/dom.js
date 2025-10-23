@@ -79,6 +79,28 @@ export function setDisabled(id, disabled, context) {
 }
 
 /**
+ * Show element by removing u-hidden class
+ *
+ * @param {string} id - Element ID
+ * @param {string} [context] - Context for error message
+ */
+export function show(id, context) {
+  const element = getElementByIdSafe(id, context);
+  element.classList.remove('u-hidden');
+}
+
+/**
+ * Hide element by adding u-hidden class
+ *
+ * @param {string} id - Element ID
+ * @param {string} [context] - Context for error message
+ */
+export function hide(id, context) {
+  const element = getElementByIdSafe(id, context);
+  element.classList.add('u-hidden');
+}
+
+/**
  * Validate required DOM elements exist
  *
  * Throws helpful error if any element is missing.

@@ -11,7 +11,7 @@
 import { initAuthenticatedPage } from './page-init.js';
 import { R } from '../i18n/strings-loader.js';
 import { getElectionById, submitVote, getResults } from './api/elections-api.js';
-import { auth } from './auth.js';
+import { getFirebaseAuth } from '../firebase/app.js';
 
 // State
 let currentElection = null;

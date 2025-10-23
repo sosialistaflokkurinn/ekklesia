@@ -12,7 +12,7 @@
  */
 
 import { MockElectionsAPI } from './elections-mock.js';
-import { authenticatedFetch } from '../auth.js';
+import { authenticatedFetch } from '../../session/auth.js';
 
 // DEVELOPMENT FLAG: Toggle between mock and real API
 const USE_MOCK_API = true;

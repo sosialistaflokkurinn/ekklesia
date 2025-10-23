@@ -252,19 +252,7 @@
   margin-bottom: 2rem;
 }
 
-.back-button {
-  color: var(--color-gray-600);
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0;
-  transition: color 0.3s;
-}
-
-.back-button:hover {
-  color: var(--color-primary);
-}
+/* .back-button now defined in global.css for reusability */
 
 .election-detail {
   background: var(--color-white);

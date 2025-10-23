@@ -241,6 +241,13 @@ function showEmpty() {
 }
 
 /**
+ * Hide empty state
+ */
+function hideEmpty() {
+  document.getElementById('elections-empty').classList.add('u-hidden');
+}
+
+/**
  * Utility: Escape HTML to prevent XSS
  */
 function escapeHTML(text) {
