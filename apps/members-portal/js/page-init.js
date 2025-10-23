@@ -14,8 +14,9 @@
  * @module page-init
  */
 
-import { R } from '/i18n/strings-loader.js';
-import { requireAuth, signOut, getUserData } from '/js/auth.js';
+import { R } from '../i18n/strings-loader.js';
+import { requireAuth, signOut, getUserData } from '../session/auth.js';
+import { initNavigation } from './nav.js';
 
 /**
  * Initialize i18n and load strings for Icelandic locale
@@ -30,13 +31,15 @@ export async function initI18n() {
 /**
  * Update navigation menu strings from i18n
  *
- * Updates the navigation bar elements (brand, dashboard, profile, logout)
+ * Updates the navigation bar elements (brand, dashboard, profile, events, voting, logout)
  * with localized strings from R.string.
  */
 export function updateNavigation() {
   document.getElementById('nav-brand').textContent = R.string.nav_brand;
   document.getElementById('nav-dashboard').textContent = R.string.nav_dashboard;
   document.getElementById('nav-profile').textContent = R.string.nav_profile;
+  document.getElementById('nav-events').textContent = R.string.nav_events;
+  document.getElementById('nav-voting').textContent = R.string.nav_voting;
   document.getElementById('nav-logout').textContent = R.string.nav_logout;
 }
 
@@ -76,6 +79,9 @@ export async function initAuthenticatedPage() {
 
   // Setup logout handler
   setupLogout();
+
+  // Initialize mobile hamburger menu
+  initNavigation();
 
   // Auth guard - redirect if not authenticated
   const user = await requireAuth();

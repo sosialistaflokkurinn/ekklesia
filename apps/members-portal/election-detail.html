@@ -5,22 +5,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title id="page-title">Loading...</title>
   <link rel="stylesheet" href="/styles/global.css">
+  <link rel="stylesheet" href="/styles/components/nav.css">
+  <link rel="stylesheet" href="/styles/components/page.css">
   <link rel="stylesheet" href="/styles/elections.css">
 </head>
-<body>
-  <nav class="navbar">
-    <div class="navbar__container">
-      <a href="/dashboard.html" class="navbar__brand" id="nav-brand">Loading...</a>
-      <ul class="navbar__menu">
-        <li><a href="/dashboard.html" id="nav-dashboard">Loading...</a></li>
-        <li><a href="/profile.html" id="nav-profile">Loading...</a></li>
-        <li><a href="/elections.html" id="nav-voting">Loading...</a></li>
-        <li><button id="btn-logout" class="btn btn--text">Loading...</button></li>
-      </ul>
+<body class="authenticated">
+  <nav class="nav">
+    <div class="nav__container">
+      <a href="/dashboard.html" class="nav__brand" id="nav-brand">Loading...</a>
+
+      <!-- Hamburger Button (mobile only) -->
+      <button class="nav__hamburger" id="nav-hamburger" aria-label="Open menu" aria-expanded="false">
+        <span class="nav__hamburger-line"></span>
+        <span class="nav__hamburger-line"></span>
+        <span class="nav__hamburger-line"></span>
+      </button>
+
+      <!-- Overlay for mobile menu -->
+      <div class="nav__overlay" id="nav-overlay"></div>
+
+      <!-- Navigation Drawer -->
+      <div class="nav__drawer" id="nav-drawer">
+        <!-- Close button (mobile only) -->
+        <button class="nav__close" id="nav-close" aria-label="Close menu">
+          <span class="nav__close-icon">✕</span>
+        </button>
+
+        <div class="nav__links">
+          <a href="/dashboard.html" class="nav__link" id="nav-dashboard">Loading...</a>
+          <a href="/profile.html" class="nav__link" id="nav-profile">Loading...</a>
+          <a href="/events.html" class="nav__link" id="nav-events">Loading...</a>
+          <a href="/elections.html" class="nav__link nav__link--active" id="nav-voting">Loading...</a>
+          <a href="#" class="nav__link nav__link--logout" id="nav-logout">Loading...</a>
+        </div>
+      </div>
     </div>
   </nav>
 
-  <div class="container">
+  <div class="page__container">
     <!-- Back Button -->
     <div class="election-header">
       <a href="/elections.html" class="btn btn--text back-button" id="back-link">Loading...</a>
