@@ -1,5 +1,5 @@
 /**
- * Test Events Page Logic
+ * Election API Test Page Logic
  *
  * Testing interface for Events and Elections service APIs.
  *
@@ -9,7 +9,7 @@
  * - Uses session/auth.js for authenticated fetch
  * - Pure functions for formatting
  *
- * @module test-events
+ * @module election-api-test
  */
 
 import { R } from '../i18n/strings-loader.js';

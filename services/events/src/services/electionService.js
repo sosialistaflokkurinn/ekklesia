@@ -17,11 +17,12 @@ async function getCurrentElection() {
       description,
       question_text,
       status,
-      voting_starts_at,
-      voting_ends_at,
+      voting_start_time,
+      voting_end_time,
       created_at
-    FROM election
-    WHERE status = 'published'
+    FROM elections.elections
+    WHERE status IN ('published', 'open')
+    ORDER BY created_at DESC
     LIMIT 1
   `);
 
@@ -36,13 +37,13 @@ async function getCurrentElection() {
  * Check if election is currently active (published and within voting period)
  */
 function isElectionActive(election) {
-  if (!election || election.status !== 'published') {
+  if (!election || (election.status !== 'published' && election.status !== 'open')) {
     return false;
   }
 
   const now = new Date();
-  const startsAt = new Date(election.voting_starts_at);
-  const endsAt = new Date(election.voting_ends_at);
+  const startsAt = new Date(election.voting_start_time);
+  const endsAt = new Date(election.voting_end_time);
 
   return now >= startsAt && now <= endsAt;
 }
@@ -64,8 +65,8 @@ function getElectionStatus(election) {
   }
 
   const now = new Date();
-  const startsAt = new Date(election.voting_starts_at);
-  const endsAt = new Date(election.voting_ends_at);
+  const startsAt = new Date(election.voting_start_time);
+  const endsAt = new Date(election.voting_end_time);
 
   if (now < startsAt) {
     return `Scheduled - voting starts ${startsAt.toISOString()}`;

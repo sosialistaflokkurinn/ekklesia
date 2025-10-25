@@ -76,7 +76,7 @@ async function issueVotingToken(election, kennitala) {
   const expiresAt = new Date(
     Math.min(
       Date.now() + 24 * 60 * 60 * 1000, // 24 hours
-      new Date(election.voting_ends_at).getTime()
+      new Date(election.voting_end_time).getTime()
     )
   );
 

@@ -929,11 +929,16 @@ router.delete('/elections/:id', requireRole('developer'), async (req, res) => {
  * Role: developer, meeting_election_manager
  * Issue: #88
  *
+ * Body Parameters:
+ * - member_count (required): Number of voting tokens to generate (1-10000)
+ * - voting_duration_hours (optional): Hours until voting closes (default: 24)
+ *
  * Actions:
  * 1. Transition election from published to open status
- * 2. Generate voting tokens for all eligible members
- * 3. Record token generation timestamp
- * 4. Log audit event
+ * 2. Set voting_start_time to NOW() and voting_end_time based on duration
+ * 3. Generate voting tokens for all eligible members
+ * 4. Record token generation timestamp
+ * 5. Log audit event
  */
 router.post('/elections/:id/open', requireAnyRoles(['developer', 'meeting_election_manager']), async (req, res) => {
   const client = await pool.connect();
@@ -980,10 +985,25 @@ router.post('/elections/:id/open', requireAnyRoles(['developer', 'meeting_electi
       });
     }
 
-    // Step 3: Transition election to open status
+    // Step 2b: Get voting duration (defaults to 24 hours)
+    const votingDurationHours = parseInt(req.body?.voting_duration_hours || '24');
+
+    if (isNaN(votingDurationHours) || votingDurationHours < 1) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'voting_duration_hours must be a positive number',
+        correlation_id: req.correlationId
+      });
+    }
+
+    // Step 3: Transition election to open status with voting period
     const updatedElection = await client.query(
       `UPDATE elections.elections
-       SET status = 'open', voting_start_time = NOW(), updated_at = NOW()
+       SET status = 'open',
+           voting_start_time = NOW(),
+           voting_end_time = NOW() + INTERVAL '${votingDurationHours} hours',
+           updated_at = NOW()
        WHERE id = $1
        RETURNING *`,
       [id]

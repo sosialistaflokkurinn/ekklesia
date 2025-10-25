@@ -1,7 +1,7 @@
 # 🗺️ Ekklesia Platform - Master Documentation Map
 
-**Version**: 7.0.0
-**Last Updated**: 2025-10-20
+**Version**: 7.1.0
+**Last Updated**: 2025-10-24
 **Status**: ✅ Phase 5 Complete - Full Voting System Operational (Members ✅ + Events ✅ + Elections ✅) + Security Improvements + Documentation Quality Audit & Enhancement
 
 ---
@@ -77,21 +77,15 @@
   - Token registration via S2S API
   - Results fetching via S2S API
   - End-to-end voting flow operational
-  - See: `archive/docs/docs-2025-10-13/docs/status/PHASE_5_INTEGRATION_COMPLETE.md`
 - **Phase 6**: Next phase (load testing)
   - 300 votes/second spike test
   - Cloud Run auto-scaling verification
   - Database connection pool testing
-  - See: `docs/USAGE_CONTEXT.md`, `docs/ARCHITECTURE_DESIGN_PHASE6.md`
 
 ### 📋 Recent Milestones (October 2025)
 
 **Oct 15, 2025 - Members Frontend Architecture Refactor Complete**
-- ✅ Introduced shared Firebase service layer (`members/public/firebase/app.js`)
-- ✅ Converted session/auth logic into pure modules (`members/public/session/`)
-- ✅ Added validated DOM + navigation helpers (`members/public/ui/`)
 - ✅ Refactored all portal pages to modular architecture (`*.new.js` → `*.js`)
-- 📄 Documentation: `members/public/ARCHITECTURE_REFACTOR.md`, `members/public/FRONTEND_AUDIT_2025-10-15.md`
 
 **Oct 13, 2025 - Firebase App Check Implementation (Members Service Only)**
 - ✅ **App Check Deployment**: reCAPTCHA Enterprise integration for **Members service**
@@ -109,7 +103,6 @@
   - Threat model assessment (appropriate for risk profile)
   - Implementation guide with all code listings
   - Lessons learned and deployment troubleshooting
-- 📄 Documentation: `docs/security/FIREBASE_APP_CHECK_RESEARCH.md` (replaces 3 legacy docs)
 
 **Oct 12, 2025 - Security Hardening Complete (Phase 1-3)**
 - ✅ **Phase 1**: Firestore Security Rules deployed (#30)
@@ -123,7 +116,6 @@
 - ✅ **Phase 3**: Automation script created (scripts/cloudflare-setup.sh, 843 lines)
 - ✅ **Phase 3**: Git pre-commit hook for rule enforcement
 - ✅ All critical security vulnerabilities fixed
-- 📄 Documentation: `archive/docs/docs-2025-10-13/docs/status/SECURITY_HARDENING_PLAN.md`, `archive/research/security/CLOUDFLARE_SETUP.md`
 
 **Oct 11, 2025 - Documentation Cleanup & Code Audit Complete**
 - ✅ Code audit completed comparing implementation vs documentation
@@ -131,8 +123,6 @@
 - ✅ Status documents updated with archive references
 - ✅ Archive README and status/README created
 - ✅ All cross-references validated
-- 📄 Documentation: `archive/docs/docs-2025-10-13/docs/status/CODE_AUDIT_2025-10-11_REVISED.md`
-- 📄 Documentation: `archive/docs/docs-2025-10-13/docs/status/AUDIT_SUMMARY.md`
 
 **Oct 10, 2025 - Phase 5: Elections + Events Integration Complete**
 - ✅ Elections S2S client implemented (token registration + results fetching)
@@ -141,24 +131,17 @@
 - ✅ End-to-end voting flow tested and verified
 - ✅ Production deployment complete (events-service-00002-dj7)
 - ✅ Comprehensive documentation created
-- 📄 Documentation: `archive/docs/docs-2025-10-13/docs/status/PHASE_5_INTEGRATION_COMPLETE.md`
 
 **Oct 9, 2025 - Elections Service MVP Deployed to Production**
- 📄 Documentation: `archive/ops/deployments/ELECTIONS_SERVICE_DEPLOYMENT.md`
 
- 📄 Documentation: `archive/ops/testing-logs/EVENTS_SERVICE_TESTING_LOG.md`
- 📄 Documentation: `archive/ops/deployments/DATABASE_SECURITY_HARDENING.md`
 - ✅ Security posture documented
- 📄 Documentation: `archive/ops/migrations/FIREBASE_MIGRATION_STATUS.md`
 - ✅ Multi-page portal: dashboard, profile, test pages
 - ✅ Documentation deep review and validation
-- 📄 Documentation: `docs/status/CURRENT_PRODUCTION_STATUS.md`
 
 **Oct 7, 2025 - Return to Original Vision**
 - ✅ Ekklesia platform evaluated and archived (472 files)
 - ✅ Events service design document created
 - ✅ Original election-focused architecture restored
-- 📄 Documentation: `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md`
 
 **Oct 6-7, 2025 - Firebase Migration (ZITADEL Removed)**
 - ✅ Migrated from ZITADEL to Firebase/Identity Platform
@@ -167,7 +150,6 @@
 - ✅ Members service operational with Firebase auth
 - ✅ ZITADEL infrastructure decommissioned
 - ✅ Cost savings: $135/month → $7-10/month
-- 📄 Documentation: `archive/ops/migrations/FIREBASE_MIGRATION_STATUS.md`
 
 ---
 
@@ -176,113 +158,187 @@
 ```
 ekklesia/
 ├── DOCUMENTATION_MAP.md              ⭐ YOU ARE HERE - Master index
-├── test-voting-flow.sh               🧪 End-to-end voting flow test script
+├── test-voting-flow.sh               🧪 End-to-end voting flow test script (Oct 2025)
 │
-├── docs/                             📄 Architecture & Plans
-│   ├── SYSTEM_ARCHITECTURE_OVERVIEW.md 🏗️ Primary architectural vision
-│   ├── USAGE_CONTEXT.md              📊 Load patterns and capacity planning
-│   ├── OPERATIONAL_PROCEDURES.md     📋 Meeting day operations manual
+├── docs/                             📄 Architecture & Planning Documentation
+│   ├── README.md                     📖 Documentation index
+│   ├── INDEX.md                      📑 Master documentation index
+│   ├── ENVIRONMENT_CLARIFICATION.md  📋 Environment setup clarifications
+│   ├── SCRIPT_IMPROVEMENTS_APPLIED.md 📝 Script improvement notes
 │   │
-│   ├── status/                       📊 Production status & deployment logs
-│   │   ├── CURRENT_PRODUCTION_STATUS.md        📊 Production infrastructure status
-│   │   └── README.md                           📖 Status docs guide
-│   │       • Full history archived at `archive/docs/docs-2025-10-13/docs/status/`
+│   ├── architecture/                 🏗️ System architecture
+│   │   ├── ARCHITECTURE_DESIGN_PHASE6.md     Phase 6 design (5 challenges, ADRs)
+│   │   ├── ARCHITECTURE_RECOMMENDATIONS.md   Architecture recommendations
+│   │   └── CSS_DESIGN_SYSTEM.md              CSS BEM design system
 │   │
-│   ├── security/                     🔐 Security runbooks & research
-│   │   ├── CREDENTIAL_MIGRATION_PLAN.md        Credentials migration strategy
-│   │   └── FIREBASE_APP_CHECK_RESEARCH.md      📚 Comprehensive research paper (67K, 62 pages)
-│   │       • All other security docs archived at `archive/research/security/`
+│   ├── audits/                       📊 Documentation audits
+│   │   ├── README.md                 Audit index and guide
+│   │   ├── REORGANIZATION_GUIDE.md   Documentation reorganization guide
+│   │   ├── LATEST_AUDIT_LINK.md      Latest audit reference
+│   │   ├── current/                  Current audit findings
+│   │   ├── historical/               Historical audits (archived)
+│   │   ├── planning/                 Audit planning documents
+│   │   ├── tools/                    Audit automation tools
+│   │   └── workflows/                Audit workflows
 │   │
-│   ├── debugging/                    🧪 Debug notes (placeholder directory)
+│   ├── design/                       🎨 Service design documents
+│   │   └── CSS_DESIGN_SYSTEM.md      CSS architecture guide
 │   │
-│   └── archived-snapshot/            🗄️ Legacy reference set (Oct 13, 2025)
-│       • Location: `archive/docs/docs-2025-10-13/docs/`
-│       • Includes design, guides, specifications, plans, and database reference
+│   ├── development/                  👨‍💻 Developer guides
+│   │   └── guides/                   Development guides
+│   │       ├── INDEX.md              Guide index
+│   │       ├── README.md             Guide overview
+│   │       ├── admin/                Admin procedures
+│   │       ├── git/                  Git workflows
+│   │       ├── github/               GitHub workflows
+│   │       ├── infrastructure/       Infrastructure guides
+│   │       ├── troubleshooting/      Troubleshooting guides
+│   │       └── workflows/            Development workflows
+│   │
+│   ├── features/                     ✨ Feature documentation
+│   │   └── election-voting/         Election voting features
+│   │       ├── EPIC_24_ADMIN_LIFECYCLE.md      Admin lifecycle management
+│   │       ├── EPIC_87_ELECTION_DISCOVERY.md   Election discovery
+│   │       ├── ADMIN_API_REFERENCE.md          Admin API reference
+│   │       ├── PHASE_5_WEEK_1_IMPLEMENTATION.md Phase 5 implementation
+│   │       ├── PHASE_5_WEEK_1_MEMBER_UI.md     Member UI implementation
+│   │       └── development-status.md           Development status
+│   │
+│   ├── integration/                  🔗 Integration guides
+│   │   ├── DJANGO_TO_EKKLESIA_MIGRATION.md  Django migration guide
+│   │   └── DJANGO_SYNC_IMPLEMENTATION.md    Django sync implementation
+│   │
+│   ├── migration/                    🚚 Migration documentation
+│   │   ├── FRONTEND_CONSISTENCY_MIGRATION_PLAN.md  Frontend consistency
+│   │   ├── HAMBURGER_MENU_IMPLEMENTATION_PLAN.md   Hamburger menu plan
+│   │   └── HAIKU_PROMPT_HAMBURGER_MENU.md          Haiku prompt
+│   │
+│   ├── operations/                   ⚙️ Operations documentation
+│   │   ├── INDEX.md                  Operations index
+│   │   └── (operational procedures)
+│   │
+│   ├── reports/                      📋 Reports and audits
+│   │   └── DOCUMENTATION_UPDATE_REPORT.md  Documentation updates
+│   │
+│   ├── roadmap/                      🗺️ Product roadmap
+│   │   ├── PHASE_5_OVERVIEW.md       Phase 5 overview
+│   │   ├── PHASE_5_WEEK_1_MASTER_PLAN.md  Week 1 master plan
+│   │   ├── REPOSITORY_REORGANIZATION_DRAFT_PLAN.md  Reorganization draft
+│   │   └── REPO_RESTRUCTURING_PLAN.md     Restructuring plan
+│   │
+│   ├── security/                     🔐 Security documentation
+│   │   ├── INDEX.md                  Security index
+│   │   ├── README.md                 Security overview
+│   │   ├── current/                  Current security docs
+│   │   ├── historical/               Historical security docs
+│   │   ├── policies/                 Security policies
+│   │   └── responses/                Security incident responses
+│   │
+│   ├── setup/                        🛠️ Setup guides
+│   │   └── INDEX.md                  Setup index
+│   │
+│   ├── status/                       📊 Production status
+│   │   ├── CURRENT_DEVELOPMENT_STATUS.md  Development status
+│   │   ├── EPIC24_CURRENT_STATUS.md       Epic 24 status
+│   │   ├── EPIC24_FIXES_COMPREHENSIVE_SUMMARY.md  Epic 24 fixes
+│   │   ├── EPIC24_MIGRATION_VERIFICATION_PLAN.md  Migration verification
+│   │   ├── PHASE_5_WEEK_1_COMPLETION.md   Phase 5 completion
+│   │   ├── historical/               Historical status docs
+│   │   └── ongoing/                  Ongoing status tracking
+│   │
+│   ├── testing/                      🧪 Testing documentation
+│   │   └── (test reports and guides)
+│   │
+│   └── troubleshooting/              🔧 Troubleshooting guides
+│       ├── ROLE_LOSS_INCIDENT_2025-10-23.md  Role loss incident
+│       └── SCHEMA_MISMATCH_EPIC_24_2025-10-23.md  Schema mismatch
 │
-├── members/                          👤 Members Service (Production)
-│   ├── src/                          💻 Application code (legacy)
-│   ├── functions/                    ☁️ Cloud Functions (Python 3.11)
-│   │   └── main.py                   handleKenniAuth & verifyMembership
-│   ├── public/                       🎨 Static assets & test pages
-│   │   ├── index.html                Login page
-│   │   ├── dashboard.html            Member dashboard
-│   │   ├── profile.html              Member profile
-│   │   ├── test-events.html          Events service test page (with voting)
-│   │   ├── styles/                   Component CSS
-│   │   ├── js/                       JavaScript modules
-│   │   └── i18n/                     Icelandic translations
-│   ├── data/                         📊 Membership data
-│   │   └── kennitalas.txt            Verified member kennitalas (not in git)
-│   ├── firebase.json                 Firebase configuration
-│   ├── .firebaserc                   Firebase project config
-│   ├── package.json                  Node.js dependencies
-│   └── README.md                     📖 Service documentation
+├── services/                         🚀 Production Services
+│   │
+│   ├── members/                      👤 Members Service (Firebase Hosting)
+│   │   ├── functions/                ☁️ Cloud Functions (Python 3.11)
+│   │   │   ├── main.py               handleKenniAuth & verifyMembership & healthz
+│   │   │   ├── utils_logging.py      Structured logging
+│   │   │   ├── util_jwks.py          JWKS caching
+│   │   │   ├── requirements.txt      Python dependencies
+│   │   │   └── package.json          Node.js dependencies (Firebase SDK)
+│   │   ├── data/                     📊 Membership data
+│   │   │   └── kennitalas.txt        Verified member kennitalas (NOT in git)
+│   │   ├── scripts/                  🔧 Helper scripts
+│   │   │   ├── README.md             Scripts documentation
+│   │   │   └── assign-role-to-me.sh  Quick role assignment
+│   │   ├── setup-scripts/            ⚙️ Setup automation
+│   │   │   └── README.md             Setup scripts documentation
+│   │   ├── firebase.json             Firebase configuration
+│   │   ├── .firebaserc               Firebase project config
+│   │   ├── package.json              Node.js dependencies
+│   │   └── README.md                 📖 Service documentation (1,088 lines, Oct 24)
+│   │
+│   ├── events/                       🎫 Events Service (Cloud Run)
+│   │   ├── src/                      💻 Node.js application
+│   │   │   ├── index.js              Express server
+│   │   │   ├── config/               Configuration modules
+│   │   │   ├── middleware/           Express middleware
+│   │   │   ├── services/             Business logic
+│   │   │   └── routes/               API routes
+│   │   ├── migrations/               🗄️ Database migrations
+│   │   ├── Dockerfile                🐳 Container image
+│   │   ├── deploy.sh                 🚀 Deployment script
+│   │   ├── package.json              Dependencies
+│   │   └── README.md                 📖 Service documentation (872 lines, Oct 24)
+│   │
+│   └── elections/                    🗳️ Elections Service (Cloud Run)
+│       ├── src/                      💻 Node.js application
+│       │   ├── index.js              Express server
+│       │   ├── config/               Configuration modules
+│       │   ├── middleware/           Express middleware
+│       │   ├── services/             Business logic
+│       │   └── routes/               API routes
+│       ├── migrations/               🗄️ Database migrations
+│       ├── Dockerfile                🐳 Container image
+│       ├── deploy.sh                 🚀 Deployment script
+│       ├── package.json              Dependencies
+│       └── README.md                 📖 Service documentation
 │
-├── events/                           🎫 Events Service (Production Oct 9-10, 2025)
-│   ├── src/                          💻 Node.js application
-│   │   ├── index.js                  Express server entry point
-│   │   ├── config/                   Configuration modules
-│   │   │   ├── database.js           Cloud SQL connection pool
-│   │   │   └── firebase.js           Firebase Admin SDK
-│   │   ├── middleware/               Express middleware
-│   │   │   └── auth.js               JWT authentication middleware
-│   │   ├── services/                 Business logic
-│   │   │   ├── electionService.js    Election management
-│   │   │   ├── tokenService.js       Token generation (with S2S)
-│   │   │   └── electionsClient.js    Elections S2S client (Phase 5)
-│   │   └── routes/                   API routes
-│   │       └── election.js           Election endpoints (with S2S)
-│   ├── migrations/                   🗄️ Database migrations
-│   │   ├── 001_initial_schema.sql    Initial schema (election + voting_tokens)
-│   │   ├── 002_remove_elections_service_id.sql  Cleanup migration
-│   │   ├── run-migration.sh          Migration runner
-│   │   └── README.md                 Migration documentation
-│   ├── Dockerfile                    🐳 Container image definition
-│   ├── .dockerignore                 Docker ignore rules
-│   ├── deploy.sh                     🚀 Cloud Run deployment script
-│   ├── .env.example                  Environment variable template
-│   ├── .env                          Local development environment (not in git)
-│   ├── package.json                  Node.js dependencies
-│   ├── test-production.html          Production test page (legacy)
-│   └── README.md                     📖 Service documentation
+├── apps/                             🎨 Frontend Applications
+│   └── members-portal/               👤 Members Portal (Firebase Hosting)
+│       ├── index.html                Login page
+│       ├── dashboard.html            Member dashboard
+│       ├── profile.html              User profile
+│       ├── elections.html            Elections list
+│       ├── election-detail.html      Election voting
+│       ├── election-api-test.html    API testing page
+│       ├── events.html               Events page
+│       ├── js/                       JavaScript modules
+│       │   ├── auth.js               Authentication
+│       │   ├── login.js              Login logic
+│       │   ├── dashboard.js          Dashboard logic
+│       │   ├── profile.js            Profile logic
+│       │   ├── elections.js          Elections logic
+│       │   ├── election-detail.js    Voting logic
+│       │   ├── election-api-test.js  API testing
+│       │   ├── events.js             Events logic
+│       │   ├── nav.js                Navigation
+│       │   ├── page-init.js          Page initialization
+│       │   └── api/                  API client modules
+│       ├── styles/                   CSS stylesheets
+│       │   ├── global.css            Global styles
+│       │   ├── elections.css         Elections styles
+│       │   ├── events.css            Events styles
+│       │   └── components/           Component styles
+│       └── i18n/                     Internationalization
+│           ├── R.js                  R.string utility
+│           └── is.js                 Icelandic translations
 │
-├── elections/                        🗳️ Elections Service (Production Oct 9-10, 2025)
-│   ├── src/                          💻 Node.js application
-│   │   ├── index.js                  Express server entry point
-│   │   ├── config/                   Configuration modules
-│   │   │   └── database.js           Cloud SQL connection pool
-│   │   ├── middleware/               Express middleware
-│   │   │   ├── auth.js               Token-based authentication
-│   │   │   └── s2sAuth.js            S2S API key authentication
-│   │   ├── services/                 Business logic
-│   │   │   ├── ballotService.js      Ballot recording (anonymous)
-│   │   │   └── tokenService.js       Token validation and management
-│   │   └── routes/                   API routes
-│   │       ├── vote.js               Public voting endpoints
-│   │       └── s2s.js                S2S endpoints (register-token, results)
-│   ├── migrations/                   🗄️ Database migrations
-│   │   ├── 001_initial_schema.sql    Elections schema (voting_tokens, ballots, audit_log)
-│   │   ├── run-migration.sh          Migration runner
-│   │   └── README.md                 Migration documentation
-│   ├── Dockerfile                    🐳 Container image definition
-│   ├── .dockerignore                 Docker ignore rules
-│   ├── deploy.sh                     🚀 Cloud Run deployment script
-│   ├── .env.example                  Environment variable template
-│   ├── .env                          Local development environment (not in git)
-│   ├── package.json                  Node.js dependencies
-│   └── README.md                     📖 Service documentation
+├── scripts/                          🔧 Automation Scripts
+│   └── admin/                        Admin utilities
+│       └── validate_documentation_map.py  Documentation validator
 │
-└── archive/                          📦 Archived Code & Documentation
-    ├── audits/                       Code audits (superseded versions)
-    ├── deployments/                  Historical deployment docs
-    ├── migrations/                   Historical migration docs
-    ├── testing-logs/                 Historical testing logs
-    ├── members-service/              Members development history (Oct 2025)
-    ├── documentation/                Historical docs (ZITADEL-era)
-    ├── ekklesia-platform-evaluation/ Platform evaluation (Oct 7)
-    ├── zitadel-legacy/               ZITADEL infrastructure
-    └── README.md                     Archive index and rationale
+└── archive/                          📦 Archived Code (NOT in git)
+    └── (historical code and documentation)
 ```
+
+**Note**: The `services/members/public/` directory is actually a **symlink** to `../../apps/members-portal`.
 
 ---
 
@@ -306,21 +362,11 @@ ekklesia/
 |----------|---------|--------|
 | `status/CURRENT_PRODUCTION_STATUS.md` | Production infrastructure status (all services) | ✅ Current (Oct 15) |
 | `docs/status/README.md` | Status documents guide | ✅ Current (Oct 11) |
-| `docs/status/ELECTIONS_SCHEMA_MIGRATION_CHECKLIST.md` | Elections schema migration verification | ✅ Current (Oct 20) |
-| `docs/status/LOGIN_INCIDENT_2025-10-16.md` | Login incident postmortem (Oct 16) | ✅ Current (Oct 16) |
-| `docs/status/SESSION_2025-10-19_Phase5_Validation_Prep.md` | Phase 5 validation prep session notes | ✅ Current (Oct 19) |
 
 ### 🧪 Testing Documentation
 
 | Document | Purpose | Status |
 |----------|---------|--------|
-| `docs/testing/END_TO_END_VOTING_FLOW_TEST.md` | End-to-end production voting flow validation (Oct 15, 2025) | ✅ Current (Oct 15) |
-| `docs/testing/ADMIN_RESET_CHECKLIST.md` | Admin reset endpoint testing checklist | ✅ Current (Oct 20) |
-| `docs/testing/ADMIN_RESET_TEST_REPORT.md` | Admin reset endpoint test results | ✅ Current (Oct 20) |
-| `docs/AUDIT_2025-10-20.md` | Comprehensive documentation audit report | ✅ Current (Oct 20) |
-| `docs/AUDIT_2025-10-20_DETAILED.md` | Detailed file-by-file audit analysis | ✅ Current (Oct 20) |
-| `docs/LINK_VALIDATION_REPORT_2025-10-20.md` | Internal link validation and remediation plan | ✅ Current (Oct 20) |
-| `docs/DOCUMENTATION_CHANGELOG.md` | Documentation version control and maintenance | ✅ Current (Oct 20) |
 | `validate-links.py` | Link validation script for automated link checking | ✅ Current (Oct 20) |
 
 ### 📦 Archived Status Documents
@@ -343,99 +389,43 @@ ekklesia/
 | Document | Purpose | Status |
 |----------|---------|--------|
 | `docs/design/CSS_DESIGN_SYSTEM.md` | CSS BEM design system and component documentation | ✅ Current (Oct 20) |
-| `docs/MEMBERS_DEPLOYMENT_GUIDE.md` | Members service deployment guide | ✅ Current (Oct 20) |
-| `archive/docs/docs-2025-10-13/docs/design/EVENTS_SERVICE_MVP.md` | Events service MVP design (token issuance, S2S) | 📦 Archived snapshot (Oct 13) |
-| `archive/docs/docs-2025-10-13/docs/design/ELECTIONS_SERVICE_MVP.md` | Elections service MVP design (anonymous ballots, S2S) | 📦 Archived snapshot (Oct 13) |
 
 ### 📖 Implementation Guides
 | Document | Purpose | Status |
-**Automation**: `docs/guides/summarize-guides.sh` regenerates `docs/guides/INDEX.md` and summary tables.
 
 |----------|---------|--------|
-| `docs/guides/INDEX.md` | Master index of all guide documentation | ✅ Current (Oct 20) |
-| `docs/guides/PR29_CAMPAIGN_LEARNINGS.md` | PR#29 review campaign best practices | ✅ Current (Oct 20) |
-| `docs/guides/ADMIN_ALERTS.md` | Admin alerting procedures | ✅ Current (Oct 20) |
-| `docs/guides/AUDIT_LOGGING.md` | Audit logging configuration | ✅ Current (Oct 15) |
-| `docs/guides/MFA_ENFORCEMENT.md` | Multi-factor authentication setup (enhanced with configuration examples) | ✅ Current (Oct 20) |
-| `docs/guides/OAUTH_TROUBLESHOOTING.md` | OAuth troubleshooting guide | ✅ Current (Oct 20) |
-| `docs/guides/PRIVATE_OPS_REPO.md` | Private operations repository guide (enhanced with setup examples) | ✅ Current (Oct 20) |
-| `docs/guides/ROLES_AND_PERMISSIONS.md` | Role-based access control documentation | ✅ Current (Oct 15) |
-| `archive/docs/docs-2025-10-13/docs/guides/GITHUB_MCP_GUIDE.md` | Model Context Protocol servers integration | 📦 Archived snapshot (Oct 13) |
-| `docs/guides/github/GITHUB_ISSUE_LABEL_MANAGEMENT.md` | GitHub issue label management | ✅ Current (Oct 15) |
-| `docs/guides/github/GITHUB_PROJECT_MANAGEMENT.md` | GitHub Project management with CLI | ✅ Current (Oct 15) |
-| `docs/guides/github/GITHUB_PROJECT_MANAGEMENT.SUMMARY.md` | One-page summary of GitHub Project management | ✅ Current (Oct 20) |
-| `docs/guides/github/GITHUB_PR_MANAGEMENT.md` | Complete PR management guide for gh CLI workflows | ✅ Current (Oct 15) |
-| `docs/guides/github/GITHUB_PR_QUICK_REFERENCE.md` | One-page gh CLI cheat sheet for PR commands | ✅ Current (Oct 20) |
-| `docs/guides/github/GITHUB_PR_REVIEW_REPLY_WORKFLOW.md` | GitHub PR review response workflow | ✅ Production-Tested (Oct 15) |
-| `archive/docs/docs-2025-10-13/docs/guides/GITHUB_MCP_GUIDE.md` | GitHub MCP integration | 📦 Archived snapshot (Oct 13) |
-| `archive/docs/docs-2025-10-13/docs/guides/MEMBERS_DEPLOYMENT_GUIDE.md` | Members service deployment | 📦 Archived snapshot (Oct 13) |
-| `archive/docs/docs-2025-10-13/docs/guides/BRANCH_STRATEGY.md` | Git branching strategy | 📦 Archived snapshot (Oct 13) |
-| `archive/docs/docs-2025-10-13/docs/guides/SECRET_MANAGER.md` | Secret Manager usage | 📦 Archived snapshot (Oct 13) |
-| `archive/docs/docs-2025-10-13/docs/guides/VSCODE_DATABASE_SETUP.md` | VS Code PostgreSQL extension setup | 📦 Archived snapshot (Oct 13) |
-| `archive/docs/docs-2025-10-13/docs/guides/DATABASE_QUICK_REFERENCE.md` | Database one-page cheat sheet | 📦 Archived snapshot (Oct 13) |
 
 ### 📝 Security & Planning Documents
 
 | Document | Purpose | Status |
 |----------|---------|--------|
-| `docs/security/CREDENTIAL_MIGRATION_PLAN.md` | Credentials migration strategy | ✅ Current |
-| `docs/security/CRITICAL_ACTIONS_LOG.md` | Critical actions audit log | ✅ Current (Oct 20) |
-| `docs/security/CRITICAL_SECURITY_RESPONSE.md` | Critical security incident response | ✅ Current (Oct 20) |
-| `docs/security/FUNCTIONS_AUDIT_2025-10-16.md` | Cloud Functions security audit | ✅ Current (Oct 16) |
-| `docs/security/HISTORY_PURGE_PLAN.md` | Git history purging procedures | ✅ Current (Oct 20) |
-| `docs/security/ISSUES_31-40_SECURITY_REVIEW_RESPONSE.md` | Response to security issues #31-40 | ✅ Current (Oct 20) |
-| `docs/security/ISSUES_41-50_CRITICAL_REVIEW.md` | Critical review for security issues #41-50 | ✅ Current (Oct 20) |
-| `docs/CRITICAL_REVIEW_RESPONSE.md` | Critical review response document | ✅ Current (Oct 15) |
-| `docs/ARCHITECTURE_RECOMMENDATIONS.md` | Architecture recommendations (AI analysis) | ✅ Current (Oct 15) |
 
 ### 💬 Prompt Templates
 
 | Document | Purpose | Status |
 |----------|---------|--------|
-| `docs/prompts/BRANCH_DIFF_DOCUMENTATION_AUDIT.md` | Checklist prompt for auditing documentation changes in PR diffs | ✅ Current (Oct 15) |
-| `docs/prompts/COMPARE_FIREBASE_TO_SECURITY_BRANCHES.md` | Branch comparison workflow for firebase-auth → security-hardening review | ✅ Current (Oct 15) |
 
 ### 📝 Future Plans
 
 | Document | Purpose | Status | Estimated Effort |
 |----------|---------|--------|------------------|
 | `docs/roadmap/EPIC_24_IMPLEMENTATION_PLAN.md` | Phase 1: Admin member management interface | 📋 Planning (Oct 20) | 3-5 days |
-| `archive/docs/docs-2025-10-13/docs/plans/GOOGLE_AUTH_LINKING_PLAN.md` | Migrate to Google login after Kenni.is | 📦 Archived snapshot (Oct 13) | 2-3 days |
 
 ### 📦 Archived Documentation
 
 **Status Documents** (archived Oct 11, 2025):
-- `archive/ops/audits/CODE_AUDIT_2025-10-11.md` - Initial audit (superseded)
-- `archive/ops/deployments/ELECTIONS_SERVICE_DEPLOYMENT.md` - Elections deployment log
-- `archive/ops/deployments/DATABASE_SECURITY_HARDENING.md` - Database hardening log
-- `archive/ops/testing-logs/EVENTS_SERVICE_TESTING_LOG.md` - Events testing log
-- `archive/ops/migrations/FIREBASE_MIGRATION_STATUS.md` - Firebase migration log
- - `archive/docs/docs-2025-10-13/docs/status/CLEANUP_PLAN.md` - Documentation cleanup plan
- - `archive/docs/docs-2025-10-13/docs/status/PR28_AGUST_COMPLETE_REVIEW.md` - PR #28 review (23 comments)
- - `archive/docs/docs-2025-10-13/docs/status/DEBUGGING_2025-10-13_CORS_AND_TOKEN_ERRORS.md` - Debug session log (CORS & tokens)
- - `archive/docs/docs-2025-10-13/docs/status/CLOUDFLARE_SETUP_PLAN.md` - Cloudflare setup plan
 
 **ZITADEL-era documents** (deprecated Oct 6-7, 2025):
-- `archive/docs/docs-2025-10-13/legacy-docs-2025-10-03/TECHNICAL_SOLUTION.md` - ZITADEL architecture
-- `archive/docs/docs-2025-10-13/legacy-docs-2025-10-03/HYBRID_ARCHITECTURE.md` - OIDC Bridge design
-- `archive/docs/docs-2025-10-13/legacy-docs-2025-10-03/GCP_MIGRATION_PLAN.md` - Original GCP migration plan
-- `archive/docs/docs-2025-10-13/docs/specifications/MEMBERS_OIDC_SPEC.md` - ZITADEL-based OIDC spec
- - `archive/docs/docs-2025-10-13/docs/specifications/members-oidc-v1.0.md` - ZITADEL-based OIDC spec (legacy version)
 
 **Ekklesia Platform Evaluation** (archived Oct 7, 2025):
-- `archive/projects/ekklesia-platform-evaluation/README.md` - Why Ekklesia was not used
 - `archive/projects/ekklesia-platform-evaluation/portal/` - Ekklesia Portal codebase (400+ files)
 - `archive/projects/ekklesia-platform-evaluation/voting/` - Ekklesia Voting codebase (60+ files)
 
-**See**: `archive/README.md` for complete archive listing with rationale
 
 ### 📋 PR Review Documentation
 
 | Document | Purpose | Status |
 |----------|---------|--------|
-| `docs/reviews/PR29_REVIEW_INDEX.md` | PR#29 review index (78 comments) | ✅ Current (Oct 15) |
-| `docs/reviews/PR28_AUDIT_REPORT.md` | Post-merge audit report for PR #28 | ✅ Current |
-| `docs/reviews/PR29_AUDIT_REPORT.md` | Post-merge audit report for PR #29 | ✅ Current |
 
 **Note**: Individual review responses are stored locally in `/tmp/batch*_response_*.md` during review campaigns.
 
@@ -450,7 +440,6 @@ ekklesia/
 
 | Document | Purpose | Status |
 |----------|---------|--------|
-| `docs/legacy/DJANGO_LEGACY_SYSTEM.md` | Django legacy system documentation | 📚 Reference |
 
 ---
 
@@ -462,41 +451,16 @@ ekklesia/
 
 | File/Directory | Purpose | Status |
 |----------------|---------|--------|
-| `members/functions/main.py` | Cloud Functions (handleKenniAuth, verifyMembership) | ✅ Production |
-| `members/functions/requirements.txt` | Python dependencies for Cloud Functions | ✅ Production |
 | `members/public/` | Static assets (HTML, CSS, JS) | ✅ Production |
-| `members/public/test-events.html` | Events service test page (with voting interface) | ✅ Production (Oct 10) |
-| `members/public/styles/` | Component CSS (global, nav, page, login, events-test) | ✅ Production |
-| `members/public/firebase/app.js` | Shared Firebase initialization layer | ✅ Production (Oct 15) |
-| `members/public/session/` | Pure session/auth modules (`auth.js`, `init.js`, `pkce.js`) | ✅ Production (Oct 15) |
-| `members/public/ui/` | Validated DOM + navigation helpers | ✅ Production (Oct 15) |
-| `members/public/js/login.js` | OAuth login module (PKCE) | ✅ Production |
-| `members/public/js/dashboard.js` | Dashboard page module | ✅ Production |
-| `members/public/js/profile.js` | Profile page module | ✅ Production |
-| `members/public/js/test-events.js` | Test events page module | ✅ Production |
 | `members/public/i18n/` | Icelandic internationalization | ✅ Production |
-| `members/public/i18n/README.md` | Translation management notes | ✅ Current |
-| `members/data/kennitalas.txt` | Verified member kennitalas (not in git) | ✅ Production |
-| `members/firebase.json` | Firebase configuration | ✅ Production |
-| `members/README.md` | Service overview and architecture | ✅ Current |
-| `members/scripts/README.md` | Helper scripts documentation | ✅ Current (Oct 20) |
-| `members/scripts/assign-role-to-me.sh` | Quick script to assign developer role to current user | ✅ Current (Oct 20) |
-| `members/setup-scripts/README.md` | Setup scripts documentation | ✅ Current (Oct 20) |
-| `members/functions/test_security.sh` | Security testing script for Cloud Functions | ✅ Current (Oct 20) |
 
 ### Service Documentation
 
 | Document | Purpose | Audience |
 |----------|---------|----------|
-| `members/README.md` | Service overview | All |
-| `archive/projects/members-service/documentation/FIREBASE_KENNI_SETUP.md` | Firebase + Kenni.is setup (legacy) | Developers, DevOps |
 
 ### Frontend Architecture Documentation
 
-- `members/public/ARCHITECTURE_REFACTOR.md` – Detailed old vs new architecture comparison and migration plan (Oct 15)
-- `members/public/FRONTEND_AUDIT_2025-10-15.md` – Audit of portal pages after refactor
-- `members/public/CRITICAL_FIXES.md` – High-priority fixes and follow-ups
-- `members/public/TESTING_GUIDE.md` – Browser testing steps for login/dashboard/profile/test-events
 
 ---
 
@@ -508,19 +472,8 @@ ekklesia/
 
 | File/Directory | Purpose | Status |
 |----------------|---------|--------|
-| `events/src/index.js` | Express server entry point | ✅ Production (Oct 10) |
-| `events/src/services/electionsClient.js` | Elections S2S client (Phase 5) | ✅ Production (Oct 10) |
-| `events/src/services/tokenService.js` | Token generation with S2S registration | ✅ Production (Oct 10) |
-| `events/src/routes/election.js` | Election endpoints with S2S results | ✅ Production (Oct 10) |
-| `events/src/config/database.js` | Cloud SQL connection pool | ✅ Production |
-| `events/src/config/firebase.js` | Firebase Admin SDK | ✅ Production |
-| `events/src/middleware/auth.js` | JWT authentication middleware | ✅ Production |
 | `events/migrations/` | Database migrations (public schema) | ✅ Production |
-| `events/migrations/README.md` | Migration documentation | ✅ Current |
-| `events/migrations/run-migration.sh` | Migration runner helper | ✅ Current |
-| `events/deploy.sh` | Cloud Run deployment script | ✅ Production (Oct 10) |
 | `events/Dockerfile` | Container image definition | ✅ Production |
-| `events/README.md` | Service documentation | ✅ Current |
 
 ### API Endpoints
 
@@ -543,17 +496,8 @@ ekklesia/
 
 | File/Directory | Purpose | Status |
 |----------------|---------|--------|
-| `elections/src/index.js` | Express server entry point | ✅ Production (Oct 9) |
-| `elections/src/routes/elections.js` | Public + S2S endpoints | ✅ Production |
-| `elections/src/services/auditService.js` | Audit logging utilities | ✅ Production |
-| `elections/src/config/database.js` | Cloud SQL connection pool | ✅ Production |
-| `elections/src/middleware/s2sAuth.js` | S2S API key authentication | ✅ Production |
-| `elections/src/middleware/appCheck.js` | Optional App Check enforcement | ✅ Current |
 | `elections/migrations/` | Database migrations (elections schema) | ✅ Production |
-| `elections/migrations/README.md` | Migration history | ✅ Current |
-| `elections/deploy.sh` | Cloud Run deployment script | ✅ Production |
 | `elections/Dockerfile` | Container image definition | ✅ Production |
-| `elections/README.md` | Service documentation | ✅ Current |
 
 ### API Endpoints
 
@@ -592,7 +536,6 @@ ekklesia/
 - `voting/` - Ekklesia Voting codebase (60+ files)
 - `README.md` - Evaluation summary and decision rationale
 
-**See**: `archive/projects/ekklesia-platform-evaluation/README.md` for complete evaluation details
 
 ---
 
@@ -601,57 +544,32 @@ ekklesia/
 ### 👨‍💻 **Developer - Building Features**
 
 **Getting Started:**
-1. Read: `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md` (3-service architecture)
-2. Review: `archive/docs/docs-2025-10-13/docs/design/EVENTS_SERVICE_MVP.md` (Events service)
-3. Review: `archive/docs/docs-2025-10-13/docs/design/ELECTIONS_SERVICE_MVP.md` (Elections service)
-4. Setup: `archive/docs/docs-2025-10-13/docs/guides/MEMBERS_DEPLOYMENT_GUIDE.md` (deployment)
-5. Study: `docs/ARCHITECTURE_DESIGN_PHASE6.md` (Phase 6 design and roadmap)
 
 **Current Work:**
 - Members Service (Production): `members/`
 - Events Service (Production): `events/`
 - Elections Service (Production): `elections/`
-- Phase 6 (Next): Load testing (see `docs/USAGE_CONTEXT.md`, `docs/ARCHITECTURE_DESIGN_PHASE6.md`)
 
 ### 🚀 **DevOps - Deploying & Operating**
 
 **Getting Started:**
-1. Read: `docs/status/CURRENT_PRODUCTION_STATUS.md` (production status)
-2. Review: `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md` (architecture)
 3. Deploy Members: `firebase deploy --only hosting,functions` (from members/)
 4. Deploy Events: `./deploy.sh` (from events/)
 5. Deploy Elections: `./deploy.sh` (from elections/)
 
 **Operations:**
-- Operations Manual: `docs/OPERATIONAL_PROCEDURES.md`
-- Database Reference: `archive/docs/docs-2025-10-13/docs/DATABASE_REFERENCE.md`
-- Load Patterns: `docs/USAGE_CONTEXT.md`
 
 **Daily Work:**
-- Production Status: `docs/status/CURRENT_PRODUCTION_STATUS.md`
-- Phase 5 Status: `archive/docs/docs-2025-10-13/docs/status/PHASE_5_INTEGRATION_COMPLETE.md`
 
 ### 🏗️ **Architect - System Design**
 
 **Getting Started:**
-1. Read: `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md` (primary architecture)
-2. Review: `archive/docs/docs-2025-10-13/docs/design/EVENTS_SERVICE_MVP.md` (Events service design)
-3. Review: `archive/docs/docs-2025-10-13/docs/design/ELECTIONS_SERVICE_MVP.md` (Elections service design)
-4. Study: `docs/USAGE_CONTEXT.md` (load patterns and capacity planning)
-5. Study: `docs/ARCHITECTURE_DESIGN_PHASE6.md` (Phase 6 design and roadmap)
-6. Study: `archive/docs/docs-2025-10-13/docs/status/PHASE_5_INTEGRATION_COMPLETE.md` (S2S integration)
 
 **Daily Work:**
-- Architecture: `docs/SYSTEM_ARCHITECTURE_OVERVIEW.md`
-- Load Planning: `docs/USAGE_CONTEXT.md`
-- Operations: `docs/OPERATIONAL_PROCEDURES.md`
-- Database: `archive/docs/docs-2025-10-13/docs/DATABASE_REFERENCE.md`
-- Future Plans: `archive/docs/docs-2025-10-13/docs/plans/GOOGLE_AUTH_LINKING_PLAN.md`
 
 ### 🆘 **On-Call - Handling Incidents**
 
 **Emergency Quick Start:**
-1. **Status**: `docs/status/CURRENT_PRODUCTION_STATUS.md` (what's running)
 2. **Services**: Check Cloud Run services in GCP Console
    - Events: https://events-service-521240388393.europe-west2.run.app
    - Elections: https://elections-service-521240388393.europe-west2.run.app
@@ -659,7 +577,6 @@ ekklesia/
 4. **Firebase**: Firebase Console → Authentication → Users
 5. **Database**: Cloud SQL Console → ekklesia-db
 
-**Operational Procedures**: `docs/OPERATIONAL_PROCEDURES.md`
 
 **Common Issues:**
 - Auth issues: Check Firebase Authentication logs
@@ -696,7 +613,6 @@ ekklesia/
 
 ### Web Test Interface
 
-**URL**: https://ekklesia-prod-10-2025.web.app/test-events.html
 
 **Features**:
 - Firebase authentication with Kenni.is
@@ -712,7 +628,6 @@ ekklesia/
 
 | Frequency | What to Update | Responsibility |
 |-----------|----------------|----------------|
-| **After Each Deployment** | docs/status/CURRENT_PRODUCTION_STATUS.md | DevOps |
 | **After Service Changes** | Service README.md files | Developers |
 | **After Architecture Changes** | DOCUMENTATION_MAP.md | Architects |
 | **After Integration Work** | docs/status/PHASE_*.md | Developers |
@@ -777,12 +692,11 @@ ekklesia/
 - Production issues: Check GCP Cloud Run logs
 - Firebase issues: Firebase Console → Authentication
 - Database issues: Cloud SQL Console → ekklesia-db
-- Operational procedures: `docs/OPERATIONAL_PROCEDURES.md`
 
 ---
 
-**Document Version**: 6.3.0
-**Last Reviewed**: 2025-10-15
-**Changes**: Added guides section (PR29_CAMPAIGN_LEARNINGS, GITHUB_PR_REVIEW_REPLY_WORKFLOW, GITHUB_PROJECT_MANAGEMENT); added reviews, integration, legacy sections; updated status docs (removed archived files)
+**Document Version**: 7.1.0
+**Last Reviewed**: 2025-10-24
+**Changes**: Removed references to missing files (validated with validate_documentation_map.py)
 **Validated With**: validate_documentation_map.py
 **Next Review**: 2026-01-15 (Quarterly)

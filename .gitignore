@@ -22,6 +22,9 @@ npm-debug.log*
 # Claude Code settings (contains secrets and MCP server config)
 .claude/
 
+# Ignore Claude commands directory (stop tracking commands)
+.claude/commands/
+
 # OS
 .DS_Store
 
