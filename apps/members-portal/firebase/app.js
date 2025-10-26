@@ -32,6 +32,9 @@ import {
 import {
   signInWithCustomToken as firebaseSignInWithCustomToken
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import {
+  getFirestore
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 // Firebase configuration
 const firebaseConfig = {
@@ -76,6 +79,15 @@ export function getApp() {
  */
 export function getFirebaseAuth() {
   return getAuth(app);
+}
+
+/**
+ * Get Firestore instance
+ *
+ * @returns {Object} Firestore instance
+ */
+export function getFirebaseFirestore() {
+  return getFirestore(app);
 }
 
 /**

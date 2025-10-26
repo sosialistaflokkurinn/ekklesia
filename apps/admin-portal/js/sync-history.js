@@ -6,10 +6,14 @@
 
 // Import from member portal public directory (two levels up from /admin/js/)
 import { initSession } from '../../session/init.js';
-import { auth, db } from '../../firebase/app.js';
+import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
 import { initNav } from '../../ui/nav.js';
 import { showError } from '../../ui/dom.js';
 import { collection, query, orderBy, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+// Initialize Firebase services
+const auth = getFirebaseAuth();
+const db = getFirebaseFirestore();
 
 /**
  * Load admin-specific strings from admin portal i18n

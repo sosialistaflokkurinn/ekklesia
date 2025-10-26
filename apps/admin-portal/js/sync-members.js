@@ -7,9 +7,12 @@
 
 // Import from member portal public directory (two levels up from /admin/js/)
 import { initSession } from '../../session/init.js';
-import { auth } from '../../firebase/app.js';
+import { getFirebaseAuth } from '../../firebase/app.js';
 import { initNav } from '../../ui/nav.js';
 import { showError } from '../../ui/dom.js';
+
+// Initialize Firebase Auth
+const auth = getFirebaseAuth();
 
 /**
  * Load admin-specific strings from admin portal i18n
