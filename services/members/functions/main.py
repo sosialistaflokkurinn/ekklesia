@@ -626,3 +626,65 @@ def verifyMembership(req: https_fn.CallableRequest) -> dict:
             code=https_fn.FunctionsErrorCode.INTERNAL,
             message="Failed to verify membership"
         )
+
+
+# ============================================================================
+# Epic #43: Member Sync from Django
+# ============================================================================
+
+from sync_members import sync_all_members, create_sync_log
+
+
+@https_fn.on_call(timeout_sec=540, memory=512)
+def syncmembers(req: https_fn.CallableRequest):
+    """
+    Epic #43: Manual trigger to sync all members from Django to Firestore.
+
+    Requires authentication and 'developer' role.
+
+    Returns:
+        Dict with sync statistics
+    """
+    # Verify authentication
+    if not req.auth:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.UNAUTHENTICATED,
+            message="Authentication required"
+        )
+
+    # Verify developer role
+    roles = req.auth.token.get('roles', [])
+    if 'developer' not in roles:
+        log_json("warn", "Unauthorized sync attempt", uid=req.auth.uid, roles=roles)
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.PERMISSION_DENIED,
+            message="Developer role required"
+        )
+
+    log_json("info", "Member sync initiated", uid=req.auth.uid)
+
+    try:
+        # Run sync
+        stats = sync_all_members()
+
+        # Create sync log
+        db = firestore.Client()
+        log_id = create_sync_log(db, stats)
+
+        log_json("info", "Member sync completed successfully",
+                 uid=req.auth.uid,
+                 stats=stats,
+                 log_id=log_id)
+
+        return {
+            'success': True,
+            'stats': stats,
+            'log_id': log_id
+        }
+
+    except Exception as e:
+        log_json("error", "Member sync failed", error=str(e), uid=req.auth.uid)
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INTERNAL,
+            message=f"Sync failed: {str(e)}"
+        )

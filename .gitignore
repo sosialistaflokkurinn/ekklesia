@@ -65,3 +65,5 @@ validate_documentation_map.py
 reset-election.example.sql
 *-reset*.sql
 *-example.sql
+data/Stadfangaskra.csv
+.gitignore
