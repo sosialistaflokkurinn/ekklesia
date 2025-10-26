@@ -8,8 +8,6 @@
 // Import from member portal public directory (two levels up from /admin/js/)
 import { initSession } from '../../session/init.js';
 import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
-import { initNav } from '../../ui/nav.js';
-import { showError } from '../../ui/dom.js';
 import { collection, query, orderBy, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 // Initialize Firebase services
@@ -221,10 +219,7 @@ async function init() {
     // 4. Set page text
     setPageText(strings);
 
-    // 5. Initialize navigation
-    initNav();
-
-    // 6. Load recent sync status
+    // 5. Load recent sync status
     await loadRecentSync();
 
     console.log('✓ Admin dashboard initialized');
@@ -246,7 +241,8 @@ async function init() {
     }
 
     // Other errors
-    showError(`Villa við að hlaða stjórnborði: ${error.message}`);
+    console.error('Error loading admin dashboard:', error);
+    alert(`Villa við að hlaða stjórnborði: ${error.message}`);
   }
 }
 

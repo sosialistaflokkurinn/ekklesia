@@ -8,8 +8,6 @@
 // Import from member portal public directory (two levels up from /admin/js/)
 import { initSession } from '../../session/init.js';
 import { getFirebaseAuth } from '../../firebase/app.js';
-import { initNav } from '../../ui/nav.js';
-import { showError } from '../../ui/dom.js';
 
 // Initialize Firebase Auth
 const auth = getFirebaseAuth();
@@ -315,10 +313,7 @@ async function init() {
     // 4. Set page text
     setPageText(strings);
 
-    // 5. Initialize navigation
-    initNav();
-
-    // 6. Setup event listeners
+    // 5. Setup event listeners
     setupEventListeners();
 
     console.log('✓ Sync members page initialized');
@@ -340,7 +335,8 @@ async function init() {
     }
 
     // Other errors
-    showError(`Villa við að hlaða síðu: ${error.message}`);
+    console.error('Error loading sync members page:', error);
+    alert(`Villa við að hlaða síðu: ${error.message}`);
   }
 }
 

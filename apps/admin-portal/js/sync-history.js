@@ -7,8 +7,6 @@
 // Import from member portal public directory (two levels up from /admin/js/)
 import { initSession } from '../../session/init.js';
 import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
-import { initNav } from '../../ui/nav.js';
-import { showError } from '../../ui/dom.js';
 import { collection, query, orderBy, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 // Initialize Firebase services
@@ -314,13 +312,10 @@ async function init() {
     // 4. Set page text
     setPageText(strings);
 
-    // 5. Initialize navigation
-    initNav();
-
-    // 6. Setup event listeners
+    // 5. Setup event listeners
     setupEventListeners();
 
-    // 7. Load sync history
+    // 6. Load sync history
     await loadHistory();
 
     console.log('✓ Sync history page initialized');
@@ -342,7 +337,8 @@ async function init() {
     }
 
     // Other errors
-    showError(`Villa við að hlaða síðu: ${error.message}`);
+    console.error('Error loading sync history page:', error);
+    alert(`Villa við að hlaða síðu: ${error.message}`);
   }
 }
 
