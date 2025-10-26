@@ -455,7 +455,7 @@ router.post('/elections', requireAnyRoles(['developer', 'meeting_election_manage
 router.patch('/elections/:id/draft', requireAnyRoles(['developer', 'meeting_election_manager']), async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, description, question, answers } = req.body;
+    const { title, description, question, answers, voting_starts_at, voting_ends_at } = req.body;
     const uid = req.user?.uid;
 
     // Check if election exists and is in draft status
@@ -501,6 +501,14 @@ router.patch('/elections/:id/draft', requireAnyRoles(['developer', 'meeting_elec
     if (answers) {
       updates.push(`answers = $${++paramCount}`);
       params.push(JSON.stringify(answers));
+    }
+    if (voting_starts_at) {
+      updates.push(`voting_starts_at = $${++paramCount}`);
+      params.push(voting_starts_at);
+    }
+    if (voting_ends_at) {
+      updates.push(`voting_ends_at = $${++paramCount}`);
+      params.push(voting_ends_at);
     }
 
     if (updates.length === 0) {
@@ -1181,14 +1189,16 @@ router.get('/elections/:id/results', requireAnyRoles(['developer', 'meeting_elec
     }
 
     const election = electionResult.rows[0];
-    const answers = JSON.parse(election.answers || '[]');
+    const answers = election.answers || [];
 
     // Fetch vote counts from Elections service (ballots table)
+    // Join with voting_tokens to get votes for this specific election
     const resultsResult = await query(
-      `SELECT answer, COUNT(*) as vote_count
-       FROM elections.ballots
-       WHERE election_id = $1
-       GROUP BY answer
+      `SELECT b.answer, COUNT(*) as vote_count
+       FROM elections.ballots b
+       JOIN elections.voting_tokens vt ON b.token_hash = vt.token_hash
+       WHERE vt.election_id = $1
+       GROUP BY b.answer
        ORDER BY vote_count DESC`,
       [id]
     );
