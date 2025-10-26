@@ -3,39 +3,61 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title id="page-title">Kosning - Sósíalistaflokkurinn</title>
+  <title id="page-title">Loading...</title>
   <link rel="stylesheet" href="/styles/global.css">
+  <link rel="stylesheet" href="/styles/components/nav.css">
+  <link rel="stylesheet" href="/styles/components/page.css">
   <link rel="stylesheet" href="/styles/elections.css">
 </head>
-<body>
-  <nav class="navbar">
-    <div class="navbar__container">
-      <a href="/dashboard.html" class="navbar__brand" id="nav-brand">Sósíalistaflokkurinn</a>
-      <ul class="navbar__menu">
-        <li><a href="/dashboard.html" id="nav-dashboard">Mín síða</a></li>
-        <li><a href="/profile.html" id="nav-profile">Aðgangur</a></li>
-        <li><a href="/elections.html" id="nav-voting">Kosningar</a></li>
-        <li><button id="btn-logout" class="btn btn--text">Útskrá</button></li>
-      </ul>
+<body class="authenticated">
+  <nav class="nav">
+    <div class="nav__container">
+      <a href="/dashboard.html" class="nav__brand" id="nav-brand">Loading...</a>
+
+      <!-- Hamburger Button (mobile only) -->
+      <button class="nav__hamburger" id="nav-hamburger" aria-expanded="false">
+        <span class="nav__hamburger-line"></span>
+        <span class="nav__hamburger-line"></span>
+        <span class="nav__hamburger-line"></span>
+      </button>
+
+      <!-- Overlay for mobile menu -->
+      <div class="nav__overlay" id="nav-overlay"></div>
+
+      <!-- Navigation Drawer -->
+      <div class="nav__drawer" id="nav-drawer" aria-hidden="true">
+        <!-- Close button (mobile only) -->
+        <button class="nav__close" id="nav-close">
+          <span class="nav__close-icon">✕</span>
+        </button>
+
+        <div class="nav__links">
+          <a href="/dashboard.html" class="nav__link" id="nav-dashboard">Loading...</a>
+          <a href="/profile.html" class="nav__link" id="nav-profile">Loading...</a>
+          <a href="/events.html" class="nav__link" id="nav-events">Loading...</a>
+          <a href="/elections.html" class="nav__link nav__link--active" id="nav-voting">Loading...</a>
+          <a href="#" class="nav__link nav__link--logout" id="nav-logout">Loading...</a>
+        </div>
+      </div>
     </div>
   </nav>
 
-  <div class="container">
+  <div class="page__container">
     <!-- Back Button -->
     <div class="election-header">
-      <a href="/elections.html" class="btn btn--text back-button" id="back-link">← Til baka</a>
+      <a href="/elections.html" class="btn btn--text back-button" id="back-link">Loading...</a>
     </div>
 
     <!-- Loading State -->
     <div id="election-loading" class="elections__loading u-hidden">
       <div class="spinner"></div>
-      <p id="loading-message">Hleð inn kosningum...</p>
+      <p id="loading-message">Loading...</p>
     </div>
 
     <!-- Error State -->
     <div id="election-error" class="elections__error u-hidden">
-      <p id="error-message">Villa við að hlaða kosningum</p>
-      <a href="/elections.html" class="btn" id="error-back-link">Til baka á kosningar</a>
+      <p id="error-message">Loading...</p>
+      <a href="/elections.html" class="btn" id="error-back-link">Loading...</a>
     </div>
 
     <!-- Election Detail Container -->
@@ -53,26 +75,26 @@
 
       <!-- Voting Section (if active) -->
       <section id="voting-section" class="voting u-hidden">
-        <h2 id="voting-title">Kjóstu nú</h2>
+        <h2 id="voting-title">Loading...</h2>
         <form id="vote-form" class="voting__form">
           <div id="vote-options" class="voting__options"></div>
-          <button type="submit" id="submit-vote-btn" class="btn">Kjósa</button>
+          <button type="submit" id="submit-vote-btn" class="btn">Loading...</button>
         </form>
       </section>
 
       <!-- Already Voted Section (if voted) -->
       <section id="already-voted-section" class="elections__already-voted u-hidden">
-        <p id="already-voted-msg">✓ Þú hefur þegar kosið í þessari kosningum.</p>
+        <p id="already-voted-msg">Loading...</p>
       </section>
 
       <!-- Upcoming Section -->
       <section id="upcoming-section" class="elections__upcoming u-hidden">
-        <p id="upcoming-text">Kosningin mynda opna fyrir atkvæðagreiðslu fyrr seinna.</p>
+        <p id="upcoming-text">Loading...</p>
       </section>
 
       <!-- Results Section (if closed) -->
       <section id="results-section" class="results u-hidden">
-        <h2 id="results-title">Niðurstöður</h2>
+        <h2 id="results-title">Loading...</h2>
         <div id="results-container" class="results__container"></div>
       </section>
 
@@ -82,14 +104,14 @@
   <!-- Confirmation Modal -->
   <div id="confirm-modal" class="modal u-hidden">
     <div class="modal__content">
-      <h2 id="confirm-title">Staðfestu atkvæði</h2>
-      <p id="confirm-message">Ertu viss um að þú viljir kjósa?</p>
+      <h2 id="confirm-title">Loading...</h2>
+      <p id="confirm-message">Loading...</p>
       <div class="modal__actions">
         <button id="confirm-cancel" class="btn btn--secondary">
-          <span id="confirm-cancel-text">Aflýsa</span>
+          <span id="confirm-cancel-text">Loading...</span>
         </button>
         <button id="confirm-submit" class="btn">
-          <span id="confirm-submit-text">Staðfesta</span>
+          <span id="confirm-submit-text">Loading...</span>
         </button>
       </div>
     </div>
@@ -98,10 +120,10 @@
   <!-- Success Modal -->
   <div id="success-modal" class="modal u-hidden">
     <div class="modal__content">
-      <h2 id="success-title">✓ Atkvæði skráð</h2>
-      <p id="success-message">Þinn atkvæði hefur verið skráð með góðum árangri.</p>
+      <h2 id="success-title">Loading...</h2>
+      <p id="success-message">Loading...</p>
       <div class="modal__actions">
-        <a href="/elections.html" class="btn" id="success-back-link">Til baka á kosningar</a>
+        <a href="/elections.html" class="btn" id="success-back-link">Loading...</a>
       </div>
     </div>
   </div>

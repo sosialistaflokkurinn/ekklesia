@@ -154,33 +154,44 @@ Ekklesia infrastructure is **stable and ready for development**. Phase 4 complet
   - Audit logging
   - Manual sync trigger for admins
 
-**Epic #87: Member Election Discovery & Voting Interface**
-- **Branch:** `feature/epic-87-election-discovery`
-- **Status:** Specification Complete ✅
+**Epic #87: Member Election Discovery & Voting Interface** ✅
+- **Status:** Complete - Merged to main (2025-10-22)
 - **Documentation:** [EPIC_87_ELECTION_DISCOVERY.md](../features/election-voting/EPIC_87_ELECTION_DISCOVERY.md)
 - **Scope:** Member-facing UI for discovering and voting in elections
-- **Timeline:** 4 weeks (starts Week 2-3, depends on #24 and #43)
-- **Key Deliverables:**
-  - /elections list page (responsive)
-  - /elections/:id detail page with voting form
-  - Vote submission flow
-  - Results display with visualizations
-  - Error handling and retry logic
+- **Commits:**
+  - 84979cf8 - refactor(epic-87): convert CSS to BEM methodology
+  - 0f1e480f - chore: remove Gitleaks in favor of pre-commit hooks
+  - 8e9b371f - feat(epic-87): add i18n support using R.string pattern
+  - d736ffbc - fix(epic-87): update nav-voting text and use R.string.app_name
+- **Delivered:**
+  - Frontend structure: `apps/members-portal/` (complete)
+  - i18n system: R.string pattern with 39 new election strings
+  - CSS: BEM methodology fully applied (650 lines)
+  - API client: Elections API integration
+  - Pages: /elections list and /elections/:id detail with voting
+  - Error handling, loading states, and retry logic
 
 ### Implementation Dependencies
 
+**Epic #87 Status:** ✅ Complete (merged to main)
+- Frontend structure available: `apps/members-portal/`
+- i18n system ready: R.string pattern
+- BEM CSS methodology established
+- Elections API client patterns available
+
+**Updated Timeline:**
+
 ```
-Week 1:     Epic #24 + Epic #43 (start simultaneously)
-Week 2:     Epic #24 + Epic #43 (continue) + Epic #87 (foundation)
-Week 3:     Epic #24 complete | Epic #43 complete | Epic #87 continues
-Week 4:     All testing, documentation, polish
+Week 1:     Epic #24 (admin API) - leverages Epic #87 frontend structure
+Week 2:     Epic #24 continues + Epic #43 (membership sync) starts
+Week 3:     Epic #24 complete | Epic #43 continues
+Week 4:     Epic #43 complete | Integration testing | Documentation
 ```
 
-**Can Run in Parallel:**
-- Epic #24 and #43 (independent development tracks)
-
-**Sequential Constraint:**
-- Epic #87 requires both #24 and #43 foundation before testing
+**Current Status:**
+- Epic #87: ✅ Complete - provides foundation for admin UI
+- Epic #24: Ready to start - can leverage Epic #87 patterns
+- Epic #43: On hold - needs recreation from current main
 
 ---
 
@@ -267,11 +278,11 @@ ekklesia/
 
 **Git Status:**
 - Current Branch: `main`
-- Last Commit: `70d6a45` (path updates, 2025-10-22)
+- Latest Commit: `768089da` (Phase 5 overview update, 2025-10-22)
 - Feature Branches (Phase 5):
   - `feature/epic-24-admin-lifecycle` ✅ Remote & local
   - `feature/epic-43-membership-sync` ✅ Remote & local
-  - `feature/epic-87-election-discovery` ✅ Remote & local
+  - `feature/epic-87-election-discovery` ✅ Merged to main (2025-10-22)
 
 ---
 
@@ -297,15 +308,22 @@ ekklesia/
 
 ### Phase 5 Week 1 (Target: Early November)
 
-**Epic #24 + #43 Kickoff**
-- Developers: 2 assigned to #24, 2 assigned to #43
-- Sprint Planning: Assign Week 1 tasks (API skeleton, service setup)
-- Repository: Switch to feature branches (`feature/epic-24-*` and `feature/epic-43-*`)
+**Epic #24 Kickoff** (Primary Focus)
+- Developers: Focus on admin API development
+- Sprint Planning: Week 1 tasks from [PHASE_5_WEEK_1_IMPLEMENTATION.md](../features/election-voting/PHASE_5_WEEK_1_IMPLEMENTATION.md)
+- Repository: Use `feature/epic-24-admin-lifecycle` branch
+- Foundation: Leverage Epic #87 frontend structure for admin UI
 
-**Epic #87 Preparation**
-- Designer: Create UI mockups for election discovery/voting pages
-- Frontend Dev: Set up component structure
-- Start: Week 2 (after #24 API foundation)
+**Epic #87 Status** ✅
+- Complete and merged to main
+- `apps/members-portal/` structure ready
+- i18n system available for admin strings
+- BEM CSS patterns established
+- Can be used as template for admin UI development
+
+**Epic #43 Status** ⏳
+- On hold - needs recreation from current main
+- Start: Week 2 (parallel with Epic #24 completion)
 
 ---
 
@@ -349,20 +367,28 @@ ekklesia/
 
 ## Success Criteria for Phase 5
 
-### Week 1-2: Foundation
+### Completed ✅
+- [x] Epic #87 UI structure and components complete
+- [x] Frontend separation to `apps/members-portal/`
+- [x] i18n system implemented (R.string pattern)
+- [x] BEM CSS methodology established
+- [x] Elections API client and mock API working
+
+### Week 1-2: Foundation (Current Focus)
 - [ ] Epic #24 REST API skeleton complete (create, update, open, close endpoints)
-- [ ] Epic #43 membership-sync service created and connected to Cloud SQL
-- [ ] Epic #87 UI wireframes and component structure ready
+- [ ] Admin API leverages Epic #87 patterns
 - [ ] Database schema migration dry-run successful
+- [ ] Epic #43 recreation from current main
 
 ### Week 3: Integration
 - [ ] Epic #24 API fully functional with audit logging
-- [ ] Epic #43 hourly sync working and tested
-- [ ] Epic #87 voting form connected to #24 API
+- [ ] Epic #43 membership-sync service created and connected to Cloud SQL
+- [ ] Admin UI connected to #24 API (leveraging Epic #87 structure)
 - [ ] Results display working correctly
 
 ### Week 4: Completion
-- [ ] All three epics code-complete with full test coverage
+- [ ] Epic #24 complete with full test coverage
+- [ ] Epic #43 hourly sync working and tested
 - [ ] Load testing on all APIs
 - [ ] Documentation complete
 - [ ] Ready for UAT (User Acceptance Testing)
@@ -452,6 +478,7 @@ For issues or blockers:
 
 ---
 
-**Status Last Verified:** 2025-10-22 10:00 UTC
+**Status Last Verified:** 2025-10-22 14:45 UTC
 **Next Status Update Due:** 2025-10-29
-**Phase 5 Target Start:** 2025-11-03
+**Phase 5 Status:** Epic #87 Complete ✅ - Epic #24 Ready to Start
+**Phase 5 Target Start:** Week of 2025-11-03

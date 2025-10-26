@@ -3,7 +3,7 @@ import os
 import requests
 import jwt
 from typing import Dict, Tuple, Optional
-from .utils_logging import log_json
+from utils_logging import log_json
 
 # Simple TTL cache for JWKS clients keyed by issuer URL
 # Structure: { issuer_url: (PyJWKClient, expires_at, hits, misses) }

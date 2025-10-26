@@ -2,7 +2,13 @@
  * Navigation Component Styles
  *
  * Shared navigation bar for authenticated pages
+ * - Desktop: Horizontal navigation (unchanged)
+ * - Mobile: Hamburger menu with slide-in drawer
  */
+
+/* ========================================== */
+/* BASE STYLES (Desktop) */
+/* ========================================== */
 
 .nav {
   background: var(--color-primary);
@@ -23,6 +29,75 @@
   font-size: 20px;
   font-weight: 600;
   text-decoration: none;
+}
+
+.nav__brand:hover {
+  opacity: 0.9;
+}
+
+/* Hamburger Button - Hidden on desktop */
+.nav__hamburger {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 12px;
+  min-width: 48px;
+  min-height: 48px;
+  z-index: 1001;
+  position: relative;
+}
+
+.nav__hamburger-line {
+  display: block;
+  width: 24px;
+  height: 3px;
+  background: white;
+  margin: 5px 0;
+  transition: all 0.3s ease;
+  border-radius: 2px;
+}
+
+/* Hamburger animation when open */
+.nav__hamburger.is-active .nav__hamburger-line:nth-child(1) {
+  transform: rotate(45deg) translateY(10px);
+}
+
+.nav__hamburger.is-active .nav__hamburger-line:nth-child(2) {
+  opacity: 0;
+}
+
+.nav__hamburger.is-active .nav__hamburger-line:nth-child(3) {
+  transform: rotate(-45deg) translateY(-10px);
+}
+
+/* Overlay - Dark background behind drawer */
+.nav__overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.nav__overlay.is-visible {
+  display: block;
+  opacity: 1;
+}
+
+/* Drawer - Slide-in menu container */
+.nav__drawer {
+  display: flex;
+  align-items: center;
+}
+
+.nav__close {
+  display: none;
 }
 
 .nav__links {
@@ -57,15 +132,155 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
-/* Mobile responsive */
+/* ========================================== */
+/* MOBILE RESPONSIVE (≤768px) */
+/* ========================================== */
+
 @media (max-width: 768px) {
-  .nav__container {
-    flex-direction: column;
-    gap: var(--spacing-md);
+
+  /* Show hamburger button */
+  .nav__hamburger {
+    display: block;
   }
 
-  .nav__links {
-    flex-wrap: wrap;
+  /* Drawer becomes slide-in panel */
+  .nav__drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 280px;
+    max-width: 85vw;
+    background: var(--color-white);
+    box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+    z-index: 1000;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-xl) 0;
+  }
+
+  /* Drawer open state */
+  .nav__drawer.is-open {
+    transform: translateX(0);
+  }
+
+  /* Close button inside drawer */
+  .nav__close {
+    display: block;
+    position: absolute;
+    top: var(--spacing-md);
+    right: var(--spacing-md);
+    background: none;
+    border: none;
+    font-size: 32px;
+    color: var(--color-gray-600);
+    cursor: pointer;
+    padding: var(--spacing-sm);
+    line-height: 1;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
     justify-content: center;
+  }
+
+  .nav__close:hover {
+    color: var(--color-primary);
+  }
+
+  /* Navigation links - vertical stack */
+  .nav__links {
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
+    margin-top: var(--spacing-xl);
+  }
+
+  .nav__link {
+    width: 100%;
+    padding: var(--spacing-md) var(--spacing-xl);
+    color: var(--color-gray-800);
+    border-bottom: 1px solid var(--color-border-light);
+    text-align: left;
+    font-size: 16px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    border-radius: 0;
+  }
+
+  .nav__link:hover {
+    background: var(--color-gray-50);
+  }
+
+  .nav__link.nav__link--active {
+    background: var(--color-primary);
+    color: white;
+    font-weight: 600;
+  }
+
+  .nav__link--logout {
+    background: var(--color-gray-50);
+    border: none;
+    border-top: 2px solid var(--color-border-medium);
+    margin-top: auto;
+    color: var(--color-primary);
+    font-weight: 500;
+  }
+
+  .nav__link--logout:hover {
+    background: var(--color-primary);
+    color: white;
+  }
+}
+
+/* Small Mobile (≤400px) - Keep drawer at 280px instead of full width */
+@media (max-width: 400px) {
+  .nav__drawer {
+    width: 280px;
+    max-width: 280px;
+  }
+}
+
+/* ========================================== */
+/* ACCESSIBILITY */
+/* ========================================== */
+
+/* Focus styles for keyboard navigation */
+.nav__hamburger:focus-visible,
+.nav__close:focus-visible {
+  outline: 2px solid var(--color-white);
+  outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+  .nav__hamburger:focus-visible {
+    outline-color: var(--color-white);
+  }
+
+  .nav__close:focus-visible {
+    outline-color: var(--color-primary);
+  }
+
+  .nav__link:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: -2px;
+  }
+}
+
+/* Prevent body scroll when drawer open */
+body.nav-open {
+  overflow: hidden;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .nav__drawer,
+  .nav__overlay,
+  .nav__hamburger-line {
+    transition: none !important;
   }
 }

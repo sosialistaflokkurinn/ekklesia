@@ -14,7 +14,7 @@
     }
   ],
   "hosting": {
-    "public": "../../apps/members-portal",
+    "public": "public",
     "ignore": [
       "firebase.json",
       "**/.*",

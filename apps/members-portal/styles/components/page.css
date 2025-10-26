@@ -35,10 +35,10 @@ body.authenticated {
 
 /* Card components */
 .card {
-  background: white;
+  background: var(--color-white);
   border-radius: var(--radius-lg);
   padding: var(--spacing-xl);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
   margin-bottom: var(--spacing-lg);
 }
 
