@@ -2,100 +2,209 @@
  * Test Events Page Logic
  *
  * Testing interface for Events and Elections service APIs.
- * Allows authenticated members to test the full voting flow.
+ *
+ * New architecture:
+ * - Reuses initSession() (no code duplication)
+ * - Uses ui/nav.js for navigation (shared)
+ * - Uses session/auth.js for authenticated fetch
+ * - Pure functions for formatting
  *
  * @module test-events
  */
 
-import { R } from '/i18n/strings-loader.js';
-import { requireAuth, signOut, authenticatedFetch } from '/js/auth.js';
-import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { R } from '../i18n/strings-loader.js';
+import { initAuthenticatedPage } from './page-init.js';
+import { requireAuth, getUserData, signOut, authenticatedFetch, AuthenticationError } from '../session/auth.js';
+import { setTextContent, setDisabled, setInnerHTML, validateElements, getElementByIdSafe } from '../ui/dom.js';
 
 /**
- * Update page title and navigation strings
+ * Required DOM elements for test events page
  */
-function updatePageStrings() {
-  document.title = R.string.page_title_test_events;
-  document.getElementById('nav-brand').textContent = R.string.nav_brand;
-  document.getElementById('nav-dashboard').textContent = R.string.nav_dashboard;
-  document.getElementById('nav-profile').textContent = R.string.nav_profile;
-  document.getElementById('nav-logout').textContent = R.string.nav_logout;
+const TEST_EVENTS_ELEMENTS = [
+  'event-title',
+  'auth-title',
+  'auth-badge',
+  'user-info',
+  'api-title',
+  'api-env-label',
+  'api-env-url',
+  'test-1-title',
+  'btn-health',
+  'test-2-title',
+  'btn-election',
+  'test-3-title',
+  'btn-request-token',
+  'test-4-title',
+  'btn-my-status',
+  'test-5-title',
+  'test-5-token-label',
+  'test-5-answer-label',
+  'btn-vote',
+  'answer-yes',
+  'answer-no',
+  'answer-abstain',
+  'test-6-title',
+  'btn-results',
+  'result-health',
+  'result-election',
+  'result-request-token',
+  'result-my-status',
+  'result-vote',
+  'result-results',
+  'voting-token',
+  'vote-answer',
+  // Reset section
+  'test-7-title',
+  'test-7-warning',
+  'test-7-scope-label',
+  'test-7-scope-mine',
+  'test-7-scope-all',
+  'test-7-confirm-label',
+  'btn-reset-election',
+  'result-reset',
+  'reset-scope',
+  'reset-confirm'
+];
+
+/**
+ * Validate test events page DOM structure
+ *
+ * @throws {Error} If required elements are missing
+ */
+function validateTestEventsPage() {
+  validateElements(TEST_EVENTS_ELEMENTS, 'test events page');
 }
 
 /**
- * Update authentication UI with user information
+ * Update test events page strings
  *
- * @param {Object} user - Firebase user object
+ * @param {Object} strings - i18n strings object
  */
-async function updateAuthUI(user) {
-  const authBadge = document.getElementById('auth-badge');
-  const userInfo = document.getElementById('user-info');
+function updateTestEventsStrings() {
+  document.title = R.string.page_title_test_events;
+  setTextContent('event-title', R.string.test_events_title, 'test events page');
+  setTextContent('auth-title', R.string.test_auth_title, 'test events page');
+  setTextContent('api-title', R.string.test_api_title, 'test events page');
+  setTextContent('api-env-label', R.string.test_api_production_env, 'test events page');
+  setTextContent('api-env-url', R.string.config_api_events, 'test events page');
 
-  if (user) {
-    authBadge.textContent = R.string.test_auth_authenticated;
-    authBadge.className = 'status-badge status-authenticated';
+  // Test section titles
+  setTextContent('test-1-title', R.string.test_1_title, 'test events page');
+  setTextContent('btn-health', R.string.test_1_button, 'test events page');
 
-    const idTokenResult = await user.getIdTokenResult();
-    const kennitala = idTokenResult.claims.kennitala || R.string.test_auth_not_available;
-    const isMember = idTokenResult.claims.isMember ? R.string.test_auth_yes : R.string.test_auth_no;
+  setTextContent('test-2-title', R.string.test_2_title, 'test events page');
+  setTextContent('btn-election', R.string.test_2_button, 'test events page');
 
-    userInfo.innerHTML = `
-      <div class="user-details">
-        <div><strong>${R.string.test_auth_uid}</strong> ${user.uid}</div>
-        <div><strong>${R.string.test_auth_kennitala}</strong> ${kennitala}</div>
-        <div><strong>${R.string.test_auth_membership}</strong> ${isMember}</div>
-      </div>
-    `;
+  setTextContent('test-3-title', R.string.test_3_title, 'test events page');
+  setTextContent('btn-request-token', R.string.test_3_button, 'test events page');
 
-    enableButtons(true);
+  setTextContent('test-4-title', R.string.test_4_title, 'test events page');
+  setTextContent('btn-my-status', R.string.test_4_button, 'test events page');
+
+  setTextContent('test-5-title', R.string.test_5_title, 'test events page');
+  setTextContent('test-5-token-label', R.string.test_5_token_label, 'test events page');
+  setTextContent('test-5-answer-label', R.string.test_5_answer_label, 'test events page');
+  setTextContent('btn-vote', R.string.test_5_button, 'test events page');
+  setTextContent('answer-yes', R.string.test_5_answer_yes, 'test events page');
+  setTextContent('answer-no', R.string.test_5_answer_no, 'test events page');
+  setTextContent('answer-abstain', R.string.test_5_answer_abstain, 'test events page');
+
+  setTextContent('test-6-title', R.string.test_6_title, 'test events page');
+  setTextContent('btn-results', R.string.test_6_button, 'test events page');
+
+  // Reset section
+  setTextContent('test-7-title', R.string.test_7_title, 'test events page');
+  setTextContent('test-7-warning', R.string.test_7_warning, 'test events page');
+  setTextContent('test-7-scope-label', R.string.test_7_scope_label, 'test events page');
+  setTextContent('test-7-scope-mine', R.string.test_7_scope_mine, 'test events page');
+  setTextContent('test-7-scope-all', R.string.test_7_scope_all, 'test events page');
+  setTextContent('test-7-confirm-label', R.string.test_7_confirm_label, 'test events page');
+  setTextContent('btn-reset-election', R.string.test_7_button, 'test events page');
+
+  const resetConfirm = document.getElementById('reset-confirm');
+  if (resetConfirm) {
+    resetConfirm.placeholder = R.string.test_7_confirm_placeholder;
+  }
+
+  // Set placeholder for voting token input
+  const votingTokenInput = document.getElementById('voting-token');
+  if (votingTokenInput) {
+    votingTokenInput.placeholder = R.string.test_5_token_placeholder;
   }
 }
 
 /**
- * Enable or disable API test buttons
+ * Format user details HTML
+ *
+ * Pure function - returns HTML for user info card.
+ *
+ * @param {Object} userData - User data
+ * @param {Object} strings - i18n strings
+ * @returns {string} HTML string
+ */
+export function formatUserDetails(userData) {
+  const kennitala = userData.kennitala || R.string.test_auth_not_available;
+  const isMember = userData.isMember ? R.string.test_auth_yes : R.string.test_auth_no;
+
+  return `
+    <div class="user-details">
+      <div><strong>${R.string.test_auth_uid}</strong> ${userData.uid}</div>
+      <div><strong>${R.string.test_auth_kennitala}</strong> ${kennitala}</div>
+      <div><strong>${R.string.test_auth_membership}</strong> ${isMember}</div>
+    </div>
+  `;
+}
+
+/**
+ * Update authentication UI
+ *
+ * @param {Object} userData - User data
+ * @param {Object} strings - i18n strings
+ */
+function updateAuthUI(userData) {
+  const authBadge = getElementByIdSafe('auth-badge', 'test events');
+  authBadge.textContent = R.string.test_auth_authenticated;
+  authBadge.className = 'status-badge status-authenticated';
+
+  setInnerHTML('user-info', formatUserDetails(userData), 'test events');
+}
+
+/**
+ * Enable API test buttons
  *
  * @param {boolean} enabled - Whether buttons should be enabled
  */
 function enableButtons(enabled) {
-  document.getElementById('btn-election').disabled = !enabled;
-  document.getElementById('btn-request-token').disabled = !enabled;
-  document.getElementById('btn-my-status').disabled = !enabled;
-  document.getElementById('btn-results').disabled = !enabled;
+  setDisabled('btn-election', !enabled, 'test events');
+  setDisabled('btn-request-token', !enabled, 'test events');
+  setDisabled('btn-my-status', !enabled, 'test events');
+  setDisabled('btn-results', !enabled, 'test events');
+  setDisabled('btn-reset-election', !enabled, 'test events');
 }
 
 /**
- * Display API test result in the UI
+ * Show API test result
  *
- * @param {string} elementId - ID of result element
- * @param {Object} data - Result data to display
- * @param {boolean} isError - Whether this is an error result
+ * @param {string} elementId - Result element ID
+ * @param {Object|string} data - Result data
+ * @param {boolean} isError - Whether this is an error
  */
 function showResult(elementId, data, isError = false) {
-  const element = document.getElementById(elementId);
+  const element = getElementByIdSafe(elementId, 'test events');
   element.className = isError ? 'test-result test-error' : 'test-result test-success';
-  element.textContent = JSON.stringify(data, null, 2);
+  element.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
   element.style.display = 'block';
 }
 
 /**
- * Setup logout button handler
- */
-function setupLogout() {
-  document.getElementById('nav-logout').addEventListener('click', async (e) => {
-    e.preventDefault();
-    await signOut();
-  });
-}
-
-/**
- * Setup API test button handlers
+ * Setup API test handlers
  *
- * @param {Object} currentUser - Firebase user object
- * @param {string} productionApi - Events service API URL
- * @param {string} electionsApi - Elections service API URL
+ * @param {string} productionApi - Events API URL
+ * @param {string} electionsApi - Elections API URL
+ * @param {Object} strings - i18n strings
  */
-function setupAPITestHandlers(currentUser, productionApi, electionsApi) {
-  // Health Check (no auth required)
+function setupAPITestHandlers(productionApi, electionsApi) {
+  // Health Check (no auth)
   document.getElementById('btn-health').addEventListener('click', async () => {
     try {
       const response = await fetch(`${productionApi}/health`);
@@ -106,7 +215,7 @@ function setupAPITestHandlers(currentUser, productionApi, electionsApi) {
     }
   });
 
-  // Get Election Details
+  // Get Election
   document.getElementById('btn-election').addEventListener('click', async () => {
     try {
       const response = await authenticatedFetch(`${productionApi}/api/election`);
@@ -130,7 +239,7 @@ function setupAPITestHandlers(currentUser, productionApi, electionsApi) {
     }
   });
 
-  // Check Participation Status
+  // Check Status
   document.getElementById('btn-my-status').addEventListener('click', async () => {
     try {
       const response = await authenticatedFetch(`${productionApi}/api/my-status`);
@@ -141,11 +250,14 @@ function setupAPITestHandlers(currentUser, productionApi, electionsApi) {
     }
   });
 
-  // Submit Vote (Elections Service)
+  // Submit Vote
   document.getElementById('btn-vote').addEventListener('click', async () => {
     try {
-      const votingToken = document.getElementById('voting-token').value.trim();
-      const answer = document.getElementById('vote-answer').value;
+      const votingTokenEl = getElementByIdSafe('voting-token', 'test events');
+      const voteAnswerEl = getElementByIdSafe('vote-answer', 'test events');
+
+      const votingToken = votingTokenEl.value.trim();
+      const answer = voteAnswerEl.value;
 
       if (!votingToken) {
         showResult('result-vote', { error: R.string.test_5_error_no_token }, true);
@@ -163,9 +275,8 @@ function setupAPITestHandlers(currentUser, productionApi, electionsApi) {
       const data = await response.json();
       showResult('result-vote', data, !response.ok);
 
-      // If vote succeeded, clear the token field
       if (response.ok) {
-        document.getElementById('voting-token').value = '';
+        votingTokenEl.value = '';
       }
     } catch (error) {
       showResult('result-vote', { error: error.message }, true);
@@ -182,36 +293,113 @@ function setupAPITestHandlers(currentUser, productionApi, electionsApi) {
       showResult('result-results', { error: error.message }, true);
     }
   });
+
+  // Admin Reset
+  document.getElementById('btn-reset-election').addEventListener('click', async () => {
+    try {
+      const scopeEl = getElementByIdSafe('reset-scope', 'test events');
+      const confirmEl = getElementByIdSafe('reset-confirm', 'test events');
+      const scope = scopeEl.value;
+      const confirmText = confirmEl.value.trim();
+
+      // For full reset, require exact phrase
+      if (scope === 'all' && confirmText !== 'RESET ALL') {
+        showResult('result-reset', { error: R.string.test_7_error_confirm }, true);
+        return;
+      }
+
+      const response = await authenticatedFetch(`${productionApi}/api/admin/reset-election`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scope, confirm: confirmText })
+      });
+      const data = await response.json();
+      showResult('result-reset', data, !response.ok);
+    } catch (error) {
+      showResult('result-reset', { error: error.message }, true);
+    }
+  });
 }
 
 /**
  * Initialize test events page
+ *
+ * @returns {Promise<void>}
  */
 async function init() {
-  // Load i18n strings
-  await R.load('is');
+  try {
+    // Validate DOM structure
+    validateTestEventsPage();
 
-  // Update page strings
-  updatePageStrings();
+    // Load i18n strings
+    await R.load('is');
 
-  // Get API URLs from i18n config
-  const PRODUCTION_API = R.string.config_api_events;
-  const ELECTIONS_API = R.string.config_api_elections;
+    // Initialize page: auth check, nav setup, logout handler
+    await initAuthenticatedPage();
 
-  // Auth guard - redirect if not authenticated
-  const currentUser = await requireAuth();
+    // Get authenticated user
+    const currentUser = await requireAuth();
 
-  // Update auth UI
-  await updateAuthUI(currentUser);
+    // Get user data from custom claims
+    const userData = await getUserData(currentUser);
 
-  // Setup logout handler
-  setupLogout();
+    // Update page-specific UI
+    updateTestEventsStrings();
+    updateAuthUI(userData);
 
-  // Setup API test handlers
-  setupAPITestHandlers(currentUser, PRODUCTION_API, ELECTIONS_API);
+    // Enable common buttons always after auth
+    enableButtons(true);
+
+    // Gate admin reset section by role (developer only)
+    try {
+      console.log('=== RBAC Debug ===');
+      console.log('userData:', userData);
+      console.log('userData.roles:', userData.roles);
+      console.log('Is array?', Array.isArray(userData.roles));
+
+      const resetSectionTitle = document.getElementById('test-7-title');
+      const resetButton = document.getElementById('btn-reset-election');
+      const hasDeveloperRole = Array.isArray(userData.roles) && userData.roles.includes('developer');
+
+      console.log('hasDeveloperRole:', hasDeveloperRole);
+
+      if (!hasDeveloperRole) {
+        console.log('❌ No developer role - hiding section');
+        // Hide the entire section by collapsing elements
+        if (resetSectionTitle) {
+          const section = resetSectionTitle.closest('.test-section');
+          if (section) {
+            section.style.display = 'none';
+            console.log('Section hidden');
+          }
+        }
+      } else {
+        console.log('✅ Developer role found - showing section');
+        // Ensure reset button is enabled for devs
+        if (resetButton) resetButton.disabled = false;
+      }
+    } catch (e) {
+      // Non-fatal UI gating error; continue without exposing controls
+      console.warn('Role-gating error:', e);
+    }
+
+    // Get API URLs from config
+    const productionApi = R.string.config_api_events;
+    const electionsApi = R.string.config_api_elections;
+
+    // Setup API test handlers
+    setupAPITestHandlers(productionApi, electionsApi);
+  } catch (error) {
+    // Handle authentication error (redirect to login)
+    if (error instanceof AuthenticationError) {
+      window.location.href = error.redirectTo;
+      return;
+    }
+
+    // Other errors
+    console.error('Test events page initialization failed:', error);
+  }
 }
 
 // Run initialization
-init().catch(error => {
-  console.error('Test events page initialization failed:', error);
-});
+init();

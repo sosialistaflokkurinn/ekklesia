@@ -135,13 +135,118 @@ New claims: {
 
 ---
 
-## Related Documentation
+## emergency-set-role.sh
 
-- [docs/guides/ROLES_AND_PERMISSIONS.md](../../docs/guides/ROLES_AND_PERMISSIONS.md) - Complete RBAC documentation
-- [docs/MEMBERS_DEPLOYMENT_GUIDE.md](../../docs/MEMBERS_DEPLOYMENT_GUIDE.md) - Members service deployment
-- [Firebase Custom Claims](https://firebase.google.com/docs/auth/admin/custom-claims) - Official documentation
+Emergency role assignment using Identity Toolkit REST API. Use this when `set-user-roles.js` fails due to credential issues.
+
+### Usage
+
+```bash
+./emergency-set-role.sh <UID> <ROLE> [KENNITALA] [EMAIL] [PHONE]
+```
+
+### Examples
+
+**Set developer role** (minimal):
+```bash
+./emergency-set-role.sh wElbKqQ8mLfYmxhpiUGAnv0vx2g1 developer
+```
+
+**Set developer role with all claims** (recommended):
+```bash
+./emergency-set-role.sh wElbKqQ8mLfYmxhpiUGAnv0vx2g1 developer 200978-3589 gudrodur@gmail.com +3547758493
+```
+
+### ⚠️ Warning
+
+This script **overwrites ALL custom claims**. You must provide all existing claims (kennitala, email, phoneNumber) or they will be lost.
+
+### Prerequisites
+
+- `gcloud` CLI authenticated: `gcloud auth login`
+- `jq` installed for JSON parsing
+- Access to project: `ekklesia-prod-10-2025`
+
+### When to Use This
+
+- `set-user-roles.js` fails with credential errors
+- Application Default Credentials are expired
+- Need quick role assignment without npm dependencies
+- Debugging custom claims issues
 
 ---
 
-**Last Updated**: 2025-10-16
+## check-user-claims.sh
+
+Verify what custom claims a user currently has. Useful for debugging role issues.
+
+### Usage
+
+```bash
+./check-user-claims.sh <UID>
+```
+
+### Example
+
+```bash
+$ ./check-user-claims.sh wElbKqQ8mLfYmxhpiUGAnv0vx2g1
+
+Fetching custom claims for user: wElbKqQ8mLfYmxhpiUGAnv0vx2g1
+
+User Information:
+{
+  "uid": "wElbKqQ8mLfYmxhpiUGAnv0vx2g1",
+  "email": "gudrodur@gmail.com",
+  "displayName": "Guðröður Atli Jónsson",
+  "lastLoginAt": "1761220879000",
+  "createdAt": "1696848000000"
+}
+
+Custom Claims (customAttributes):
+{
+  "roles": ["developer"],
+  "kennitala": "200978-3589",
+  "isMember": true,
+  "email": "gudrodur@gmail.com",
+  "phoneNumber": "+3547758493"
+}
+```
+
+### Prerequisites
+
+- `gcloud` CLI authenticated: `gcloud auth login`
+- `jq` installed for JSON parsing
+- Access to project: `ekklesia-prod-10-2025`
+
+### When to Use This
+
+- Verify role was set correctly after using `set-user-roles.js`
+- Debug why user doesn't have expected permissions
+- Check if custom claims were lost during `handleKenniAuth` redeployment
+- Audit user roles for security review
+
+---
+
+## Quick Reference
+
+| Task | Recommended Tool | Fallback |
+|------|------------------|----------|
+| Set role (normal) | `set-user-roles.js` | `emergency-set-role.sh` |
+| Check claims | `check-user-claims.sh` | Firebase Console |
+| Remove role | `set-user-roles.js --remove` | `emergency-set-role.sh` (without role) |
+| List all users with roles | N/A (build UI) | Firebase Console + manual check |
+
+---
+
+## Related Documentation
+
+- [docs/guides/ROLES_AND_PERMISSIONS.md](../../docs/guides/ROLES_AND_PERMISSIONS.md) - Complete RBAC documentation
+- [docs/troubleshooting/ROLE_LOSS_INCIDENT_2025-10-23.md](../../../docs/troubleshooting/ROLE_LOSS_INCIDENT_2025-10-23.md) - Role loss incident report
+- [docs/MEMBERS_DEPLOYMENT_GUIDE.md](../../docs/MEMBERS_DEPLOYMENT_GUIDE.md) - Members service deployment
+- [Firebase Custom Claims](https://firebase.google.com/docs/auth/admin/custom-claims) - Official documentation
+- [GitHub Issue #96](https://github.com/sosialistaflokkurinn/ekklesia/issues/96) - Role preservation improvements
+
+---
+
+**Last Updated**: 2025-10-23
 **Status**: ✅ Production-ready

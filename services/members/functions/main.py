@@ -18,8 +18,8 @@ from firebase_functions import https_fn, options
 from google.cloud import firestore as gcf
 
 # Local utilities (no firebase_admin side-effects)
-from .utils_logging import log_json, sanitize_fields
-from .util_jwks import get_jwks_client_cached_ttl, get_jwks_cache_stats
+from utils_logging import log_json, sanitize_fields
+from util_jwks import get_jwks_client_cached_ttl, get_jwks_cache_stats
 
 # --- SETUP ---
 if not firebase_admin._apps:

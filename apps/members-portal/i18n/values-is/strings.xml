@@ -15,6 +15,7 @@
     <string name="page_title_login">Innskráning - Sósíalistaflokkurinn</string>
     <string name="page_title_dashboard">Mín síða - Sósíalistaflokkurinn</string>
     <string name="page_title_profile">Aðgangur - Sósíalistaflokkurinn</string>
+    <string name="page_title_events">Viðburðir - Sósíalistaflokkurinn</string>
     <string name="page_title_test_events">Prófunarkosning 2025 - Sósíalistaflokkurinn</string>
 
     <!-- ========================================== -->
@@ -47,6 +48,10 @@
     <string name="nav_events">Atburðir</string>
     <string name="nav_voting">Kosningar</string>
     <string name="nav_logout">Útskrá</string>
+
+    <!-- Hamburger menu (mobile) -->
+    <string name="nav_hamburger_open">Opna valmynd</string>
+    <string name="nav_hamburger_close">Loka valmynd</string>
 
     <!-- ========================================== -->
     <!-- DASHBOARD PAGE (dashboard.html) -->
@@ -105,6 +110,18 @@
     <string name="placeholder_dash">-</string>
     <string name="placeholder_not_available">Ekki tiltækt</string>
     <string name="placeholder_not_found">Fannst ekki</string>
+
+    <!-- ========================================== -->
+    <!-- EVENTS PAGE (events.html) -->
+    <!-- ========================================== -->
+    <string name="events_title">Viðburðir</string>
+    <string name="events_subtitle">Fundir og viðburðir flokksins</string>
+    <string name="events_tab_upcoming">Væntanlegir</string>
+    <string name="events_tab_past">Liðnir</string>
+    <string name="events_loading">Sæki viðburði...</string>
+    <string name="events_empty">Engir viðburðir fundust</string>
+    <string name="events_error">Villa kom upp</string>
+    <string name="events_init_error">Ekki tókst að hlaða viðburðasíðu</string>
 
     <!-- ========================================== -->
     <!-- TEST EVENTS PAGE (test-events.html) -->

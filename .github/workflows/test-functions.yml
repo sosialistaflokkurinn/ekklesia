@@ -10,9 +10,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Run helper unit tests
-        run: |
-          python3 services/members/functions/test_security.py
+
+      - name: Install pytest
+        run: pip install pytest
+
+      - name: Run security helper unit tests
+        working-directory: ./services/members/functions
+        run: pytest test_security.py -v --tb=short
