@@ -75,17 +75,15 @@ const adminStrings = new AdminStringsLoader();
 /**
  * Check if user has developer role
  */
-function checkAdminAccess(user) {
-  return user.getIdTokenResult().then(idTokenResult => {
-    const roles = idTokenResult.claims.roles || [];
-    const isAdmin = roles.includes('developer');
+function checkAdminAccess(userData) {
+  const roles = userData.roles || [];
+  const isAdmin = roles.includes('developer');
 
-    if (!isAdmin) {
-      throw new Error('Unauthorized: Developer role required');
-    }
+  if (!isAdmin) {
+    throw new Error('Unauthorized: Developer role required');
+  }
 
-    return idTokenResult;
-  });
+  return true;
 }
 
 /**
@@ -304,10 +302,10 @@ async function init() {
     const strings = await adminStrings.load();
 
     // 2. Init session (loads member portal strings + authenticates)
-    const user = await initSession();
+    const { user, userData } = await initSession();
 
     // 3. Check admin access (developer role required)
-    await checkAdminAccess(user);
+    checkAdminAccess(userData);
 
     // 4. Set page text
     setPageText(strings);
