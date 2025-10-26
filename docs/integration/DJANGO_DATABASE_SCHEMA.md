@@ -9,7 +9,7 @@
 
 ## Overview
 
-This document maps the Django PostgreSQL database schema to the Firestore schema for Epic #43 Member Management System. The Django system (`sfi_felagakerfi_live` on Linode) is the current source of truth with **2,216 active members**.
+This document maps the Django PostgreSQL database schema to the Firestore schema for Epic #43 Member Management System. The Django system (`sfi_felagakerfi_live` on Linode) is the current source of truth with **2,200 active members** (verified 2025-10-26).
 
 **Goal**: Sync ALL member data from Django → Firestore for read/write operations in Ekklesia admin panel.
 
@@ -44,7 +44,7 @@ This document maps the Django PostgreSQL database schema to the Firestore schema
 
 **Purpose**: Main member registry table - **source of truth** for all members
 
-**Total Records**: 2,216 active members (Oct 2025)
+**Total Records**: 2,200 active members (verified Oct 26, 2025)
 
 **Django Model**: `membership.models.Comrade`
 
@@ -180,30 +180,100 @@ class Comrade(models.Model):
 
 ---
 
-### 7. Address Tables (To Be Investigated)
+### 7. Address Tables (✅ Verified)
 
-**Likely Tables**:
-- `membership_address` (or similar)
-- Fields: `street`, `postal_code`, `city`, `country`
+**Address System**: Django uses a complex multi-table structure for addresses:
 
-**Action Required**: SSH to Django server and inspect schema:
+#### `membership_contactinfo` (Contact Details)
+
+**Purpose**: Stores phone, email, and Facebook for each member (1:1 relationship)
+
+**Schema**:
+
+| Column | Type | Nullable | Description | Sync to Firestore? |
+|--------|------|----------|-------------|-------------------|
+| `comrade_id` | INTEGER (PK, FK) | No | → `membership_comrade.id` | (use as join key) |
+| `phone` | VARCHAR(32) | Yes | Phone number | ✅ Yes (`profile.phone`) |
+| `email` | VARCHAR(124) | Yes | Email address | ✅ Yes (`profile.email`) |
+| `facebook` | VARCHAR(255) | Yes | Facebook profile | ⏳ Optional |
+
+**Note**: This is a **1:1 relationship** (one contact info per member)
+
+#### `membership_newlocaladdress` (Local/Iceland Addresses)
+
+**Purpose**: Links members to Icelandic addresses (uses map system)
+
+**Schema**:
+
+| Column | Type | Nullable | Description |
+|--------|------|----------|-------------|
+| `newcomradeaddress_ptr_id` | INTEGER (PK) | No | Junction table ID |
+| `comrade_id` | INTEGER (FK) | Yes | → `membership_comrade.id` |
+| `address_id` | INTEGER (FK) | Yes | → `map_address.id` |
+| `unlocated` | BOOLEAN | No | Address not found in map |
+
+#### `map_address` (Iceland Address Database)
+
+**Purpose**: Full Iceland address database with GIS data
+
+**Schema**:
+
+| Column | Type | Nullable | Description |
+|--------|------|----------|-------------|
+| `id` | INTEGER (PK) | No | Address ID |
+| `number` | INTEGER | Yes | House number |
+| `letter` | VARCHAR(16) | No | House letter (e.g., "A") |
+| `extra` | VARCHAR(64) | No | Extra info (apartment #) |
+| `special` | VARCHAR(128) | No | Special notes |
+| `geometry` | GEOMETRY (Point) | No | GPS coordinates |
+| `street_id` | INTEGER (FK) | No | → `map_street.id` |
+
+#### `map_street` (Street Database)
+
+**Purpose**: Street names with postal codes
+
+**Schema**:
+
+| Column | Type | Nullable | Description |
+|--------|------|----------|-------------|
+| `id` | INTEGER (PK) | No | Street ID |
+| `name` | VARCHAR(128) | No | Street name (e.g., "Túngata") |
+| `postal_code_id` | INTEGER (FK) | No | → `map_postalcode.id` |
+| `municipality_id` | INTEGER (FK) | No | → `map_municipality.id` |
+
+#### `membership_newforeignaddress` (Foreign Addresses)
+
+**Purpose**: Addresses outside Iceland (free-text)
+
+**Schema**: To be investigated (likely has `street`, `city`, `country` fields)
+
+**Sync Strategy**:
+
+For Epic #43 MVP:
+1. **Contact Info**: Join `membership_contactinfo` to get phone/email
+2. **Local Addresses**: Join through `membership_newlocaladdress` → `map_address` → `map_street`
+3. **Foreign Addresses**: Skip for MVP (manual entry in admin UI)
+4. **Address Format**: Concatenate `map_street.name` + `map_address.number` + `map_address.letter`
+
+**SQL Query** (example):
 ```sql
--- Connect to database
-sudo -u postgres psql socialism
-
--- List all tables with "address" in name
-SELECT table_name
-FROM information_schema.tables
-WHERE table_schema = 'public'
-  AND table_name LIKE '%address%';
-
--- Inspect address table schema
-\d membership_address
+SELECT
+    c.ssn,
+    c.name,
+    ci.email,
+    ci.phone,
+    s.name || ' ' || a.number || a.letter AS full_address,
+    pc.code AS postal_code,
+    m.name AS city
+FROM membership_comrade c
+LEFT JOIN membership_contactinfo ci ON ci.comrade_id = c.id
+LEFT JOIN membership_newlocaladdress nla ON nla.comrade_id = c.id
+LEFT JOIN map_address a ON a.id = nla.address_id
+LEFT JOIN map_street s ON s.id = a.street_id
+LEFT JOIN map_postalcode pc ON pc.id = s.postal_code_id
+LEFT JOIN map_municipality m ON m.id = s.municipality_id
+WHERE c.ssn = '0101012980';
 ```
-
-**Sync Strategy** (once confirmed):
-- Primary address → `address.street`, `address.postal`, `address.city`
-- Foreign addresses → TBD (may need separate handling)
 
 ---
 
@@ -532,13 +602,14 @@ match /members/{kennitala} {
 
 ## Next Steps
 
-### Phase 1: Schema Verification (This Week)
+### Phase 1: Schema Verification ✅ COMPLETE
 
 - [x] Document Django database schema (this file)
-- [ ] SSH to Django server
-- [ ] Verify address table schema
-- [ ] Verify phone number storage
-- [ ] Document any missing fields
+- [x] SSH to Django server (via `~/django-ssh.sh`)
+- [x] Verify address table schema (`map_address`, `map_street`, etc.)
+- [x] Verify phone number storage (`membership_contactinfo`)
+- [x] Document member count (2,200 members)
+- [x] Create helper scripts for database access
 
 ### Phase 2: Django API Development (Week 2)
 
