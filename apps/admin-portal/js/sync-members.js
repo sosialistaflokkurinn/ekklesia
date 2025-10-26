@@ -5,11 +5,11 @@
  * Calls syncmembers Cloud Function and displays results.
  */
 
-// Import from parent member portal directory (up one level from /admin/)
-import { initSession } from '../js/session.js';
-import { auth } from '../js/firebase-init.js';
-import { initNav } from '../js/ui/nav.js';
-import { showError } from '../js/ui/dom.js';
+// Import from member portal public directory
+import { initSession } from '../session/init.js';
+import { auth } from '../firebase/app.js';
+import { initNav } from '../ui/nav.js';
+import { showError } from '../ui/dom.js';
 
 /**
  * Load admin-specific strings from admin portal i18n
