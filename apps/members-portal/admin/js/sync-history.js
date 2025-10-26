@@ -91,7 +91,7 @@ function checkAdminAccess(userData) {
  */
 async function fetchSyncLogs() {
   const syncLogsRef = collection(db, 'sync_logs');
-  const q = query(syncLogsRef, orderBy('timestamp', 'desc'), limit(20));
+  const q = query(syncLogsRef, orderBy('created_at', 'desc'), limit(20));
   const querySnapshot = await getDocs(q);
 
   const logs = [];
@@ -189,8 +189,8 @@ function renderHistoryTable(logs) {
 function createHistoryRow(log, strings) {
   const tr = document.createElement('tr');
 
-  // Format timestamp
-  const timestamp = log.timestamp?.toDate?.() || new Date();
+  // Format timestamp (use created_at from Firestore)
+  const timestamp = log.created_at?.toDate?.() || (log.created_at ? new Date(log.created_at) : new Date());
   const formattedDate = timestamp.toLocaleString('is-IS', {
     year: 'numeric',
     month: 'short',
