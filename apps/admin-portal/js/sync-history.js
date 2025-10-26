@@ -4,11 +4,11 @@
  * Display history of member sync operations from Firestore sync_logs collection.
  */
 
-// Import from member portal public directory
-import { initSession } from '../session/init.js';
-import { auth, db } from '../firebase/app.js';
-import { initNav } from '../ui/nav.js';
-import { showError } from '../ui/dom.js';
+// Import from member portal public directory (two levels up from /admin/js/)
+import { initSession } from '../../session/init.js';
+import { auth, db } from '../../firebase/app.js';
+import { initNav } from '../../ui/nav.js';
+import { showError } from '../../ui/dom.js';
 import { collection, query, orderBy, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 /**

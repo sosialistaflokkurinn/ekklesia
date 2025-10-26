@@ -5,16 +5,13 @@
  * Only users with 'developer' role can access admin portal.
  */
 
-// Import from member portal public directory
-// Actual file paths in deployed public/ directory:
-// - ../session/init.js (initSession)
-// - ../firebase/app.js (auth, db)
-// - ../ui/nav.js (initNav)
-// - ../ui/dom.js (showError)
-import { initSession } from '../session/init.js';
-import { auth, db } from '../firebase/app.js';
-import { initNav } from '../ui/nav.js';
-import { showError } from '../ui/dom.js';
+// Import from member portal public directory (one level up from /admin/)
+// Browser sees: /admin/js/admin.js
+// So ../session/init.js = /session/init.js (correct!)
+import { initSession } from '../../session/init.js';
+import { auth, db } from '../../firebase/app.js';
+import { initNav } from '../../ui/nav.js';
+import { showError } from '../../ui/dom.js';
 import { collection, query, orderBy, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 /**
