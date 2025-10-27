@@ -231,7 +231,7 @@ fi
 
 **Files:**
 - Removed all real kennitalas from documentation
-- Replaced with placeholder values (e.g., `200978-3589` → `XXXXXX-XXXX`)
+- Replaced with placeholder values (e.g., `DDMMYY-XXXX` → `XXXXXX-XXXX`)
 - Added Firebase UID detection to prevent UID leakage
 
 ---

@@ -30,13 +30,13 @@
 
 ### Personal Information (Kennitala/SSN)
 **Location:** `docs/testing/EPIC_43_MEMBER_SYNC_TEST_REPORT.md`
-- **Before:** `200978-3589` (Guðrúður Atli Jónsson)
+- **Before:** `DDMMYY-XXXX` (Example User)
 - **After:** `XXXXXX-XXXX` (Example User)
 - **Lines:** 94, 113, 192, 203
 
 ### Contact Information
 **Location:** `docs/testing/EPIC_43_MEMBER_SYNC_TEST_REPORT.md`
-- **Before:** `gudrodur@gmail.com`, `+3547758493`
+- **Before:** `example@example.is`, `+354XXXXXXX`
 - **After:** `user@example.com`, `+354XXXXXXX`
 - **Lines:** 96-97, 115-116
 

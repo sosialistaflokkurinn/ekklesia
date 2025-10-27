@@ -84,3 +84,14 @@ docs/migration/DUPLICATE_SSN_CLEANUP_2025-10-26.md
 
 # Playwright MCP screenshots (temporary cache)
 .playwright-mcp/
+
+# Sensitive temporary documentation (contains PII/kennitalur)
+*KENNITALA*.md
+*DUPLICATE_SSN*.md
+*DJANGO_KENNITALA*.md
+*kennitala*.md
+*pii_redaction*.md
+
+# Temporary analysis files
+/tmp/*.md
+/tmp/**/*.md
