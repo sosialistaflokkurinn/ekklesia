@@ -95,3 +95,9 @@ docs/migration/DUPLICATE_SSN_CLEANUP_2025-10-26.md
 # Temporary analysis files
 /tmp/*.md
 /tmp/**/*.md
+
+# Log files with PII (names, emails, etc.)
+scripts/logs/*.jsonl
+**/logs/*.jsonl
+*.audit.json
+*-audit-*.jsonl
