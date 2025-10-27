@@ -102,10 +102,40 @@ async function loadEvents(filter = 'upcoming') {
     showLoading();
 
     // TODO: Replace with actual Events API call
-    // For now, show empty state
+    // For now, show hardcoded events
     await new Promise(resolve => setTimeout(resolve, 500)); // Simulate loading
 
-    const events = []; // Placeholder - no events yet
+    // Hardcoded event data - Facebook events
+    const allEvents = [
+      // Upcoming events
+      {
+        title: 'Málþing um sveitarstjórnarmál',
+        date: '1. nóvember 2025, kl. 10:00-14:30',
+        description: 'Opinn fundur um sveitastjórnarmál þar sem allir fá tækifæri til að segja sína skoðun og heyra skoðun annara.\n\nDagskrá:\n• Fullrúar frá svæðisfélögum sósíalista segir frá sinni sýn á sveitastjórnarmálum\n• Hlé\n• Almennar umræður um sveitastjórnarmál þar sem félagsmenn fá að segja sína skoðun\n• Kaffi og léttar veitingar í boði',
+        location: 'Hverfisgata 105, 101 Reykjavík',
+        status: 'upcoming'
+      },
+      {
+        title: 'Tölum um húsnæðismál',
+        date: '25. september 2025, kl. 20:00',
+        description: 'Jón Ferdinand Estherarson fjallar um húsnæðismálin. Húsnæðismál eru í dag eitt stærsta verkefnið sem unga fólkið, láglaunafólk og efnaminni eru að takast á við. Verkefnið er alþjóðlegt, en hér á Íslandi er það engu að síður einstakt. Hvað er til ráða? Og hvað getur róttækur stjórnmálaflókkur gert til að bjarga þeim sem í vandræðum eru?\n\nKomdu og tökum þetta saman! Í húsakynnum Sósíalistaflokks Íslands, Hverfisgötu 105, Rvk. og á zoom.',
+        location: 'Sósíalistaflokkur Íslands, Hverfisgötu 105',
+        status: 'upcoming'
+      },
+      // Past events
+      {
+        title: 'Félagsfundur Október 2025',
+        date: '25. október 2025, kl. 10:30',
+        description: 'Félagsfundur Sósíalistaflokks Íslands.\n\nHúsið opnar klukkan 10:30 og fundurinn hefst stundvíslega klukkan 11:00. Boðið var upp á að taka þátt í gegnum Zoom.\n\nDagskrá:\n1. Framkvæmdastjórn segir frá starfinu\n2. Málefnastjórn segir frá starfinu\n3. Kosningastjórn segir frá starfinu\n4. Sagt frá starfi svæðisfélaga\n5. Önnur mál\n\nLéttar veitingar voru í boði.',
+        location: 'Hverfisgata 105, 101 Reykjavík',
+        status: 'past'
+      }
+    ];
+
+    // Filter events by status
+    const events = filter === 'upcoming'
+      ? allEvents.filter(e => e.status === 'upcoming')
+      : allEvents.filter(e => e.status === 'past');
 
     if (events.length === 0) {
       showEmpty();

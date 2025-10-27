@@ -52,6 +52,18 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Events collection
+    match /events/{eventId} {
+      // Read: All authenticated members can view events
+      allow read: if isAuthenticated();
+
+      // Create/Update: Only developers can manage events
+      allow create, update: if hasDeveloperRole();
+
+      // Delete: Only developers can delete events
+      allow delete: if hasDeveloperRole();
+    }
+
     // Default: Deny all other access
     match /{document=**} {
       allow read, write: if false;
