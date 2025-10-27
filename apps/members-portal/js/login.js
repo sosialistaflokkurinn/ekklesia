@@ -119,16 +119,25 @@ async function handleOAuthCallback(authCode, functions) {
     });
 
     if (!response.ok) {
-      // Try to surface structured error details including correlation ID
+      // Read response body once (can't read twice)
+      const contentType = response.headers.get('content-type');
+      let errorMessage = `${response.status} ${response.statusText}`;
+
       try {
-        const errJson = await response.json();
-        const cid = errJson.correlationId ? ` (cid: ${errJson.correlationId})` : '';
-        const msg = `${errJson.error || 'ERROR'}${cid}${errJson.message ? ` - ${errJson.message}` : ''}`;
-        throw new Error(msg);
-      } catch (_) {
-        const txt = await response.text();
-        throw new Error(`${response.status} ${txt}`);
+        if (contentType && contentType.includes('application/json')) {
+          const errJson = await response.json();
+          const cid = errJson.correlationId ? ` (cid: ${errJson.correlationId})` : '';
+          errorMessage = `${errJson.error || 'ERROR'}${cid}${errJson.message ? ` - ${errJson.message}` : ''}`;
+        } else {
+          const txt = await response.text();
+          errorMessage = `${response.status} ${txt}`;
+        }
+      } catch (readError) {
+        // If we can't read the response, use status text
+        console.error('Failed to read error response:', readError);
       }
+
+      throw new Error(errorMessage);
     }
 
     const data = await response.json();
