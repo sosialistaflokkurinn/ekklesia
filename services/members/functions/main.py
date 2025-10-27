@@ -220,7 +220,6 @@ def healthz(req: https_fn.Request) -> https_fn.Response:
         "KENNI_IS_CLIENT_ID",
         "KENNI_IS_CLIENT_SECRET",
         "KENNI_IS_REDIRECT_URI",
-        "FIREBASE_STORAGE_BUCKET",
     ]
     env_status = {k: bool(os.environ.get(k)) for k in env_keys}
 
@@ -565,35 +564,35 @@ def verifyMembership(req: https_fn.CallableRequest) -> dict:
         )
 
     try:
-        # Read kennitalas.txt from Cloud Storage
-        from google.cloud import storage
+        # Epic #43: Read membership status from Firestore (synced from Django)
+        db = firestore.client()
 
-        storage_client = storage.Client()
-        bucket_name = os.environ.get('FIREBASE_STORAGE_BUCKET')
-        bucket = storage_client.bucket(bucket_name)
-        blob = bucket.blob('kennitalas.txt')
-
-        if not blob.exists():
-            log_json("warn", "kennitalas.txt not found", bucket=bucket_name)
-            return {'isMember': False, 'verified': False}
-
-        contents = blob.download_as_text()
-        kennitalas = [
-            line.strip()
-            for line in contents.split('\n')
-            if line.strip()
-        ]
-
-        # Normalize kennitala for comparison (remove hyphen if present)
-        # File format: DDMMYYXXXX (no hyphen)
-        # Token format: may be DDMMYY-XXXX (with hyphen) or DDMMYYXXXX (without)
+        # Normalize kennitala (remove hyphen if present)
         kennitala_normalized = kennitala.replace('-', '')
 
-        # Check membership status
-        is_member = kennitala_normalized in kennitalas
+        # Query members collection by document ID (kennitala without hyphen)
+        member_doc_ref = db.collection('members').document(kennitala_normalized)
+        member_doc = member_doc_ref.get()
+
+        # Check if member exists and has active membership status
+        is_member = False
+        if member_doc.exists:
+            member_data = member_doc.to_dict()
+            membership = member_data.get('membership', {})
+            membership_status = membership.get('status', '')
+            is_member = membership_status == 'active'
+
+            log_json("info", "Member lookup successful",
+                     kennitala=f"{kennitala[:7]}****",
+                     status=membership_status,
+                     isMember=is_member,
+                     uid=req.auth.uid)
+        else:
+            log_json("info", "Member not found in Firestore",
+                     kennitala=f"{kennitala[:7]}****",
+                     uid=req.auth.uid)
 
         # Update user profile in Firestore
-        db = firestore.client()
         db.collection('users').document(req.auth.uid).update({
             'isMember': is_member,
             'membershipVerifiedAt': firestore.SERVER_TIMESTAMP
