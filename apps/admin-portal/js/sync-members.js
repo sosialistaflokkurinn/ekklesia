@@ -86,7 +86,7 @@ function checkAdminAccess(userData) {
 }
 
 /**
- * Call syncmembers Cloud Function
+ * Call syncmembers Cloud Run service
  */
 async function triggerSync() {
   const user = auth.currentUser;
@@ -95,16 +95,15 @@ async function triggerSync() {
   // Get Firebase ID token
   const token = await user.getIdToken();
 
-  // Call Cloud Function
+  // Call Cloud Run service
   const response = await fetch(
-    'https://europe-west2-ekklesia-prod-10-2025.cloudfunctions.net/syncmembers',
+    'https://syncmembers-ymzrguoifa-nw.a.run.app/sync',
     {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ data: {} })
+      }
     }
   );
 
@@ -114,7 +113,7 @@ async function triggerSync() {
   }
 
   const result = await response.json();
-  return result.result;  // Cloud Functions wrap response in { result: ... }
+  return result;  // Cloud Run returns response directly
 }
 
 /**
@@ -151,37 +150,81 @@ function showSyncInProgress() {
  * Show sync success with stats
  */
 function showSyncSuccess(result) {
+  console.log('showSyncSuccess called with result:', result);
+
   const strings = adminStrings.strings;
   const stats = result.stats || {};
 
-  // Update title
-  document.getElementById('sync-status-title').textContent = strings.sync_success_title;
+  console.log('Stats extracted:', stats);
 
-  // Hide progress
-  document.getElementById('sync-progress').classList.add('u-hidden');
+  try {
+    // Update title
+    const titleEl = document.getElementById('sync-status-title');
+    if (titleEl) {
+      titleEl.textContent = strings.sync_success_title || 'Samstilling tókst';
+    }
 
-  // Show stats
-  const statsContainer = document.getElementById('sync-stats');
-  statsContainer.classList.remove('u-hidden');
+    // Hide progress
+    const progressEl = document.getElementById('sync-progress');
+    if (progressEl) {
+      progressEl.classList.add('u-hidden');
+      console.log('Progress hidden');
+    }
 
-  // Set stat labels
-  document.getElementById('stat-total-label').textContent = strings.stat_total_label;
-  document.getElementById('stat-synced-label').textContent = strings.stat_synced_label;
-  document.getElementById('stat-failed-label').textContent = strings.stat_failed_label;
-  document.getElementById('stat-duration-label').textContent = strings.stat_duration_label;
+    // Show stats
+    const statsContainer = document.getElementById('sync-stats');
+    if (statsContainer) {
+      statsContainer.classList.remove('u-hidden');
+      console.log('Stats container shown');
+    }
 
-  // Set stat values
-  document.getElementById('stat-total-value').textContent = stats.total_members || 0;
-  document.getElementById('stat-synced-value').textContent = stats.synced || 0;
-  document.getElementById('stat-failed-value').textContent = stats.failed || 0;
-  document.getElementById('stat-duration-value').textContent = calculateDuration(stats);
+    // Set stat labels
+    const totalLabel = document.getElementById('stat-total-label');
+    const syncedLabel = document.getElementById('stat-synced-label');
+    const failedLabel = document.getElementById('stat-failed-label');
+    const durationLabel = document.getElementById('stat-duration-label');
 
-  // Show action buttons
-  const actionsContainer = document.getElementById('sync-actions');
-  actionsContainer.classList.remove('u-hidden');
+    if (totalLabel) totalLabel.textContent = strings.stat_total_label || 'Heildarfjöldi';
+    if (syncedLabel) syncedLabel.textContent = strings.stat_synced_label || 'Samstillt';
+    if (failedLabel) failedLabel.textContent = strings.stat_failed_label || 'Mistókst';
+    if (durationLabel) durationLabel.textContent = strings.stat_duration_label || 'Tími';
 
-  document.getElementById('view-history-btn').textContent = strings.btn_view_history;
-  document.getElementById('back-dashboard-btn').textContent = strings.btn_back_to_dashboard;
+    // Set stat values
+    const totalValue = document.getElementById('stat-total-value');
+    const syncedValue = document.getElementById('stat-synced-value');
+    const failedValue = document.getElementById('stat-failed-value');
+    const durationValue = document.getElementById('stat-duration-value');
+
+    if (totalValue) totalValue.textContent = stats.total_members || 0;
+    if (syncedValue) syncedValue.textContent = stats.synced || 0;
+    if (failedValue) failedValue.textContent = stats.failed || 0;
+    if (durationValue) durationValue.textContent = calculateDuration(stats);
+
+    console.log('Stats updated:', {
+      total: stats.total_members,
+      synced: stats.synced,
+      failed: stats.failed
+    });
+
+    // Show action buttons
+    const actionsContainer = document.getElementById('sync-actions');
+    if (actionsContainer) {
+      actionsContainer.classList.remove('u-hidden');
+      console.log('Actions shown');
+    }
+
+    const viewHistoryBtn = document.getElementById('view-history-btn');
+    const backDashboardBtn = document.getElementById('back-dashboard-btn');
+
+    if (viewHistoryBtn) viewHistoryBtn.textContent = strings.btn_view_history || 'Skoða sögu';
+    if (backDashboardBtn) backDashboardBtn.textContent = strings.btn_back_to_dashboard || 'Til baka';
+
+    console.log('✓ showSyncSuccess completed successfully');
+
+  } catch (error) {
+    console.error('Error in showSyncSuccess:', error);
+    throw error;
+  }
 }
 
 /**

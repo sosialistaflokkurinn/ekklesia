@@ -225,6 +225,18 @@ def sync_all_members() -> Dict[str, Any]:
             members = data.get('results', [])
 
             for member in members:
+                ssn = member.get('ssn', '')
+
+                # Skip fake SSNs (duplicates marked with 9999XXXXXX during cleanup)
+                if ssn.startswith('9999'):
+                    log_json('DEBUG', 'Skipping fake SSN',
+                             event='sync_member_skipped_fake_ssn',
+                             ssn=ssn,
+                             django_id=member.get('id'),
+                             name=member.get('name'))
+                    stats['skipped'] += 1
+                    continue
+
                 success = sync_member_to_firestore(db, member)
                 if success:
                     stats['synced'] += 1
