@@ -21,6 +21,8 @@ npm-debug.log*
 
 # Claude Code settings (contains secrets and MCP server config)
 .claude/
+!.claude/README.md
+!.claude/commands/
 
 # OS
 .DS_Store
