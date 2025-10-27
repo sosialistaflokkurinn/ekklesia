@@ -213,7 +213,9 @@ function setPageText(strings, userData) {
   document.getElementById('nav-back-to-member').textContent = strings.nav_back_to_member;
 
   // Welcome card - with personalized greeting
+  console.log('Building welcome message for:', userData.name);
   const welcomeMessage = buildWelcomeMessage(userData.name, strings);
+  console.log('Welcome message result:', welcomeMessage);
   document.getElementById('admin-welcome-title').textContent = welcomeMessage;
   document.getElementById('admin-welcome-subtitle').textContent = strings.admin_welcome_subtitle;
 
