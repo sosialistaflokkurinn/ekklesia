@@ -247,7 +247,7 @@ async function handleCallback(authCode) {
     sessionStorage.removeItem('csrf_state');
 
     // ← Loading state automatically cleared on redirect
-    window.location.href = '/dashboard.html';
+    window.location.href = '/members-area/dashboard.html';
   } catch (error) {
     // Hide loading indicator on error
     setLoadingState(false);
@@ -271,7 +271,7 @@ async function checkAuthAndRedirect() {
   const user = await getCurrentUser();
   if (user) {
     // Already authenticated - redirect to dashboard
-    window.location.href = '/dashboard.html';
+    window.location.href = '/members-area/dashboard.html';
   }
 }
 
