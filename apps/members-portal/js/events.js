@@ -24,7 +24,7 @@ function updateEventsStrings() {
   setTextContent('tab-past-label', R.string.events_tab_past || 'Liðnir', 'events page');
 
   // Loading message
-  setTextContent('loading-message', R.string.loading_events || 'Hleð inn viðburðum...', 'events page');
+  setTextContent('loading-message', R.string.events_loading || 'Hleð inn viðburðum...', 'events page');
 
   // Empty message
   setTextContent('empty-message', R.string.events_empty || 'Engir viðburðir fundust', 'events page');
@@ -115,7 +115,7 @@ async function loadEvents(filter = 'upcoming') {
 
   } catch (error) {
     console.error('Failed to load events:', error);
-    showError(R.string.error_loading_events || 'Villa kom upp við að sækja viðburði');
+    showError(R.string.events_error || 'Villa kom upp við að sækja viðburði');
   }
 }
 
