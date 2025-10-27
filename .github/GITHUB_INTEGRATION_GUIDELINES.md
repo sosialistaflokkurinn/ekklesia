@@ -1,7 +1,7 @@
 # GitHub Integration Guidelines
 
-**Version:** 1.0  
-**Last Updated:** October 17, 2025  
+**Version:** 1.1
+**Last Updated:** October 27, 2025
 **Status:** Active Policy
 
 ## Purpose
@@ -997,6 +997,377 @@ If a `gh` CLI script needs to be converted to API:
 
 ---
 
+## Security Issue Verification Workflow
+
+### Background
+
+The Weekly Security Hygiene workflow (`.github/workflows/security-hygiene.yml`) runs automated checks every Monday to ensure security issues are properly tracked and verified. This section documents the manual verification routine when the bot identifies unverified security fixes.
+
+### When the Bot Alerts You
+
+The bot sends email notifications for closed security issues missing the `Verified` label:
+
+```
+⚠️ Security Verification Missing
+
+This security issue was closed but has not been verified with test evidence.
+
+Required for security fixes:
+ □ Add test demonstrating the fix
+ □ Verify in production (if deployed)
+ □ Add Verified label once confirmed
+```
+
+### Verification Routine (Step-by-Step)
+
+**Time Required:** ~5 minutes per issue
+
+#### Step 1: Identify Unverified Issues
+
+```bash
+# Find all closed security issues from last 30 days without Verified label
+gh issue list --label "Security" --state closed \
+  --json number,title,labels,closedAt \
+  --jq '.[] | select(
+    (.closedAt | fromdateiso8601) > (now - 2592000) and
+    ([.labels[].name] | contains(["Verified"]) | not)
+  ) | {number, title, closed: .closedAt[:10]}'
+```
+
+**Expected Output:**
+```json
+{"closed":"2025-10-19","number":63,"title":"Cache JWKS client"}
+{"closed":"2025-10-19","number":58,"title":"Security improvements"}
+{"closed":"2025-10-19","number":50,"title":"CORS restrictions"}
+```
+
+#### Step 2: Review Each Issue's Resolution
+
+For each issue, check the comments for resolution evidence:
+
+```bash
+# Read issue details and comments
+gh issue view 63 --comments | grep -A 20 "Resolution\|Verification\|deployed" -i
+```
+
+**Look for:**
+- ✅ Implementation commit hash
+- ✅ Deployment confirmation (service name, timestamp, URL)
+- ✅ Test evidence (manual testing, unit tests, production logs)
+- ✅ Performance/security impact measured
+
+#### Step 3: Create Verification Template
+
+Based on the issue type, use appropriate verification comment template:
+
+**Template A: Code Changes with Tests**
+```bash
+gh issue comment <NUMBER> --body "$(cat <<'EOF'
+✅ **Security Fix Verified**
+
+**Implementation:**
+- Commit: <HASH>
+- Files changed: <FILES>
+- Deployment: <SERVICE_NAME> (<TIMESTAMP>)
+
+**Test Evidence:**
+- Unit tests: <TEST_FILE>
+- Production testing: <DESCRIPTION>
+- Results: <OUTCOME>
+
+**Verification Type:** <TYPE>
+**Verified By:** @<USERNAME> (<DATE>)
+**Label Added:** Verified (<DATE>)
+
+This issue meets all security fix verification requirements.
+EOF
+)"
+```
+
+**Template B: Production Testing Only**
+```bash
+gh issue comment <NUMBER> --body "$(cat <<'EOF'
+✅ **Security Fix Verified**
+
+**Production Testing Evidence:**
+- Test performed: <DATE>
+- Test description: <WHAT_WAS_TESTED>
+- Expected behavior: <EXPECTED>
+- Actual behavior: <ACTUAL>
+- Result: ✅ Pass
+
+**Configuration Changes:**
+- Service: <SERVICE_NAME>
+- Environment variables: <VARS>
+- Deployment: <TIMESTAMP>
+
+**Verification Type:** Production testing
+**Verified By:** @<USERNAME> (<DATE>)
+**Label Added:** Verified (<DATE>)
+
+This issue meets all security fix verification requirements.
+EOF
+)"
+```
+
+**Template C: Infrastructure/Config Changes**
+```bash
+gh issue comment <NUMBER> --body "$(cat <<'EOF'
+✅ **Security Fix Verified**
+
+**Infrastructure Changes:**
+- Resource: <RESOURCE_NAME>
+- Changes applied: <DESCRIPTION>
+- Verification commands:
+  ```bash
+  <COMMAND_1>
+  <COMMAND_2>
+  ```
+
+**Verification Results:**
+- ✅ <ITEM_1>
+- ✅ <ITEM_2>
+- ✅ <ITEM_3>
+
+**Security Impact:**
+- Before: <OLD_STATE>
+- After: <NEW_STATE>
+
+**Verification Type:** Infrastructure validation
+**Verified By:** @<USERNAME> (<DATE>)
+**Label Added:** Verified (<DATE>)
+
+This issue meets all security fix verification requirements.
+EOF
+)"
+```
+
+#### Step 4: Add Verified Label
+
+```bash
+# Add Verified label to issue
+gh issue edit <NUMBER> --add-label "Verified"
+```
+
+#### Step 5: Verify Label Creation (First Time Only)
+
+If the `Verified` label doesn't exist, create it:
+
+```bash
+# Create Verified label with green color
+gh label create "Verified" \
+  --description "Security fix has been verified with test evidence" \
+  --color "0e8a16"
+```
+
+### Real-World Example (Oct 27, 2025)
+
+**Scenario:** Weekly Security Hygiene bot identified 5 unverified issues
+
+**Issues to Verify:**
+- #48 - Database password rotation
+- #50 - CORS restrictions
+- #58 - Security improvements (body size, audit, errors)
+- #62 - Rate limiting
+- #63 - JWKS caching
+
+**Execution Log:**
+
+```bash
+# Step 1: Find unverified issues
+$ gh issue list --label "Security" --state closed \
+    --json number,title,closedAt --jq '...'
+# Output: 5 issues found
+
+# Step 2: Process each issue
+for issue in 48 50 58 62 63; do
+  echo "Processing issue #$issue..."
+
+  # Read resolution evidence
+  gh issue view $issue --comments | tail -80
+
+  # Add verification comment (using appropriate template)
+  gh issue comment $issue --body "$(cat <<'EOF'
+✅ **Security Fix Verified**
+...evidence details...
+EOF
+)"
+
+  # Add Verified label
+  gh issue edit $issue --add-label "Verified"
+
+  echo "✅ Issue #$issue verified"
+done
+```
+
+**Result:**
+- Time: ~25 minutes total (5 issues × 5 min each)
+- All 5 issues properly verified and labeled
+- Bot will not send alerts for these issues again
+
+### Batch Processing Script
+
+For multiple issues with similar verification needs:
+
+```bash
+#!/bin/bash
+# scripts/verify-security-issues.sh
+
+set -euo pipefail
+
+# Issues to verify (space-separated)
+ISSUES="48 50 58 62 63"
+
+# Verification template (customize per batch)
+TEMPLATE="$(cat <<'EOF'
+✅ **Security Fix Verified**
+
+This issue has been verified with test evidence from the resolution comment.
+
+**Verification Type:** Production testing + code review
+**Verified By:** @gudrodur (Oct 27, 2025)
+**Label Added:** Verified (Oct 27, 2025)
+
+This issue meets all security fix verification requirements.
+EOF
+)"
+
+# Process each issue
+for issue in $ISSUES; do
+  echo "🔍 Processing issue #$issue..."
+
+  # Check if already verified
+  if gh issue view $issue --json labels \
+      --jq '.labels[].name' | grep -q "^Verified$"; then
+    echo "  ⏭️  Already verified, skipping"
+    continue
+  fi
+
+  # Add verification comment
+  if gh issue comment $issue --body "$TEMPLATE"; then
+    echo "  ✅ Added verification comment"
+  else
+    echo "  ❌ Failed to add comment"
+    continue
+  fi
+
+  # Add Verified label
+  if gh issue edit $issue --add-label "Verified"; then
+    echo "  ✅ Added Verified label"
+  else
+    echo "  ❌ Failed to add label"
+  fi
+
+  echo ""
+done
+
+echo "✅ Verification complete"
+```
+
+**Usage:**
+```bash
+chmod +x scripts/verify-security-issues.sh
+./scripts/verify-security-issues.sh
+```
+
+### Verification Checklist
+
+Before marking an issue as verified, ensure:
+
+- [ ] **Resolution evidence exists** in issue comments
+- [ ] **Deployment confirmed** (service name, timestamp, URL)
+- [ ] **Test evidence documented** (unit tests, manual tests, or production logs)
+- [ ] **Security impact measured** (before/after comparison)
+- [ ] **Verification comment added** with all required details
+- [ ] **Verified label applied** to issue
+
+### Common Verification Types
+
+| Type | Evidence Required | Example |
+|------|------------------|---------|
+| **Code Changes** | Commit hash, deployment, unit tests | Rate limiting implementation (#62) |
+| **Production Testing** | Test description, commands, results | CORS preflight testing (#50) |
+| **Infrastructure** | Config changes, verification commands | Database password rotation (#48) |
+| **Performance Fix** | Before/after metrics, load testing | JWKS caching (#63) |
+| **Security Hardening** | Multiple tests, audit logs | Body size limits + error sanitization (#58) |
+
+### Troubleshooting
+
+**Issue: Label creation fails**
+```bash
+# Check if label exists
+gh label list | grep Verified
+
+# If exists but wrong color, update it
+gh label edit "Verified" --color "0e8a16"
+```
+
+**Issue: Cannot find verification evidence**
+```bash
+# Search all comments for keywords
+gh issue view <NUMBER> --comments | grep -i "verification\|tested\|deployed\|commit"
+
+# If no evidence, request it
+gh issue comment <NUMBER> --body "⚠️ **Verification Needed**
+
+This issue needs test evidence before it can be marked as verified.
+
+Please provide:
+- Commit hash or deployment details
+- Test evidence (unit tests, manual testing, production logs)
+- Security impact assessment
+
+See: docs/security/VERIFICATION_GUIDELINES.md"
+```
+
+**Issue: Bot still sending alerts after verification**
+```bash
+# Check if Verified label is actually on the issue
+gh issue view <NUMBER> --json labels --jq '.labels[].name'
+
+# Ensure label name is exactly "Verified" (case-sensitive)
+gh label list | grep -E "^Verified"
+
+# Wait for next weekly run (Mondays 9 AM UTC)
+```
+
+### Automation Opportunities
+
+**Future Enhancement:** Auto-detect verification evidence
+
+```bash
+# Check if resolution comment contains verification keywords
+if gh issue view <NUMBER> --comments | \
+    grep -qE "(deployed|tested|verified|commit [a-f0-9]{7})"; then
+  echo "✅ Verification evidence detected"
+  # Could auto-add Verified label if sufficient evidence
+fi
+```
+
+### Integration with Weekly Workflow
+
+The verification routine complements the automated workflow:
+
+**Automated (.github/workflows/security-hygiene.yml):**
+- Runs every Monday 9 AM UTC
+- Identifies unverified issues
+- Posts reminder comments
+- Sends email notifications
+
+**Manual (this routine):**
+- Review bot notifications
+- Verify test evidence exists
+- Add verification comments
+- Apply Verified labels
+
+**Result:**
+- All closed security issues have proper verification
+- Audit trail for compliance
+- No missing test evidence
+- Bot stops sending alerts
+
+---
+
 ## Review & Updates
 
 This guideline should be reviewed:
@@ -1004,8 +1375,8 @@ This guideline should be reviewed:
 - **After major incidents:** If automation causes issues
 - **When GitHub updates:** New API features may change best practices
 
-**Last Review:** October 17, 2025  
-**Next Review:** January 17, 2026
+**Last Review:** October 27, 2025
+**Next Review:** January 27, 2026
 
 ---
 
