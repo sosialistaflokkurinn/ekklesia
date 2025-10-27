@@ -207,10 +207,19 @@ function renderRoleBadges(roles) {
     return '';
   }
 
+  // Map role names to Icelandic
+  const roleLabels = {
+    'developer': 'Forritari',
+    'admin': 'Stjórnandi',
+    'meeting_election_manager': 'Kosningastjóri',
+    'event_manager': 'Viðburðastjóri'
+  };
+
   const badges = normalizedRoles.map((role) => {
     // Create a class modifier for each role type
     const roleClass = role === 'developer' ? 'role-badge--developer' : 'role-badge--admin';
-    return `<span class="role-badge ${roleClass}">${role}</span>`;
+    const label = roleLabels[role] || role;
+    return `<span class="role-badge ${roleClass}">${label}</span>`;
   }).join('');
 
   return badges;
