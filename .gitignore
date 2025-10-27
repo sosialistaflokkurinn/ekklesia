@@ -54,6 +54,10 @@ cloud-sql-proxy*
 archive/
 audits/
 
+# EXCEPT: Archive docs-plans (historical planning documents - keep in git)
+!archive/docs-plans/
+!archive/docs-plans/**
+
 # ALLOW ALL DOCUMENTATION
 !docs/
 !docs/**/*.md
