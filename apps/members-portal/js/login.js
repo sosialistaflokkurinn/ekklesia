@@ -119,16 +119,25 @@ async function handleOAuthCallback(authCode, functions) {
     });
 
     if (!response.ok) {
-      // Try to surface structured error details including correlation ID
+      // Read response body once (can't read twice)
+      const contentType = response.headers.get('content-type');
+      let errorMessage = `${response.status} ${response.statusText}`;
+
       try {
-        const errJson = await response.json();
-        const cid = errJson.correlationId ? ` (cid: ${errJson.correlationId})` : '';
-        const msg = `${errJson.error || 'ERROR'}${cid}${errJson.message ? ` - ${errJson.message}` : ''}`;
-        throw new Error(msg);
-      } catch (_) {
-        const txt = await response.text();
-        throw new Error(`${response.status} ${txt}`);
+        if (contentType && contentType.includes('application/json')) {
+          const errJson = await response.json();
+          const cid = errJson.correlationId ? ` (cid: ${errJson.correlationId})` : '';
+          errorMessage = `${errJson.error || 'ERROR'}${cid}${errJson.message ? ` - ${errJson.message}` : ''}`;
+        } else {
+          const txt = await response.text();
+          errorMessage = `${response.status} ${txt}`;
+        }
+      } catch (readError) {
+        // If we can't read the response, use status text
+        console.error('Failed to read error response:', readError);
       }
+
+      throw new Error(errorMessage);
     }
 
     const data = await response.json();
@@ -168,7 +177,7 @@ function updateLoginStrings() {
   document.getElementById('login-title').textContent = R.string.login_title;
   document.getElementById('login-subtitle').textContent = R.string.login_subtitle;
   document.getElementById('status-text').textContent = R.string.status_not_authenticated;
-  document.getElementById('login-btn').textContent = R.string.btn_login;
+  document.getElementById('btn-login').textContent = R.string.btn_login;
   document.getElementById('login-description').textContent = R.string.btn_login_description;
 }
 
@@ -180,7 +189,7 @@ function updateLoginStrings() {
  * @param {string} redirectUri - OAuth redirect URI
  */
 function setupLoginButton(issuerUrl, clientId, redirectUri) {
-  document.getElementById('login-btn').addEventListener('click', async () => {
+  document.getElementById('btn-login').addEventListener('click', async () => {
     const { verifier, challenge } = await generatePKCE();
     sessionStorage.setItem('pkce_code_verifier', verifier);
 
@@ -214,11 +223,18 @@ function validateCSRF(returnedState) {
   const statusTextEl = document.getElementById('status-text');
   const storedState = sessionStorage.getItem('oauth_state');
 
+  console.log('CSRF validation:', {
+    returnedState: returnedState ? `${returnedState.substring(0, 8)}...` : 'null',
+    storedState: storedState ? `${storedState.substring(0, 8)}...` : 'null',
+    match: returnedState === storedState
+  });
+
   if (!storedState || returnedState !== storedState) {
     statusEl.textContent = R.string.error_csrf_title;
     statusTextEl.textContent = R.string.error_csrf_message;
     statusTextEl.style.color = 'red';
     console.error(R.string.log_csrf_failed);
+    console.error('CSRF mismatch - this usually means you opened the OAuth redirect in a different browser tab');
     sessionStorage.removeItem('oauth_state');
     sessionStorage.removeItem('pkce_code_verifier');
     return false;

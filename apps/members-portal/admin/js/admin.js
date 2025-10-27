@@ -1,0 +1,328 @@
+/**
+ * Admin Dashboard - Epic #43 Phase 2
+ *
+ * Main admin page with role-based access control.
+ * Only users with 'developer' role can access admin portal.
+ */
+
+// Import from member portal public directory (two levels up from /admin/js/)
+import { initSession } from '../../session/init.js';
+import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
+import { collection, query, orderBy, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+// Initialize Firebase services
+const auth = getFirebaseAuth();
+const db = getFirebaseFirestore();
+
+/**
+ * Load admin-specific strings from admin portal i18n
+ */
+class AdminStringsLoader {
+  constructor() {
+    this.strings = {};
+    this.loaded = false;
+  }
+
+  async load() {
+    if (this.loaded) return this.strings;
+
+    try {
+      const response = await fetch('/admin/i18n/values-is/strings.xml');
+      if (!response.ok) {
+        throw new Error(`Failed to load admin strings: ${response.statusText}`);
+      }
+
+      const xmlText = await response.text();
+      this.strings = this.parseXML(xmlText);
+      this.loaded = true;
+
+      console.log(`✓ Loaded ${Object.keys(this.strings).length} admin strings`);
+      return this.strings;
+    } catch (error) {
+      console.error('Failed to load admin strings:', error);
+      throw error;
+    }
+  }
+
+  parseXML(xmlText) {
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+
+    const parserError = xmlDoc.querySelector('parsererror');
+    if (parserError) {
+      throw new Error(`XML parsing error: ${parserError.textContent}`);
+    }
+
+    const strings = {};
+    const stringElements = xmlDoc.querySelectorAll('string');
+
+    stringElements.forEach(element => {
+      const name = element.getAttribute('name');
+      const value = element.textContent;
+      if (name) {
+        strings[name] = value;
+      }
+    });
+
+    return strings;
+  }
+
+  get(key) {
+    return this.strings[key] || key;
+  }
+}
+
+const adminStrings = new AdminStringsLoader();
+
+/**
+ * Check if user has developer role
+ */
+function checkAdminAccess(userData) {
+  const roles = userData.roles || [];
+  const isAdmin = roles.includes('developer');
+
+  if (!isAdmin) {
+    throw new Error('Unauthorized: Developer role required');
+  }
+
+  return true;
+}
+
+/**
+ * Load recent sync status from Firestore
+ */
+async function loadRecentSync() {
+  try {
+    const syncLogsRef = collection(db, 'sync_logs');
+    const q = query(syncLogsRef, orderBy('created_at', 'desc'), limit(1));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      // No recent sync, hide the card
+      document.getElementById('recent-sync-card').classList.add('u-hidden');
+      return;
+    }
+
+    const recentLog = querySnapshot.docs[0].data();
+    displayRecentSync(recentLog);
+  } catch (error) {
+    console.error('Failed to load recent sync:', error);
+    // Don't show error, just hide the card
+    document.getElementById('recent-sync-card').classList.add('u-hidden');
+  }
+}
+
+/**
+ * Display recent sync summary
+ */
+function displayRecentSync(log) {
+  const card = document.getElementById('recent-sync-card');
+  const summary = document.getElementById('recent-sync-summary');
+
+  // Format timestamp (use created_at from Firestore)
+  const timestamp = log.created_at?.toDate?.() || (log.created_at ? new Date(log.created_at) : new Date());
+  const formattedDate = timestamp.toLocaleString('is-IS', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+
+  // Build summary HTML
+  const stats = log.stats || {};
+  const status = stats.failed > 0 ? '⚠️ Með villum' : '✅ Tókst';
+
+  summary.innerHTML = `
+    <div class="info-grid">
+      <div class="info-grid__item">
+        <div class="info-grid__label">Dagsetning</div>
+        <div class="info-grid__value">${formattedDate}</div>
+      </div>
+      <div class="info-grid__item">
+        <div class="info-grid__label">Staða</div>
+        <div class="info-grid__value">${status}</div>
+      </div>
+      <div class="info-grid__item">
+        <div class="info-grid__label">Samstillt</div>
+        <div class="info-grid__value">${stats.synced || 0} / ${stats.total_members || 0}</div>
+      </div>
+      <div class="info-grid__item">
+        <div class="info-grid__label">Tími</div>
+        <div class="info-grid__value">${calculateDuration(stats)}</div>
+      </div>
+    </div>
+  `;
+
+  card.classList.remove('u-hidden');
+}
+
+/**
+ * Calculate duration from stats
+ */
+function calculateDuration(stats) {
+  if (!stats.started_at || !stats.completed_at) return 'N/A';
+
+  const start = new Date(stats.started_at);
+  const end = new Date(stats.completed_at);
+  const durationSec = Math.floor((end - start) / 1000);
+
+  if (durationSec < 60) return `${durationSec}s`;
+
+  const minutes = Math.floor(durationSec / 60);
+  const seconds = durationSec % 60;
+  return `${minutes}m ${seconds}s`;
+}
+
+/**
+ * Build welcome message with proper Icelandic grammar
+ * (same logic as member dashboard)
+ */
+function buildWelcomeMessage(displayName, strings) {
+  const fallbackName = 'notandi';
+  const rawName = (displayName || fallbackName).trim();
+  const parts = rawName.split(/\s+/);
+  const lastPart = parts.length ? parts[parts.length - 1] : '';
+  const normalizedLast = lastPart
+    ? lastPart.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()
+    : '';
+
+  let template = strings.admin_welcome_neutral;
+  if (normalizedLast.endsWith('son')) {
+    template = strings.admin_welcome_male;
+  } else if (normalizedLast.endsWith('dottir')) {
+    template = strings.admin_welcome_female;
+  }
+
+  // Simple string replacement for %s
+  return template.replace('%s', rawName);
+}
+
+/**
+ * Render role badges HTML
+ */
+function renderRoleBadges(roles) {
+  const normalizedRoles = Array.isArray(roles) ? roles.filter(Boolean) : [];
+  if (normalizedRoles.length === 0) {
+    return '';
+  }
+
+  // Map role names to Icelandic
+  const roleLabels = {
+    'developer': 'Forritari',
+    'admin': 'Stjórnandi',
+    'meeting_election_manager': 'Kosningastjóri',
+    'event_manager': 'Viðburðastjóri'
+  };
+
+  const badges = normalizedRoles.map((role) => {
+    // Create a class modifier for each role type
+    const roleClass = role === 'developer' ? 'role-badge--developer' : 'role-badge--admin';
+    const label = roleLabels[role] || role;
+    return `<span class="role-badge ${roleClass}">${label}</span>`;
+  }).join('');
+
+  return badges;
+}
+
+/**
+ * Update role badges display
+ */
+function updateRoleBadges(roles) {
+  const container = document.getElementById('role-badges');
+  if (!container) {
+    return;
+  }
+
+  const html = renderRoleBadges(roles);
+  if (!html) {
+    container.innerHTML = '';
+    container.classList.add('u-hidden');
+    return;
+  }
+
+  container.innerHTML = html;
+  container.classList.remove('u-hidden');
+}
+
+/**
+ * Set page text from admin strings
+ */
+function setPageText(strings, userData) {
+  // Page title
+  document.getElementById('page-title').textContent = strings.admin_dashboard_title;
+
+  // Navigation
+  document.getElementById('nav-brand').textContent = strings.admin_brand;
+  document.getElementById('nav-admin-dashboard').textContent = strings.nav_admin_dashboard;
+  document.getElementById('nav-admin-sync').textContent = strings.nav_admin_sync;
+  document.getElementById('nav-admin-history').textContent = strings.nav_admin_history;
+  document.getElementById('nav-back-to-member').textContent = strings.nav_back_to_member;
+
+  // Welcome card - with personalized greeting
+  console.log('Building welcome message for:', userData.displayName);
+  const welcomeMessage = buildWelcomeMessage(userData.displayName, strings);
+  console.log('Welcome message result:', welcomeMessage);
+  document.getElementById('admin-welcome-title').textContent = welcomeMessage;
+  document.getElementById('admin-welcome-subtitle').textContent = strings.admin_welcome_subtitle;
+
+  // Role badges
+  updateRoleBadges(userData.roles);
+
+  // Quick actions
+  document.getElementById('admin-actions-title').textContent = strings.admin_actions_title;
+  document.getElementById('quick-action-sync-label').textContent = strings.quick_action_sync_label;
+  document.getElementById('quick-action-sync-desc').textContent = strings.quick_action_sync_desc;
+  document.getElementById('quick-action-history-label').textContent = strings.quick_action_history_label;
+  document.getElementById('quick-action-history-desc').textContent = strings.quick_action_history_desc;
+}
+
+/**
+ * Initialize admin dashboard
+ */
+async function init() {
+  try {
+    // 1. Load admin strings
+    const strings = await adminStrings.load();
+
+    // 2. Init session (loads member portal strings + authenticates)
+    const { user, userData } = await initSession();
+
+    console.log('userData from initSession:', userData);
+    console.log('userData.roles:', userData.roles);
+
+    // 3. Check admin access (developer role required)
+    checkAdminAccess(userData);
+
+    // 4. Set page text (with personalized greeting)
+    setPageText(strings, userData);
+
+    // 5. Load recent sync status
+    await loadRecentSync();
+
+    console.log('✓ Admin dashboard initialized');
+
+  } catch (error) {
+    console.error('Failed to initialize admin dashboard:', error);
+
+    // Check if unauthorized
+    if (error.message.includes('Unauthorized')) {
+      alert('Þú hefur ekki aðgang að stjórnkerfi. Aðeins notendur með developer role hafa aðgang.');
+      window.location.href = '/members-area/dashboard.html';
+      return;
+    }
+
+    // Check if not authenticated
+    if (error.message.includes('Not authenticated')) {
+      window.location.href = '/';
+      return;
+    }
+
+    // Other errors
+    console.error('Error loading admin dashboard:', error);
+    alert(`Villa við að hlaða stjórnborði: ${error.message}`);
+  }
+}
+
+// Run on page load
+init();

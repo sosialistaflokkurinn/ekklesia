@@ -149,12 +149,12 @@ Emergency role assignment using Identity Toolkit REST API. Use this when `set-us
 
 **Set developer role** (minimal):
 ```bash
-./emergency-set-role.sh wElbKqQ8mLfYmxhpiUGAnv0vx2g1 developer
+./emergency-set-role.sh abc123XYZ789ExampleUserUID456 developer
 ```
 
 **Set developer role with all claims** (recommended):
 ```bash
-./emergency-set-role.sh wElbKqQ8mLfYmxhpiUGAnv0vx2g1 developer 200978-3589 gudrodur@gmail.com +3547758493
+./emergency-set-role.sh abc123XYZ789ExampleUserUID456 developer 010190-2939 jon.jonsson@example.com +3545551234
 ```
 
 ### ⚠️ Warning
@@ -189,15 +189,15 @@ Verify what custom claims a user currently has. Useful for debugging role issues
 ### Example
 
 ```bash
-$ ./check-user-claims.sh wElbKqQ8mLfYmxhpiUGAnv0vx2g1
+$ ./check-user-claims.sh abc123XYZ789ExampleUserUID456
 
-Fetching custom claims for user: wElbKqQ8mLfYmxhpiUGAnv0vx2g1
+Fetching custom claims for user: abc123XYZ789ExampleUserUID456
 
 User Information:
 {
-  "uid": "wElbKqQ8mLfYmxhpiUGAnv0vx2g1",
-  "email": "gudrodur@gmail.com",
-  "displayName": "Guðröður Atli Jónsson",
+  "uid": "abc123XYZ789ExampleUserUID456",
+  "email": "jon.jonsson@example.com",
+  "displayName": "Jón Jónsson",
   "lastLoginAt": "1761220879000",
   "createdAt": "1696848000000"
 }
@@ -205,10 +205,10 @@ User Information:
 Custom Claims (customAttributes):
 {
   "roles": ["developer"],
-  "kennitala": "200978-3589",
+  "kennitala": "010190-2939",
   "isMember": true,
-  "email": "gudrodur@gmail.com",
-  "phoneNumber": "+3547758493"
+  "email": "jon.jonsson@example.com",
+  "phoneNumber": "+3545551234"
 }
 ```
 

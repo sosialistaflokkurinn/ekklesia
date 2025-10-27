@@ -32,9 +32,9 @@ echo -e "\n${YELLOW}Setting GCP project to ${PROJECT_ID}...${NC}"
 gcloud config set project ${PROJECT_ID}
 
 # Admin configuration (for developer reset endpoint)
-# Firebase UID for Guðröður Atli Jónsson (gudrodur@gmail.com)
+# Firebase UID for Jón Jónsson (jon.jonsson@example.com)
 ADMIN_RESET_ENABLED="true"
-ALLOWED_RESET_UIDS="wElbKqQ8mLfYmxhpiUGAnv0vx2g1"  # Comma-separated UIDs for multiple developers
+ALLOWED_RESET_UIDS="abc123XYZ789ExampleUserUID456"  # Comma-separated UIDs for multiple developers
 
 # Build and push image to Container Registry
 echo -e "\n${YELLOW}Building and pushing Docker image...${NC}"

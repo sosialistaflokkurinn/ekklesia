@@ -215,9 +215,9 @@
     <string name="config_api_elections">https://elections-service-ymzrguoifa-nw.a.run.app</string>
 
     <!-- Paths -->
-    <string name="path_dashboard">/dashboard.html</string>
-    <string name="path_profile">/profile.html</string>
-    <string name="path_test_events">/test-events.html</string>
+    <string name="path_dashboard">/members-area/dashboard.html</string>
+    <string name="path_profile">/members-area/profile.html</string>
+    <string name="path_test_events">/members-area/test-events.html</string>
 
     <!-- Firebase region -->
     <string name="config_firebase_region">europe-west2</string>

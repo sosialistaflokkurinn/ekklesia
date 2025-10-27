@@ -27,7 +27,7 @@ All administrative actions that modify elections, user permissions, or system st
 | `level` | string | Log level (info, warn, error) | `"info"` |
 | `message` | string | Human-readable description | `"Election created"` |
 | `action` | string | Action identifier (see Actions table) | `"election_created"` |
-| `performed_by` | string | Firebase UID of user who performed action | `"wElbKqQ8mLfYmxhpiUGAnv0vx2g1"` |
+| `performed_by` | string | Firebase UID of user who performed action | `"abc123XYZ789ExampleUserUID456"` |
 | `timestamp` | string | ISO 8601 timestamp (UTC) | `"2025-10-19T03:26:45.127Z"` |
 
 ### Optional Fields
@@ -91,7 +91,7 @@ All administrative actions that modify elections, user permissions, or system st
   "message": "Election created",
   "action": "election_created",
   "correlation_id": "a1b2c3d4e5f67890",
-  "performed_by": "wElbKqQ8mLfYmxhpiUGAnv0vx2g1",
+  "performed_by": "abc123XYZ789ExampleUserUID456",
   "resource_type": "election",
   "resource_id": "1f247133-475b-4510-bce2-d5b029c605d8",
   "details": {
@@ -109,7 +109,7 @@ All administrative actions that modify elections, user permissions, or system st
   "message": "Election published",
   "action": "election_published",
   "correlation_id": "b2c3d4e5f6789012",
-  "performed_by": "wElbKqQ8mLfYmxhpiUGAnv0vx2g1",
+  "performed_by": "abc123XYZ789ExampleUserUID456",
   "resource_type": "election",
   "resource_id": "1f247133-475b-4510-bce2-d5b029c605d8",
   "details": {
@@ -128,7 +128,7 @@ All administrative actions that modify elections, user permissions, or system st
   "level": "info",
   "message": "Admin reset - user scope",
   "action": "reset_election_user",
-  "performed_by": "wElbKqQ8mLfYmxhpiUGAnv0vx2g1",
+  "performed_by": "abc123XYZ789ExampleUserUID456",
   "kennitala_masked": "200978-****",
   "timestamp": "2025-10-19T03:26:45.119Z"
 }
@@ -141,7 +141,7 @@ All administrative actions that modify elections, user permissions, or system st
   "level": "warn",
   "message": "Blocked full reset in production (guardrail)",
   "action": "reset_election_blocked",
-  "performed_by": "wElbKqQ8mLfYmxhpiUGAnv0vx2g1",
+  "performed_by": "abc123XYZ789ExampleUserUID456",
   "timestamp": "2025-10-19T03:26:29.393Z"
 }
 ```
@@ -153,7 +153,7 @@ All administrative actions that modify elections, user permissions, or system st
   "level": "info",
   "message": "Admin reset completed",
   "action": "reset_election_all",
-  "performed_by": "wElbKqQ8mLfYmxhpiUGAnv0vx2g1",
+  "performed_by": "abc123XYZ789ExampleUserUID456",
   "scope": "all",
   "before": {
     "events_tokens": 5,
@@ -253,7 +253,7 @@ function createForbiddenResponse(req, requiredRoles, mode = 'any') {
 ```
 resource.type="cloud_run_revision"
 resource.labels.service_name="events-service"
-jsonPayload.performed_by="wElbKqQ8mLfYmxhpiUGAnv0vx2g1"
+jsonPayload.performed_by="abc123XYZ789ExampleUserUID456"
 timestamp>="2025-10-19T00:00:00Z"
 ```
 

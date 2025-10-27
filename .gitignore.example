@@ -10,6 +10,7 @@
 # Environment files with secrets
 .env
 .env.local
+.env.*
 .env.*.local
 *.env
 !*.env.example
@@ -23,6 +24,7 @@
 # GCP credentials
 .gcloud/
 gcloud-*.json
+*.key.json
 
 # Firebase service account keys
 firebase-adminsdk-*.json
@@ -166,6 +168,7 @@ desktop.ini
 
 *.backup
 *.bak
+*.old
 *.orig
 *.tmp
 *.swp
@@ -188,11 +191,10 @@ tmp/
 !README.md
 
 # Core documentation directories (tracked)
+!docs/
 !docs/**/*.md
-!members/**/*.md
-!events/**/*.md
-!elections/**/*.md
-!scripts/**/*.md
+!docs/**/*.MD
+!**/*.md
 
 # GitHub templates (tracked)
 !.github/
@@ -251,7 +253,13 @@ docker-compose.override.yml
 # Cloud SQL Proxy binary
 cloud-sql-proxy
 cloud-sql-proxy.exe
-cloud-sql-proxy-*
+cloud-sql-proxy*
+
+# Cloud SQL proxy connection directories (temp artifacts)
+# Pattern: instance-name:region:database-name
+*:europe-west*:*
+*:us-central*:*
+*:asia-*:*
 
 ###################
 # Project-Specific
@@ -259,10 +267,21 @@ cloud-sql-proxy-*
 
 # Archive directories (historical reference only, not for production)
 archive/
+audits/
 
 # Sensitive data files
 members/data/kennitalas.txt
 kennitalas.txt
+
+# Firebase public symlink (points to apps/members-portal)
+services/members/public
+
+# Prevent duplicate admin portal directory
+apps/admin-portal/
+
+# Example SQL files (database reset - local testing only)
+*-reset*.sql
+*-example.sql
 
 # Legacy directories (if they exist)
 template/

@@ -2,7 +2,7 @@
 
 **Test Date**: 2025-10-19T21:08:27Z
 **Environment**: Production (`events-service`)
-**Tester**: User `wElbKqQ8mLfYmxhpiUGAnv0vx2g1` (Guðröður, kennitala: 200978-****)
+**Tester**: User `abc123XYZ789ExampleUserUID456` (Guðröður, kennitala: 200978-****)
 **Test Type**: Manual end-to-end functional test
 **Objective**: Verify RBAC enforcement, audit logging, and production guardrails with October 2025 seed data
 
@@ -24,8 +24,8 @@ This test verified three critical security features against fresh seed data:
 ## Test Scenario
 
 ### User Context
-- **Firebase UID**: `wElbKqQ8mLfYmxhpiUGAnv0vx2g1`
-- **Kennitala**: `200978-3589` (masked in logs as `200978-****`)
+- **Firebase UID**: `abc123XYZ789ExampleUserUID456`
+- **Kennitala**: `010190-2939` (masked in logs as `200978-****`)
 - **Membership Status**: Active member (isMember: true)
 - **Roles**: `["developer"]` (verified in Firebase Auth custom claims)
 
@@ -90,7 +90,7 @@ Content-Type: application/json
   "success": true,
   "message": "Deleted your Events token. You can request a new token now.",
   "scope": "mine",
-  "performed_by": "wElbKqQ8mLfYmxhpiUGAnv0vx2g1",
+  "performed_by": "abc123XYZ789ExampleUserUID456",
   "before": {
     "events_tokens": 1,
     "elections_tokens": 6,
@@ -113,13 +113,13 @@ Content-Type: application/json
 **Audit Log** (2025-10-19T21:08:27.384981Z):
 ```
 Message: "Admin reset - user scope"
-Performed by: wElbKqQ8mLfYmxhpiUGAnv0vx2g1
+Performed by: abc123XYZ789ExampleUserUID456
 ```
 
 **Audit Log** (2025-10-19T21:08:27.392156Z):
 ```
 Message: "Admin reset completed"
-Performed by: wElbKqQ8mLfYmxhpiUGAnv0vx2g1
+Performed by: abc123XYZ789ExampleUserUID456
 ```
 
 **Verification**:
@@ -166,7 +166,7 @@ Content-Type: application/json
 **Audit Log** (2025-10-19T21:08:28.683298Z):
 ```
 Message: "Blocked full reset in production (guardrail)"
-Performed by: wElbKqQ8mLfYmxhpiUGAnv0vx2g1
+Performed by: abc123XYZ789ExampleUserUID456
 ```
 
 **Verification**:
@@ -242,5 +242,5 @@ Both tests passed successfully against fresh October 2025 seed data:
 ---
 
 **Test Report Updated**: 2025-10-19
-**Validated By**: Guðröður Atli Jónsson (UID: wElbKqQ8mLfYmxhpiUGAnv0vx2g1)
+**Validated By**: Jón Jónsson (UID: abc123XYZ789ExampleUserUID456)
 **Code Reference**: [events/src/routes/admin.js](../../events/src/routes/admin.js)

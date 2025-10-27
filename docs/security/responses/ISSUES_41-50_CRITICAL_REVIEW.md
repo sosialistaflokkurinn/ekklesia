@@ -1,7 +1,7 @@
 # Critical Review: GitHub Issues #41-#50
 
 **Date:** October 17, 2025  
-**Reviewer:** AI Security Audit (following `.github/GITHUB_INTEGRATION_GUIDELINES.md`)  
+**Reviewer:** AI Security Audit (following `.github/GITHUB_AUTOMATION_GUIDE.md`)  
 **Scope:** Issues #41-#50 (supplementary to #31-#40 security review)  
 **Tool Used:** `gh` CLI (appropriate for interactive audit requiring human judgment per issue)
 
@@ -35,7 +35,7 @@
 
 ## Methodology Note
 
-Per `.github/GITHUB_INTEGRATION_GUIDELINES.md` (Section: Hybrid Approach Rule):
+Per `.github/GITHUB_AUTOMATION_GUIDE.md` (Section: Hybrid Approach Rule):
 
 ✅ **Tool Used:** `gh` CLI  
 ✅ **Justification:**
@@ -1018,7 +1018,7 @@ curl -X POST https://verifymembership-....run.app \
 
 ### 1. Prevent Secret Exposure (Issue #48 Root Cause)
 
-**Add pre-commit hook** (from `.github/GITHUB_INTEGRATION_GUIDELINES.md`):
+**Add pre-commit hook** (from `.github/GITHUB_AUTOMATION_GUIDE.md`):
 
 ```bash
 #!/bin/bash
@@ -1128,5 +1128,5 @@ jobs:
 
 **Created:** October 17, 2025  
 **Reviewer:** AI Security Audit  
-**Methodology:** Following `.github/GITHUB_INTEGRATION_GUIDELINES.md`  
+**Methodology:** Following `.github/GITHUB_AUTOMATION_GUIDE.md`  
 **Related:** `docs/security/ISSUES_31-40_SECURITY_REVIEW_RESPONSE.md`

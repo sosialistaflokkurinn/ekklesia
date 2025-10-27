@@ -267,7 +267,7 @@ Per security policy, closed security issues MUST include:
    - Grade improvement: 8.5 → 9.5/10
    - Commit: 93c621a
 
-4. **`.github/GITHUB_INTEGRATION_GUIDELINES.md`** (1,026 lines)
+4. **`.github/GITHUB_AUTOMATION_GUIDE.md`** (1,026 lines)
    - Hybrid approach rule (gh CLI vs API)
    - Error handling patterns
    - Testing strategies
@@ -423,7 +423,7 @@ cd services/members/functions && gcloud functions deploy handlekenniauth --gen2 
 - `.github/workflows/security-hygiene.yml` - Automation
 
 **Related Documents:**
-- `.github/GITHUB_INTEGRATION_GUIDELINES.md` - Workflow guidelines
+- `.github/GITHUB_AUTOMATION_GUIDE.md` - Workflow guidelines
 - `docs/CRITICAL_REVIEW_RESPONSE.md` - Guidelines response
 
 ---
