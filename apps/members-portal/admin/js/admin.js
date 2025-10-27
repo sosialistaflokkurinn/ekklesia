@@ -308,7 +308,7 @@ async function init() {
     // Check if unauthorized
     if (error.message.includes('Unauthorized')) {
       alert('Þú hefur ekki aðgang að stjórnkerfi. Aðeins notendur með developer role hafa aðgang.');
-      window.location.href = '/dashboard.html';
+      window.location.href = '/members-area/dashboard.html';
       return;
     }
 
