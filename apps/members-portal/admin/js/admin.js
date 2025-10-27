@@ -175,9 +175,33 @@ function calculateDuration(stats) {
 }
 
 /**
+ * Build welcome message with proper Icelandic grammar
+ * (same logic as member dashboard)
+ */
+function buildWelcomeMessage(displayName, strings) {
+  const fallbackName = 'notandi';
+  const rawName = (displayName || fallbackName).trim();
+  const parts = rawName.split(/\s+/);
+  const lastPart = parts.length ? parts[parts.length - 1] : '';
+  const normalizedLast = lastPart
+    ? lastPart.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()
+    : '';
+
+  let template = strings.admin_welcome_neutral;
+  if (normalizedLast.endsWith('son')) {
+    template = strings.admin_welcome_male;
+  } else if (normalizedLast.endsWith('dottir')) {
+    template = strings.admin_welcome_female;
+  }
+
+  // Simple string replacement for %s
+  return template.replace('%s', rawName);
+}
+
+/**
  * Set page text from admin strings
  */
-function setPageText(strings) {
+function setPageText(strings, userData) {
   // Page title
   document.getElementById('page-title').textContent = strings.admin_dashboard_title;
 
@@ -188,8 +212,9 @@ function setPageText(strings) {
   document.getElementById('nav-admin-history').textContent = strings.nav_admin_history;
   document.getElementById('nav-back-to-member').textContent = strings.nav_back_to_member;
 
-  // Welcome card
-  document.getElementById('admin-welcome-title').textContent = strings.admin_welcome_title;
+  // Welcome card - with personalized greeting
+  const welcomeMessage = buildWelcomeMessage(userData.name, strings);
+  document.getElementById('admin-welcome-title').textContent = welcomeMessage;
   document.getElementById('admin-welcome-subtitle').textContent = strings.admin_welcome_subtitle;
 
   // Quick actions
@@ -217,8 +242,8 @@ async function init() {
     // 3. Check admin access (developer role required)
     checkAdminAccess(userData);
 
-    // 4. Set page text
-    setPageText(strings);
+    // 4. Set page text (with personalized greeting)
+    setPageText(strings, userData);
 
     // 5. Load recent sync status
     await loadRecentSync();

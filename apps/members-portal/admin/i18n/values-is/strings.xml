@@ -10,6 +10,9 @@
   <!-- Admin Dashboard -->
   <string name="admin_dashboard_title">Stjórnborð</string>
   <string name="admin_welcome_title">Velkomin/n í stjórnkerfi</string>
+  <string name="admin_welcome_male">Velkominn %s í stjórnkerfi</string>
+  <string name="admin_welcome_female">Velkomin %s í stjórnkerfi</string>
+  <string name="admin_welcome_neutral">Velkomin/n %s í stjórnkerfi</string>
   <string name="admin_welcome_subtitle">Hér getur þú stjórnað samstillingu félagsmanna og öðrum stjórnunaraðgerðum</string>
   <string name="admin_actions_title">Aðgerðir</string>
   <string name="quick_action_sync_label">Samstilla félagsmenn</string>
