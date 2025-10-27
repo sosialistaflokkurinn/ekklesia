@@ -194,6 +194,11 @@ body.admin {
   color: rgba(255, 255, 255, 0.8);
 }
 
+/* Fix h1 color in welcome card (override global.css) */
+.card--welcome h1 {
+  color: white;
+}
+
 /* ========================================== */
 /* INFO GRID ENHANCEMENTS */
 /* ========================================== */
