@@ -32,6 +32,10 @@ npm-debug.log*
 # Firebase public symlink (points to apps/members-portal)
 services/members/public
 
+# Prevent duplicate admin portal directory (removed 2025-10-27)
+# All admin files belong in apps/members-portal/admin/
+apps/admin-portal/
+
 # Environment
 .env
 .env.*

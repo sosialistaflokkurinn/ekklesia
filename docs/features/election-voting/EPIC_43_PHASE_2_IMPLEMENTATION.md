@@ -22,10 +22,10 @@ Successfully implemented the admin web UI for Epic #43, providing a secure inter
 
 ### 1. Directory Structure ✅
 
-Created `/apps/admin-portal/` with complete structure:
+Created `/apps/members-portal/admin/` with complete structure:
 
 ```
-apps/admin-portal/
+apps/members-portal/admin/
 ├── admin.html              # Main admin dashboard
 ├── sync-members.html       # Manual sync trigger page
 ├── sync-history.html       # Sync history table
@@ -39,6 +39,8 @@ apps/admin-portal/
     └── values-is/
         └── strings.xml    # 50+ Icelandic admin strings
 ```
+
+**Note:** Admin portal is integrated within members-portal at `/admin/` subdirectory, deployed via symlink `services/members/public -> ../../apps/members-portal`
 
 ### 2. i18n Strings (Icelandic) ✅
 
@@ -273,17 +275,19 @@ Created `admin-portal/i18n/values-is/strings.xml` with 50+ strings:
 
 ### 6. Firebase Hosting Configuration ✅
 
-**Symlink Created:**
+**Symlink Structure:**
 ```bash
-ln -s /home/gudro/Development/projects/ekklesia/apps/admin-portal \
-      /home/gudro/Development/projects/ekklesia/services/members/public/admin
+services/members/public → ../../apps/members-portal
 ```
 
 **Result:**
 - Admin portal accessible at: `/admin/admin.html`, `/admin/sync-members.html`, `/admin/sync-history.html`
-- Shares same Firebase hosting as member portal
+- Member portal accessible at: `/dashboard.html`, `/elections.html`, etc.
+- Shares same Firebase hosting deployment
 - Uses same navigation component (BEM CSS)
 - Reuses global.css, nav.css, page.css
+
+**Single Source of Truth:** All files deployed from `apps/members-portal/` (including `/admin/` subdirectory)
 
 **No Firebase config changes needed** - symlink handles routing automatically.
 
@@ -331,23 +335,23 @@ ln -s /home/gudro/Development/projects/ekklesia/apps/admin-portal \
 ## Files Created
 
 ### HTML (3 files)
-1. `/apps/admin-portal/admin.html` (67 lines)
-2. `/apps/admin-portal/sync-members.html` (108 lines)
-3. `/apps/admin-portal/sync-history.html` (96 lines)
+1. `/apps/members-portal/admin/admin.html` (67 lines)
+2. `/apps/members-portal/admin/sync-members.html` (108 lines)
+3. `/apps/members-portal/admin/sync-history.html` (96 lines)
 
 ### JavaScript (3 files)
-1. `/apps/admin-portal/js/admin.js` (208 lines)
-2. `/apps/admin-portal/js/sync-members.js` (340 lines)
-3. `/apps/admin-portal/js/sync-history.js` (263 lines)
+1. `/apps/members-portal/admin/js/admin.js` (208 lines)
+2. `/apps/members-portal/admin/js/sync-members.js` (340 lines)
+3. `/apps/members-portal/admin/js/sync-history.js` (263 lines)
 
 ### CSS (1 file)
-1. `/apps/admin-portal/styles/admin.css` (217 lines)
+1. `/apps/members-portal/admin/styles/admin.css` (217 lines)
 
 ### i18n (1 file)
-1. `/apps/admin-portal/i18n/values-is/strings.xml` (50+ strings)
+1. `/apps/members-portal/admin/i18n/values-is/strings.xml` (50+ strings)
 
 ### Configuration (1 symlink)
-1. `services/members/public/admin → apps/admin-portal`
+1. `services/members/public → apps/members-portal` (admin accessible at `/admin/` subdirectory)
 
 **Total Lines of Code:** ~1,350 lines
 
