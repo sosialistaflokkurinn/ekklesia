@@ -199,6 +199,11 @@ body.admin {
   color: white;
 }
 
+/* Fix subtitle color in welcome card */
+.card--welcome .u-text-muted {
+  color: rgba(255, 255, 255, 0.9);
+}
+
 /* ========================================== */
 /* INFO GRID ENHANCEMENTS */
 /* ========================================== */
