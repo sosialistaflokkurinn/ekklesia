@@ -8,7 +8,7 @@
 #   ./check-user-claims.sh <UID>
 #
 # Example:
-#   ./check-user-claims.sh wElbKqQ8mLfYmxhpiUGAnv0vx2g1
+#   ./check-user-claims.sh abc123XYZ789ExampleUserUID456
 
 set -e
 
@@ -17,7 +17,7 @@ if [ $# -lt 1 ]; then
     echo "Usage: $0 <UID>"
     echo ""
     echo "Example:"
-    echo "  $0 wElbKqQ8mLfYmxhpiUGAnv0vx2g1"
+    echo "  $0 abc123XYZ789ExampleUserUID456"
     exit 1
 fi
 

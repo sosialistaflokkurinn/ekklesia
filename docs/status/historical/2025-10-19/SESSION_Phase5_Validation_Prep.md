@@ -74,7 +74,7 @@ voting_ends_at: 2025-10-20 21:00:00+00
 ### 3. Firebase Auth RBAC Configuration
 **Status**: Configured in production (not version controlled)
 
-**Problem Identified**: User `wElbKqQ8mLfYmxhpiUGAnv0vx2g1` lacked `developer` role in Firebase Auth custom claims
+**Problem Identified**: User `abc123XYZ789ExampleUserUID456` lacked `developer` role in Firebase Auth custom claims
 
 **Root Cause Analysis**:
 - User initially added `role: "developer"` (string) to **Firestore** `users` collection
@@ -89,7 +89,7 @@ curl -X POST 'https://identitytoolkit.googleapis.com/v1/projects/ekklesia-prod-1
   -H 'X-Goog-User-Project: ekklesia-prod-10-2025' \
   -H 'Content-Type: application/json' \
   -d '{
-    "localId": "wElbKqQ8mLfYmxhpiUGAnv0vx2g1",
+    "localId": "abc123XYZ789ExampleUserUID456",
     "customAttributes": "{\"roles\":[\"developer\"],\"kennitala\":\"200978-****\",\"isMember\":true}"
   }'
 ```
@@ -99,7 +99,7 @@ curl -X POST 'https://identitytoolkit.googleapis.com/v1/projects/ekklesia-prod-1
 # Confirmed custom claims in Firebase Auth
 curl -X POST 'https://identitytoolkit.googleapis.com/v1/projects/ekklesia-prod-10-2025/accounts:lookup' \
   -H 'X-Goog-User-Project: ekklesia-prod-10-2025' \
-  -d '{"localId": ["wElbKqQ8mLfYmxhpiUGAnv0vx2g1"]}' | jq '.users[0].customAttributes'
+  -d '{"localId": ["abc123XYZ789ExampleUserUID456"]}' | jq '.users[0].customAttributes'
 
 # Output: {"roles":["developer"],"kennitala":"200978-****","isMember":true}
 ```
@@ -115,7 +115,7 @@ curl -X POST 'https://identitytoolkit.googleapis.com/v1/projects/ekklesia-prod-1
 
 **Test Environment**:
 - **Service**: `https://events-service-ymzrguoifa-nw.a.run.app`
-- **Tester**: User `wElbKqQ8mLfYmxhpiUGAnv0vx2g1` (kennitala: `200978-****`)
+- **Tester**: User `abc123XYZ789ExampleUserUID456` (kennitala: `200978-****`)
 - **Timestamp**: 2025-10-19 21:08:27-28 UTC
 - **Token**: Firebase ID token with `roles: ["developer"]` claim
 
@@ -128,7 +128,7 @@ curl -X POST 'https://identitytoolkit.googleapis.com/v1/projects/ekklesia-prod-1
   "success": true,
   "message": "Deleted your Events token. You can request a new token now.",
   "scope": "mine",
-  "performed_by": "wElbKqQ8mLfYmxhpiUGAnv0vx2g1",
+  "performed_by": "abc123XYZ789ExampleUserUID456",
   "before": {"events_tokens": 1, "elections_tokens": 6, "elections_ballots": 5},
   "after": {"events_tokens": 0, "elections_tokens": 6, "elections_ballots": 5},
   "actions": [{"action": "delete_events_token_for_user", "kennitala": "200978-****"}]
@@ -172,18 +172,18 @@ gcloud logging read \
 1. **Admin Reset - User Scope** (Test 1 start)
    - Timestamp: `2025-10-19T21:08:27.384981Z`
    - Message: `"Admin reset - user scope"`
-   - Performed by: `wElbKqQ8mLfYmxhpiUGAnv0vx2g1`
+   - Performed by: `abc123XYZ789ExampleUserUID456`
    - Correlation ID: *(not captured - see residual risk #2)*
 
 2. **Admin Reset Completed** (Test 1 success)
    - Timestamp: `2025-10-19T21:08:27.392156Z`
    - Message: `"Admin reset completed"`
-   - Performed by: `wElbKqQ8mLfYmxhpiUGAnv0vx2g1`
+   - Performed by: `abc123XYZ789ExampleUserUID456`
 
 3. **Blocked Full Reset** (Test 2 guardrail)
    - Timestamp: `2025-10-19T21:08:28.683298Z`
    - Message: `"Blocked full reset in production (guardrail)"`
-   - Performed by: `wElbKqQ8mLfYmxhpiUGAnv0vx2g1`
+   - Performed by: `abc123XYZ789ExampleUserUID456`
 
 ---
 
@@ -212,7 +212,7 @@ git commit -m "test: rerun admin reset validation against October 2025 seed data
 
 Fresh test evidence for Phase 5 ticket #84 (issues #71-#79).
 Test date: 2025-10-19T21:08:27 UTC
-Tester: wElbKqQ8mLfYmxhpiUGAnv0vx2g1"
+Tester: abc123XYZ789ExampleUserUID456"
 git push origin feature/security-hardening
 ```
 
@@ -265,7 +265,7 @@ git status
 ### Priority 3: Remove Incorrect Firestore Field
 **Status**: ❌ **Firestore still has `role: "developer"` string field**
 
-**Location**: `users/wElbKqQ8mLfYmxhpiUGAnv0vx2g1` document in Firestore
+**Location**: `users/abc123XYZ789ExampleUserUID456` document in Firestore
 
 **Problem**:
 - Field `role: "developer"` (string) exists in Firestore
@@ -275,7 +275,7 @@ git status
 
 **Action**:
 1. Go to: https://console.firebase.google.com/project/ekklesia-prod-10-2025/firestore
-2. Navigate to `users/wElbKqQ8mLfYmxhpiUGAnv0vx2g1`
+2. Navigate to `users/abc123XYZ789ExampleUserUID456`
 3. Delete the `role` field (string)
 4. Keep Firebase Auth custom claims unchanged (already correct)
 

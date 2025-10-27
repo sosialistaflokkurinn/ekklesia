@@ -426,7 +426,7 @@ Four migrations were created and applied to fix all schema mismatches:
   "question": "Should we approve migration 006?",
   "answers": ["yes", "no", "abstain"],
   "status": "draft",
-  "created_by": "wElbKqQ8mLfYmxhpiUGAnv0vx2g1"
+  "created_by": "abc123XYZ789ExampleUserUID456"
 }
 ```
 

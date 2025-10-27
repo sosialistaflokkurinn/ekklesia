@@ -17,6 +17,12 @@ service cloud.firestore {
              request.auth.token.kennitala.matches('^[0-9]{6}-?[0-9]{4}$');
     }
 
+    function hasDeveloperRole() {
+      return isAuthenticated() &&
+             request.auth.token.roles is list &&
+             'developer' in request.auth.token.roles;
+    }
+
     // Users collection
     match /users/{userId} {
       // Read: Only own profile
@@ -35,6 +41,27 @@ service cloud.firestore {
 
       // Delete: Never allowed (soft delete via admin only)
       allow delete: if false;
+    }
+
+    // Sync logs collection (Epic #43)
+    match /sync_logs/{logId} {
+      // Read: Only developers can view sync logs
+      allow read: if hasDeveloperRole();
+
+      // Write: Only Cloud Functions (via Admin SDK)
+      allow write: if false;
+    }
+
+    // Events collection
+    match /events/{eventId} {
+      // Read: All authenticated members can view events
+      allow read: if isAuthenticated();
+
+      // Create/Update: Only developers can manage events
+      allow create, update: if hasDeveloperRole();
+
+      // Delete: Only developers can delete events
+      allow delete: if hasDeveloperRole();
     }
 
     // Default: Deny all other access

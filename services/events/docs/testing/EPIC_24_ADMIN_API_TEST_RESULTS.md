@@ -69,7 +69,7 @@ Successfully tested and fixed the Epic #24 Admin Election Lifecycle Management A
 - **Authentication**: Firebase JWT tokens with custom claims
 - **Required Roles**: `developer`, `meeting_election_manager`, or `event_manager`
 - **Audit Logging**: All admin actions logged to `elections.admin_audit_log` table
-- **Test User**: PERSON_26 (developer role)
+- **Test User**: Jón Jónsson (developer role)
 
 ## Database Schema Verified
 

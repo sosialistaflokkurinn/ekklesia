@@ -34,7 +34,7 @@ Regnhlífarverkefni fyrir kosningakerfi Sósíalistaflokksins ásamt meðlima og
 
 **Quick Links**:
 - [Documentation Hub](docs/README.md) - All documentation
-- [Directory & Structure](DIRECTORY.md) - Repository structure guide
+- [Repository Structure](DOCUMENTATION_MAP.md#-repository-structure) - Complete repository guide (in Documentation Map)
 - [System Architecture](docs/architecture/SYSTEM_ARCHITECTURE_OVERVIEW.md) - Overall system design
 - [Current Status](docs/features/election-voting/production-status.md) - Production infrastructure
 - [Services](services/) - Member, Events, and Elections services

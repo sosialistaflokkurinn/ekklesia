@@ -248,7 +248,7 @@ git commit --no-verify -m "emergency: hotfix"
 
 - **Issue #48:** Database password exposure incident (root cause for this hook)
 - **Security Review:** `docs/security/ISSUES_41-50_CRITICAL_REVIEW.md`
-- **Guidelines:** `.github/GITHUB_INTEGRATION_GUIDELINES.md`
+- **Guidelines:** `.github/GITHUB_AUTOMATION_GUIDE.md`
 
 ---
 

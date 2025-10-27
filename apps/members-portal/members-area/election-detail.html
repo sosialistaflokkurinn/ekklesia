@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Loading...</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/styles/global.css?v=20251027">
+  <link rel="stylesheet" href="/styles/components/nav.css?v=20251027">
+  <link rel="stylesheet" href="/styles/components/page.css?v=20251027">
+  <link rel="stylesheet" href="/styles/elections.css?v=20251027">
+</head>
+<body class="authenticated">
+  <nav class="nav">
+    <div class="nav__container">
+      <a href="/members-area/dashboard.html" class="nav__brand" id="nav-brand">Loading...</a>
+
+      <!-- Hamburger Button (mobile only) -->
+      <button class="nav__hamburger" id="nav-hamburger" aria-expanded="false">
+        <span class="nav__hamburger-line"></span>
+        <span class="nav__hamburger-line"></span>
+        <span class="nav__hamburger-line"></span>
+      </button>
+
+      <!-- Overlay for mobile menu -->
+      <div class="nav__overlay" id="nav-overlay"></div>
+
+      <!-- Navigation Drawer -->
+      <div class="nav__drawer" id="nav-drawer" aria-hidden="true">
+        <!-- Close button (mobile only) -->
+        <button class="nav__close" id="nav-close">
+          <span class="nav__close-icon">✕</span>
+        </button>
+
+        <div class="nav__links">
+          <a href="/members-area/dashboard.html" class="nav__link" id="nav-dashboard">Loading...</a>
+          <a href="/members-area/profile.html" class="nav__link" id="nav-profile">Loading...</a>
+          <a href="/members-area/events.html" class="nav__link" id="nav-events">Loading...</a>
+          <a href="/members-area/elections.html" class="nav__link nav__link--active" id="nav-voting">Loading...</a>
+          <a href="#" class="nav__link nav__link--logout" id="nav-logout">Loading...</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page__container">
+    <!-- Back Button -->
+    <div class="election-header">
+      <a href="/members-area/elections.html" class="btn btn--text back-button" id="back-link">Loading...</a>
+    </div>
+
+    <!-- Loading State -->
+    <div id="election-loading" class="elections__loading u-hidden">
+      <div class="spinner"></div>
+      <p id="loading-message">Loading...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="election-error" class="elections__error u-hidden">
+      <p id="error-message">Loading...</p>
+      <a href="/members-area/elections.html" class="btn" id="error-back-link">Loading...</a>
+    </div>
+
+    <!-- Election Detail Container -->
+    <section id="election-detail" class="election-detail u-hidden">
+
+      <!-- Election Title & Metadata -->
+      <div class="election-detail__header">
+        <h1 id="election-title">Kosning</h1>
+        <p id="election-question" class="election-detail__question"></p>
+        <div class="election-detail__meta">
+          <span id="election-status" class="election-detail__status"></span>
+          <span id="election-date" class="election-detail__date"></span>
+        </div>
+      </div>
+
+      <!-- Voting Section (if active) -->
+      <section id="voting-section" class="voting u-hidden">
+        <h2 id="voting-title">Loading...</h2>
+        <form id="vote-form" class="voting__form">
+          <div id="vote-options" class="voting__options"></div>
+          <button type="submit" id="submit-vote-btn" class="btn">Loading...</button>
+        </form>
+      </section>
+
+      <!-- Already Voted Section (if voted) -->
+      <section id="already-voted-section" class="elections__already-voted u-hidden">
+        <p id="already-voted-msg">Loading...</p>
+      </section>
+
+      <!-- Upcoming Section -->
+      <section id="upcoming-section" class="elections__upcoming u-hidden">
+        <p id="upcoming-text">Loading...</p>
+      </section>
+
+      <!-- Results Section (if closed) -->
+      <section id="results-section" class="results u-hidden">
+        <h2 id="results-title">Loading...</h2>
+        <div id="results-container" class="results__container"></div>
+      </section>
+
+    </section>
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div id="confirm-modal" class="modal u-hidden">
+    <div class="modal__content">
+      <h2 id="confirm-title">Loading...</h2>
+      <p id="confirm-message">Loading...</p>
+      <div class="modal__actions">
+        <button id="confirm-cancel" class="btn btn--secondary">
+          <span id="confirm-cancel-text">Loading...</span>
+        </button>
+        <button id="confirm-submit" class="btn">
+          <span id="confirm-submit-text">Loading...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div id="success-modal" class="modal u-hidden">
+    <div class="modal__content">
+      <h2 id="success-title">Loading...</h2>
+      <p id="success-message">Loading...</p>
+      <div class="modal__actions">
+        <a href="/members-area/elections.html" class="btn" id="success-back-link">Loading...</a>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/js/election-detail.js?v=20251027"></script>
+</body>
+</html>

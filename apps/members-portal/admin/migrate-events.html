@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Migrate Events to Firestore</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    button {
+      background: #1976d2;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .log {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 14px;
+      white-space: pre-wrap;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .success { color: #2e7d32; }
+    .error { color: #d32f2f; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Migrate Events to Firestore</h1>
+    <p>This will add 3 Facebook events to the Firestore events collection.</p>
+
+    <button id="migrateBtn" onclick="migrateEvents()">Migrate Events</button>
+
+    <div id="log" class="log"></div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getFirestore, collection, addDoc, getDocs, Timestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+    import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDlGQ7fZ3tEsKhB7FtYvF8zq_0w2xjKxE4",
+      authDomain: "ekklesia-prod-10-2025.firebaseapp.com",
+      projectId: "ekklesia-prod-10-2025",
+      storageBucket: "ekklesia-prod-10-2025.firebasestorage.app",
+      messagingSenderId: "521240388393",
+      appId: "1:521240388393:web:a74b98e3c9e9f9c9e3c9e9"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    function log(message, type = '') {
+      const logEl = document.getElementById('log');
+      const span = document.createElement('span');
+      span.className = type;
+      span.textContent = message + '\n';
+      logEl.appendChild(span);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    window.migrateEvents = async function() {
+      const btn = document.getElementById('migrateBtn');
+      btn.disabled = true;
+      document.getElementById('log').innerHTML = '';
+
+      log('🚀 Starting event migration...\n');
+
+      // Check if user is authenticated
+      if (!auth.currentUser) {
+        log('❌ ERROR: You must be logged in to migrate events.', 'error');
+        log('Please login first at /members-area/dashboard.html', 'error');
+        btn.disabled = false;
+        return;
+      }
+
+      log(`Authenticated as: ${auth.currentUser.email || auth.currentUser.uid}`);
+      log('');
+
+      const events = [
+        {
+          title: 'Málþing um sveitarstjórnarmál',
+          date: Timestamp.fromDate(new Date('2025-11-01T10:00:00+00:00')),
+          endDate: Timestamp.fromDate(new Date('2025-11-01T14:30:00+00:00')),
+          description: 'Opinn fundur um sveitastjórnarmál þar sem allir fá tækifæri til að segja sína skoðun og heyra skoðun annara.\n\nDagskrá:\n• Fullrúar frá svæðisfélögum sósíalista segir frá sinni sýn á sveitastjórnarmálum\n• Hlé\n• Almennar umræður um sveitastjórnarmál þar sem félagsmenn fá að segja sína skoðun\n• Kaffi og léttar veitingar í boði',
+          location: 'Hverfisgata 105, 101 Reykjavík',
+          status: 'upcoming',
+          organizers: ['Sósíalistaflokkur Íslands'],
+          createdAt: Timestamp.now(),
+          updatedAt: Timestamp.now()
+        },
+        {
+          title: 'Tölum um húsnæðismál',
+          date: Timestamp.fromDate(new Date('2025-09-25T20:00:00+00:00')),
+          endDate: Timestamp.fromDate(new Date('2025-09-25T21:30:00+00:00')),
+          description: 'Jón Ferdinand Estherarson fjallar um húsnæðismálin. Húsnæðismál eru í dag eitt stærsta verkefnið sem unga fólkið, láglaunafólk og efnaminni eru að takast á við. Verkefnið er alþjóðlegt, en hér á Íslandi er það engu að síður einstakt. Hvað er til ráða? Og hvað getur róttækur stjórnmálaflókkur gert til að bjarga þeim sem í vandræðum eru?\n\nKomdu og tökum þetta saman! Í húsakynnum Sósíalistaflokks Íslands, Hverfisgötu 105, Rvk. og á zoom.',
+          location: 'Sósíalistaflokkur Íslands, Hverfisgötu 105',
+          onlineLink: 'https://zoom.us/j/example',
+          status: 'upcoming',
+          organizers: ['Birna Gunnlaugsdóttir', 'Markus Candi'],
+          createdAt: Timestamp.now(),
+          updatedAt: Timestamp.now()
+        },
+        {
+          title: 'Félagsfundur Október 2025',
+          date: Timestamp.fromDate(new Date('2025-10-25T10:30:00+00:00')),
+          endDate: Timestamp.fromDate(new Date('2025-10-25T12:00:00+00:00')),
+          description: 'Félagsfundur Sósíalistaflokks Íslands.\n\nHúsið opnar klukkan 10:30 og fundurinn hefst stundvíslega klukkan 11:00. Boðið var upp á að taka þátt í gegnum Zoom.\n\nDagskrá:\n1. Framkvæmdastjórn segir frá starfinu\n2. Málefnastjórn segir frá starfinu\n3. Kosningastjórn segir frá starfinu\n4. Sagt frá starfi svæðisfélaga\n5. Önnur mál\n\nLéttar veitingar voru í boði.',
+          location: 'Hverfisgata 105, 101 Reykjavík',
+          status: 'past',
+          organizers: ['Sósíalistaflokkur Íslands'],
+          createdAt: Timestamp.now(),
+          updatedAt: Timestamp.now()
+        }
+      ];
+
+      const eventsRef = collection(db, 'events');
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (const event of events) {
+        try {
+          const docRef = await addDoc(eventsRef, event);
+          log(`✓ Added: "${event.title}"`, 'success');
+          log(`  ID: ${docRef.id}`, 'success');
+          log(`  Status: ${event.status}`);
+          log('');
+          successCount++;
+        } catch (error) {
+          log(`✗ Failed: "${event.title}"`, 'error');
+          log(`  Error: ${error.message}`, 'error');
+          log('');
+          errorCount++;
+        }
+      }
+
+      // Verify
+      try {
+        const snapshot = await getDocs(eventsRef);
+        log('━'.repeat(50));
+        log(`✅ Migration complete!`, 'success');
+        log(`   Successfully added: ${successCount} events`, 'success');
+        if (errorCount > 0) {
+          log(`   Errors: ${errorCount}`, 'error');
+        }
+        log(`   Total events in Firestore: ${snapshot.size}`);
+        log('');
+        log('Next steps:');
+        log('1. Update events.js to fetch from Firestore');
+        log('2. Remove hardcoded events from events.js');
+        log('3. Deploy changes');
+      } catch (error) {
+        log(`Error verifying: ${error.message}`, 'error');
+      }
+
+      btn.disabled = false;
+    };
+  </script>
+</body>
+</html>

@@ -52,7 +52,7 @@ members/scripts/set-user-roles.js
 
 ### Special Case Files (4 files)
 ```
-.github/GITHUB_INTEGRATION_GUIDELINES.md
+.github/GITHUB_AUTOMATION_GUIDE.md
 members/public/ARCHITECTURE_REFACTOR.md
 members/public/TESTING_GUIDE.md
 members/public/CRITICAL_FIXES.md
@@ -77,7 +77,7 @@ find . -name "server.js"          # Should be at tools/legacy/server.js
 find . -name "audit-mfa.js"       # Should be at members/scripts/audit-mfa.js
 
 # Special guides
-find . -name "GITHUB_INTEGRATION_GUIDELINES.md"
+find . -name "GITHUB_AUTOMATION_GUIDE.md"
 ```
 
 ### What's Actually Happening:
