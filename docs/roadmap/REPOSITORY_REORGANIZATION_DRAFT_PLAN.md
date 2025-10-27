@@ -6,7 +6,7 @@
 
 > **Status**: COMPLETED 2025-10-21 (Commit f3ecc28)
 > This was a draft plan. The actual restructuring has been completed.
-> See [DIRECTORY.md](../../DIRECTORY.md) for current structure.
+> See [Repository Structure](../../DOCUMENTATION_MAP.md#-repository-structure) for current structure.
 **Effort**: 40-60 hours (2-3 weeks with Haiku + Sonnet workflow)
 **Risk Level**: Medium-High (impacts all developers, git operations involved)
 

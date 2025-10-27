@@ -276,7 +276,7 @@ Action:
 Actions:
 - Create docs/README.md (entry point for all docs)
 - Create docs/QUICK_START.md (for new developers)
-- Create docs/DIRECTORY.md (detailed directory guide)
+- Create DOCUMENTATION_MAP.md with Repository Structure section (detailed directory guide)
 - Create service-specific README.md in each services/{name}/
 
 Result: Clear entry point for navigation
@@ -516,7 +516,7 @@ Phase 6 (Archive):
 Phase 7 (Index):
 ✅ docs/README.md is clear entry point
 ✅ docs/QUICK_START.md works for onboarding
-✅ docs/DIRECTORY.md provides navigation
+✅ DOCUMENTATION_MAP.md#Repository-Structure provides navigation (consolidated from DIRECTORY.md)
 ✅ Each service has README.md
 
 Phase 8 (Verify & Commit):

@@ -1,8 +1,8 @@
 # 🗺️ Ekklesia Platform - Master Documentation Map
 
-**Version**: 7.0.0
-**Last Updated**: 2025-10-20
-**Status**: ✅ Phase 5 Complete - Full Voting System Operational (Members ✅ + Events ✅ + Elections ✅) + Security Improvements + Documentation Quality Audit & Enhancement
+**Version**: 8.0.0
+**Last Updated**: 2025-10-27
+**Status**: ✅ Phase 5 Complete - Full Voting System Operational (Members ✅ + Events ✅ + Elections ✅) + Security Improvements + Documentation Quality Audit & Enhancement + Repository Structure Consolidated
 
 ---
 
@@ -11,15 +11,17 @@
 ### 🚀 **Getting Started**
 - [Project Overview](#project-overview)
 - [Current Status](#current-status)
+- [Repository Structure](#-repository-structure) ⭐ **NEW** - Complete repo guide
 - [Documentation Structure](#documentation-structure)
 - [Quick Links by Role](#quick-links-by-role)
 
 ### 📚 **Documentation Directories**
 - [/docs/ - Architecture & Plans](#docs-directory)
-- [/members/ - Members Service](#members-directory)
-- [/events/ - Events Service](#events-directory)
-- [/elections/ - Elections Service](#elections-directory)
-- [/archive/ - Archived Code](#archive-directory)
+- [/services/ - Backend Services](#-services-directory-services)
+- [/apps/ - Frontend Apps](#-applications-directory-apps)
+- [/testing/ - Tests & Reports](#-testing-directory-testing)
+- [/scripts/ - Deployment Scripts](#%EF%B8%8F-scripts-directory-scripts)
+- [/archive/ - Archived Code](#-archive-directory-archive)
 
 ---
 
@@ -168,6 +170,145 @@
 - ✅ ZITADEL infrastructure decommissioned
 - ✅ Cost savings: $135/month → $7-10/month
 - 📄 Documentation: `archive/ops/migrations/FIREBASE_MIGRATION_STATUS.md`
+
+---
+
+## 📂 Repository Structure
+
+Complete overview of repository organization (consolidated from DIRECTORY.md).
+
+### Root Level
+
+```
+ekklesia/
+├── services/                    ← Backend services (members, events, elections)
+├── apps/                        ← Frontend applications
+├── docs/                        ← Project documentation
+├── infrastructure/              ← Infrastructure-as-Code (Terraform, Cloud Run)
+├── testing/                     ← E2E tests & test utilities
+├── scripts/                     ← Deployment & maintenance scripts
+├── archive/                     ← Deprecated/historical code
+├── .github/                     ← GitHub workflows & templates
+├── README.md                    ← Project overview
+├── DOCUMENTATION_MAP.md         ← This file (master documentation index)
+└── [config files]               ← .gitignore, package.json, etc.
+```
+
+### 🏢 Services Directory (`/services/`)
+
+**Backend microservices** for Ekklesia voting platform.
+
+#### `services/members/`
+- **Purpose**: Members Portal + Authentication Service
+- **Runtime**: Firebase Hosting + Cloud Functions
+- **Key Features**: Kenni.is OAuth, profile management, membership verification
+- **Status**: ✅ Production (Phase 4)
+
+#### `services/events/`
+- **Purpose**: Events Service - Election administration & voting token issuance
+- **Runtime**: Node.js 18 + Express on Cloud Run
+- **Key Features**: Election management, token issuance, audit trail
+- **Status**: ✅ Production (Phase 5 MVP)
+
+#### `services/elections/`
+- **Purpose**: Elections Service - Anonymous ballot recording
+- **Runtime**: Node.js 18 + Express on Cloud Run
+- **Key Features**: Anonymous voting, double-vote prevention, result calculation
+- **Status**: ✅ Production (Phase 5 MVP)
+
+### 🎨 Applications Directory (`/apps/`)
+
+**Frontend interfaces** for Ekklesia.
+
+#### `apps/members-portal/`
+- **Purpose**: Member dashboard, election discovery, voting interface
+- **Technology**: HTML5, ES6 JavaScript, CSS3 (BEM methodology)
+- **Hosted**: Firebase Hosting (ekklesia-prod-10-2025.web.app)
+- **Status**: ✅ Active
+
+### 🛠️ Scripts Directory (`/scripts/`)
+
+**Deployment, maintenance, and utility scripts** organized by function.
+
+```
+scripts/
+├── admin/              ← Admin utilities (audits, documentation fixes)
+├── database/           ← Database operations (psql wrappers, backups)
+├── deployment/         ← Deployment helpers (Cloud Run, git hooks)
+├── git-hooks/          ← Git pre-commit hooks (security scanning)
+└── README.md           ← Script documentation
+```
+
+**Key Scripts**:
+- `deployment/install-git-hooks.sh` - Setup pre-commit hooks
+- `deployment/get-secret.sh` - Retrieve secrets from Secret Manager
+- `database/psql-cloud.sh` - Connect to Cloud SQL
+- `admin/*.py` - Documentation audits and validation
+
+### 🧪 Testing Directory (`/testing/`)
+
+**Centralized test utilities, fixtures, and E2E tests.**
+
+```
+testing/
+├── integration/        ← Integration test scripts
+├── reports/           ← Test execution reports & checklists
+└── INDEX.md           ← Testing documentation index
+```
+
+### 🏗️ Infrastructure Directory (`/infrastructure/`)
+
+**Infrastructure-as-Code and deployment configuration.**
+
+```
+infrastructure/
+├── terraform/          ← Terraform configurations (Phase 6+)
+├── cloud-run/          ← Cloud Run service configurations
+└── sql/                ← Database configurations & migrations
+```
+
+**Current Infrastructure**:
+- **Hosting**: Firebase Hosting (members portal)
+- **Compute**: Cloud Run (events, elections services)
+- **Functions**: Cloud Functions (handleKenniAuth, verifyMembership)
+- **Database**: Cloud SQL PostgreSQL 15 (europe-west2)
+- **Auth**: Firebase Authentication + Kenni.is OAuth
+- **Storage**: Firebase Storage (membership list)
+
+### 📦 Archive Directory (`/archive/`)
+
+**Historical, deprecated, and legacy code** (not in production).
+
+```
+archive/
+├── docs/               ← Archived documentation (organized by date)
+├── research/           ← Research papers and evaluations
+└── phase-1-3/         ← Historical project notes
+```
+
+### 📋 Configuration Files (Root)
+
+| File | Purpose |
+|------|---------|
+| `.gitignore` | Git ignore rules (excludes __pycache__, *.pyc, local configs) |
+| `package.json` | Project metadata & shared dependencies |
+| `README.md` | Project overview & getting started |
+| `DOCUMENTATION_MAP.md` | This file - complete documentation index |
+| `.code-rules` | Claude Code configuration (local only) |
+
+### 🗂️ File Naming Conventions
+
+**Documentation Files**: `UPPERCASE_WITH_UNDERSCORES.md`
+- Examples: `SYSTEM_ARCHITECTURE_OVERVIEW.md`, `CURRENT_PRODUCTION_STATUS.md`
+
+**Shell Scripts**: `lowercase-with-dashes.sh`
+- Examples: `install-git-hooks.sh`, `get-secret.sh`
+
+**Python Scripts**: `lowercase_with_underscores.py`
+- Examples: `audit_documentation.py`, `validate_links.py`
+
+**Directories**: `lowercase-with-dashes/`
+- Examples: `git-hooks/`, `cloud-run/`
 
 ---
 
