@@ -1,6 +1,6 @@
 # Ekklesia Current Development Status
 
-**Last Updated:** 2025-10-22
+**Last Updated:** 2025-10-27
 **Status:** 🟡 Development Phase - Infrastructure Ready
 **Current Phase:** 5 - Feature Development & Deployment Planning
 **Target Completion:** November 2025
@@ -42,6 +42,44 @@ Ekklesia infrastructure is **stable and ready for development**. Phase 4 complet
 
 ---
 
+## Recent Development Activity (Oct 22-27, 2025)
+
+**Infrastructure & Tooling:**
+- ✅ **Claude Code Setup System** - Complete AI session environment configuration
+  - Created `.claude/README.md` (234 lines) - Configuration guide
+  - Created `docs/development/guides/CLAUDE_CODE_SETUP.md` (259 lines) - Quick start guide
+  - Created `/tmp/setup_env_vars.sh` - Automated environment setup script
+  - Environment variables: `PGPASSWORD`, `FIREBASE_TOKEN`, `DJANGO_API_TOKEN`
+  - Secret Manager integration documented
+
+- ✅ **GitHub Automation Improvements**
+  - Renamed and cleaned up `GITHUB_AUTOMATION_GUIDE.md` (v1.1)
+  - Added 375-line Security Issue Verification Workflow section
+  - Updated GitHub Actions to latest versions (2025-10-27)
+  - Fixed security-hygiene.yml workflow (removed apt-get dependency)
+
+- ✅ **Security Enhancements**
+  - Cleaned up hardcoded credentials from `.claude/settings.local.json`
+  - Moved Django API token to Secret Manager
+  - Pre-commit hooks for kennitala/PII detection
+  - Updated `.gitignore` for better security (`.playwright-mcp/`, `.claude/` exceptions)
+
+**Epic #43 Progress:**
+- ✅ Facebook events Firestore migration implementation
+- ✅ Epic #43 Phase 2 implementation documentation created
+- ✅ Firestore members collection replacing flat file storage
+- 🔄 Multiple UI improvements (events page buttons, i18n string fixes)
+
+**Bug Fixes & Refactoring:**
+- Fixed login flow error handling (double-read prevention)
+- Fixed admin JS redirects to use `/members-area/` paths
+- Added missing `hideEmpty()` function to elections
+- CSRF validation logging for troubleshooting
+
+**Total Commits Since 2025-10-22:** 29 commits across multiple areas
+
+---
+
 ## Development System Status
 
 ### Services (All Operational)
@@ -50,15 +88,19 @@ Ekklesia infrastructure is **stable and ready for development**. Phase 4 complet
 |---------|--------|---------|-------------|----------|
 | **Elections Service** | ✅ Running | MVP | 2025-10-19 | `services/elections` |
 | **Events Service** | ✅ Running | MVP | 2025-10-19 | `services/events` |
-| **Members Service** | ✅ Running | Phase 4 | 2025-10-18 | `services/members` |
+| **Members Service** | ✅ Running | Phase 4 | 2025-10-18 | Frontend: `apps/members-portal/`<br>Functions: `services/members/` |
 | **Cloud SQL Database** | ✅ Running | 15.1 | 2025-10-17 | PostgreSQL, europe-west2 |
 | **Firebase Project** | ✅ Active | Config | 2025-10-15 | ekklesia-prod-10-2025 |
+
+**Note on Members Service:** Unlike Elections and Events services, the Members Service is a hybrid architecture:
+- **Frontend**: Static site hosted on Firebase Hosting (`apps/members-portal/`)
+- **Backend**: Cloud Functions (handlekenniauth, syncmembers, verifymembership in `services/members/`)
 
 ### Infrastructure (All Verified)
 
 | Component | Status | Details |
 |-----------|--------|---------|
-| **Cloud Run** | ✅ Deployed | 3 services running in europe-west2 |
+| **Cloud Run** | ✅ Deployed | 6 services: elections-service, events-service, handlekenniauth, healthz, syncmembers, verifymembership (europe-west2) |
 | **Cloud SQL** | ✅ Operational | PostgreSQL 15.1, 2 schemas (public, elections) |
 | **Firebase Hosting** | ✅ Live | Members frontend at https://ekklesia-prod-10-2025.web.app |
 | **Cloud Storage** | ✅ Configured | Audit logs and backups |
@@ -141,11 +183,18 @@ Ekklesia infrastructure is **stable and ready for development**. Phase 4 complet
   - Role-based access control
 
 **Epic #43: Membership Sync with Django Backend**
-- **Branch:** `feature/epic-43-membership-sync`
-- **Status:** Specification Complete ✅
-- **Documentation:** [EPIC_43_MEMBERSHIP_SYNC.md](../features/election-voting/EPIC_43_MEMBERSHIP_SYNC.md)
+- **Branch:** `feature/epic-43-membership-sync` (ACTIVE)
+- **Status:** 🟡 In Progress - Phase 2 Implementation
+- **Documentation:**
+  - [EPIC_43_MEMBER_MANAGEMENT_SYSTEM.md](../features/election-voting/EPIC_43_MEMBER_MANAGEMENT_SYSTEM.md)
+  - [EPIC_43_PHASE_2_IMPLEMENTATION.md](../features/election-voting/EPIC_43_PHASE_2_IMPLEMENTATION.md)
 - **Scope:** Hourly automatic member synchronization from Django backend
 - **Timeline:** 4 weeks (parallel with #24)
+- **Recent Work:**
+  - ✅ Facebook events Firestore migration completed
+  - ✅ Phase 2 implementation documentation created
+  - ✅ Firestore members collection replacing kennitalas.txt
+  - 🔄 GitHub issues #88-92 (Epic #43 subtasks) in progress
 - **Key Deliverables:**
   - New membership-sync service (Node.js)
   - Cloud Scheduler integration (hourly)
@@ -191,7 +240,56 @@ Week 4:     Epic #43 complete | Integration testing | Documentation
 **Current Status:**
 - Epic #87: ✅ Complete - provides foundation for admin UI
 - Epic #24: Ready to start - can leverage Epic #87 patterns
-- Epic #43: On hold - needs recreation from current main
+- Epic #43: 🟡 In Progress - Facebook events migration & Phase 2 docs complete
+
+### Additional Active Epics
+
+Beyond the three Phase 5 core epics, several other epics are in planning/progress:
+
+**Epic #101: Fine Tuning, Documentation & UI Polish**
+- **Status:** 🟡 Open
+- **Scope:** Polish existing features, improve documentation, refine UI/UX
+- **Priority:** Ongoing throughout Phase 5
+
+**Epic #98: Facebook Graph API Integration for Automated Event Management**
+- **Status:** 🟡 Open
+- **Scope:** Automated event synchronization from Facebook
+- **Priority:** Low (backend automation)
+- **Related:** Members UI events page (#97)
+
+**Epic #25: Role Preservation and Management Improvements**
+- **Status:** 🟡 Open
+- **Scope:** Better handling of admin/member roles across sessions
+- **Priority:** Medium
+
+**Issue Tracker:** [GitHub Issues](https://github.com/sosialistaflokkurinn/ekklesia/issues?q=is%3Aissue+is%3Aopen+label%3AEpic)
+
+---
+
+## Development Environment
+
+### Required Setup for AI Sessions
+
+**Environment Variables:**
+- `PGPASSWORD` - PostgreSQL database password (from Secret Manager)
+- `FIREBASE_TOKEN` - Firebase JWT auth token (from browser console)
+- `DJANGO_API_TOKEN` - Django API token for membership sync (from Secret Manager)
+
+**Setup Guides:**
+- **Quick Start:** `docs/development/guides/CLAUDE_CODE_SETUP.md` (2-minute setup)
+- **Full Configuration:** `.claude/README.md` (comprehensive guide)
+- **Automated Script:** `/tmp/setup_env_vars.sh`
+
+**Required Tools:**
+- gcloud CLI (authenticated with `ekklesia-prod-10-2025` project)
+- Cloud SQL Proxy (for local database access)
+- Firebase CLI (for deployments)
+- GitHub CLI (for issue/PR automation)
+
+**Key Documentation:**
+- **GitHub Automation:** `.github/GITHUB_AUTOMATION_GUIDE.md`
+- **Git Workflows:** `docs/development/guides/git/GIT_WORKFLOW_EXAMPLES.md`
+- **Security Guidelines:** `docs/security/`
 
 ---
 
@@ -256,33 +354,54 @@ Week 4:     Epic #43 complete | Integration testing | Documentation
 
 ```
 ekklesia/
-├── services/              (Phase 5 location)
-│   ├── elections/         (Elections Service)
-│   ├── events/            (Events Service)
-│   └── members/           (Members Service + Cloud Functions)
-├── docs/                  (Reorganized 2025-10-21)
+├── apps/                  (Frontend applications)
+│   └── members-portal/    (Members frontend - HTML, JS, CSS)
+│       ├── admin/         (Admin pages)
+│       ├── members-area/  (Member dashboard)
+│       ├── js/            (JavaScript modules)
+│       ├── styles/        (CSS with BEM methodology)
+│       └── i18n/          (Internationalization)
+├── services/              (Backend services)
+│   ├── elections/         (Elections API - Node.js)
+│   ├── events/            (Events API - Node.js)
+│   └── members/           (Cloud Functions - Python/Node.js)
+├── docs/                  (Documentation - reorganized 2025-10-21)
 │   ├── features/
 │   │   └── election-voting/
 │   │       ├── EPIC_24_ADMIN_LIFECYCLE.md ✅
-│   │       ├── EPIC_43_MEMBERSHIP_SYNC.md ✅
+│   │       ├── EPIC_43_MEMBER_MANAGEMENT_SYSTEM.md ✅
+│   │       ├── EPIC_43_PHASE_2_IMPLEMENTATION.md ✅
 │   │       └── EPIC_87_ELECTION_DISCOVERY.md ✅
 │   ├── roadmap/
 │   │   └── PHASE_5_OVERVIEW.md ✅
 │   ├── setup/             (Deployment guides)
-│   ├── development/       (Dev guides)
-│   ├── security/          (Security docs)
-│   └── status/            (This and related docs)
-├── .github/workflows/     (CI/CD)
+│   ├── development/       (Dev guides, workflows, Claude Code setup)
+│   ├── security/          (Security docs, responses)
+│   └── status/            (This file and related status docs)
+├── .github/
+│   ├── workflows/         (CI/CD, security scanning)
+│   └── GITHUB_AUTOMATION_GUIDE.md ✅ (Security verification workflow)
+├── .claude/
+│   ├── README.md ✅       (Claude Code setup guide)
+│   └── commands/          (Custom slash commands)
 └── README.md
 ```
 
 **Git Status:**
-- Current Branch: `main`
-- Latest Commit: `768089da` (Phase 5 overview update, 2025-10-22)
+- Current Branch: `feature/epic-43-membership-sync` (Active development)
+- Latest Commit on main: `768089da` (Phase 5 overview update, 2025-10-22)
+- Latest Commit on branch: `6fb3129f` (Django API token docs, 2025-10-27)
 - Feature Branches (Phase 5):
-  - `feature/epic-24-admin-lifecycle` ✅ Remote & local
-  - `feature/epic-43-membership-sync` ✅ Remote & local
+  - `feature/epic-24-admin-lifecycle` ✅ Remote & local (ready to start)
+  - `feature/epic-43-membership-sync` 🟡 Remote & local (active development)
   - `feature/epic-87-election-discovery` ✅ Merged to main (2025-10-22)
+
+**Recent Commits on feature/epic-43-membership-sync:**
+- 6fb3129f - docs: update Django API token to use Secret Manager
+- a275336b - fix: correct secret name from database-password to postgres-password
+- 53af1692 - docs: add Claude Code quick setup guide
+- 9d3dfe1e - docs: add Claude Code configuration guide
+- 6836630f - feat(events): add Firestore migration for Facebook events
 
 ---
 

@@ -1,9 +1,11 @@
 # Ekklesia Usage Context & Load Characteristics
 
 **Document Type**: System Requirements - Usage Patterns
-**Last Updated**: 2025-10-09
+**Last Updated**: 2025-10-27
 **Status**: ✅ Active - Critical Design Context
 **Purpose**: Define real-world usage patterns and load characteristics for capacity planning
+
+**Note**: These specifications are pre-production estimates based on analysis of organizational meeting patterns. Will be updated after first production meetings with actual load data.
 
 ---
 

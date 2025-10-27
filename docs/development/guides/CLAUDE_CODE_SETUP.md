@@ -85,10 +85,18 @@ Claude Code automatically loads project context by reading:
 
 ### Database Queries
 
+**Prerequisites**: Cloud SQL Proxy must be running in the background
+
 ```bash
-# Already configured - just use psql
+# Start Cloud SQL Proxy (in separate terminal or background)
+./cloud-sql-proxy ekklesia-prod-10-2025:europe-west2:ekklesia-db \
+  --port=5432 &
+
+# Now you can query the database
 psql -h 127.0.0.1 -p 5432 -U postgres -d postgres -c "SELECT * FROM users LIMIT 5;"
 ```
+
+**Note**: If database queries fail with "connection refused", the Cloud SQL Proxy is not running. Start it with the command above.
 
 ### Testing Authenticated Endpoints
 
