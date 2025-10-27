@@ -72,3 +72,4 @@ reset-election.example.sql
 data/Stadfangaskra.csv
 .gitignore
 docs/migration/DUPLICATE_SSN_CLEANUP_2025-10-26.md
+.claude/settings.local.json

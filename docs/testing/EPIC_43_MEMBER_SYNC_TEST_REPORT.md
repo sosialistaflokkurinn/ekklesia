@@ -185,14 +185,14 @@ def syncmembers(req: https_fn.CallableRequest):
 
 **Key Log Entries:**
 ```
-[INFO] Member sync initiated (uid=wElbKqQ8mLfYmxhpiUGAnv0vx2g1)
+[INFO] Member sync initiated (uid=abc123XYZ789ExampleUserUID456)
 [INFO] Django API token retrieved (project_id=ekklesia-prod-10-2025)
 [INFO] Fetching members from Django (page=1, url=https://starf.sosialistaflokkurinn.is/felagar/api/full/)
 [INFO] Fetched members from Django (page=1, count=2174, results_count=100)
 [INFO] Member synced to Firestore (kennitala=XXXXXX-XXXX, name=Example User, django_id=123)
 ... (2,173 more sync entries)
 [INFO] Member sync completed (event=member_sync_completed, stats={...})
-[INFO] Member sync completed successfully (uid=wElbKqQ8mLfYmxhpiUGAnv0vx2g1, log_id=snqEcbaIjvwLzKqkwUv8)
+[INFO] Member sync completed successfully (uid=abc123XYZ789ExampleUserUID456, log_id=snqEcbaIjvwLzKqkwUv8)
 ```
 
 ### Firestore Collections

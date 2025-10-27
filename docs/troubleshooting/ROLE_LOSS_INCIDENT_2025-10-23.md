@@ -1,7 +1,7 @@
 # Role Loss Incident - October 23, 2025
 
 **Status**: ✅ Resolved
-**Impact**: Developer role lost from user `wElbKqQ8mLfYmxhpiUGAnv0vx2g1`
+**Impact**: Developer role lost from user `abc123XYZ789ExampleUserUID456`
 **Root Cause**: Custom claims handling during handleKenniAuth redeployment
 **Resolution**: Manually reset developer role via Identity Toolkit REST API
 
@@ -10,7 +10,7 @@
 ## Timeline
 
 ### 1. Initial State (Before Redeployment)
-- User `wElbKqQ8mLfYmxhpiUGAnv0vx2g1` (gudrodur@gmail.com, kennitala: 200978-3589)
+- User `abc123XYZ789ExampleUserUID456` (jon.jonsson@example.com, kennitala: 010190-2939)
 - **Assumed state**: User may or may not have had developer role set previously
 - System: Firebase Auth with custom claims in production
 
@@ -30,17 +30,17 @@ User reported: "mitt role er ekki þannig þetta er ekki forritara role tóken"
 Decoded token showed:
 ```json
 {
-  "name": "Guðröður Atli Jónsson",
-  "kennitala": "200978-3589",
+  "name": "Jón Jónsson",
+  "kennitala": "010190-2939",
   "isMember": true,
-  "email": "gudrodur@gmail.com",
-  "phoneNumber": "+3547758493",
+  "email": "jon.jonsson@example.com",
+  "phoneNumber": "+3545551234",
   // ❌ NO "roles" field
   "iss": "https://securetoken.google.com/ekklesia-prod-10-2025",
   "aud": "ekklesia-prod-10-2025",
   "auth_time": 1760904491,
-  "user_id": "wElbKqQ8mLfYmxhpiUGAnv0vx2g1",
-  "sub": "wElbKqQ8mLfYmxhpiUGAnv0vx2g1",
+  "user_id": "abc123XYZ789ExampleUserUID456",
+  "sub": "abc123XYZ789ExampleUserUID456",
   "iat": 1760904491,
   "exp": 1760908091
 }
@@ -55,7 +55,7 @@ Decoded token showed:
 ### 5. Resolution Attempt 2 (Failed)
 **Correct tool, credential issues**: Tried using `set-user-roles.js` script
 ```bash
-node set-user-roles.js wElbKqQ8mLfYmxhpiUGAnv0vx2g1 developer
+node set-user-roles.js abc123XYZ789ExampleUserUID456 developer
 ```
 
 **Errors encountered:**
@@ -77,7 +77,7 @@ curl -X POST "https://identitytoolkit.googleapis.com/v1/projects/ekklesia-prod-1
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -H "x-goog-user-project: ekklesia-prod-10-2025" \
-  -d '{"localId":"wElbKqQ8mLfYmxhpiUGAnv0vx2g1","customAttributes":"{\"roles\":[\"developer\"],\"kennitala\":\"200978-3589\",\"isMember\":true,\"email\":\"gudrodur@gmail.com\",\"phoneNumber\":\"+3547758493\"}"}'
+  -d '{"localId":"abc123XYZ789ExampleUserUID456","customAttributes":"{\"roles\":[\"developer\"],\"kennitala\":\"010190-2939\",\"isMember\":true,\"email\":\"jon.jonsson@example.com\",\"phoneNumber\":\"+3545551234\"}"}'
 ```
 
 **Key details:**
@@ -90,8 +90,8 @@ curl -X POST "https://identitytoolkit.googleapis.com/v1/projects/ekklesia-prod-1
 ```json
 {
   "kind": "identitytoolkit#SetAccountInfoResponse",
-  "localId": "wElbKqQ8mLfYmxhpiUGAnv0vx2g1",
-  "displayName": "Guðröður Atli Jónsson"
+  "localId": "abc123XYZ789ExampleUserUID456",
+  "displayName": "Jón Jónsson"
 }
 ```
 
@@ -103,17 +103,17 @@ curl -s -X POST "https://identitytoolkit.googleapis.com/v1/projects/ekklesia-pro
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -H "x-goog-user-project: ekklesia-prod-10-2025" \
-  -d '{"localId":["wElbKqQ8mLfYmxhpiUGAnv0vx2g1"]}' | jq '.users[0].customAttributes'
+  -d '{"localId":["abc123XYZ789ExampleUserUID456"]}' | jq '.users[0].customAttributes'
 ```
 
 **Result:**
 ```json
 {
   "roles": ["developer"],
-  "kennitala": "200978-3589",
+  "kennitala": "010190-2939",
   "isMember": true,
-  "email": "gudrodur@gmail.com",
-  "phoneNumber": "+3547758493"
+  "email": "jon.jonsson@example.com",
+  "phoneNumber": "+3545551234"
 }
 ```
 
@@ -228,7 +228,7 @@ A transient error during login (immediately after redeployment) caused `auth.get
 ```javascript
 admin.auth().setCustomUserClaims(uid, {
   roles: ["developer"],
-  kennitala: "200978-3589"
+  kennitala: "010190-2939"
 });
 ```
 
@@ -297,7 +297,7 @@ The `set-user-roles.js` script already existed and was the correct tool.
 
 ### Immediate Actions (Completed)
 
-1. ✅ Developer role restored for gudrodur@gmail.com
+1. ✅ Developer role restored for jon.jonsson@example.com
 2. ✅ Created `/tmp/set_developer_role.sh` for emergency role assignment
 3. ✅ Created `/tmp/check_custom_claims.sh` for verification
 4. ✅ Installed firebase-admin in scripts directory
@@ -390,7 +390,7 @@ firebase deploy --only functions:handleKenniAuth
 ```bash
 # Set multiple roles
 cd /home/gudro/Development/projects/ekklesia/services/members/scripts
-node set-user-roles.js wElbKqQ8mLfYmxhpiUGAnv0vx2g1 developer meeting_election_manager
+node set-user-roles.js abc123XYZ789ExampleUserUID456 developer meeting_election_manager
 
 # Verify both roles present
 # Login and check token
@@ -403,7 +403,7 @@ node set-user-roles.js wElbKqQ8mLfYmxhpiUGAnv0vx2g1 developer meeting_election_m
 ```bash
 # Remove specific role
 cd /home/gudro/Development/projects/ekklesia/services/members/scripts
-node set-user-roles.js --uid wElbKqQ8mLfYmxhpiUGAnv0vx2g1 --remove meeting_election_manager
+node set-user-roles.js --uid abc123XYZ789ExampleUserUID456 --remove meeting_election_manager
 
 # Verify only developer role remains
 ```

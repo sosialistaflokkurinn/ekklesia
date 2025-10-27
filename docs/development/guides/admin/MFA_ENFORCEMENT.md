@@ -59,7 +59,7 @@ Summary:
 - Elevated users detected: 1
 - With MFA: 0 (0.0%)
 - Without MFA: 1
-- Non-compliant UIDs: wElbKqQ8mLfYmxhpiUGAnv0vx2g1
+- Non-compliant UIDs: abc123XYZ789ExampleUserUID456
 
 Remediation Plan (immediate):
 1) User with developer role must enroll MFA (TOTP preferred) as soon as possible.

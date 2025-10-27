@@ -650,6 +650,6 @@ apps/admin-members/
 ---
 
 **Last Updated**: 2025-10-26
-**Author**: Guðröður Atli Jónsson
+**Author**: Jón Jónsson
 **Status**: 🔨 In Development - Epic #43 Active
 **Next Review**: After Phase 1 completion

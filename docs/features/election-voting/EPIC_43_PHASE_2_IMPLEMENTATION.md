@@ -504,7 +504,7 @@ Successfully leveraged existing member portal patterns:
    ```bash
    # Check user custom claims
    firebase auth:export users.json --project ekklesia-prod-10-2025
-   cat users.json | jq '.users[] | select(.email=="gudrodur@gmail.com") | .customClaims'
+   cat users.json | jq '.users[] | select(.email=="jon.jonsson@example.com") | .customClaims'
    ```
 
 3. **Test Locally:**

@@ -340,7 +340,7 @@ curl -H "Authorization: Token $TOKEN" \\
       "gender": 2,
       "contact_info": {
         "pk": 1,
-        "phone": "+3547758493",
+        "phone": "+3545551234",
         "email": "gudrun@example.is",
         "facebook": ""
       },

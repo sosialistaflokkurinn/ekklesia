@@ -319,7 +319,7 @@ WHERE c.ssn = '0101012980';
       "housing_situation": 1,
       "gender": 2,
       "email": "gudrun@example.is",
-      "phone": "+3547758493",
+      "phone": "+3545551234",
       "address": {
         "street": "Túngata 14",
         "postal": "101",
@@ -480,7 +480,7 @@ SELECT * FROM membership_comrade WHERE ssn = '0101012980';
     "name": "Guðrún Jónsdóttir",
     "birthday": "1998-01-01",
     "email": "gudrun@example.is",
-    "phone": "+3547758493",
+    "phone": "+3545551234",
     "housingSituation": 1,
     "gender": 2
   },
