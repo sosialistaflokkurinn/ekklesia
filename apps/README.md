@@ -18,13 +18,21 @@ members-portal/
 │   ├── js/                  # Admin JavaScript modules
 │   ├── styles/              # Admin-specific CSS
 │   └── i18n/                # Admin Icelandic strings
-├── dashboard.html           # Member dashboard
-├── elections.html           # Elections list
-├── election-detail.html     # Vote on election
-├── profile.html             # Member profile
+├── members-area/            # Member portal (authenticated members)
+│   ├── dashboard.html       # Member dashboard
+│   ├── elections.html       # Elections list
+│   ├── election-detail.html # Vote on election
+│   ├── events.html          # Events calendar
+│   ├── profile.html         # Member profile
+│   ├── test-events.html     # Test events page
+│   └── docs/                # Member-specific documentation
+├── index.html               # Landing page (login)
+├── favicon.svg              # Favicon
+├── favicon.ico              # Favicon fallback
 ├── js/                      # Shared JavaScript modules
 ├── styles/                  # Shared CSS (BEM methodology)
 ├── session/                 # Session management
+├── ui/                      # Shared UI components
 └── firebase/                # Firebase configuration
 ```
 
@@ -34,7 +42,8 @@ members-portal/
 - **All files deployed from this single location**
 
 **URLs**:
-- Member pages: `/dashboard.html`, `/elections.html`, etc.
+- Landing page: `/index.html` (login)
+- Member pages: `/members-area/dashboard.html`, `/members-area/elections.html`, etc.
 - Admin pages: `/admin/admin.html`, `/admin/sync-members.html`, etc.
 
 **Technology**:
