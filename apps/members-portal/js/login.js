@@ -168,7 +168,7 @@ function updateLoginStrings() {
   document.getElementById('login-title').textContent = R.string.login_title;
   document.getElementById('login-subtitle').textContent = R.string.login_subtitle;
   document.getElementById('status-text').textContent = R.string.status_not_authenticated;
-  document.getElementById('login-btn').textContent = R.string.btn_login;
+  document.getElementById('btn-login').textContent = R.string.btn_login;
   document.getElementById('login-description').textContent = R.string.btn_login_description;
 }
 
@@ -180,7 +180,7 @@ function updateLoginStrings() {
  * @param {string} redirectUri - OAuth redirect URI
  */
 function setupLoginButton(issuerUrl, clientId, redirectUri) {
-  document.getElementById('login-btn').addEventListener('click', async () => {
+  document.getElementById('btn-login').addEventListener('click', async () => {
     const { verifier, challenge } = await generatePKCE();
     sessionStorage.setItem('pkce_code_verifier', verifier);
 
