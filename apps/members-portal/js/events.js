@@ -123,13 +123,17 @@ async function loadEvents(filter = 'upcoming') {
  * Setup tab filter event listeners
  */
 function setupFilters() {
-  const tabs = document.querySelectorAll('.tabs__item');
+  const tabs = document.querySelectorAll('.button-group .btn');
 
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
-      // Update active tab
-      tabs.forEach(t => t.classList.remove('tabs__item--active'));
-      tab.classList.add('tabs__item--active');
+      // Update active tab (toggle between primary and secondary)
+      tabs.forEach(t => {
+        t.classList.remove('btn--primary');
+        t.classList.add('btn--secondary');
+      });
+      tab.classList.remove('btn--secondary');
+      tab.classList.add('btn--primary');
 
       // Load events for selected filter
       const filter = tab.getAttribute('data-filter');
