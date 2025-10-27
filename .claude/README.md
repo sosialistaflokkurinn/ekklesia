@@ -50,7 +50,7 @@ export PGPASSWORD="your-postgres-password-here"
 **How to get it:**
 ```bash
 # From Secret Manager (requires gcloud auth)
-gcloud secrets versions access latest --secret="database-password" --project=ekklesia-prod-10-2025
+gcloud secrets versions access latest --secret="postgres-password" --project=ekklesia-prod-10-2025
 ```
 
 ---
@@ -103,7 +103,7 @@ sudo -u manager venv/bin/python manage.py drf_create_token <username>
 
 ```bash
 # 1. Set environment variables (add to ~/.bashrc for persistence)
-export PGPASSWORD="$(gcloud secrets versions access latest --secret=database-password --project=ekklesia-prod-10-2025)"
+export PGPASSWORD="$(gcloud secrets versions access latest --secret=postgres-password --project=ekklesia-prod-10-2025)"
 export FIREBASE_TOKEN="<get-from-browser-console>"
 export DJANGO_API_TOKEN="<get-from-admin>"
 
@@ -172,7 +172,7 @@ This gives the AI assistant immediate context about:
 echo $PGPASSWORD
 
 # If empty, set it:
-export PGPASSWORD="$(gcloud secrets versions access latest --secret=database-password --project=ekklesia-prod-10-2025)"
+export PGPASSWORD="$(gcloud secrets versions access latest --secret=postgres-password --project=ekklesia-prod-10-2025)"
 ```
 
 ---

@@ -20,7 +20,7 @@ Before starting Claude Code, you need access to:
 ```bash
 # PostgreSQL password (from Secret Manager)
 export PGPASSWORD="$(gcloud secrets versions access latest \
-  --secret=database-password \
+  --secret=postgres-password \
   --project=ekklesia-prod-10-2025)"
 
 # Firebase token (get from browser after login)
@@ -165,7 +165,7 @@ env | grep PGPASSWORD
 
 # If missing, set it:
 export PGPASSWORD="$(gcloud secrets versions access latest \
-  --secret=database-password \
+  --secret=postgres-password \
   --project=ekklesia-prod-10-2025)"
 ```
 
@@ -214,7 +214,7 @@ export EKKLESIA_HOME="/home/gudro/Development/projects/ekklesia"
 # Auto-load database password on terminal start
 if command -v gcloud &> /dev/null; then
   export PGPASSWORD="$(gcloud secrets versions access latest \
-    --secret=database-password \
+    --secret=postgres-password \
     --project=ekklesia-prod-10-2025 2>/dev/null || echo '')"
 fi
 
