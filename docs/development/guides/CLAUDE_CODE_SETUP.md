@@ -30,7 +30,9 @@ export PGPASSWORD="$(gcloud secrets versions access latest \
 export FIREBASE_TOKEN="<paste-token-here>"
 
 # Django API token (optional, for membership sync)
-export DJANGO_API_TOKEN="<ask-admin-for-token>"
+export DJANGO_API_TOKEN="$(gcloud secrets versions access latest \
+  --secret=django-api-token \
+  --project=ekklesia-prod-10-2025)"
 ```
 
 ### Step 2: Verify Setup
@@ -101,7 +103,13 @@ curl -H "Authorization: Bearer $FIREBASE_TOKEN" \
 ```bash
 # Django API token is available via $DJANGO_API_TOKEN
 curl -H "Authorization: Token $DJANGO_API_TOKEN" \
-  http://172.105.71.207/felagar/api/full/
+  https://starf.sosialistaflokkurinn.is/felagar/api/full/ \
+  | jq -r '.count + " members in Django database"'
+
+# Get single member by ID
+curl -H "Authorization: Token $DJANGO_API_TOKEN" \
+  https://starf.sosialistaflokkurinn.is/felagar/api/full/1/ \
+  | jq '.'
 ```
 
 ---

@@ -88,11 +88,23 @@ export DJANGO_API_TOKEN="your-django-api-token-here"
 - Legacy member data access
 
 **How to get it:**
-Ask system administrator for API token, or generate via Django admin:
 ```bash
-ssh gudro@172.105.71.207
+# From Secret Manager (requires gcloud auth)
+gcloud secrets versions access latest --secret="django-api-token" --project=ekklesia-prod-10-2025
+```
+
+**Alternative - Regenerate via Django admin:**
+```bash
+ssh root@172.105.71.207
 cd /home/manager/socialism
-sudo -u manager venv/bin/python manage.py drf_create_token <username>
+sudo -u manager venv/bin/python manage.py shell
+
+# In Django shell:
+from rest_framework.authtoken.models import Token
+from django.contrib.auth.models import User
+user = User.objects.filter(is_staff=True, is_superuser=True).first()
+token, created = Token.objects.get_or_create(user=user)
+print(f"Token: {token.key}")
 ```
 
 ---
@@ -105,7 +117,7 @@ sudo -u manager venv/bin/python manage.py drf_create_token <username>
 # 1. Set environment variables (add to ~/.bashrc for persistence)
 export PGPASSWORD="$(gcloud secrets versions access latest --secret=postgres-password --project=ekklesia-prod-10-2025)"
 export FIREBASE_TOKEN="<get-from-browser-console>"
-export DJANGO_API_TOKEN="<get-from-admin>"
+export DJANGO_API_TOKEN="$(gcloud secrets versions access latest --secret=django-api-token --project=ekklesia-prod-10-2025)"
 
 # 2. Verify setup
 echo "PGPASSWORD: ${PGPASSWORD:0:10}..." # Show first 10 chars
