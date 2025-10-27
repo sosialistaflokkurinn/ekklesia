@@ -223,11 +223,18 @@ function validateCSRF(returnedState) {
   const statusTextEl = document.getElementById('status-text');
   const storedState = sessionStorage.getItem('oauth_state');
 
+  console.log('CSRF validation:', {
+    returnedState: returnedState ? `${returnedState.substring(0, 8)}...` : 'null',
+    storedState: storedState ? `${storedState.substring(0, 8)}...` : 'null',
+    match: returnedState === storedState
+  });
+
   if (!storedState || returnedState !== storedState) {
     statusEl.textContent = R.string.error_csrf_title;
     statusTextEl.textContent = R.string.error_csrf_message;
     statusTextEl.style.color = 'red';
     console.error(R.string.log_csrf_failed);
+    console.error('CSRF mismatch - this usually means you opened the OAuth redirect in a different browser tab');
     sessionStorage.removeItem('oauth_state');
     sessionStorage.removeItem('pkce_code_verifier');
     return false;
