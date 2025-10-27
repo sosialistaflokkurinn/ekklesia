@@ -276,37 +276,42 @@ async function weeklySecurityAudit() {
 
 ---
 
-## Examples from This Project
+## Usage Examples
 
-### ✅ Good: Used `gh` CLI for Security Review (#31-40)
+### ✅ Good: `gh` CLI for Security Reviews
 
-**Task:** Audit 10 security issues, each requiring custom analysis
+**Scenario:** Security audit requiring custom analysis per issue
 
-**Why `gh` was correct:**
-- Each issue needed different feedback (not bulk operation)
+**Why `gh` CLI is appropriate:**
+- Each issue needs different feedback (not bulk operation)
 - Human judgment required per issue
 - One-time audit, not recurring
-- Sequential: analyze → verify → comment
+- Sequential workflow: analyze → verify → comment
 
-**Result:** Efficient and appropriate
+**Implementation:**
 
 ```bash
-# Issue-by-issue analysis
-gh issue view 33 --json body,comments
-# (Analyze CSRF implementation...)
-gh issue comment 33 -b "Verification complete: State is single-use..."
+# Process issues individually with custom feedback
+for issue in <ISSUE_NUMBERS>; do
+  # Analyze issue content
+  gh issue view $issue --json body,comments
 
-gh issue view 32 --json body,comments  
-# (Analyze idempotency...)
-gh issue comment 32 -b "Verification complete: Race conditions handled..."
+  # Human review and analysis here...
+
+  # Add custom verification comment
+  gh issue comment $issue -b "Verification complete: <CUSTOM_FEEDBACK>"
+
+  # Add appropriate labels based on findings
+  gh issue edit $issue --add-label "<APPROPRIATE_LABEL>"
+done
 ```
 
-### ❌ Bad Example: Bulk Update with `gh` CLI
+### ❌ Bad: Bulk Operations with `gh` CLI
 
-**Anti-pattern:** Updating 50 issues with same label
+**Anti-pattern:** Updating many issues with same change
 
 ```bash
-# DON'T DO THIS - Too slow, no error handling
+# DON'T DO THIS - Inefficient, no error handling, no rate limiting
 for i in {1..50}; do
   gh issue edit $i --add-label "Needs Review"
 done
@@ -315,16 +320,26 @@ done
 **Instead, use GitHub API:**
 
 ```javascript
-// DO THIS - Batch operation with error handling
-const issues = Array.from({length: 50}, (_, i) => i + 1);
-await Promise.allSettled(
-  issues.map(num => 
+// DO THIS - Parallel execution with error handling
+const issues = [/* array of issue numbers */];
+const results = await Promise.allSettled(
+  issues.map(num =>
     octokit.issues.addLabels({
-      owner, repo, issue_number: num,
+      owner, repo,
+      issue_number: num,
       labels: ['Needs Review']
     })
   )
 );
+
+// Handle successes and failures
+results.forEach((result, i) => {
+  if (result.status === 'fulfilled') {
+    console.log(`✅ Updated #${issues[i]}`);
+  } else {
+    console.error(`❌ Failed #${issues[i]}: ${result.reason}`);
+  }
+});
 ```
 
 ---
@@ -546,7 +561,7 @@ Before running bulk GraphQL operations:
    }
    ```
 3. **Verify mutation syntax** before running in production
-4. **Test on dedicated test issue** (create issue #999 as "Test Issue - OK to modify")
+4. **Test on dedicated test issue** (create test issue with "[TEST]" prefix)
 
 ### Approach 3: Test Issue Pattern
 
@@ -555,21 +570,25 @@ Before running bulk GraphQL operations:
 # Create a test issue for validating operations
 
 TEST_ISSUE=$(gh issue create \
-  --title "[TEST] Label Management Test" \
-  --body "This issue is for testing label operations. Safe to close." \
+  --title "[TEST] Automation Test - Safe to Close" \
+  --body "This issue is for testing GitHub automation scripts. Safe to modify and close." \
   --label "test" \
   --json number -q .number)
 
-echo "Created test issue #$TEST_ISSUE"
+echo "✅ Created test issue #$TEST_ISSUE"
 
 # Test your operations on this issue
-./bulk-label-update.sh "$TEST_ISSUE"
+echo "🔍 Testing operations..."
+./your-automation-script.sh "$TEST_ISSUE"
 
 # Verify results
-gh issue view "$TEST_ISSUE" --json labels -q '.labels[].name'
+echo "📊 Verification results:"
+gh issue view "$TEST_ISSUE" --json labels,state -q '{labels: .labels[].name, state: .state}'
 
 # Clean up
-gh issue close "$TEST_ISSUE"
+echo "🧹 Cleaning up test issue..."
+gh issue close "$TEST_ISSUE" --comment "Test complete, closing."
+echo "✅ Test complete"
 ```
 
 ## Rate Limit Handling

@@ -161,7 +161,7 @@ git commit -m "test"
 
 ### Status: ✅ Implemented and Committed
 
-**Purpose:** Automated security hygiene checks per `.github/GITHUB_INTEGRATION_GUIDELINES.md`
+**Purpose:** Automated security hygiene checks per `.github/GITHUB_AUTOMATION_GUIDE.md`
 
 **File Created:**
 - `.github/workflows/security-hygiene.yml` (4.5 KB)
@@ -417,7 +417,7 @@ Based on this incident and review, the following policies are now enforced:
 
 **Related Documents:**
 - `docs/security/ISSUES_31-40_SECURITY_REVIEW_RESPONSE.md` - Prior review
-- `.github/GITHUB_INTEGRATION_GUIDELINES.md` - Workflow guidelines
+- `.github/GITHUB_AUTOMATION_GUIDE.md` - Workflow guidelines
 - `docs/CRITICAL_REVIEW_RESPONSE.md` - Guidelines review response
 
 ---
