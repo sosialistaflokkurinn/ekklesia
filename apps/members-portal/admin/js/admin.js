@@ -199,6 +199,44 @@ function buildWelcomeMessage(displayName, strings) {
 }
 
 /**
+ * Render role badges HTML
+ */
+function renderRoleBadges(roles) {
+  const normalizedRoles = Array.isArray(roles) ? roles.filter(Boolean) : [];
+  if (normalizedRoles.length === 0) {
+    return '';
+  }
+
+  const badges = normalizedRoles.map((role) => {
+    // Create a class modifier for each role type
+    const roleClass = role === 'developer' ? 'role-badge--developer' : 'role-badge--admin';
+    return `<span class="role-badge ${roleClass}">${role}</span>`;
+  }).join('');
+
+  return badges;
+}
+
+/**
+ * Update role badges display
+ */
+function updateRoleBadges(roles) {
+  const container = document.getElementById('role-badges');
+  if (!container) {
+    return;
+  }
+
+  const html = renderRoleBadges(roles);
+  if (!html) {
+    container.innerHTML = '';
+    container.classList.add('u-hidden');
+    return;
+  }
+
+  container.innerHTML = html;
+  container.classList.remove('u-hidden');
+}
+
+/**
  * Set page text from admin strings
  */
 function setPageText(strings, userData) {
@@ -218,6 +256,9 @@ function setPageText(strings, userData) {
   console.log('Welcome message result:', welcomeMessage);
   document.getElementById('admin-welcome-title').textContent = welcomeMessage;
   document.getElementById('admin-welcome-subtitle').textContent = strings.admin_welcome_subtitle;
+
+  // Role badges
+  updateRoleBadges(userData.roles);
 
   // Quick actions
   document.getElementById('admin-actions-title').textContent = strings.admin_actions_title;
