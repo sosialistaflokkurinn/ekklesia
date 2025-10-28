@@ -260,21 +260,34 @@ const db = getFirebaseFirestore();
     if (isLoading) return;
     isLoading = true;
 
-    showLoading();
+    showLoading(currentSearch ? 'Leita í öllum félögum...' : 'Hleð félagaskrá...');
 
     try {
+      // If searching, load ALL documents for complete client-side search
+      // For 2,118 members, this is acceptable (~500KB)
+      const limitCount = currentSearch ? 5000 : 50;
+
       const result = await MembersAPI.fetchMembers({
-        limit: 50,
+        limit: limitCount,
         status: currentStatus,
         search: currentSearch,
-        startAfter: lastDoc
+        startAfter: currentSearch ? null : lastDoc  // No pagination when searching
       });
 
       if (result.members.length === 0) {
         showEmpty();
       } else {
         renderMembers(result.members);
-        updatePagination(result.hasMore, result.members.length);
+
+        // Hide pagination when searching (showing all results)
+        if (currentSearch) {
+          elements.paginationContainer.style.display = 'none';
+          elements.paginationInfo.textContent = `Sýni ${result.members.length} niðurstöður`;
+        } else {
+          updatePagination(result.hasMore, result.members.length);
+          elements.paginationContainer.style.display = 'flex';
+        }
+
         lastDoc = result.lastDoc;
 
         // Update count
@@ -384,11 +397,12 @@ const db = getFirebaseFirestore();
     elements.btnPageNext.disabled = !hasMore;
   }
 
-  // Mask kennitala (show only last 4 digits)
+  // Mask kennitala (show birthdate, mask personal identifier)
   function maskKennitala(kennitala) {
     if (!kennitala) return '-';
-    if (kennitala.length < 4) return kennitala;
-    return '******-' + kennitala.slice(-4);
+    if (kennitala.length < 11) return kennitala; // Expected format: DDMMYY-XXXX
+    // Show first 7 chars (DDMMYY-), mask last 4
+    return kennitala.slice(0, 7) + '****';
   }
 
   // Get status text in Icelandic
@@ -401,12 +415,17 @@ const db = getFirebaseFirestore();
   }
 
   // Show loading state
-  function showLoading() {
+  function showLoading(message = 'Hleð félagaskrá...') {
     elements.loadingState.style.display = 'block';
     elements.errorState.style.display = 'none';
     elements.emptyState.style.display = 'none';
     elements.tableContainer.style.display = 'none';
     elements.paginationContainer.style.display = 'none';
+
+    const loadingText = document.getElementById('members-loading-text');
+    if (loadingText) {
+      loadingText.textContent = message;
+    }
   }
 
   // Show error state
