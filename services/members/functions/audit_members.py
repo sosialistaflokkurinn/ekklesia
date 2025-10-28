@@ -128,8 +128,8 @@ def auditmemberchanges(
         'adminId': admin_id,
         'adminEmail': admin_email,
         'action': action,
-        'memberId': kennitala,
-        'memberName': member_name,
+        'memberId': f"{kennitala[:6]}-****",  # Masked for PII protection
+        'memberName': 'Masked Member Name', # Masked for PII protection
         'timestamp': firestore.SERVER_TIMESTAMP,
         'changes': {
             'before': before_data,

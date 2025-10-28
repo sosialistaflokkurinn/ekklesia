@@ -305,6 +305,7 @@ function setPageText(strings) {
   document.getElementById('nav-admin-sync').textContent = strings.nav_admin_sync;
   document.getElementById('nav-admin-history').textContent = strings.nav_admin_history;
   document.getElementById('nav-back-to-member').textContent = strings.nav_back_to_member;
+  document.getElementById('nav-logout').textContent = strings.nav_logout;
 
   // Page header
   document.getElementById('sync-title').textContent = strings.sync_members_title;
@@ -313,7 +314,27 @@ function setPageText(strings) {
   // Trigger card
   document.getElementById('sync-trigger-title').textContent = strings.sync_trigger_title;
   document.getElementById('sync-description').textContent = strings.sync_trigger_description;
+
+
   document.getElementById('sync-trigger-btn').textContent = strings.sync_trigger_btn;
+
+  // Sync status card (initial state)
+  document.getElementById('sync-status-title').textContent = strings.sync_status_title;
+  document.getElementById('sync-progress-message').textContent = strings.sync_progress_message;
+
+  // Stats labels
+  document.getElementById('stat-total-label').textContent = strings.stat_total_label;
+  document.getElementById('stat-synced-label').textContent = strings.stat_synced_label;
+  document.getElementById('stat-failed-label').textContent = strings.stat_failed_label;
+  document.getElementById('stat-duration-label').textContent = strings.stat_duration_label;
+
+  // Action buttons
+  document.getElementById('view-history-btn').textContent = strings.btn_view_history;
+  document.getElementById('back-dashboard-btn').textContent = strings.btn_back_to_dashboard;
+
+  // Error card
+  document.getElementById('sync-error-title').textContent = strings.sync_failed_title;
+  document.getElementById('sync-retry-btn').textContent = strings.btn_retry;
 }
 
 /**

@@ -16,10 +16,12 @@ echo "⏳ Starting proxy (PID: $PROXY_PID)..."
 sleep 3
 
 # Test connection
-if psql -h 127.0.0.1 -p 5432 -U postgres -d postgres -c "SELECT 1;" > /dev/null 2>&1; then
+if psql -h 127.0.0.1 -p 5432 -U postgres -d postgres -c "SELECT 1;" > /dev/null 2> psql_error.log; then
     echo "✅ Proxy started successfully"
 else
-    echo "❌ Proxy failed to start"
+    PSQL_ERROR=$(cat psql_error.log)
+    echo "❌ Proxy failed to start: $PSQL_ERROR"
+    rm psql_error.log
     kill $PROXY_PID
     exit 1
 fi
