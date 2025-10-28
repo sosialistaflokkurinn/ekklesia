@@ -7,6 +7,19 @@
 
 // Import Firestore from member portal
 import { getFirebaseFirestore } from '../../../firebase/app.js';
+// Import Firestore v9 modular functions
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  limit,
+  startAfter,
+  getDocs,
+  getDoc,
+  doc,
+  getCountFromServer
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 // Get Firestore instance
 const db = getFirebaseFirestore();
@@ -21,39 +34,40 @@ const MembersAPI = {
    * @param {Object} options.startAfter - Firestore document for pagination
    * @returns {Promise<{members: Array, hasMore: boolean, lastDoc: Object}>}
    */
-  async fetchMembers({ limit = 50, status = 'active', search = '', startAfter = null } = {}) {
+  async fetchMembers({ limit: limitCount = 50, status = 'active', search = '', startAfter: startAfterDoc = null } = {}) {
     try {
-      let query = db.collection('members');
+      // Build query using v9 modular syntax
+      const membersCol = collection(db, 'members');
+      let constraints = [];
 
       // Filter by status
       if (status !== 'all') {
-        query = query.where('status', '==', status);
+        constraints.push(where('status', '==', status));
       }
 
       // Order by name for consistent pagination
-      query = query.orderBy('name');
-
-      // Search filter (client-side for now, server-side would require indexes)
-      // TODO: Implement server-side search with Algolia or similar
+      constraints.push(orderBy('name'));
 
       // Pagination
-      if (startAfter) {
-        query = query.startAfter(startAfter);
+      if (startAfterDoc) {
+        constraints.push(startAfter(startAfterDoc));
       }
 
-      query = query.limit(limit + 1); // Fetch one extra to check if there are more
+      // Limit (fetch one extra to check if there are more)
+      constraints.push(limit(limitCount + 1));
 
-      const snapshot = await query.get();
+      const q = query(membersCol, ...constraints);
+      const snapshot = await getDocs(q);
       const members = [];
       const docs = snapshot.docs;
 
       // Process results
-      for (let i = 0; i < Math.min(docs.length, limit); i++) {
-        const doc = docs[i];
+      for (let i = 0; i < Math.min(docs.length, limitCount); i++) {
+        const docSnap = docs[i];
         members.push({
-          id: doc.id,
-          ...doc.data(),
-          _doc: doc // Keep reference for pagination
+          id: docSnap.id,
+          ...docSnap.data(),
+          _doc: docSnap // Keep reference for pagination
         });
       }
 
@@ -70,8 +84,8 @@ const MembersAPI = {
 
       return {
         members: filteredMembers,
-        hasMore: docs.length > limit,
-        lastDoc: docs.length > 0 ? docs[Math.min(docs.length - 1, limit - 1)] : null,
+        hasMore: docs.length > limitCount,
+        lastDoc: docs.length > 0 ? docs[Math.min(docs.length - 1, limitCount - 1)] : null,
         total: snapshot.size
       };
 
@@ -88,20 +102,24 @@ const MembersAPI = {
    */
   async getMembersCount(status = 'active') {
     try {
-      let query = db.collection('members');
+      const membersCol = collection(db, 'members');
+      let constraints = [];
 
       if (status !== 'all') {
-        query = query.where('status', '==', status);
+        constraints.push(where('status', '==', status));
       }
 
-      const snapshot = await query.count().get();
+      const q = query(membersCol, ...constraints);
+      const snapshot = await getCountFromServer(q);
       return snapshot.data().count;
 
     } catch (error) {
       console.error('Error getting members count:', error);
       // Fallback: fetch all and count (not efficient, but works)
       try {
-        const snapshot = await db.collection('members').get();
+        const membersCol = collection(db, 'members');
+        const q = query(membersCol);
+        const snapshot = await getDocs(q);
         return snapshot.size;
       } catch (fallbackError) {
         throw new Error(`Failed to get members count: ${error.message}`);
@@ -116,15 +134,16 @@ const MembersAPI = {
    */
   async getMember(kennitala) {
     try {
-      const doc = await db.collection('members').doc(kennitala).get();
+      const docRef = doc(db, 'members', kennitala);
+      const docSnap = await getDoc(docRef);
 
-      if (!doc.exists) {
+      if (!docSnap.exists()) {
         throw new Error('Member not found');
       }
 
       return {
-        id: doc.id,
-        ...doc.data()
+        id: docSnap.id,
+        ...docSnap.data()
       };
 
     } catch (error) {
