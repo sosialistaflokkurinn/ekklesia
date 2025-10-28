@@ -68,6 +68,24 @@
   <string name="history_status_failed">Mistókst</string>
   <string name="history_empty">Engin samstillingasaga fannst</string>
 
+  <!-- Members Admin (Epic #116) -->
+  <string name="nav_admin_members">Félagar</string>
+  <string name="members_list_title">Félagar</string>
+  <string name="members_list_subtitle">Skoða og breyta félagaskrá</string>
+  <string name="member_name">Nafn</string>
+  <string name="member_kennitala">Kennitala</string>
+  <string name="member_email">Netfang</string>
+  <string name="member_phone">Sími</string>
+  <string name="member_status">Staða</string>
+  <string name="member_actions">Aðgerðir</string>
+  <string name="member_create_button">+ Nýr félagi</string>
+  <string name="member_search_placeholder">Leita að nafni eða kennitölu...</string>
+  <string name="pagination_previous">‹ Fyrri</string>
+  <string name="pagination_next">Næsta ›</string>
+  <string name="members_loading">Hleð félagaskrá...</string>
+  <string name="members_empty">Engir félagar fundust</string>
+  <string name="members_error">Villa kom upp við að hlaða félagaskrá</string>
+
   <!-- Errors & Messages -->
   <string name="error_unauthorized">Þú hefur ekki heimild til að nota stjórnkerfið</string>
   <string name="error_unauthorized_developer">Þú hefur ekki aðgang að stjórnkerfi. Aðeins notendur með 'developer' hlutverk hafa aðgang.</string>

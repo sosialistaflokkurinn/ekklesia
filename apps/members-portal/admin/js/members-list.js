@@ -1,0 +1,409 @@
+/**
+ * Members List Page - Epic #116, Issue #120
+ *
+ * Handles UI interactions for the members list page:
+ * - Loading and displaying members from Firestore
+ * - Search functionality (debounced)
+ * - Status filtering
+ * - Pagination
+ * - Loading/error/empty states
+ */
+
+(function() {
+  'use strict';
+
+  // State
+  let currentPage = 1;
+  let lastDoc = null;
+  let pageHistory = []; // Stack of lastDoc for previous pages
+  let currentStatus = 'active';
+  let currentSearch = '';
+  let isLoading = false;
+
+  // DOM Elements
+  const elements = {
+    searchInput: null,
+    filterStatus: null,
+    tableBody: null,
+    loadingState: null,
+    errorState: null,
+    emptyState: null,
+    tableContainer: null,
+    paginationContainer: null,
+    countText: null,
+    paginationInfo: null,
+    paginationCurrent: null,
+    btnPagePrev: null,
+    btnPageNext: null,
+    btnRetry: null
+  };
+
+  // Initialize page
+  async function init() {
+    // Check authentication
+    firebase.auth().onAuthStateChanged(async (user) => {
+      if (!user) {
+        window.location.href = '/login.html';
+        return;
+      }
+
+      // Check admin role
+      const token = await user.getIdTokenResult();
+      if (!token.claims.roles || !token.claims.roles.includes('admin')) {
+        showError('Þú hefur ekki réttindi til að skoða þessa síðu');
+        return;
+      }
+
+      // Initialize DOM elements
+      initElements();
+
+      // Load i18n strings
+      await loadStrings();
+
+      // Set up event listeners
+      setupEventListeners();
+
+      // Load initial data
+      await loadMembers();
+    });
+  }
+
+  // Initialize DOM element references
+  function initElements() {
+    elements.searchInput = document.getElementById('members-search-input');
+    elements.filterStatus = document.getElementById('members-filter-status');
+    elements.tableBody = document.getElementById('members-table-body');
+    elements.loadingState = document.getElementById('members-loading');
+    elements.errorState = document.getElementById('members-error');
+    elements.emptyState = document.getElementById('members-empty');
+    elements.tableContainer = document.getElementById('members-table-container');
+    elements.paginationContainer = document.getElementById('members-pagination');
+    elements.countText = document.getElementById('members-count-text');
+    elements.paginationInfo = document.getElementById('pagination-info');
+    elements.paginationCurrent = document.getElementById('pagination-current');
+    elements.btnPagePrev = document.getElementById('btn-page-prev');
+    elements.btnPageNext = document.getElementById('btn-page-next');
+    elements.btnRetry = document.getElementById('btn-retry');
+  }
+
+  // Load i18n strings
+  async function loadStrings() {
+    if (typeof R === 'undefined' || !R.string) {
+      console.warn('i18n strings not loaded');
+      return;
+    }
+
+    // Page title
+    document.title = R.string.members_list_title || 'Félagar';
+
+    // Navigation
+    const navBrand = document.getElementById('nav-brand');
+    if (navBrand) navBrand.textContent = R.string.app_name || 'Ekklesia';
+
+    const navAdminDashboard = document.getElementById('nav-admin-dashboard');
+    if (navAdminDashboard) navAdminDashboard.textContent = R.string.nav_admin_dashboard || 'Stjórnborð';
+
+    const navAdminMembers = document.getElementById('nav-admin-members');
+    if (navAdminMembers) navAdminMembers.textContent = R.string.nav_admin_members || 'Félagar';
+
+    const navAdminSync = document.getElementById('nav-admin-sync');
+    if (navAdminSync) navAdminSync.textContent = R.string.nav_admin_sync || 'Samstilling';
+
+    const navAdminHistory = document.getElementById('nav-admin-history');
+    if (navAdminHistory) navAdminHistory.textContent = R.string.nav_admin_history || 'Saga';
+
+    const navBackToMember = document.getElementById('nav-back-to-member');
+    if (navBackToMember) navBackToMember.textContent = R.string.nav_back_to_member || 'Til baka';
+
+    const navLogout = document.getElementById('nav-logout');
+    if (navLogout) navLogout.textContent = R.string.nav_logout || 'Útskrá';
+
+    // Page header
+    const pageTitle = document.getElementById('page-header-title');
+    if (pageTitle) pageTitle.textContent = R.string.members_list_title || 'Félagar';
+
+    const pageSubtitle = document.getElementById('page-header-subtitle');
+    if (pageSubtitle) pageSubtitle.textContent = R.string.members_list_subtitle || 'Skoða og breyta félagaskrá';
+
+    // Table headers
+    const headerName = document.getElementById('header-name');
+    if (headerName) headerName.textContent = R.string.member_name || 'Nafn';
+
+    const headerKennitala = document.getElementById('header-kennitala');
+    if (headerKennitala) headerKennitala.textContent = R.string.member_kennitala || 'Kennitala';
+
+    const headerEmail = document.getElementById('header-email');
+    if (headerEmail) headerEmail.textContent = R.string.member_email || 'Netfang';
+
+    const headerPhone = document.getElementById('header-phone');
+    if (headerPhone) headerPhone.textContent = R.string.member_phone || 'Sími';
+
+    const headerStatus = document.getElementById('header-status');
+    if (headerStatus) headerStatus.textContent = R.string.member_status || 'Staða';
+
+    const headerActions = document.getElementById('header-actions');
+    if (headerActions) headerActions.textContent = R.string.member_actions || 'Aðgerðir';
+
+    // Create button
+    const btnCreateText = document.getElementById('btn-create-member-text');
+    if (btnCreateText) btnCreateText.textContent = R.string.member_create_button || '+ Nýr félagi';
+
+    // Pagination
+    const btnPagePrevText = document.getElementById('btn-page-prev-text');
+    if (btnPagePrevText) btnPagePrevText.textContent = R.string.pagination_previous || '‹ Fyrri';
+
+    const btnPageNextText = document.getElementById('btn-page-next-text');
+    if (btnPageNextText) btnPageNextText.textContent = R.string.pagination_next || 'Næsta ›';
+  }
+
+  // Set up event listeners
+  function setupEventListeners() {
+    // Search input (debounced)
+    let searchTimeout;
+    elements.searchInput?.addEventListener('input', (e) => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        currentSearch = e.target.value.trim();
+        resetPagination();
+        loadMembers();
+      }, 300); // 300ms debounce
+    });
+
+    // Status filter
+    elements.filterStatus?.addEventListener('change', (e) => {
+      currentStatus = e.target.value;
+      resetPagination();
+      loadMembers();
+    });
+
+    // Pagination buttons
+    elements.btnPagePrev?.addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        lastDoc = pageHistory.pop();
+        loadMembers();
+      }
+    });
+
+    elements.btnPageNext?.addEventListener('click', () => {
+      if (lastDoc) {
+        pageHistory.push(lastDoc);
+        currentPage++;
+        loadMembers();
+      }
+    });
+
+    // Retry button
+    elements.btnRetry?.addEventListener('click', () => {
+      loadMembers();
+    });
+
+    // Logout
+    const navLogout = document.getElementById('nav-logout');
+    navLogout?.addEventListener('click', async (e) => {
+      e.preventDefault();
+      await firebase.auth().signOut();
+      window.location.href = '/login.html';
+    });
+  }
+
+  // Reset pagination state
+  function resetPagination() {
+    currentPage = 1;
+    lastDoc = null;
+    pageHistory = [];
+  }
+
+  // Load members from Firestore
+  async function loadMembers() {
+    if (isLoading) return;
+    isLoading = true;
+
+    showLoading();
+
+    try {
+      const result = await window.MembersAPI.fetchMembers({
+        limit: 50,
+        status: currentStatus,
+        search: currentSearch,
+        startAfter: lastDoc
+      });
+
+      if (result.members.length === 0) {
+        showEmpty();
+      } else {
+        renderMembers(result.members);
+        updatePagination(result.hasMore, result.members.length);
+        lastDoc = result.lastDoc;
+
+        // Update count
+        updateMemberCount();
+
+        showTable();
+      }
+
+    } catch (error) {
+      console.error('Error loading members:', error);
+      showError(error.message || 'Villa kom upp við að hlaða félagaskrá');
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  // Update member count display
+  async function updateMemberCount() {
+    try {
+      const count = await window.MembersAPI.getMembersCount(currentStatus);
+      const statusText = currentStatus === 'all' ? 'allir' :
+                        currentStatus === 'active' ? 'virkir' : 'óvirkir';
+      elements.countText.textContent = `${count} ${statusText} félagar`;
+    } catch (error) {
+      console.error('Error getting member count:', error);
+      elements.countText.textContent = 'Félagar';
+    }
+  }
+
+  // Render members in table
+  function renderMembers(members) {
+    elements.tableBody.innerHTML = '';
+
+    members.forEach(member => {
+      const row = document.createElement('tr');
+      row.className = 'members-table__row';
+
+      // Name
+      const nameCell = document.createElement('td');
+      nameCell.className = 'members-table__cell';
+      nameCell.textContent = member.name || '-';
+      row.appendChild(nameCell);
+
+      // Kennitala (masked)
+      const kennitalaCell = document.createElement('td');
+      kennitalaCell.className = 'members-table__cell';
+      kennitalaCell.textContent = maskKennitala(member.kennitala);
+      row.appendChild(kennitalaCell);
+
+      // Email
+      const emailCell = document.createElement('td');
+      emailCell.className = 'members-table__cell';
+      emailCell.textContent = member.email || '-';
+      row.appendChild(emailCell);
+
+      // Phone
+      const phoneCell = document.createElement('td');
+      phoneCell.className = 'members-table__cell';
+      phoneCell.textContent = member.phone || '-';
+      row.appendChild(phoneCell);
+
+      // Status
+      const statusCell = document.createElement('td');
+      statusCell.className = 'members-table__cell';
+      const statusBadge = document.createElement('span');
+      statusBadge.className = `members-table__status members-table__status--${member.status || 'unknown'}`;
+      statusBadge.textContent = getStatusText(member.status);
+      statusCell.appendChild(statusBadge);
+      row.appendChild(statusCell);
+
+      // Actions
+      const actionsCell = document.createElement('td');
+      actionsCell.className = 'members-table__cell members-table__cell--actions';
+
+      const viewBtn = document.createElement('a');
+      viewBtn.href = `/admin/member-detail.html?id=${member.kennitala}`;
+      viewBtn.className = 'members-table__action';
+      viewBtn.textContent = 'Skoða';
+      actionsCell.appendChild(viewBtn);
+
+      const editBtn = document.createElement('a');
+      editBtn.href = `/admin/member-edit.html?id=${member.kennitala}`;
+      editBtn.className = 'members-table__action';
+      editBtn.textContent = 'Breyta';
+      actionsCell.appendChild(editBtn);
+
+      row.appendChild(actionsCell);
+
+      elements.tableBody.appendChild(row);
+    });
+  }
+
+  // Update pagination controls
+  function updatePagination(hasMore, currentCount) {
+    // Update pagination info
+    const start = (currentPage - 1) * 50 + 1;
+    const end = (currentPage - 1) * 50 + currentCount;
+    elements.paginationInfo.textContent = `Sýni ${start}-${end}`;
+
+    // Update current page
+    elements.paginationCurrent.textContent = `Síða ${currentPage}`;
+
+    // Enable/disable previous button
+    elements.btnPagePrev.disabled = currentPage === 1;
+
+    // Enable/disable next button
+    elements.btnPageNext.disabled = !hasMore;
+  }
+
+  // Mask kennitala (show only last 4 digits)
+  function maskKennitala(kennitala) {
+    if (!kennitala) return '-';
+    if (kennitala.length < 4) return kennitala;
+    return '******-' + kennitala.slice(-4);
+  }
+
+  // Get status text in Icelandic
+  function getStatusText(status) {
+    switch (status) {
+      case 'active': return 'Virkur';
+      case 'inactive': return 'Óvirkur';
+      default: return 'Óþekkt';
+    }
+  }
+
+  // Show loading state
+  function showLoading() {
+    elements.loadingState.style.display = 'block';
+    elements.errorState.style.display = 'none';
+    elements.emptyState.style.display = 'none';
+    elements.tableContainer.style.display = 'none';
+    elements.paginationContainer.style.display = 'none';
+  }
+
+  // Show error state
+  function showError(message) {
+    elements.loadingState.style.display = 'none';
+    elements.errorState.style.display = 'block';
+    elements.emptyState.style.display = 'none';
+    elements.tableContainer.style.display = 'none';
+    elements.paginationContainer.style.display = 'none';
+
+    const errorMessage = document.getElementById('members-error-message');
+    if (errorMessage) {
+      errorMessage.textContent = message;
+    }
+  }
+
+  // Show empty state
+  function showEmpty() {
+    elements.loadingState.style.display = 'none';
+    elements.errorState.style.display = 'none';
+    elements.emptyState.style.display = 'block';
+    elements.tableContainer.style.display = 'none';
+    elements.paginationContainer.style.display = 'none';
+  }
+
+  // Show table with data
+  function showTable() {
+    elements.loadingState.style.display = 'none';
+    elements.errorState.style.display = 'none';
+    elements.emptyState.style.display = 'none';
+    elements.tableContainer.style.display = 'block';
+    elements.paginationContainer.style.display = 'flex';
+  }
+
+  // Initialize on DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
