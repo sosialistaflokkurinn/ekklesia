@@ -47,13 +47,13 @@
 
 /* Form Note */
 .member-edit__note {
-  background: #fff3cd;
-  border: 1px solid #ffc107;
+  background: var(--color-warning-bg);
+  border: 1px solid var(--color-warning-border);
   border-radius: 8px;
   padding: 1rem;
   margin-bottom: 1.5rem;
   font-size: 0.9rem;
-  color: #856404;
+  color: var(--color-warning-dark);
 }
 
 /* Sections */
@@ -110,12 +110,12 @@
 .member-edit__select:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
+  box-shadow: 0 0 0 3px var(--color-primary-alpha-10);
 }
 
 .member-edit__input--readonly {
-  background: #f5f5f5;
-  color: #757575;
+  background: var(--color-gray-100);
+  color: var(--color-gray-500);
   cursor: not-allowed;
 }
 
@@ -148,7 +148,7 @@
 
 /* Form Errors */
 .member-edit__form-errors {
-  background: #ffebee;
+  background: var(--color-error-bg-light);
   border: 1px solid var(--color-error);
   border-radius: 8px;
   padding: 1rem;
@@ -167,12 +167,12 @@
 
 /* Success Message */
 .member-edit__success {
-  background: #e8f5e9;
-  border: 1px solid #4caf50;
+  background: var(--color-success-bg-light);
+  border: 1px solid var(--color-success-border);
   border-radius: 8px;
   padding: 1rem;
   margin-top: 1.5rem;
-  color: #2e7d32;
+  color: var(--color-success-green);
   text-align: center;
   font-weight: 500;
 }
