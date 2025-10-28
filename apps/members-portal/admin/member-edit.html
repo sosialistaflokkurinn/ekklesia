@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Breyta félaga - Ekklesia</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+  <!-- Reuse member portal styles -->
+  <link rel="stylesheet" href="/styles/global.css">
+  <link rel="stylesheet" href="/styles/components/nav.css">
+  <link rel="stylesheet" href="/styles/components/page.css">
+
+  <!-- Admin-specific styles -->
+  <link rel="stylesheet" href="/admin/styles/admin.css">
+  <link rel="stylesheet" href="/admin/styles/member-edit.css">
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+</head>
+<body class="authenticated admin">
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="nav__container">
+      <a href="/admin/admin.html" class="nav__brand" id="nav-brand">Ekklesia</a>
+
+      <!-- Hamburger Button (mobile only) -->
+      <button class="nav__hamburger" id="nav-hamburger" aria-expanded="false">
+        <span class="nav__hamburger-line"></span>
+        <span class="nav__hamburger-line"></span>
+        <span class="nav__hamburger-line"></span>
+      </button>
+
+      <!-- Overlay for mobile menu -->
+      <div class="nav__overlay" id="nav-overlay"></div>
+
+      <!-- Navigation Drawer -->
+      <div class="nav__drawer" id="nav-drawer" aria-hidden="true">
+        <!-- Close button (mobile only) -->
+        <button class="nav__close" id="nav-close">
+          <span class="nav__close-icon">✕</span>
+        </button>
+
+        <div class="nav__links">
+          <a href="/admin/admin.html" class="nav__link" id="nav-admin-dashboard">Stjórnborð</a>
+          <a href="/admin/members.html" class="nav__link" id="nav-admin-members">Félagar</a>
+          <a href="/admin/sync-members.html" class="nav__link" id="nav-admin-sync">Samstilling</a>
+          <a href="/admin/sync-history.html" class="nav__link" id="nav-admin-history">Saga</a>
+          <a href="/members-area/dashboard.html" class="nav__link" id="nav-back-to-member">Til baka</a>
+          <a href="#" class="nav__link nav__link--logout" id="nav-logout">Útskrá</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="page">
+    <div class="page__container">
+      <!-- Back Navigation -->
+      <div class="member-edit__back">
+        <a href="#" class="member-edit__back-link" id="back-to-detail">
+          ← <span id="back-to-detail-text">Til baka</span>
+        </a>
+      </div>
+
+      <!-- Page Header -->
+      <header class="page__header">
+        <h1 class="page__title" id="page-header-title">Breyta félaga</h1>
+        <p class="page__subtitle" id="page-header-subtitle">Uppfæra upplýsingar um félaga</p>
+      </header>
+
+      <!-- Loading State -->
+      <div id="member-loading" class="member-edit__loading">
+        <div class="spinner"></div>
+        <p id="member-loading-text">Hleð upplýsingum...</p>
+      </div>
+
+      <!-- Error State -->
+      <div id="member-error" class="member-edit__error" style="display: none;">
+        <p class="member-edit__error-message" id="member-error-message"></p>
+        <button class="btn btn--secondary" id="btn-retry">Reyna aftur</button>
+      </div>
+
+      <!-- Not Found State -->
+      <div id="member-not-found" class="member-edit__not-found" style="display: none;">
+        <p class="member-edit__not-found-message" id="member-not-found-message">Félagi fannst ekki</p>
+        <a href="/admin/members.html" class="btn btn--secondary">Til baka til félaga</a>
+      </div>
+
+      <!-- Edit Form -->
+      <div id="member-form-container" class="member-edit" style="display: none;">
+        <form id="member-edit-form" class="member-edit__form">
+          <!-- Readonly Note -->
+          <div class="member-edit__note">
+            <p id="readonly-note">* Kennitala og ID er ekki hægt að breyta</p>
+          </div>
+
+          <!-- Basic Information -->
+          <section class="member-edit__section">
+            <h2 class="member-edit__section-title" id="section-basic-info">Grunnupplýsingar</h2>
+
+            <div class="member-edit__grid">
+              <!-- Name (required) -->
+              <div class="member-edit__field">
+                <label for="input-name" class="member-edit__label" id="label-name">Nafn *</label>
+                <input
+                  type="text"
+                  id="input-name"
+                  name="name"
+                  class="member-edit__input"
+                  required
+                  maxlength="100"
+                  placeholder="Fullt nafn"
+                >
+                <span class="member-edit__error-text" id="error-name"></span>
+              </div>
+
+              <!-- Kennitala (readonly) -->
+              <div class="member-edit__field">
+                <label for="input-kennitala" class="member-edit__label" id="label-kennitala">Kennitala</label>
+                <input
+                  type="text"
+                  id="input-kennitala"
+                  class="member-edit__input member-edit__input--readonly"
+                  readonly
+                  disabled
+                >
+              </div>
+
+              <!-- Email -->
+              <div class="member-edit__field">
+                <label for="input-email" class="member-edit__label" id="label-email">Netfang</label>
+                <input
+                  type="email"
+                  id="input-email"
+                  name="email"
+                  class="member-edit__input"
+                  placeholder="nafn@example.is"
+                >
+                <span class="member-edit__error-text" id="error-email"></span>
+              </div>
+
+              <!-- Phone -->
+              <div class="member-edit__field">
+                <label for="input-phone" class="member-edit__label" id="label-phone">Sími</label>
+                <input
+                  type="tel"
+                  id="input-phone"
+                  name="phone"
+                  class="member-edit__input"
+                  placeholder="7758493"
+                  pattern="[0-9]{7}"
+                >
+                <span class="member-edit__error-text" id="error-phone"></span>
+              </div>
+
+              <!-- Birthday -->
+              <div class="member-edit__field">
+                <label for="input-birthday" class="member-edit__label" id="label-birthday">Fæðingardagur</label>
+                <input
+                  type="date"
+                  id="input-birthday"
+                  name="birthday"
+                  class="member-edit__input"
+                >
+                <span class="member-edit__error-text" id="error-birthday"></span>
+              </div>
+
+              <!-- Gender -->
+              <div class="member-edit__field">
+                <label for="input-gender" class="member-edit__label" id="label-gender">Kyn</label>
+                <select id="input-gender" name="gender" class="member-edit__select">
+                  <option value="">Veldu...</option>
+                  <option value="0" id="option-gender-m">Karl</option>
+                  <option value="1" id="option-gender-f">Kona</option>
+                </select>
+                <span class="member-edit__error-text" id="error-gender"></span>
+              </div>
+            </div>
+          </section>
+
+          <!-- Address (Read-Only) -->
+          <section class="member-edit__section">
+            <h2 class="member-edit__section-title" id="section-address">Heimilisfang</h2>
+
+            <div class="member-edit__note" style="margin-bottom: 1rem;">
+              <p>⚠️ Heimilisfang notar Staðfangaskrá og er ekki hægt að breyta hér. Notaðu Django admin til að uppfæra heimilisfang.</p>
+            </div>
+
+            <div class="member-edit__grid">
+              <!-- Street (readonly) -->
+              <div class="member-edit__field">
+                <label for="input-street" class="member-edit__label" id="label-street">Gata</label>
+                <input
+                  type="text"
+                  id="input-street"
+                  name="street"
+                  class="member-edit__input member-edit__input--readonly"
+                  readonly
+                  disabled
+                  placeholder="-"
+                >
+              </div>
+
+              <!-- Number (readonly) -->
+              <div class="member-edit__field">
+                <label for="input-number" class="member-edit__label" id="label-number">Númer</label>
+                <input
+                  type="text"
+                  id="input-number"
+                  name="number"
+                  class="member-edit__input member-edit__input--readonly"
+                  readonly
+                  disabled
+                  placeholder="-"
+                >
+              </div>
+
+              <!-- Postal Code (readonly) -->
+              <div class="member-edit__field">
+                <label for="input-postal-code" class="member-edit__label" id="label-postal-code">Póstnúmer</label>
+                <input
+                  type="text"
+                  id="input-postal-code"
+                  name="postal_code"
+                  class="member-edit__input member-edit__input--readonly"
+                  readonly
+                  disabled
+                  placeholder="-"
+                >
+              </div>
+
+              <!-- City (readonly) -->
+              <div class="member-edit__field">
+                <label for="input-city" class="member-edit__label" id="label-city">Staður</label>
+                <input
+                  type="text"
+                  id="input-city"
+                  name="city"
+                  class="member-edit__input member-edit__input--readonly"
+                  readonly
+                  disabled
+                  placeholder="-"
+                >
+              </div>
+            </div>
+          </section>
+
+          <!-- Form Actions -->
+          <div class="member-edit__actions">
+            <button type="submit" class="btn btn--primary" id="btn-save">
+              <span id="btn-save-text">Vista breytingar</span>
+            </button>
+            <button type="button" class="btn btn--secondary" id="btn-cancel">
+              <span id="btn-cancel-text">Hætta við</span>
+            </button>
+          </div>
+
+          <!-- Global Form Errors -->
+          <div id="form-errors" class="member-edit__form-errors" style="display: none;"></div>
+
+          <!-- Success Message -->
+          <div id="success-message" class="member-edit__success" style="display: none;">
+            <p id="success-text">Breytingar vistaðar</p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script type="module" src="/admin/js/member-edit.js"></script>
+</body>
+</html>
