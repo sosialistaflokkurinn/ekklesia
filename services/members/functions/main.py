@@ -27,8 +27,11 @@ from util_jwks import get_jwks_client_cached_ttl, get_jwks_cache_stats
 # We import and re-export to make the function discoverable.
 from audit_members import auditmemberchanges
 
+# Django API token access (Epic #116, Issue #137)
+from get_django_token import get_django_token
+
 # Re-export at module level so Firebase discovers it
-__all__ = ['auditmemberchanges']
+__all__ = ['auditmemberchanges', 'get_django_token']
 
 # --- SETUP ---
 if not firebase_admin._apps:

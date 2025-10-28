@@ -103,4 +103,43 @@
   <!-- Loading States -->
   <string name="loading">Hleð inn...</string>
   <string name="loading_sync_logs">Sæki samstillingasögu...</string>
+
+  <!-- Member Detail Page (Epic #116, Issue #136) -->
+  <string name="member_detail_title">Félagsupplýsingar</string>
+  <string name="member_detail_subtitle">Skoða upplýsingar um félaga</string>
+  <string name="member_detail_basic_info">Grunnupplýsingar</string>
+  <string name="member_detail_address">Heimilisfang</string>
+  <string name="member_detail_membership">Félagsaðild</string>
+  <string name="member_detail_metadata">Kerfisgögn</string>
+  <string name="member_detail_edit_button">Breyta félaga</string>
+  <string name="member_detail_back">Til baka til félaga</string>
+  <string name="member_detail_not_found">Félagi fannst ekki</string>
+  <string name="member_detail_error">Villa kom upp við að hlaða félaga</string>
+  <string name="member_detail_loading">Hleð upplýsingum...</string>
+
+  <!-- Member Edit Page (Epic #116, Issue #137) -->
+  <string name="member_edit_title">Breyta félaga</string>
+  <string name="member_edit_subtitle">Uppfæra upplýsingar um félaga</string>
+  <string name="member_edit_save_button">Vista breytingar</string>
+  <string name="member_edit_cancel_button">Hætta við</string>
+  <string name="member_edit_loading">Hleð upplýsingum...</string>
+  <string name="member_edit_saving">Vista breytingar...</string>
+  <string name="member_edit_success">Breytingar vistaðar</string>
+  <string name="member_edit_error">Villa kom upp við að vista</string>
+  <string name="member_edit_validation_error">Vinsamlegast leiðréttu villurnar</string>
+  <string name="member_edit_not_found">Félagi fannst ekki</string>
+  <string name="member_edit_field_name">Nafn *</string>
+  <string name="member_edit_field_email">Netfang</string>
+  <string name="member_edit_field_phone">Sími</string>
+  <string name="member_edit_field_birthday">Fæðingardagur</string>
+  <string name="member_edit_field_gender">Kyn</string>
+  <string name="member_edit_field_gender_m">Karl</string>
+  <string name="member_edit_field_gender_f">Kona</string>
+  <string name="member_edit_field_gender_x">Annað</string>
+  <string name="member_edit_field_street">Gata</string>
+  <string name="member_edit_field_number">Númer</string>
+  <string name="member_edit_field_postal_code">Póstnúmer</string>
+  <string name="member_edit_field_city">Staður</string>
+  <string name="member_edit_readonly_note">* Kennitala og ID er ekki hægt að breyta</string>
+  <string name="member_edit_address_readonly_note">⚠️ Heimilisfang notar Staðfangaskrá og er ekki hægt að breyta hér. Notaðu Django admin til að uppfæra heimilisfang.</string>
 </resources>

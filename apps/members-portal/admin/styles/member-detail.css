@@ -1,0 +1,160 @@
+/**
+ * Member Detail Page Styles - Epic #116, Issue #136
+ * BEM Methodology
+ */
+
+/* Back Navigation */
+.member-detail__back {
+  margin-bottom: 1.5rem;
+}
+
+.member-detail__back-link {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: color 0.2s ease;
+}
+
+.member-detail__back-link:hover {
+  color: var(--color-primary);
+}
+
+/* Actions */
+.member-detail__actions {
+  margin: 1.5rem 0 2rem;
+  display: flex;
+  gap: 1rem;
+}
+
+/* Loading/Error/Not Found States */
+.member-detail__loading,
+.member-detail__error,
+.member-detail__not-found {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.member-detail__loading .spinner {
+  margin: 0 auto 1rem;
+}
+
+.member-detail__error-message,
+.member-detail__not-found-message {
+  color: var(--color-error);
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Member Detail Container */
+.member-detail {
+  max-width: 800px;
+}
+
+/* Sections */
+.member-detail__section {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.member-detail__section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--color-border);
+}
+
+/* Field Grid */
+.member-detail__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.member-detail__field {
+  display: flex;
+  flex-direction: column;
+}
+
+.member-detail__label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.member-detail__value {
+  font-size: 1rem;
+  color: var(--color-text-primary);
+  word-break: break-word;
+  margin: 0;
+}
+
+/* Status Badge */
+.member-detail__status-badge {
+  display: inline-block;
+  padding: 0.375rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.member-detail__status-badge--active {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.member-detail__status-badge--inactive {
+  background-color: #fbe9e7;
+  color: #d84315;
+}
+
+.member-detail__status-badge--unknown {
+  background-color: #f5f5f5;
+  color: #757575;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .member-detail__grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .member-detail__section {
+    padding: 1rem;
+  }
+
+  .member-detail__section-title {
+    font-size: 1.1rem;
+  }
+
+  .member-detail__actions {
+    flex-direction: column;
+  }
+
+  .member-detail__actions .btn {
+    width: 100%;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .nav,
+  .member-detail__back,
+  .member-detail__actions {
+    display: none;
+  }
+
+  .member-detail__section {
+    page-break-inside: avoid;
+  }
+}
