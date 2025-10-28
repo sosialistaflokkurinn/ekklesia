@@ -142,6 +142,12 @@ function renderRoleBadges(roles) {
   const badges = normalizedRoles.map((role) => {
     const key = `role_badge_${role}`;
     const label = R.string[key] || role;
+
+    // Make admin/developer badges clickable links to admin portal
+    if (role === 'admin' || role === 'developer') {
+      return `<a href="/admin/admin.html" class="role-badge role-badge--clickable" title="Opna stjórnborð">${label}</a>`;
+    }
+
     return `<span class="role-badge">${label}</span>`;
   }).join('');
 
