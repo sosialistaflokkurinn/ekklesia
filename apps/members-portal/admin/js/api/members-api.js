@@ -40,13 +40,13 @@ const MembersAPI = {
       const membersCol = collection(db, 'members');
       let constraints = [];
 
-      // Filter by status
+      // Filter by status (nested in membership.status from Django sync)
       if (status !== 'all') {
-        constraints.push(where('status', '==', status));
+        constraints.push(where('membership.status', '==', status));
       }
 
-      // Order by name for consistent pagination
-      constraints.push(orderBy('name'));
+      // Order by name (nested in profile.name from Django sync)
+      constraints.push(orderBy('profile.name'));
 
       // Pagination
       if (startAfterDoc) {
@@ -61,12 +61,23 @@ const MembersAPI = {
       const members = [];
       const docs = snapshot.docs;
 
-      // Process results
+      // Process results and flatten Django sync structure
       for (let i = 0; i < Math.min(docs.length, limitCount); i++) {
         const docSnap = docs[i];
+        const data = docSnap.data();
+
+        // Flatten nested structure from Django sync
         members.push({
           id: docSnap.id,
-          ...docSnap.data(),
+          kennitala: data.profile?.kennitala || docSnap.id,
+          name: data.profile?.name || 'Unknown',
+          email: data.profile?.email || '',
+          phone: data.profile?.phone || '',
+          status: data.membership?.status || 'unknown',
+          birthday: data.profile?.birthday || '',
+          address: data.address || {},
+          membership: data.membership || {},
+          metadata: data.metadata || {},
           _doc: docSnap // Keep reference for pagination
         });
       }
@@ -106,7 +117,7 @@ const MembersAPI = {
       let constraints = [];
 
       if (status !== 'all') {
-        constraints.push(where('status', '==', status));
+        constraints.push(where('membership.status', '==', status));
       }
 
       const q = query(membersCol, ...constraints);
@@ -141,9 +152,23 @@ const MembersAPI = {
         throw new Error('Member not found');
       }
 
+      const data = docSnap.data();
+
+      // Flatten nested structure from Django sync
       return {
         id: docSnap.id,
-        ...docSnap.data()
+        kennitala: data.profile?.kennitala || docSnap.id,
+        name: data.profile?.name || 'Unknown',
+        email: data.profile?.email || '',
+        phone: data.profile?.phone || '',
+        status: data.membership?.status || 'unknown',
+        birthday: data.profile?.birthday || '',
+        address: data.address || {},
+        membership: data.membership || {},
+        metadata: data.metadata || {},
+        profile: data.profile || {},
+        titles: data.titles || [],
+        unions: data.unions || []
       };
 
     } catch (error) {
