@@ -253,8 +253,8 @@ Columns (partial list):
 # Count test accounts (SSN starts with 9999)
 ~/django-ssh.sh "cd /home/manager/socialism && sudo -u postgres psql -U postgres -d socialism -c \"SELECT COUNT(*) as test_accounts FROM membership_comrade WHERE ssn LIKE '9999%';\""
 
-# Get member by kennitala
-~/django-ssh.sh "cd /home/manager/socialism && sudo -u postgres psql -U postgres -d socialism -c \"SELECT id, name, ssn, date_joined FROM membership_comrade WHERE ssn = '200978-3589';\""
+# Get member by kennitala (example with fake SSN)
+~/django-ssh.sh "cd /home/manager/socialism && sudo -u postgres psql -U postgres -d socialism -c \"SELECT id, name, ssn, date_joined FROM membership_comrade WHERE ssn = 'XXXXXX-XXXX';\""
 
 # Check database tables
 ~/django-ssh.sh "cd /home/manager/socialism && sudo -u postgres psql -U postgres -d socialism -c \"\dt\" | head -30"
@@ -353,19 +353,19 @@ Sample: Gunnar Smári Egilsson
 **Single Member Object Structure:**
 ```json
 {
-  "id": 3445,
-  "ssn": "200978-3589",
-  "name": "Guðröður Örn Arnarson",
-  "birthday": "1978-09-20",
+  "id": 12345,
+  "ssn": "010190-1234",
+  "name": "Jón Jónsson",
+  "birthday": "1990-01-01",
   "date_joined": "2024-06-15T14:32:00Z",
   "gender": "m",
   "reachable": true,
   "groupable": true,
   "housing_situation": "owner",
   "contact_info": {
-    "email": "gudro@example.com",
-    "phone": "+3547654321",
-    "facebook": "gudro.arnarson"
+    "email": "jon@example.com",
+    "phone": "+3541234567",
+    "facebook": "jon.jonsson"
   },
   "local_address": {
     "street": "Laugavegur 123",
@@ -707,7 +707,7 @@ LIMIT 10;
 ```sql
 SELECT id, name, ssn, date_joined, reachable
 FROM membership_comrade
-WHERE ssn = '200978-3589';
+WHERE ssn = '010190-1234';  -- Example fake SSN
 ```
 
 **Members with Contact Info:**
