@@ -21,6 +21,9 @@ from google.cloud import firestore as gcf
 from utils_logging import log_json, sanitize_fields
 from util_jwks import get_jwks_client_cached_ttl, get_jwks_cache_stats
 
+# Audit logging (Epic #116, Issue #119)
+from audit_members import audit_member_changes
+
 # --- SETUP ---
 if not firebase_admin._apps:
     initialize_app()
