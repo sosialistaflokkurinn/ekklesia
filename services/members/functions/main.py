@@ -25,10 +25,10 @@ from util_jwks import get_jwks_client_cached_ttl, get_jwks_cache_stats
 # NOTE: Firebase Functions Python SDK requires decorated functions to be
 # directly defined in main.py or explicitly re-exported at module level.
 # We import and re-export to make the function discoverable.
-from audit_members import audit_member_changes
+from audit_members import auditmemberchanges
 
 # Re-export at module level so Firebase discovers it
-__all__ = ['audit_member_changes']
+__all__ = ['auditmemberchanges']
 
 # --- SETUP ---
 if not firebase_admin._apps:

@@ -75,15 +75,15 @@ def _get_admin_email(admin_id: str) -> str:
     memory=options.MemoryOption.MB_256,
     timeout_sec=60
 )
-def audit_member_changes(
+def auditmemberchanges(
     event: firestore_fn.Event[firestore_fn.Change[firestore_fn.DocumentSnapshot]]
 ) -> None:
     """
     Firestore trigger that creates an audit log entry for any member change.
-    
+
     Triggered on: create, update, delete operations on members/{kennitala}
     Creates: Document in members_audit_log collection
-    
+
     Args:
         event: Firestore event with before/after snapshots
     """
@@ -166,4 +166,4 @@ def audit_member_changes(
 
 
 # Export function for Firebase Functions
-__all__ = ['audit_member_changes']
+__all__ = ['auditmemberchanges']

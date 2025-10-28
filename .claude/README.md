@@ -1,3 +1,5 @@
+/
+
 # Claude Code Configuration
 
 This directory contains configuration for Claude Code AI assistant.

@@ -1,0 +1,54 @@
+{
+  "mcpServers": {
+    "postgres": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-postgres@latest"
+      ],
+      "env": {
+        "PG_HOST": "127.0.0.1",
+        "PG_PORT": "5432",
+        "PG_USER": "postgres",
+        "PG_PASSWORD": "${PGPASSWORD}",
+        "PG_DATABASE": "postgres"
+      }
+    },
+    "github": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github@latest"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      }
+    },
+    "git": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-git@latest"
+      ],
+      "env": {
+        "GIT_REPOSITORY_PATH": "/home/gudro/Development/projects/ekklesia"
+      }
+    },
+    "gcloud": {
+      "command": "gcloud",
+      "args": [
+        "run",
+        "proxy"
+      ],
+      "env": {
+        "CLOUDSDK_CORE_PROJECT": "ekklesia-prod-10-2025"
+      }
+    },
+    "desktop-commander": {
+      "command": "npx",
+      "args": [
+        "@wonderwhy-er/desktop-commander@latest"
+      ]
+    }
+  }
+}
