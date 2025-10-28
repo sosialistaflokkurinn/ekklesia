@@ -137,9 +137,7 @@
   text-align: right;
 }
 
-.members-table__body {
-  /* No specific styles needed */
-}
+/* Note: .members-table__body has no specific styles needed */
 
 .members-table__row {
   border-bottom: 1px solid var(--color-border, var(--color-gray-200));
