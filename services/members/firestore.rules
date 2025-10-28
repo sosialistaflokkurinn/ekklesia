@@ -72,9 +72,7 @@ service cloud.firestore {
 
     // Members collection (Epic #116)
     match /members/{kennitala} {
-      // Read: All authenticated members can view other members (for directory)
-      // Admin can view all fields
-      allow read: if isAuthenticated();
+      allow read: if request.auth.uid == kennitala || hasAdminRole();
 
       // Create: Only admins can create new members
       allow create: if hasAdminRole() &&
