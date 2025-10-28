@@ -255,6 +255,7 @@ function setPageText(strings, userData) {
   // Navigation
   document.getElementById('nav-brand').textContent = strings.admin_brand;
   document.getElementById('nav-admin-dashboard').textContent = strings.nav_admin_dashboard;
+  document.getElementById('nav-admin-members').textContent = strings.nav_admin_members;
   document.getElementById('nav-admin-sync').textContent = strings.nav_admin_sync;
   document.getElementById('nav-admin-history').textContent = strings.nav_admin_history;
   document.getElementById('nav-back-to-member').textContent = strings.nav_back_to_member;
