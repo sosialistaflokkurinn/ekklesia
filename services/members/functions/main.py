@@ -22,7 +22,13 @@ from utils_logging import log_json, sanitize_fields
 from util_jwks import get_jwks_client_cached_ttl, get_jwks_cache_stats
 
 # Audit logging (Epic #116, Issue #119)
+# NOTE: Firebase Functions Python SDK requires decorated functions to be
+# directly defined in main.py or explicitly re-exported at module level.
+# We import and re-export to make the function discoverable.
 from audit_members import audit_member_changes
+
+# Re-export at module level so Firebase discovers it
+__all__ = ['audit_member_changes']
 
 # --- SETUP ---
 if not firebase_admin._apps:

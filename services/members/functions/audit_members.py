@@ -56,10 +56,10 @@ def _determine_action(
         return 'unknown'
 
 
-async def _get_admin_email(admin_id: str) -> str:
+def _get_admin_email(admin_id: str) -> str:
     """Get admin email from Firebase Auth, with error handling."""
     try:
-        user = await auth.get_user(admin_id)
+        user = auth.get_user(admin_id)
         return user.email or f"unknown-{admin_id}"
     except Exception as e:
         log_json('ERROR', 'Failed to get admin email',
@@ -75,7 +75,7 @@ async def _get_admin_email(admin_id: str) -> str:
     memory=options.MemoryOption.MB_256,
     timeout_sec=60
 )
-async def audit_member_changes(
+def audit_member_changes(
     event: firestore_fn.Event[firestore_fn.Change[firestore_fn.DocumentSnapshot]]
 ) -> None:
     """
@@ -107,23 +107,23 @@ async def audit_member_changes(
         admin_id = before_data.get('updatedBy') or before_data.get('createdBy') or 'system'
     
     # Get admin email
-    admin_email = await _get_admin_email(admin_id)
-    
+    admin_email = _get_admin_email(admin_id)
+
     # Get member name
     member_name = 'Unknown'
     if after_data:
         member_name = after_data.get('name', 'Unknown')
     elif before_data:
         member_name = before_data.get('name', 'Unknown')
-    
+
     # Calculate diff
     diff = _calculate_diff(before_data, after_data)
-    
+
     # Create audit log entry
     db = firestore.client()
     timestamp_ms = int(datetime.now().timestamp() * 1000)
     log_id = f"{timestamp_ms}_{admin_id}_{action}_{kennitala}"
-    
+
     audit_entry = {
         'adminId': admin_id,
         'adminEmail': admin_email,
@@ -139,9 +139,9 @@ async def audit_member_changes(
         'source': 'firestore-trigger',
         'success': True
     }
-    
+
     try:
-        await db.collection('members_audit_log').document(log_id).set(audit_entry)
+        db.collection('members_audit_log').document(log_id).set(audit_entry)
         
         log_json('INFO', 'Audit log created',
                  event='audit_member_changes_success',
