@@ -9,6 +9,15 @@
  * - Loading/error/empty states
  */
 
+// Import from member portal public directory
+import { initSession } from '../../session/init.js';
+import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
+import MembersAPI from './api/members-api.js';
+
+// Initialize Firebase services
+const auth = getFirebaseAuth();
+const db = getFirebaseFirestore();
+
 (function() {
   'use strict';
 
@@ -41,7 +50,7 @@
   // Initialize page
   async function init() {
     // Check authentication
-    firebase.auth().onAuthStateChanged(async (user) => {
+    auth.onAuthStateChanged(async (user) => {
       if (!user) {
         window.location.href = '/login.html';
         return;
@@ -86,9 +95,38 @@
     elements.btnRetry = document.getElementById('btn-retry');
   }
 
-  // Load i18n strings
+  // Load i18n strings from admin portal
   async function loadStrings() {
-    if (typeof R === 'undefined' || !R.string) {
+    try {
+      const response = await fetch('/admin/i18n/values-is/strings.xml');
+      if (!response.ok) {
+        console.warn('Could not load admin i18n strings');
+        return;
+      }
+
+      const xmlText = await response.text();
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+      const stringElements = xmlDoc.getElementsByTagName('string');
+
+      const R = { string: {} };
+      for (const el of stringElements) {
+        const name = el.getAttribute('name');
+        const value = el.textContent;
+        if (name) R.string[name] = value;
+      }
+
+      // Apply strings to DOM
+      applyStrings(R);
+    } catch (error) {
+      console.warn('Error loading i18n strings:', error);
+      return;
+    }
+  }
+
+  // Apply i18n strings to DOM elements
+  function applyStrings(R) {
+    if (!R || !R.string) {
       console.warn('i18n strings not loaded');
       return;
     }
@@ -202,7 +240,7 @@
     const navLogout = document.getElementById('nav-logout');
     navLogout?.addEventListener('click', async (e) => {
       e.preventDefault();
-      await firebase.auth().signOut();
+      await auth.signOut();
       window.location.href = '/login.html';
     });
   }
@@ -222,7 +260,7 @@
     showLoading();
 
     try {
-      const result = await window.MembersAPI.fetchMembers({
+      const result = await MembersAPI.fetchMembers({
         limit: 50,
         status: currentStatus,
         search: currentSearch,
@@ -253,7 +291,7 @@
   // Update member count display
   async function updateMemberCount() {
     try {
-      const count = await window.MembersAPI.getMembersCount(currentStatus);
+      const count = await MembersAPI.getMembersCount(currentStatus);
       const statusText = currentStatus === 'all' ? 'allir' :
                         currentStatus === 'active' ? 'virkir' : 'óvirkir';
       elements.countText.textContent = `${count} ${statusText} félagar`;

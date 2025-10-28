@@ -5,6 +5,12 @@
  * Handles pagination, search, and filtering.
  */
 
+// Import Firestore from member portal
+import { getFirebaseFirestore } from '../../../firebase/app.js';
+
+// Get Firestore instance
+const db = getFirebaseFirestore();
+
 const MembersAPI = {
   /**
    * Fetch members with pagination and filtering
@@ -17,7 +23,6 @@ const MembersAPI = {
    */
   async fetchMembers({ limit = 50, status = 'active', search = '', startAfter = null } = {}) {
     try {
-      const db = firebase.firestore();
       let query = db.collection('members');
 
       // Filter by status
@@ -83,7 +88,6 @@ const MembersAPI = {
    */
   async getMembersCount(status = 'active') {
     try {
-      const db = firebase.firestore();
       let query = db.collection('members');
 
       if (status !== 'all') {
@@ -112,7 +116,6 @@ const MembersAPI = {
    */
   async getMember(kennitala) {
     try {
-      const db = firebase.firestore();
       const doc = await db.collection('members').doc(kennitala).get();
 
       if (!doc.exists) {
@@ -132,4 +135,4 @@ const MembersAPI = {
 };
 
 // Export for use in other modules
-window.MembersAPI = MembersAPI;
+export default MembersAPI;
