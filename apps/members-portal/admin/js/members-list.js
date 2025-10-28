@@ -52,6 +52,9 @@ const db = getFirebaseFirestore();
     // Initialize DOM elements first (before auth check)
     initElements();
 
+    // Load i18n strings early (before auth check so UI shows proper text)
+    await loadStrings();
+
     // Check authentication
     auth.onAuthStateChanged(async (user) => {
       if (!user) {
@@ -65,9 +68,6 @@ const db = getFirebaseFirestore();
         showError('Þú hefur ekki réttindi til að skoða þessa síðu');
         return;
       }
-
-      // Load i18n strings
-      await loadStrings();
 
       // Set up event listeners
       setupEventListeners();
