@@ -101,3 +101,4 @@ scripts/logs/*.jsonl
 **/logs/*.jsonl
 *.audit.json
 *-audit-*.jsonl
+.gemini/tmp/firestore_index.json
