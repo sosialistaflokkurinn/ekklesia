@@ -62,9 +62,12 @@ const db = getFirebaseFirestore();
         return;
       }
 
-      // Check admin role
+      // Check admin or developer role (developers have admin access)
       const token = await user.getIdTokenResult();
-      if (!token.claims.roles || !token.claims.roles.includes('admin')) {
+      const roles = token.claims.roles || [];
+      const hasAdminAccess = roles.includes('admin') || roles.includes('developer');
+
+      if (!hasAdminAccess) {
         showError('Þú hefur ekki réttindi til að skoða þessa síðu');
         return;
       }
