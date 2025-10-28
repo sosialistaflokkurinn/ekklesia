@@ -1,75 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <!-- Admin Navigation -->
-  <string name="admin_brand">Ekklesia Admin</string>
-  <string name="nav_admin_dashboard">Stjórnborð</string>
-  <string name="nav_admin_sync">Samstilla félagsmenn</string>
-  <string name="nav_admin_history">Samstillingarsaga</string>
-  <string name="nav_back_to_member">Til baka í félagavef</string>
+  <string name="admin_brand">Ekklesia Stjórnkerfi</string>
+  <string name="nav_admin_dashboard">Yfirlit</string>
+  <string name="nav_admin_sync">Samstilla félagaskrá</string>
+  <string name="nav_admin_history">Samstillingasaga</string>
+  <string name="nav_back_to_member">Aftur á félagavef</string>
+  <string name="nav_logout">Útskrá</string>
 
   <!-- Admin Dashboard -->
-  <string name="admin_dashboard_title">Stjórnborð</string>
-  <string name="admin_welcome_title">Velkomin/n í stjórnkerfi</string>
-  <string name="admin_welcome_male">Velkominn %s í stjórnkerfi</string>
-  <string name="admin_welcome_female">Velkomin %s í stjórnkerfi</string>
-  <string name="admin_welcome_neutral">Velkomin/n %s í stjórnkerfi</string>
-  <string name="admin_welcome_subtitle">Hér getur þú stjórnað samstillingu félagsmanna og öðrum stjórnunaraðgerðum</string>
+  <string name="admin_dashboard_title">Yfirlit</string>
+  <string name="last_sync_title">Síðasta samstilling</string>
+  <string name="admin_welcome_title">Velkomin/n í stjórnkerfið</string>
+  <string name="admin_welcome_male">Velkominn, %s</string>
+  <string name="admin_welcome_female">Velkomin, %s</string>
+  <string name="admin_welcome_neutral">Velkomin/n, %s</string>
+  <string name="admin_welcome_subtitle">Hér getur þú haft umsjón með samstillingu félagaskrár og öðrum aðgerðum.</string>
   <string name="admin_actions_title">Aðgerðir</string>
-  <string name="quick_action_sync_label">Samstilla félagsmenn</string>
-  <string name="quick_action_sync_desc">Keyra samstillingu úr Django kerfinu</string>
-  <string name="quick_action_history_label">Samstillingarsaga</string>
-  <string name="quick_action_history_desc">Skoða eldri samstillingar</string>
+  <string name="quick_action_sync_label">Samstilla félagaskrá</string>
+  <string name="quick_action_sync_desc">Keyra samstillingu úr eldra Django-kerfi</string>
+  <string name="quick_action_history_label">Samstillingasaga</string>
+  <string name="quick_action_history_desc">Skoða yfirlit yfir fyrri samstillingar</string>
 
   <!-- Sync Members Page -->
-  <string name="sync_members_title">Samstilla félagsmenn</string>
-  <string name="sync_members_subtitle">Handvirk samstilling úr Django aðalkerfi félagsins</string>
+  <string name="sync_members_title">Samstilla félagaskrá</string>
+  <string name="sync_members_subtitle">Handvirk samstilling félagaskrár úr eldra Django-kerfi</string>
   <string name="sync_trigger_title">Hefja samstillingu</string>
-  <string name="sync_trigger_btn">Byrja samstillingu núna</string>
-  <string name="sync_trigger_confirm">Ertu viss um að þú viljir keyra samstillingu? Þetta getur tekið 1-2 mínútur.</string>
+  <string name="sync_trigger_description">Þetta mun samstilla félagaskrá úr eldra Django kerfi yfir í nýja Firestore gagnagrunninn.</string>
+  <string name="sync_trigger_btn">Keyra samstillingu</string>
+  <string name="sync_trigger_confirm">Ertu viss um að þú viljir keyra samstillingu? Þetta gæti tekið 1-2 mínútur.</string>
 
   <!-- Sync Status -->
   <string name="sync_status_title">Samstilling í gangi</string>
-  <string name="sync_progress_message">Sæki gögn úr Django og uppfæri Firestore...</string>
+  <string name="sync_status_with_errors">⚠️ Með villum</string>
+  <string name="sync_status_success_simple">✅ Tókst</string>
+  <string name="sync_progress_message">Sæki gögn úr Django og uppfæri gagnagrunn...</string>
   <string name="sync_success_title">Samstilling tókst</string>
-  <string name="sync_success_message">Samstilling lauk með góðum árangri</string>
+  <string name="sync_success_message">Samstillingu lauk árangursríkt</string>
   <string name="sync_failed_title">Samstilling mistókst</string>
   <string name="sync_failed_message">Villa kom upp við samstillingu: %s</string>
 
   <!-- Sync Stats -->
-  <string name="stat_total_label">Heildarfjöldi</string>
+  <string name="stat_total_label">Samtals</string>
   <string name="stat_synced_label">Samstillt</string>
-  <string name="stat_failed_label">Mistókst</string>
+  <string name="stat_failed_label">Mistókust</string>
   <string name="stat_skipped_label">Sleppt</string>
-  <string name="stat_duration_label">Tími</string>
+  <string name="stat_duration_label">Tímalengd</string>
   <string name="stat_pages_label">Síður</string>
+  <string name="stat_status_label">Staða</string>
+  <string name="stat_time_label">Tímalengd</string>
+
+  <!-- Roles -->
+  <string name="role_admin">Stjórnandi</string>
+  <string name="role_election_manager">Kosningastjóri</string>
+  <string name="role_event_manager">Viðburðastjóri</string>
 
   <!-- Sync History Page -->
-  <string name="history_title">Samstillingarsaga</string>
-  <string name="history_subtitle">Yfirlit yfir allar samstillingar</string>
+  <string name="history_title">Samstillingasaga</string>
+  <string name="history_subtitle">Yfirlit yfir fyrri keyrslur</string>
   <string name="history_table_date">Dagsetning</string>
   <string name="history_table_status">Staða</string>
-  <string name="history_table_total">Heildarfjöldi</string>
+  <string name="history_table_total">Samtals</string>
   <string name="history_table_synced">Samstillt</string>
-  <string name="history_table_failed">Mistókst</string>
-  <string name="history_table_duration">Tími</string>
+  <string name="history_table_failed">Mistókust</string>
+  <string name="history_table_duration">Tímalengd</string>
   <string name="history_status_success">Tókst</string>
   <string name="history_status_failed">Mistókst</string>
-  <string name="history_empty">Engar samstillingar fundust</string>
+  <string name="history_empty">Engin samstillingasaga fannst</string>
 
   <!-- Errors & Messages -->
-  <string name="error_unauthorized">Þú hefur ekki aðgang að stjórnkerfi</string>
-  <string name="error_auth_required">Innskráning nauðsynleg</string>
+  <string name="error_unauthorized">Þú hefur ekki heimild til að nota stjórnkerfið</string>
+  <string name="error_unauthorized_developer">Þú hefur ekki aðgang að stjórnkerfi. Aðeins notendur með 'developer' hlutverk hafa aðgang.</string>
+  <string name="error_auth_required">Innskráning er nauðsynleg</string>
   <string name="error_network">Netvilla: %s</string>
-  <string name="error_sync_trigger">Gat ekki byrjað samstillingu: %s</string>
-  <string name="error_load_history">Gat ekki sótt samstillingarsögu: %s</string>
+  <string name="error_sync_trigger">Gat ekki hafið samstillingu: %s</string>
+  <string name="error_load_history">Gat ekki sótt samstillingasögu: %s</string>
   <string name="error_page_load">Villa við að hlaða síðu: %s</string>
 
   <!-- Buttons -->
   <string name="btn_retry">Reyna aftur</string>
-  <string name="btn_back_to_dashboard">Til baka</string>
-  <string name="btn_view_history">Skoða sögu</string>
+  <string name="btn_back_to_dashboard">Aftur í yfirlit</string>
+  <string name="btn_view_history">Skoða keyrslusögu</string>
 
   <!-- Loading States -->
   <string name="loading">Hleð inn...</string>
-  <string name="loading_sync_logs">Sæki samstillingarsögu...</string>
+  <string name="loading_sync_logs">Sæki samstillingasögu...</string>
 </resources>

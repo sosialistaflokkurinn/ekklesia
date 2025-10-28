@@ -323,7 +323,7 @@ async function init() {
 
     // Check if unauthorized
     if (error.message.includes('Unauthorized')) {
-      alert('Þú hefur ekki aðgang að stjórnkerfi. Aðeins notendur með developer role hafa aðgang.');
+      alert(adminStrings.get('error_unauthorized_developer'));
       window.location.href = '/members-area/dashboard.html';
       return;
     }
@@ -336,7 +336,7 @@ async function init() {
 
     // Other errors
     console.error('Error loading sync history page:', error);
-    alert(`Villa við að hlaða síðu: ${error.message}`);
+    alert(adminStrings.get('error_page_load').replace('%s', error.message));
   }
 }
 

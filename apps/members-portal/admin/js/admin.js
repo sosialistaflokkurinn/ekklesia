@@ -131,24 +131,24 @@ function displayRecentSync(log) {
 
   // Build summary HTML
   const stats = log.stats || {};
-  const status = stats.failed > 0 ? '⚠️ Með villum' : '✅ Tókst';
+  const status = stats.failed > 0 ? adminStrings.get('sync_status_with_errors') : adminStrings.get('sync_status_success_simple');
 
   summary.innerHTML = `
     <div class="info-grid">
       <div class="info-grid__item">
-        <div class="info-grid__label">Dagsetning</div>
+        <div class="info-grid__label">${adminStrings.get('history_table_date')}</div>
         <div class="info-grid__value">${formattedDate}</div>
       </div>
       <div class="info-grid__item">
-        <div class="info-grid__label">Staða</div>
+        <div class="info-grid__label">${adminStrings.get('stat_status_label')}</div>
         <div class="info-grid__value">${status}</div>
       </div>
       <div class="info-grid__item">
-        <div class="info-grid__label">Samstillt</div>
+        <div class="info-grid__label">${adminStrings.get('stat_synced_label')}</div>
         <div class="info-grid__value">${stats.synced || 0} / ${stats.total_members || 0}</div>
       </div>
       <div class="info-grid__item">
-        <div class="info-grid__label">Tími</div>
+        <div class="info-grid__label">${adminStrings.get('stat_time_label')}</div>
         <div class="info-grid__value">${calculateDuration(stats)}</div>
       </div>
     </div>
@@ -209,10 +209,10 @@ function renderRoleBadges(roles) {
 
   // Map role names to Icelandic
   const roleLabels = {
-    'developer': 'Forritari',
-    'admin': 'Stjórnandi',
-    'meeting_election_manager': 'Kosningastjóri',
-    'event_manager': 'Viðburðastjóri'
+    'developer': 'Forritari', // This string is from the main app, not admin-specific
+    'admin': adminStrings.get('role_admin'),
+    'meeting_election_manager': adminStrings.get('role_election_manager'),
+    'event_manager': adminStrings.get('role_event_manager')
   };
 
   const badges = normalizedRoles.map((role) => {
@@ -258,6 +258,7 @@ function setPageText(strings, userData) {
   document.getElementById('nav-admin-sync').textContent = strings.nav_admin_sync;
   document.getElementById('nav-admin-history').textContent = strings.nav_admin_history;
   document.getElementById('nav-back-to-member').textContent = strings.nav_back_to_member;
+  document.getElementById('nav-logout').textContent = strings.nav_logout;
 
   // Welcome card - with personalized greeting
   console.log('Building welcome message for:', userData.displayName);
@@ -275,6 +276,9 @@ function setPageText(strings, userData) {
   document.getElementById('quick-action-sync-desc').textContent = strings.quick_action_sync_desc;
   document.getElementById('quick-action-history-label').textContent = strings.quick_action_history_label;
   document.getElementById('quick-action-history-desc').textContent = strings.quick_action_history_desc;
+
+  // Other titles
+  document.getElementById('last-sync-title').textContent = strings.last_sync_title;
 }
 
 /**
@@ -307,7 +311,7 @@ async function init() {
 
     // Check if unauthorized
     if (error.message.includes('Unauthorized')) {
-      alert('Þú hefur ekki aðgang að stjórnkerfi. Aðeins notendur með developer role hafa aðgang.');
+      alert(adminStrings.get('error_unauthorized_developer'));
       window.location.href = '/members-area/dashboard.html';
       return;
     }
@@ -320,7 +324,7 @@ async function init() {
 
     // Other errors
     console.error('Error loading admin dashboard:', error);
-    alert(`Villa við að hlaða stjórnborði: ${error.message}`);
+    alert(adminStrings.get('error_page_load').replace('%s', error.message));
   }
 }
 

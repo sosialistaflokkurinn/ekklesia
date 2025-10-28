@@ -14,7 +14,7 @@
     <string name="page_title">Innskráning - Sósíalistaflokkurinn</string>
     <string name="page_title_login">Innskráning - Sósíalistaflokkurinn</string>
     <string name="page_title_dashboard">Mín síða - Sósíalistaflokkurinn</string>
-    <string name="page_title_profile">Aðgangur - Sósíalistaflokkurinn</string>
+    <string name="page_title_profile">Prófíllinn minn - Sósíalistaflokkurinn</string>
     <string name="page_title_events">Viðburðir - Sósíalistaflokkurinn</string>
     <string name="page_title_test_events">Prófunarkosning 2025 - Sósíalistaflokkurinn</string>
 
@@ -23,19 +23,19 @@
     <!-- ========================================== -->
     <string name="login_title">Innskráning</string>
     <string name="login_subtitle">Félagar Sósíalistaflokksins</string>
-    <string name="btn_login">Skrá inn með Kenni.is</string>
+    <string name="btn_login">Innskrá með Kenni.is</string>
     <string name="btn_login_description">Auðkenning með rafrænum skilríkjum</string>
 
     <!-- Authentication status -->
-    <string name="status_authenticated">Innskráð(ur)</string>
-    <string name="status_not_authenticated">Ekki innskráð(ur)</string>
+    <string name="status_authenticated">Innskráð/ur</string>
+    <string name="status_not_authenticated">Óinnskráð/ur</string>
     <string name="status_authenticating">Auðkennir...</string>
-    <string name="status_verifying_membership">Kannar aðild...</string>
+    <string name="status_verifying_membership">Kannar félagsaðild...</string>
 
     <!-- Login errors -->
     <string name="error_missing_pkce">Vantar PKCE-sannprófara</string>
     <string name="error_authentication_failed">Auðkenning mistókst</string>
-    <string name="error_authentication">Villa við auðkenningu: %s</string>
+    <string name="error_authentication">Auðkenningarvilla: %s</string>
     <string name="error_csrf_title">Villa</string>
     <string name="error_csrf_message">Öryggisvilla: CSRF-vörn virk. Vinsamlegast reyndu aftur.</string>
 
@@ -44,8 +44,8 @@
     <!-- ========================================== -->
     <string name="nav_brand">Sósíalistaflokkurinn</string>
     <string name="nav_dashboard">Mín síða</string>
-    <string name="nav_profile">Aðgangur</string>
-    <string name="nav_events">Atburðir</string>
+    <string name="nav_profile">Prófíll</string>
+    <string name="nav_events">Viðburðir</string>
     <string name="nav_voting">Kosningar</string>
     <string name="nav_logout">Útskrá</string>
 
@@ -56,33 +56,33 @@
     <!-- ========================================== -->
     <!-- DASHBOARD PAGE (dashboard.html) -->
     <!-- ========================================== -->
-  <string name="dashboard_welcome_male">Sæll, kæri félagi %s!</string>
-  <string name="dashboard_welcome_female">Sæl, kæri félagi %s!</string>
-  <string name="dashboard_welcome_neutral">Sæl, kæri félagi %s!</string>
-  <string name="dashboard_welcome">Sæll/Sæl</string>
-  <string name="dashboard_welcome_user">%s, %s!</string>
+  <string name="dashboard_welcome_male">Sæll, félagi %s!</string>
+  <string name="dashboard_welcome_female">Sæl, félagi %s!</string>
+  <string name="dashboard_welcome_neutral">Sæll/Sæl, félagi %s!</string>
+  <string name="dashboard_welcome">Velkomin/n</string>
+  <string name="dashboard_welcome_user">Velkomin/n, %s!</string>
     <string name="dashboard_subtitle">Félagasvæði Sósíalistaflokksins</string>
     <string name="dashboard_default_name">félagi</string>
 
     <!-- Quick links -->
     <string name="quick_links_title">Flýtileiðir</string>
-    <string name="quick_links_profile_label">Aðgangur</string>
-    <string name="quick_links_profile_desc">Skoða mínar upplýsingar</string>
-    <string name="quick_links_events_label">Atburðir</string>
-    <string name="quick_links_events_desc">Prófunarkosning 2025</string>
+    <string name="quick_links_profile_label">Prófíllinn minn</string>
+    <string name="quick_links_profile_desc">Skoða og breyta mínum upplýsingum</string>
+    <string name="quick_links_events_label">Viðburðir</string>
+    <string name="quick_links_events_desc">Skoða viðburði og fundi</string>
     <string name="quick_links_voting_label">Kosningar</string>
     <string name="quick_links_voting_desc">Væntanlegt</string>
 
     <!-- Membership status -->
     <string name="membership_title">Félagastaða</string>
     <string name="membership_loading">Hleð inn...</string>
-    <string name="membership_active">✓ Gild aðild</string>
-    <string name="membership_inactive">Ekki félagi</string>
+    <string name="membership_active">✓ Virk félagsaðild</string>
+    <string name="membership_inactive">✗ Ekki með félagsaðild</string>
     <string name="membership_not_verified">Óstaðfest</string>
-    <string name="membership_verifying">Kannar aðild...</string>
-    <string name="membership_verification_failed">Villa við staðfestingu</string>
+    <string name="membership_verifying">Kannar félagsaðild...</string>
+    <string name="membership_verification_failed">Staðfesting tókst ekki</string>
     <string name="btn_verify_membership">Staðfesta félagsaðild</string>
-  <string name="btn_verify_membership_again">Endurstaðfesta félagsaðild</string>
+  <string name="btn_verify_membership_again">Staðfesta aðild aftur</string>
     <string name="dashboard_roles_label">Hlutverk</string>
     <string name="role_badge_developer">Forritari</string>
     <string name="role_badge_meeting_election_manager">Fundar- og kosningastjóri</string>
@@ -92,13 +92,13 @@
     <!-- ========================================== -->
     <!-- PROFILE PAGE (profile.html) -->
     <!-- ========================================== -->
-    <string name="profile_title">Aðgangur</string>
+    <string name="profile_title">Prófíll</string>
     <string name="profile_subtitle">Mínar upplýsingar</string>
 
     <!-- Personal information -->
-    <string name="section_personal_info">Persónuupplýsingar</string>
+    <string name="section_personal_info">Mínar upplýsingar</string>
     <string name="label_name">Nafn</string>
-    <string name="label_display_name">Nafn</string>
+    <string name="label_display_name">Birtingarnafn</string>
     <string name="label_kennitala">Kennitala</string>
     <string name="label_email">Netfang</string>
     <string name="label_phone">Símanúmer</string>
@@ -116,8 +116,8 @@
     <!-- ========================================== -->
     <string name="events_title">Viðburðir</string>
     <string name="events_subtitle">Fundir og viðburðir flokksins</string>
-    <string name="events_tab_upcoming">Væntanlegir</string>
-    <string name="events_tab_past">Liðnir</string>
+    <string name="events_tab_upcoming">Framundan</string>
+    <string name="events_tab_past">Liðnir viðburðir</string>
     <string name="events_loading">Sæki viðburði...</string>
     <string name="events_empty">Engir viðburðir fundust</string>
     <string name="events_error">Villa kom upp</string>
@@ -130,8 +130,8 @@
 
     <!-- Authentication status -->
     <string name="test_auth_title">Auðkenning</string>
-    <string name="test_auth_not_authenticated">Ekki auðkennd/ur</string>
-    <string name="test_auth_authenticated">✓ Auðkenndur</string>
+    <string name="test_auth_not_authenticated">Óauðkennd/ur</string>
+    <string name="test_auth_authenticated">✓ Auðkennd/ur</string>
     <string name="test_auth_uid">Auðkenni:</string>
     <string name="test_auth_kennitala">Kennitala:</string>
     <string name="test_auth_membership">Félagsaðild:</string>
@@ -140,24 +140,24 @@
     <string name="test_auth_not_available">Ekki tiltækt</string>
 
     <!-- API Tests -->
-    <string name="test_api_title">API Prófanir</string>
+    <string name="test_api_title">API prófanir</string>
     <string name="test_api_production_env">Framleiðsluumhverfi:</string>
 
     <!-- Test sections -->
-    <string name="test_1_title">1. Heilsuathugun (engin auðkenning)</string>
+    <string name="test_1_title">1. Heilbrigðisathugun (óauðkennt)</string>
     <string name="test_1_button">GET /health</string>
 
     <string name="test_2_title">2. Sækja upplýsingar um kosningu</string>
     <string name="test_2_button">GET /api/election</string>
 
-    <string name="test_3_title">3. Biðja um atkvæðalykil</string>
+    <string name="test_3_title">3. Óska eftir atkvæðalykli</string>
     <string name="test_3_button">POST /api/request-token</string>
 
     <string name="test_4_title">4. Athuga þátttökustöðu</string>
     <string name="test_4_button">GET /api/my-status</string>
 
     <string name="test_5_title">5. Kjósa (Kosningaþjónusta)</string>
-    <string name="test_5_button">POST /api/vote (Elections Service)</string>
+    <string name="test_5_button">POST /api/vote (Kosningaþjónusta)</string>
     <string name="test_5_token_label">Atkvæðalykill:</string>
     <string name="test_5_token_placeholder">Límdu atkvæðalykilinn hér</string>
     <string name="test_5_answer_label">Svar:</string>
@@ -170,18 +170,18 @@
     <string name="test_6_button">GET /api/results</string>
 
   <!-- Reset section (developer-only) -->
-  <string name="test_7_title">7. Endursetja kosningar (þróunaraðilar)</string>
-  <string name="test_7_warning">⚠️ Aðeins fyrir prófanir. Þessi aðgerð getur hreinsað öll atkvæði og atkvæðalykla. Notið með varúð.</string>
+  <string name="test_7_title">7. Endurstilla kosningu (fyrir þróunaraðila)</string>
+  <string name="test_7_warning">⚠️ Aðeins fyrir prófanir. Þessi aðgerð hreinsar öll atkvæði og kosningalykla. Notist með varúð.</string>
   <string name="test_7_scope_label">Umfang:</string>
-  <string name="test_7_scope_mine">Aðeins minn aðgangur (eyðir mínum atkvæðalykli)</string>
+  <string name="test_7_scope_mine">Aðeins mitt atkvæði (eyðir mínum kosningalykli)</string>
   <string name="test_7_scope_all">Allt (hreinsar öll atkvæði og lykla)</string>
   <string name="test_7_confirm_label">Staðfesting:</string>
-  <string name="test_7_confirm_placeholder">Sláðu inn "RESET ALL" til að staðfesta</string>
-  <string name="test_7_button">Endursetja</string>
-  <string name="test_7_error_confirm">Þú verður að slá inn nákvæmlega "RESET ALL" til að staðfesta heildar endursetningu.</string>
+  <string name="test_7_confirm_placeholder">Skrifaðu "RESET ALL" til að staðfesta</string>
+  <string name="test_7_button">Endurstilla</string>
+  <string name="test_7_error_confirm">Þú verður að skrifa nákvæmlega "RESET ALL" til að staðfesta heildarendurstillingu.</string>
 
     <!-- Test errors -->
-    <string name="test_error_not_authenticated">Ekki auðkennd/ur</string>
+    <string name="test_error_not_authenticated">Óauðkennd/ur</string>
 
     <!-- ========================================== -->
     <!-- COMMON / SHARED STRINGS -->
@@ -194,11 +194,11 @@
     <!-- ========================================== -->
     <!-- CONSOLE LOG MESSAGES (for debugging) -->
     <!-- ========================================== -->
-    <string name="log_membership_verified">Aðild staðfest við innskráningu</string>
-    <string name="log_membership_verify_failed">Staðfesting aðildar mistókst við innskráningu:</string>
-    <string name="log_authentication_error">Villa við auðkenningu:</string>
+    <string name="log_membership_verified">Félagsaðild staðfest við innskráningu</string>
+    <string name="log_membership_verify_failed">Staðfesting félagsaðildar mistókst við innskráningu:</string>
+    <string name="log_authentication_error">Auðkenningarvilla:</string>
     <string name="log_csrf_failed">CSRF-athugun mistókst: ósamræmi í stöðu</string>
-    <string name="log_membership_verification_error">Villa við staðfestingu aðildar:</string>
+    <string name="log_membership_verification_error">Villa við staðfestingu á félagsaðild:</string>
 
     <!-- ========================================== -->
     <!-- CONFIGURATION (not translated) -->
@@ -232,30 +232,30 @@
 
     <!-- Elections list page -->
     <string name="elections_title">Kosningar</string>
-    <string name="elections_subtitle">Kjóstu í opnum kosningum</string>
+    <string name="elections_subtitle">Taktu þátt í rafrænum kosningum</string>
 
     <!-- Filter tabs -->
     <string name="filter_all">Allar</string>
     <string name="filter_active">Virkar</string>
     <string name="filter_upcoming">Væntanlegar</string>
-    <string name="filter_closed">Lokkaðar</string>
+    <string name="filter_closed">Lokaðar</string>
 
     <!-- Status badges -->
     <string name="status_active">Virk</string>
-    <string name="status_upcoming">Væntanleg</string>
+    <string name="status_upcoming">Framundan</string>
     <string name="status_closed">Lokuð</string>
 
     <!-- Election card -->
     <string name="election_card_voted">✓ Þú hefur kosið</string>
-    <string name="election_card_cta">Skoðaðu kosninguna →</string>
+    <string name="election_card_cta">Skoða kosningu →</string>
 
     <!-- Loading states -->
     <string name="loading_elections">Hleð inn kosningum...</string>
-    <string name="loading_election_detail">Hleð inn kosningum...</string>
+    <string name="loading_election_detail">Hleð inn upplýsingum um kosningu...</string>
 
     <!-- Error states -->
-    <string name="error_load_elections">Villa við að hlaða kosningum</string>
-    <string name="error_load_election_detail">Villa við að hlaða kosningum</string>
+    <string name="error_load_elections">Ekki tókst að sækja kosningar</string>
+    <string name="error_load_election_detail">Ekki tókst að sækja upplýsingar um kosningu</string>
     <string name="error_no_election_selected">Engin kosning er valin</string>
     <string name="error_submit_vote">Villa við að skrá atkvæði</string>
     <string name="error_load_results">Villa við að hlaða niðurstöðum</string>
@@ -266,10 +266,10 @@
     <!-- Buttons -->
     <string name="btn_retry">Reyna aftur</string>
     <string name="btn_back">Til baka</string>
-    <string name="btn_back_to_elections">Til baka á kosningar</string>
+    <string name="btn_back_to_elections">Aftur í kosningayfirlit</string>
     <string name="btn_vote_now">Kjósa núna</string>
     <string name="btn_vote">Kjósa</string>
-    <string name="btn_cancel">Aflýsa</string>
+    <string name="btn_cancel">Hætta við</string>
     <string name="btn_confirm">Staðfesta</string>
 
     <!-- Election detail page -->
@@ -277,23 +277,23 @@
     <string name="election_detail_back_link">← Til baka</string>
 
     <!-- Voting section -->
-    <string name="voting_section_title">Kjóstu nú</string>
+    <string name="voting_section_title">Kjóstu hér</string>
 
     <!-- Already voted section -->
-    <string name="msg_already_voted">✓ Þú hefur þegar kosið í þessari kosningum.</string>
+    <string name="msg_already_voted">✓ Þú hefur þegar kosið í þessari kosningu.</string>
 
     <!-- Upcoming section -->
-    <string name="msg_upcoming_election">Kosningin mynda opna fyrir atkvæðagreiðslu fyrr seinna.</string>
+    <string name="msg_upcoming_election">Þessi kosning hefur ekki enn opnað fyrir atkvæðagreiðslu.</string>
 
     <!-- Results section -->
     <string name="results_title">Niðurstöður</string>
     <string name="results_votes">%s atkvæði</string>
 
     <!-- Confirmation modal -->
-    <string name="modal_confirm_title">Staðfestu atkvæði</string>
-    <string name="modal_confirm_message">Ertu viss um að þú viljir kjósa?</string>
+    <string name="modal_confirm_title">Staðfesta atkvæði</string>
+    <string name="modal_confirm_message">Viltu staðfesta atkvæði þitt?</string>
 
     <!-- Success modal -->
     <string name="modal_success_title">✓ Atkvæði skráð</string>
-    <string name="modal_success_message">Þinn atkvæði hefur verið skráð með góðum árangri.</string>
+    <string name="modal_success_message">Atkvæði þitt hefur verið skráð.</string>
 </resources>
