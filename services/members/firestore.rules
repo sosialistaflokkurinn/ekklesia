@@ -23,6 +23,12 @@ service cloud.firestore {
              'developer' in request.auth.token.roles;
     }
 
+    function hasAdminRole() {
+      return isAuthenticated() &&
+             request.auth.token.roles is list &&
+             'admin' in request.auth.token.roles;
+    }
+
     // Users collection
     match /users/{userId} {
       // Read: Only own profile
@@ -62,6 +68,39 @@ service cloud.firestore {
 
       // Delete: Only developers can delete events
       allow delete: if hasDeveloperRole();
+    }
+
+    // Members collection (Epic #116)
+    match /members/{kennitala} {
+      // Read: All authenticated members can view other members (for directory)
+      // Admin can view all fields
+      allow read: if isAuthenticated();
+
+      // Create: Only admins can create new members
+      allow create: if hasAdminRole() &&
+                       request.resource.data.kennitala is string &&
+                       request.resource.data.name is string &&
+                       request.resource.data.createdBy == request.auth.uid &&
+                       request.resource.data.updatedAt is timestamp;
+
+      // Update: Only admins can update members
+      allow update: if hasAdminRole() &&
+                       request.resource.data.kennitala == resource.data.kennitala && // Cannot change kennitala
+                       request.resource.data.updatedBy == request.auth.uid &&
+                       request.resource.data.updatedAt is timestamp;
+
+      // Delete: Never allowed (soft delete via status field)
+      allow delete: if false;
+    }
+
+    // Members audit log collection (Epic #116)
+    match /members_audit_log/{logId} {
+      // Read: Only admins can view audit logs
+      allow read: if hasAdminRole();
+
+      // Write: Only Cloud Functions (via Admin SDK)
+      // Client-side writes are blocked to ensure audit integrity
+      allow write: if false;
     }
 
     // Default: Deny all other access
