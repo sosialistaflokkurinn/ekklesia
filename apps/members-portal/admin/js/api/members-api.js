@@ -66,11 +66,17 @@ const MembersAPI = {
       for (let i = 0; i < Math.min(docs.length, limitCount); i++) {
         const docSnap = docs[i];
         const data = docSnap.data();
+        const kennitala = data.profile?.kennitala || docSnap.id;
+
+        // Skip test accounts with kennitala starting with 9999
+        if (kennitala.startsWith('9999')) {
+          continue;
+        }
 
         // Flatten nested structure from Django sync
         members.push({
           id: docSnap.id,
-          kennitala: data.profile?.kennitala || docSnap.id,
+          kennitala: kennitala,
           name: data.profile?.name || 'Unknown',
           email: data.profile?.email || '',
           phone: data.profile?.phone || '',
@@ -154,6 +160,12 @@ const MembersAPI = {
       }
 
       const data = docSnap.data();
+      const memberKennitala = data.profile?.kennitala || docSnap.id;
+
+      // Skip test accounts with kennitala starting with 9999
+      if (memberKennitala.startsWith('9999')) {
+        throw new Error('Test account not accessible');
+      }
 
       // Flatten nested structure from Django sync
       return {
