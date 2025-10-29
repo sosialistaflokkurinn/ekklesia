@@ -128,20 +128,23 @@ const MembersAPI = {
       }
 
       const q = query(membersCol, ...constraints);
-      const snapshot = await getCountFromServer(q);
-      return snapshot.data().count;
+      const snapshot = await getDocs(q);
+
+      // Count members, excluding test accounts with 9999 prefix
+      let count = 0;
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const kennitala = data.profile?.kennitala || doc.id;
+        if (!kennitala.startsWith('9999')) {
+          count++;
+        }
+      });
+
+      return count;
 
     } catch (error) {
       console.error('Error getting members count:', error);
-      // Fallback: fetch all and count (not efficient, but works)
-      try {
-        const membersCol = collection(db, 'members');
-        const q = query(membersCol);
-        const snapshot = await getDocs(q);
-        return snapshot.size;
-      } catch (fallbackError) {
-        throw new Error(`Failed to get members count: ${error.message}`);
-      }
+      throw new Error(`Failed to get members count: ${error.message}`);
     }
   },
 
