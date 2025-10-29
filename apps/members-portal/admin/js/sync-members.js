@@ -72,14 +72,14 @@ class AdminStringsLoader {
 const adminStrings = new AdminStringsLoader();
 
 /**
- * Check if user has developer role
+ * Check if user has admin or superuser role
  */
 function checkAdminAccess(userData) {
   const roles = userData.roles || [];
-  const isAdmin = roles.includes('developer');
+  const hasAccess = roles.includes('admin') || roles.includes('superuser');
 
-  if (!isAdmin) {
-    throw new Error('Unauthorized: Developer role required');
+  if (!hasAccess) {
+    throw new Error('Unauthorized: Admin or superuser role required');
   }
 
   return true;
