@@ -325,17 +325,17 @@ const db = getFirebaseFirestore();
       const row = document.createElement('tr');
       row.className = 'members-table__row';
 
+      // Django ID
+      const idCell = document.createElement('td');
+      idCell.className = 'members-table__cell';
+      idCell.textContent = member.metadata?.django_id || '-';
+      row.appendChild(idCell);
+
       // Name
       const nameCell = document.createElement('td');
       nameCell.className = 'members-table__cell';
       nameCell.textContent = member.name || '-';
       row.appendChild(nameCell);
-
-      // Email
-      const emailCell = document.createElement('td');
-      emailCell.className = 'members-table__cell';
-      emailCell.textContent = member.email || '-';
-      row.appendChild(emailCell);
 
       // Phone
       const phoneCell = document.createElement('td');
@@ -343,11 +343,17 @@ const db = getFirebaseFirestore();
       phoneCell.textContent = member.phone || '-';
       row.appendChild(phoneCell);
 
-      // ID (masked kennitala)
-      const idCell = document.createElement('td');
-      idCell.className = 'members-table__cell';
-      idCell.textContent = maskKennitala(member.kennitala);
-      row.appendChild(idCell);
+      // Email
+      const emailCell = document.createElement('td');
+      emailCell.className = 'members-table__cell';
+      emailCell.textContent = member.email || '-';
+      row.appendChild(emailCell);
+
+      // Kennitala (masked)
+      const kennitalaCell = document.createElement('td');
+      kennitalaCell.className = 'members-table__cell';
+      kennitalaCell.textContent = maskKennitala(member.kennitala);
+      row.appendChild(kennitalaCell);
 
       // Actions
       const actionsCell = document.createElement('td');
