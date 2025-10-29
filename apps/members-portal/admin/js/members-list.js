@@ -349,14 +349,11 @@ const db = getFirebaseFirestore();
       phoneCell.textContent = member.phone || '-';
       row.appendChild(phoneCell);
 
-      // Status
-      const statusCell = document.createElement('td');
-      statusCell.className = 'members-table__cell';
-      const statusBadge = document.createElement('span');
-      statusBadge.className = `members-table__status members-table__status--${member.status || 'unknown'}`;
-      statusBadge.textContent = getStatusText(member.status);
-      statusCell.appendChild(statusBadge);
-      row.appendChild(statusCell);
+      // Django ID
+      const idCell = document.createElement('td');
+      idCell.className = 'members-table__cell';
+      idCell.textContent = member.metadata?.django_id || '-';
+      row.appendChild(idCell);
 
       // Actions
       const actionsCell = document.createElement('td');
