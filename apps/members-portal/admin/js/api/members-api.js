@@ -45,8 +45,9 @@ const MembersAPI = {
         constraints.push(where('membership.status', '==', status));
       }
 
-      // Order by name (nested in profile.name from Django sync)
-      constraints.push(orderBy('profile.name'));
+      // Order by Django ID descending (newest members first)
+      // metadata.django_id is synced from Django backend
+      constraints.push(orderBy('metadata.django_id', 'desc'));
 
       // Pagination
       if (startAfterDoc) {
