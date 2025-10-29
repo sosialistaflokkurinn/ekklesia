@@ -147,6 +147,79 @@ def transform_django_member_to_firestore(django_member: Dict[str, Any]) -> Dict[
     return firestore_doc
 
 
+def update_user_roles_from_django(db: firestore.Client, django_member: Dict[str, Any]) -> bool:
+    """
+    Update /users/{uid} with roles from Django member data.
+
+    Epic #116: Sync roles from Django User model to Firestore /users/ collection.
+
+    Args:
+        db: Firestore client
+        django_member: Django API member object with is_admin, is_superuser fields
+
+    Returns:
+        True if successful, False otherwise
+    """
+    kennitala = django_member.get('ssn')
+    if not kennitala:
+        return False
+
+    # Normalize kennitala (remove hyphen if present)
+    kennitala_normalized = kennitala.replace('-', '')
+
+    # Find Firebase UID by querying /users/ collection with kennitala field
+    users_ref = db.collection('users')
+    query = users_ref.where('kennitala', '==', kennitala_normalized).limit(1)
+    existing_users = list(query.stream())
+
+    if not existing_users:
+        # User hasn't logged in yet - skip (roles will be set on first login)
+        log_json('DEBUG', 'No Firebase user found for kennitala',
+                 event='update_user_roles_skipped_no_firebase_user',
+                 kennitala=f"{kennitala[:6]}****",
+                 django_id=django_member.get('id'))
+        return False
+
+    uid = existing_users[0].id  # Firebase UID
+
+    # Determine roles from Django User model flags
+    roles = ['member']  # Default role for all members
+
+    is_admin = django_member.get('is_admin', False)
+    is_superuser = django_member.get('is_superuser', False)
+
+    if is_admin:
+        roles.append('admin')
+
+    if is_superuser:
+        roles.append('developer')
+
+    # Update /users/{uid} with roles
+    try:
+        users_ref.document(uid).update({
+            'roles': roles,
+            'django_id': django_member.get('id'),
+            'lastRoleSync': firestore.SERVER_TIMESTAMP
+        })
+
+        log_json('INFO', 'Updated user roles',
+                 event='user_roles_updated',
+                 uid=uid,
+                 kennitala=f"{kennitala[:6]}****",
+                 roles=roles,
+                 django_id=django_member.get('id'))
+
+        return True
+
+    except Exception as e:
+        log_json('ERROR', 'Failed to update user roles',
+                 event='update_user_roles_error',
+                 uid=uid,
+                 kennitala=f"{kennitala[:6]}****",
+                 error=str(e))
+        return False
+
+
 def sync_member_to_firestore(db: firestore.Client, django_member: Dict[str, Any]) -> bool:
     """
     Sync a single member to Firestore.
@@ -169,7 +242,7 @@ def sync_member_to_firestore(db: firestore.Client, django_member: Dict[str, Any]
     try:
         firestore_doc = transform_django_member_to_firestore(django_member)
 
-        # Write to Firestore
+        # Write to Firestore /members/ collection
         member_ref = db.collection('members').document(kennitala)
         member_ref.set(firestore_doc, merge=True)
 
@@ -178,6 +251,9 @@ def sync_member_to_firestore(db: firestore.Client, django_member: Dict[str, Any]
                  kennitala=kennitala,
                  name=django_member.get('name'),
                  django_id=django_member.get('id'))
+
+        # Epic #116: Also update /users/ collection with roles
+        update_user_roles_from_django(db, django_member)
 
         return True
 
