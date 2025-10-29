@@ -183,6 +183,7 @@ def update_user_roles_from_django(db: firestore.Client, django_member: Dict[str,
     uid = existing_users[0].id  # Firebase UID
 
     # Determine roles from Django User model flags
+    # Matches Django User model: is_staff → admin, is_superuser → superuser
     roles = ['member']  # Default role for all members
 
     is_admin = django_member.get('is_admin', False)
@@ -192,7 +193,7 @@ def update_user_roles_from_django(db: firestore.Client, django_member: Dict[str,
         roles.append('admin')
 
     if is_superuser:
-        roles.append('developer')
+        roles.append('superuser')
 
     # Update /users/{uid} with roles
     try:

@@ -65,7 +65,7 @@ const db = getFirebaseFirestore();
       // Check admin or developer role
       const token = await user.getIdTokenResult();
       const roles = token.claims.roles || [];
-      const hasAdminAccess = roles.includes('admin') || roles.includes('developer');
+      const hasAdminAccess = roles.includes('admin') || roles.includes('superuser');
 
       if (!hasAdminAccess) {
         showError('Þú hefur ekki réttindi til að breyta þessari síðu');
