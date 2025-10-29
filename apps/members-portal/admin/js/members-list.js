@@ -331,12 +331,6 @@ const db = getFirebaseFirestore();
       nameCell.textContent = member.name || '-';
       row.appendChild(nameCell);
 
-      // Kennitala (masked)
-      const kennitalaCell = document.createElement('td');
-      kennitalaCell.className = 'members-table__cell';
-      kennitalaCell.textContent = maskKennitala(member.kennitala);
-      row.appendChild(kennitalaCell);
-
       // Email
       const emailCell = document.createElement('td');
       emailCell.className = 'members-table__cell';
@@ -349,10 +343,10 @@ const db = getFirebaseFirestore();
       phoneCell.textContent = member.phone || '-';
       row.appendChild(phoneCell);
 
-      // Django ID
+      // ID (masked kennitala)
       const idCell = document.createElement('td');
       idCell.className = 'members-table__cell';
-      idCell.textContent = member.metadata?.django_id || '-';
+      idCell.textContent = maskKennitala(member.kennitala);
       row.appendChild(idCell);
 
       // Actions
