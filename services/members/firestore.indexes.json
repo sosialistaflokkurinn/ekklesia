@@ -51,8 +51,8 @@
           "order": "ASCENDING"
         },
         {
-          "fieldPath": "profile.name",
-          "order": "ASCENDING"
+          "fieldPath": "metadata.django_id",
+          "order": "DESCENDING"
         }
       ]
     }
