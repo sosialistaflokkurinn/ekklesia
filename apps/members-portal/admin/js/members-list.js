@@ -397,9 +397,15 @@ const db = getFirebaseFirestore();
   // Mask kennitala (show birthdate, mask personal identifier)
   function maskKennitala(kennitala) {
     if (!kennitala) return '-';
-    if (kennitala.length < 11) return kennitala; // Expected format: DDMMYY-XXXX
-    // Show first 7 chars (DDMMYY-), mask last 4
-    return kennitala.slice(0, 7) + '****';
+
+    // Remove any existing dashes
+    const cleaned = kennitala.replace(/-/g, '');
+
+    // Expected format: DDMMYYXXXX (10 digits)
+    if (cleaned.length !== 10) return kennitala;
+
+    // Show first 6 chars (DDMMYY), mask last 4
+    return cleaned.slice(0, 6) + 'XXXX';
   }
 
   // Get status text in Icelandic
