@@ -12,6 +12,9 @@ import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-
 const auth = getFirebaseAuth();
 const db = getFirebaseFirestore();
 
+// Global i18n storage
+const adminStrings = new Map();
+
 (function() {
   'use strict';
 
@@ -61,7 +64,7 @@ const db = getFirebaseFirestore();
       const hasAdminAccess = roles.includes('admin') || roles.includes('superuser');
 
       if (!hasAdminAccess) {
-        showError('Þú hefur ekki réttindi til að skoða þessa síðu');
+        showError(adminStrings.get('error_permission_denied'));
         return;
       }
 
@@ -102,7 +105,10 @@ const db = getFirebaseFirestore();
       for (const el of stringElements) {
         const name = el.getAttribute('name');
         const value = el.textContent;
-        if (name) R.string[name] = value;
+        if (name) {
+          R.string[name] = value;
+          adminStrings.set(name, value);
+        }
       }
 
       // Apply strings to DOM
@@ -202,7 +208,7 @@ const db = getFirebaseFirestore();
 
     } catch (error) {
       console.error('Error loading member:', error);
-      showError('Villa kom upp við að hlaða félaga. Vinsamlegast reyndu aftur.');
+      showError(adminStrings.get('member_detail_error'));
     }
   }
 
@@ -257,8 +263,18 @@ const db = getFirebaseFirestore();
     try {
       const date = new Date(dateString);
       const months = [
-        'janúar', 'febrúar', 'mars', 'apríl', 'maí', 'júní',
-        'júlí', 'ágúst', 'september', 'október', 'nóvember', 'desember'
+        adminStrings.get('month_january'),
+        adminStrings.get('month_february'),
+        adminStrings.get('month_march'),
+        adminStrings.get('month_april'),
+        adminStrings.get('month_may'),
+        adminStrings.get('month_june'),
+        adminStrings.get('month_july'),
+        adminStrings.get('month_august'),
+        adminStrings.get('month_september'),
+        adminStrings.get('month_october'),
+        adminStrings.get('month_november'),
+        adminStrings.get('month_december')
       ];
       const day = date.getDate();
       const month = months[date.getMonth()];
@@ -286,9 +302,9 @@ const db = getFirebaseFirestore();
   // Get status text in Icelandic
   function getStatusText(status) {
     switch (status) {
-      case 'active': return 'Virkur';
-      case 'inactive': return 'Óvirkur';
-      default: return 'Óþekkt';
+      case 'active': return adminStrings.get('members_status_active') || 'Virkur';
+      case 'inactive': return adminStrings.get('members_status_inactive') || 'Óvirkur';
+      default: return adminStrings.get('members_status_unknown') || 'Óþekkt';
     }
   }
 

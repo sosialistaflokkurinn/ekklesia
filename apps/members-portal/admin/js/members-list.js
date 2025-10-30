@@ -68,7 +68,7 @@ const db = getFirebaseFirestore();
       const hasAdminAccess = roles.includes('admin') || roles.includes('superuser');
 
       if (!hasAdminAccess) {
-        showError('Þú hefur ekki réttindi til að skoða þessa síðu');
+        showError(adminStrings.get('error_permission_denied'));
         return;
       }
 
@@ -260,7 +260,7 @@ const db = getFirebaseFirestore();
     if (isLoading) return;
     isLoading = true;
 
-    showLoading(currentSearch ? 'Leita í öllum félögum...' : 'Hleð félagaskrá...');
+    showLoading(currentSearch ? adminStrings.get('members_searching') : adminStrings.get('members_loading'));
 
     try {
       // If searching, load ALL documents for complete client-side search
@@ -298,7 +298,7 @@ const db = getFirebaseFirestore();
 
     } catch (error) {
       console.error('Error loading members:', error);
-      showError(error.message || 'Villa kom upp við að hlaða félagaskrá');
+      showError(error.message || adminStrings.get('members_error_loading'));
     } finally {
       isLoading = false;
     }
@@ -308,12 +308,13 @@ const db = getFirebaseFirestore();
   async function updateMemberCount() {
     try {
       const count = await MembersAPI.getMembersCount(currentStatus);
-      const statusText = currentStatus === 'all' ? 'allir' :
-                        currentStatus === 'active' ? 'virkir' : 'óvirkir';
+      const statusText = currentStatus === 'all' ? adminStrings.get('members_status_all_plural') :
+                        currentStatus === 'active' ? adminStrings.get('members_status_active_plural') :
+                        adminStrings.get('members_status_inactive_plural');
       elements.countText.textContent = `${count} ${statusText} félagar`;
     } catch (error) {
       console.error('Error getting member count:', error);
-      elements.countText.textContent = 'Félagar';
+      elements.countText.textContent = adminStrings.get('members_list_title') || 'Félagar';
     }
   }
 
@@ -362,7 +363,7 @@ const db = getFirebaseFirestore();
       const viewBtn = document.createElement('a');
       viewBtn.href = `/admin/member-detail.html?id=${member.kennitala}`;
       viewBtn.className = 'members-table__action';
-      viewBtn.textContent = 'Skoða';
+      viewBtn.textContent = adminStrings.get('members_btn_view');
       actionsCell.appendChild(viewBtn);
 
       const editBtn = document.createElement('a');
@@ -411,14 +412,14 @@ const db = getFirebaseFirestore();
   // Get status text in Icelandic
   function getStatusText(status) {
     switch (status) {
-      case 'active': return 'Virkur';
-      case 'inactive': return 'Óvirkur';
-      default: return 'Óþekkt';
+      case 'active': return adminStrings.get('members_status_active') || 'Virkur';
+      case 'inactive': return adminStrings.get('members_status_inactive') || 'Óvirkur';
+      default: return adminStrings.get('members_status_unknown') || 'Óþekkt';
     }
   }
 
   // Show loading state
-  function showLoading(message = 'Hleð félagaskrá...') {
+  function showLoading(message = adminStrings.get('members_loading') || 'Hleð félagaskrá...') {
     elements.loadingState.style.display = 'block';
     elements.errorState.style.display = 'none';
     elements.emptyState.style.display = 'none';
