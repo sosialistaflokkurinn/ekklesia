@@ -13,6 +13,7 @@
 import { initSession } from '../../session/init.js';
 import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
 import MembersAPI from './api/members-api.js';
+import { formatPhone, maskKennitala } from './utils/format.js';
 
 // Initialize Firebase services
 const auth = getFirebaseAuth();
@@ -344,10 +345,10 @@ const adminStrings = new Map();
       nameCell.textContent = member.name || '-';
       row.appendChild(nameCell);
 
-      // Phone
+      // Phone (formatted as XXX-XXXX)
       const phoneCell = document.createElement('td');
       phoneCell.className = 'members-table__cell';
-      phoneCell.textContent = member.phone || '-';
+      phoneCell.textContent = formatPhone(member.phone) || '-';
       row.appendChild(phoneCell);
 
       // Email
@@ -399,20 +400,6 @@ const adminStrings = new Map();
 
     // Enable/disable next button
     elements.btnPageNext.disabled = !hasMore;
-  }
-
-  // Mask kennitala (show birthdate, mask personal identifier)
-  function maskKennitala(kennitala) {
-    if (!kennitala) return '-';
-
-    // Remove any existing dashes
-    const cleaned = kennitala.replace(/-/g, '');
-
-    // Expected format: DDMMYYXXXX (10 digits)
-    if (cleaned.length !== 10) return kennitala;
-
-    // Show first 6 chars (DDMMYY), mask last 4
-    return cleaned.slice(0, 6) + 'XXXX';
   }
 
   // Get status text in Icelandic
