@@ -84,9 +84,8 @@
     <string name="btn_verify_membership">Staðfesta félagsaðild</string>
   <string name="btn_verify_membership_again">Staðfesta aðild aftur</string>
     <string name="dashboard_roles_label">Hlutverk</string>
-    <string name="role_badge_developer">Forritari</string>
-    <string name="role_badge_meeting_election_manager">Fundar- og kosningastjóri</string>
-    <string name="role_badge_event_manager">Viðburðastjóri</string>
+    <string name="role_badge_admin">Stjórnandi</string>
+    <string name="role_badge_superuser">Kerfisstjóri</string>
     <string name="role_badge_member">Félagi</string>
 
     <!-- ========================================== -->
@@ -190,6 +189,80 @@
     <string name="error_generic">Villa: %s</string>
     <string name="success">Tókst</string>
     <string name="failed">Mistókst</string>
+
+    <!-- ========================================== -->
+    <!-- PROFILE UPDATE MODAL (Dashboard) -->
+    <!-- ========================================== -->
+    <string name="profile_update_title">Uppfæra mínar upplýsingar?</string>
+    <string name="profile_update_description">Við fundum mismun á milli félaga- og Þjóðskrár gagna. Viltu uppfæra upplýsingarnar þínar?</string>
+    <string name="profile_update_cancel">Nei takk, halda núverandi</string>
+    <string name="profile_update_confirm">Já, uppfæra upplýsingar</string>
+    <string name="profile_updating">Uppfæri...</string>
+    <string name="profile_updated_success">Upplýsingar þínar hafa verið uppfærðar!</string>
+    <string name="profile_update_error">Villa kom upp við að uppfæra upplýsingar:\n%s\n\nVinsamlegast reyndu aftur.</string>
+    <string name="profile_empty_value">(tómt)</string>
+    <string name="profile_phone_label">Símanúmer</string>
+    <string name="profile_discrepancy_old_label">Félagaskrá:</string>
+    <string name="profile_discrepancy_new_label">Þjóðskrá:</string>
+
+    <!-- ========================================== -->
+    <!-- MEMBER LIST (Admin) -->
+    <!-- ========================================== -->
+    <string name="members_loading">Hleð félagaskrá...</string>
+    <string name="members_searching">Leita í öllum félögum...</string>
+    <string name="members_error_loading">Villa kom upp við að hlaða félagaskrá</string>
+    <string name="members_status_active_plural">virkir</string>
+    <string name="members_status_inactive_plural">óvirkir</string>
+    <string name="members_btn_view">Skoða</string>
+    <string name="members_status_inactive">Óvirkur</string>
+    <string name="members_status_unknown">Óþekkt</string>
+
+    <!-- ========================================== -->
+    <!-- MEMBER DETAIL (Admin) -->
+    <!-- ========================================== -->
+    <string name="member_detail_error_loading">Villa kom upp við að hlaða félaga. Vinsamlegast reyndu aftur.</string>
+
+    <!-- Month names -->
+    <string name="month_january">janúar</string>
+    <string name="month_february">febrúar</string>
+    <string name="month_march">mars</string>
+    <string name="month_april">apríl</string>
+    <string name="month_may">maí</string>
+    <string name="month_june">júní</string>
+    <string name="month_july">júlí</string>
+    <string name="month_august">ágúst</string>
+    <string name="month_september">september</string>
+    <string name="month_october">október</string>
+    <string name="month_november">nóvember</string>
+    <string name="month_december">desember</string>
+
+    <!-- ========================================== -->
+    <!-- MEMBER EDIT (Admin) -->
+    <!-- ========================================== -->
+    <string name="member_edit_error_missing_id">Ekki er hægt að breyta þessum félaga (vantar Django ID)</string>
+    <string name="member_edit_error_fix_errors">Vinsamlegast leiðréttu villurnar</string>
+    <string name="member_edit_confirm_cancel">Ertu viss um að þú viljir hætta við? Óvistaðar breytingar tapast.</string>
+
+    <!-- Validation messages -->
+    <string name="validation_required">Þetta svæði er nauðsynlegt</string>
+    <string name="validation_invalid_email">Ógilt netfang</string>
+    <string name="validation_phone_7_digits">Símanúmer verður að vera 7 tölustafir</string>
+    <string name="validation_postal_3_digits">Póstnúmer verður að vera 3 tölustafir</string>
+
+    <!-- ========================================== -->
+    <!-- PERMISSION ERRORS -->
+    <!-- ========================================== -->
+    <string name="error_permission_denied">Þú hefur ekki réttindi til að skoða þessa síðu</string>
+    <string name="error_permission_edit">Þú hefur ekki réttindi til að breyta þessari síðu</string>
+
+    <!-- ========================================== -->
+    <!-- SYNC MEMBERS FALLBACKS (Admin) -->
+    <!-- ========================================== -->
+    <string name="sync_success_title">Samstilling tókst</string>
+    <string name="stat_failed_label">Mistókust</string>
+    <string name="stat_duration_label">Tímalengd</string>
+    <string name="btn_view_history">Skoða keyrslusögu</string>
+    <string name="btn_back_to_dashboard">Aftur í yfirlit</string>
 
     <!-- ========================================== -->
     <!-- CONSOLE LOG MESSAGES (for debugging) -->

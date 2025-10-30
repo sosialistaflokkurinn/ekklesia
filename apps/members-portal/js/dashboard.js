@@ -16,7 +16,7 @@
 import { R } from '../i18n/strings-loader.js';
 import { initAuthenticatedPage } from './page-init.js';
 import { requireAuth, getUserData, signOut, AuthenticationError } from '../session/auth.js';
-import { httpsCallable } from '../firebase/app.js';
+import { httpsCallable, getFirebaseAuth, getFirebaseFirestore } from '../firebase/app.js';
 import { setTextContent, setInnerHTML, addEventListener, setDisabled, validateElements } from '../ui/dom.js';
 
 /**
@@ -262,6 +262,246 @@ function setupMembershipVerification(user) {
 }
 
 /**
+ * Check for discrepancies between Kenni.is data (userData) and Firestore /members/ collection
+ *
+ * Compares:
+ * - Full name
+ * - Email
+ * - Phone number
+ *
+ * If differences found, prompts user to update both Firestore and Django backend.
+ *
+ * @param {Object} userData - User data from Firebase Auth token (Kenni.is claims)
+ * @returns {Promise<void>}
+ */
+async function checkProfileDiscrepancies(userData) {
+  try {
+    // Get member data from Firestore /members/ collection
+    const db = getFirebaseFirestore();
+    const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+
+    const memberDocRef = doc(db, 'members', userData.kennitala.replace(/-/g, ''));
+    const memberDoc = await getDoc(memberDocRef);
+
+    if (!memberDoc.exists()) {
+      console.log('No member document found - skipping profile check');
+      return;
+    }
+
+    const memberData = memberDoc.data();
+    const memberProfile = memberData.profile || {};
+
+    // Compare fields
+    const discrepancies = [];
+
+    // Name comparison
+    if (userData.displayName && memberProfile.name !== userData.displayName) {
+      discrepancies.push({
+        field: 'name',
+        label: R.string.nav_profile, // "Prófíll" - we reuse this for "Nafn"
+        kenni: userData.displayName,
+        members: memberProfile.name || R.string.profile_empty_value
+      });
+    }
+
+    // Email comparison
+    if (userData.email && memberProfile.email !== userData.email) {
+      discrepancies.push({
+        field: 'email',
+        label: R.string.profile_email_label, // From existing strings
+        kenni: userData.email,
+        members: memberProfile.email || R.string.profile_empty_value
+      });
+    }
+
+    // Phone comparison (normalize format - remove spaces/dashes)
+    const normalizePhone = (phone) => phone ? phone.replace(/[\s-]/g, '') : '';
+    const kenniPhone = normalizePhone(userData.phoneNumber);
+    const membersPhone = normalizePhone(memberProfile.phone);
+
+    if (kenniPhone && kenniPhone !== membersPhone) {
+      discrepancies.push({
+        field: 'phone',
+        label: R.string.profile_phone_label,
+        kenni: userData.phoneNumber,
+        members: memberProfile.phone || R.string.profile_empty_value
+      });
+    }
+
+    // If discrepancies found, show modal
+    if (discrepancies.length > 0) {
+      console.log('Profile discrepancies found:', discrepancies);
+      await showProfileUpdateModal(discrepancies, userData, memberData);
+    }
+
+  } catch (error) {
+    console.error('Error checking profile discrepancies:', error);
+    // Don't block dashboard load on error
+  }
+}
+
+/**
+ * Show modal dialog for profile update confirmation
+ *
+ * @param {Array} discrepancies - Array of field discrepancies
+ * @param {Object} userData - Current user data from Kenni.is
+ * @param {Object} memberData - Current member data from Firestore
+ * @returns {Promise<void>}
+ */
+async function showProfileUpdateModal(discrepancies, userData, memberData) {
+  // Set modal text using i18n
+  setTextContent('profile-update-modal-title', R.string.profile_update_title);
+  setTextContent('profile-update-modal-desc', R.string.profile_update_description);
+  setTextContent('btn-cancel-profile-update', R.string.profile_update_cancel);
+  setTextContent('btn-confirm-profile-update', R.string.profile_update_confirm);
+
+  // Build discrepancies list HTML
+  const discrepanciesList = document.getElementById('profile-discrepancies-list');
+  discrepanciesList.innerHTML = discrepancies.map(d => `
+    <div class="profile-discrepancy">
+      <div class="profile-discrepancy__label">${d.label}:</div>
+      <div class="profile-discrepancy__values">
+        <div class="profile-discrepancy__old">
+          <strong>${R.string.profile_discrepancy_old_label}</strong> ${d.members}
+        </div>
+        <div class="profile-discrepancy__new">
+          <strong>${R.string.profile_discrepancy_new_label}</strong> ${d.kenni}
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  // Show modal
+  const modal = document.getElementById('profile-update-modal');
+  modal.style.display = 'block';
+
+  // Return promise that resolves when user makes choice
+  return new Promise((resolve) => {
+    const btnConfirm = document.getElementById('btn-confirm-profile-update');
+    const btnCancel = document.getElementById('btn-cancel-profile-update');
+
+    const handleConfirm = async () => {
+      btnConfirm.disabled = true;
+      btnConfirm.textContent = R.string.profile_updating;
+
+      try {
+        // Update both Firestore and Django
+        await updateProfileData(userData, discrepancies);
+
+        // Close modal
+        modal.style.display = 'none';
+
+        // Show success message
+        alert(R.string.profile_updated_success);
+
+        resolve(true);
+      } catch (error) {
+        console.error('Failed to update profile:', error);
+        console.error('Error details:', {
+          message: error.message,
+          stack: error.stack,
+          name: error.name
+        });
+        alert(R.string.profile_update_error.replace('%s', error.message || error));
+        btnConfirm.disabled = false;
+        btnConfirm.textContent = R.string.profile_update_confirm;
+        resolve(false);
+      }
+
+      // Cleanup
+      btnConfirm.removeEventListener('click', handleConfirm);
+      btnCancel.removeEventListener('click', handleCancel);
+    };
+
+    const handleCancel = () => {
+      modal.style.display = 'none';
+      resolve(false);
+
+      // Cleanup
+      btnConfirm.removeEventListener('click', handleConfirm);
+      btnCancel.removeEventListener('click', handleCancel);
+    };
+
+    btnConfirm.addEventListener('click', handleConfirm);
+    btnCancel.addEventListener('click', handleCancel);
+  });
+}
+
+/**
+ * Update profile data in both Firestore and Django backend
+ *
+ * @param {Object} userData - User data from Kenni.is (source of truth)
+ * @param {Array} discrepancies - List of fields that need updating
+ * @returns {Promise<void>}
+ */
+async function updateProfileData(userData, discrepancies) {
+  const kennitala = userData.kennitala.replace(/-/g, '');
+
+  // Build update data from discrepancies
+  const updates = {};
+  discrepancies.forEach(d => {
+    if (d.field === 'name') updates.name = userData.displayName;
+    if (d.field === 'email') updates.email = userData.email;
+    if (d.field === 'phone') updates.phone = userData.phoneNumber;
+  });
+
+  // 1. Update Firestore /members/ collection
+  await updateFirestoreMember(kennitala, updates);
+
+  // 2. Update Django backend
+  await updateDjangoMember(kennitala, updates);
+}
+
+/**
+ * Update member profile in Firestore
+ *
+ * @param {string} kennitala - Member's kennitala (normalized, no hyphen)
+ * @param {Object} updates - Fields to update {name, email, phone}
+ * @returns {Promise<void>}
+ */
+async function updateFirestoreMember(kennitala, updates) {
+  const db = getFirebaseFirestore();
+  const { doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+
+  const memberDocRef = doc(db, 'members', kennitala);
+
+  // Build Firestore update object (nested under profile)
+  const firestoreUpdates = {};
+  if (updates.name) firestoreUpdates['profile.name'] = updates.name;
+  if (updates.email) firestoreUpdates['profile.email'] = updates.email;
+  if (updates.phone) firestoreUpdates['profile.phone'] = updates.phone;
+
+  await updateDoc(memberDocRef, firestoreUpdates);
+
+  console.log('✅ Updated Firestore member:', kennitala, firestoreUpdates);
+}
+
+/**
+ * Update member profile in Django backend
+ *
+ * @param {string} kennitala - Member's kennitala (normalized, no hyphen)
+ * @param {Object} updates - Fields to update {name, email, phone}
+ * @returns {Promise<void>}
+ */
+async function updateDjangoMember(kennitala, updates) {
+  // Call Cloud Function using Firebase callable function API
+  // Function is deployed in europe-west2 region
+  const updateMemberProfile = httpsCallable('updatememberprofile', 'europe-west2');
+
+  try {
+    const result = await updateMemberProfile({
+      kennitala: kennitala,
+      updates: updates
+    });
+
+    console.log('✅ Updated Django member:', result.data);
+  } catch (error) {
+    console.error('Django update failed:', error);
+    throw new Error(`Villa við uppfærslu Django gagnagrunns: ${error.message}`);
+  }
+}
+
+/**
  * Initialize dashboard page
  *
  * New architecture - clear separation:
@@ -302,6 +542,9 @@ async function init() {
 
     // Show role badges for elevated users
     updateRoleBadges(userData.roles);
+
+    // Check for profile data discrepancies between Kenni.is and Firestore
+    await checkProfileDiscrepancies(userData);
 
     // Setup membership verification handler
     setupMembershipVerification(currentUser);
