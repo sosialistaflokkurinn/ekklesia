@@ -83,17 +83,27 @@
   <string name="pagination_previous">‹ Fyrri</string>
   <string name="pagination_next">Næsta ›</string>
   <string name="members_loading">Hleð félagaskrá...</string>
+  <string name="members_searching">Leita í öllum félögum...</string>
+  <string name="members_error_loading">Villa kom upp við að hlaða félagaskrá</string>
   <string name="members_empty">Engir félagar fundust</string>
   <string name="members_error">Villa kom upp við að hlaða félagaskrá</string>
+  <string name="members_btn_view">Skoða</string>
+  <string name="members_status_active">Virkur</string>
+  <string name="members_status_inactive">Óvirkur</string>
+  <string name="members_status_unknown">Óþekkt</string>
+  <string name="members_status_all_plural">allir</string>
+  <string name="members_status_active_plural">virkir</string>
+  <string name="members_status_inactive_plural">óvirkir</string>
 
   <!-- Errors & Messages -->
   <string name="error_unauthorized">Þú hefur ekki heimild til að nota stjórnkerfið</string>
-  <string name="error_unauthorized_developer">Þú hefur ekki aðgang að stjórnkerfi. Aðeins notendur með 'developer' hlutverk hafa aðgang.</string>
+  <string name="error_unauthorized_admin">Þú hefur ekki aðgang að stjórnkerfi. Aðeins notendur með 'admin' eða 'superuser' hlutverk hafa aðgang.</string>
   <string name="error_auth_required">Innskráning er nauðsynleg</string>
   <string name="error_network">Netvilla: %s</string>
   <string name="error_sync_trigger">Gat ekki hafið samstillingu: %s</string>
   <string name="error_load_history">Gat ekki sótt samstillingasögu: %s</string>
   <string name="error_page_load">Villa við að hlaða síðu: %s</string>
+  <string name="error_permission_denied">Þú hefur ekki réttindi til að skoða þessa síðu</string>
 
   <!-- Buttons -->
   <string name="btn_retry">Reyna aftur</string>
@@ -103,6 +113,20 @@
   <!-- Loading States -->
   <string name="loading">Hleð inn...</string>
   <string name="loading_sync_logs">Sæki samstillingasögu...</string>
+
+  <!-- Month Names (for date formatting) -->
+  <string name="month_january">janúar</string>
+  <string name="month_february">febrúar</string>
+  <string name="month_march">mars</string>
+  <string name="month_april">apríl</string>
+  <string name="month_may">maí</string>
+  <string name="month_june">júní</string>
+  <string name="month_july">júlí</string>
+  <string name="month_august">ágúst</string>
+  <string name="month_september">september</string>
+  <string name="month_october">október</string>
+  <string name="month_november">nóvember</string>
+  <string name="month_december">desember</string>
 
   <!-- Member Detail Page (Epic #116, Issue #136) -->
   <string name="member_detail_title">Félagsupplýsingar</string>
@@ -128,6 +152,9 @@
   <string name="member_edit_error">Villa kom upp við að vista</string>
   <string name="member_edit_validation_error">Vinsamlegast leiðréttu villurnar</string>
   <string name="member_edit_not_found">Félagi fannst ekki</string>
+  <string name="member_edit_missing_django_id">Ekki er hægt að breyta þessum félaga (vantar Django ID)</string>
+  <string name="member_edit_loading_error">Villa kom upp við að hlaða félaga</string>
+  <string name="member_edit_cancel_confirm">Ertu viss um að þú viljir hætta við? Óvistaðar breytingar tapast.</string>
   <string name="member_edit_field_name">Nafn *</string>
   <string name="member_edit_field_email">Netfang</string>
   <string name="member_edit_field_phone">Sími</string>
@@ -142,4 +169,10 @@
   <string name="member_edit_field_city">Staður</string>
   <string name="member_edit_readonly_note">* Kennitala og ID er ekki hægt að breyta</string>
   <string name="member_edit_address_readonly_note">⚠️ Heimilisfang notar Staðfangaskrá og er ekki hægt að breyta hér. Notaðu Django admin til að uppfæra heimilisfang.</string>
+
+  <!-- Validation Messages (shared with member portal) -->
+  <string name="validation_required">Þetta svæði er nauðsynlegt</string>
+  <string name="validation_invalid_email">Ógilt netfang</string>
+  <string name="validation_invalid_phone">Símanúmer verður að vera 7 tölustafir</string>
+  <string name="validation_invalid_postal_code">Póstnúmer verður að vera 3 tölustafir</string>
 </resources>

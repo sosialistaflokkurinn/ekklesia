@@ -13,6 +13,9 @@ import { getMemberByDjangoId, updateMember, validateMemberData } from './django-
 const auth = getFirebaseAuth();
 const db = getFirebaseFirestore();
 
+// Global i18n storage
+const adminStrings = new Map();
+
 (function() {
   'use strict';
 
@@ -68,7 +71,7 @@ const db = getFirebaseFirestore();
       const hasAdminAccess = roles.includes('admin') || roles.includes('superuser');
 
       if (!hasAdminAccess) {
-        showError('Þú hefur ekki réttindi til að breyta þessari síðu');
+        showError(adminStrings.get('error_permission_denied'));
         return;
       }
 
@@ -113,7 +116,10 @@ const db = getFirebaseFirestore();
       for (const el of stringElements) {
         const name = el.getAttribute('name');
         const value = el.textContent;
-        if (name) R.string[name] = value;
+        if (name) {
+          R.string[name] = value;
+          adminStrings.set(name, value);
+        }
       }
 
       // Apply strings to DOM
@@ -241,7 +247,7 @@ const db = getFirebaseFirestore();
 
       if (!djangoId) {
         console.error('No Django ID found for member');
-        showError('Ekki er hægt að breyta þessum félaga (vantar Django ID)');
+        showError(adminStrings.get('member_edit_missing_django_id'));
         return;
       }
 
@@ -254,7 +260,7 @@ const db = getFirebaseFirestore();
 
     } catch (error) {
       console.error('Error loading member:', error);
-      showError(`Villa kom upp við að hlaða félaga: ${error.message}`);
+      showError(`${adminStrings.get('member_edit_loading_error')}: ${error.message}`);
     }
   }
 
@@ -288,7 +294,7 @@ const db = getFirebaseFirestore();
     // Validate all fields
     const isValid = validateAllFields();
     if (!isValid) {
-      showFormError('Vinsamlegast leiðréttu villurnar');
+      showFormError(adminStrings.get('member_edit_validation_error'));
       return;
     }
 
@@ -320,7 +326,7 @@ const db = getFirebaseFirestore();
 
     } catch (error) {
       console.error('Error saving member:', error);
-      showFormError(`Villa kom upp við að vista: ${error.message}`);
+      showFormError(`${adminStrings.get('member_edit_error')}: ${error.message}`);
     } finally {
       isSaving = false;
       setSavingState(false);
@@ -386,22 +392,22 @@ const db = getFirebaseFirestore();
 
     // Required field validation
     if (input.hasAttribute('required') && !value) {
-      errorMessage = 'Þetta svæði er nauðsynlegt';
+      errorMessage = adminStrings.get('validation_required');
     }
 
     // Email validation
     if (name === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-      errorMessage = 'Ógilt netfang';
+      errorMessage = adminStrings.get('validation_invalid_email');
     }
 
     // Phone validation
     if (name === 'phone' && value && !/^[0-9]{7}$/.test(value.replace(/[-\s]/g, ''))) {
-      errorMessage = 'Símanúmer verður að vera 7 tölustafir';
+      errorMessage = adminStrings.get('validation_invalid_phone');
     }
 
     // Postal code validation
     if (name === 'postal_code' && value && !/^[0-9]{3}$/.test(value)) {
-      errorMessage = 'Póstnúmer verður að vera 3 tölustafir';
+      errorMessage = adminStrings.get('validation_invalid_postal_code');
     }
 
     if (errorMessage) {
@@ -419,7 +425,7 @@ const db = getFirebaseFirestore();
   // Handle cancel button
   function handleCancel(e) {
     e.preventDefault();
-    if (confirm('Ertu viss um að þú viljir hætta við? Óvistaðar breytingar tapast.')) {
+    if (confirm(adminStrings.get('member_edit_cancel_confirm'))) {
       window.location.href = `/admin/member-detail.html?id=${currentKennitala}`;
     }
   }
@@ -489,11 +495,11 @@ const db = getFirebaseFirestore();
     if (saving) {
       elements.btnSave.disabled = true;
       elements.btnCancel.disabled = true;
-      if (btnSaveText) btnSaveText.textContent = 'Vista breytingar...';
+      if (btnSaveText) btnSaveText.textContent = adminStrings.get('member_edit_saving');
     } else {
       elements.btnSave.disabled = false;
       elements.btnCancel.disabled = false;
-      if (btnSaveText) btnSaveText.textContent = 'Vista breytingar';
+      if (btnSaveText) btnSaveText.textContent = adminStrings.get('member_edit_save_button');
     }
   }
 
