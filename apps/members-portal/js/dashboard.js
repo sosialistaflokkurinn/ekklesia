@@ -18,6 +18,7 @@ import { initAuthenticatedPage } from './page-init.js';
 import { requireAuth, getUserData, signOut, AuthenticationError } from '../session/auth.js';
 import { httpsCallable, getFirebaseAuth, getFirebaseFirestore } from '../firebase/app.js';
 import { setTextContent, setInnerHTML, addEventListener, setDisabled, validateElements } from '../ui/dom.js';
+import { formatPhone, normalizePhoneForComparison } from './utils/format.js';
 
 /**
  * Required DOM elements for dashboard page
@@ -314,17 +315,18 @@ async function checkProfileDiscrepancies(userData) {
       });
     }
 
-    // Phone comparison (normalize format - remove spaces/dashes)
-    const normalizePhone = (phone) => phone ? phone.replace(/[\s-]/g, '') : '';
-    const kenniPhone = normalizePhone(userData.phoneNumber);
-    const membersPhone = normalizePhone(memberProfile.phone);
+    // Phone comparison (normalize format - remove spaces/dashes/country code)
+    // Use shared utility to handle +354 prefix from Kenni.is
+    const kenniPhone = normalizePhoneForComparison(userData.phoneNumber);
+    const membersPhone = normalizePhoneForComparison(memberProfile.phone);
 
     if (kenniPhone && kenniPhone !== membersPhone) {
       discrepancies.push({
         field: 'phone',
         label: R.string.profile_phone_label,
-        kenni: userData.phoneNumber,
-        members: memberProfile.phone || R.string.profile_empty_value
+        // Format both for display (XXX-XXXX)
+        kenni: formatPhone(userData.phoneNumber),
+        members: formatPhone(memberProfile.phone) || R.string.profile_empty_value
       });
     }
 
