@@ -18,6 +18,9 @@ import MembersAPI from './api/members-api.js';
 const auth = getFirebaseAuth();
 const db = getFirebaseFirestore();
 
+// Global i18n storage
+const adminStrings = new Map();
+
 (function() {
   'use strict';
 
@@ -116,7 +119,10 @@ const db = getFirebaseFirestore();
       for (const el of stringElements) {
         const name = el.getAttribute('name');
         const value = el.textContent;
-        if (name) R.string[name] = value;
+        if (name) {
+          R.string[name] = value;
+          adminStrings.set(name, value);
+        }
       }
 
       // Apply strings to DOM
