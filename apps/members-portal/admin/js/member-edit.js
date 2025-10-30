@@ -8,6 +8,7 @@
 import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
 import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { getMemberByDjangoId, updateMember, validateMemberData } from './django-api.js';
+import { formatPhone, maskKennitala, validatePhone } from './utils/format.js';
 
 // Initialize Firebase services
 const auth = getFirebaseAuth();
@@ -270,7 +271,8 @@ const adminStrings = new Map();
     setValue('input-name', data.name);
     setValue('input-kennitala', maskKennitala(data.ssn || currentKennitala));
     setValue('input-email', data.contact_info?.email);
-    setValue('input-phone', data.contact_info?.phone);
+    // Format phone for display (XXX-XXXX)
+    setValue('input-phone', formatPhone(data.contact_info?.phone));
     setValue('input-birthday', data.birthday);
     setValue('input-gender', data.gender);
 
@@ -400,8 +402,8 @@ const adminStrings = new Map();
       errorMessage = adminStrings.get('validation_invalid_email');
     }
 
-    // Phone validation
-    if (name === 'phone' && value && !/^[0-9]{7}$/.test(value.replace(/[-\s]/g, ''))) {
+    // Phone validation (use shared utility - accepts various formats)
+    if (name === 'phone' && value && !validatePhone(value)) {
       errorMessage = adminStrings.get('validation_invalid_phone');
     }
 
@@ -446,13 +448,6 @@ const adminStrings = new Map();
   function setText(id, text) {
     const el = document.getElementById(id);
     if (el) el.textContent = text;
-  }
-
-  // Mask kennitala (show birthdate, mask personal identifier)
-  function maskKennitala(kennitala) {
-    if (!kennitala) return '-';
-    if (kennitala.length < 11) return kennitala;
-    return kennitala.slice(0, 7) + '****';
   }
 
   // Clear all form errors

@@ -7,6 +7,7 @@
 // Import from member portal public directory
 import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
 import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { formatPhone, maskKennitala } from './utils/format.js';
 
 // Initialize Firebase services
 const auth = getFirebaseAuth();
@@ -218,7 +219,8 @@ const adminStrings = new Map();
     setText('value-name', data.profile?.name || '-');
     setText('value-kennitala', maskKennitala(data.profile?.kennitala || currentKennitala));
     setText('value-email', data.profile?.email || '-');
-    setText('value-phone', data.profile?.phone || '-');
+    // Format phone for display (XXX-XXXX)
+    setText('value-phone', formatPhone(data.profile?.phone) || '-');
     setText('value-birthday', formatDate(data.profile?.birthday) || '-');
 
     // Address
@@ -248,13 +250,6 @@ const adminStrings = new Map();
   function setText(id, text) {
     const el = document.getElementById(id);
     if (el) el.textContent = text;
-  }
-
-  // Mask kennitala (show birthdate, mask personal identifier)
-  function maskKennitala(kennitala) {
-    if (!kennitala) return '-';
-    if (kennitala.length < 11) return kennitala;
-    return kennitala.slice(0, 7) + '****';
   }
 
   // Format date (YYYY-MM-DD → DD. Month YYYY)

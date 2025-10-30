@@ -6,6 +6,7 @@
  */
 
 import { getFirebaseAuth } from '../../firebase/app.js';
+import { validatePhone } from './utils/format.js';
 
 const auth = getFirebaseAuth();
 
@@ -178,11 +179,11 @@ export function validateMemberData(data) {
     }
   }
 
-  // Phone validation (Icelandic phone numbers)
+  // Phone validation (use shared utility - accepts various formats)
   if (data.contact_info?.phone !== undefined) {
     const phone = data.contact_info.phone;
-    if (phone && !/^[0-9]{7}$/.test(phone.replace(/[-\s]/g, ''))) {
-      errors.push('Símanúmer verður að vera 7 tölustafir');
+    if (phone && !validatePhone(phone)) {
+      errors.push('Ógilt símanúmer');
     }
   }
 
