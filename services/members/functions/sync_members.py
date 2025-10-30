@@ -13,6 +13,9 @@ from google.cloud import firestore
 from google.cloud.secretmanager import SecretManagerServiceClient
 from utils_logging import log_json
 
+# Django API Base URL
+DJANGO_API_BASE_URL = "https://starf.sosialistaflokkurinn.is/felagar"
+
 
 def get_django_api_token() -> str:
     """
@@ -360,3 +363,91 @@ def create_sync_log(db: firestore.Client, stats: Dict[str, Any]) -> str:
     })
 
     return log_ref.id
+
+
+def get_django_member_by_kennitala(kennitala: str) -> Dict[str, Any]:
+    """
+    Fetch a single Django member by kennitala.
+
+    Args:
+        kennitala: Icelandic national ID (kennitala), normalized (no hyphen)
+
+    Returns:
+        Django member data dict, or None if not found
+    """
+    try:
+        django_token = get_django_api_token()
+        response = requests.get(
+            f"{DJANGO_API_BASE_URL}/api/full/",
+            headers={'Authorization': f'Token {django_token}'},
+            params={'ssn': kennitala},
+            timeout=30
+        )
+
+        if response.status_code == 200:
+            data = response.json()
+            results = data.get('results', [])
+            if results:
+                return results[0]  # Return first match
+            return None
+        else:
+            log_json('ERROR', f'Django API error: {response.status_code}',
+                     event='get_django_member_by_kennitala_error',
+                     kennitala=f"{kennitala[:6]}****")
+            return None
+
+    except Exception as e:
+        log_json('ERROR', f'Failed to fetch Django member: {str(e)}',
+                 event='get_django_member_by_kennitala_exception',
+                 kennitala=f"{kennitala[:6]}****")
+        return None
+
+
+def update_django_member(django_id: int, updates: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Update a Django member via PATCH request.
+
+    Args:
+        django_id: Django Comrade ID
+        updates: Dict of fields to update {name, contact_info, etc}
+
+    Returns:
+        Updated member data from Django
+
+    Raises:
+        Exception if update fails
+    """
+    try:
+        django_token = get_django_api_token()
+
+        # PATCH request to update member
+        response = requests.patch(
+            f"{DJANGO_API_BASE_URL}/api/full/{django_id}/",
+            headers={
+                'Authorization': f'Token {django_token}',
+                'Content-Type': 'application/json'
+            },
+            json=updates,
+            timeout=30
+        )
+
+        if response.status_code == 200:
+            updated_member = response.json()
+            log_json('INFO', 'Django member updated',
+                     event='update_django_member_success',
+                     django_id=django_id,
+                     updated_fields=list(updates.keys()))
+            return updated_member
+        else:
+            error_msg = f"Django API returned {response.status_code}: {response.text[:200]}"
+            log_json('ERROR', error_msg,
+                     event='update_django_member_error',
+                     django_id=django_id)
+            raise Exception(error_msg)
+
+    except requests.exceptions.RequestException as e:
+        error_msg = f"Django API request failed: {str(e)}"
+        log_json('ERROR', error_msg,
+                 event='update_django_member_exception',
+                 django_id=django_id)
+        raise Exception(error_msg)
