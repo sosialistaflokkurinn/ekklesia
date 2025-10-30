@@ -323,7 +323,7 @@ async function init() {
 
     // Check if unauthorized
     if (error.message.includes('Unauthorized')) {
-      alert(adminStrings.get('error_unauthorized_developer'));
+      alert(adminStrings.get('error_unauthorized_admin'));
       window.location.href = '/members-area/dashboard.html';
       return;
     }
