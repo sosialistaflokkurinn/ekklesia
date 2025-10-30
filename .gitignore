@@ -102,3 +102,4 @@ scripts/logs/*.jsonl
 *.audit.json
 *-audit-*.jsonl
 .gemini/tmp/firestore_index.json
+apps/members-portal/js/utils/debug.js
