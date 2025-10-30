@@ -108,6 +108,39 @@ def validate_kennitala(kennitala: str) -> bool:
     pattern = r'^\d{6}-?\d{4}$'
     return bool(re.match(pattern, kennitala))
 
+def normalize_phone(phone: str) -> str:
+    """Normalize Icelandic phone number to XXX-XXXX format
+
+    Handles various input formats:
+    - +3545551234 -> 555-1234
+    - 003545551234 -> 555-1234
+    - 5551234 -> 555-1234
+    - 555 1234 -> 555-1234
+    - 5551-234 -> 555-1234
+
+    Returns None if phone is None or empty.
+    Returns original string if format is invalid (not 7 digits after normalization).
+    """
+    if not phone:
+        return None
+
+    # Remove all whitespace, dashes, parentheses, and other separators
+    phone = phone.strip()
+    digits = ''.join(c for c in phone if c.isdigit())
+
+    # Remove Iceland country code prefix if present
+    # +354 or 00354 -> 10 digits total
+    if digits.startswith('354') and len(digits) == 10:
+        digits = digits[3:]  # Remove '354' prefix
+
+    # Validate: should be exactly 7 digits for Icelandic phone
+    if len(digits) != 7:
+        log_json("warn", "Invalid phone number format", original=phone, digits=digits, length=len(digits))
+        return phone  # Return original if invalid
+
+    # Format as XXX-XXXX (3 digits - hyphen - 4 digits)
+    return f"{digits[:3]}-{digits[3:]}"
+
 def _rate_limit_bucket_id(ip_address: str, now: datetime, window_minutes: int) -> str:
     """Create a stable document id for the (ip, window) bucket.
 
@@ -403,6 +436,9 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
 
         normalized_kennitala = normalize_kennitala(national_id)
 
+        # Normalize phone number to XXX-XXXX format
+        normalized_phone = normalize_phone(phone_number) if phone_number else None
+
         log_json("info", "Verified Kenni.is token", userName=full_name, kennitala=f"{normalized_kennitala[:7]}****", correlationId=correlation_id)
 
         # Step 4: Create or get existing user from Firestore
@@ -424,8 +460,8 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
             }
             if email:
                 update_data['email'] = email
-            if phone_number:
-                update_data['phoneNumber'] = phone_number
+            if normalized_phone:
+                update_data['phoneNumber'] = normalized_phone
             if full_name:
                 update_data['fullName'] = full_name
 
@@ -444,7 +480,7 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
                     'fullName': full_name,
                     'kennitala': normalized_kennitala,
                     'email': email,
-                    'phoneNumber': phone_number,
+                    'phoneNumber': normalized_phone,
                     'photoURL': None,
                     'isMember': False,  # Will be verified separately
                     'createdAt': firestore.SERVER_TIMESTAMP,
@@ -494,8 +530,8 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
         }
         if email:
             custom_claims['email'] = email
-        if phone_number:
-            custom_claims['phoneNumber'] = phone_number
+        if normalized_phone:
+            custom_claims['phoneNumber'] = normalized_phone
 
         # Persist merged claims back to Firebase Auth (ensures roles survive future logins)
         try:
@@ -788,9 +824,11 @@ def updatememberprofile(req: https_fn.CallableRequest):
             django_updates['contact_info'] = {'email': updates['email']}
         if 'phone' in updates:
             # Phone is in contact_info nested object
+            # Normalize phone number to XXX-XXXX format
+            normalized_phone = normalize_phone(updates['phone'])
             if 'contact_info' not in django_updates:
                 django_updates['contact_info'] = {}
-            django_updates['contact_info']['phone'] = updates['phone']
+            django_updates['contact_info']['phone'] = normalized_phone
 
         # Update Django via API
         updated_member = update_django_member(django_id, django_updates)

@@ -17,6 +17,40 @@ from utils_logging import log_json
 DJANGO_API_BASE_URL = "https://starf.sosialistaflokkurinn.is/felagar"
 
 
+def normalize_phone(phone: str) -> str:
+    """Normalize Icelandic phone number to XXX-XXXX format
+
+    Handles various input formats:
+    - +3545551234 -> 555-1234
+    - 003545551234 -> 555-1234
+    - 5551234 -> 555-1234
+    - 555 1234 -> 555-1234
+    - 5551-234 -> 555-1234
+
+    Returns None if phone is None or empty.
+    Returns original string if format is invalid (not 7 digits after normalization).
+    """
+    if not phone:
+        return None
+
+    # Remove all whitespace, dashes, parentheses, and other separators
+    phone = phone.strip()
+    digits = ''.join(c for c in phone if c.isdigit())
+
+    # Remove Iceland country code prefix if present
+    # +354 or 00354 -> 10 digits total
+    if digits.startswith('354') and len(digits) == 10:
+        digits = digits[3:]  # Remove '354' prefix
+
+    # Validate: should be exactly 7 digits for Icelandic phone
+    if len(digits) != 7:
+        log_json("warn", "Invalid phone number format", original=phone, digits=digits, length=len(digits))
+        return phone  # Return original if invalid
+
+    # Format as XXX-XXXX (3 digits - hyphen - 4 digits)
+    return f"{digits[:3]}-{digits[3:]}"
+
+
 def get_django_api_token() -> str:
     """
     Fetch Django API token from Google Secret Manager.
@@ -112,6 +146,10 @@ def transform_django_member_to_firestore(django_member: Dict[str, Any]) -> Dict[
                      date_joined=date_joined_str,
                      member_id=django_member.get('id'))
 
+    # Normalize phone number to XXX-XXXX format
+    raw_phone = contact_info.get('phone', '')
+    normalized_phone = normalize_phone(raw_phone) if raw_phone else ''
+
     # Create Firestore document
     firestore_doc = {
         'profile': {
@@ -119,7 +157,7 @@ def transform_django_member_to_firestore(django_member: Dict[str, Any]) -> Dict[
             'name': django_member.get('name', ''),
             'birthday': django_member.get('birthday'),
             'email': contact_info.get('email', ''),
-            'phone': contact_info.get('phone', ''),
+            'phone': normalized_phone,
             'facebook': contact_info.get('facebook', ''),
             'gender': django_member.get('gender'),
             'reachable': django_member.get('reachable', True),
