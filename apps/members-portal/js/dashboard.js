@@ -19,6 +19,10 @@ import { requireAuth, getUserData, signOut, AuthenticationError } from '../sessi
 import { httpsCallable, getFirebaseAuth, getFirebaseFirestore } from '../firebase/app.js';
 import { setTextContent, setInnerHTML, addEventListener, setDisabled, validateElements } from '../ui/dom.js';
 import { formatPhone, normalizePhoneForComparison } from './utils/format.js';
+import { DebugLogger } from './utils/debug.js';
+
+// Create namespaced debug logger
+const debug = DebugLogger.create('dashboard');
 
 /**
  * Required DOM elements for dashboard page
@@ -320,7 +324,22 @@ async function checkProfileDiscrepancies(userData) {
     const kenniPhone = normalizePhoneForComparison(userData.phoneNumber);
     const membersPhone = normalizePhoneForComparison(memberProfile.phone);
 
+    debug.debug('phone_comparison', {
+      raw_kenni: userData.phoneNumber,
+      raw_members: memberProfile.phone,
+      normalized_kenni: kenniPhone,
+      normalized_members: membersPhone,
+      match: kenniPhone === membersPhone
+    });
+
     if (kenniPhone && kenniPhone !== membersPhone) {
+      debug.warn('phone_discrepancy_found', {
+        kenni: userData.phoneNumber,
+        members: memberProfile.phone,
+        normalized_kenni: kenniPhone,
+        normalized_members: membersPhone
+      });
+
       discrepancies.push({
         field: 'phone',
         label: R.string.profile_phone_label,
