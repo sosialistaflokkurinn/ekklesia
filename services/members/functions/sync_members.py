@@ -17,6 +17,25 @@ from utils_logging import log_json
 DJANGO_API_BASE_URL = "https://starf.sosialistaflokkurinn.is/felagar"
 
 
+def normalize_kennitala(kennitala: str) -> str:
+    """Normalize kennitala format to DDMMYY-XXXX"""
+    if not kennitala:
+        return None
+
+    # Remove any whitespace
+    kennitala = kennitala.strip()
+
+    # Already has hyphen
+    if '-' in kennitala:
+        return kennitala
+
+    # Add hyphen if missing (assumes 10 digits)
+    if len(kennitala) == 10 and kennitala.isdigit():
+        return f"{kennitala[:6]}-{kennitala[6:]}"
+
+    return kennitala
+
+
 def normalize_phone(phone: str) -> str:
     """Normalize Icelandic phone number to XXX-XXXX format
 
@@ -150,10 +169,14 @@ def transform_django_member_to_firestore(django_member: Dict[str, Any]) -> Dict[
     raw_phone = contact_info.get('phone', '')
     normalized_phone = normalize_phone(raw_phone) if raw_phone else ''
 
+    # Normalize kennitala to DDMMYY-XXXX format
+    raw_kennitala = django_member.get('ssn', '')
+    normalized_kennitala = normalize_kennitala(raw_kennitala) if raw_kennitala else ''
+
     # Create Firestore document
     firestore_doc = {
         'profile': {
-            'kennitala': django_member.get('ssn', ''),
+            'kennitala': normalized_kennitala,
             'name': django_member.get('name', ''),
             'birthday': django_member.get('birthday'),
             'email': contact_info.get('email', ''),
@@ -281,11 +304,14 @@ def sync_member_to_firestore(db: firestore.Client, django_member: Dict[str, Any]
                  member_name=django_member.get('name'))
         return False
 
+    # Normalize kennitala for use as document ID
+    normalized_kennitala = normalize_kennitala(kennitala)
+
     try:
         firestore_doc = transform_django_member_to_firestore(django_member)
 
-        # Write to Firestore /members/ collection
-        member_ref = db.collection('members').document(kennitala)
+        # Write to Firestore /members/ collection (use normalized kennitala as document ID)
+        member_ref = db.collection('members').document(normalized_kennitala)
         member_ref.set(firestore_doc, merge=True)
 
         log_json('INFO', 'Member synced to Firestore',
