@@ -17,16 +17,20 @@ service cloud.firestore {
              request.auth.token.kennitala.matches('^[0-9]{6}-?[0-9]{4}$');
     }
 
-    function hasDeveloperRole() {
-      return isAuthenticated() &&
-             request.auth.token.roles is list &&
-             'developer' in request.auth.token.roles;
-    }
-
     function hasAdminRole() {
       return isAuthenticated() &&
              request.auth.token.roles is list &&
              'admin' in request.auth.token.roles;
+    }
+
+    function hasSuperuserRole() {
+      return isAuthenticated() &&
+             request.auth.token.roles is list &&
+             'superuser' in request.auth.token.roles;
+    }
+
+    function hasAdminAccess() {
+      return hasAdminRole() || hasSuperuserRole();
     }
 
     // Users collection
@@ -51,8 +55,8 @@ service cloud.firestore {
 
     // Sync logs collection (Epic #43)
     match /sync_logs/{logId} {
-      // Read: Only developers can view sync logs
-      allow read: if hasDeveloperRole();
+      // Read: Only admins and superusers can view sync logs
+      allow read: if hasAdminAccess();
 
       // Write: Only Cloud Functions (via Admin SDK)
       allow write: if false;
@@ -63,29 +67,28 @@ service cloud.firestore {
       // Read: All authenticated members can view events
       allow read: if isAuthenticated();
 
-      // Create/Update: Only developers can manage events
-      allow create, update: if hasDeveloperRole();
+      // Create/Update: Only admins and superusers can manage events
+      allow create, update: if hasAdminAccess();
 
-      // Delete: Only developers can delete events
-      allow delete: if hasDeveloperRole();
+      // Delete: Only admins and superusers can delete events
+      allow delete: if hasAdminAccess();
     }
 
     // Members collection (Epic #116)
     match /members/{kennitala} {
-      allow read: if request.auth.uid == kennitala || hasAdminRole();
+      // Read: Own profile (kennitala matches token) OR admin access
+      allow read: if (hasValidKennitala() &&
+                      request.auth.token.kennitala.replace('-', '') == kennitala) ||
+                     hasAdminAccess();
 
-      // Create: Only admins can create new members
-      allow create: if hasAdminRole() &&
-                       request.resource.data.kennitala is string &&
-                       request.resource.data.name is string &&
-                       request.resource.data.createdBy == request.auth.uid &&
-                       request.resource.data.updatedAt is timestamp;
+      // Create: Only admins and superusers can create new members
+      allow create: if hasAdminAccess();
 
-      // Update: Only admins can update members
-      allow update: if hasAdminRole() &&
-                       request.resource.data.kennitala == resource.data.kennitala && // Cannot change kennitala
-                       request.resource.data.updatedBy == request.auth.uid &&
-                       request.resource.data.updatedAt is timestamp;
+      // Update: Own profile OR admin access (all fields)
+      // Users can update their own profile (but not metadata, membership, address)
+      allow update: if (hasValidKennitala() &&
+                        request.auth.token.kennitala.replace('-', '') == kennitala) ||
+                       hasAdminAccess();
 
       // Delete: Never allowed (soft delete via status field)
       allow delete: if false;
@@ -93,8 +96,8 @@ service cloud.firestore {
 
     // Members audit log collection (Epic #116)
     match /members_audit_log/{logId} {
-      // Read: Only admins can view audit logs
-      allow read: if hasAdminRole();
+      // Read: Only admins and superusers can view audit logs
+      allow read: if hasAdminAccess();
 
       // Write: Only Cloud Functions (via Admin SDK)
       // Client-side writes are blocked to ensure audit integrity

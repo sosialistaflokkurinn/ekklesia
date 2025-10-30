@@ -472,17 +472,26 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
                     # Re-raise if it's a different error
                     raise
 
-        # Step 5: Create Firebase custom token with all claims
-        # Read existing custom claims from Firebase Auth (includes roles set by admin)
-        try:
-            existing_user = auth.get_user(auth_uid)
-            existing_custom_claims = existing_user.custom_claims or {}
-        except Exception as e:
-            log_json("warn", "Could not read existing custom claims", error=str(e), uid=auth_uid)
-            existing_custom_claims = {}
+        # Step 5: Read roles from Firestore /users/ collection (set by Django sync)
+        # Epic #116: Roles are synced from Django User model (is_staff → admin, is_superuser → superuser)
+        user_doc_ref = db.collection('users').document(auth_uid)
+        user_doc = user_doc_ref.get()
 
-        # Merge new claims with existing claims (preserve roles, etc.)
-        custom_claims = {**existing_custom_claims, 'kennitala': normalized_kennitala}
+        roles = ['member']  # Default role for all members
+        if user_doc.exists:
+            user_data = user_doc.to_dict()
+            roles = user_data.get('roles', ['member'])
+            log_json("info", "Read roles from Firestore /users/",
+                     uid=auth_uid, roles=roles, correlationId=correlation_id)
+        else:
+            log_json("warn", "No /users/ document found, using default roles",
+                     uid=auth_uid, correlationId=correlation_id)
+
+        # Step 6: Create Firebase custom token with claims
+        custom_claims = {
+            'kennitala': normalized_kennitala,
+            'roles': roles  # Roles from Firestore (synced from Django)
+        }
         if email:
             custom_claims['email'] = email
         if phone_number:
@@ -651,7 +660,7 @@ def syncmembers(req: https_fn.CallableRequest):
     """
     Epic #43: Manual trigger to sync all members from Django to Firestore.
 
-    Requires authentication and 'developer' role.
+    Requires authentication and 'admin' or 'superuser' role.
 
     Returns:
         Dict with sync statistics
@@ -663,13 +672,14 @@ def syncmembers(req: https_fn.CallableRequest):
             message="Authentication required"
         )
 
-    # Verify developer role
+    # Verify admin or superuser role
     roles = req.auth.token.get('roles', [])
-    if 'developer' not in roles:
+    has_access = 'admin' in roles or 'superuser' in roles
+    if not has_access:
         log_json("warn", "Unauthorized sync attempt", uid=req.auth.uid, roles=roles)
         raise https_fn.HttpsError(
             code=https_fn.FunctionsErrorCode.PERMISSION_DENIED,
-            message="Developer role required"
+            message="Admin or superuser role required"
         )
 
     log_json("info", "Member sync initiated", uid=req.auth.uid)
@@ -698,4 +708,110 @@ def syncmembers(req: https_fn.CallableRequest):
         raise https_fn.HttpsError(
             code=https_fn.FunctionsErrorCode.INTERNAL,
             message=f"Sync failed: {str(e)}"
+        )
+
+
+@https_fn.on_call(timeout_sec=30, memory=256)
+def updatememberprofile(req: https_fn.CallableRequest):
+    """
+    Update member profile from Kenni.is data to Django backend.
+
+    This function is called when a user confirms profile updates from Þjóðskrá.
+    It updates the Django backend via the ComradeFullViewSet PATCH endpoint.
+
+    Requires authentication and must be the member themselves.
+
+    Args:
+        req.data: {
+            'kennitala': str,
+            'updates': {
+                'name': str (optional),
+                'email': str (optional),
+                'phone': str (optional)
+            }
+        }
+
+    Returns:
+        Dict with success status and updated member data
+    """
+    # Verify authentication
+    if not req.auth:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.UNAUTHENTICATED,
+            message="Authentication required"
+        )
+
+    # Get request data
+    kennitala = req.data.get('kennitala')
+    updates = req.data.get('updates', {})
+
+    if not kennitala:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+            message="kennitala is required"
+        )
+
+    # Verify user is updating their own profile
+    user_kennitala = req.auth.token.get('kennitala', '').replace('-', '')
+    if user_kennitala != kennitala:
+        log_json("warn", "Unauthorized profile update attempt",
+                 uid=req.auth.uid,
+                 requested_kennitala=f"{kennitala[:6]}****",
+                 user_kennitala=f"{user_kennitala[:6]}****")
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.PERMISSION_DENIED,
+            message="You can only update your own profile"
+        )
+
+    log_json("info", "Profile update initiated",
+             uid=req.auth.uid,
+             kennitala=f"{kennitala[:6]}****",
+             fields=list(updates.keys()))
+
+    try:
+        # Import Django API client
+        from sync_members import get_django_member_by_kennitala, update_django_member
+
+        # Get Django member ID
+        django_member = get_django_member_by_kennitala(kennitala)
+        if not django_member:
+            raise Exception(f"Member not found in Django: {kennitala[:6]}****")
+
+        django_id = django_member.get('id')
+
+        # Build Django update payload
+        django_updates = {}
+        if 'name' in updates:
+            django_updates['name'] = updates['name']
+        if 'email' in updates:
+            # Email is in contact_info nested object
+            django_updates['contact_info'] = {'email': updates['email']}
+        if 'phone' in updates:
+            # Phone is in contact_info nested object
+            if 'contact_info' not in django_updates:
+                django_updates['contact_info'] = {}
+            django_updates['contact_info']['phone'] = updates['phone']
+
+        # Update Django via API
+        updated_member = update_django_member(django_id, django_updates)
+
+        log_json("info", "Profile updated successfully",
+                 uid=req.auth.uid,
+                 django_id=django_id,
+                 kennitala=f"{kennitala[:6]}****")
+
+        return {
+            'success': True,
+            'django_id': django_id,
+            'updated_fields': list(updates.keys())
+        }
+
+    except Exception as e:
+        log_json("error", "Profile update failed",
+                 uid=req.auth.uid,
+                 kennitala=f"{kennitala[:6]}****",
+                 error=str(e))
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INTERNAL,
+            message=f"Profile update failed: {str(e)}"
         )
