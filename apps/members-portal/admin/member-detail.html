@@ -16,6 +16,7 @@
 
   <!-- Admin-specific styles -->
   <link rel="stylesheet" href="/admin/styles/admin.css">
+  <link rel="stylesheet" href="/admin/styles/admin-shared.css">
   <link rel="stylesheet" href="/admin/styles/member-detail.css">
 
   <!-- Firebase SDK -->
@@ -62,8 +63,8 @@
   <main class="page">
     <div class="page__container">
       <!-- Back Navigation -->
-      <div class="member-detail__back">
-        <a href="/admin/members.html" class="member-detail__back-link" id="back-to-members">
+      <div class="admin-back">
+        <a href="/admin/members.html" class="admin-back__link" id="back-to-members">
           ← <span id="back-to-members-text">Til baka til félaga</span>
         </a>
       </div>
@@ -82,99 +83,99 @@
       </div>
 
       <!-- Loading State -->
-      <div id="member-loading" class="member-detail__loading">
+      <div id="member-loading" class="admin-loading">
         <div class="spinner"></div>
         <p id="member-loading-text">Hleð upplýsingum...</p>
       </div>
 
       <!-- Error State -->
-      <div id="member-error" class="member-detail__error" style="display: none;">
-        <p class="member-detail__error-message" id="member-error-message"></p>
+      <div id="member-error" class="admin-error" style="display: none;">
+        <p class="admin-error__message" id="member-error-message"></p>
         <button class="btn btn--secondary" id="btn-retry">Reyna aftur</button>
       </div>
 
       <!-- Not Found State -->
-      <div id="member-not-found" class="member-detail__not-found" style="display: none;">
-        <p class="member-detail__not-found-message" id="member-not-found-message">Félagi fannst ekki</p>
+      <div id="member-not-found" class="admin-not-found" style="display: none;">
+        <p class="admin-not-found__message" id="member-not-found-message">Félagi fannst ekki</p>
         <a href="/admin/members.html" class="btn btn--secondary">Til baka til félaga</a>
       </div>
 
       <!-- Member Details -->
       <div id="member-details" class="member-detail" style="display: none;">
         <!-- Basic Information -->
-        <section class="member-detail__section">
-          <h2 class="member-detail__section-title" id="section-basic-info">Grunnupplýsingar</h2>
-          <div class="member-detail__grid">
-            <div class="member-detail__field">
-              <label class="member-detail__label" id="label-name">Nafn</label>
-              <p class="member-detail__value" id="value-name">-</p>
+        <section class="admin-section">
+          <h2 class="admin-section__title" id="section-basic-info">Grunnupplýsingar</h2>
+          <div class="admin-grid">
+            <div class="admin-field">
+              <label class="admin-field__label" id="label-name">Nafn</label>
+              <p class="admin-field__value" id="value-name">-</p>
             </div>
-            <div class="member-detail__field">
-              <label class="member-detail__label" id="label-kennitala">Kennitala</label>
-              <p class="member-detail__value" id="value-kennitala">-</p>
+            <div class="admin-field">
+              <label class="admin-field__label" id="label-kennitala">Kennitala</label>
+              <p class="admin-field__value" id="value-kennitala">-</p>
             </div>
-            <div class="member-detail__field">
-              <label class="member-detail__label" id="label-email">Netfang</label>
-              <p class="member-detail__value" id="value-email">-</p>
+            <div class="admin-field">
+              <label class="admin-field__label" id="label-email">Netfang</label>
+              <p class="admin-field__value" id="value-email">-</p>
             </div>
-            <div class="member-detail__field">
-              <label class="member-detail__label" id="label-phone">Sími</label>
-              <p class="member-detail__value" id="value-phone">-</p>
+            <div class="admin-field">
+              <label class="admin-field__label" id="label-phone">Sími</label>
+              <p class="admin-field__value" id="value-phone">-</p>
             </div>
-            <div class="member-detail__field">
-              <label class="member-detail__label" id="label-birthday">Fæðingardagur</label>
-              <p class="member-detail__value" id="value-birthday">-</p>
+            <div class="admin-field">
+              <label class="admin-field__label" id="label-birthday">Fæðingardagur</label>
+              <p class="admin-field__value" id="value-birthday">-</p>
             </div>
           </div>
         </section>
 
         <!-- Address -->
-        <section class="member-detail__section">
-          <h2 class="member-detail__section-title" id="section-address">Heimilisfang</h2>
-          <div class="member-detail__grid">
-            <div class="member-detail__field">
-              <label class="member-detail__label" id="label-street">Gata</label>
-              <p class="member-detail__value" id="value-street">-</p>
+        <section class="admin-section">
+          <h2 class="admin-section__title" id="section-address">Heimilisfang</h2>
+          <div class="admin-grid">
+            <div class="admin-field">
+              <label class="admin-field__label" id="label-street">Gata</label>
+              <p class="admin-field__value" id="value-street">-</p>
             </div>
-            <div class="member-detail__field">
-              <label class="member-detail__label" id="label-postal-code">Póstnúmer</label>
-              <p class="member-detail__value" id="value-postal-code">-</p>
+            <div class="admin-field">
+              <label class="admin-field__label" id="label-postal-code">Póstnúmer</label>
+              <p class="admin-field__value" id="value-postal-code">-</p>
             </div>
-            <div class="member-detail__field">
-              <label class="member-detail__label" id="label-city">Staður</label>
-              <p class="member-detail__value" id="value-city">-</p>
+            <div class="admin-field">
+              <label class="admin-field__label" id="label-city">Staður</label>
+              <p class="admin-field__value" id="value-city">-</p>
             </div>
           </div>
         </section>
 
         <!-- Membership -->
-        <section class="member-detail__section">
-          <h2 class="member-detail__section-title" id="section-membership">Félagsaðild</h2>
-          <div class="member-detail__grid">
-            <div class="member-detail__field">
-              <label class="member-detail__label" id="label-status">Staða</label>
-              <p class="member-detail__value" id="value-status">
-                <span class="member-detail__status-badge" id="status-badge">-</span>
+        <section class="admin-section">
+          <h2 class="admin-section__title" id="section-membership">Félagsaðild</h2>
+          <div class="admin-grid">
+            <div class="admin-field">
+              <label class="admin-field__label" id="label-status">Staða</label>
+              <p class="admin-field__value" id="value-status">
+                <span class="admin-badge" id="status-badge">-</span>
               </p>
             </div>
-            <div class="member-detail__field">
-              <label class="member-detail__label" id="label-joined">Skráður</label>
-              <p class="member-detail__value" id="value-joined">-</p>
+            <div class="admin-field">
+              <label class="admin-field__label" id="label-joined">Skráður</label>
+              <p class="admin-field__value" id="value-joined">-</p>
             </div>
           </div>
         </section>
 
         <!-- System Metadata -->
-        <section class="member-detail__section">
-          <h2 class="member-detail__section-title" id="section-metadata">Kerfisgögn</h2>
-          <div class="member-detail__grid">
-            <div class="member-detail__field">
-              <label class="member-detail__label" id="label-django-id">Django ID</label>
-              <p class="member-detail__value" id="value-django-id">-</p>
+        <section class="admin-section">
+          <h2 class="admin-section__title" id="section-metadata">Kerfisgögn</h2>
+          <div class="admin-grid">
+            <div class="admin-field">
+              <label class="admin-field__label" id="label-django-id">Django ID</label>
+              <p class="admin-field__value" id="value-django-id">-</p>
             </div>
-            <div class="member-detail__field">
-              <label class="member-detail__label" id="label-synced-at">Síðast samstillt</label>
-              <p class="member-detail__value" id="value-synced-at">-</p>
+            <div class="admin-field">
+              <label class="admin-field__label" id="label-synced-at">Síðast samstillt</label>
+              <p class="admin-field__value" id="value-synced-at">-</p>
             </div>
           </div>
         </section>
