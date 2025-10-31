@@ -6,6 +6,21 @@
  */
 
 /* ========================================== */
+/* ADMIN COLOR VARIABLES */
+/* ========================================== */
+
+:root {
+  /* Admin section/card colors */
+  --admin-card-bg: var(--color-white);          /* White background for all admin cards */
+  --admin-card-border: var(--color-border-light); /* Light gray border */
+
+  /* Admin text colors */
+  --admin-text-primary: var(--color-black);      /* Black text for main content */
+  --admin-text-secondary: #4a4a4a;               /* Dark gray for labels */
+  --admin-text-muted: var(--color-gray-500);     /* Muted gray for subtle text */
+}
+
+/* ========================================== */
 /* ADMIN BODY MODIFIER */
 /* ========================================== */
 
