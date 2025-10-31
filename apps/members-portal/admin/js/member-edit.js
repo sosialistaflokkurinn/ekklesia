@@ -347,7 +347,7 @@ const adminStrings = new Map();
     if (birthday) formData.birthday = birthday;
 
     const gender = getValue('input-gender');
-    if (gender) formData.gender = parseInt(gender, 10);  // Convert to integer
+    if (gender !== '') formData.gender = parseInt(gender, 10);  // Convert to integer (allow 0)
 
     // Contact info
     const email = getValue('input-email');
@@ -355,7 +355,8 @@ const adminStrings = new Map();
     if (email || phone) {
       formData.contact_info = {};
       if (email) formData.contact_info.email = email;
-      if (phone) formData.contact_info.phone = phone;
+      // Remove dashes from phone before saving to Django
+      if (phone) formData.contact_info.phone = phone.replace(/-/g, '');
     }
 
     // Address - Skip for now (complex nested model)
