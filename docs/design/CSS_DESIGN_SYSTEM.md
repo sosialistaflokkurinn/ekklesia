@@ -760,6 +760,314 @@ styles/
 
 ---
 
+## Admin Portal Components
+
+### Admin Color Variables
+
+The admin portal uses dedicated CSS variables defined in `admin.css` to maintain consistent styling across all admin pages.
+
+#### Admin Variables (`:root` in `admin.css`)
+
+```css
+:root {
+  /* Admin section/card colors */
+  --admin-card-bg: var(--color-white);          /* White background for all admin cards */
+  --admin-card-border: var(--color-border-light); /* Light gray border */
+
+  /* Admin text colors */
+  --admin-text-primary: var(--color-black);      /* Black text for main content */
+  --admin-text-secondary: #4a4a4a;               /* Dark gray for labels */
+  --admin-text-muted: var(--color-gray-500);     /* Muted gray for subtle text */
+}
+```
+
+**Usage**: These variables ensure all admin cards (member details, member edit, sync pages) have consistent white backgrounds and black text, regardless of the page-specific theme.
+
+---
+
+### Admin Shared Components (`.admin-*`)
+
+**File**: `admin-shared.css`
+
+**Purpose**: Reusable components for all admin pages (member detail, member edit, sync, etc.)
+
+These components follow BEM methodology with `.admin-` prefix to differentiate from member portal components.
+
+#### Admin Section (`.admin-section`)
+
+**Block**: `.admin-section`
+**Elements**: `.admin-section__title`
+
+Card-style sections for grouping related information (used across all admin pages).
+
+**Structure**:
+```html
+<section class="admin-section">
+  <h2 class="admin-section__title">Grunnupplýsingar</h2>
+  <div class="admin-grid">
+    <!-- Fields here -->
+  </div>
+</section>
+```
+
+**CSS**:
+```css
+.admin-section {
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-card-border);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.admin-section__title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--admin-text-primary);
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--admin-card-border);
+}
+```
+
+---
+
+#### Admin Field Grid (`.admin-grid`, `.admin-field`)
+
+**Block**: Implicit (no `.admin-grid` as block)
+**Elements**: `.admin-field`, `.admin-field__label`, `.admin-field__value`
+
+Responsive grid for displaying label-value pairs in admin pages.
+
+**Structure**:
+```html
+<div class="admin-grid">
+  <div class="admin-field">
+    <label class="admin-field__label">Nafn</label>
+    <p class="admin-field__value">Guðröður Atli Jónsson</p>
+  </div>
+  <div class="admin-field">
+    <label class="admin-field__label">Kennitala</label>
+    <p class="admin-field__value">200978-3589</p>
+  </div>
+</div>
+```
+
+**CSS**:
+```css
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.admin-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-field__label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--admin-text-secondary);
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.admin-field__value {
+  font-size: 1rem;
+  color: var(--admin-text-primary);
+  word-break: break-word;
+  margin: 0;
+}
+```
+
+**Responsive**: On mobile (<768px), grid collapses to single column.
+
+---
+
+#### Admin Status Badges (`.admin-badge`)
+
+**Block**: `.admin-badge`
+**Modifiers**: `.admin-badge--success`, `.admin-badge--error`, `.admin-badge--warning`, `.admin-badge--neutral`
+
+Status indicators for member states, sync status, etc.
+
+**Structure**:
+```html
+<span class="admin-badge admin-badge--success">Virkur</span>
+<span class="admin-badge admin-badge--error">Óvirkur</span>
+<span class="admin-badge admin-badge--warning">Í bið</span>
+<span class="admin-badge admin-badge--neutral">Óþekkt</span>
+```
+
+**CSS**:
+```css
+.admin-badge {
+  display: inline-block;
+  padding: 0.375rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.admin-badge--success {
+  background-color: var(--color-success-bg-light);
+  color: var(--color-success-green);
+}
+
+.admin-badge--error {
+  background-color: var(--color-error-bg-lighter);
+  color: var(--color-error-deep-orange);
+}
+
+.admin-badge--warning {
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning-dark);
+}
+
+.admin-badge--neutral {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-500);
+}
+```
+
+---
+
+#### Admin State Components
+
+**Blocks**: `.admin-loading`, `.admin-error`, `.admin-not-found`
+**Elements**: `.admin-error__message`, `.admin-not-found__message`
+
+Loading, error, and not-found states for admin pages.
+
+**Structure**:
+```html
+<!-- Loading State -->
+<div class="admin-loading">
+  <div class="spinner"></div>
+  <p>Hleð upplýsingum...</p>
+</div>
+
+<!-- Error State -->
+<div class="admin-error">
+  <p class="admin-error__message">Villa kom upp</p>
+  <button class="btn btn--secondary">Reyna aftur</button>
+</div>
+
+<!-- Not Found State -->
+<div class="admin-not-found">
+  <p class="admin-not-found__message">Félagi fannst ekki</p>
+  <a href="/admin/members.html" class="btn btn--secondary">Til baka</a>
+</div>
+```
+
+**CSS**:
+```css
+.admin-loading,
+.admin-error,
+.admin-not-found {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.admin-loading .spinner {
+  margin: 0 auto 1rem;
+}
+
+.admin-error__message,
+.admin-not-found__message {
+  color: var(--color-error);
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+```
+
+---
+
+#### Admin Back Navigation (`.admin-back`)
+
+**Block**: `.admin-back`
+**Elements**: `.admin-back__link`
+
+Consistent back navigation for all admin pages.
+
+**Structure**:
+```html
+<div class="admin-back">
+  <a href="/admin/members.html" class="admin-back__link">
+    ← Til baka til félaga
+  </a>
+</div>
+```
+
+**CSS**:
+```css
+.admin-back {
+  margin-bottom: 1.5rem;
+}
+
+.admin-back__link {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: color 0.2s ease;
+}
+
+.admin-back__link:hover {
+  color: var(--color-primary);
+}
+```
+
+---
+
+### Admin File Structure
+
+```
+apps/members-portal/admin/styles/
+├── admin.css              # Admin-specific overrides and variables
+├── admin-shared.css       # Shared admin components (NEW - 2025-10-31)
+├── member-detail.css      # Member detail page-specific styles
+├── member-edit.css        # Member edit page-specific styles
+├── members.css            # Member list page styles
+├── sync-members.css       # Sync page styles
+└── sync-history.css       # Sync history page styles
+```
+
+**Design Pattern**:
+- `admin.css` - Global admin variables and overrides
+- `admin-shared.css` - Reusable components (`.admin-section`, `.admin-grid`, etc.)
+- Page-specific CSS - Page-unique styles only
+
+**Benefits**:
+- Single source of truth for admin component styles
+- Consistent white cards and black text across all admin pages
+- Easy to change color scheme globally via CSS variables
+- Reduced code duplication (~42 lines saved in initial refactoring)
+
+---
+
+### Admin Component Usage
+
+**When to use `.admin-*` vs page-specific classes**:
+
+✅ **Use `.admin-*` for**:
+- Card sections (`.admin-section`)
+- Field grids (`.admin-grid`, `.admin-field`)
+- Status badges (`.admin-badge`)
+- Loading/error states (`.admin-loading`, `.admin-error`)
+- Back navigation (`.admin-back`)
+
+✅ **Use page-specific classes for**:
+- Form inputs (`.member-edit__input`)
+- Page-specific actions (`.member-detail__actions`)
+- Unique page elements (`.member-edit__note`)
+
+---
+
 ## Related Documentation
 
 - **BEM Methodology**: https://getbem.com/
