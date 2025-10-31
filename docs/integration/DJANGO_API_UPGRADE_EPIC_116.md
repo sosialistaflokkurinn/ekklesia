@@ -1,15 +1,18 @@
 # Django API Upgrade - Epic #116, Issue #138
 
 **Date**: 2025-10-28
-**Status**: ✅ Complete
+**Status**: ⚠️ Complete with Known Bug (Address Sync Broken)
 **Epic**: #116 - Members Admin UI
 **Issue**: #138 - Django API Update Endpoint
+**Bug Report**: [Epic #116 Address Sync Bug](#epic-116-address-sync-bug)
 
 ---
 
 ## Summary
 
 Upgraded Django REST API from **ReadOnlyModelViewSet** to **ModelViewSet** to support PUT/PATCH operations for updating member data from the Ekklesia admin UI.
+
+⚠️ **CRITICAL BUG**: This implementation broke address synchronization for Epic #43. See [Bug Report](#epic-116-address-sync-bug) below.
 
 ---
 
@@ -179,6 +182,9 @@ Django API is accessible via **domain name**, not IP address:
 ## Related Documents
 
 - Implementation Plan: `docs/features/admin-portal/EPIC_116_MEMBER_DETAIL_EDIT_PLAN.md`
+- **Address System Deep Dive**: `docs/integration/DJANGO_ADDRESS_SYSTEM_DEEP_DIVE.md`
+- Database Schema: `docs/integration/DJANGO_DATABASE_SCHEMA.md`
+- System Overview: `docs/systems/DJANGO_BACKEND_SYSTEM.md`
 - GitHub Issue #138: Django API Update Endpoint
 - GitHub Issue #136: Member Detail Page
 - GitHub Issue #137: Member Edit Page
@@ -201,6 +207,125 @@ Django API is accessible via **domain name**, not IP address:
 
 ---
 
-**Status**: ✅ Django API upgrade complete and tested
+## Epic #116 Address Sync Bug
+
+⚠️ **CRITICAL BUG DISCOVERED**: 2025-10-31
+
+### Problem
+
+Epic #116 implementation **broke address synchronization** from Django → Firestore. All members now return `"local_address": null` from API despite 1,975 members having valid addresses in Django database.
+
+### Root Cause
+
+During implementation, the `local_address` serializer field was changed from `SerializerMethodField()` to `DictField()` to support write operations. This broke read functionality.
+
+**Original Code** (Epic #43 - Working):
+```python
+class ComradeFullSerializer(serializers.ModelSerializer):
+    local_address = serializers.SerializerMethodField()
+
+    def get_local_address(self, obj):
+        local_addr = obj.local_addresses.filter(current=True).first()
+        if local_addr:
+            return AddressSerializer(local_addr).data
+        return None
+```
+
+**Changed Code** (Epic #116 - Broken):
+```python
+class ComradeFullSerializer(serializers.ModelSerializer):
+    # Epic #116: Allow updates via custom update method
+    local_address = serializers.DictField(required=False, allow_null=True)
+    # ❌ BUG: get_local_address() no longer called!
+```
+
+### Why It Failed
+
+1. `DictField` expects model to have `local_address` attribute (doesn't exist)
+2. Model has `local_addresses` (plural, relationship to NewLocalAddress table)
+3. `get_local_address()` method is never called (not a SerializerMethodField)
+4. Django REST Framework returns `null` for non-existent model attributes
+5. API sync returns null → Firestore members have empty addresses
+
+### Impact
+
+- ❌ **1,975 member addresses NOT synced** to Firestore
+- ❌ Members see **no address** in member portal
+- ❌ Admins see **no address** in admin UI
+- ✅ Database **intact** (no data loss)
+- ✅ Epic #116 **updates work** for other fields (name, email, phone)
+
+### The Fix
+
+**File**: `/home/manager/socialism/membership/serializers.py`
+**Line**: ~127 (in `ComradeFullSerializer` class)
+
+**Change ONE line**:
+```python
+# BEFORE (Broken):
+local_address = serializers.DictField(required=False, allow_null=True)
+
+# AFTER (Fixed):
+local_address = serializers.SerializerMethodField()
+```
+
+**Why this works**:
+- ✅ Restores read functionality (calls `get_local_address()`)
+- ✅ Write functionality preserved (handled in `update()` method)
+- ✅ No breaking changes to Epic #116 features
+
+### Deployment
+
+**Automated Fix**:
+```bash
+/tmp/apply_django_fix.sh
+```
+
+**Manual Fix**:
+```bash
+ssh root@172.105.71.207
+nano /home/manager/socialism/membership/serializers.py
+# Find line ~127, change DictField to SerializerMethodField
+sudo systemctl restart socialism
+```
+
+**Verification**:
+```bash
+DJANGO_API_TOKEN=$(gcloud secrets versions access latest --secret=django-api-token --project=ekklesia-prod-10-2025)
+
+curl -s -H "Authorization: Token $DJANGO_API_TOKEN" \
+  "https://starf.sosialistaflokkurinn.is/felagar/api/full/813/" \
+  | python3 -c "import json, sys; print(json.load(sys.stdin)['local_address'])"
+
+# Expected: {"street": "Gullengi", "number": 37, "postal_code": 112, "city": "Reykjavík"}
+# Broken:   None
+```
+
+### Post-Fix Actions
+
+After deploying fix:
+
+1. **Re-sync members**: Visit https://ekklesia-prod-10-2025.web.app/admin/sync-members.html
+2. **Verify Firestore**: Check that members now have addresses
+3. **Test member portal**: Login and verify address displays
+4. **Update documentation**: Mark bug as resolved
+
+### Documentation
+
+**Comprehensive Bug Analysis**: `/tmp/ADDRESS_SYNC_BUG_ANALYSIS.md`
+**Deep Dive Documentation**: `docs/integration/DJANGO_ADDRESS_SYSTEM_DEEP_DIVE.md`
+
+### Lessons Learned
+
+1. **Never change SerializerMethodField to DictField** without verifying model has the attribute
+2. **Test both READ and WRITE** after serializer changes
+3. **Check Firestore sync** after Django API changes
+4. **Document breaking changes** explicitly in commit messages
+
+---
+
+**Status**: ⚠️ Django API upgrade complete with known address sync bug (fix ready)
 **Date Completed**: 2025-10-28
-**Next Task**: Member Detail Page (Issue #136)
+**Bug Discovered**: 2025-10-31
+**Fix Status**: Ready to deploy
+**Next Task**: Deploy address sync fix, then Member Detail Page (Issue #136)
