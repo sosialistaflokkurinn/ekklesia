@@ -16,6 +16,7 @@
 
   <!-- Admin-specific styles -->
   <link rel="stylesheet" href="/admin/styles/admin.css">
+  <link rel="stylesheet" href="/admin/styles/admin-shared.css">
   <link rel="stylesheet" href="/admin/styles/member-edit.css">
 
   <!-- Firebase SDK -->
@@ -62,8 +63,8 @@
   <main class="page">
     <div class="page__container">
       <!-- Back Navigation -->
-      <div class="member-edit__back">
-        <a href="#" class="member-edit__back-link" id="back-to-detail">
+      <div class="admin-back">
+        <a href="#" class="admin-back__link" id="back-to-detail">
           ← <span id="back-to-detail-text">Til baka</span>
         </a>
       </div>
@@ -75,20 +76,20 @@
       </header>
 
       <!-- Loading State -->
-      <div id="member-loading" class="member-edit__loading">
+      <div id="member-loading" class="admin-loading">
         <div class="spinner"></div>
         <p id="member-loading-text">Hleð upplýsingum...</p>
       </div>
 
       <!-- Error State -->
-      <div id="member-error" class="member-edit__error" style="display: none;">
-        <p class="member-edit__error-message" id="member-error-message"></p>
+      <div id="member-error" class="admin-error" style="display: none;">
+        <p class="admin-error__message" id="member-error-message"></p>
         <button class="btn btn--secondary" id="btn-retry">Reyna aftur</button>
       </div>
 
       <!-- Not Found State -->
-      <div id="member-not-found" class="member-edit__not-found" style="display: none;">
-        <p class="member-edit__not-found-message" id="member-not-found-message">Félagi fannst ekki</p>
+      <div id="member-not-found" class="admin-not-found" style="display: none;">
+        <p class="admin-not-found__message" id="member-not-found-message">Félagi fannst ekki</p>
         <a href="/admin/members.html" class="btn btn--secondary">Til baka til félaga</a>
       </div>
 
@@ -101,13 +102,13 @@
           </div>
 
           <!-- Basic Information -->
-          <section class="member-edit__section">
-            <h2 class="member-edit__section-title" id="section-basic-info">Grunnupplýsingar</h2>
+          <section class="admin-section">
+            <h2 class="admin-section__title" id="section-basic-info">Grunnupplýsingar</h2>
 
-            <div class="member-edit__grid">
+            <div class="admin-grid">
               <!-- Name (required) -->
-              <div class="member-edit__field">
-                <label for="input-name" class="member-edit__label" id="label-name">Nafn *</label>
+              <div class="admin-field">
+                <label for="input-name" class="admin-field__label" id="label-name">Nafn *</label>
                 <input
                   type="text"
                   id="input-name"
@@ -121,8 +122,8 @@
               </div>
 
               <!-- Kennitala (readonly) -->
-              <div class="member-edit__field">
-                <label for="input-kennitala" class="member-edit__label" id="label-kennitala">Kennitala</label>
+              <div class="admin-field">
+                <label for="input-kennitala" class="admin-field__label" id="label-kennitala">Kennitala</label>
                 <input
                   type="text"
                   id="input-kennitala"
@@ -133,8 +134,8 @@
               </div>
 
               <!-- Email -->
-              <div class="member-edit__field">
-                <label for="input-email" class="member-edit__label" id="label-email">Netfang</label>
+              <div class="admin-field">
+                <label for="input-email" class="admin-field__label" id="label-email">Netfang</label>
                 <input
                   type="email"
                   id="input-email"
@@ -146,8 +147,8 @@
               </div>
 
               <!-- Phone -->
-              <div class="member-edit__field">
-                <label for="input-phone" class="member-edit__label" id="label-phone">Sími</label>
+              <div class="admin-field">
+                <label for="input-phone" class="admin-field__label" id="label-phone">Sími</label>
                 <input
                   type="tel"
                   id="input-phone"
@@ -160,8 +161,8 @@
               </div>
 
               <!-- Birthday -->
-              <div class="member-edit__field">
-                <label for="input-birthday" class="member-edit__label" id="label-birthday">Fæðingardagur</label>
+              <div class="admin-field">
+                <label for="input-birthday" class="admin-field__label" id="label-birthday">Fæðingardagur</label>
                 <input
                   type="date"
                   id="input-birthday"
@@ -172,8 +173,8 @@
               </div>
 
               <!-- Gender -->
-              <div class="member-edit__field">
-                <label for="input-gender" class="member-edit__label" id="label-gender">Kyn</label>
+              <div class="admin-field">
+                <label for="input-gender" class="admin-field__label" id="label-gender">Kyn</label>
                 <select id="input-gender" name="gender" class="member-edit__select">
                   <option value="">Veldu...</option>
                   <option value="0" id="option-gender-m">Karl</option>
@@ -185,17 +186,17 @@
           </section>
 
           <!-- Address (Read-Only) -->
-          <section class="member-edit__section">
-            <h2 class="member-edit__section-title" id="section-address">Heimilisfang</h2>
+          <section class="admin-section">
+            <h2 class="admin-section__title" id="section-address">Heimilisfang</h2>
 
             <div class="member-edit__note" style="margin-bottom: 1rem;">
               <p>⚠️ Heimilisfang notar Staðfangaskrá og er ekki hægt að breyta hér. Notaðu Django admin til að uppfæra heimilisfang.</p>
             </div>
 
-            <div class="member-edit__grid">
+            <div class="admin-grid">
               <!-- Street (readonly) -->
-              <div class="member-edit__field">
-                <label for="input-street" class="member-edit__label" id="label-street">Gata</label>
+              <div class="admin-field">
+                <label for="input-street" class="admin-field__label" id="label-street">Gata</label>
                 <input
                   type="text"
                   id="input-street"
@@ -208,8 +209,8 @@
               </div>
 
               <!-- Number (readonly) -->
-              <div class="member-edit__field">
-                <label for="input-number" class="member-edit__label" id="label-number">Númer</label>
+              <div class="admin-field">
+                <label for="input-number" class="admin-field__label" id="label-number">Númer</label>
                 <input
                   type="text"
                   id="input-number"
@@ -222,8 +223,8 @@
               </div>
 
               <!-- Postal Code (readonly) -->
-              <div class="member-edit__field">
-                <label for="input-postal-code" class="member-edit__label" id="label-postal-code">Póstnúmer</label>
+              <div class="admin-field">
+                <label for="input-postal-code" class="admin-field__label" id="label-postal-code">Póstnúmer</label>
                 <input
                   type="text"
                   id="input-postal-code"
@@ -236,8 +237,8 @@
               </div>
 
               <!-- City (readonly) -->
-              <div class="member-edit__field">
-                <label for="input-city" class="member-edit__label" id="label-city">Staður</label>
+              <div class="admin-field">
+                <label for="input-city" class="admin-field__label" id="label-city">Staður</label>
                 <input
                   type="text"
                   id="input-city"

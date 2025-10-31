@@ -237,7 +237,9 @@ const adminStrings = new Map();
     const statusBadge = document.getElementById('status-badge');
     if (statusBadge) {
       statusBadge.textContent = getStatusText(status);
-      statusBadge.className = `member-detail__status-badge member-detail__status-badge--${status}`;
+      // Map status to admin badge modifiers
+      const badgeModifier = status === 'active' ? 'success' : status === 'inactive' ? 'error' : 'neutral';
+      statusBadge.className = `admin-badge admin-badge--${badgeModifier}`;
     }
     setText('value-joined', formatDate(data.membership?.joined) || '-');
 

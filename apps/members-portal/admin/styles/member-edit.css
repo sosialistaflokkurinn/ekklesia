@@ -1,44 +1,10 @@
 /**
  * Member Edit Page Styles - Epic #116, Issue #137
  * BEM Methodology
+ *
+ * Shared styles moved to admin-shared.css
+ * This file only contains page-specific form styles
  */
-
-/* Back Navigation */
-.member-edit__back {
-  margin-bottom: 1.5rem;
-}
-
-.member-edit__back-link {
-  display: inline-flex;
-  align-items: center;
-  color: var(--color-text-secondary);
-  text-decoration: none;
-  font-size: 0.95rem;
-  transition: color 0.2s ease;
-}
-
-.member-edit__back-link:hover {
-  color: var(--color-primary);
-}
-
-/* Loading/Error/Not Found States */
-.member-edit__loading,
-.member-edit__error,
-.member-edit__not-found {
-  text-align: center;
-  padding: 3rem 1rem;
-}
-
-.member-edit__loading .spinner {
-  margin: 0 auto 1rem;
-}
-
-.member-edit__error-message,
-.member-edit__not-found-message {
-  color: var(--color-error);
-  font-size: 1.1rem;
-  margin-bottom: 1.5rem;
-}
 
 /* Member Edit Container */
 .member-edit {
@@ -56,45 +22,7 @@
   color: var(--color-warning-dark);
 }
 
-/* Sections */
-.member-edit__section {
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.member-edit__section-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin: 0 0 1.5rem 0;
-  padding-bottom: 0.75rem;
-  border-bottom: 2px solid var(--color-border);
-}
-
-/* Field Grid */
-.member-edit__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-}
-
-.member-edit__field {
-  display: flex;
-  flex-direction: column;
-}
-
-.member-edit__label {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--color-text-secondary);
-  margin-bottom: 0.5rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
+/* Form Inputs */
 .member-edit__input,
 .member-edit__select {
   font-size: 1rem;
@@ -177,39 +105,13 @@
   font-weight: 500;
 }
 
-/* Responsive Design */
+/* Responsive Design - Page Specific */
 @media (max-width: 768px) {
-  .member-edit__grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .member-edit__section {
-    padding: 1rem;
-  }
-
-  .member-edit__section-title {
-    font-size: 1.1rem;
-  }
-
   .member-edit__actions {
     flex-direction: column;
   }
 
   .member-edit__actions .btn {
     width: 100%;
-  }
-}
-
-/* Print Styles */
-@media print {
-  .nav,
-  .member-edit__back,
-  .member-edit__actions {
-    display: none;
-  }
-
-  .member-edit__section {
-    page-break-inside: avoid;
   }
 }
