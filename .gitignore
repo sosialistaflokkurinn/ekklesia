@@ -1,89 +1,13 @@
-# Python
-__pycache__/
-*.py[cod]
-venv/
-env/
+# This is your personal .gitignore file for local-only rules.
+# It is NOT committed to Git.
+# Project-wide rules are in .gitignore.example.
 
-# Node
-node_modules/
-npm-debug.log*
+# --- PERSONAL & LOCAL RULES ---
 
-# IDEs
-.vscode/
-.idea/
-*.swp
-
-# Backup files
-*.backup
-*.bak
-*.old
-*~
-
-# Claude Code settings (contains secrets and MCP server config)
-.claude/
-!.claude/README.md
-!.claude/commands/
-
-# OS
-.DS_Store
-
-# Firebase
-*.log
-.firebase/
-
-# Firebase public symlink (points to apps/members-portal)
-services/members/public
-
-# Prevent duplicate admin portal directory (removed 2025-10-27)
-# All admin files belong in apps/members-portal/admin/
-apps/admin-portal/
-
-# Environment
-.env
-.env.*
-
-# Google Cloud
-*.key.json
-cloud-sql-proxy*
-
-# Cloud SQL proxy connection directories (temp artifacts)
-# Pattern: instance-name:region:database-name
-*:europe-west*:*
-*:us-central*:*
-*:asia-*:*
-
-# Archives (local only)
-archive/
-audits/
-
-# EXCEPT: Archive docs-plans (historical planning documents - keep in git)
-!archive/docs-plans/
-!archive/docs-plans/**
-
-# ALLOW ALL DOCUMENTATION
-!docs/
-!docs/**/*.md
-!docs/**/*.MD
-!README.md
-!DIRECTORY.md
-!**/*.md
-
-# Keep some scripts local
-validate_documentation_map.py
-
-# Example SQL files (database reset - local testing only)
-reset-election.example.sql
-*-reset*.sql
-*-example.sql
-data/Stadfangaskra.csv
-.gitignore
-docs/migration/DUPLICATE_SSN_CLEANUP_2025-10-26.md
-.claude/settings.local.json
-*.pyc
-*.pyo
-
-# Playwright MCP screenshots (temporary cache)
-.playwright-mcp/
+# IDE / Tooling specific folders
+/.claude/
+/.gemini/
+/.playwright-mcp/
 
 # Sensitive temporary documentation (contains PII/kennitalur)
 *KENNITALA*.md
@@ -92,14 +16,16 @@ docs/migration/DUPLICATE_SSN_CLEANUP_2025-10-26.md
 *kennitala*.md
 *pii_redaction*.md
 
-# Temporary analysis files
-/tmp/*.md
-/tmp/**/*.md
+# Local-only scripts
+validate_documentation_map.py
 
-# Log files with PII (names, emails, etc.)
-scripts/logs/*.jsonl
-**/logs/*.jsonl
-*.audit.json
-*-audit-*.jsonl
-.gemini/tmp/firestore_index.json
-apps/members-portal/js/utils/debug.js
+# Local Claude settings
+.claude/settings.local.json
+
+# Example SQL files (database reset - local testing only)
+reset-election.example.sql
+*-reset*.sql
+*-example.sql
+
+# Local data files
+data/Stadfangaskra.csv
