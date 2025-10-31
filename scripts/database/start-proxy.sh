@@ -1,6 +1,9 @@
 #!/bin/bash
 # scripts/database/start-proxy.sh
 
+# Source the environment variables
+source "$(dirname "$0")/../deployment/set-env.sh"
+
 # Check if proxy already running
 if pgrep -f "cloud-sql-proxy.*ekklesia-db" > /dev/null; then
     echo "✅ Proxy already running"
@@ -8,7 +11,7 @@ if pgrep -f "cloud-sql-proxy.*ekklesia-db" > /dev/null; then
 fi
 
 # Start proxy in background
-cloud-sql-proxy ekklesia-prod-10-2025:europe-west2:ekklesia-db --port 5432 &
+cloud-sql-proxy $DB_CONNECTION_NAME --port 5432 &
 PROXY_PID=$!
 
 # Wait for startup
