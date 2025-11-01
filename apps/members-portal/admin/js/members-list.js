@@ -342,19 +342,31 @@ const adminStrings = new Map();
           startAfter: null
         });
 
+        // Debug: Log sample postal codes
+        console.log('=== Electoral District Debug ===');
+        console.log('Total members loaded:', result.members.length);
+        console.log('Current status filter:', currentStatus);
+        console.log('Sample postal codes:', result.members.slice(0, 10).map(m => ({
+          name: m.name,
+          postal_code: m.address?.postal_code,
+          address: m.address
+        })));
+
         // Filter by electoral district
         const filteredMembers = filterMembersByDistrict(result.members, currentDistrict);
-        const count = filteredMembers.length;
+        console.log('Filtered members count:', filteredMembers.length);
+        console.log('Sample filtered:', filteredMembers.slice(0, 5).map(m => ({
+          name: m.name,
+          postal_code: m.address?.postal_code
+        })));
 
-        // Build status text
-        const statusText = currentStatus === 'all' ? '' :
-                          currentStatus === 'active' ? 'virkir ' :
-                          'óvirkir ';
+        const count = filteredMembers.length;
 
         // Get district name
         const districtName = getElectoralDistrictName(currentDistrict);
 
-        elements.countText.textContent = `${count} ${statusText}félagar í ${districtName}`;
+        // Simple count without status metadata
+        elements.countText.textContent = `${count} félagar í ${districtName}`;
       } else {
         // Normal count (no district filter)
         const count = await MembersAPI.getMembersCount(currentStatus);
