@@ -3,7 +3,7 @@ Cloud Function: getDjangoToken
 Epic #116, Issue #137
 
 Securely provides Django API token to authorized admin users.
-Token is stored in Secret Manager and only accessible to admin/developer roles.
+Token is stored in Secret Manager and only accessible to admin/superuser roles.
 """
 
 import os
@@ -32,7 +32,7 @@ def get_django_token(request):
 
     Security:
         - Requires Firebase authentication
-        - Requires 'admin' or 'developer' role
+        - Requires 'admin' or 'superuser' role
         - Returns token from Secret Manager
     """
 
@@ -72,13 +72,13 @@ def get_django_token(request):
 
         # Check user roles
         roles = decoded_token.get('roles', [])
-        has_admin_access = 'admin' in roles or 'developer' in roles
+        has_admin_access = 'admin' in roles or 'superuser' in roles
 
         if not has_admin_access:
             logger.warning(f"getDjangoToken: Access denied for user {decoded_token['uid']} (roles: {', '.join(roles)})")
             return (jsonify({
                 'error': 'Forbidden',
-                'message': 'You do not have permission to access this resource. Admin or developer role required.'
+                'message': 'You do not have permission to access this resource. Admin or superuser role required.'
             }), 403, headers)
 
         # Get Django token from Secret Manager

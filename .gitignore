@@ -1,13 +1,97 @@
-# This is your personal .gitignore file for local-only rules.
-# It is NOT committed to Git.
-# Project-wide rules are in .gitignore.example.
+# Ekklesia Platform - Git Ignore Template
+# This file contains project-wide ignore rules.
+# New developers should copy this to .gitignore:
+# cp .gitignore.example .gitignore
 
-# --- PERSONAL & LOCAL RULES ---
+##################################################################
+# --- PROJECT-WIDE IGNORE RULES ---
+# (This file SHOULD be committed to Git)
+##################################################################
 
-# IDE / Tooling specific folders
-/.claude/
-/.gemini/
-/.playwright-mcp/
+# --- Local & Personal Files ---
+# Ignore the local .gitignore file so developers can add personal rules.
+.gitignore
+
+# Ignore local environment variables.
+.env
+.env.*
+!*.env.example
+
+# --- Security & Secrets ---
+# Service account keys and other credentials
+*.key.json
+*client_secret*
+*serviceAccount*.json
+firebase-adminsdk-*.json
+
+# --- Python ---
+# Bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+venv/
+env/
+.venv/
+.virtualenv/
+
+# --- Node.js ---
+# Dependencies and logs
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.eslintcache
+
+# --- IDEs & Editors ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+
+# --- OS Specific ---
+.DS_Store
+Thumbs.db
+
+# --- Firebase ---
+.firebase/
+*.log
+
+# --- Google Cloud ---
+# Ignore the Cloud SQL Proxy binary itself
+cloud-sql-proxy*
+
+# --- Build & Temp Artifacts ---
+dist/
+build/
+*.backup
+*.bak
+*.old
+
+# --- Project Specific (Local Only) ---
+
+# Local-only archives and audit results
+# Note: Specific documentation within these folders can be un-ignored
+# with targeted rules if needed, e.g., !archive/docs-plans/
+archive/
+audits/
+
+# Symlink created by setup scripts
+services/members/public
+
+# Admin portal directories (content is built or managed elsewhere)
+public/admin/
+apps/members-portal/admin/
+
+# Temporary directory for Playwright screenshots
+.playwright-mcp/
 
 # Sensitive temporary documentation (contains PII/kennitalur)
 *KENNITALA*.md
@@ -16,16 +100,18 @@
 *kennitala*.md
 *pii_redaction*.md
 
-# Local-only scripts
-validate_documentation_map.py
+# Log files that may contain PII
+scripts/logs/*.jsonl
+**/logs/*.jsonl
+*.audit.json
+*-audit-*.jsonl
 
-# Local Claude settings
-.claude/settings.local.json
+# IDE / Tooling folders (personal, local only)
+.claude/
+.gemini/
 
-# Example SQL files (database reset - local testing only)
-reset-election.example.sql
-*-reset*.sql
-*-example.sql
+# Local debugging files
+apps/members-portal/js/utils/debug.js
 
 # Local data files
 data/Stadfangaskra.csv
