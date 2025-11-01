@@ -342,24 +342,8 @@ const adminStrings = new Map();
           startAfter: null
         });
 
-        // Debug: Log sample postal codes
-        console.log('=== Electoral District Debug ===');
-        console.log('Total members loaded:', result.members.length);
-        console.log('Current status filter:', currentStatus);
-        console.log('Sample postal codes:', result.members.slice(0, 10).map(m => ({
-          name: m.name,
-          postal_code: m.address?.postal_code,
-          address: m.address
-        })));
-
         // Filter by electoral district
         const filteredMembers = filterMembersByDistrict(result.members, currentDistrict);
-        console.log('Filtered members count:', filteredMembers.length);
-        console.log('Sample filtered:', filteredMembers.slice(0, 5).map(m => ({
-          name: m.name,
-          postal_code: m.address?.postal_code
-        })));
-
         const count = filteredMembers.length;
 
         // Get district name

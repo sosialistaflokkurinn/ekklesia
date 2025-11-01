@@ -15,52 +15,107 @@
 /**
  * Norðausturkjördæmi (Northeast Electoral District)
  *
- * Covers 15 municipalities:
- * - Fjallabyggð, Dalvíkurbyggð, Hörgársveit
- * - Akureyrarbær, Grýtubakkahreppur
- * - Eyjafjarðarsveit, Svalbarðsstrandarhreppur
- * - Þingeyjarsveit, Norðurþing, Tjörneshreppur
- * - Langanesbyggð, Vopnafjarðarhreppur
- * - Múlaþing, Fljótsdalshreppur, Fjarðabyggð
- *
+ * Covers 15 municipalities from Fjallabyggð to Fjarðabyggð
  * Total: 38 unique postal codes
  */
 export const NORDAUSTURKJORDAEMI_POSTNUMER = [
   // Fjallabyggð
   580, 581, 625, 626,
-
   // Dalvíkurbyggð
   620, 621,
-
   // Hörgársveit
   604,
-
   // Akureyrarbær + Grýtubakkahreppur
   600, 601, 603,
-
   // Eyjafjarðarsveit
   605,
-
   // Svalbarðsstrandarhreppur
   606,
-
   // Þingeyjarsveit
   607,
-
   // Norðurþing + Tjörneshreppur
   640, 641, 645,
-
   // Langanesbyggð
   670, 671, 675, 676, 680, 681, 685, 686,
-
   // Vopnafjarðarhreppur
   690, 691,
-
   // Múlaþing + Fljótsdalshreppur
   700, 701,
-
   // Fjarðabyggð
   730, 731, 735, 736, 740, 741, 750, 751, 755, 756
+];
+
+/**
+ * Norðvesturkjördæmi (Northwest Electoral District)
+ *
+ * Covers 26 municipalities: Vesturland, Vestfirðir, Norðurland vestra
+ * Total: ~45 postal codes
+ */
+export const NORDVESTURKJORDAEMI_POSTNUMER = [
+  // Vesturland
+  300, 301, 310, 311, 320, 340, 345, 350, 355, 356, 360, 370, 371,
+  // Vestfirðir
+  380, 400, 401, 415, 420, 425, 430, 450, 451, 460, 465, 470, 471,
+  500, 510, 520, 522, 523, 524,
+  // Norðurland vestra
+  530, 531, 540, 541, 545, 550, 551, 560, 565, 566
+];
+
+/**
+ * Suðurkjördæmi (South Electoral District)
+ *
+ * Covers 17 municipalities: Suðurnes, Suðurland, Vestmannaeyjar
+ * Total: ~45 postal codes
+ */
+export const SUDURKJORDAEMI_POSTNUMER = [
+  // Suðurnes
+  190, 220, 221, 222, 230, 231, 232, 233, 235, 240, 241, 245, 250, 251, 260, 261, 262,
+  // Suðurland
+  780, 781, 785, 800, 801, 802, 806, 810, 815, 816, 820, 825, 840, 845, 850, 851,
+  860, 861, 870, 871, 880, 881, 882,
+  // Vestmannaeyjar
+  900, 901, 902
+];
+
+/**
+ * Suðvesturkjördæmi (Southwest Electoral District)
+ *
+ * Covers 6 municipalities: Hafnarfjörður, Garðabær, Kópavogur, Seltjarnarnes, Mosfellsbær, Kjósarhreppur
+ * Total: ~15 postal codes
+ */
+export const SUDVESTURKJORDAEMI_POSTNUMER = [
+  // Kópavogur
+  200, 201, 202, 203,
+  // Garðabær
+  210, 211, 212,
+  // Hafnarfjörður
+  220, 221, 222,
+  // Seltjarnarnes
+  170, 171, 172,
+  // Mosfellsbær
+  270, 271,
+  // Kjósarhreppur
+  276
+];
+
+/**
+ * Reykjavíkurkjördæmi suður (Reykjavik South Electoral District)
+ *
+ * Covers western Reykjavik
+ * Total: ~10 postal codes
+ */
+export const REYKJAVIKURKJORDAEMI_SUDUR_POSTNUMER = [
+  101, 102, 103, 104, 105, 107, 108, 109, 110, 150, 155
+];
+
+/**
+ * Reykjavíkurkjördæmi norður (Reykjavik North Electoral District)
+ *
+ * Covers eastern Reykjavik
+ * Total: ~15 postal codes
+ */
+export const REYKJAVIKURKJORDAEMI_NORDUR_POSTNUMER = [
+  111, 112, 113, 116, 121, 123, 124, 125, 127, 128, 129, 130, 132
 ];
 
 /**
@@ -70,11 +125,27 @@ export const ELECTORAL_DISTRICTS = {
   nordaustur: {
     name: 'Norðausturkjördæmi',
     postalCodes: NORDAUSTURKJORDAEMI_POSTNUMER
+  },
+  nordvestur: {
+    name: 'Norðvesturkjördæmi',
+    postalCodes: NORDVESTURKJORDAEMI_POSTNUMER
+  },
+  sudur: {
+    name: 'Suðurkjördæmi',
+    postalCodes: SUDURKJORDAEMI_POSTNUMER
+  },
+  sudvestur: {
+    name: 'Suðvesturkjördæmi',
+    postalCodes: SUDVESTURKJORDAEMI_POSTNUMER
+  },
+  reykjavik_sudur: {
+    name: 'Reykjavíkurkjördæmi suður',
+    postalCodes: REYKJAVIKURKJORDAEMI_SUDUR_POSTNUMER
+  },
+  reykjavik_nordur: {
+    name: 'Reykjavíkurkjördæmi norður',
+    postalCodes: REYKJAVIKURKJORDAEMI_NORDUR_POSTNUMER
   }
-  // Additional electoral districts can be added here:
-  // nordvestur: { ... },
-  // sudur: { ... },
-  // etc.
 };
 
 /**
@@ -95,21 +166,9 @@ export function isInElectoralDistrict(postalCode, districtKey) {
     ? parseInt(postalCode.trim(), 10)
     : postalCode;
 
-  if (isNaN(normalizedCode)) {
-    console.warn('Invalid postal code:', postalCode);
-    return false;
-  }
+  if (isNaN(normalizedCode)) return false;
 
-  const isMatch = district.postalCodes.includes(normalizedCode);
-
-  // Debug first 5 checks
-  if (window.__districtDebugCount === undefined) window.__districtDebugCount = 0;
-  if (window.__districtDebugCount < 5) {
-    console.log(`Postal code check: ${postalCode} -> ${normalizedCode} = ${isMatch}`);
-    window.__districtDebugCount++;
-  }
-
-  return isMatch;
+  return district.postalCodes.includes(normalizedCode);
 }
 
 /**
