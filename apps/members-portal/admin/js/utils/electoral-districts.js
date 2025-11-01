@@ -95,9 +95,21 @@ export function isInElectoralDistrict(postalCode, districtKey) {
     ? parseInt(postalCode.trim(), 10)
     : postalCode;
 
-  if (isNaN(normalizedCode)) return false;
+  if (isNaN(normalizedCode)) {
+    console.warn('Invalid postal code:', postalCode);
+    return false;
+  }
 
-  return district.postalCodes.includes(normalizedCode);
+  const isMatch = district.postalCodes.includes(normalizedCode);
+
+  // Debug first 5 checks
+  if (window.__districtDebugCount === undefined) window.__districtDebugCount = 0;
+  if (window.__districtDebugCount < 5) {
+    console.log(`Postal code check: ${postalCode} -> ${normalizedCode} = ${isMatch}`);
+    window.__districtDebugCount++;
+  }
+
+  return isMatch;
 }
 
 /**
