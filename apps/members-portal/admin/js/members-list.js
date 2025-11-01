@@ -14,6 +14,7 @@ import { initSession } from '../../session/init.js';
 import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
 import MembersAPI from './api/members-api.js';
 import { formatPhone, maskKennitala } from './utils/format.js';
+import { filterMembersByDistrict } from './utils/electoral-districts.js';
 
 // Initialize Firebase services
 const auth = getFirebaseAuth();
@@ -31,12 +32,14 @@ const adminStrings = new Map();
   let pageHistory = []; // Stack of lastDoc for previous pages
   let currentStatus = 'active';
   let currentSearch = '';
+  let currentDistrict = 'all';
   let isLoading = false;
 
   // DOM Elements
   const elements = {
     searchInput: null,
     filterStatus: null,
+    filterDistrict: null,
     tableBody: null,
     loadingState: null,
     errorState: null,
@@ -88,6 +91,7 @@ const adminStrings = new Map();
   function initElements() {
     elements.searchInput = document.getElementById('members-search-input');
     elements.filterStatus = document.getElementById('members-filter-status');
+    elements.filterDistrict = document.getElementById('members-filter-district');
     elements.tableBody = document.getElementById('members-table-body');
     elements.loadingState = document.getElementById('members-loading');
     elements.errorState = document.getElementById('members-error');
@@ -224,6 +228,13 @@ const adminStrings = new Map();
       loadMembers();
     });
 
+    // Electoral district filter
+    elements.filterDistrict?.addEventListener('change', (e) => {
+      currentDistrict = e.target.value;
+      resetPagination();
+      loadMembers();
+    });
+
     // Pagination buttons
     elements.btnPagePrev?.addEventListener('click', () => {
       if (currentPage > 1) {
@@ -270,28 +281,35 @@ const adminStrings = new Map();
     showLoading(currentSearch ? adminStrings.get('members_searching') : adminStrings.get('members_loading'));
 
     try {
-      // If searching, load ALL documents for complete client-side search
+      // If searching OR filtering by district, load ALL documents for client-side filtering
       // For 2,118 members, this is acceptable (~500KB)
-      const limitCount = currentSearch ? 5000 : 50;
+      const needsClientSideFiltering = currentSearch || currentDistrict !== 'all';
+      const limitCount = needsClientSideFiltering ? 5000 : 50;
 
       const result = await MembersAPI.fetchMembers({
         limit: limitCount,
         status: currentStatus,
         search: currentSearch,
-        startAfter: currentSearch ? null : lastDoc  // No pagination when searching
+        startAfter: needsClientSideFiltering ? null : lastDoc  // No pagination when filtering
       });
 
-      if (result.members.length === 0) {
+      // Apply electoral district filter client-side
+      let filteredMembers = result.members;
+      if (currentDistrict !== 'all') {
+        filteredMembers = filterMembersByDistrict(result.members, currentDistrict);
+      }
+
+      if (filteredMembers.length === 0) {
         showEmpty();
       } else {
-        renderMembers(result.members);
+        renderMembers(filteredMembers);
 
-        // Hide pagination when searching (showing all results)
-        if (currentSearch) {
+        // Hide pagination when searching or filtering by district (showing all results)
+        if (needsClientSideFiltering) {
           elements.paginationContainer.style.display = 'none';
-          elements.paginationInfo.textContent = `Sýni ${result.members.length} niðurstöður`;
+          elements.paginationInfo.textContent = `Sýni ${filteredMembers.length} niðurstöður`;
         } else {
-          updatePagination(result.hasMore, result.members.length);
+          updatePagination(result.hasMore, filteredMembers.length);
           elements.paginationContainer.style.display = 'flex';
         }
 
