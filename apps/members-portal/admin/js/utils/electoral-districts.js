@@ -81,41 +81,36 @@ export const SUDURKJORDAEMI_POSTNUMER = [
  * Suðvesturkjördæmi (Southwest Electoral District)
  *
  * Covers 6 municipalities: Hafnarfjörður, Garðabær, Kópavogur, Seltjarnarnes, Mosfellsbær, Kjósarhreppur
- * Total: ~15 postal codes
+ * Total: 17 postal codes
  */
 export const SUDVESTURKJORDAEMI_POSTNUMER = [
+  // Seltjarnarnes
+  170, 172,
   // Kópavogur
   200, 201, 202, 203,
   // Garðabær
-  210, 211, 212,
-  // Hafnarfjörður
-  220, 221, 222,
-  // Seltjarnarnes
-  170, 171, 172,
-  // Mosfellsbær
-  270, 271,
-  // Kjósarhreppur
-  276
+  210, 212,
+  // Hafnarfjörður + Álftanes
+  220, 221, 222, 225,
+  // Mosfellsbær + Kjósarhreppur
+  270, 271, 276
 ];
 
 /**
- * Reykjavíkurkjördæmi suður (Reykjavik South Electoral District)
+ * Reykjavíkurkjördæmi (Reykjavik Electoral District)
  *
- * Covers western Reykjavik
- * Total: ~10 postal codes
+ * Covers all of Reykjavik
+ * Total: 27 postal codes
  */
-export const REYKJAVIKURKJORDAEMI_SUDUR_POSTNUMER = [
-  101, 102, 103, 104, 105, 107, 108, 109, 110, 150, 155
-];
-
-/**
- * Reykjavíkurkjördæmi norður (Reykjavik North Electoral District)
- *
- * Covers eastern Reykjavik
- * Total: ~15 postal codes
- */
-export const REYKJAVIKURKJORDAEMI_NORDUR_POSTNUMER = [
-  111, 112, 113, 116, 121, 123, 124, 125, 127, 128, 129, 130, 132
+export const REYKJAVIKURKJORDAEMI_POSTNUMER = [
+  // Þéttbýli
+  101, 102, 103, 104, 105, 107, 108, 109, 110, 111, 112, 113, 116,
+  // Pósthólf
+  121, 123, 124, 125, 127, 128, 129, 130, 132,
+  // Opinberar stofnanir og fyrirtæki
+  150, 155,
+  // Dreifbýli
+  161, 162
 ];
 
 /**
@@ -138,13 +133,9 @@ export const ELECTORAL_DISTRICTS = {
     name: 'Suðvesturkjördæmi',
     postalCodes: SUDVESTURKJORDAEMI_POSTNUMER
   },
-  reykjavik_sudur: {
-    name: 'Reykjavíkurkjördæmi suður',
-    postalCodes: REYKJAVIKURKJORDAEMI_SUDUR_POSTNUMER
-  },
-  reykjavik_nordur: {
-    name: 'Reykjavíkurkjördæmi norður',
-    postalCodes: REYKJAVIKURKJORDAEMI_NORDUR_POSTNUMER
+  reykjavik: {
+    name: 'Reykjavíkurkjördæmi',
+    postalCodes: REYKJAVIKURKJORDAEMI_POSTNUMER
   }
 };
 
