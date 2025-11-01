@@ -14,7 +14,7 @@ import { initSession } from '../../session/init.js';
 import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
 import MembersAPI from './api/members-api.js';
 import { formatPhone, maskKennitala } from './utils/format.js';
-import { filterMembersByDistrict } from './utils/electoral-districts.js';
+import { filterMembersByDistrict, getElectoralDistrictName } from './utils/electoral-districts.js';
 
 // Initialize Firebase services
 const auth = getFirebaseAuth();
@@ -332,11 +332,37 @@ const adminStrings = new Map();
   // Update member count display
   async function updateMemberCount() {
     try {
-      const count = await MembersAPI.getMembersCount(currentStatus);
-      const statusText = currentStatus === 'all' ? adminStrings.get('members_status_all_plural') :
-                        currentStatus === 'active' ? adminStrings.get('members_status_active_plural') :
-                        adminStrings.get('members_status_inactive_plural');
-      elements.countText.textContent = `${count} ${statusText} félagar`;
+      // If electoral district filter is active, count filtered members
+      if (currentDistrict !== 'all') {
+        // Load all members for client-side counting
+        const result = await MembersAPI.fetchMembers({
+          limit: 5000,
+          status: currentStatus,
+          search: '',
+          startAfter: null
+        });
+
+        // Filter by electoral district
+        const filteredMembers = filterMembersByDistrict(result.members, currentDistrict);
+        const count = filteredMembers.length;
+
+        // Build status text
+        const statusText = currentStatus === 'all' ? '' :
+                          currentStatus === 'active' ? 'virkir ' :
+                          'óvirkir ';
+
+        // Get district name
+        const districtName = getElectoralDistrictName(currentDistrict);
+
+        elements.countText.textContent = `${count} ${statusText}félagar í ${districtName}`;
+      } else {
+        // Normal count (no district filter)
+        const count = await MembersAPI.getMembersCount(currentStatus);
+        const statusText = currentStatus === 'all' ? adminStrings.get('members_status_all_plural') :
+                          currentStatus === 'active' ? adminStrings.get('members_status_active_plural') :
+                          adminStrings.get('members_status_inactive_plural');
+        elements.countText.textContent = `${count} ${statusText} félagar`;
+      }
     } catch (error) {
       console.error('Error getting member count:', error);
       elements.countText.textContent = adminStrings.get('members_list_title') || 'Félagar';
