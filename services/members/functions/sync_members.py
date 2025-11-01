@@ -247,17 +247,20 @@ def update_user_roles_from_django(db: firestore.Client, django_member: Dict[str,
     uid = existing_users[0].id  # Firebase UID
 
     # Determine roles from Django User model flags
-    # Matches Django User model: is_staff → admin, is_superuser → superuser
+    # Direct mapping from Django to Ekklesia:
+    # - is_superuser → superuser (full system access)
+    # - is_staff → admin (administrative access)
+    # - all members → member (default)
     roles = ['member']  # Default role for all members
 
-    is_admin = django_member.get('is_admin', False)
+    is_staff = django_member.get('is_staff', False)
     is_superuser = django_member.get('is_superuser', False)
 
-    if is_admin:
-        roles.append('admin')
-
     if is_superuser:
-        roles.append('superuser')
+        roles.append('superuser')  # Full system access
+
+    if is_staff:
+        roles.append('admin')  # Administrative access
 
     # Update /users/{uid} with roles
     try:

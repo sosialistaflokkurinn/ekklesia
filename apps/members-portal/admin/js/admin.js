@@ -2,7 +2,7 @@
  * Admin Dashboard - Epic #43 Phase 2
  *
  * Main admin page with role-based access control.
- * Only users with 'developer' role can access admin portal.
+ * Only users with 'superuser' role can access admin portal.
  */
 
 // Import from member portal public directory (two levels up from /admin/js/)
@@ -209,15 +209,15 @@ function renderRoleBadges(roles) {
 
   // Map role names to Icelandic
   const roleLabels = {
-    'developer': 'Forritari', // This string is from the main app, not admin-specific
+    'superuser': 'Forritari', // This string is from the main app, not admin-specific
     'admin': adminStrings.get('role_admin'),
-    'meeting_election_manager': adminStrings.get('role_election_manager'),
-    'event_manager': adminStrings.get('role_event_manager')
+    'admin': adminStrings.get('role_election_manager'),
+    'admin': adminStrings.get('role_admin')
   };
 
   const badges = normalizedRoles.map((role) => {
     // Create a class modifier for each role type
-    const roleClass = role === 'developer' ? 'role-badge--developer' : 'role-badge--admin';
+    const roleClass = role === 'superuser' ? 'role-badge--developer' : 'role-badge--admin';
     const label = roleLabels[role] || role;
     return `<span class="role-badge ${roleClass}">${label}</span>`;
   }).join('');
