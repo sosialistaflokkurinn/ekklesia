@@ -73,14 +73,14 @@ class AdminStringsLoader {
 const adminStrings = new AdminStringsLoader();
 
 /**
- * Check if user has developer role
+ * Check if user has admin or superuser role
  */
 function checkAdminAccess(userData) {
   const roles = userData.roles || [];
-  const isAdmin = roles.includes('developer');
+  const hasAccess = roles.includes('admin') || roles.includes('superuser');
 
-  if (!isAdmin) {
-    throw new Error('Unauthorized: Developer role required');
+  if (!hasAccess) {
+    throw new Error('Unauthorized: Admin or superuser role required');
   }
 
   return true;
@@ -323,7 +323,7 @@ async function init() {
 
     // Check if unauthorized
     if (error.message.includes('Unauthorized')) {
-      alert('Þú hefur ekki aðgang að stjórnkerfi. Aðeins notendur með developer role hafa aðgang.');
+      alert(adminStrings.get('error_unauthorized_admin'));
       window.location.href = '/members-area/dashboard.html';
       return;
     }
@@ -336,7 +336,7 @@ async function init() {
 
     // Other errors
     console.error('Error loading sync history page:', error);
-    alert(`Villa við að hlaða síðu: ${error.message}`);
+    alert(adminStrings.get('error_page_load').replace('%s', error.message));
   }
 }
 

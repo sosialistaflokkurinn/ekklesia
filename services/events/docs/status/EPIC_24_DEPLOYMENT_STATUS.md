@@ -45,7 +45,7 @@
 
 ```bash
 # 1. Start Cloud SQL proxy (in a separate terminal)
-cloud_sql_proxy -instances=ekklesia-prod-10-2025:europe-west2:ekklesia-db=tcp:5432
+./scripts/database/start-proxy.sh
 
 # 2. Get database password
 DB_PASSWORD=$(gcloud secrets versions access latest --secret="postgres-password" --project=ekklesia-prod-10-2025)

@@ -2,7 +2,8 @@
 # Source this file to load environment variables from Secret Manager
 # Usage: source ./scripts/load-env.sh
 
-PROJECT_ID="ekklesia-prod-10-2025"
+# Source centralized environment variables
+source "$(dirname "$0")/set-env.sh"
 
 echo "Loading secrets from Secret Manager..."
 

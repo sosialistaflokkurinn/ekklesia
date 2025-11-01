@@ -51,7 +51,7 @@ async function listAllUsers() {
 
   const elevated = users.filter(u => {
     const roles = (u.customClaims?.roles) || [];
-    return roles.some(r => ['developer','meeting_election_manager','event_manager'].includes(r));
+    return roles.some(r => ['superuser','admin','admin'].includes(r));
   });
 
   for (const u of elevated) {

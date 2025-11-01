@@ -1,0 +1,117 @@
+/**
+ * Member Edit Page Styles - Epic #116, Issue #137
+ * BEM Methodology
+ *
+ * Shared styles moved to admin-shared.css
+ * This file only contains page-specific form styles
+ */
+
+/* Member Edit Container */
+.member-edit {
+  max-width: 800px;
+}
+
+/* Form Note */
+.member-edit__note {
+  background: var(--color-warning-bg);
+  border: 1px solid var(--color-warning-border);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  color: var(--color-warning-dark);
+}
+
+/* Form Inputs */
+.member-edit__input,
+.member-edit__select {
+  font-size: 1rem;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: white;
+  color: var(--color-text-primary);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.member-edit__input:focus,
+.member-edit__select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-alpha-10);
+}
+
+.member-edit__input--readonly {
+  background: var(--color-gray-100);
+  color: var(--color-gray-500);
+  cursor: not-allowed;
+}
+
+.member-edit__input.error,
+.member-edit__select.error {
+  border-color: var(--color-error);
+}
+
+.member-edit__error-text {
+  font-size: 0.875rem;
+  color: var(--color-error);
+  margin-top: 0.5rem;
+  display: none;
+}
+
+.member-edit__error-text.visible {
+  display: block;
+}
+
+/* Form Actions */
+.member-edit__actions {
+  margin-top: 2rem;
+  display: flex;
+  gap: 1rem;
+}
+
+.member-edit__actions .btn {
+  min-width: 150px;
+}
+
+/* Form Errors */
+.member-edit__form-errors {
+  background: var(--color-error-bg-light);
+  border: 1px solid var(--color-error);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1.5rem;
+  color: var(--color-error);
+}
+
+.member-edit__form-errors ul {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.member-edit__form-errors li {
+  margin: 0.5rem 0;
+}
+
+/* Success Message */
+.member-edit__success {
+  background: var(--color-success-bg-light);
+  border: 1px solid var(--color-success-border);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1.5rem;
+  color: var(--color-success-green);
+  text-align: center;
+  font-weight: 500;
+}
+
+/* Responsive Design - Page Specific */
+@media (max-width: 768px) {
+  .member-edit__actions {
+    flex-direction: column;
+  }
+
+  .member-edit__actions .btn {
+    width: 100%;
+  }
+}

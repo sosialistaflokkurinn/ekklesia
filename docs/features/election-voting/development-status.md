@@ -321,7 +321,7 @@
 - Max instances: 10
 - Min instances: 0
 - Timeout: 60s
-- Cloud SQL connector: ekklesia-prod-10-2025:europe-west2:ekklesia-db
+- Cloud SQL connector: $DB_CONNECTION_NAME
 - Public access: Allowed (Firebase auth enforced at app level)
 
 **Testing Results**:

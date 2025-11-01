@@ -15,7 +15,7 @@ Run these queries to confirm the seed data is in place:
 
 ```bash
 # Start Cloud SQL Proxy (if not already running)
-cloud-sql-proxy ekklesia-prod-10-2025:europe-west2:ekklesia-db --port 5432 &
+./scripts/database/start-proxy.sh
 
 # Set password from Secret Manager
 export PGPASSWORD="$(gcloud secrets versions access latest --secret=postgres-password --project=ekklesia-prod-10-2025)"
@@ -298,11 +298,11 @@ If you get 401 Unauthorized:
 If psql can't connect:
 ```bash
 # Check proxy is running
-ps aux | grep cloud-sql-proxy
+pgrep cloud-sql-proxy
 
 # Restart proxy if needed
 pkill cloud-sql-proxy
-cloud-sql-proxy ekklesia-prod-10-2025:europe-west2:ekklesia-db --port 5432 &
+./scripts/database/start-proxy.sh
 ```
 
 ### Audit Logs Not Found

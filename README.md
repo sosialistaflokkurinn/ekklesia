@@ -6,6 +6,16 @@ Regnhlífarverkefni fyrir kosningakerfi Sósíalistaflokksins ásamt meðlima og
 
 ---
 
+## Aðeins um "prod" nafngiftina (Note on "prod" Naming)
+
+Þetta verkefni notar framleiðslu-innviði (production-grade GCP infrastructure) með `prod` í nafni (verkefni: `ekklesia-prod-10-2025`) vegna þess að **Kenni.is auðkenning krefst slíks umhverfis** (þeir bjóða ekki upp á sandkassa).
+
+Kerfið sjálft er hins vegar á **þróunarstigi**, með óskráða vefslóð og eingöngu prófunarkosningar.
+
+Nánari upplýsingar má finna í [docs/ENVIRONMENT_CLARIFICATION.md](docs/ENVIRONMENT_CLARIFICATION.md).
+
+---
+
 ## 🚀 Production Services
 
 **Status**: ✅ All services operational (October 2025)

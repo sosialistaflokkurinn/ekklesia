@@ -48,7 +48,7 @@ git log --oneline feature/security-hardening | head -3
 export PGPASSWORD="$(gcloud secrets versions access latest --secret=postgres-password --project=ekklesia-prod-10-2025)"
 
 # 2. Started Cloud SQL Proxy
-cloud-sql-proxy ekklesia-prod-10-2025:europe-west2:ekklesia-db --port 5432 &
+./scripts/database/start-proxy.sh
 
 # 3. Applied migration
 psql -h 127.0.0.1 -p 5432 -U postgres -d postgres -f events/migrations/003_seed_october_2025_election.sql
@@ -420,7 +420,7 @@ ps aux | grep -E 'cloud.*sql.*proxy' | grep -v grep
 gcloud auth application-default login
 
 # 2. Start proxy
-cloud-sql-proxy ekklesia-prod-10-2025:europe-west2:ekklesia-db --port 5432 &
+./scripts/database/start-proxy.sh
 
 # 3. Connect via localhost
 psql -h 127.0.0.1 -p 5432 -U postgres -d postgres

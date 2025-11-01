@@ -433,7 +433,7 @@ By end of Week 1:
 ### Local Setup
 ```bash
 # 1. Start Cloud SQL Proxy
-./cloud-sql-proxy.linux.amd64 -dir=/tmp/cloudsql ekklesia-prod-10-2025:europe-west2:ekklesia-db &
+./scripts/database/start-proxy.sh
 
 # 2. Connect to dev environment
 export DEV_CONN_URI="postgresql://postgres:password@localhost:5432/ekklesia_dev"

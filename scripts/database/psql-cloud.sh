@@ -5,7 +5,9 @@
 
 set -e
 
-PROJECT_ID="ekklesia-prod-10-2025"
+# Source centralized environment variables
+source "$(dirname "$0")/../deployment/set-env.sh"
+
 DB_PASSWORD=$(gcloud secrets versions access latest \
   --secret=postgres-password \
   --project="$PROJECT_ID" \

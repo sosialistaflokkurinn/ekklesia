@@ -12,7 +12,8 @@
 
 ```bash
 # 1. Start Cloud SQL Proxy (if not already running)
-~/bin/cloud-sql-proxy ekklesia-prod-10-2025:europe-west2:ekklesia-db --port 5433
+# This script now uses the DB_CONNECTION_NAME from scripts/deployment/set-env.sh
+./scripts/database/start-proxy.sh
 
 # 2. Get database password from Secret Manager
 export PGPASSWORD=$(gcloud secrets versions access latest \

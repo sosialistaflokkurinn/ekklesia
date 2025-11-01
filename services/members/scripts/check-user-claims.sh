@@ -22,7 +22,9 @@ if [ $# -lt 1 ]; then
 fi
 
 UID=$1
-PROJECT_ID="ekklesia-prod-10-2025"
+
+# Source centralized environment variables
+source "$(dirname "$0")/../../../scripts/deployment/set-env.sh"
 
 echo "Fetching custom claims for user: $UID"
 echo ""

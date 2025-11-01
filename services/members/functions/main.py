@@ -21,6 +21,18 @@ from google.cloud import firestore as gcf
 from utils_logging import log_json, sanitize_fields
 from util_jwks import get_jwks_client_cached_ttl, get_jwks_cache_stats
 
+# Audit logging (Epic #116, Issue #119)
+# NOTE: Firebase Functions Python SDK requires decorated functions to be
+# directly defined in main.py or explicitly re-exported at module level.
+# We import and re-export to make the function discoverable.
+from audit_members import auditmemberchanges
+
+# Django API token access (Epic #116, Issue #137)
+from get_django_token import get_django_token
+
+# Re-export at module level so Firebase discovers it
+__all__ = ['auditmemberchanges', 'get_django_token']
+
 # --- SETUP ---
 if not firebase_admin._apps:
     initialize_app()
@@ -95,6 +107,39 @@ def validate_kennitala(kennitala: str) -> bool:
     import re
     pattern = r'^\d{6}-?\d{4}$'
     return bool(re.match(pattern, kennitala))
+
+def normalize_phone(phone: str) -> str:
+    """Normalize Icelandic phone number to XXX-XXXX format
+
+    Handles various input formats:
+    - +3545551234 -> 555-1234
+    - 003545551234 -> 555-1234
+    - 5551234 -> 555-1234
+    - 555 1234 -> 555-1234
+    - 5551-234 -> 555-1234
+
+    Returns None if phone is None or empty.
+    Returns original string if format is invalid (not 7 digits after normalization).
+    """
+    if not phone:
+        return None
+
+    # Remove all whitespace, dashes, parentheses, and other separators
+    phone = phone.strip()
+    digits = ''.join(c for c in phone if c.isdigit())
+
+    # Remove Iceland country code prefix if present
+    # +354 or 00354 -> 10 digits total
+    if digits.startswith('354') and len(digits) == 10:
+        digits = digits[3:]  # Remove '354' prefix
+
+    # Validate: should be exactly 7 digits for Icelandic phone
+    if len(digits) != 7:
+        log_json("warn", "Invalid phone number format", original=phone, digits=digits, length=len(digits))
+        return phone  # Return original if invalid
+
+    # Format as XXX-XXXX (3 digits - hyphen - 4 digits)
+    return f"{digits[:3]}-{digits[3:]}"
 
 def _rate_limit_bucket_id(ip_address: str, now: datetime, window_minutes: int) -> str:
     """Create a stable document id for the (ip, window) bucket.
@@ -391,6 +436,9 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
 
         normalized_kennitala = normalize_kennitala(national_id)
 
+        # Normalize phone number to XXX-XXXX format
+        normalized_phone = normalize_phone(phone_number) if phone_number else None
+
         log_json("info", "Verified Kenni.is token", userName=full_name, kennitala=f"{normalized_kennitala[:7]}****", correlationId=correlation_id)
 
         # Step 4: Create or get existing user from Firestore
@@ -412,8 +460,8 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
             }
             if email:
                 update_data['email'] = email
-            if phone_number:
-                update_data['phoneNumber'] = phone_number
+            if normalized_phone:
+                update_data['phoneNumber'] = normalized_phone
             if full_name:
                 update_data['fullName'] = full_name
 
@@ -432,7 +480,7 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
                     'fullName': full_name,
                     'kennitala': normalized_kennitala,
                     'email': email,
-                    'phoneNumber': phone_number,
+                    'phoneNumber': normalized_phone,
                     'photoURL': None,
                     'isMember': False,  # Will be verified separately
                     'createdAt': firestore.SERVER_TIMESTAMP,
@@ -460,21 +508,30 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
                     # Re-raise if it's a different error
                     raise
 
-        # Step 5: Create Firebase custom token with all claims
-        # Read existing custom claims from Firebase Auth (includes roles set by admin)
-        try:
-            existing_user = auth.get_user(auth_uid)
-            existing_custom_claims = existing_user.custom_claims or {}
-        except Exception as e:
-            log_json("warn", "Could not read existing custom claims", error=str(e), uid=auth_uid)
-            existing_custom_claims = {}
+        # Step 5: Read roles from Firestore /users/ collection (set by Django sync)
+        # Epic #116: Roles are synced from Django User model (is_staff → admin, is_superuser → superuser)
+        user_doc_ref = db.collection('users').document(auth_uid)
+        user_doc = user_doc_ref.get()
 
-        # Merge new claims with existing claims (preserve roles, etc.)
-        custom_claims = {**existing_custom_claims, 'kennitala': normalized_kennitala}
+        roles = ['member']  # Default role for all members
+        if user_doc.exists:
+            user_data = user_doc.to_dict()
+            roles = user_data.get('roles', ['member'])
+            log_json("info", "Read roles from Firestore /users/",
+                     uid=auth_uid, roles=roles, correlationId=correlation_id)
+        else:
+            log_json("warn", "No /users/ document found, using default roles",
+                     uid=auth_uid, correlationId=correlation_id)
+
+        # Step 6: Create Firebase custom token with claims
+        custom_claims = {
+            'kennitala': normalized_kennitala,
+            'roles': roles  # Roles from Firestore (synced from Django)
+        }
         if email:
             custom_claims['email'] = email
-        if phone_number:
-            custom_claims['phoneNumber'] = phone_number
+        if normalized_phone:
+            custom_claims['phoneNumber'] = normalized_phone
 
         # Persist merged claims back to Firebase Auth (ensures roles survive future logins)
         try:
@@ -639,7 +696,7 @@ def syncmembers(req: https_fn.CallableRequest):
     """
     Epic #43: Manual trigger to sync all members from Django to Firestore.
 
-    Requires authentication and 'developer' role.
+    Requires authentication and 'admin' or 'superuser' role.
 
     Returns:
         Dict with sync statistics
@@ -651,13 +708,14 @@ def syncmembers(req: https_fn.CallableRequest):
             message="Authentication required"
         )
 
-    # Verify developer role
+    # Verify admin or superuser role
     roles = req.auth.token.get('roles', [])
-    if 'developer' not in roles:
+    has_access = 'admin' in roles or 'superuser' in roles
+    if not has_access:
         log_json("warn", "Unauthorized sync attempt", uid=req.auth.uid, roles=roles)
         raise https_fn.HttpsError(
             code=https_fn.FunctionsErrorCode.PERMISSION_DENIED,
-            message="Developer role required"
+            message="Admin or superuser role required"
         )
 
     log_json("info", "Member sync initiated", uid=req.auth.uid)
@@ -686,4 +744,112 @@ def syncmembers(req: https_fn.CallableRequest):
         raise https_fn.HttpsError(
             code=https_fn.FunctionsErrorCode.INTERNAL,
             message=f"Sync failed: {str(e)}"
+        )
+
+
+@https_fn.on_call(timeout_sec=30, memory=256)
+def updatememberprofile(req: https_fn.CallableRequest):
+    """
+    Update member profile from Kenni.is data to Django backend.
+
+    This function is called when a user confirms profile updates from Þjóðskrá.
+    It updates the Django backend via the ComradeFullViewSet PATCH endpoint.
+
+    Requires authentication and must be the member themselves.
+
+    Args:
+        req.data: {
+            'kennitala': str,
+            'updates': {
+                'name': str (optional),
+                'email': str (optional),
+                'phone': str (optional)
+            }
+        }
+
+    Returns:
+        Dict with success status and updated member data
+    """
+    # Verify authentication
+    if not req.auth:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.UNAUTHENTICATED,
+            message="Authentication required"
+        )
+
+    # Get request data
+    kennitala = req.data.get('kennitala')
+    updates = req.data.get('updates', {})
+
+    if not kennitala:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+            message="kennitala is required"
+        )
+
+    # Verify user is updating their own profile
+    user_kennitala = req.auth.token.get('kennitala', '').replace('-', '')
+    if user_kennitala != kennitala:
+        log_json("warn", "Unauthorized profile update attempt",
+                 uid=req.auth.uid,
+                 requested_kennitala=f"{kennitala[:6]}****",
+                 user_kennitala=f"{user_kennitala[:6]}****")
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.PERMISSION_DENIED,
+            message="You can only update your own profile"
+        )
+
+    log_json("info", "Profile update initiated",
+             uid=req.auth.uid,
+             kennitala=f"{kennitala[:6]}****",
+             fields=list(updates.keys()))
+
+    try:
+        # Import Django API client
+        from sync_members import get_django_member_by_kennitala, update_django_member
+
+        # Get Django member ID
+        django_member = get_django_member_by_kennitala(kennitala)
+        if not django_member:
+            raise Exception(f"Member not found in Django: {kennitala[:6]}****")
+
+        django_id = django_member.get('id')
+
+        # Build Django update payload
+        django_updates = {}
+        if 'name' in updates:
+            django_updates['name'] = updates['name']
+        if 'email' in updates:
+            # Email is in contact_info nested object
+            django_updates['contact_info'] = {'email': updates['email']}
+        if 'phone' in updates:
+            # Phone is in contact_info nested object
+            # Normalize phone number to XXX-XXXX format
+            normalized_phone = normalize_phone(updates['phone'])
+            if 'contact_info' not in django_updates:
+                django_updates['contact_info'] = {}
+            django_updates['contact_info']['phone'] = normalized_phone
+
+        # Update Django via API
+        updated_member = update_django_member(django_id, django_updates)
+
+        log_json("info", "Profile updated successfully",
+                 uid=req.auth.uid,
+                 django_id=django_id,
+                 kennitala=f"{kennitala[:6]}****")
+
+        return {
+            'success': True,
+            'django_id': django_id,
+            'updated_fields': list(updates.keys())
+        }
+
+    except Exception as e:
+        log_json("error", "Profile update failed",
+                 uid=req.auth.uid,
+                 kennitala=f"{kennitala[:6]}****",
+                 error=str(e))
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INTERNAL,
+            message=f"Profile update failed: {str(e)}"
         )

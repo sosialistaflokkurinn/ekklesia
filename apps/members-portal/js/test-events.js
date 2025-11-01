@@ -350,7 +350,7 @@ async function init() {
     // Enable common buttons always after auth
     enableButtons(true);
 
-    // Gate admin reset section by role (developer only)
+    // Gate admin reset section by role (superuser only)
     try {
       console.log('=== RBAC Debug ===');
       console.log('userData:', userData);
@@ -359,12 +359,12 @@ async function init() {
 
       const resetSectionTitle = document.getElementById('test-7-title');
       const resetButton = document.getElementById('btn-reset-election');
-      const hasDeveloperRole = Array.isArray(userData.roles) && userData.roles.includes('developer');
+      const hasDeveloperRole = Array.isArray(userData.roles) && userData.roles.includes('superuser');
 
       console.log('hasDeveloperRole:', hasDeveloperRole);
 
       if (!hasDeveloperRole) {
-        console.log('❌ No developer role - hiding section');
+        console.log('❌ No superuser role - hiding section');
         // Hide the entire section by collapsing elements
         if (resetSectionTitle) {
           const section = resetSectionTitle.closest('.test-section');

@@ -2,7 +2,7 @@
  * Admin Dashboard - Epic #43 Phase 2
  *
  * Main admin page with role-based access control.
- * Only users with 'developer' role can access admin portal.
+ * Only users with 'superuser' role can access admin portal.
  */
 
 // Import from member portal public directory (two levels up from /admin/js/)
@@ -75,14 +75,14 @@ class AdminStringsLoader {
 const adminStrings = new AdminStringsLoader();
 
 /**
- * Check if user has developer role
+ * Check if user has admin or superuser role
  */
 function checkAdminAccess(userData) {
   const roles = userData.roles || [];
-  const isAdmin = roles.includes('developer');
+  const hasAccess = roles.includes('admin') || roles.includes('superuser');
 
-  if (!isAdmin) {
-    throw new Error('Unauthorized: Developer role required');
+  if (!hasAccess) {
+    throw new Error('Unauthorized: Admin or superuser role required');
   }
 
   return true;
@@ -131,24 +131,24 @@ function displayRecentSync(log) {
 
   // Build summary HTML
   const stats = log.stats || {};
-  const status = stats.failed > 0 ? '⚠️ Með villum' : '✅ Tókst';
+  const status = stats.failed > 0 ? adminStrings.get('sync_status_with_errors') : adminStrings.get('sync_status_success_simple');
 
   summary.innerHTML = `
     <div class="info-grid">
       <div class="info-grid__item">
-        <div class="info-grid__label">Dagsetning</div>
+        <div class="info-grid__label">${adminStrings.get('history_table_date')}</div>
         <div class="info-grid__value">${formattedDate}</div>
       </div>
       <div class="info-grid__item">
-        <div class="info-grid__label">Staða</div>
+        <div class="info-grid__label">${adminStrings.get('stat_status_label')}</div>
         <div class="info-grid__value">${status}</div>
       </div>
       <div class="info-grid__item">
-        <div class="info-grid__label">Samstillt</div>
+        <div class="info-grid__label">${adminStrings.get('stat_synced_label')}</div>
         <div class="info-grid__value">${stats.synced || 0} / ${stats.total_members || 0}</div>
       </div>
       <div class="info-grid__item">
-        <div class="info-grid__label">Tími</div>
+        <div class="info-grid__label">${adminStrings.get('stat_time_label')}</div>
         <div class="info-grid__value">${calculateDuration(stats)}</div>
       </div>
     </div>
@@ -209,15 +209,15 @@ function renderRoleBadges(roles) {
 
   // Map role names to Icelandic
   const roleLabels = {
-    'developer': 'Forritari',
-    'admin': 'Stjórnandi',
-    'meeting_election_manager': 'Kosningastjóri',
-    'event_manager': 'Viðburðastjóri'
+    'superuser': 'Forritari', // This string is from the main app, not admin-specific
+    'admin': adminStrings.get('role_admin'),
+    'admin': adminStrings.get('role_election_manager'),
+    'admin': adminStrings.get('role_admin')
   };
 
   const badges = normalizedRoles.map((role) => {
     // Create a class modifier for each role type
-    const roleClass = role === 'developer' ? 'role-badge--developer' : 'role-badge--admin';
+    const roleClass = role === 'superuser' ? 'role-badge--developer' : 'role-badge--admin';
     const label = roleLabels[role] || role;
     return `<span class="role-badge ${roleClass}">${label}</span>`;
   }).join('');
@@ -255,9 +255,11 @@ function setPageText(strings, userData) {
   // Navigation
   document.getElementById('nav-brand').textContent = strings.admin_brand;
   document.getElementById('nav-admin-dashboard').textContent = strings.nav_admin_dashboard;
+  document.getElementById('nav-admin-members').textContent = strings.nav_admin_members;
   document.getElementById('nav-admin-sync').textContent = strings.nav_admin_sync;
   document.getElementById('nav-admin-history').textContent = strings.nav_admin_history;
   document.getElementById('nav-back-to-member').textContent = strings.nav_back_to_member;
+  document.getElementById('nav-logout').textContent = strings.nav_logout;
 
   // Welcome card - with personalized greeting
   console.log('Building welcome message for:', userData.displayName);
@@ -275,6 +277,9 @@ function setPageText(strings, userData) {
   document.getElementById('quick-action-sync-desc').textContent = strings.quick_action_sync_desc;
   document.getElementById('quick-action-history-label').textContent = strings.quick_action_history_label;
   document.getElementById('quick-action-history-desc').textContent = strings.quick_action_history_desc;
+
+  // Other titles
+  document.getElementById('last-sync-title').textContent = strings.last_sync_title;
 }
 
 /**
@@ -307,7 +312,7 @@ async function init() {
 
     // Check if unauthorized
     if (error.message.includes('Unauthorized')) {
-      alert('Þú hefur ekki aðgang að stjórnkerfi. Aðeins notendur með developer role hafa aðgang.');
+      alert(adminStrings.get('error_unauthorized_developer'));
       window.location.href = '/members-area/dashboard.html';
       return;
     }
@@ -320,7 +325,7 @@ async function init() {
 
     // Other errors
     console.error('Error loading admin dashboard:', error);
-    alert(`Villa við að hlaða stjórnborði: ${error.message}`);
+    alert(adminStrings.get('error_page_load').replace('%s', error.message));
   }
 }
 

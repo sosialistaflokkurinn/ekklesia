@@ -1,12 +1,15 @@
 #!/bin/bash
 set -e
 
+# Source the centralized environment variables (PROJECT_ID, REGION, DB_CONNECTION_NAME)
+# This provides a single source of truth for deployment configuration
+source "$(dirname "$0")/../../scripts/deployment/set-env.sh"
+
 # Events Service Deployment to Cloud Run
 # This script deploys the Events service to Google Cloud Run
 
 # Configuration
-PROJECT_ID="ekklesia-prod-10-2025"
-REGION="europe-west2"
+# PROJECT_ID and REGION are loaded from set-env.sh
 SERVICE_NAME="events-service"
 IMAGE_NAME="gcr.io/${PROJECT_ID}/${SERVICE_NAME}"
 
@@ -53,8 +56,8 @@ gcloud run deploy ${SERVICE_NAME} \
   --cpu 1 \
   --timeout 60s \
   --port 8080 \
-  --add-cloudsql-instances ekklesia-prod-10-2025:europe-west2:ekklesia-db \
-  --set-env-vars "NODE_ENV=production,FIREBASE_PROJECT_ID=ekklesia-prod-10-2025,DATABASE_HOST=/cloudsql/ekklesia-prod-10-2025:europe-west2:ekklesia-db,DATABASE_PORT=5432,DATABASE_NAME=postgres,DATABASE_USER=postgres,ELECTIONS_SERVICE_URL=https://elections-service-521240388393.europe-west2.run.app,ADMIN_RESET_ENABLED=${ADMIN_RESET_ENABLED},ALLOWED_RESET_UIDS=${ALLOWED_RESET_UIDS}" \
+  --add-cloudsql-instances "$DB_CONNECTION_NAME" \
+  --set-env-vars "NODE_ENV=production,FIREBASE_PROJECT_ID=ekklesia-prod-10-2025,DATABASE_HOST=/cloudsql/$DB_CONNECTION_NAME,DATABASE_PORT=5432,DATABASE_NAME=postgres,DATABASE_USER=postgres,ELECTIONS_SERVICE_URL=https://elections-service-521240388393.europe-west2.run.app,ADMIN_RESET_ENABLED=${ADMIN_RESET_ENABLED},ALLOWED_RESET_UIDS=${ALLOWED_RESET_UIDS}" \
   --set-secrets "DATABASE_PASSWORD=postgres-password:latest,S2S_API_KEY=elections-s2s-api-key:latest"
 
 # Get service URL

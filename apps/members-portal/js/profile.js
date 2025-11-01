@@ -17,6 +17,7 @@ import { initAuthenticatedPage } from './page-init.js';
 import { requireAuth, getUserData, signOut, AuthenticationError } from '../session/auth.js';
 import { httpsCallable } from '../firebase/app.js';
 import { setTextContent, validateElements } from '../ui/dom.js';
+import { formatPhone } from './utils/format.js';
 
 /**
  * Required DOM elements for profile page
@@ -111,7 +112,8 @@ function updateUserInfo(userData) {
   setTextContent('value-name', formatFieldValue(userData.displayName, placeholder), 'profile page');
   setTextContent('value-kennitala', formatFieldValue(userData.kennitala, placeholder), 'profile page');
   setTextContent('value-email', formatFieldValue(userData.email, placeholder), 'profile page');
-  setTextContent('value-phone', formatFieldValue(userData.phoneNumber, placeholder), 'profile page');
+  // Format phone for display (XXX-XXXX)
+  setTextContent('value-phone', formatPhone(userData.phoneNumber) || placeholder, 'profile page');
   setTextContent('value-uid', formatFieldValue(userData.uid, placeholder), 'profile page');
 }
 

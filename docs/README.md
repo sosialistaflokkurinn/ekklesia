@@ -29,6 +29,16 @@ Detailed information about each major feature and epic.
 - **[Membership Sync](./features/)** - Django integration and member synchronization
 - **[Member Election Voting](./features/)** - Complete voting flow
 
+### 🔗 Integration & External Systems
+Django backend integration, API connectivity, and data synchronization.
+- **[Django Address System Deep Dive](./integration/DJANGO_ADDRESS_SYSTEM_DEEP_DIVE.md)** ⭐ **START HERE** - Complete guide to Django address architecture
+- **[Django Backend System](./systems/DJANGO_BACKEND_SYSTEM.md)** - System overview and connection details
+- **[Django Database Schema](./integration/DJANGO_DATABASE_SCHEMA.md)** - Complete table schema and field mappings
+- **[Django API Implementation](./integration/DJANGO_API_IMPLEMENTATION.md)** - API endpoint implementation guide
+- **[Django API Upgrade - Epic #116](./integration/DJANGO_API_UPGRADE_EPIC_116.md)** - Read/write API changes (includes address sync bug)
+- **[Django Sync Implementation](./integration/DJANGO_SYNC_IMPLEMENTATION.md)** - Member synchronization process
+- **[Django → Ekklesia Migration](./integration/DJANGO_TO_EKKLESIA_MIGRATION.md)** - Long-term migration strategy
+
 ### 🛠️ Development
 Guides for developers contributing to Ekklesia.
 - **[GitHub Workflow](./development/guides/github/README.md)** - Issue tracking and PRs

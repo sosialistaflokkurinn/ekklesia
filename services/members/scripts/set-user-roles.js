@@ -60,7 +60,7 @@ function initAdmin(projectId) {
   }
 }
 
-const VALID_ROLES = ['developer', 'meeting_election_manager', 'event_manager', 'member'];
+const VALID_ROLES = ['superuser', 'admin', 'admin', 'member'];
 
 function validateRoles(addRoles = [], removeRoles = []) {
   const invalidAdds = addRoles.filter(r => !VALID_ROLES.includes(r));
@@ -190,8 +190,8 @@ if (require.main === module) {
     }
 
     // Require confirmation if removing developer role
-    if ((parsed.remove || []).includes('developer')) {
-      console.warn('⚠️  WARNING: You are about to remove the "developer" role.');
+    if ((parsed.remove || []).includes('superuser')) {
+      console.warn('⚠️  WARNING: You are about to remove the "superuser" role.');
       console.warn('This may revoke administrative access for the user.');
       const ans = await askConfirm('Type "CONFIRM" to proceed: ');
       if (ans !== 'CONFIRM') {
@@ -201,8 +201,8 @@ if (require.main === module) {
     }
 
     // Require confirmation if adding developer role
-    if ((parsed.add || []).includes('developer')) {
-      console.warn('⚠️  WARNING: You are about to ADD the "developer" role.');
+    if ((parsed.add || []).includes('superuser')) {
+      console.warn('⚠️  WARNING: You are about to ADD the "superuser" role.');
       console.warn('This grants full administrative access in some environments.');
       const ans = await askConfirm('Type "CONFIRM" to proceed: ');
       if (ans !== 'CONFIRM') {

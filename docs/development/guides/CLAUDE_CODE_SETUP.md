@@ -89,8 +89,8 @@ Claude Code automatically loads project context by reading:
 
 ```bash
 # Start Cloud SQL Proxy (in separate terminal or background)
-./cloud-sql-proxy ekklesia-prod-10-2025:europe-west2:ekklesia-db \
-  --port=5432 &
+# This script now uses the DB_CONNECTION_NAME from scripts/deployment/set-env.sh
+./scripts/database/start-proxy.sh
 
 # Now you can query the database
 psql -h 127.0.0.1 -p 5432 -U postgres -d postgres -c "SELECT * FROM users LIMIT 5;"

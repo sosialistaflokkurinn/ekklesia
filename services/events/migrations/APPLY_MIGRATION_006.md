@@ -51,8 +51,7 @@ PGPASSWORD="ZmUmDgn3Gz4KMofqDgO6SPba/miLApDsIN9JggFP2Ic=" \
 
 ```bash
 # Start Cloud SQL Proxy
-/home/gudro/bin/cloud-sql-proxy ekklesia-prod-10-2025:europe-west2:ekklesia-db \
-  --port 5433 > /tmp/cloud-sql-proxy.log 2>&1 &
+./scripts/database/start-proxy.sh
 
 # Wait for it to be ready
 sleep 3

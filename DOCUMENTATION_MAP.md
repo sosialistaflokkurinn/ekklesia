@@ -776,7 +776,8 @@ ekklesia/
 **Usage**:
 ```bash
 # Start Cloud SQL Proxy first
-~/bin/cloud-sql-proxy ekklesia-prod-10-2025:europe-west2:ekklesia-db --port 5433 &
+# (This script now uses the DB_CONNECTION_NAME from scripts/deployment/set-env.sh)
+./scripts/database/start-proxy.sh
 
 # Run test
 ./test-voting-flow.sh

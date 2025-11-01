@@ -5,7 +5,9 @@
 set -e
 
 SECRET_NAME="$1"
-PROJECT_ID="ekklesia-prod-10-2025"
+
+# Source centralized environment variables
+source "$(dirname "$0")/set-env.sh"
 
 if [ -z "$SECRET_NAME" ]; then
   echo "Usage: $0 <secret-name>" >&2

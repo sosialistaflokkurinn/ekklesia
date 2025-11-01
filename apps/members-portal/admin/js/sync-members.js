@@ -72,14 +72,14 @@ class AdminStringsLoader {
 const adminStrings = new AdminStringsLoader();
 
 /**
- * Check if user has developer role
+ * Check if user has admin or superuser role
  */
 function checkAdminAccess(userData) {
   const roles = userData.roles || [];
-  const isAdmin = roles.includes('developer');
+  const hasAccess = roles.includes('admin') || roles.includes('superuser');
 
-  if (!isAdmin) {
-    throw new Error('Unauthorized: Developer role required');
+  if (!hasAccess) {
+    throw new Error('Unauthorized: Admin or superuser role required');
   }
 
   return true;
@@ -185,10 +185,10 @@ function showSyncSuccess(result) {
     const failedLabel = document.getElementById('stat-failed-label');
     const durationLabel = document.getElementById('stat-duration-label');
 
-    if (totalLabel) totalLabel.textContent = strings.stat_total_label || 'Heildarfjöldi';
+    if (totalLabel) totalLabel.textContent = strings.stat_total_label || 'Samtals';
     if (syncedLabel) syncedLabel.textContent = strings.stat_synced_label || 'Samstillt';
-    if (failedLabel) failedLabel.textContent = strings.stat_failed_label || 'Mistókst';
-    if (durationLabel) durationLabel.textContent = strings.stat_duration_label || 'Tími';
+    if (failedLabel) failedLabel.textContent = strings.stat_failed_label || 'Mistókust';
+    if (durationLabel) durationLabel.textContent = strings.stat_duration_label || 'Tímalengd';
 
     // Set stat values
     const totalValue = document.getElementById('stat-total-value');
@@ -217,8 +217,8 @@ function showSyncSuccess(result) {
     const viewHistoryBtn = document.getElementById('view-history-btn');
     const backDashboardBtn = document.getElementById('back-dashboard-btn');
 
-    if (viewHistoryBtn) viewHistoryBtn.textContent = strings.btn_view_history || 'Skoða sögu';
-    if (backDashboardBtn) backDashboardBtn.textContent = strings.btn_back_to_dashboard || 'Til baka';
+    if (viewHistoryBtn) viewHistoryBtn.textContent = strings.btn_view_history || 'Skoða keyrslusögu';
+    if (backDashboardBtn) backDashboardBtn.textContent = strings.btn_back_to_dashboard || 'Aftur í yfirlit';
 
     console.log('✓ showSyncSuccess completed successfully');
 
@@ -305,6 +305,7 @@ function setPageText(strings) {
   document.getElementById('nav-admin-sync').textContent = strings.nav_admin_sync;
   document.getElementById('nav-admin-history').textContent = strings.nav_admin_history;
   document.getElementById('nav-back-to-member').textContent = strings.nav_back_to_member;
+  document.getElementById('nav-logout').textContent = strings.nav_logout;
 
   // Page header
   document.getElementById('sync-title').textContent = strings.sync_members_title;
@@ -312,7 +313,28 @@ function setPageText(strings) {
 
   // Trigger card
   document.getElementById('sync-trigger-title').textContent = strings.sync_trigger_title;
+  document.getElementById('sync-description').textContent = strings.sync_trigger_description;
+
+
   document.getElementById('sync-trigger-btn').textContent = strings.sync_trigger_btn;
+
+  // Sync status card (initial state)
+  document.getElementById('sync-status-title').textContent = strings.sync_status_title;
+  document.getElementById('sync-progress-message').textContent = strings.sync_progress_message;
+
+  // Stats labels
+  document.getElementById('stat-total-label').textContent = strings.stat_total_label;
+  document.getElementById('stat-synced-label').textContent = strings.stat_synced_label;
+  document.getElementById('stat-failed-label').textContent = strings.stat_failed_label;
+  document.getElementById('stat-duration-label').textContent = strings.stat_duration_label;
+
+  // Action buttons
+  document.getElementById('view-history-btn').textContent = strings.btn_view_history;
+  document.getElementById('back-dashboard-btn').textContent = strings.btn_back_to_dashboard;
+
+  // Error card
+  document.getElementById('sync-error-title').textContent = strings.sync_failed_title;
+  document.getElementById('sync-retry-btn').textContent = strings.btn_retry;
 }
 
 /**
@@ -365,7 +387,7 @@ async function init() {
 
     // Check if unauthorized
     if (error.message.includes('Unauthorized')) {
-      alert('Þú hefur ekki aðgang að stjórnkerfi. Aðeins notendur með developer role hafa aðgang.');
+      alert(adminStrings.get('error_unauthorized_admin'));
       window.location.href = '/members-area/dashboard.html';
       return;
     }
@@ -378,7 +400,7 @@ async function init() {
 
     // Other errors
     console.error('Error loading sync members page:', error);
-    alert(`Villa við að hlaða síðu: ${error.message}`);
+    alert(adminStrings.get('error_page_load').replace('%s', error.message));
   }
 }
 
