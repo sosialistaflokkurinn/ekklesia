@@ -1,0 +1,61 @@
+version: 2
+updates:
+  # GitHub Actions workflow dependencies
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Atlantic/Reykjavik"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+
+  # Python dependencies (Cloud Functions - Members)
+  - package-ecosystem: "pip"
+    directory: "/services/members/functions"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "10:00"
+      timezone: "Atlantic/Reykjavik"
+    labels:
+      - "dependencies"
+      - "python"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+
+  # Node.js dependencies (Elections Service)
+  - package-ecosystem: "npm"
+    directory: "/services/elections"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "11:00"
+      timezone: "Atlantic/Reykjavik"
+    labels:
+      - "dependencies"
+      - "javascript"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+
+  # Node.js dependencies (Events Service)
+  - package-ecosystem: "npm"
+    directory: "/services/events"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "11:30"
+      timezone: "Atlantic/Reykjavik"
+    labels:
+      - "dependencies"
+      - "javascript"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"

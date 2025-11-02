@@ -2,6 +2,9 @@
 
 Custom e-democracy voting platform for **Sósíalistaflokkur Íslands** (Socialist Party of Iceland).
 
+[![Test Cloud Functions](https://github.com/sosialistaflokkurinn/ekklesia/actions/workflows/test-functions.yml/badge.svg)](https://github.com/sosialistaflokkurinn/ekklesia/actions/workflows/test-functions.yml)
+[![Security Hygiene](https://github.com/sosialistaflokkurinn/ekklesia/actions/workflows/security-hygiene.yml/badge.svg)](https://github.com/sosialistaflokkurinn/ekklesia/actions/workflows/security-hygiene.yml)
+
 Regnhlífarverkefni fyrir kosningakerfi Sósíalistaflokksins ásamt meðlima og atburðakerfi.
 
 ---
