@@ -2,7 +2,10 @@ import json
 import os
 from typing import Any, Dict
 
-SENSITIVE_KEYS = {"authorization", "token", "id_token", "access_token", "refresh_token", "client_secret", "password"}
+SENSITIVE_KEYS = {
+    "authorization", "token", "id_token", "access_token", "refresh_token",
+    "client_secret", "password", "kennitala", "ssn", "phone", "phonenumber"
+}
 
 
 def sanitize_fields(data: Dict[str, Any]) -> Dict[str, Any]:

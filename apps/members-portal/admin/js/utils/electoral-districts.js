@@ -191,7 +191,31 @@ export function getElectoralDistrictName(districtKey) {
 }
 
 /**
- * Get all electoral district options for dropdown
+ * Get all electoral district options for dropdownapp.js:61 ✅ Firebase App Check initialized (reCAPTCHA Enterprise)
+strings-loader.js:48 ✓ Loaded 235 strings for locale: is
+strings-loader.js:31 ✓ Using cached strings for locale: is (235 strings)app.js:61 ✅ Firebase App Check initialized (reCAPTCHA Enterprise)
+strings-loader.js:48 ✓ Loaded 235 strings for locale: is
+strings-loader.js:31 ✓ Using cached strings for locale: is (235 strings)
+profile.js?v=20251102:411 ✅ Firestore updated (optimistic): Object
+europe-west2-ekklesia-prod-10-2025.cloudfunctions.net/updatememberprofile:1  Failed to load resource: the server responded with a status of 403 ()
+profile.js?v=20251102:435 ❌ Django update failed: FirebaseError: You can only update your own profile
+updateDjangoMember @ profile.js?v=20251102:435
+profile.js?v=20251102:411 ✅ Firestore updated (optimistic): Object
+
+profile.js?v=20251102:411 ✅ Firestore updated (optimistic): Object
+europe-west2-ekklesia-prod-10-2025.cloudfunctions.net/updatememberprofile:1  Failed to load resource: the server responded with a status of 403 ()
+profile.js?v=20251102:435 ❌ Django update failed: FirebaseError: You can only update your own proapp.js:61 ✅ Firebase App Check initialized (reCAPTCHA Enterprise)
+strings-loader.js:48 ✓ Loaded 235 strings for locale: is
+strings-loader.js:31 ✓ Using cached strings for locale: is (235 strings)
+profile.js?v=20251102:411 ✅ Firestore updated (optimistic): Object
+europe-west2-ekklesia-prod-10-2025.cloudfunctions.net/updatememberprofile:1  Failed to load resource: the server responded with a status of 403 ()
+profile.js?v=20251102:435 ❌ Django update failed: FirebaseError: You can only update your own profile
+updateDjangoMember @ profile.js?v=20251102:435
+profile.js?v=20251102:411 ✅ Firestore updated (optimistic): Object
+file
+updateDjangoMember @ profile.js?v=20251102:435
+profile.js?v=20251102:411 ✅ Firestore updated (optimistic): Object
+
  *
  * @returns {Array<{value: string, label: string}>} Array of district options
  */

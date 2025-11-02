@@ -788,8 +788,10 @@ def updatememberprofile(req: https_fn.CallableRequest):
         )
 
     # Verify user is updating their own profile
+    # Normalize both kennitalas to same format (no hyphens) for comparison
     user_kennitala = req.auth.token.get('kennitala', '').replace('-', '')
-    if user_kennitala != kennitala:
+    request_kennitala = kennitala.replace('-', '')
+    if user_kennitala != request_kennitala:
         log_json("warn", "Unauthorized profile update attempt",
                  uid=req.auth.uid,
                  requested_kennitala=f"{kennitala[:6]}****",
@@ -806,14 +808,45 @@ def updatememberprofile(req: https_fn.CallableRequest):
 
     try:
         # Import Django API client
-        from sync_members import get_django_member_by_kennitala, update_django_member
+        from sync_members import update_django_member
 
-        # Get Django member ID
-        django_member = get_django_member_by_kennitala(kennitala)
-        if not django_member:
-            raise Exception(f"Member not found in Django: {kennitala[:6]}****")
+        # Get Django member ID from Firestore (faster and more reliable than Django API search)
+        # Django API doesn't support ?ssn= filter, so we use Firestore lookup
+        kennitala_no_hyphen = kennitala.replace('-', '')
 
-        django_id = django_member.get('id')
+        log_json("debug", "Looking up member in Firestore",
+                 uid=req.auth.uid,
+                 kennitala=f"{kennitala_no_hyphen[:6]}****")
+
+        db = firestore.client()
+        member_ref = db.collection('members').document(kennitala_no_hyphen)
+        member_doc = member_ref.get()
+
+        if not member_doc.exists:
+            log_json("error", "Member not found in Firestore",
+                     uid=req.auth.uid,
+                     kennitala=f"{kennitala_no_hyphen[:6]}****")
+            raise https_fn.HttpsError(
+                code=https_fn.FunctionsErrorCode.NOT_FOUND,
+                message="Member not found in system"
+            )
+
+        member_data = member_doc.to_dict()
+        django_id = member_data.get('metadata', {}).get('django_id')
+
+        if not django_id:
+            log_json("error", "Django ID missing from Firestore member",
+                     uid=req.auth.uid,
+                     kennitala=f"{kennitala_no_hyphen[:6]}****")
+            raise https_fn.HttpsError(
+                code=https_fn.FunctionsErrorCode.INTERNAL,
+                message="Member data incomplete - please contact admin"
+            )
+
+        log_json("debug", "Found member in Firestore",
+                 uid=req.auth.uid,
+                 django_id=django_id,
+                 kennitala=f"{kennitala_no_hyphen[:6]}****")
 
         # Build Django update payload
         django_updates = {}
@@ -824,24 +857,62 @@ def updatememberprofile(req: https_fn.CallableRequest):
             django_updates['contact_info'] = {'email': updates['email']}
         if 'phone' in updates:
             # Phone is in contact_info nested object
-            # Normalize phone number to XXX-XXXX format
-            normalized_phone = normalize_phone(updates['phone'])
+            # IMPORTANT: Django expects phone WITHOUT hyphen (7 digits only)
+            phone_digits = ''.join(c for c in updates['phone'] if c.isdigit())
+            # Remove country code if present
+            if phone_digits.startswith('354') and len(phone_digits) == 10:
+                phone_digits = phone_digits[3:]  # Keep only 7 local digits
             if 'contact_info' not in django_updates:
                 django_updates['contact_info'] = {}
-            django_updates['contact_info']['phone'] = normalized_phone
+            django_updates['contact_info']['phone'] = phone_digits
 
         # Update Django via API
         updated_member = update_django_member(django_id, django_updates)
 
-        log_json("info", "Profile updated successfully",
+        log_json("info", "Profile updated successfully in Django",
                  uid=req.auth.uid,
                  django_id=django_id,
                  kennitala=f"{kennitala[:6]}****")
 
+        # Also update Firestore (optimistic update from frontend already done,
+        # but we update again with canonical Django data)
+        try:
+            # Reuse db and kennitala_no_hyphen from above
+            # Get member_ref for update
+            member_ref = db.collection('members').document(kennitala_no_hyphen)
+
+            # Build Firestore updates with nested profile fields
+            firestore_updates = {}
+            if 'name' in updates:
+                firestore_updates['profile.name'] = updates['name']
+            if 'email' in updates:
+                firestore_updates['profile.email'] = updates['email']
+            if 'phone' in updates:
+                firestore_updates['profile.phone'] = normalize_phone(updates['phone'])
+
+            # Always update last_modified timestamp
+            firestore_updates['metadata.last_modified'] = datetime.now(timezone.utc)
+
+            member_ref.update(firestore_updates)
+
+            log_json("info", "Profile updated successfully in Firestore",
+                     uid=req.auth.uid,
+                     kennitala=f"{kennitala[:6]}****",
+                     firestore_fields=list(firestore_updates.keys()))
+
+        except Exception as firestore_error:
+            # Log error but don't fail the request - Django is source of truth
+            log_json("warn", "Firestore update failed (Django succeeded)",
+                     uid=req.auth.uid,
+                     kennitala=f"{kennitala[:6]}****",
+                     error=str(firestore_error))
+
+        # Return fresh data from Django
         return {
             'success': True,
             'django_id': django_id,
-            'updated_fields': list(updates.keys())
+            'updated_fields': list(updates.keys()),
+            'member': updated_member
         }
 
     except Exception as e:

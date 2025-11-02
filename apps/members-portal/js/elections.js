@@ -12,6 +12,7 @@
 import { initAuthenticatedPage } from './page-init.js';
 import { R } from '../i18n/strings-loader.js';
 import { getElections } from './api/elections-api.js';
+import { escapeHTML } from './utils/format.js';
 
 // State
 let currentFilter = 'all';
@@ -245,15 +246,6 @@ function showEmpty() {
  */
 function hideEmpty() {
   document.getElementById('elections-empty').classList.add('u-hidden');
-}
-
-/**
- * Utility: Escape HTML to prevent XSS
- */
-function escapeHTML(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
 }
 
 /**

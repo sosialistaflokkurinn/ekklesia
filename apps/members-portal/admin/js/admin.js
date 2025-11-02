@@ -9,84 +9,12 @@
 import { initSession } from '../../session/init.js';
 import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
 import { collection, query, orderBy, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { adminStrings } from './i18n/admin-strings-loader.js';
+import { checkAdminAccess, calculateDuration } from './utils/admin-helpers.js';
 
 // Initialize Firebase services
 const auth = getFirebaseAuth();
 const db = getFirebaseFirestore();
-
-/**
- * Load admin-specific strings from admin portal i18n
- */
-class AdminStringsLoader {
-  constructor() {
-    this.strings = {};
-    this.loaded = false;
-  }
-
-  async load() {
-    if (this.loaded) return this.strings;
-
-    try {
-      const response = await fetch('/admin/i18n/values-is/strings.xml');
-      if (!response.ok) {
-        throw new Error(`Failed to load admin strings: ${response.statusText}`);
-      }
-
-      const xmlText = await response.text();
-      this.strings = this.parseXML(xmlText);
-      this.loaded = true;
-
-      console.log(`✓ Loaded ${Object.keys(this.strings).length} admin strings`);
-      return this.strings;
-    } catch (error) {
-      console.error('Failed to load admin strings:', error);
-      throw error;
-    }
-  }
-
-  parseXML(xmlText) {
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-
-    const parserError = xmlDoc.querySelector('parsererror');
-    if (parserError) {
-      throw new Error(`XML parsing error: ${parserError.textContent}`);
-    }
-
-    const strings = {};
-    const stringElements = xmlDoc.querySelectorAll('string');
-
-    stringElements.forEach(element => {
-      const name = element.getAttribute('name');
-      const value = element.textContent;
-      if (name) {
-        strings[name] = value;
-      }
-    });
-
-    return strings;
-  }
-
-  get(key) {
-    return this.strings[key] || key;
-  }
-}
-
-const adminStrings = new AdminStringsLoader();
-
-/**
- * Check if user has admin or superuser role
- */
-function checkAdminAccess(userData) {
-  const roles = userData.roles || [];
-  const hasAccess = roles.includes('admin') || roles.includes('superuser');
-
-  if (!hasAccess) {
-    throw new Error('Unauthorized: Admin or superuser role required');
-  }
-
-  return true;
-}
 
 /**
  * Load recent sync status from Firestore
@@ -158,23 +86,6 @@ function displayRecentSync(log) {
 }
 
 /**
- * Calculate duration from stats
- */
-function calculateDuration(stats) {
-  if (!stats.started_at || !stats.completed_at) return 'N/A';
-
-  const start = new Date(stats.started_at);
-  const end = new Date(stats.completed_at);
-  const durationSec = Math.floor((end - start) / 1000);
-
-  if (durationSec < 60) return `${durationSec}s`;
-
-  const minutes = Math.floor(durationSec / 60);
-  const seconds = durationSec % 60;
-  return `${minutes}m ${seconds}s`;
-}
-
-/**
  * Build welcome message with proper Icelandic grammar
  * (same logic as member dashboard)
  */
@@ -209,7 +120,7 @@ function renderRoleBadges(roles) {
 
   // Map role names to Icelandic
   const roleLabels = {
-    'superuser': 'Forritari', // This string is from the main app, not admin-specific
+    'superuser': 'Kerfisstóri', // This string is from the main app, not admin-specific
     'admin': adminStrings.get('role_admin'),
     'admin': adminStrings.get('role_election_manager'),
     'admin': adminStrings.get('role_admin')

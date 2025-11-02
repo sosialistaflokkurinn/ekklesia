@@ -17,7 +17,7 @@ class StringsLoader {
   constructor() {
     this.strings = {};
     this.currentLocale = 'is'; // Default to Icelandic
-    this.loaded = false;
+    this.loaded = false;XML Strings Loader
   }
 
   /**

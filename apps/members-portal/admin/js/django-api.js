@@ -6,7 +6,7 @@
  */
 
 import { getFirebaseAuth } from '../../firebase/app.js';
-import { validatePhone } from './utils/format.js';
+import { validatePhone } from '../../js/utils/format.js';
 
 const auth = getFirebaseAuth();
 

@@ -110,6 +110,22 @@
     <string name="placeholder_not_available">Ekki tiltækt</string>
     <string name="placeholder_not_found">Fannst ekki</string>
 
+    <!-- Profile Edit -->
+    <string name="profile_edit_button">Breyta upplýsingum</string>
+    <string name="profile_save_button">Vista breytingar</string>
+    <string name="profile_saving_button">Vistar...</string>
+    <string name="profile_cancel_button">Hætta við</string>
+    <string name="profile_save_success">Upplýsingar uppfærðar!</string>
+    <string name="profile_save_error">Villa við vistun. Reyndu aftur.</string>
+    <string name="profile_no_changes">Engar breytingar til að vista</string>
+    <string name="profile_cancel_confirm">Ertu viss um að þú viljir hætta við? Óvistaðar breytingar tapast.</string>
+
+    <!-- Validation Messages -->
+    <string name="validation_name_required">Nafn má ekki vera tómt</string>
+    <string name="validation_name_too_long">Nafn má ekki vera lengra en 100 stafir</string>
+    <string name="validation_email_invalid">Ógilt netfang</string>
+    <string name="validation_phone_invalid">Ógilt símanúmer (7 tölustafir)</string>
+
     <!-- ========================================== -->
     <!-- EVENTS PAGE (events.html) -->
     <!-- ========================================== -->
@@ -369,4 +385,65 @@
     <!-- Success modal -->
     <string name="modal_success_title">✓ Atkvæði skráð</string>
     <string name="modal_success_message">Atkvæði þitt hefur verið skráð.</string>
+
+    <!-- ========================================== -->
+    <!-- FOREIGN ADDRESS (Profile & Admin) -->
+    <!-- ========================================== -->
+
+    <!-- Address sections -->
+    <string name="section_address">Heimilisfang</string>
+    <string name="section_icelandic_address">Íslenskt heimilisfang</string>
+    <string name="section_foreign_address">Erlent heimilisfang</string>
+
+    <!-- Living status -->
+    <string name="living_status_iceland">Bý á Íslandi</string>
+    <string name="living_status_abroad">Bý erlendis</string>
+    <string name="living_status_both">Heima og erlendis</string>
+
+    <!-- Icelandic address fields -->
+    <string name="label_street">Gata</string>
+    <string name="label_number">Númer</string>
+    <string name="label_postal_code">Póstnúmer</string>
+    <string name="label_city">Staður</string>
+
+    <!-- Foreign address fields -->
+    <string name="label_country">Land</string>
+    <string name="label_foreign_address">Heimilisfang</string>
+    <string name="label_foreign_postal_code">Póstnúmer</string>
+    <string name="label_foreign_municipality">Sveitarfélag/Borg</string>
+    <string name="label_foreign_phone">Erlent símanúmer</string>
+
+    <!-- Address placeholders -->
+    <string name="placeholder_select_country">Veldu land...</string>
+    <string name="placeholder_enter_address">Sláðu inn heimilisfang</string>
+    <string name="placeholder_enter_postal_code">Póstnúmer</string>
+    <string name="placeholder_enter_municipality">Sveitarfélag eða borg</string>
+    <string name="placeholder_enter_foreign_phone">+45 12345678</string>
+
+    <!-- Address validation errors -->
+    <string name="validation_country_required">Vinsamlegast veldu land</string>
+    <string name="validation_address_required">Heimilisfang má ekki vera tómt</string>
+    <string name="validation_postal_code_required">Póstnúmer má ekki vera tómt</string>
+    <string name="validation_postal_code_invalid">Ógilt póstnúmer</string>
+    <string name="validation_foreign_phone_invalid">Ógilt alþjóðlegt símanúmer (notaðu +[landsnúmer] format)</string>
+    <string name="validation_foreign_phone_format">Dæmi: +354 775-8492, +45 12345678</string>
+
+    <!-- Address display -->
+    <string name="address_not_available">Engin heimilisfang skráð</string>
+    <string name="foreign_address_not_available">Ekkert erlent heimilisfang skráð</string>
+
+    <!-- Address notes -->
+    <string name="address_change_note">Til að uppfæra heimilisfang, hafðu samband við stjórnanda.</string>
+    <string name="address_readonly_note">ℹ️ Heimilisfang er ekki hægt að breyta hér. Notaðu Django admin eða hafðu samband við stjórnanda.</string>
+
+    <!-- Address edit mode (for future implementation) -->
+    <string name="btn_edit_address">Breyta heimilisfangi</string>
+    <string name="btn_save_address">Vista heimilisfang</string>
+    <string name="btn_cancel_address">Hætta við</string>
+
+    <!-- Address update success/error -->
+    <string name="address_update_success">Heimilisfang uppfært!</string>
+    <string name="address_update_error">Villa við uppfærslu heimilisfangs</string>
+    <string name="foreign_address_save_success">Erlent heimilisfang vistað!</string>
+    <string name="foreign_address_save_error">Villa við vistun erlendar heimilisfangs</string>
 </resources>

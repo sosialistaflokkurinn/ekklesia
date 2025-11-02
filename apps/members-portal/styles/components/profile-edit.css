@@ -1,0 +1,104 @@
+/* Profile Edit Component Styles */
+
+.profile-edit__actions {
+  margin-top: 2rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-start;
+}
+
+.profile-edit__input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--color-gray-300, #d1d5db);
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: inherit;
+  background-color: #fff;
+}
+
+.profile-edit__input:focus {
+  outline: none;
+  border-color: var(--color-primary, #2563eb);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.profile-edit__input.error {
+  border-color: var(--color-error, #dc2626);
+}
+
+.profile-edit__input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.profile-edit__error {
+  color: var(--color-error, #dc2626);
+  font-size: 0.875rem;
+  display: none;
+  margin-top: 0.25rem;
+}
+
+.profile-edit__error:not(:empty) {
+  display: block;
+}
+
+.profile-edit__success {
+  background-color: var(--color-success-bg, #d1fae5);
+  border: 1px solid var(--color-success, #10b981);
+  color: var(--color-success-text, #065f46);
+  padding: 1rem;
+  border-radius: 4px;
+  margin-top: 1rem;
+}
+
+.profile-edit__error-message {
+  background-color: var(--color-error-bg, #fee2e2);
+  border: 1px solid var(--color-error, #dc2626);
+  color: var(--color-error-text, #991b1b);
+  padding: 1rem;
+  border-radius: 4px;
+  margin-top: 1rem;
+}
+
+/* Edit mode visibility */
+body.profile-editing .profile-edit__value {
+  display: none !important;
+}
+
+body.profile-editing .profile-edit__input-wrapper {
+  display: flex !important;
+}
+
+/* Read-only fields (kennitala, etc.) */
+.profile-edit__readonly {
+  background-color: var(--color-gray-100, #f3f4f6);
+  cursor: not-allowed;
+}
+
+/* Button states */
+.profile-edit__btn-edit,
+.profile-edit__btn-save,
+.profile-edit__btn-cancel {
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.profile-edit__btn-edit:disabled,
+.profile-edit__btn-save:disabled,
+.profile-edit__btn-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .profile-edit__actions {
+    flex-direction: column;
+  }
+
+  .profile-edit__actions button {
+    width: 100%;
+  }
+}

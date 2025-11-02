@@ -13,8 +13,9 @@
 import { initSession } from '../../session/init.js';
 import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
 import MembersAPI from './api/members-api.js';
-import { formatPhone, maskKennitala } from './utils/format.js';
+import { formatPhone, maskKennitala } from '../../js/utils/format.js';
 import { filterMembersByDistrict, getElectoralDistrictName } from './utils/electoral-districts.js';
+import { createListPageStates } from './utils/ui-states.js';
 
 // Initialize Firebase services
 const auth = getFirebaseAuth();
@@ -54,10 +55,20 @@ const adminStrings = new Map();
     btnRetry: null
   };
 
+  // UI State Manager
+  let uiStates = null;
+
   // Initialize page
   async function init() {
     // Initialize DOM elements first (before auth check)
     initElements();
+
+    // Initialize UI state manager
+    uiStates = createListPageStates({
+      ...elements,
+      loadingMessage: document.getElementById('members-loading-text'),
+      errorMessage: document.getElementById('members-error-message')
+    });
 
     // Load i18n strings early (before auth check so UI shows proper text)
     await loadStrings();
@@ -75,7 +86,7 @@ const adminStrings = new Map();
       const hasAdminAccess = roles.includes('admin') || roles.includes('superuser');
 
       if (!hasAdminAccess) {
-        showError(adminStrings.get('error_permission_denied'));
+        uiStates.showError(adminStrings.get('error_permission_denied'));
         return;
       }
 
@@ -278,7 +289,7 @@ const adminStrings = new Map();
     if (isLoading) return;
     isLoading = true;
 
-    showLoading(currentSearch ? adminStrings.get('members_searching') : adminStrings.get('members_loading'));
+    uiStates.showLoading(currentSearch ? adminStrings.get('members_searching') : adminStrings.get('members_loading'));
 
     try {
       // If searching OR filtering by district, load ALL documents for client-side filtering
@@ -300,7 +311,7 @@ const adminStrings = new Map();
       }
 
       if (filteredMembers.length === 0) {
-        showEmpty();
+        uiStates.showEmpty();
       } else {
         renderMembers(filteredMembers);
 
@@ -318,12 +329,13 @@ const adminStrings = new Map();
         // Update count
         updateMemberCount();
 
-        showTable();
+        uiStates.showContent();
+        elements.paginationContainer.style.display = 'flex';
       }
 
     } catch (error) {
       console.error('Error loading members:', error);
-      showError(error.message || adminStrings.get('members_error_loading'));
+      uiStates.showError(error.message || adminStrings.get('members_error_loading'));
     } finally {
       isLoading = false;
     }
@@ -449,52 +461,6 @@ const adminStrings = new Map();
       case 'inactive': return adminStrings.get('members_status_inactive') || 'Óvirkur';
       default: return adminStrings.get('members_status_unknown') || 'Óþekkt';
     }
-  }
-
-  // Show loading state
-  function showLoading(message = adminStrings.get('members_loading') || 'Hleð félagaskrá...') {
-    elements.loadingState.style.display = 'block';
-    elements.errorState.style.display = 'none';
-    elements.emptyState.style.display = 'none';
-    elements.tableContainer.style.display = 'none';
-    elements.paginationContainer.style.display = 'none';
-
-    const loadingText = document.getElementById('members-loading-text');
-    if (loadingText) {
-      loadingText.textContent = message;
-    }
-  }
-
-  // Show error state
-  function showError(message) {
-    elements.loadingState.style.display = 'none';
-    elements.errorState.style.display = 'block';
-    elements.emptyState.style.display = 'none';
-    elements.tableContainer.style.display = 'none';
-    elements.paginationContainer.style.display = 'none';
-
-    const errorMessage = document.getElementById('members-error-message');
-    if (errorMessage) {
-      errorMessage.textContent = message;
-    }
-  }
-
-  // Show empty state
-  function showEmpty() {
-    elements.loadingState.style.display = 'none';
-    elements.errorState.style.display = 'none';
-    elements.emptyState.style.display = 'block';
-    elements.tableContainer.style.display = 'none';
-    elements.paginationContainer.style.display = 'none';
-  }
-
-  // Show table with data
-  function showTable() {
-    elements.loadingState.style.display = 'none';
-    elements.errorState.style.display = 'none';
-    elements.emptyState.style.display = 'none';
-    elements.tableContainer.style.display = 'block';
-    elements.paginationContainer.style.display = 'flex';
   }
 
   // Initialize on DOM ready

@@ -8,82 +8,11 @@
 // Import from member portal public directory (two levels up from /admin/js/)
 import { initSession } from '../../session/init.js';
 import { getFirebaseAuth } from '../../firebase/app.js';
+import { adminStrings } from './i18n/admin-strings-loader.js';
+import { checkAdminAccess, calculateDuration } from './utils/admin-helpers.js';
 
 // Initialize Firebase Auth
 const auth = getFirebaseAuth();
-
-/**
- * Load admin-specific strings from admin portal i18n
- */
-class AdminStringsLoader {
-  constructor() {
-    this.strings = {};
-    this.loaded = false;
-  }
-
-  async load() {
-    if (this.loaded) return this.strings;
-
-    try {
-      const response = await fetch('/admin/i18n/values-is/strings.xml');
-      if (!response.ok) {
-        throw new Error(`Failed to load admin strings: ${response.statusText}`);
-      }
-
-      const xmlText = await response.text();
-      this.strings = this.parseXML(xmlText);
-      this.loaded = true;
-
-      return this.strings;
-    } catch (error) {
-      console.error('Failed to load admin strings:', error);
-      throw error;
-    }
-  }
-
-  parseXML(xmlText) {
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-
-    const parserError = xmlDoc.querySelector('parsererror');
-    if (parserError) {
-      throw new Error(`XML parsing error: ${parserError.textContent}`);
-    }
-
-    const strings = {};
-    const stringElements = xmlDoc.querySelectorAll('string');
-
-    stringElements.forEach(element => {
-      const name = element.getAttribute('name');
-      const value = element.textContent;
-      if (name) {
-        strings[name] = value;
-      }
-    });
-
-    return strings;
-  }
-
-  get(key) {
-    return this.strings[key] || key;
-  }
-}
-
-const adminStrings = new AdminStringsLoader();
-
-/**
- * Check if user has admin or superuser role
- */
-function checkAdminAccess(userData) {
-  const roles = userData.roles || [];
-  const hasAccess = roles.includes('admin') || roles.includes('superuser');
-
-  if (!hasAccess) {
-    throw new Error('Unauthorized: Admin or superuser role required');
-  }
-
-  return true;
-}
 
 /**
  * Call syncmembers Cloud Function
@@ -244,23 +173,6 @@ function showSyncError(error) {
   document.getElementById('sync-error-message').textContent =
     strings.error_sync_trigger.replace('%s', error.message);
   document.getElementById('sync-retry-btn').textContent = strings.btn_retry;
-}
-
-/**
- * Calculate duration from stats
- */
-function calculateDuration(stats) {
-  if (!stats.started_at || !stats.completed_at) return 'N/A';
-
-  const start = new Date(stats.started_at);
-  const end = new Date(stats.completed_at);
-  const durationSec = Math.floor((end - start) / 1000);
-
-  if (durationSec < 60) return `${durationSec}s`;
-
-  const minutes = Math.floor(durationSec / 60);
-  const seconds = durationSec % 60;
-  return `${minutes}m ${seconds}s`;
 }
 
 /**
