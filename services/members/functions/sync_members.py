@@ -169,9 +169,26 @@ def transform_django_member_to_firestore(django_member: Dict[str, Any]) -> Dict[
     raw_phone = contact_info.get('phone', '')
     normalized_phone = normalize_phone(raw_phone) if raw_phone else ''
 
+    # Foreign phone (keep international format as-is, e.g., +45 12345678)
+    foreign_phone = contact_info.get('foreign_phone', '') or ''
+
     # Normalize kennitala to DDMMYY-XXXX format
     raw_kennitala = django_member.get('ssn', '')
     normalized_kennitala = normalize_kennitala(raw_kennitala) if raw_kennitala else ''
+
+    # Extract foreign addresses
+    foreign_addresses_raw = django_member.get('foreign_addresses', []) or []
+    foreign_addresses = []
+    for fa in foreign_addresses_raw:
+        foreign_addr = {
+            'id': fa.get('pk'),
+            'country': fa.get('country'),  # ISO country code or ID
+            'current': fa.get('current', False),
+            'municipality': fa.get('municipality', ''),
+            'postal_code': fa.get('postal_code', ''),
+            'address': fa.get('address', '')
+        }
+        foreign_addresses.append(foreign_addr)
 
     # Create Firestore document
     firestore_doc = {
@@ -181,6 +198,7 @@ def transform_django_member_to_firestore(django_member: Dict[str, Any]) -> Dict[
             'birthday': django_member.get('birthday'),
             'email': contact_info.get('email', ''),
             'phone': normalized_phone,
+            'foreign_phone': foreign_phone,  # ← NEW: International phone
             'facebook': contact_info.get('facebook', ''),
             'gender': django_member.get('gender'),
             'reachable': django_member.get('reachable', True),
@@ -195,6 +213,7 @@ def transform_django_member_to_firestore(django_member: Dict[str, Any]) -> Dict[
             'city': local_address.get('city', ''),
             'from_reykjavik': False  # Will be enhanced later with API lookup
         },
+        'foreign_addresses': foreign_addresses,  # ← NEW: Foreign addresses array
         'membership': {
             'date_joined': date_joined,
             'status': 'active',  # Default, will be enhanced with actual status
