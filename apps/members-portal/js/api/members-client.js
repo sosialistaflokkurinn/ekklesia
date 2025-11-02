@@ -15,7 +15,7 @@
  *   });
  */
 
-import { getFirebaseFirestore } from '../firebase/app.js';
+import { getFirebaseFirestore } from '../../firebase/app.js';
 import { doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { httpsCallable } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js';
 
