@@ -256,6 +256,76 @@ function populateCountryDropdown() {
 }
 
 /**
+ * Show Iceland address form, hide foreign address form
+ */
+function showIcelandAddressForm() {
+  const icelandSection = document.getElementById('iceland-address-section');
+  const foreignForm = document.getElementById('foreign-address-form');
+
+  if (icelandSection) icelandSection.style.display = 'block';
+  if (foreignForm) foreignForm.style.display = 'none';
+}
+
+/**
+ * Show foreign address form, hide Iceland address
+ */
+function showForeignAddressForm() {
+  const icelandSection = document.getElementById('iceland-address-section');
+  const foreignForm = document.getElementById('foreign-address-form');
+
+  if (icelandSection) icelandSection.style.display = 'none';
+  if (foreignForm) foreignForm.style.display = 'block';
+}
+
+/**
+ * Show both Iceland and foreign address forms
+ */
+function showBothAddressForms() {
+  const icelandSection = document.getElementById('iceland-address-section');
+  const foreignForm = document.getElementById('foreign-address-form');
+
+  if (icelandSection) icelandSection.style.display = 'block';
+  if (foreignForm) foreignForm.style.display = 'block';
+}
+
+/**
+ * Handle living status radio button change
+ * @param {Event} event - Change event
+ */
+function handleLivingStatusChange(event) {
+  const selectedValue = event.target.value;
+
+  switch (selectedValue) {
+    case 'iceland':
+      showIcelandAddressForm();
+      break;
+    case 'abroad':
+      showForeignAddressForm();
+      break;
+    case 'both':
+      showBothAddressForms();
+      break;
+  }
+}
+
+/**
+ * Setup event listeners for living status radio buttons
+ */
+function setupLivingStatusListeners() {
+  const radioButtons = document.querySelectorAll('input[name="living-status"]');
+
+  radioButtons.forEach(radio => {
+    radio.addEventListener('change', handleLivingStatusChange);
+  });
+
+  // Trigger initial state based on checked radio
+  const checkedRadio = document.querySelector('input[name="living-status"]:checked');
+  if (checkedRadio) {
+    handleLivingStatusChange({ target: checkedRadio });
+  }
+}
+
+/**
  * Update membership status display
  *
  * @param {boolean} isMember - Whether user is a verified member
@@ -650,6 +720,9 @@ async function init() {
 
     // Populate country dropdown for foreign address form
     populateCountryDropdown();
+
+    // Setup living status radio button listeners
+    setupLivingStatusListeners();
 
     // Update profile-specific UI
     updateProfileStrings();
