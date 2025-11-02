@@ -168,6 +168,156 @@
       </div>
     </div>
 
+    <!-- Address Information -->
+    <div class="card">
+      <h3 class="card__title" id="section-address-info">Loading...</h3>
+
+      <!-- Living Status Selector (edit mode only) -->
+      <div class="profile-edit__input-wrapper" id="living-status-selector" style="display: none;">
+        <div class="info-grid__label" id="label-living-status">Loading...</div>
+        <div class="profile-edit__radio-group">
+          <label class="profile-edit__radio-label">
+            <input type="radio" name="living-status" value="iceland" id="radio-iceland" checked>
+            <span id="living-status-iceland">Loading...</span>
+          </label>
+          <label class="profile-edit__radio-label">
+            <input type="radio" name="living-status" value="abroad" id="radio-abroad">
+            <span id="living-status-abroad">Loading...</span>
+          </label>
+          <label class="profile-edit__radio-label">
+            <input type="radio" name="living-status" value="both" id="radio-both">
+            <span id="living-status-both">Loading...</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Address Display (view mode) -->
+      <div id="address-display-view">
+        <div class="info-grid">
+          <!-- Iceland Address -->
+          <div id="iceland-address-section" style="display: none;">
+            <div class="info-grid__item">
+              <div class="info-grid__label" id="label-address">Loading...</div>
+              <div class="info-grid__value" id="value-address">-</div>
+            </div>
+            <div class="info-grid__item">
+              <div class="info-grid__label" id="label-postal-code">Loading...</div>
+              <div class="info-grid__value" id="value-postal-code">-</div>
+            </div>
+            <div class="info-grid__item">
+              <div class="info-grid__label" id="label-city">Loading...</div>
+              <div class="info-grid__value" id="value-city">-</div>
+            </div>
+          </div>
+
+          <!-- Foreign Address -->
+          <div id="foreign-address-section" style="display: none;">
+            <div class="info-grid__item">
+              <div class="info-grid__label" id="label-country">Loading...</div>
+              <div class="info-grid__value" id="value-country">-</div>
+            </div>
+            <div class="info-grid__item">
+              <div class="info-grid__label" id="label-foreign-address">Loading...</div>
+              <div class="info-grid__value" id="value-foreign-address">-</div>
+            </div>
+            <div class="info-grid__item">
+              <div class="info-grid__label" id="label-foreign-postal">Loading...</div>
+              <div class="info-grid__value" id="value-foreign-postal">-</div>
+            </div>
+            <div class="info-grid__item">
+              <div class="info-grid__label" id="label-foreign-municipality">Loading...</div>
+              <div class="info-grid__value" id="value-foreign-municipality">-</div>
+            </div>
+            <div class="info-grid__item">
+              <div class="info-grid__label" id="label-foreign-phone">Loading...</div>
+              <div class="info-grid__value" id="value-foreign-phone">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Foreign Address Form (edit mode) -->
+      <div id="foreign-address-form" style="display: none;">
+        <div class="info-grid">
+          <!-- Country Selector -->
+          <div class="info-grid__item">
+            <div class="info-grid__label" id="label-country-select">Loading...</div>
+            <div class="profile-edit__input-wrapper">
+              <select class="profile-edit__input" id="input-country" name="country">
+                <option value="">-- Veldu land --</option>
+                <!-- Countries populated by JS -->
+              </select>
+              <span class="profile-edit__error" id="error-country"></span>
+            </div>
+          </div>
+
+          <!-- Foreign Address -->
+          <div class="info-grid__item">
+            <div class="info-grid__label" id="label-foreign-address-input">Loading...</div>
+            <div class="profile-edit__input-wrapper">
+              <input
+                type="text"
+                class="profile-edit__input"
+                id="input-foreign-address"
+                name="foreign-address"
+                placeholder="Nørrebrogade 10A"
+                maxlength="200"
+              />
+              <span class="profile-edit__error" id="error-foreign-address"></span>
+            </div>
+          </div>
+
+          <!-- Foreign Postal Code -->
+          <div class="info-grid__item">
+            <div class="info-grid__label" id="label-foreign-postal-input">Loading...</div>
+            <div class="profile-edit__input-wrapper">
+              <input
+                type="text"
+                class="profile-edit__input"
+                id="input-foreign-postal"
+                name="foreign-postal"
+                placeholder="2100"
+                maxlength="16"
+              />
+              <span class="profile-edit__error" id="error-foreign-postal"></span>
+            </div>
+          </div>
+
+          <!-- Foreign Municipality -->
+          <div class="info-grid__item">
+            <div class="info-grid__label" id="label-foreign-municipality-input">Loading...</div>
+            <div class="profile-edit__input-wrapper">
+              <input
+                type="text"
+                class="profile-edit__input"
+                id="input-foreign-municipality"
+                name="foreign-municipality"
+                placeholder="Copenhagen"
+                maxlength="100"
+              />
+              <span class="profile-edit__error" id="error-foreign-municipality"></span>
+            </div>
+          </div>
+
+          <!-- Foreign Phone -->
+          <div class="info-grid__item">
+            <div class="info-grid__label" id="label-foreign-phone-input">Loading...</div>
+            <div class="profile-edit__input-wrapper">
+              <input
+                type="tel"
+                class="profile-edit__input"
+                id="input-foreign-phone"
+                name="foreign-phone"
+                placeholder="+45 12345678"
+                pattern="\+[0-9]{1,3}\s?[0-9\s()-]{6,20}"
+              />
+              <span class="profile-edit__error" id="error-foreign-phone"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Membership Status -->
     <div class="card">
       <h3 class="card__title" id="membership-title">Loading...</h3>

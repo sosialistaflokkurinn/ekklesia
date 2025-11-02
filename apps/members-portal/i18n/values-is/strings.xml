@@ -396,11 +396,13 @@
     <string name="section_foreign_address">Erlent heimilisfang</string>
 
     <!-- Living status -->
+    <string name="label_living_status">Búseta</string>
     <string name="living_status_iceland">Bý á Íslandi</string>
     <string name="living_status_abroad">Bý erlendis</string>
     <string name="living_status_both">Heima og erlendis</string>
 
     <!-- Icelandic address fields -->
+    <string name="label_address">Heimilisfang</string>
     <string name="label_street">Gata</string>
     <string name="label_number">Númer</string>
     <string name="label_postal_code">Póstnúmer</string>

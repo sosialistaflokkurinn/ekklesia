@@ -18,7 +18,8 @@ import { requireAuth, getUserData, signOut, AuthenticationError } from '../sessi
 import { httpsCallable, getFirebaseFirestore } from '../firebase/app.js';
 import { doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { setTextContent, validateElements } from '../ui/dom.js';
-import { formatPhone, validatePhone } from './utils/format.js';
+import { formatPhone, validatePhone, formatInternationalPhone, validateInternationalPhone } from './utils/format.js';
+import { getCountryName, getCountriesSorted } from './utils/countries.js';
 import { updateMemberProfile } from './api/members-client.js';
 
 /**
@@ -82,6 +83,7 @@ function updateProfileStrings() {
   document.title = R.string.page_title_profile;
   setTextContent('profile-title', R.string.profile_title, 'profile page');
   setTextContent('section-personal-info', R.string.section_personal_info, 'profile page');
+  setTextContent('section-address-info', R.string.section_address, 'profile page');
   setTextContent('membership-title', R.string.membership_title, 'profile page');
   setTextContent('membership-status', R.string.membership_loading, 'profile page');
   setTextContent('label-name', R.string.label_name, 'profile page');
@@ -90,6 +92,27 @@ function updateProfileStrings() {
   setTextContent('label-phone', R.string.label_phone, 'profile page');
   setTextContent('label-status', R.string.label_status, 'profile page');
   setTextContent('label-uid', R.string.label_uid, 'profile page');
+
+  // Address labels
+  setTextContent('label-living-status', R.string.label_living_status, 'profile page');
+  setTextContent('living-status-iceland', R.string.living_status_iceland, 'profile page');
+  setTextContent('living-status-abroad', R.string.living_status_abroad, 'profile page');
+  setTextContent('living-status-both', R.string.living_status_both, 'profile page');
+  setTextContent('label-address', R.string.label_address, 'profile page');
+  setTextContent('label-postal-code', R.string.label_postal_code, 'profile page');
+  setTextContent('label-city', R.string.label_city, 'profile page');
+  setTextContent('label-country', R.string.label_country, 'profile page');
+  setTextContent('label-foreign-address', R.string.label_foreign_address, 'profile page');
+  setTextContent('label-foreign-postal', R.string.label_foreign_postal_code, 'profile page');
+  setTextContent('label-foreign-municipality', R.string.label_foreign_municipality, 'profile page');
+  setTextContent('label-foreign-phone', R.string.label_foreign_phone, 'profile page');
+
+  // Address input labels (edit mode)
+  setTextContent('label-country-select', R.string.label_country, 'profile page');
+  setTextContent('label-foreign-address-input', R.string.label_foreign_address, 'profile page');
+  setTextContent('label-foreign-postal-input', R.string.label_foreign_postal_code, 'profile page');
+  setTextContent('label-foreign-municipality-input', R.string.label_foreign_municipality, 'profile page');
+  setTextContent('label-foreign-phone-input', R.string.label_foreign_phone, 'profile page');
 }
 
 /**
@@ -146,6 +169,90 @@ function updateUserInfo(userData, memberData = null) {
   const phone = memberProfile.phone || userData.phoneNumber;
   setTextContent('value-phone', formatPhone(phone) || placeholder, 'profile page');
   setTextContent('value-uid', formatFieldValue(userData.uid, placeholder), 'profile page');
+}
+
+/**
+ * Update address information display
+ *
+ * Shows either Iceland address or current foreign address based on foreign_addresses.current flag
+ *
+ * @param {Object} memberData - Member data from Firestore
+ */
+function updateAddressInfo(memberData) {
+  const placeholder = R.string.placeholder_not_available;
+
+  // Get address sections
+  const icelandSection = document.getElementById('iceland-address-section');
+  const foreignSection = document.getElementById('foreign-address-section');
+
+  if (!memberData) {
+    // No member data - hide both sections
+    if (icelandSection) icelandSection.style.display = 'none';
+    if (foreignSection) foreignSection.style.display = 'none';
+    return;
+  }
+
+  // Check for current foreign address
+  const foreignAddresses = memberData.foreign_addresses || [];
+  const currentForeignAddress = foreignAddresses.find(fa => fa.current === true);
+
+  if (currentForeignAddress) {
+    // Show foreign address, hide Iceland address
+    if (icelandSection) icelandSection.style.display = 'none';
+    if (foreignSection) {
+      foreignSection.style.display = 'block';
+
+      // Display foreign address fields
+      const countryName = getCountryName(currentForeignAddress.country);
+      setTextContent('value-country', countryName || placeholder, 'profile page');
+      setTextContent('value-foreign-address', currentForeignAddress.address || placeholder, 'profile page');
+      setTextContent('value-foreign-postal', currentForeignAddress.postal_code || placeholder, 'profile page');
+      setTextContent('value-foreign-municipality', currentForeignAddress.municipality || placeholder, 'profile page');
+
+      // Display foreign phone (from profile, not address)
+      const foreignPhone = memberData.profile?.foreign_phone || '';
+      setTextContent('value-foreign-phone', formatInternationalPhone(foreignPhone) || placeholder, 'profile page');
+    }
+  } else {
+    // Show Iceland address, hide foreign address
+    if (foreignSection) foreignSection.style.display = 'none';
+    if (icelandSection) {
+      icelandSection.style.display = 'block';
+
+      // Display Iceland address fields
+      const address = memberData.address || {};
+      const fullAddress = [address.street, address.number, address.letter]
+        .filter(Boolean)
+        .join(' ') || placeholder;
+      setTextContent('value-address', fullAddress, 'profile page');
+      setTextContent('value-postal-code', address.postal_code || placeholder, 'profile page');
+      setTextContent('value-city', address.city || placeholder, 'profile page');
+    }
+  }
+}
+
+/**
+ * Populate country dropdown for foreign address form
+ */
+function populateCountryDropdown() {
+  const countrySelect = document.getElementById('input-country');
+  if (!countrySelect) return;
+
+  // Get sorted countries
+  const countries = getCountriesSorted();
+
+  // Clear existing options (except the first placeholder)
+  while (countrySelect.options.length > 1) {
+    countrySelect.remove(1);
+  }
+
+  // Add country options
+  countries.forEach(country => {
+    const option = document.createElement('option');
+    option.value = country.code;
+    option.textContent = country.name;
+    countrySelect.appendChild(option);
+  });
 }
 
 /**
@@ -541,9 +648,13 @@ async function init() {
     // Initialize edit functionality
     initEditElements();
 
+    // Populate country dropdown for foreign address form
+    populateCountryDropdown();
+
     // Update profile-specific UI
     updateProfileStrings();
     updateUserInfo(userData, memberData);
+    updateAddressInfo(memberData);
 
     // Show loading state while verifying membership
     const membershipElement = document.getElementById('membership-status');
