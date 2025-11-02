@@ -15,9 +15,11 @@
 import { R } from '../i18n/strings-loader.js';
 import { initAuthenticatedPage } from './page-init.js';
 import { requireAuth, getUserData, signOut, AuthenticationError } from '../session/auth.js';
-import { httpsCallable } from '../firebase/app.js';
+import { httpsCallable, getFirebaseFirestore } from '../firebase/app.js';
+import { doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { setTextContent, validateElements } from '../ui/dom.js';
-import { formatPhone } from './utils/format.js';
+import { formatPhone, validatePhone } from './utils/format.js';
+import { updateMemberProfile } from './api/members-client.js';
 
 /**
  * Required DOM elements for profile page
@@ -39,6 +41,30 @@ const PROFILE_ELEMENTS = [
   'label-uid',
   'value-uid'
 ];
+
+/**
+ * Edit mode state
+ */
+let isEditing = false;
+let originalData = null;
+let currentUserData = null;
+
+/**
+ * DOM elements for edit functionality
+ */
+const editElements = {
+  btnEdit: null,
+  btnSave: null,
+  btnCancel: null,
+  inputName: null,
+  inputEmail: null,
+  inputPhone: null,
+  valueName: null,
+  valueEmail: null,
+  valuePhone: null,
+  successMessage: null,
+  errorMessage: null
+};
 
 /**
  * Validate profile page DOM structure
@@ -105,15 +131,20 @@ export function formatMembershipStatus(isMember) {
  * Update user information in UI
  *
  * @param {Object} userData - User data from Firebase token claims
+ * @param {Object} memberData - Member data from Firestore /members/ collection
  */
-function updateUserInfo(userData) {
+function updateUserInfo(userData, memberData = null) {
   const placeholder = R.string.placeholder_not_available;
 
-  setTextContent('value-name', formatFieldValue(userData.displayName, placeholder), 'profile page');
+  // Prefer memberData.profile values over userData (memberData is source of truth)
+  const memberProfile = memberData?.profile || {};
+
+  setTextContent('value-name', formatFieldValue(memberProfile.name || userData.displayName, placeholder), 'profile page');
   setTextContent('value-kennitala', formatFieldValue(userData.kennitala, placeholder), 'profile page');
-  setTextContent('value-email', formatFieldValue(userData.email, placeholder), 'profile page');
-  // Format phone for display (XXX-XXXX)
-  setTextContent('value-phone', formatPhone(userData.phoneNumber) || placeholder, 'profile page');
+  setTextContent('value-email', formatFieldValue(memberProfile.email || userData.email, placeholder), 'profile page');
+  // Format phone for display (XXX-XXXX) - prefer memberData phone
+  const phone = memberProfile.phone || userData.phoneNumber;
+  setTextContent('value-phone', formatPhone(phone) || placeholder, 'profile page');
   setTextContent('value-uid', formatFieldValue(userData.uid, placeholder), 'profile page');
 }
 
@@ -150,6 +181,324 @@ async function verifyMembership() {
 }
 
 /**
+ * Initialize edit DOM elements
+ */
+function initEditElements() {
+  editElements.btnEdit = document.getElementById('btn-edit');
+  editElements.btnSave = document.getElementById('btn-save');
+  editElements.btnCancel = document.getElementById('btn-cancel');
+  editElements.inputName = document.getElementById('input-name');
+  editElements.inputEmail = document.getElementById('input-email');
+  editElements.inputPhone = document.getElementById('input-phone');
+  editElements.valueName = document.getElementById('value-name');
+  editElements.valueEmail = document.getElementById('value-email');
+  editElements.valuePhone = document.getElementById('value-phone');
+  editElements.successMessage = document.getElementById('profile-success');
+  editElements.errorMessage = document.getElementById('profile-error');
+
+  // Add event listeners
+  editElements.btnEdit?.addEventListener('click', enableEditMode);
+  editElements.btnSave?.addEventListener('click', saveChanges);
+  editElements.btnCancel?.addEventListener('click', cancelEdit);
+}
+
+/**
+ * Enable edit mode - show inputs, hide values
+ */
+function enableEditMode() {
+  isEditing = true;
+
+  // Save original data for cancel/revert
+  originalData = {
+    name: editElements.valueName.textContent,
+    email: editElements.valueEmail.textContent,
+    phone: editElements.valuePhone.textContent
+  };
+
+  // Populate input fields with current values
+  editElements.inputName.value = originalData.name !== '-' ? originalData.name : '';
+  editElements.inputEmail.value = originalData.email !== '-' ? originalData.email : '';
+  editElements.inputPhone.value = originalData.phone !== '-' ? originalData.phone : '';
+
+  // Toggle UI
+  document.body.classList.add('profile-editing');
+  editElements.btnEdit.style.display = 'none';
+  editElements.btnSave.style.display = 'inline-block';
+  editElements.btnCancel.style.display = 'inline-block';
+
+  // Hide values, show inputs
+  document.querySelectorAll('.profile-edit__value').forEach(el => {
+    el.style.display = 'none';
+  });
+  document.querySelectorAll('.profile-edit__input-wrapper').forEach(el => {
+    el.style.display = 'block';
+  });
+
+  // Focus on first input
+  editElements.inputName.focus();
+
+  // Clear any previous messages
+  clearMessages();
+}
+
+/**
+ * Cancel edit mode - revert to view mode
+ */
+function cancelEdit() {
+  // Check for unsaved changes
+  if (hasUnsavedChanges()) {
+    if (!confirm(R.string.profile_cancel_confirm || 'Hætta við breytingar?')) {
+      return;
+    }
+  }
+
+  // Reset state
+  isEditing = false;
+  originalData = null;
+
+  // Toggle UI back
+  document.body.classList.remove('profile-editing');
+  editElements.btnEdit.style.display = 'inline-block';
+  editElements.btnSave.style.display = 'none';
+  editElements.btnCancel.style.display = 'none';
+
+  // Show values, hide inputs
+  document.querySelectorAll('.profile-edit__value').forEach(el => {
+    el.style.display = 'block';
+  });
+  document.querySelectorAll('.profile-edit__input-wrapper').forEach(el => {
+    el.style.display = 'none';
+  });
+
+  // Clear errors
+  clearErrors();
+}
+
+/**
+ * Validate form fields
+ * @returns {boolean} True if valid
+ */
+function validateForm() {
+  let isValid = true;
+  clearErrors();
+
+  // Name (required)
+  const name = editElements.inputName.value.trim();
+  if (!name || name.length === 0) {
+    showFieldError('name', R.string.validation_name_required || 'Nafn má ekki vera tómt');
+    isValid = false;
+  } else if (name.length > 100) {
+    showFieldError('name', R.string.validation_name_too_long || 'Nafn má ekki vera lengra en 100 stafir');
+    isValid = false;
+  }
+
+  // Email (optional, but must be valid if provided)
+  const email = editElements.inputEmail.value.trim();
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showFieldError('email', R.string.validation_email_invalid || 'Ógilt netfang');
+    isValid = false;
+  }
+
+  // Phone (optional, but must be valid if provided)
+  const phone = editElements.inputPhone.value.trim();
+  if (phone && !validatePhone(phone)) {
+    showFieldError('phone', R.string.validation_phone_invalid || 'Ógilt símanúmer (7 tölustafir)');
+    isValid = false;
+  }
+
+  return isValid;
+}
+
+/**
+ * Save changes - optimistic update
+ */
+async function saveChanges() {
+  // Validate
+  if (!validateForm()) {
+    return;
+  }
+
+  // Collect updates
+  const updates = {};
+  const name = editElements.inputName.value.trim();
+  const email = editElements.inputEmail.value.trim();
+  const phone = editElements.inputPhone.value.trim();
+
+  if (name !== originalData.name) updates.name = name;
+  if (email !== originalData.email) updates.email = email;
+  if (phone !== originalData.phone) updates.phone = phone;
+
+  // Nothing changed?
+  if (Object.keys(updates).length === 0) {
+    showSuccess(R.string.profile_no_changes || 'Engar breytingar til að vista');
+    cancelEdit();
+    return;
+  }
+
+  // Disable buttons during save
+  editElements.btnSave.disabled = true;
+  editElements.btnCancel.disabled = true;
+  const saveText = editElements.btnSave.querySelector('#btn-save-text');
+  if (saveText) {
+    saveText.textContent = R.string.profile_saving_button || 'Vistar...';
+  }
+
+  try {
+    // Build original data structure for rollback
+    const originalMemberData = {
+      profile: {
+        name: originalData.name !== '-' ? originalData.name : '',
+        email: originalData.email !== '-' ? originalData.email : '',
+        phone: originalData.phone !== '-' ? originalData.phone : ''
+      }
+    };
+
+    // Update both Firestore and Django using shared client
+    // (includes optimistic update + automatic rollback if Django fails)
+    const region = R.string.config_firebase_region;
+    await updateMemberProfile(currentUserData.kennitala, updates, originalMemberData, region);
+
+    // Success! Update UI to reflect saved changes
+    if (updates.name) editElements.valueName.textContent = updates.name;
+    if (updates.email) editElements.valueEmail.textContent = updates.email;
+    if (updates.phone) editElements.valuePhone.textContent = formatPhone(updates.phone) || updates.phone;
+
+    // Show success message
+    showSuccess(R.string.profile_save_success || 'Upplýsingar uppfærðar!');
+
+    // Exit edit mode
+    isEditing = false;
+    document.body.classList.remove('profile-editing');
+    editElements.btnEdit.style.display = 'inline-block';
+    editElements.btnSave.style.display = 'none';
+    editElements.btnCancel.style.display = 'none';
+
+    // Show values, hide inputs
+    document.querySelectorAll('.profile-edit__value').forEach(el => {
+      el.style.display = 'block';
+    });
+    document.querySelectorAll('.profile-edit__input-wrapper').forEach(el => {
+      el.style.display = 'none';
+    });
+
+  } catch (error) {
+    console.error('Save failed:', error);
+
+    // Revert UI to original values (Firestore already rolled back by shared client)
+    editElements.valueName.textContent = originalData.name;
+    editElements.valueEmail.textContent = originalData.email;
+    editElements.valuePhone.textContent = originalData.phone;
+
+    showError('Villa við vistun í Django. Breytingar voru ekki vistaðar. Reyndu aftur.');
+  } finally {
+    // Re-enable buttons
+    editElements.btnSave.disabled = false;
+    editElements.btnCancel.disabled = false;
+    if (saveText) {
+      saveText.textContent = R.string.profile_save_button || 'Vista breytingar';
+    }
+  }
+}
+
+/**
+ * Helper: Check if there are unsaved changes
+ */
+function hasUnsavedChanges() {
+  if (!originalData) return false;
+
+  const currentName = editElements.inputName.value.trim();
+  const currentEmail = editElements.inputEmail.value.trim();
+  const currentPhone = editElements.inputPhone.value.trim();
+
+  return (
+    currentName !== originalData.name ||
+    currentEmail !== originalData.email ||
+    currentPhone !== originalData.phone
+  );
+}
+
+/**
+ * Helper: Show field error
+ */
+function showFieldError(fieldName, message) {
+  const errorEl = document.getElementById(`error-${fieldName}`);
+  if (errorEl) {
+    errorEl.textContent = message;
+    errorEl.style.display = 'block';
+  }
+
+  const inputEl = document.getElementById(`input-${fieldName}`);
+  if (inputEl) {
+    inputEl.classList.add('error');
+  }
+}
+
+/**
+ * Helper: Clear all errors
+ */
+function clearErrors() {
+  document.querySelectorAll('.profile-edit__error').forEach(el => {
+    el.style.display = 'none';
+    el.textContent = '';
+  });
+
+  document.querySelectorAll('.profile-edit__input').forEach(el => {
+    el.classList.remove('error');
+  });
+}
+
+/**
+ * Helper: Show success message
+ */
+function showSuccess(message) {
+  const successEl = editElements.successMessage;
+  if (successEl) {
+    successEl.querySelector('#success-message').textContent = message;
+    successEl.style.display = 'block';
+  }
+
+  const errorEl = editElements.errorMessage;
+  if (errorEl) {
+    errorEl.style.display = 'none';
+  }
+
+  // Auto-hide after 5 seconds
+  setTimeout(() => {
+    if (successEl) {
+      successEl.style.display = 'none';
+    }
+  }, 5000);
+}
+
+/**
+ * Helper: Show error message
+ */
+function showError(message) {
+  const errorEl = editElements.errorMessage;
+  if (errorEl) {
+    errorEl.querySelector('#error-message').textContent = message;
+    errorEl.style.display = 'block';
+  }
+
+  const successEl = editElements.successMessage;
+  if (successEl) {
+    successEl.style.display = 'none';
+  }
+}
+
+/**
+ * Helper: Clear messages
+ */
+function clearMessages() {
+  if (editElements.successMessage) {
+    editElements.successMessage.style.display = 'none';
+  }
+  if (editElements.errorMessage) {
+    editElements.errorMessage.style.display = 'none';
+  }
+}
+
+/**
  * Initialize profile page
  *
  * @returns {Promise<void>}
@@ -171,9 +520,30 @@ async function init() {
     // Get user data from custom claims
     const userData = await getUserData(currentUser);
 
+    // Save user data for edit functions
+    currentUserData = userData;
+
+    // Load member data from Firestore (source of truth for profile fields)
+    let memberData = null;
+    try {
+      const db = getFirebaseFirestore();
+      const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+      const memberDocRef = doc(db, 'members', userData.kennitala.replace(/-/g, ''));
+      const memberDoc = await getDoc(memberDocRef);
+      if (memberDoc.exists()) {
+        memberData = memberDoc.data();
+      }
+    } catch (error) {
+      console.warn('Failed to load member data from Firestore:', error);
+      // Continue with userData only
+    }
+
+    // Initialize edit functionality
+    initEditElements();
+
     // Update profile-specific UI
     updateProfileStrings();
-    updateUserInfo(userData);
+    updateUserInfo(userData, memberData);
 
     // Show loading state while verifying membership
     const membershipElement = document.getElementById('membership-status');
