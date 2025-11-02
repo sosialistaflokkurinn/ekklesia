@@ -12,6 +12,7 @@ import { initAuthenticatedPage } from './page-init.js';
 import { R } from '../i18n/strings-loader.js';
 import { getElectionById, submitVote, getResults } from './api/elections-api.js';
 import { auth } from './auth.js';
+import { escapeHTML } from './utils/format.js';
 
 // State
 let currentElection = null;
@@ -341,15 +342,6 @@ function showError(message) {
   document.getElementById('error-message').textContent = message;
   document.getElementById('election-loading').classList.add('u-hidden');
   document.getElementById('election-detail').classList.add('u-hidden');
-}
-
-/**
- * Utility: Escape HTML to prevent XSS
- */
-function escapeHTML(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
 }
 
 /**

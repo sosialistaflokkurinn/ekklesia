@@ -444,23 +444,46 @@ def get_django_member_by_kennitala(kennitala: str) -> Dict[str, Any]:
     """
     try:
         django_token = get_django_api_token()
+        api_url = f"{DJANGO_API_BASE_URL}/api/full/"
+
+        log_json('DEBUG', 'Django API lookup',
+                 event='get_django_member_by_kennitala_request',
+                 url=api_url,
+                 ssn_param=f"{kennitala[:6]}****")
+
         response = requests.get(
-            f"{DJANGO_API_BASE_URL}/api/full/",
+            api_url,
             headers={'Authorization': f'Token {django_token}'},
             params={'ssn': kennitala},
             timeout=30
         )
 
+        log_json('DEBUG', f'Django API response status: {response.status_code}',
+                 event='get_django_member_by_kennitala_response',
+                 status_code=response.status_code)
+
         if response.status_code == 200:
             data = response.json()
             results = data.get('results', [])
+            count = len(results)
+
+            log_json('DEBUG', f'Django API returned {count} results',
+                     event='get_django_member_by_kennitala_results',
+                     count=count)
+
             if results:
-                return results[0]  # Return first match
+                member = results[0]
+                log_json('DEBUG', 'Returning first member',
+                         event='get_django_member_by_kennitala_found',
+                         django_id=member.get('id'),
+                         django_ssn=f"{member.get('ssn', '')[:6]}****")
+                return member
             return None
         else:
             log_json('ERROR', f'Django API error: {response.status_code}',
                      event='get_django_member_by_kennitala_error',
-                     kennitala=f"{kennitala[:6]}****")
+                     kennitala=f"{kennitala[:6]}****",
+                     response_text=response.text[:200])
             return None
 
     except Exception as e:

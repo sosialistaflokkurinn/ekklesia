@@ -8,7 +8,8 @@
 import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
 import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { getMemberByDjangoId, updateMember, validateMemberData } from './django-api.js';
-import { formatPhone, maskKennitala, validatePhone } from './utils/format.js';
+import { formatPhone, maskKennitala, validatePhone } from '../../js/utils/format.js';
+import { createMemberPageStates } from './utils/ui-states.js';
 
 // Initialize Firebase services
 const auth = getFirebaseAuth();
@@ -41,10 +42,19 @@ const adminStrings = new Map();
     successMessage: null
   };
 
+  // UI State Manager
+  let uiStates = null;
+
   // Initialize page
   async function init() {
     // Initialize DOM elements
     initElements();
+
+    // Initialize UI state manager (use formContainer as content)
+    uiStates = createMemberPageStates({
+      ...elements,
+      details: elements.formContainer
+    });
 
     // Load i18n strings early
     await loadStrings();
@@ -72,7 +82,7 @@ const adminStrings = new Map();
       const hasAdminAccess = roles.includes('admin') || roles.includes('superuser');
 
       if (!hasAdminAccess) {
-        showError(adminStrings.get('error_permission_denied'));
+        uiStates.showError(adminStrings.get('error_permission_denied'));
         return;
       }
 
@@ -231,7 +241,7 @@ const adminStrings = new Map();
 
   // Load member data from Firestore and Django
   async function loadMemberData() {
-    showLoading();
+    uiStates.showLoading();
 
     try {
       // First, get Django ID from Firestore
@@ -239,7 +249,7 @@ const adminStrings = new Map();
       const docSnap = await getDoc(docRef);
 
       if (!docSnap.exists()) {
-        showNotFound();
+        uiStates.show('notFound');
         return;
       }
 
@@ -248,7 +258,7 @@ const adminStrings = new Map();
 
       if (!djangoId) {
         console.error('No Django ID found for member');
-        showError(adminStrings.get('member_edit_missing_django_id'));
+        uiStates.showError(adminStrings.get('member_edit_missing_django_id'));
         return;
       }
 
@@ -257,11 +267,11 @@ const adminStrings = new Map();
 
       // Populate form
       populateForm(memberData);
-      showForm();
+      uiStates.showContent();
 
     } catch (error) {
       console.error('Error loading member:', error);
-      showError(`${adminStrings.get('member_edit_loading_error')}: ${error.message}`);
+      uiStates.showError(`${adminStrings.get('member_edit_loading_error')}: ${error.message}`);
     }
   }
 
@@ -497,39 +507,6 @@ const adminStrings = new Map();
       elements.btnCancel.disabled = false;
       if (btnSaveText) btnSaveText.textContent = adminStrings.get('member_edit_save_button');
     }
-  }
-
-  // Show loading state
-  function showLoading() {
-    elements.loading.style.display = 'block';
-    elements.error.style.display = 'none';
-    elements.notFound.style.display = 'none';
-    elements.formContainer.style.display = 'none';
-  }
-
-  // Show error state
-  function showError(message) {
-    elements.loading.style.display = 'none';
-    elements.error.style.display = 'block';
-    elements.notFound.style.display = 'none';
-    elements.formContainer.style.display = 'none';
-    elements.errorMessage.textContent = message;
-  }
-
-  // Show not found state
-  function showNotFound() {
-    elements.loading.style.display = 'none';
-    elements.error.style.display = 'none';
-    elements.notFound.style.display = 'block';
-    elements.formContainer.style.display = 'none';
-  }
-
-  // Show form
-  function showForm() {
-    elements.loading.style.display = 'none';
-    elements.error.style.display = 'none';
-    elements.notFound.style.display = 'none';
-    elements.formContainer.style.display = 'block';
   }
 
   // Initialize on DOM ready

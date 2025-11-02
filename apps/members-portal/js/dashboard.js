@@ -19,6 +19,7 @@ import { requireAuth, getUserData, signOut, AuthenticationError } from '../sessi
 import { httpsCallable, getFirebaseAuth, getFirebaseFirestore } from '../firebase/app.js';
 import { setTextContent, setInnerHTML, addEventListener, setDisabled, validateElements } from '../ui/dom.js';
 import { formatPhone, normalizePhoneForComparison } from './utils/format.js';
+import { updateMemberProfile } from './api/members-client.js';
 
 /**
  * Required DOM elements for dashboard page
@@ -434,9 +435,10 @@ async function showProfileUpdateModal(discrepancies, userData, memberData) {
  *
  * @param {Object} userData - User data from Kenni.is (source of truth)
  * @param {Array} discrepancies - List of fields that need updating
+ * @param {Object} memberData - Current member data from Firestore (for rollback)
  * @returns {Promise<void>}
  */
-async function updateProfileData(userData, discrepancies) {
+async function updateProfileData(userData, discrepancies, memberData = {}) {
   const kennitala = userData.kennitala.replace(/-/g, '');
 
   // Build update data from discrepancies
@@ -447,60 +449,9 @@ async function updateProfileData(userData, discrepancies) {
     if (d.field === 'phone') updates.phone = userData.phoneNumber;
   });
 
-  // 1. Update Firestore /members/ collection
-  await updateFirestoreMember(kennitala, updates);
-
-  // 2. Update Django backend
-  await updateDjangoMember(kennitala, updates);
-}
-
-/**
- * Update member profile in Firestore
- *
- * @param {string} kennitala - Member's kennitala (normalized, no hyphen)
- * @param {Object} updates - Fields to update {name, email, phone}
- * @returns {Promise<void>}
- */
-async function updateFirestoreMember(kennitala, updates) {
-  const db = getFirebaseFirestore();
-  const { doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-
-  const memberDocRef = doc(db, 'members', kennitala);
-
-  // Build Firestore update object (nested under profile)
-  const firestoreUpdates = {};
-  if (updates.name) firestoreUpdates['profile.name'] = updates.name;
-  if (updates.email) firestoreUpdates['profile.email'] = updates.email;
-  if (updates.phone) firestoreUpdates['profile.phone'] = updates.phone;
-
-  await updateDoc(memberDocRef, firestoreUpdates);
-
-  console.log('✅ Updated Firestore member:', kennitala, firestoreUpdates);
-}
-
-/**
- * Update member profile in Django backend
- *
- * @param {string} kennitala - Member's kennitala (normalized, no hyphen)
- * @param {Object} updates - Fields to update {name, email, phone}
- * @returns {Promise<void>}
- */
-async function updateDjangoMember(kennitala, updates) {
-  // Call Cloud Function using Firebase callable function API
-  // Function is deployed in europe-west2 region
-  const updateMemberProfile = httpsCallable('updatememberprofile', 'europe-west2');
-
-  try {
-    const result = await updateMemberProfile({
-      kennitala: kennitala,
-      updates: updates
-    });
-
-    console.log('✅ Updated Django member:', result.data);
-  } catch (error) {
-    console.error('Django update failed:', error);
-    throw new Error(`Villa við uppfærslu Django gagnagrunns: ${error.message}`);
-  }
+  // Update both Firestore and Django using shared client
+  // (includes automatic rollback if Django fails)
+  await updateMemberProfile(kennitala, updates, memberData);
 }
 
 /**

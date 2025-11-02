@@ -8,9 +8,10 @@
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <link rel="stylesheet" href="/styles/global.css?v=20251027">
-  <link rel="stylesheet" href="/styles/components/nav.css?v=20251027">
-  <link rel="stylesheet" href="/styles/components/page.css?v=20251027">
+  <link rel="stylesheet" href="/styles/global.css?v=20251102">
+  <link rel="stylesheet" href="/styles/components/nav.css?v=20251102">
+  <link rel="stylesheet" href="/styles/components/page.css?v=20251102">
+  <link rel="stylesheet" href="/styles/components/profile-edit.css?v=20251102">
 </head>
 <body class="authenticated">
   <!-- Navigation -->
@@ -56,22 +57,114 @@
     <div class="card">
       <h3 class="card__title" id="section-personal-info">Loading...</h3>
       <div class="info-grid">
+        <!-- Name -->
         <div class="info-grid__item">
           <div class="info-grid__label" id="label-name">Loading...</div>
-          <div class="info-grid__value" id="value-name">-</div>
+
+          <!-- View mode (default) -->
+          <div class="info-grid__value profile-edit__value" id="value-name">-</div>
+
+          <!-- Edit mode (hidden by default) -->
+          <div class="profile-edit__input-wrapper" style="display: none;">
+            <input
+              type="text"
+              class="profile-edit__input"
+              id="input-name"
+              name="name"
+              required
+              maxlength="100"
+            />
+            <span class="profile-edit__error" id="error-name"></span>
+          </div>
         </div>
+
+        <!-- Kennitala (always read-only) -->
         <div class="info-grid__item">
           <div class="info-grid__label" id="label-kennitala">Loading...</div>
           <div class="info-grid__value" id="value-kennitala">-</div>
         </div>
+
+        <!-- Email -->
         <div class="info-grid__item">
           <div class="info-grid__label" id="label-email">Loading...</div>
-          <div class="info-grid__value" id="value-email">-</div>
+
+          <!-- View mode -->
+          <div class="info-grid__value profile-edit__value" id="value-email">-</div>
+
+          <!-- Edit mode -->
+          <div class="profile-edit__input-wrapper" style="display: none;">
+            <input
+              type="email"
+              class="profile-edit__input"
+              id="input-email"
+              name="email"
+              placeholder="nafn@example.is"
+            />
+            <span class="profile-edit__error" id="error-email"></span>
+          </div>
         </div>
+
+        <!-- Phone -->
         <div class="info-grid__item">
           <div class="info-grid__label" id="label-phone">Loading...</div>
-          <div class="info-grid__value" id="value-phone">-</div>
+
+          <!-- View mode -->
+          <div class="info-grid__value profile-edit__value" id="value-phone">-</div>
+
+          <!-- Edit mode -->
+          <div class="profile-edit__input-wrapper" style="display: none;">
+            <input
+              type="tel"
+              class="profile-edit__input"
+              id="input-phone"
+              name="phone"
+              placeholder="780-8188"
+              pattern="[0-9]{7}|[0-9]{3}-[0-9]{4}"
+            />
+            <span class="profile-edit__error" id="error-phone"></span>
+          </div>
         </div>
+      </div>
+
+      <!-- Edit/Save/Cancel Buttons -->
+      <div class="profile-edit__actions">
+        <!-- Edit button (default visible) -->
+        <button
+          type="button"
+          id="btn-edit"
+          class="btn btn--primary profile-edit__btn-edit"
+        >
+          <span id="btn-edit-text">Breyta upplýsingum</span>
+        </button>
+
+        <!-- Save button (hidden by default) -->
+        <button
+          type="button"
+          id="btn-save"
+          class="btn btn--primary profile-edit__btn-save"
+          style="display: none;"
+        >
+          <span id="btn-save-text">Vista breytingar</span>
+        </button>
+
+        <!-- Cancel button (hidden by default) -->
+        <button
+          type="button"
+          id="btn-cancel"
+          class="btn btn--secondary profile-edit__btn-cancel"
+          style="display: none;"
+        >
+          <span id="btn-cancel-text">Hætta við</span>
+        </button>
+      </div>
+
+      <!-- Success/error messages -->
+      <div id="profile-success" class="profile-edit__success" style="display: none;">
+        <p id="success-message"></p>
+      </div>
+
+      <div id="profile-error" class="profile-edit__error-message" style="display: none;">
+        <p id="error-message"></p>
       </div>
     </div>
 
@@ -91,6 +184,6 @@
     </div>
   </div>
 
-  <script type="module" src="/js/profile.js?v=20251027"></script>
+  <script type="module" src="/js/profile.js?v=20251102"></script>
 </body>
 </html>

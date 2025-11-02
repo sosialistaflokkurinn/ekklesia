@@ -7,7 +7,8 @@
 // Import from member portal public directory
 import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
 import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-import { formatPhone, maskKennitala } from './utils/format.js';
+import { formatPhone, maskKennitala } from '../../js/utils/format.js';
+import { createMemberPageStates } from './utils/ui-states.js';
 
 // Initialize Firebase services
 const auth = getFirebaseAuth();
@@ -34,10 +35,16 @@ const adminStrings = new Map();
     btnEdit: null
   };
 
+  // UI State Manager
+  let uiStates = null;
+
   // Initialize page
   async function init() {
     // Initialize DOM elements
     initElements();
+
+    // Initialize UI state manager
+    uiStates = createMemberPageStates(elements);
 
     // Load i18n strings early
     await loadStrings();
@@ -65,7 +72,7 @@ const adminStrings = new Map();
       const hasAdminAccess = roles.includes('admin') || roles.includes('superuser');
 
       if (!hasAdminAccess) {
-        showError(adminStrings.get('error_permission_denied'));
+        uiStates.showError(adminStrings.get('error_permission_denied'));
         return;
       }
 
@@ -192,24 +199,24 @@ const adminStrings = new Map();
 
   // Load member detail from Firestore
   async function loadMemberDetail() {
-    showLoading();
+    uiStates.showLoading();
 
     try {
       const docRef = doc(db, 'members', currentKennitala);
       const docSnap = await getDoc(docRef);
 
       if (!docSnap.exists()) {
-        showNotFound();
+        uiStates.show('notFound');
         return;
       }
 
       memberData = docSnap.data();
       renderMemberDetail(memberData);
-      showDetails();
+      uiStates.showContent();
 
     } catch (error) {
       console.error('Error loading member:', error);
-      showError(adminStrings.get('member_detail_error'));
+      uiStates.showError(adminStrings.get('member_detail_error'));
     }
   }
 
@@ -303,39 +310,6 @@ const adminStrings = new Map();
       case 'inactive': return adminStrings.get('members_status_inactive') || 'Óvirkur';
       default: return adminStrings.get('members_status_unknown') || 'Óþekkt';
     }
-  }
-
-  // Show loading state
-  function showLoading() {
-    elements.loading.style.display = 'block';
-    elements.error.style.display = 'none';
-    elements.notFound.style.display = 'none';
-    elements.details.style.display = 'none';
-  }
-
-  // Show error state
-  function showError(message) {
-    elements.loading.style.display = 'none';
-    elements.error.style.display = 'block';
-    elements.notFound.style.display = 'none';
-    elements.details.style.display = 'none';
-    elements.errorMessage.textContent = message;
-  }
-
-  // Show not found state
-  function showNotFound() {
-    elements.loading.style.display = 'none';
-    elements.error.style.display = 'none';
-    elements.notFound.style.display = 'block';
-    elements.details.style.display = 'none';
-  }
-
-  // Show details
-  function showDetails() {
-    elements.loading.style.display = 'none';
-    elements.error.style.display = 'none';
-    elements.notFound.style.display = 'none';
-    elements.details.style.display = 'block';
   }
 
   // Initialize on DOM ready
