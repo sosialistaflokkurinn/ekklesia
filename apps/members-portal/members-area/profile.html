@@ -124,6 +124,27 @@
             <span class="profile-edit__error" id="error-phone"></span>
           </div>
         </div>
+
+        <!-- Living Status Selector (edit mode only) -->
+        <div class="info-grid__item info-grid__item--full-width">
+          <div class="profile-edit__input-wrapper" id="living-status-selector" style="display: none;">
+            <div class="info-grid__label" id="label-living-status">Loading...</div>
+            <div class="profile-edit__radio-group">
+              <label class="profile-edit__radio-label">
+                <input type="radio" name="living-status" value="iceland" id="radio-iceland" checked>
+                <span id="living-status-iceland">Loading...</span>
+              </label>
+              <label class="profile-edit__radio-label">
+                <input type="radio" name="living-status" value="abroad" id="radio-abroad">
+                <span id="living-status-abroad">Loading...</span>
+              </label>
+              <label class="profile-edit__radio-label">
+                <input type="radio" name="living-status" value="both" id="radio-both">
+                <span id="living-status-both">Loading...</span>
+              </label>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Edit/Save/Cancel Buttons -->
@@ -171,25 +192,6 @@
     <!-- Address Information -->
     <div class="card">
       <h3 class="card__title" id="section-address-info">Loading...</h3>
-
-      <!-- Living Status Selector (edit mode only) -->
-      <div class="profile-edit__input-wrapper" id="living-status-selector" style="display: none;">
-        <div class="info-grid__label" id="label-living-status">Loading...</div>
-        <div class="profile-edit__radio-group">
-          <label class="profile-edit__radio-label">
-            <input type="radio" name="living-status" value="iceland" id="radio-iceland" checked>
-            <span id="living-status-iceland">Loading...</span>
-          </label>
-          <label class="profile-edit__radio-label">
-            <input type="radio" name="living-status" value="abroad" id="radio-abroad">
-            <span id="living-status-abroad">Loading...</span>
-          </label>
-          <label class="profile-edit__radio-label">
-            <input type="radio" name="living-status" value="both" id="radio-both">
-            <span id="living-status-both">Loading...</span>
-          </label>
-        </div>
-      </div>
 
       <!-- Address Display (view mode) -->
       <div id="address-display-view">
