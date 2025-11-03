@@ -196,38 +196,40 @@ function updateAddressInfo(memberData) {
   const foreignAddresses = memberData.foreign_addresses || [];
   const currentForeignAddress = foreignAddresses.find(fa => fa.current === true);
 
-  if (currentForeignAddress) {
-    // Show foreign address, hide Iceland address
-    if (icelandSection) icelandSection.style.display = 'none';
-    if (foreignSection) {
-      foreignSection.style.display = 'block';
+  // Show Iceland address (always show if available)
+  const address = memberData.address || {};
+  const hasIcelandAddress = address.street || address.postal_code || address.city;
 
-      // Display foreign address fields
-      const countryName = getCountryName(currentForeignAddress.country);
-      setTextContent('value-country', countryName || placeholder, 'profile page');
-      setTextContent('value-foreign-address', currentForeignAddress.address || placeholder, 'profile page');
-      setTextContent('value-foreign-postal', currentForeignAddress.postal_code || placeholder, 'profile page');
-      setTextContent('value-foreign-municipality', currentForeignAddress.municipality || placeholder, 'profile page');
+  if (hasIcelandAddress && icelandSection) {
+    icelandSection.style.display = 'block';
 
-      // Display foreign phone (from profile, not address)
-      const foreignPhone = memberData.profile?.foreign_phone || '';
-      setTextContent('value-foreign-phone', formatInternationalPhone(foreignPhone) || placeholder, 'profile page');
-    }
-  } else {
-    // Show Iceland address, hide foreign address
-    if (foreignSection) foreignSection.style.display = 'none';
-    if (icelandSection) {
-      icelandSection.style.display = 'block';
+    // Display Iceland address fields
+    const fullAddress = [address.street, address.number, address.letter]
+      .filter(Boolean)
+      .join(' ') || placeholder;
+    setTextContent('value-address', fullAddress, 'profile page');
+    setTextContent('value-postal-code', address.postal_code || placeholder, 'profile page');
+    setTextContent('value-city', address.city || placeholder, 'profile page');
+  } else if (icelandSection) {
+    icelandSection.style.display = 'none';
+  }
 
-      // Display Iceland address fields
-      const address = memberData.address || {};
-      const fullAddress = [address.street, address.number, address.letter]
-        .filter(Boolean)
-        .join(' ') || placeholder;
-      setTextContent('value-address', fullAddress, 'profile page');
-      setTextContent('value-postal-code', address.postal_code || placeholder, 'profile page');
-      setTextContent('value-city', address.city || placeholder, 'profile page');
-    }
+  // Show foreign address if available
+  if (currentForeignAddress && foreignSection) {
+    foreignSection.style.display = 'block';
+
+    // Display foreign address fields
+    const countryName = getCountryName(currentForeignAddress.country);
+    setTextContent('value-country', countryName || placeholder, 'profile page');
+    setTextContent('value-foreign-address', currentForeignAddress.address || placeholder, 'profile page');
+    setTextContent('value-foreign-postal', currentForeignAddress.postal_code || placeholder, 'profile page');
+    setTextContent('value-foreign-municipality', currentForeignAddress.municipality || placeholder, 'profile page');
+
+    // Display foreign phone (from profile, not address)
+    const foreignPhone = memberData.profile?.foreign_phone || '';
+    setTextContent('value-foreign-phone', formatInternationalPhone(foreignPhone) || placeholder, 'profile page');
+  } else if (foreignSection) {
+    foreignSection.style.display = 'none';
   }
 }
 
