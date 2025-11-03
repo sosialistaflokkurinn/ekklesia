@@ -102,17 +102,16 @@ function updateProfileStrings() {
   setTextContent('label-postal-code', R.string.label_postal_code, 'profile page');
   setTextContent('label-city', R.string.label_city, 'profile page');
   setTextContent('label-country', R.string.label_country, 'profile page');
+  setTextContent('label-foreign-phone-view', R.string.label_foreign_phone, 'profile page');
   setTextContent('label-foreign-address', R.string.label_foreign_address, 'profile page');
   setTextContent('label-foreign-postal', R.string.label_foreign_postal_code, 'profile page');
   setTextContent('label-foreign-municipality', R.string.label_foreign_municipality, 'profile page');
-  setTextContent('label-foreign-phone', R.string.label_foreign_phone, 'profile page');
 
   // Address input labels (edit mode)
   setTextContent('label-country-select', R.string.label_country, 'profile page');
   setTextContent('label-foreign-address-input', R.string.label_foreign_address, 'profile page');
   setTextContent('label-foreign-postal-input', R.string.label_foreign_postal_code, 'profile page');
   setTextContent('label-foreign-municipality-input', R.string.label_foreign_municipality, 'profile page');
-  setTextContent('label-foreign-phone-input', R.string.label_foreign_phone, 'profile page');
 }
 
 /**
@@ -168,6 +167,9 @@ function updateUserInfo(userData, memberData = null) {
   // Format phone for display (XXX-XXXX) - prefer memberData phone
   const phone = memberProfile.phone || userData.phoneNumber;
   setTextContent('value-phone', formatPhone(phone) || placeholder, 'profile page');
+  // Format foreign phone for display
+  const foreignPhone = memberProfile.foreign_phone || '';
+  setTextContent('value-foreign-phone-view', formatInternationalPhone(foreignPhone) || placeholder, 'profile page');
   setTextContent('value-uid', formatFieldValue(userData.uid, placeholder), 'profile page');
 }
 
@@ -234,10 +236,6 @@ function updateAddressInfo(memberData) {
     setTextContent('value-foreign-address', currentForeignAddress.address || placeholder, 'profile page');
     setTextContent('value-foreign-postal', currentForeignAddress.postal_code || placeholder, 'profile page');
     setTextContent('value-foreign-municipality', currentForeignAddress.municipality || placeholder, 'profile page');
-
-    // Display foreign phone (from profile, not address)
-    const foreignPhone = memberData.profile?.foreign_phone || '';
-    setTextContent('value-foreign-phone', formatInternationalPhone(foreignPhone) || placeholder, 'profile page');
   } else if (foreignSection) {
     foreignSection.style.display = 'none';
   }
@@ -423,7 +421,7 @@ function enableEditMode() {
   editElements.inputPhone.value = originalData.phone !== '-' ? originalData.phone : '';
 
   // Populate foreign phone if available
-  const foreignPhoneInput = document.getElementById('input-foreign-phone');
+  const foreignPhoneInput = document.getElementById('input-foreign-phone-top');
   if (foreignPhoneInput) {
     foreignPhoneInput.value = originalData.foreign_phone;
   }
@@ -551,7 +549,7 @@ function validateForeignAddress() {
   const address = document.getElementById('input-foreign-address')?.value.trim();
   const postalCode = document.getElementById('input-foreign-postal')?.value.trim();
   const municipality = document.getElementById('input-foreign-municipality')?.value.trim();
-  const foreignPhone = document.getElementById('input-foreign-phone')?.value.trim();
+  const foreignPhone = document.getElementById('input-foreign-phone-top')?.value.trim();
 
   // Country is required for foreign address
   if (!country) {
@@ -573,7 +571,7 @@ function validateForeignAddress() {
 
   // Foreign phone validation (optional, but if provided must be valid E.164)
   if (foreignPhone && !validateInternationalPhone(foreignPhone)) {
-    showFieldError('foreign-phone', R.string.validation_foreign_phone_invalid || 'Ógilt alþjóðlegt símanúmer');
+    showFieldError('foreign-phone-top', R.string.validation_foreign_phone_invalid || 'Ógilt alþjóðlegt símanúmer');
     isValid = false;
   }
 
@@ -613,7 +611,7 @@ async function saveChanges() {
   const name = editElements.inputName.value.trim();
   const email = editElements.inputEmail.value.trim();
   const phone = editElements.inputPhone.value.trim();
-  const foreignPhone = document.getElementById('input-foreign-phone')?.value.trim() || '';
+  const foreignPhone = document.getElementById('input-foreign-phone-top')?.value.trim() || '';
 
   if (name !== originalData.name) updates.name = name;
   if (email !== originalData.email) updates.email = email;
@@ -671,15 +669,11 @@ async function saveChanges() {
         const foreignAddressValue = document.getElementById('value-foreign-address');
         const foreignPostalValue = document.getElementById('value-foreign-postal');
         const foreignMunicipalityValue = document.getElementById('value-foreign-municipality');
-        const foreignPhoneValue = document.getElementById('value-foreign-phone');
 
         if (countryValue) countryValue.textContent = getCountryName(foreignAddressData.country);
         if (foreignAddressValue) foreignAddressValue.textContent = foreignAddressData.address;
         if (foreignPostalValue) foreignPostalValue.textContent = foreignAddressData.postal_code || '-';
         if (foreignMunicipalityValue) foreignMunicipalityValue.textContent = foreignAddressData.municipality || '-';
-        if (foreignPhoneValue) {
-          foreignPhoneValue.textContent = foreignPhone || '-';
-        }
 
       } catch (foreignAddressError) {
         // Foreign address save failed (Django API not implemented yet)
