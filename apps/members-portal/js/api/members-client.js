@@ -54,6 +54,11 @@ async function updateFirestoreMember(kennitala, updates) {
     }
   }
 
+  if ('foreign_phone' in updates) {
+    // Store foreign phone as-is (already validated)
+    firestoreUpdates['profile.foreign_phone'] = updates.foreign_phone;
+  }
+
   // Always update last modified timestamp
   firestoreUpdates['metadata.last_modified'] = new Date();
 
@@ -116,6 +121,7 @@ async function rollbackFirestore(kennitala, originalData) {
     if (originalData.profile.name) rollbackUpdates['profile.name'] = originalData.profile.name;
     if (originalData.profile.email) rollbackUpdates['profile.email'] = originalData.profile.email;
     if (originalData.profile.phone) rollbackUpdates['profile.phone'] = originalData.profile.phone;
+    if ('foreign_phone' in originalData.profile) rollbackUpdates['profile.foreign_phone'] = originalData.profile.foreign_phone;
   }
 
   await updateDoc(memberRef, rollbackUpdates);
