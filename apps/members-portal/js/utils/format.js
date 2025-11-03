@@ -183,15 +183,12 @@ export function validateInternationalPhone(phone) {
   // Must start with +
   if (!phone.startsWith('+')) return false;
 
-  // Remove all non-digits except the leading +
-  const cleaned = phone.replace(/[^\d+]/g, '');
+  // Remove all non-digits
+  const digitsOnly = phone.replace(/\D/g, '');
 
-  // Must have format: +[country code 1-3 digits][number 6-20 digits]
-  // Total length: 8-24 characters (+ and digits)
-  if (cleaned.length < 8 || cleaned.length > 24) return false;
-
-  // Check format: + followed by digits only
-  return /^\+[0-9]{7,23}$/.test(cleaned);
+  // Very permissive: just need at least 5 digits total
+  // This allows almost any international format
+  return digitsOnly.length >= 5;
 }
 
 /**

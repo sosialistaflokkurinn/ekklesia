@@ -428,7 +428,7 @@
     <string name="validation_address_required">Heimilisfang má ekki vera tómt</string>
     <string name="validation_postal_code_required">Póstnúmer má ekki vera tómt</string>
     <string name="validation_postal_code_invalid">Ógilt póstnúmer</string>
-    <string name="validation_foreign_phone_invalid">Ógilt alþjóðlegt símanúmer (notaðu +[landsnúmer] format)</string>
+    <string name="validation_foreign_phone_invalid">Vinsamlegast byrjaðu á + og landskóða. Dæmi: +45 12345678 eða +1 206-555-0142</string>
     <string name="validation_foreign_phone_format">Dæmi: +354 775-8492, +45 12345678</string>
 
     <!-- Address display -->
