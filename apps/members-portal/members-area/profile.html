@@ -125,6 +125,27 @@
           </div>
         </div>
 
+        <!-- Foreign Phone -->
+        <div class="info-grid__item">
+          <div class="info-grid__label" id="label-foreign-phone-view">Loading...</div>
+
+          <!-- View mode -->
+          <div class="info-grid__value profile-edit__value" id="value-foreign-phone-view">-</div>
+
+          <!-- Edit mode -->
+          <div class="profile-edit__input-wrapper" style="display: none;">
+            <input
+              type="tel"
+              class="profile-edit__input"
+              id="input-foreign-phone-top"
+              name="foreign-phone"
+              placeholder="+45 12345678 eða +1 206-555-0142"
+              title="Alþjóðlegt símanúmer með landskóða, t.d. +45 12345678"
+            />
+            <span class="profile-edit__error" id="error-foreign-phone-top"></span>
+          </div>
+        </div>
+
         <!-- Living Status Selector (edit mode only) -->
         <div class="info-grid__item info-grid__item--full-width">
           <div class="profile-edit__input-wrapper" id="living-status-selector" style="display: none;">
@@ -230,10 +251,6 @@
               <div class="info-grid__label" id="label-foreign-municipality">Loading...</div>
               <div class="info-grid__value" id="value-foreign-municipality">-</div>
             </div>
-            <div class="info-grid__item">
-              <div class="info-grid__label" id="label-foreign-phone">Loading...</div>
-              <div class="info-grid__value" id="value-foreign-phone">-</div>
-            </div>
           </div>
         </div>
       </div>
@@ -298,22 +315,6 @@
                 maxlength="100"
               />
               <span class="profile-edit__error" id="error-foreign-municipality"></span>
-            </div>
-          </div>
-
-          <!-- Foreign Phone -->
-          <div class="info-grid__item">
-            <div class="info-grid__label" id="label-foreign-phone-input">Loading...</div>
-            <div class="profile-edit__input-wrapper">
-              <input
-                type="tel"
-                class="profile-edit__input"
-                id="input-foreign-phone"
-                name="foreign-phone"
-                placeholder="+45 12345678 eða +1 206-555-0142"
-                title="Alþjóðlegt símanúmer með landskóða, t.d. +45 12345678"
-              />
-              <span class="profile-edit__error" id="error-foreign-phone"></span>
             </div>
           </div>
         </div>
