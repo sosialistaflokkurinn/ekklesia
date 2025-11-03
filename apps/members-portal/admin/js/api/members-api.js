@@ -150,12 +150,14 @@ const MembersAPI = {
 
   /**
    * Get single member by kennitala
-   * @param {string} kennitala - Member's kennitala (document ID)
+   * @param {string} kennitala - Member's kennitala (with or without hyphen)
    * @returns {Promise<Object>}
    */
   async getMember(kennitala) {
     try {
-      const docRef = doc(db, 'members', kennitala);
+      // CRITICAL FIX (Issue #166): Normalize kennitala (remove hyphen) before using as document ID
+      const kennitalaNoHyphen = kennitala.replace(/-/g, '');
+      const docRef = doc(db, 'members', kennitalaNoHyphen);
       const docSnap = await getDoc(docRef);
 
       if (!docSnap.exists()) {
