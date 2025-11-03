@@ -193,8 +193,18 @@ function updateAddressInfo(memberData) {
   }
 
   // Check for current foreign address
-  const foreignAddresses = memberData.foreign_addresses || [];
-  const currentForeignAddress = foreignAddresses.find(fa => fa.current === true);
+  // In Firestore: memberData.profile.foreign_address (object)
+  // From Django API: memberData.foreign_addresses (array)
+  let currentForeignAddress = null;
+
+  if (memberData.profile?.foreign_address) {
+    // Firestore format
+    currentForeignAddress = memberData.profile.foreign_address;
+  } else if (memberData.foreign_addresses) {
+    // Django API format
+    const foreignAddresses = memberData.foreign_addresses || [];
+    currentForeignAddress = foreignAddresses.find(fa => fa.current === true);
+  }
 
   // Show Iceland address (always show if available)
   const address = memberData.address || {};
@@ -387,28 +397,22 @@ function initEditElements() {
 function enableEditMode() {
   isEditing = true;
 
-  // Save original data for cancel/revert
-  const foreignPhoneValue = document.getElementById('value-foreign-phone')?.textContent || '';
-  const countryValue = document.getElementById('value-country')?.textContent || '';
-  const foreignAddressValue = document.getElementById('value-foreign-address')?.textContent || '';
-  const foreignPostalValue = document.getElementById('value-foreign-postal')?.textContent || '';
-  const foreignMunicipalityValue = document.getElementById('value-foreign-municipality')?.textContent || '';
-
+  // Save original data from currentUserData (source of truth)
   originalData = {
-    name: editElements.valueName.textContent,
-    email: editElements.valueEmail.textContent,
-    phone: editElements.valuePhone.textContent,
-    foreign_phone: foreignPhoneValue !== '-' ? foreignPhoneValue : '',
+    name: currentUserData?.profile?.name || editElements.valueName.textContent,
+    email: currentUserData?.profile?.email || editElements.valueEmail.textContent,
+    phone: currentUserData?.profile?.phone || editElements.valuePhone.textContent,
+    foreign_phone: currentUserData?.profile?.foreign_phone || '',
     foreign_address: null // Will be populated if foreign address exists
   };
 
-  // Check if foreign address exists and save it for rollback
-  if (countryValue && countryValue !== '-' && foreignAddressValue && foreignAddressValue !== '-') {
+  // Check for foreign address in Firestore format
+  if (currentUserData?.profile?.foreign_address) {
     originalData.foreign_address = {
-      country: countryValue, // This is the display name, we'll need to map back to code
-      address: foreignAddressValue,
-      postal_code: foreignPostalValue !== '-' ? foreignPostalValue : '',
-      municipality: foreignMunicipalityValue !== '-' ? foreignMunicipalityValue : '',
+      country: currentUserData.profile.foreign_address.country, // Country code (e.g., "US")
+      address: currentUserData.profile.foreign_address.address,
+      postal_code: currentUserData.profile.foreign_address.postal_code || '',
+      municipality: currentUserData.profile.foreign_address.municipality || '',
       current: true
     };
   }
@@ -431,8 +435,8 @@ function enableEditMode() {
     const postalInput = document.getElementById('input-foreign-postal');
     const municipalityInput = document.getElementById('input-foreign-municipality');
 
-    // Note: We need to map country display name back to country code
-    // For now, we'll just populate the fields - TODO: add country code lookup
+    // Set country code (e.g., "US") - dropdown uses country codes
+    if (countryInput) countryInput.value = originalData.foreign_address.country;
     if (addressInput) addressInput.value = originalData.foreign_address.address;
     if (postalInput) postalInput.value = originalData.foreign_address.postal_code;
     if (municipalityInput) municipalityInput.value = originalData.foreign_address.municipality;
