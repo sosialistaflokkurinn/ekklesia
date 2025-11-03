@@ -256,14 +256,33 @@
       <!-- Foreign Address Form (edit mode) -->
       <div id="foreign-address-form" style="display: none;">
         <div class="info-grid">
-          <!-- Country Selector -->
+          <!-- Country Selector (Autocomplete) -->
           <div class="info-grid__item">
             <div class="info-grid__label" id="label-country-select">Loading...</div>
             <div class="profile-edit__input-wrapper">
-              <select class="profile-edit__input" id="input-country" name="country">
-                <option value="">-- Veldu land --</option>
-                <!-- Countries populated by JS -->
-              </select>
+              <!-- Text input for search (visible) -->
+              <input
+                type="text"
+                class="profile-edit__input"
+                id="input-country"
+                name="country"
+                autocomplete="off"
+                role="combobox"
+                aria-autocomplete="list"
+                aria-controls="country-dropdown"
+                aria-expanded="false"
+              />
+              <!-- Hidden input to store selected country code (for validation) -->
+              <input type="hidden" id="input-country-code" name="country-code" />
+              <!-- Dropdown for autocomplete suggestions -->
+              <ul
+                id="country-dropdown"
+                class="autocomplete-dropdown"
+                role="listbox"
+                style="display: none;"
+              >
+                <!-- Populated dynamically by JS -->
+              </ul>
               <span class="profile-edit__error" id="error-country"></span>
             </div>
           </div>

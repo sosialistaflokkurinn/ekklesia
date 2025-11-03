@@ -130,6 +130,62 @@ body.profile-editing .profile-edit__input-wrapper {
   grid-column: 1 / -1;
 }
 
+/* Autocomplete Dropdown Styles */
+.autocomplete-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background-color: #fff;
+  border: 1px solid var(--color-gray-300, #d1d5db);
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  max-height: 300px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.autocomplete-dropdown:empty::after {
+  content: "Ekkert land fannst";
+  display: block;
+  padding: 0.75rem;
+  color: var(--color-gray-500, #6b7280);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.autocomplete-item {
+  padding: 0.75rem;
+  cursor: pointer;
+  color: var(--color-gray-900, #111827);
+  font-size: 0.9375rem;
+  border-bottom: 1px solid var(--color-gray-100, #f3f4f6);
+  transition: background-color 0.15s ease;
+}
+
+.autocomplete-item:last-child {
+  border-bottom: none;
+}
+
+.autocomplete-item:hover,
+.autocomplete-item.autocomplete-item--selected {
+  background-color: var(--color-primary-light, #dbeafe);
+  color: var(--color-primary, #2563eb);
+}
+
+.autocomplete-item--selected {
+  font-weight: 500;
+}
+
+/* Ensure input wrapper has relative positioning for dropdown */
+.profile-edit__input-wrapper {
+  position: relative;
+}
+
 /* Responsive */
 @media (max-width: 640px) {
   .profile-edit__actions {
@@ -143,5 +199,9 @@ body.profile-editing .profile-edit__input-wrapper {
   .profile-edit__radio-group {
     flex-direction: column;
     gap: 0.75rem;
+  }
+
+  .autocomplete-dropdown {
+    max-height: 200px;
   }
 }
