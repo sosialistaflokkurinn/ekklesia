@@ -244,8 +244,11 @@ const adminStrings = new Map();
     uiStates.showLoading();
 
     try {
+      // CRITICAL FIX (Issue #166): Normalize kennitala (remove hyphen) before using as document ID
+      const kennitalaNoHyphen = currentKennitala.replace(/-/g, '');
+
       // First, get Django ID from Firestore
-      const docRef = doc(db, 'members', currentKennitala);
+      const docRef = doc(db, 'members', kennitalaNoHyphen);
       const docSnap = await getDoc(docRef);
 
       if (!docSnap.exists()) {
