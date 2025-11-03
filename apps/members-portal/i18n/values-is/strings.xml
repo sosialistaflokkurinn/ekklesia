@@ -454,4 +454,9 @@
     <string name="address_update_error">Villa við uppfærslu heimilisfangs</string>
     <string name="foreign_address_save_success">Erlent heimilisfang vistað!</string>
     <string name="foreign_address_save_error">Villa við vistun erlendar heimilisfangs</string>
+
+    <!-- Country autocomplete -->
+    <string name="placeholder_country_search">Leita að landi... (t.d. Banda, US, United)</string>
+    <string name="country_no_results">Ekkert land fannst</string>
+    <string name="country_search_help">Þú getur leitað með íslensku nafni, ensku nafni eða landskóða</string>
 </resources>

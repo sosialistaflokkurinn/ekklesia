@@ -126,6 +126,12 @@ function updateProfileStrings() {
     foreignPhoneInput.title = R.string.title_foreign_phone || '';
   }
 
+  // Set country autocomplete placeholder
+  const countryInput = document.getElementById('input-country');
+  if (countryInput) {
+    countryInput.placeholder = R.string.placeholder_country_search || '';
+  }
+
   setTextContent('label-foreign-address', R.string.label_foreign_address, 'profile page');
   setTextContent('label-foreign-postal', R.string.label_foreign_postal_code, 'profile page');
   setTextContent('label-foreign-municipality', R.string.label_foreign_municipality, 'profile page');
@@ -289,27 +295,151 @@ function updateAddressInfo(memberData) {
 }
 
 /**
- * Populate country dropdown for foreign address form
+ * Setup country autocomplete (replaces dropdown with search)
+ *
+ * Enhanced UX: User can search by:
+ * - Icelandic name ("Banda" → Bandaríkin)
+ * - English name ("United" → Bandaríkin)
+ * - Country code ("US" → Bandaríkin)
+ *
+ * See: docs/development/DATA_QUALITY_POLICY.md (Pattern 2: Flexible Search)
  */
-function populateCountryDropdown() {
-  const countrySelect = document.getElementById('input-country');
-  if (!countrySelect) return;
+function setupCountryAutocomplete() {
+  const countryInput = document.getElementById('input-country');
+  const countryCodeInput = document.getElementById('input-country-code');
+  const dropdown = document.getElementById('country-dropdown');
 
-  // Get sorted countries
-  const countries = getCountriesSorted();
+  if (!countryInput || !countryCodeInput || !dropdown) return;
 
-  // Clear existing options (except the first placeholder)
-  while (countrySelect.options.length > 1) {
-    countrySelect.remove(1);
+  let selectedIndex = -1;  // Track keyboard selection
+
+  // Input event: Search and show dropdown
+  countryInput.addEventListener('input', (e) => {
+    const query = e.target.value.trim();
+
+    // Clear selection when user types
+    countryCodeInput.value = '';
+    selectedIndex = -1;
+
+    if (query.length === 0) {
+      hideDropdown();
+      return;
+    }
+
+    // Search countries (supports Icelandic, English, code)
+    const results = searchCountries(query);
+
+    if (results.length === 0) {
+      showEmptyDropdown();
+      return;
+    }
+
+    // Show dropdown with results
+    showDropdown(results);
+  });
+
+  // Keyboard navigation (↑↓ Enter Escape)
+  countryInput.addEventListener('keydown', (e) => {
+    const items = dropdown.querySelectorAll('.autocomplete-item');
+
+    if (items.length === 0) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+      updateSelection(items);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      selectedIndex = Math.max(selectedIndex - 1, 0);
+      updateSelection(items);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (selectedIndex >= 0 && items[selectedIndex]) {
+        selectCountry(items[selectedIndex]);
+      }
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      hideDropdown();
+    }
+  });
+
+  // Click outside to close dropdown
+  document.addEventListener('click', (e) => {
+    if (!countryInput.contains(e.target) && !dropdown.contains(e.target)) {
+      hideDropdown();
+    }
+  });
+
+  // Helper: Show dropdown with results
+  function showDropdown(countries) {
+    dropdown.innerHTML = '';
+    dropdown.style.display = 'block';
+    countryInput.setAttribute('aria-expanded', 'true');
+
+    countries.forEach((country, index) => {
+      const li = document.createElement('li');
+      li.className = 'autocomplete-item';
+      li.textContent = country.nameIs;  // Show Icelandic name
+      li.setAttribute('role', 'option');
+      li.setAttribute('data-code', country.code);
+      li.setAttribute('data-name', country.nameIs);
+
+      // Click to select
+      li.addEventListener('click', () => selectCountry(li));
+
+      dropdown.appendChild(li);
+    });
   }
 
-  // Add country options
-  countries.forEach(country => {
-    const option = document.createElement('option');
-    option.value = country.code;
-    option.textContent = country.name;
-    countrySelect.appendChild(option);
-  });
+  // Helper: Show empty state
+  function showEmptyDropdown() {
+    dropdown.innerHTML = '';  // Empty triggers CSS ::after with "Ekkert land fannst"
+    dropdown.style.display = 'block';
+    countryInput.setAttribute('aria-expanded', 'true');
+  }
+
+  // Helper: Hide dropdown
+  function hideDropdown() {
+    dropdown.style.display = 'none';
+    dropdown.innerHTML = '';
+    countryInput.setAttribute('aria-expanded', 'false');
+    selectedIndex = -1;
+  }
+
+  // Helper: Update keyboard selection visual
+  function updateSelection(items) {
+    items.forEach((item, index) => {
+      if (index === selectedIndex) {
+        item.classList.add('autocomplete-item--selected');
+        item.scrollIntoView({ block: 'nearest' });
+      } else {
+        item.classList.remove('autocomplete-item--selected');
+      }
+    });
+  }
+
+  // Helper: Select country (via click or Enter)
+  function selectCountry(item) {
+    const code = item.getAttribute('data-code');
+    const name = item.getAttribute('data-name');
+
+    // Set visible input to Icelandic name
+    countryInput.value = name;
+
+    // Set hidden input to country code (for validation/saving)
+    countryCodeInput.value = code;
+
+    // Hide dropdown
+    hideDropdown();
+
+    // Clear any error
+    const errorEl = document.getElementById('error-country');
+    if (errorEl) {
+      errorEl.style.display = 'none';
+      errorEl.textContent = '';
+    }
+    countryInput.classList.remove('error');
+  }
 }
 
 /**
@@ -379,6 +509,49 @@ function setupLivingStatusListeners() {
   const checkedRadio = document.querySelector('input[name="living-status"]:checked');
   if (checkedRadio) {
     handleLivingStatusChange({ target: checkedRadio });
+  }
+}
+
+/**
+ * Setup auto-prepend '+' for foreign phone input
+ *
+ * Automatically prepends '+' when user starts typing digits in foreign phone field.
+ * This helps users who don't know E.164 format requirement (+[country][number]).
+ *
+ * Real-time UX: User types "45" → immediately becomes "+45"
+ * See: docs/development/DATA_QUALITY_POLICY.md (Pattern 1: Auto-Prepend Required Prefix)
+ */
+function setupForeignPhoneAutoPrepend() {
+  const foreignPhoneInput = document.getElementById('input-foreign-phone');
+  if (!foreignPhoneInput) return;
+
+  // Remove existing listener if any (prevent duplicate)
+  foreignPhoneInput.removeEventListener('input', handleForeignPhoneInput);
+  foreignPhoneInput.addEventListener('input', handleForeignPhoneInput);
+}
+
+/**
+ * Handle input event for foreign phone field
+ * Auto-prepends '+' if user starts typing digits
+ *
+ * @param {Event} e - Input event
+ */
+function handleForeignPhoneInput(e) {
+  const input = e.target;
+  let value = input.value;
+
+  // If value is empty, do nothing
+  if (value.length === 0) return;
+
+  // If first character is a digit (not '+'), prepend '+'
+  if (/^\d/.test(value)) {
+    const newValue = '+' + value;
+    input.value = newValue;
+
+    // Move cursor to end (after the prepended '+' and user's digits)
+    // This prevents cursor jumping to beginning
+    const cursorPosition = newValue.length;
+    input.setSelectionRange(cursorPosition, cursorPosition);
   }
 }
 
@@ -476,12 +649,18 @@ function enableEditMode() {
   // Populate foreign address fields if available
   if (originalData.foreign_address) {
     const countryInput = document.getElementById('input-country');
+    const countryCodeInput = document.getElementById('input-country-code');
     const addressInput = document.getElementById('input-foreign-address');
     const postalInput = document.getElementById('input-foreign-postal');
     const municipalityInput = document.getElementById('input-foreign-municipality');
 
-    // Set country code (e.g., "US") - dropdown uses country codes
-    if (countryInput) countryInput.value = originalData.foreign_address.country;
+    // Set visible input to Icelandic country name (e.g., "Bandaríkin")
+    // Set hidden input to country code (e.g., "US")
+    if (countryInput && countryCodeInput) {
+      const code = originalData.foreign_address.country;
+      countryInput.value = getCountryName(code);  // Show name
+      countryCodeInput.value = code;  // Store code
+    }
     if (addressInput) addressInput.value = originalData.foreign_address.address;
     if (postalInput) postalInput.value = originalData.foreign_address.postal_code;
     if (municipalityInput) municipalityInput.value = originalData.foreign_address.municipality;
@@ -506,6 +685,9 @@ function enableEditMode() {
 
   // Clear any previous messages
   clearMessages();
+
+  // Setup foreign phone auto-prepend '+' (real-time UX improvement)
+  setupForeignPhoneAutoPrepend();
 }
 
 /**
@@ -603,14 +785,15 @@ const VALIDATION_MESSAGES = {
 function validateForeignAddress() {
   let isValid = true;
 
-  const country = document.getElementById('input-country')?.value;
+  // Read from hidden input (country code, e.g., "US")
+  const countryCode = document.getElementById('input-country-code')?.value;
   const address = document.getElementById('input-foreign-address')?.value.trim();
   const postalCode = document.getElementById('input-foreign-postal')?.value.trim();
   const municipality = document.getElementById('input-foreign-municipality')?.value.trim();
   const foreignPhone = document.getElementById('input-foreign-phone')?.value.trim();
 
   // Country is required for foreign address
-  if (!country) {
+  if (!countryCode) {
     showFieldError('country', VALIDATION_MESSAGES.countryRequired());
     isValid = false;
   }
@@ -622,7 +805,7 @@ function validateForeignAddress() {
   }
 
   // Postal code validation (optional field, but if provided must be valid)
-  if (postalCode && !validateInternationalPostalCode(postalCode, country)) {
+  if (postalCode && !validateInternationalPostalCode(postalCode, countryCode)) {
     showFieldError('foreign-postal', VALIDATION_MESSAGES.postalCodeInvalid());
     isValid = false;
   }
@@ -654,9 +837,9 @@ async function saveChanges() {
       return; // Validation failed
     }
 
-    // Collect foreign address data
+    // Collect foreign address data (use hidden input for country code)
     foreignAddressData = {
-      country: document.getElementById('input-country')?.value,
+      country: document.getElementById('input-country-code')?.value,  // ISO code (e.g., "US")
       address: document.getElementById('input-foreign-address')?.value.trim(),
       postal_code: document.getElementById('input-foreign-postal')?.value.trim() || '',
       municipality: document.getElementById('input-foreign-municipality')?.value.trim() || '',
@@ -937,8 +1120,8 @@ async function init() {
     // Initialize edit functionality
     initEditElements();
 
-    // Populate country dropdown for foreign address form
-    populateCountryDropdown();
+    // Setup country autocomplete (replaces old dropdown)
+    setupCountryAutocomplete();
 
     // Setup living status radio button listeners
     setupLivingStatusListeners();
