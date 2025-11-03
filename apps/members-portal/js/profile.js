@@ -19,7 +19,7 @@ import { httpsCallable, getFirebaseFirestore } from '../firebase/app.js';
 import { doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { setTextContent, validateElements } from '../ui/dom.js';
 import { formatPhone, validatePhone, formatInternationalPhone, validateInternationalPhone, validateInternationalPostalCode, formatMembershipDuration } from './utils/format.js';
-import { getCountryName, getCountriesSorted } from './utils/countries.js';
+import { getCountryName, getCountriesSorted, searchCountries } from './utils/countries.js';
 import { updateMemberProfile, updateMemberForeignAddress } from './api/members-client.js';
 
 /**
@@ -370,6 +370,44 @@ function setupCountryAutocomplete() {
     }
   });
 
+  // On blur: Auto-select first result if user typed text but didn't click
+  countryInput.addEventListener('blur', (e) => {
+    // Small delay to allow click events to fire first
+    setTimeout(() => {
+      const query = countryInput.value.trim();
+      const hasSelectedCode = countryCodeInput.value.trim().length > 0;
+
+      // If user typed something but hasn't selected (hidden field empty)
+      if (query.length > 0 && !hasSelectedCode) {
+        const results = searchCountries(query);
+
+        // If exactly one result, auto-select it
+        if (results.length === 1) {
+          countryInput.value = results[0].nameIs;
+          countryCodeInput.value = results[0].code;
+          hideDropdown();
+        }
+        // If multiple results but first is exact match, auto-select it
+        else if (results.length > 1) {
+          const exactMatch = results.find(c =>
+            c.nameIs.toLowerCase() === query.toLowerCase() ||
+            c.code.toLowerCase() === query.toLowerCase()
+          );
+          if (exactMatch) {
+            countryInput.value = exactMatch.nameIs;
+            countryCodeInput.value = exactMatch.code;
+            hideDropdown();
+          } else {
+            // Clear invalid input
+            countryInput.value = '';
+            countryCodeInput.value = '';
+            hideDropdown();
+          }
+        }
+      }
+    }, 200);
+  });
+
   // Helper: Show dropdown with results
   function showDropdown(countries) {
     dropdown.innerHTML = '';
@@ -524,6 +562,12 @@ function setupLivingStatusListeners() {
 function setupForeignPhoneAutoPrepend() {
   const foreignPhoneInput = document.getElementById('input-foreign-phone');
   if (!foreignPhoneInput) return;
+
+  // Prepend '+' to existing value if it starts with digit (load from database case)
+  const currentValue = foreignPhoneInput.value.trim();
+  if (currentValue.length > 0 && /^\d/.test(currentValue)) {
+    foreignPhoneInput.value = '+' + currentValue;
+  }
 
   // Remove existing listener if any (prevent duplicate)
   foreignPhoneInput.removeEventListener('input', handleForeignPhoneInput);
