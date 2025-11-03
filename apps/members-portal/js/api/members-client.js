@@ -182,3 +182,161 @@ export async function updateMemberProfile(kennitala, updates, originalData, regi
     throw error;
   }
 }
+
+/**
+ * Update member foreign address in Firestore
+ *
+ * @param {string} kennitala - Member's kennitala (normalized, no hyphen)
+ * @param {Object} foreignAddress - Foreign address data { country, address, postal_code, municipality, current }
+ * @returns {Promise<void>}
+ * @private
+ */
+async function updateFirestoreForeignAddress(kennitala, foreignAddress) {
+  const db = getFirebaseFirestore();
+  const memberRef = doc(db, 'members', kennitala);
+
+  // Build Firestore update object for foreign address
+  const firestoreUpdates = {
+    'profile.foreign_address': foreignAddress,
+    'metadata.last_modified': new Date()
+  };
+
+  await updateDoc(memberRef, firestoreUpdates);
+
+  console.log('✅ Firestore foreign address updated:', {
+    kennitala,
+    country: foreignAddress.country
+  });
+}
+
+/**
+ * Update member foreign address in Django backend via Cloud Function
+ *
+ * NOTE: This is a STUB implementation. Blocked on Issue #161.
+ * Django API endpoints for foreign address CRUD do not exist yet.
+ *
+ * @param {string} kennitala - Member's kennitala (normalized, no hyphen)
+ * @param {Object} foreignAddress - Foreign address data
+ * @param {string} region - Firebase Functions region (default: 'europe-west2')
+ * @returns {Promise<Object>} Django update result
+ * @private
+ * @throws {Error} Currently throws "Not implemented" error
+ */
+async function updateDjangoForeignAddress(kennitala, foreignAddress, region = 'europe-west2') {
+  // TODO: Issue #161 - Implement Django foreign address API endpoints
+  // Endpoint: POST /api/members/:kennitala/foreign-addresses/
+  // or PATCH /api/members/:kennitala/foreign-addresses/:id/
+
+  console.warn('⚠️ Django foreign address API not yet implemented (Issue #161)');
+
+  // For now, throw error so Firestore rollback happens
+  throw new Error('Django foreign address API endpoints not implemented yet. See Issue #161.');
+
+  /* Future implementation:
+  const updateForeignAddress = httpsCallable('updatememberforeignaddress', region);
+
+  try {
+    const result = await updateForeignAddress({
+      kennitala: kennitala,
+      foreign_address: foreignAddress
+    });
+
+    console.log('✅ Django foreign address updated:', {
+      success: result.data.success,
+      django_id: result.data.django_id
+    });
+
+    return result.data;
+  } catch (error) {
+    console.error('❌ Django foreign address update failed:', error);
+    throw new Error(`Villa við uppfærslu Django erlends heimilisfangs: ${error.message}`);
+  }
+  */
+}
+
+/**
+ * Rollback Firestore foreign address changes after Django update failure
+ *
+ * @param {string} kennitala - Member's kennitala
+ * @param {Object} originalForeignAddress - Original foreign address data before update (or null)
+ * @private
+ */
+async function rollbackFirestoreForeignAddress(kennitala, originalForeignAddress) {
+  const db = getFirebaseFirestore();
+  const memberRef = doc(db, 'members', kennitala);
+
+  // Restore original foreign address (or remove if didn't exist before)
+  const rollbackUpdates = {};
+
+  if (originalForeignAddress) {
+    rollbackUpdates['profile.foreign_address'] = originalForeignAddress;
+  } else {
+    // Foreign address didn't exist before, remove it
+    rollbackUpdates['profile.foreign_address'] = null;
+  }
+
+  await updateDoc(memberRef, rollbackUpdates);
+
+  console.log('🔄 Firestore foreign address rolled back:', {
+    kennitala
+  });
+}
+
+/**
+ * Update member foreign address with optimistic update pattern
+ *
+ * This function:
+ * 1. Updates Firestore immediately (instant UI feedback)
+ * 2. Updates Django backend (source of truth) - BLOCKED ON ISSUE #161
+ * 3. Rolls back Firestore if Django update fails
+ *
+ * @param {string} kennitala - Member's kennitala (with or without hyphen)
+ * @param {Object} foreignAddress - Foreign address data { country, address, postal_code, municipality, current }
+ * @param {Object} originalForeignAddress - Original foreign address data (for rollback, or null if new)
+ * @param {string} region - Firebase Functions region (default: 'europe-west2')
+ * @returns {Promise<void>}
+ * @throws {Error} If Django update fails (Firestore will be rolled back)
+ *
+ * @example
+ * try {
+ *   await updateMemberForeignAddress(kennitala, {
+ *     country: 'US',
+ *     address: '123 Main St',
+ *     postal_code: '98101',
+ *     municipality: 'Seattle',
+ *     current: true
+ *   }, originalForeignAddress);
+ *
+ *   // Show success message
+ * } catch (error) {
+ *   // Show error message (Firestore already rolled back)
+ * }
+ */
+export async function updateMemberForeignAddress(kennitala, foreignAddress, originalForeignAddress, region = 'europe-west2') {
+  // Normalize kennitala
+  const kennitalaNoHyphen = kennitala.replace(/-/g, '');
+
+  // Step 1: Optimistic update - Update Firestore first (instant feedback)
+  await updateFirestoreForeignAddress(kennitalaNoHyphen, foreignAddress);
+
+  try {
+    // Step 2: Update Django (source of truth)
+    // NOTE: This will throw error until Issue #161 is implemented
+    await updateDjangoForeignAddress(kennitalaNoHyphen, foreignAddress, region);
+
+    // Success! Both Firestore and Django updated
+  } catch (error) {
+    // Step 3: Django failed - Roll back Firestore changes
+    console.warn('⚠️ Rolling back Firestore foreign address due to Django failure');
+
+    try {
+      await rollbackFirestoreForeignAddress(kennitalaNoHyphen, originalForeignAddress);
+    } catch (rollbackError) {
+      console.error('❌ Foreign address rollback failed:', rollbackError);
+      // Even if rollback fails, we still throw the original error
+    }
+
+    // Re-throw error so caller knows update failed
+    throw error;
+  }
+}

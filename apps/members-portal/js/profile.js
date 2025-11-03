@@ -20,7 +20,7 @@ import { doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/fireba
 import { setTextContent, validateElements } from '../ui/dom.js';
 import { formatPhone, validatePhone, formatInternationalPhone, validateInternationalPhone } from './utils/format.js';
 import { getCountryName, getCountriesSorted } from './utils/countries.js';
-import { updateMemberProfile } from './api/members-client.js';
+import { updateMemberProfile, updateMemberForeignAddress } from './api/members-client.js';
 
 /**
  * Required DOM elements for profile page
@@ -386,16 +386,55 @@ function enableEditMode() {
   isEditing = true;
 
   // Save original data for cancel/revert
+  const foreignPhoneValue = document.getElementById('value-foreign-phone')?.textContent || '';
+  const countryValue = document.getElementById('value-country')?.textContent || '';
+  const foreignAddressValue = document.getElementById('value-foreign-address')?.textContent || '';
+  const foreignPostalValue = document.getElementById('value-foreign-postal')?.textContent || '';
+  const foreignMunicipalityValue = document.getElementById('value-foreign-municipality')?.textContent || '';
+
   originalData = {
     name: editElements.valueName.textContent,
     email: editElements.valueEmail.textContent,
-    phone: editElements.valuePhone.textContent
+    phone: editElements.valuePhone.textContent,
+    foreign_phone: foreignPhoneValue !== '-' ? foreignPhoneValue : '',
+    foreign_address: null // Will be populated if foreign address exists
   };
+
+  // Check if foreign address exists and save it for rollback
+  if (countryValue && countryValue !== '-' && foreignAddressValue && foreignAddressValue !== '-') {
+    originalData.foreign_address = {
+      country: countryValue, // This is the display name, we'll need to map back to code
+      address: foreignAddressValue,
+      postal_code: foreignPostalValue !== '-' ? foreignPostalValue : '',
+      municipality: foreignMunicipalityValue !== '-' ? foreignMunicipalityValue : '',
+      current: true
+    };
+  }
 
   // Populate input fields with current values
   editElements.inputName.value = originalData.name !== '-' ? originalData.name : '';
   editElements.inputEmail.value = originalData.email !== '-' ? originalData.email : '';
   editElements.inputPhone.value = originalData.phone !== '-' ? originalData.phone : '';
+
+  // Populate foreign phone if available
+  const foreignPhoneInput = document.getElementById('input-foreign-phone');
+  if (foreignPhoneInput) {
+    foreignPhoneInput.value = originalData.foreign_phone;
+  }
+
+  // Populate foreign address fields if available
+  if (originalData.foreign_address) {
+    const countryInput = document.getElementById('input-country');
+    const addressInput = document.getElementById('input-foreign-address');
+    const postalInput = document.getElementById('input-foreign-postal');
+    const municipalityInput = document.getElementById('input-foreign-municipality');
+
+    // Note: We need to map country display name back to country code
+    // For now, we'll just populate the fields - TODO: add country code lookup
+    if (addressInput) addressInput.value = originalData.foreign_address.address;
+    if (postalInput) postalInput.value = originalData.foreign_address.postal_code;
+    if (municipalityInput) municipalityInput.value = originalData.foreign_address.municipality;
+  }
 
   // Toggle UI
   document.body.classList.add('profile-editing');
@@ -487,26 +526,100 @@ function validateForm() {
 }
 
 /**
+ * Get selected living status
+ * @returns {string} 'iceland', 'abroad', or 'both'
+ */
+function getLivingStatus() {
+  const checkedRadio = document.querySelector('input[name="living-status"]:checked');
+  return checkedRadio ? checkedRadio.value : 'iceland';
+}
+
+/**
+ * Validate foreign address fields
+ * @returns {boolean} True if valid
+ */
+function validateForeignAddress() {
+  let isValid = true;
+
+  const country = document.getElementById('input-country')?.value;
+  const address = document.getElementById('input-foreign-address')?.value.trim();
+  const postalCode = document.getElementById('input-foreign-postal')?.value.trim();
+  const municipality = document.getElementById('input-foreign-municipality')?.value.trim();
+  const foreignPhone = document.getElementById('input-foreign-phone')?.value.trim();
+
+  // Country is required for foreign address
+  if (!country) {
+    showFieldError('country', R.string.validation_country_required || 'Vinsamlegast veldu land');
+    isValid = false;
+  }
+
+  // Address is required
+  if (!address || address.length === 0) {
+    showFieldError('foreign-address', R.string.validation_address_required || 'Heimilisfang má ekki vera tómt');
+    isValid = false;
+  }
+
+  // Postal code validation (optional field, but if provided must be valid)
+  if (postalCode && !validateInternationalPostalCode(postalCode, country)) {
+    showFieldError('foreign-postal', R.string.validation_postal_code_invalid || 'Ógilt póstnúmer');
+    isValid = false;
+  }
+
+  // Foreign phone validation (optional, but if provided must be valid E.164)
+  if (foreignPhone && !validateInternationalPhone(foreignPhone)) {
+    showFieldError('foreign-phone', R.string.validation_foreign_phone_invalid || 'Ógilt alþjóðlegt símanúmer');
+    isValid = false;
+  }
+
+  return isValid;
+}
+
+/**
  * Save changes - optimistic update
  */
 async function saveChanges() {
-  // Validate
+  // Validate basic fields
   if (!validateForm()) {
     return;
   }
 
-  // Collect updates
+  // Check living status and validate foreign address if needed
+  const livingStatus = getLivingStatus();
+  let foreignAddressData = null;
+
+  if (livingStatus === 'abroad' || livingStatus === 'both') {
+    if (!validateForeignAddress()) {
+      return; // Validation failed
+    }
+
+    // Collect foreign address data
+    foreignAddressData = {
+      country: document.getElementById('input-country')?.value,
+      address: document.getElementById('input-foreign-address')?.value.trim(),
+      postal_code: document.getElementById('input-foreign-postal')?.value.trim() || '',
+      municipality: document.getElementById('input-foreign-municipality')?.value.trim() || '',
+      current: true // Always set to current when saving
+    };
+  }
+
+  // Collect basic profile updates
   const updates = {};
   const name = editElements.inputName.value.trim();
   const email = editElements.inputEmail.value.trim();
   const phone = editElements.inputPhone.value.trim();
+  const foreignPhone = document.getElementById('input-foreign-phone')?.value.trim() || '';
 
   if (name !== originalData.name) updates.name = name;
   if (email !== originalData.email) updates.email = email;
   if (phone !== originalData.phone) updates.phone = phone;
 
+  // Add foreign phone to updates (even if empty, to allow clearing)
+  if (foreignPhone !== (originalData.foreign_phone || '')) {
+    updates.foreign_phone = foreignPhone;
+  }
+
   // Nothing changed?
-  if (Object.keys(updates).length === 0) {
+  if (Object.keys(updates).length === 0 && !foreignAddressData) {
     showSuccess(R.string.profile_no_changes || 'Engar breytingar til að vista');
     cancelEdit();
     return;
@@ -534,6 +647,54 @@ async function saveChanges() {
     // (includes optimistic update + automatic rollback if Django fails)
     const region = R.string.config_firebase_region;
     await updateMemberProfile(currentUserData.kennitala, updates, originalMemberData, region);
+
+    // If foreign address provided, save it separately
+    if (foreignAddressData) {
+      const originalForeignAddress = originalData.foreign_address || null;
+
+      try {
+        await updateMemberForeignAddress(
+          currentUserData.kennitala,
+          foreignAddressData,
+          originalForeignAddress,
+          region
+        );
+
+        // Update UI to show foreign address
+        const countryValue = document.getElementById('value-country');
+        const foreignAddressValue = document.getElementById('value-foreign-address');
+        const foreignPostalValue = document.getElementById('value-foreign-postal');
+        const foreignMunicipalityValue = document.getElementById('value-foreign-municipality');
+        const foreignPhoneValue = document.getElementById('value-foreign-phone');
+
+        if (countryValue) countryValue.textContent = getCountryName(foreignAddressData.country);
+        if (foreignAddressValue) foreignAddressValue.textContent = foreignAddressData.address;
+        if (foreignPostalValue) foreignPostalValue.textContent = foreignAddressData.postal_code || '-';
+        if (foreignMunicipalityValue) foreignMunicipalityValue.textContent = foreignAddressData.municipality || '-';
+        if (foreignPhoneValue) {
+          foreignPhoneValue.textContent = foreignPhone || '-';
+        }
+
+      } catch (foreignAddressError) {
+        // Foreign address save failed (Django API not implemented yet)
+        console.warn('Foreign address save failed:', foreignAddressError);
+
+        // Show warning (basic profile was saved successfully)
+        showError(
+          R.string.profile_foreign_address_blocked ||
+          'Grunnupplýsingar vistaðar, en erlent heimilisfang er ekki virkt ennþá. Vinsamlegast reyndu aftur síðar.'
+        );
+
+        // Re-enable buttons so user can try again
+        editElements.btnSave.disabled = false;
+        editElements.btnCancel.disabled = false;
+        if (saveText) {
+          saveText.textContent = R.string.profile_save_button || 'Vista breytingar';
+        }
+
+        return; // Don't exit edit mode, let user try again
+      }
+    }
 
     // Success! Update UI to reflect saved changes
     if (updates.name) editElements.valueName.textContent = updates.name;
