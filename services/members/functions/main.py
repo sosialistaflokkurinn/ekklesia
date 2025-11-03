@@ -30,8 +30,11 @@ from audit_members import auditmemberchanges
 # Django API token access (Epic #116, Issue #137)
 from get_django_token import get_django_token
 
+# Foreign address management (Epic #159, Issue #161)
+from update_member_foreign_address import updatememberforeignaddress
+
 # Re-export at module level so Firebase discovers it
-__all__ = ['auditmemberchanges', 'get_django_token']
+__all__ = ['auditmemberchanges', 'get_django_token', 'updatememberforeignaddress']
 
 # --- SETUP ---
 if not firebase_admin._apps:
