@@ -418,6 +418,8 @@
     <string name="label_foreign_postal_code">Póstnúmer</string>
     <string name="label_foreign_municipality">Sveitarfélag/Borg</string>
     <string name="label_foreign_phone">Erlent símanúmer</string>
+    <string name="placeholder_foreign_phone">+45 12345678 eða +1 206-555-0142</string>
+    <string name="title_foreign_phone">Alþjóðlegt símanúmer með landskóða, t.d. +45 12345678</string>
 
     <!-- Address placeholders -->
     <string name="placeholder_select_country">Veldu land...</string>

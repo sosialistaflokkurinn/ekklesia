@@ -19,6 +19,28 @@ import { getFirebaseFirestore, httpsCallable } from '../../firebase/app.js';
 import { doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 /**
+ * Generic Firestore document updater
+ * @param {string} kennitala - Member's kennitala
+ * @param {Object} updates - Fields to update (with dot notation keys)
+ * @param {boolean} addTimestamp - Whether to add last_modified timestamp
+ * @returns {Promise<string[]>} Updated field keys
+ * @private
+ */
+async function updateFirestoreDoc(kennitala, updates, addTimestamp = true) {
+  const db = getFirebaseFirestore();
+  const kennitalaNoHyphen = kennitala.replace(/-/g, '');
+  const memberRef = doc(db, 'members', kennitalaNoHyphen);
+
+  const finalUpdates = { ...updates };
+  if (addTimestamp) {
+    finalUpdates['metadata.last_modified'] = new Date();
+  }
+
+  await updateDoc(memberRef, finalUpdates);
+  return Object.keys(finalUpdates);
+}
+
+/**
  * Update member profile in Firestore
  *
  * @param {string} kennitala - Member's kennitala (with or without hyphen)
@@ -27,12 +49,6 @@ import { doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/fireba
  * @private
  */
 async function updateFirestoreMember(kennitala, updates) {
-  const db = getFirebaseFirestore();
-
-  // Normalize kennitala (remove hyphen for document ID)
-  const kennitalaNoHyphen = kennitala.replace(/-/g, '');
-  const memberRef = doc(db, 'members', kennitalaNoHyphen);
-
   // Build Firestore update object (nested under profile)
   const firestoreUpdates = {};
 
@@ -59,14 +75,12 @@ async function updateFirestoreMember(kennitala, updates) {
     firestoreUpdates['profile.foreign_phone'] = updates.foreign_phone;
   }
 
-  // Always update last modified timestamp
-  firestoreUpdates['metadata.last_modified'] = new Date();
-
-  await updateDoc(memberRef, firestoreUpdates);
+  // Use shared helper to update Firestore
+  const fields = await updateFirestoreDoc(kennitala, firestoreUpdates);
 
   console.log('✅ Firestore updated:', {
-    kennitala: kennitalaNoHyphen,
-    fields: Object.keys(firestoreUpdates)
+    kennitala: kennitala.replace(/-/g, ''),
+    fields
   });
 }
 
@@ -111,10 +125,6 @@ async function updateDjangoMember(kennitala, updates, region = 'europe-west2') {
  * @private
  */
 async function rollbackFirestore(kennitala, originalData) {
-  const db = getFirebaseFirestore();
-  const kennitalaNoHyphen = kennitala.replace(/-/g, '');
-  const memberRef = doc(db, 'members', kennitalaNoHyphen);
-
   // Restore original profile data
   const rollbackUpdates = {};
   if (originalData.profile) {
@@ -124,11 +134,12 @@ async function rollbackFirestore(kennitala, originalData) {
     if ('foreign_phone' in originalData.profile) rollbackUpdates['profile.foreign_phone'] = originalData.profile.foreign_phone;
   }
 
-  await updateDoc(memberRef, rollbackUpdates);
+  // Use shared helper to update Firestore (don't add new timestamp on rollback)
+  const fields = await updateFirestoreDoc(kennitala, rollbackUpdates, false);
 
   console.log('🔄 Firestore rolled back:', {
-    kennitala: kennitalaNoHyphen,
-    fields: Object.keys(rollbackUpdates)
+    kennitala: kennitala.replace(/-/g, ''),
+    fields
   });
 }
 
@@ -197,19 +208,16 @@ export async function updateMemberProfile(kennitala, updates, originalData, regi
  * @private
  */
 async function updateFirestoreForeignAddress(kennitala, foreignAddress) {
-  const db = getFirebaseFirestore();
-  const memberRef = doc(db, 'members', kennitala);
-
   // Build Firestore update object for foreign address
   const firestoreUpdates = {
-    'profile.foreign_address': foreignAddress,
-    'metadata.last_modified': new Date()
+    'profile.foreign_address': foreignAddress
   };
 
-  await updateDoc(memberRef, firestoreUpdates);
+  // Use shared helper to update Firestore
+  await updateFirestoreDoc(kennitala, firestoreUpdates);
 
   console.log('✅ Firestore foreign address updated:', {
-    kennitala,
+    kennitala: kennitala.replace(/-/g, ''),
     country: foreignAddress.country
   });
 }
@@ -258,9 +266,6 @@ async function updateDjangoForeignAddress(kennitala, foreignAddress, region = 'e
  * @private
  */
 async function rollbackFirestoreForeignAddress(kennitala, originalForeignAddress) {
-  const db = getFirebaseFirestore();
-  const memberRef = doc(db, 'members', kennitala);
-
   // Restore original foreign address (or remove if didn't exist before)
   const rollbackUpdates = {};
 
@@ -271,10 +276,11 @@ async function rollbackFirestoreForeignAddress(kennitala, originalForeignAddress
     rollbackUpdates['profile.foreign_address'] = null;
   }
 
-  await updateDoc(memberRef, rollbackUpdates);
+  // Use shared helper to update Firestore (don't add new timestamp on rollback)
+  await updateFirestoreDoc(kennitala, rollbackUpdates, false);
 
   console.log('🔄 Firestore foreign address rolled back:', {
-    kennitala
+    kennitala: kennitala.replace(/-/g, '')
   });
 }
 
