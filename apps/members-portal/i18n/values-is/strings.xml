@@ -117,6 +117,7 @@
     <string name="profile_cancel_button">Hætta við</string>
     <string name="profile_save_success">Upplýsingar uppfærðar!</string>
     <string name="profile_save_error">Villa við vistun. Reyndu aftur.</string>
+    <string name="profile_foreign_address_blocked">Grunnupplýsingar vistaðar, en erlent heimilisfang er ekki virkt ennþá. Vinsamlegast reyndu aftur síðar.</string>
     <string name="profile_no_changes">Engar breytingar til að vista</string>
     <string name="profile_cancel_confirm">Ertu viss um að þú viljir hætta við? Óvistaðar breytingar tapast.</string>
 
