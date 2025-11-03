@@ -18,7 +18,7 @@ import { requireAuth, getUserData, signOut, AuthenticationError } from '../sessi
 import { httpsCallable, getFirebaseFirestore } from '../firebase/app.js';
 import { doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { setTextContent, validateElements } from '../ui/dom.js';
-import { formatPhone, validatePhone, formatInternationalPhone, validateInternationalPhone } from './utils/format.js';
+import { formatPhone, validatePhone, formatInternationalPhone, validateInternationalPhone, validateInternationalPostalCode } from './utils/format.js';
 import { getCountryName, getCountriesSorted } from './utils/countries.js';
 import { updateMemberProfile, updateMemberForeignAddress } from './api/members-client.js';
 
