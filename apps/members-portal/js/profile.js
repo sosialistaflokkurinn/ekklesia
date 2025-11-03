@@ -39,6 +39,12 @@ const PROFILE_ELEMENTS = [
   'value-phone',
   'label-status',
   'membership-status',
+  'label-django-id',
+  'value-django-id',
+  'label-date-joined',
+  'value-date-joined',
+  'label-member-since',
+  'value-member-since',
   'label-uid',
   'value-uid'
 ];
@@ -91,6 +97,9 @@ function updateProfileStrings() {
   setTextContent('label-email', R.string.label_email, 'profile page');
   setTextContent('label-phone', R.string.label_phone, 'profile page');
   setTextContent('label-status', R.string.label_status, 'profile page');
+  setTextContent('label-django-id', R.string.label_django_id, 'profile page');
+  setTextContent('label-date-joined', R.string.label_date_joined, 'profile page');
+  setTextContent('label-member-since', R.string.label_member_since, 'profile page');
   setTextContent('label-uid', R.string.label_uid, 'profile page');
 
   // Address labels
@@ -170,6 +179,47 @@ function updateUserInfo(userData, memberData = null) {
   // Format foreign phone for display
   const foreignPhone = memberProfile.foreign_phone || '';
   setTextContent('value-foreign-phone-view', formatInternationalPhone(foreignPhone) || placeholder, 'profile page');
+
+  // Membership metadata
+  const djangoId = memberData?.metadata?.django_id;
+  setTextContent('value-django-id', djangoId ? `#${djangoId}` : placeholder, 'profile page');
+
+  // Date joined
+  const dateJoined = memberData?.membership?.date_joined;
+  if (dateJoined && dateJoined.toDate) {
+    const joinedDate = dateJoined.toDate();
+    const formattedDate = joinedDate.toLocaleDateString('is-IS', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    setTextContent('value-date-joined', formattedDate, 'profile page');
+
+    // Calculate membership duration
+    const now = new Date();
+    const diffYears = now.getFullYear() - joinedDate.getFullYear();
+    const diffMonths = now.getMonth() - joinedDate.getMonth();
+    const totalMonths = diffYears * 12 + diffMonths;
+    const years = Math.floor(totalMonths / 12);
+    const months = totalMonths % 12;
+
+    let durationText = '';
+    if (years > 0) {
+      durationText = years === 1 ? '1 ár' : `${years} ár`;
+      if (months > 0) {
+        durationText += ` og ${months} ${months === 1 ? 'mánuð' : 'mánuði'}`;
+      }
+    } else if (months > 0) {
+      durationText = months === 1 ? '1 mánuð' : `${months} mánuði`;
+    } else {
+      durationText = 'nýskráður';
+    }
+    setTextContent('value-member-since', durationText, 'profile page');
+  } else {
+    setTextContent('value-date-joined', placeholder, 'profile page');
+    setTextContent('value-member-since', placeholder, 'profile page');
+  }
+
   setTextContent('value-uid', formatFieldValue(userData.uid, placeholder), 'profile page');
 }
 

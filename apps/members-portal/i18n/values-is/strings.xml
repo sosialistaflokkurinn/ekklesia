@@ -103,6 +103,9 @@
     <string name="label_phone">Símanúmer</string>
     <string name="label_uid">Notandaauðkenni</string>
     <string name="label_status">Staða</string>
+    <string name="label_django_id">Django ID</string>
+    <string name="label_date_joined">Skráð í flokkinn</string>
+    <string name="label_member_since">Félagi í</string>
     <string name="membership_status">Félagastaða</string>
 
     <!-- Placeholders -->
