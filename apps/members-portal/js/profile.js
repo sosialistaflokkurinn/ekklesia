@@ -18,9 +18,15 @@ import { requireAuth, getUserData, signOut, AuthenticationError } from '../sessi
 import { httpsCallable, getFirebaseFirestore } from '../firebase/app.js';
 import { doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { setTextContent, validateElements } from '../ui/dom.js';
-import { formatPhone, validatePhone, formatInternationalPhone, validateInternationalPhone, validateInternationalPostalCode } from './utils/format.js';
+import { formatPhone, validatePhone, formatInternationalPhone, validateInternationalPhone, validateInternationalPostalCode, formatMembershipDuration } from './utils/format.js';
 import { getCountryName, getCountriesSorted } from './utils/countries.js';
 import { updateMemberProfile, updateMemberForeignAddress } from './api/members-client.js';
+
+/**
+ * Constants
+ */
+const MAX_NAME_LENGTH = 100;
+const SUCCESS_MESSAGE_AUTO_HIDE_MS = 5000;
 
 /**
  * Required DOM elements for profile page
@@ -111,7 +117,15 @@ function updateProfileStrings() {
   setTextContent('label-postal-code', R.string.label_postal_code, 'profile page');
   setTextContent('label-city', R.string.label_city, 'profile page');
   setTextContent('label-country', R.string.label_country, 'profile page');
-  setTextContent('label-foreign-phone-view', R.string.label_foreign_phone, 'profile page');
+  setTextContent('label-foreign-phone', R.string.label_foreign_phone, 'profile page');
+
+  // Set foreign phone input placeholder and title
+  const foreignPhoneInput = document.getElementById('input-foreign-phone');
+  if (foreignPhoneInput) {
+    foreignPhoneInput.placeholder = R.string.placeholder_foreign_phone || '';
+    foreignPhoneInput.title = R.string.title_foreign_phone || '';
+  }
+
   setTextContent('label-foreign-address', R.string.label_foreign_address, 'profile page');
   setTextContent('label-foreign-postal', R.string.label_foreign_postal_code, 'profile page');
   setTextContent('label-foreign-municipality', R.string.label_foreign_municipality, 'profile page');
@@ -178,7 +192,7 @@ function updateUserInfo(userData, memberData = null) {
   setTextContent('value-phone', formatPhone(phone) || placeholder, 'profile page');
   // Format foreign phone for display
   const foreignPhone = memberProfile.foreign_phone || '';
-  setTextContent('value-foreign-phone-view', formatInternationalPhone(foreignPhone) || placeholder, 'profile page');
+  setTextContent('value-foreign-phone', formatInternationalPhone(foreignPhone) || placeholder, 'profile page');
 
   // Membership metadata
   const djangoId = memberData?.metadata?.django_id;
@@ -195,25 +209,8 @@ function updateUserInfo(userData, memberData = null) {
     });
     setTextContent('value-date-joined', formattedDate, 'profile page');
 
-    // Calculate membership duration
-    const now = new Date();
-    const diffYears = now.getFullYear() - joinedDate.getFullYear();
-    const diffMonths = now.getMonth() - joinedDate.getMonth();
-    const totalMonths = diffYears * 12 + diffMonths;
-    const years = Math.floor(totalMonths / 12);
-    const months = totalMonths % 12;
-
-    let durationText = '';
-    if (years > 0) {
-      durationText = years === 1 ? '1 ár' : `${years} ár`;
-      if (months > 0) {
-        durationText += ` og ${months} ${months === 1 ? 'mánuð' : 'mánuði'}`;
-      }
-    } else if (months > 0) {
-      durationText = months === 1 ? '1 mánuð' : `${months} mánuði`;
-    } else {
-      durationText = 'nýskráður';
-    }
+    // Format membership duration using utility function
+    const durationText = formatMembershipDuration(joinedDate);
     setTextContent('value-member-since', durationText, 'profile page');
   } else {
     setTextContent('value-date-joined', placeholder, 'profile page');
@@ -471,9 +468,9 @@ function enableEditMode() {
   editElements.inputPhone.value = originalData.phone !== '-' ? originalData.phone : '';
 
   // Populate foreign phone if available
-  const foreignPhoneInput = document.getElementById('input-foreign-phone-top');
-  if (foreignPhoneInput) {
-    foreignPhoneInput.value = originalData.foreign_phone;
+  const foreignPhoneInputEdit = document.getElementById('input-foreign-phone');
+  if (foreignPhoneInputEdit) {
+    foreignPhoneInputEdit.value = originalData.foreign_phone;
   }
 
   // Populate foreign address fields if available
@@ -557,7 +554,7 @@ function validateForm() {
   if (!name || name.length === 0) {
     showFieldError('name', R.string.validation_name_required || 'Nafn má ekki vera tómt');
     isValid = false;
-  } else if (name.length > 100) {
+  } else if (name.length > MAX_NAME_LENGTH) {
     showFieldError('name', R.string.validation_name_too_long || 'Nafn má ekki vera lengra en 100 stafir');
     isValid = false;
   }
@@ -589,6 +586,17 @@ function getLivingStatus() {
 }
 
 /**
+ * Validation error messages (centralized)
+ * Loaded from R.string, no hardcoded fallbacks
+ */
+const VALIDATION_MESSAGES = {
+  countryRequired: () => R.string.validation_country_required,
+  addressRequired: () => R.string.validation_address_required,
+  postalCodeInvalid: () => R.string.validation_postal_code_invalid,
+  foreignPhoneInvalid: () => R.string.validation_foreign_phone_invalid
+};
+
+/**
  * Validate foreign address fields
  * @returns {boolean} True if valid
  */
@@ -599,29 +607,29 @@ function validateForeignAddress() {
   const address = document.getElementById('input-foreign-address')?.value.trim();
   const postalCode = document.getElementById('input-foreign-postal')?.value.trim();
   const municipality = document.getElementById('input-foreign-municipality')?.value.trim();
-  const foreignPhone = document.getElementById('input-foreign-phone-top')?.value.trim();
+  const foreignPhone = document.getElementById('input-foreign-phone')?.value.trim();
 
   // Country is required for foreign address
   if (!country) {
-    showFieldError('country', R.string.validation_country_required || 'Vinsamlegast veldu land');
+    showFieldError('country', VALIDATION_MESSAGES.countryRequired());
     isValid = false;
   }
 
   // Address is required
   if (!address || address.length === 0) {
-    showFieldError('foreign-address', R.string.validation_address_required || 'Heimilisfang má ekki vera tómt');
+    showFieldError('foreign-address', VALIDATION_MESSAGES.addressRequired());
     isValid = false;
   }
 
   // Postal code validation (optional field, but if provided must be valid)
   if (postalCode && !validateInternationalPostalCode(postalCode, country)) {
-    showFieldError('foreign-postal', R.string.validation_postal_code_invalid || 'Ógilt póstnúmer');
+    showFieldError('foreign-postal', VALIDATION_MESSAGES.postalCodeInvalid());
     isValid = false;
   }
 
   // Foreign phone validation (optional, but if provided must be valid E.164)
   if (foreignPhone && !validateInternationalPhone(foreignPhone)) {
-    showFieldError('foreign-phone-top', R.string.validation_foreign_phone_invalid || 'Ógilt alþjóðlegt símanúmer');
+    showFieldError('foreign-phone', VALIDATION_MESSAGES.foreignPhoneInvalid());
     isValid = false;
   }
 
@@ -661,7 +669,7 @@ async function saveChanges() {
   const name = editElements.inputName.value.trim();
   const email = editElements.inputEmail.value.trim();
   const phone = editElements.inputPhone.value.trim();
-  const foreignPhone = document.getElementById('input-foreign-phone-top')?.value.trim() || '';
+  const foreignPhone = document.getElementById('input-foreign-phone')?.value.trim() || '';
 
   if (name !== originalData.name) updates.name = name;
   if (email !== originalData.email) updates.email = email;
@@ -855,7 +863,7 @@ function showSuccess(message) {
     if (successEl) {
       successEl.style.display = 'none';
     }
-  }, 5000);
+  }, SUCCESS_MESSAGE_AUTO_HIDE_MS);
 }
 
 /**

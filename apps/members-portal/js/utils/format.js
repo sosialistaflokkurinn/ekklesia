@@ -352,3 +352,43 @@ export function escapeHTML(text) {
   div.textContent = text;
   return div.innerHTML;
 }
+
+/**
+ * Format membership duration in Icelandic
+ * @param {Date} joinDate - Date when member joined
+ * @returns {string} Formatted duration in Icelandic (e.g., "8 ár og 7 mánuði")
+ *
+ * Examples:
+ * - 8 years, 7 months: "8 ár og 7 mánuði"
+ * - 1 year, 0 months: "1 ár"
+ * - 0 years, 3 months: "3 mánuði"
+ * - 0 years, 1 month: "1 mánuð"
+ * - 0 years, 0 months: "nýskráður"
+ */
+export function formatMembershipDuration(joinDate) {
+  if (!joinDate || !(joinDate instanceof Date)) {
+    return '';
+  }
+
+  const MONTHS_PER_YEAR = 12;
+  const now = new Date();
+  const diffYears = now.getFullYear() - joinDate.getFullYear();
+  const diffMonths = now.getMonth() - joinDate.getMonth();
+  const totalMonths = diffYears * MONTHS_PER_YEAR + diffMonths;
+  const years = Math.floor(totalMonths / MONTHS_PER_YEAR);
+  const months = totalMonths % MONTHS_PER_YEAR;
+
+  let durationText = '';
+  if (years > 0) {
+    durationText = years === 1 ? '1 ár' : `${years} ár`;
+    if (months > 0) {
+      durationText += ` og ${months} ${months === 1 ? 'mánuð' : 'mánuði'}`;
+    }
+  } else if (months > 0) {
+    durationText = months === 1 ? '1 mánuð' : `${months} mánuði`;
+  } else {
+    durationText = 'nýskráður';
+  }
+
+  return durationText;
+}
