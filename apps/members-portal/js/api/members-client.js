@@ -210,29 +210,20 @@ async function updateFirestoreForeignAddress(kennitala, foreignAddress) {
 }
 
 /**
- * Update member foreign address in Django backend via Cloud Function
+ * Update member foreign address in Django backend via Cloud Function proxy
  *
- * NOTE: This is a STUB implementation. Blocked on Issue #161.
- * Django API endpoints for foreign address CRUD do not exist yet.
+ * Issue #161: Implemented! Uses Cloud Function to securely call Django API.
  *
  * @param {string} kennitala - Member's kennitala (normalized, no hyphen)
- * @param {Object} foreignAddress - Foreign address data
+ * @param {Object} foreignAddress - Foreign address data { country, address, postal_code, municipality, current }
  * @param {string} region - Firebase Functions region (default: 'europe-west2')
  * @returns {Promise<Object>} Django update result
  * @private
- * @throws {Error} Currently throws "Not implemented" error
+ * @throws {Error} If Django API call fails
  */
 async function updateDjangoForeignAddress(kennitala, foreignAddress, region = 'europe-west2') {
-  // TODO: Issue #161 - Implement Django foreign address API endpoints
-  // Endpoint: POST /api/members/:kennitala/foreign-addresses/
-  // or PATCH /api/members/:kennitala/foreign-addresses/:id/
-
-  console.warn('⚠️ Django foreign address API not yet implemented (Issue #161)');
-
-  // For now, throw error so Firestore rollback happens
-  throw new Error('Django foreign address API endpoints not implemented yet. See Issue #161.');
-
-  /* Future implementation:
+  // Call Cloud Function that proxies to Django API
+  // This keeps the Django API token secure server-side
   const updateForeignAddress = httpsCallable('updatememberforeignaddress', region);
 
   try {
@@ -243,7 +234,8 @@ async function updateDjangoForeignAddress(kennitala, foreignAddress, region = 'e
 
     console.log('✅ Django foreign address updated:', {
       success: result.data.success,
-      django_id: result.data.django_id
+      django_id: result.data.django_id,
+      method: result.data.method  // 'POST' or 'PATCH'
     });
 
     return result.data;
@@ -251,7 +243,6 @@ async function updateDjangoForeignAddress(kennitala, foreignAddress, region = 'e
     console.error('❌ Django foreign address update failed:', error);
     throw new Error(`Villa við uppfærslu Django erlends heimilisfangs: ${error.message}`);
   }
-  */
 }
 
 /**
