@@ -61,12 +61,41 @@ def updatememberforeignaddress(req: https_fn.CallableRequest) -> dict:
     # Get parameters
     kennitala = req.data.get('kennitala')
     foreign_address = req.data.get('foreign_address')
-    
+
     if not kennitala or not foreign_address:
         raise https_fn.HttpsError(
             code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
             message="kennitala and foreign_address required"
         )
+
+    # Convert country code to country ID if needed
+    # Frontend sends country code (e.g., "US"), Django expects country ID (e.g., 211)
+    country_value = foreign_address.get('country')
+    if country_value and isinstance(country_value, str):
+        # Map common country codes to Django Country IDs
+        COUNTRY_CODE_TO_ID = {
+            'US': 211,  # Bandaríkin
+            'DK': 48,   # Danmörk
+            'NO': 155,  # Noregur
+            'SE': 189,  # Svíþjóð
+            'FI': 64,   # Finnland
+            'GB': 72,   # Bretland
+            'DE': 204,  # Þýskaland
+            'FR': 65,   # Frakkland
+            'IS': 109,  # Ísland
+            'CA': 35,   # Kanada
+            'AU': 13,   # Ástralía
+            'NZ': 154,  # Nýja-Sjáland
+        }
+
+        django_country_id = COUNTRY_CODE_TO_ID.get(country_value)
+        if not django_country_id:
+            raise https_fn.HttpsError(
+                code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+                message=f"Unknown country code: {country_value}"
+            )
+
+        foreign_address['country'] = django_country_id
     
     # Get Django API token from Secret Manager
     try:
