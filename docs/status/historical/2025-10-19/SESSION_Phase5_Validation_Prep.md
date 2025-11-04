@@ -279,7 +279,7 @@ git status
 3. Delete the `role` field (string)
 4. Keep Firebase Auth custom claims unchanged (already correct)
 
-**Reference**: See [ROLES_AND_PERMISSIONS.md](../guides/ROLES_AND_PERMISSIONS.md) lines 113-119:
+**Reference**: See [ROLES_AND_PERMISSIONS.md](../../../development/guides/admin/ROLES_AND_PERMISSIONS.md) lines 113-119:
 > Source of truth: Firebase Auth custom claims on the user record.
 
 ---
@@ -400,7 +400,7 @@ ps aux | grep -E 'cloud.*sql.*proxy' | grep -v grep
 - ❌ Setting `roles` in **Firestore** `users` collection (not read by auth system)
 - ✅ Setting `roles` in **Firebase Auth** `customAttributes` (correct source of truth)
 
-**Code Reference**: [members/functions/main.py:467-481](../../members/functions/main.py#L467-L481)
+**Code Reference**: members/functions/main.py:467-481 (see services/members/)
 
 ---
 
@@ -493,13 +493,13 @@ psql -h 127.0.0.1 -p 5432 -U postgres -d postgres
 
 8. ⏳ **RECOMMENDED**: Document role assignment procedure
    - Create `scripts/set_user_role.sh` wrapper around Identity Toolkit API
-   - Add to [ROLES_AND_PERMISSIONS.md](../guides/ROLES_AND_PERMISSIONS.md) "How to assign roles" section (line 121)
+   - Add to [ROLES_AND_PERMISSIONS.md](../../../development/guides/admin/ROLES_AND_PERMISSIONS.md) "How to assign roles" section (line 121)
    - Satisfies TODO on line 158: "Provide a small CLI script for setting roles"
 
 9. ⏳ **RECOMMENDED**: Improve audit log structure
    - Ensure `correlation_id` is logged in all admin operations
    - Add structured fields (`before`, `after`, `scope`) to all log entries
-   - Update [AUDIT_LOGGING.md](../guides/AUDIT_LOGGING.md) with examples
+   - Update [AUDIT_LOGGING.md](../../../development/guides/admin/AUDIT_LOGGING.md) with examples
 
 ---
 

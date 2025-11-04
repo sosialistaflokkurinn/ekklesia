@@ -52,7 +52,7 @@ All evolving documentation files should follow semantic versioning: `MAJOR.MINOR
 | [../development/guides/admin/ADMIN_ALERTS.md](../development/guides/admin/ADMIN_ALERTS.md) | v1.0 | 2025-10-20 | ✅ Current |
 | [../development/guides/admin/AUDIT_LOGGING.md](../development/guides/admin/AUDIT_LOGGING.md) | v1.0 | 2025-10-16 | ✅ Current |
 | [../development/../development/guides/admin/ROLES_AND_PERMISSIONS.md](../development/../development/guides/admin/ROLES_AND_PERMISSIONS.md) | v1.0 | 2025-10-14 | ✅ Current |
-| [MCP_SERVERS.md TBD](MCP_SERVERS.md TBD) | v1.0 | 2025-10-14 | ✅ Current |
+| MCP_SERVERS.md (TBD) | v1.0 | 2025-10-14 | ✅ Current |
 
 ### GitHub Guides
 
@@ -60,27 +60,27 @@ All evolving documentation files should follow semantic versioning: `MAJOR.MINOR
 |----------|---------|--------------|--------|
 | [../development/guides/github/GITHUB_PROJECT_MANAGEMENT.md](../development/guides/github/GITHUB_PROJECT_MANAGEMENT.md) | v1.1 | 2025-10-14 | ✅ Current |
 | [../development/guides/github/GITHUB_PROJECT_MANAGEMENT.SUMMARY.md](../development/guides/github/GITHUB_PROJECT_MANAGEMENT.SUMMARY.md) | v1.0 | 2025-10-20 | ✅ Current |
-| [../development/guides/github/GITHUB_PR_MANAGEMENT.md](guides/github/GITHUB_PR_MANAGEMENT.md) | v1.0 | 2025-10-14 | ✅ Current |
-| [../development/guides/github/GITHUB_PR_QUICK_REFERENCE.md](guides/github/GITHUB_PR_QUICK_REFERENCE.md) | v1.0 | 2025-10-20 | ✅ Current |
-| [../development/guides/github/GITHUB_PR_REVIEW_REPLY_WORKFLOW.md](guides/github/GITHUB_PR_REVIEW_REPLY_WORKFLOW.md) | v1.0 | 2025-10-14 | ✅ Current |
-| [guides/github/GITHUB_ISSUE_LABEL_MANAGEMENT.md](guides/github/GITHUB_ISSUE_LABEL_MANAGEMENT.md) | v1.0 | 2025-10-14 | ✅ Current |
+| [../development/guides/github/GITHUB_PR_MANAGEMENT.md](../development/guides/github/GITHUB_PR_MANAGEMENT.md) | v1.0 | 2025-10-14 | ✅ Current |
+| [../development/guides/github/GITHUB_PR_QUICK_REFERENCE.md](../development/guides/github/GITHUB_PR_QUICK_REFERENCE.md) | v1.0 | 2025-10-20 | ✅ Current |
+| [../development/guides/github/GITHUB_PR_REVIEW_REPLY_WORKFLOW.md](../development/guides/github/GITHUB_PR_REVIEW_REPLY_WORKFLOW.md) | v1.0 | 2025-10-14 | ✅ Current |
+| [guides/github/GITHUB_ISSUE_LABEL_MANAGEMENT.md](../development/guides/github/GITHUB_ISSUE_LABEL_MANAGEMENT.md) | v1.0 | 2025-10-14 | ✅ Current |
 | [../development/guides/workflows/PR29_CAMPAIGN_LEARNINGS.md](../development/guides/workflows/PR29_CAMPAIGN_LEARNINGS.md) | v1.0 | 2025-10-15 | ✅ Current |
 
 ### Operational/Deployment Guides
 
 | Document | Version | Last Updated | Status |
 |----------|---------|--------------|--------|
-| [MEMBERS_DEPLOYMENT_GUIDE.md](MEMBERS_DEPLOYMENT_GUIDE.md) | v1.0 | 2025-10-20 | ✅ Current |
-| [DEPLOYMENT_INSTRUCTIONS.md](DEPLOYMENT_INSTRUCTIONS.md) | v2.0 | 2025-10-20 | ✅ Current |
-| [OPERATIONAL_PROCEDURES.md](OPERATIONAL_PROCEDURES.md) | v1.0 | 2025-10-13 | 🔄 Needs Review |
+| [MEMBERS_DEPLOYMENT_GUIDE.md](../setup/MEMBERS_DEPLOYMENT_GUIDE.md) | v1.0 | 2025-10-20 | ✅ Current |
+| [DEPLOYMENT_INSTRUCTIONS.md](../setup/) | v2.0 | 2025-10-20 | ✅ Current |
+| [OPERATIONAL_PROCEDURES.md](./OPERATIONAL_PROCEDURES.md) | v1.0 | 2025-10-13 | 🔄 Needs Review |
 
 ### Architecture & Design
 
 | Document | Version | Last Updated | Status |
 |----------|---------|--------------|--------|
-| [SYSTEM_ARCHITECTURE_OVERVIEW.md](SYSTEM_ARCHITECTURE_OVERVIEW.md) | v1.0 | 2025-10-13 | 🔄 Needs Review |
-| [ARCHITECTURE_DESIGN_PHASE6.md](ARCHITECTURE_DESIGN_PHASE6.md) | v1.0 | 2025-10-13 | 🔄 Needs Review |
-| [ARCHITECTURE_RECOMMENDATIONS.md](ARCHITECTURE_RECOMMENDATIONS.md) | v1.0 | 2025-10-13 | 🔄 Needs Review |
+| [SYSTEM_ARCHITECTURE_OVERVIEW.md](../design/SYSTEM_ARCHITECTURE_OVERVIEW.md) | v1.0 | 2025-10-13 | 🔄 Needs Review |
+| [ARCHITECTURE_DESIGN_PHASE6.md](../architecture/ARCHITECTURE_DESIGN_PHASE6.md) | v1.0 | 2025-10-13 | 🔄 Needs Review |
+| [ARCHITECTURE_RECOMMENDATIONS.md](../architecture/ARCHITECTURE_RECOMMENDATIONS.md) | v1.0 | 2025-10-13 | 🔄 Needs Review |
 
 ---
 
