@@ -1,6 +1,6 @@
 # 🗺️ Ekklesia Platform - Master Documentation Map
 
-**Version**: 8.1.1
+**Version**: 8.1.2
 **Last Updated**: 2025-11-04
 **Status**: ✅ Phase 5 Complete - Full Voting System Operational (Members ✅ + Events ✅ + Elections ✅) + Epic #159 Profile & Admin UI Implementation + Comprehensive Documentation Organization (120+ docs indexed)
 
@@ -76,17 +76,22 @@
 
 ### 🔨 Current Work
 
-- **Phase 5**: ✅ Complete (Oct 10, 2025)
-  - S2S integration between Events and Elections services
-  - Token registration via S2S API
-  - Results fetching via S2S API
-  - End-to-end voting flow operational
-  - See: Phase 5 Integration (archived)
-- **Phase 6**: Next phase (load testing)
-  - 300 votes/second spike test
-  - Cloud Run auto-scaling verification
-  - Database connection pool testing
-  - See: `docs/development/guides/workflows/USAGE_CONTEXT.md`, `docs/design/ARCHITECTURE_DESIGN_PHASE6.md`
+- **Epic #159**: 🔄 In Progress (Nov 2025) - Profile Editing & Admin UI
+  - Member profile self-service editing (phone, email, address)
+  - Country autocomplete with Icelandic-first sorting
+  - Foreign phone number auto-prepend (+country code)
+  - Admin UI improvements and role system refinement
+  - See: Recent Milestones (Nov 1-4, 2025) below
+- **Epic #103**: ✅ Complete (Nov 4, 2025) - Documentation Organization
+  - 100% link validation success (178 broken links fixed)
+  - 3 comprehensive script READMEs created (1,219 lines)
+  - GraphQL validation (20+ examples, 0 errors)
+  - See: Recent Milestones (Nov 4, 2025) below
+- **Epic #116**: ✅ Complete (Oct 29, 2025) - Members Admin UI
+  - Admin portal with member CRUD operations
+  - Firestore-based member management
+  - Audit logging system
+  - See: Recent Milestones (Oct 22-29, 2025) below
 
 ### 📋 Recent Milestones (November 2025)
 
