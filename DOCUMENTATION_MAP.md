@@ -9,11 +9,12 @@
 ## 📍 Quick Navigation
 
 ### 🚀 **Getting Started**
-- [Project Overview](#project-overview)
-- [Current Status](#current-status)
-- [Repository Structure](#-repository-structure) ⭐ **NEW** - Complete repo guide
-- [Documentation Structure](#documentation-structure)
-- [Quick Links by Role](#quick-links-by-role)
+- [Project Overview](#project-overview) - Technology stack and component overview
+- [Current Status](#current-status) - Production services and recent milestones
+- [Repository Structure](#-repository-structure) - Complete repo organization guide
+- [Scripts Documentation](#%EF%B8%8F-scripts-directory-scripts) ⭐ **NEW** - Comprehensive script READMEs added
+- [Documentation Structure](#documentation-structure) - Full documentation tree
+- [Quick Links by Role](#quick-links-by-role) - Role-based navigation
 
 ### 📚 **Documentation Directories**
 - [/docs/ - Architecture & Plans](#docs-directory)
