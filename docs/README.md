@@ -39,6 +39,18 @@ Django backend integration, API connectivity, and data synchronization.
 - **[Django Sync Implementation](./integration/DJANGO_SYNC_IMPLEMENTATION.md)** - Member synchronization process
 - **[Django → Ekklesia Migration](./integration/DJANGO_TO_EKKLESIA_MIGRATION.md)** - Long-term migration strategy
 
+### 📐 Code Standards
+**Required reading for all developers**. Unified code standards and style guides.
+- **[Code Standards (Master Index)](./CODE_STANDARDS.md)** ⭐ **START HERE** - Overview of all standards
+- **[CSS & BEM Guide](./standards/CSS_BEM_GUIDE.md)** - CSS methodology and design system
+- **[HTML Guide](./standards/HTML_GUIDE.md)** - Semantic HTML and accessibility
+- **[JavaScript Guide](./standards/JAVASCRIPT_GUIDE.md)** - ES6+ standards and patterns
+- **[i18n Guide](./standards/I18N_GUIDE.md)** - Internationalization with R.string
+- **[Data Quality & UX Guide](./standards/DATA_QUALITY_UX.md)** - User experience and validation
+- **[Documentation Guide](./standards/DOCUMENTATION_GUIDE.md)** - Writing JSDoc, READMEs, and ADRs
+- **[Git Workflow Guide](./standards/GIT_WORKFLOW_GUIDE.md)** - Branching and commit conventions
+- **[Quality & Testing Guide](./standards/QUALITY_TESTING_GUIDE.md)** - Testing philosophy and practices
+
 ### 🛠️ Development
 Guides for developers contributing to Ekklesia.
 - **[GitHub Workflow](./development/guides/github/README.md)** - Issue tracking and PRs
@@ -81,6 +93,8 @@ ekklesia/
 │   └── members-portal/         # Members UI (Firebase Hosting)
 │
 ├── docs/                       # This documentation
+│   ├── CODE_STANDARDS.md       # Master code standards index
+│   ├── standards/              # Code standards and style guides
 │   ├── architecture/           # System design
 │   ├── features/               # Feature-specific docs
 │   ├── development/            # Developer guides
@@ -107,15 +121,16 @@ Choose your path based on your role:
 
 ### For Frontend Developers
 1. [Getting Started](./development/guides/github/README.md)
-2. [Members Service Architecture](./architecture/)
-3. [Feature Guides](./features/)
-4. [UI Design System](./architecture/CSS_DESIGN_SYSTEM.md)
+2. **[Code Standards](./CODE_STANDARDS.md)** - HTML, CSS, JavaScript, i18n standards
+3. [Members Service Architecture](./architecture/)
+4. [Feature Guides](./features/)
 
 ### For Backend Developers
 1. [Getting Started](./development/guides/github/README.md)
-2. [System Architecture](./architecture/)
-3. [Service Design Documentation](./architecture/EVENTS_SERVICE_MVP.md)
-4. [Database Schema](./reference/)
+2. **[Code Standards](./CODE_STANDARDS.md)** - JavaScript, testing, and documentation standards
+3. [System Architecture](./architecture/)
+4. [Service Design Documentation](./architecture/EVENTS_SERVICE_MVP.md)
+5. [Database Schema](./reference/)
 
 ### For DevOps / Infrastructure
 1. [Infrastructure Guide](./development/guides/infrastructure/README.md)
@@ -182,6 +197,6 @@ This documentation is maintained alongside the codebase. When features are added
 
 ---
 
-**Last Updated**: 2025-10-21
+**Last Updated**: 2025-11-04
 **Maintained By**: Ekklesia Development Team
 **Repository**: [github.com/sosialistaflokkurinn/ekklesia](https://github.com/sosialistaflokkurinn/ekklesia)
