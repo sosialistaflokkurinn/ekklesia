@@ -56,7 +56,7 @@ testing/
 
 **Line 12:**
 ```markdown
-| [TESTING_GUIDE.md](./TESTING_GUIDE.md) | Comprehensive testing guide and procedures | ✅ Current |
+| TESTING_GUIDE.md (TBD) | Comprehensive testing guide and procedures | ✅ Current |
 ```
 
 **Impact:** Users clicking link get 404
@@ -146,7 +146,7 @@ testing/
 Edit `/testing/reports/INDEX.md` line 12:
 
 ```diff
-- | [TESTING_GUIDE.md](./TESTING_GUIDE.md) | Comprehensive testing guide and procedures | ✅ Current |
+- | TESTING_GUIDE.md (TBD) | Comprehensive testing guide and procedures | ✅ Current |
 ```
 
 ### Fix 2: Update Related Documentation Section
@@ -154,10 +154,10 @@ Edit `/testing/reports/INDEX.md` line 12:
 Edit `/testing/reports/INDEX.md` lines 67-73 to fix broken paths:
 
 ```diff
-- [Setup](../setup/INDEX.md) - Environment setup
-- [Audit Tools](../audits/INDEX.md) - Validation scripts
-- [Operations](../maintenance/INDEX.md) - Operational procedures
-- [Architecture](../design/INDEX.md) - System design
+- Setup (see setup/) - Environment setup
+- Audit Tools (see scripts/admin/) - Validation scripts
+- Operations (see operations/) - Operational procedures
+- [Architecture](../../../../design/) - System design
 - [Main Hub](../INDEX.md) - Documentation overview
 + [Setup](../../docs/setup/INDEX.md) - Environment setup
 + [Operations](../../docs/OPERATIONAL_PROCEDURES.md) - Operational procedures

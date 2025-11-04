@@ -781,7 +781,7 @@ gcloud logging read "resource.labels.service_name=elections-service AND severity
 - Events Service (see services/events/)
 - [Members Deployment Guide](../setup/MEMBERS_DEPLOYMENT_GUIDE.md)
 - [Operational Procedures](../operations/OPERATIONAL_PROCEDURES.md)
-- [Usage Context & Load Patterns](../USAGE_CONTEXT.md)
+- [Usage Context & Load Patterns](../development/guides/workflows/USAGE_CONTEXT.md)
 
 ---
 

@@ -470,13 +470,13 @@ ekklesia/
 ### Current Phase 5 Documentation
 - [PHASE_5_OVERVIEW.md](../roadmap/PHASE_5_OVERVIEW.md) - Comprehensive phase planning
 - [EPIC_24_ADMIN_LIFECYCLE.md](../features/election-voting/EPIC_24_ADMIN_LIFECYCLE.md) - Admin API spec (305 lines)
-- [EPIC_43_MEMBERSHIP_SYNC.md](../features/election-voting/EPIC_43_MEMBERSHIP_SYNC.md) - Sync service spec (546 lines)
+- [EPIC_43_MEMBER_MANAGEMENT_SYSTEM.md](../features/election-voting/EPIC_43_MEMBER_MANAGEMENT_SYSTEM.md) - Sync service spec (546 lines)
 - [EPIC_87_ELECTION_DISCOVERY.md](../features/election-voting/EPIC_87_ELECTION_DISCOVERY.md) - Member UI spec (421 lines)
 
 ### Infrastructure & Security Documentation
 - [CRITICAL_ACTIONS_LOG.md](../security/current/CRITICAL_ACTIONS_LOG.md) - Deployment commands & security fixes
 - [MEMBERS_DEPLOYMENT_GUIDE.md](../setup/MEMBERS_DEPLOYMENT_GUIDE.md) - Members service deployment
-- [ROLES_AND_PERMISSIONS.md](../development/guides/ROLES_AND_PERMISSIONS.md) - Admin/member roles
+- [ROLES_AND_PERMISSIONS.md](../development/guides/admin/ROLES_AND_PERMISSIONS.md) - Admin/member roles
 
 ### Historical Documentation
 - [ISSUES_31-40_SECURITY_REVIEW_RESPONSE.md](../security/responses/ISSUES_31-40_SECURITY_REVIEW_RESPONSE.md) - Phase 4 security fixes
@@ -592,7 +592,7 @@ npm run test:smoke
 
 For issues or blockers:
 1. Check [Repository Structure](../../DOCUMENTATION_MAP.md#-repository-structure) for file locations
-2. Review [OPERATIONAL_PROCEDURES.md](../../OPERATIONAL_PROCEDURES.md) for common tasks
+2. Review [OPERATIONAL_PROCEDURES.md](../operations/OPERATIONAL_PROCEDURES.md) for common tasks
 3. File GitHub issue with label `phase-5` or `epic-{number}`
 
 ---

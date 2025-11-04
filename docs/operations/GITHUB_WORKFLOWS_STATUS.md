@@ -462,8 +462,8 @@ jobs:
 
 ### Internal Docs
 - [GitHub Automation Guide](../../.github/GITHUB_AUTOMATION_GUIDE.md)
-- [Pre-commit Hooks Setup](../development/guides/PRE_COMMIT_HOOKS.md)
-- [Security Policy](../security/SECURITY.md)
+- Pre-commit Hooks (see .pre-commit-config.yaml)
+- Security Policy (see security/)
 
 ### External Resources
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)

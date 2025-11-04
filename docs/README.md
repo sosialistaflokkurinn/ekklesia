@@ -152,10 +152,10 @@ Choose your path based on your role:
 |----------|---------|----------|
 | [CURRENT_DEVELOPMENT_STATUS.md](./status/CURRENT_DEVELOPMENT_STATUS.md) | Current system status | All |
 | [ENVIRONMENT_CLARIFICATION.md](./ENVIRONMENT_CLARIFICATION.md) | Production tools vs development system | All |
-| [SYSTEM_ARCHITECTURE_OVERVIEW.md](./architecture/SYSTEM_ARCHITECTURE_OVERVIEW.md) | How the system works | Developers, Architects |
+| [SYSTEM_ARCHITECTURE_OVERVIEW.md](./design/SYSTEM_ARCHITECTURE_OVERVIEW.md) | How the system works | Developers, Architects |
 | [Multi-Agent Workflow](./development/guides/workflows/MULTI_AGENT_WORKFLOW.md) | Development process | Developers, Project Managers |
 | [Security Defense Analysis](./security/) | Security hardening | Security, DevOps |
-| [REPO_RESTRUCTURING_PLAN.md](./roadmap/REPO_RESTRUCTURING_PLAN.md) | Repository organization | Technical Leads |
+| REPO_RESTRUCTURING_PLAN.md (archived) | Repository organization | Technical Leads |
 
 ---
 

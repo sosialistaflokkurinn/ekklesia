@@ -6,7 +6,7 @@
 
 > **Note**: This is a historical document from before the repository restructuring (2025-10-21).
 > Path references use the old structure (e.g., `members/` instead of `services/members/`).
-> For current paths, see the [Repository Structure](../../../DIRECTORY.md).
+> For current paths, see the Repository Structure (see DOCUMENTATION_MAP.md).
 
 ---
 
@@ -23,8 +23,8 @@ Completed automated setup for Phase 5 validation (ticket #84): applied database 
 **Status**: Committed and pushed
 
 - Moved 6 GitHub guides to `docs/development/guides/github/` subdirectory
-- Updated [docs/development/guides/INDEX.md](../guides/INDEX.md): 13 guides organized in 4 categories
-- Created [docs/testing/ADMIN_RESET_CHECKLIST.md](../testing/ADMIN_RESET_CHECKLIST.md): Step-by-step validation playbook
+- Updated [development/guides/INDEX.md](../../../development/guides/INDEX.md): 13 guides organized in 4 categories
+- Created ADMIN_RESET_CHECKLIST.md (see testing/): Step-by-step validation playbook
 
 **Verification**:
 ```bash
@@ -40,7 +40,7 @@ git log --oneline feature/security-hardening | head -3
 **Commit**: `3353bed`
 **Status**: Applied to production + committed
 
-**Migration File**: [events/migrations/003_seed_october_2025_election.sql](../../events/migrations/003_seed_october_2025_election.sql)
+**Migration File**: events/migrations/003_seed_october_2025_election.sql (see services/events/migrations/)
 
 **Process**:
 ```bash
@@ -67,7 +67,7 @@ voting_ends_at: 2025-10-20 21:00:00+00
 -- Clean state for Phase 5 validation
 ```
 
-**Documentation Updated**: [events/migrations/README.md](../../events/migrations/README.md) marked migration 003 as applied (2025-10-19 19:44 UTC)
+**Documentation Updated**: events/migrations/ (see services/events/migrations/) marked migration 003 as applied (2025-10-19 19:44 UTC)
 
 ---
 
@@ -190,7 +190,7 @@ gcloud logging read \
 ## ⚠️ Outstanding Work (Required)
 
 ### Priority 1: Update Test Report
-**File**: [docs/testing/ADMIN_RESET_TEST_REPORT.md](../testing/ADMIN_RESET_TEST_REPORT.md)
+**File**: ADMIN_RESET_TEST_REPORT.md (see testing/)
 **Status**: ❌ **Not updated with fresh test evidence**
 
 **Required Changes**:

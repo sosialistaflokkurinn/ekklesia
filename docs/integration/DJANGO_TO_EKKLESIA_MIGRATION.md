@@ -559,9 +559,9 @@ async function migrateMembers() {
 
 ## Related Documentation
 
-- [docs/legacy/DJANGO_LEGACY_SYSTEM.md](../legacy/DJANGO_LEGACY_SYSTEM.md) - Django system details
+- DJANGO_LEGACY_SYSTEM.md (archived) - Django system details
 - [docs/integration/DJANGO_SYNC_IMPLEMENTATION.md](DJANGO_SYNC_IMPLEMENTATION.md) - Phase 5 sync implementation
-- [docs/status/CURRENT_PRODUCTION_STATUS.md](../status/CURRENT_PRODUCTION_STATUS.md) - Ekklesia current state
+- [CURRENT_DEVELOPMENT_STATUS.md](../status/CURRENT_DEVELOPMENT_STATUS.md) - Ekklesia current state
 
 ---
 

@@ -9,7 +9,7 @@
 
 ## Overview
 
-Currently, [.claude/settings.local.json](../../.claude/settings.local.json) contains hardcoded credentials in bash permission patterns. This is **technical debt** that should be resolved by using Google Cloud Secret Manager.
+Currently, [.claude/settings.local.json](../../../.claude/settings.local.json) contains hardcoded credentials in bash permission patterns. This is **technical debt** that should be resolved by using Google Cloud Secret Manager.
 
 **Current State**:
 - ✅ Secrets stored in Secret Manager (postgres-password, elections-s2s-api-key, etc.)
@@ -301,10 +301,10 @@ curl -H "Authorization: Bearer $ELECTIONS_API_KEY" https://elections-service-...
 
 ## Related Documentation
 
-- [docs/security/SECURITY_DEFENSE_ANALYSIS.md](SECURITY_DEFENSE_ANALYSIS.md) - Security architecture
-- [docs/security/FIREBASE_APP_CHECK_RESEARCH.md](FIREBASE_APP_CHECK_RESEARCH.md) - App Check implementation
-- [.code-rules](../../.code-rules) - Session initialization rules
-- [scripts/README.md](../../scripts/README.md) - Scripts documentation
+- SECURITY_DEFENSE_ANALYSIS.md (see security/) - Security architecture
+- [FIREBASE_APP_CHECK_RESEARCH.md](../current/FIREBASE_APP_CHECK_RESEARCH.md) - App Check implementation
+- [.code-rules](../../../.code-rules) - Session initialization rules
+- scripts/ (no README) - Scripts documentation
 
 ---
 

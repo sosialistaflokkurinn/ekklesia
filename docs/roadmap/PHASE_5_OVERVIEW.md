@@ -110,7 +110,7 @@ Members can discover, view details, and participate in elections:
 ### Epic #43: Membership Sync with Django Backend
 **Branch**: `feature/epic-43-membership-sync`
 **Status**: 🟡 Specification Complete, Ready for Implementation
-**Documentation**: [EPIC_43_MEMBERSHIP_SYNC.md](../features/election-voting/EPIC_43_MEMBERSHIP_SYNC.md)
+**Documentation**: [EPIC_43_MEMBER_MANAGEMENT_SYSTEM.md](../features/election-voting/EPIC_43_MEMBER_MANAGEMENT_SYSTEM.md)
 
 #### Overview
 Automatic membership synchronization ensures elections always use current membership data:
@@ -444,7 +444,7 @@ Updates:
 ### Epic Documentation
 - ✅ [EPIC_24_ADMIN_LIFECYCLE.md](../features/election-voting/EPIC_24_ADMIN_LIFECYCLE.md)
 - ✅ [EPIC_87_ELECTION_DISCOVERY.md](../features/election-voting/EPIC_87_ELECTION_DISCOVERY.md)
-- ✅ [EPIC_43_MEMBERSHIP_SYNC.md](../features/election-voting/EPIC_43_MEMBERSHIP_SYNC.md)
+- ✅ [EPIC_43_MEMBER_MANAGEMENT_SYSTEM.md](../features/election-voting/EPIC_43_MEMBER_MANAGEMENT_SYSTEM.md)
 
 ### Developer Guides
 - ✅ [docs/development/guides/](../development/guides/) - All available

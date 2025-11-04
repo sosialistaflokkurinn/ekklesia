@@ -26,7 +26,7 @@ The Ekklesia system is designed for **infrequent, high-load events** (monthly me
 - One-time token enforcement working
 - Performance excellent (<500ms response times)
 
-**See**: [docs/testing/END_TO_END_VOTING_FLOW_TEST.md](testing/END_TO_END_VOTING_FLOW_TEST.md)
+**See**: [END_TO_END_VOTING_FLOW_TEST.md](../testing/)
 
 **Conclusion**: Core voting infrastructure validated. System awaits Phase 5 completion (admin UI, membership sync) before first production use. Load testing remains (300 votes/sec spike).
 
@@ -622,10 +622,10 @@ gcloud alpha monitoring policies create \
 
 ## Related Documentation
 
-- [docs/USAGE_CONTEXT.md](USAGE_CONTEXT.md) - Load patterns and capacity planning
-- [docs/design/ELECTIONS_SERVICE_MVP.md](design/ELECTIONS_SERVICE_MVP.md) - Elections service design
-- [docs/design/EVENTS_SERVICE_MVP.md](design/EVENTS_SERVICE_MVP.md) - Events service design
-- [docs/status/CURRENT_PRODUCTION_STATUS.md](status/CURRENT_PRODUCTION_STATUS.md) - Production status
+- [USAGE_CONTEXT.md](../development/guides/workflows/USAGE_CONTEXT.md) - Load patterns and capacity planning
+- ELECTIONS_SERVICE_MVP.md (see services/elections/) - Elections service design
+- EVENTS_SERVICE_MVP.md (see services/events/) - Events service design
+- [CURRENT_DEVELOPMENT_STATUS.md](../status/CURRENT_DEVELOPMENT_STATUS.md) - Production status
 
 ---
 
