@@ -88,6 +88,14 @@ h1 {
   --shadow-primary: 0 4px 12px rgba(183, 28, 28, 0.22);
   --shadow-primary-pressed: 0 3px 10px rgba(183, 28, 28, 0.2);
 
+  /* Input & Focus shadows */
+  --shadow-inset-sm: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-focus-primary: 0 0 0 3px var(--color-primary-alpha-10);
+
+  /* Dropdown & overlay shadows */
+  --shadow-dropdown: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-toast: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
   /* Overlay */
   --overlay-bg: rgba(0, 0, 0, 0.5);
 

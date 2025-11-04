@@ -61,20 +61,18 @@
         <div class="info-grid__item">
           <div class="info-grid__label" id="label-name">Loading...</div>
 
-          <!-- View mode (default) -->
-          <div class="info-grid__value profile-edit__value" id="value-name">-</div>
-
-          <!-- Edit mode (hidden by default) -->
-          <div class="profile-edit__input-wrapper" style="display: none;">
+          <!-- Always-on edit mode -->
+          <div class="profile-field">
             <input
               type="text"
-              class="profile-edit__input"
+              class="profile-field__input"
               id="input-name"
               name="name"
               required
               maxlength="100"
             />
-            <span class="profile-edit__error" id="error-name"></span>
+            <span class="profile-field__status" id="status-name"></span>
+            <span class="profile-field__error" id="error-name"></span>
           </div>
         </div>
 
@@ -88,253 +86,82 @@
         <div class="info-grid__item">
           <div class="info-grid__label" id="label-email">Loading...</div>
 
-          <!-- View mode -->
-          <div class="info-grid__value profile-edit__value" id="value-email">-</div>
-
-          <!-- Edit mode -->
-          <div class="profile-edit__input-wrapper" style="display: none;">
+          <!-- Always-on edit mode -->
+          <div class="profile-field">
             <input
               type="email"
-              class="profile-edit__input"
+              class="profile-field__input"
               id="input-email"
               name="email"
               placeholder="nafn@example.is"
             />
-            <span class="profile-edit__error" id="error-email"></span>
+            <span class="profile-field__status" id="status-email"></span>
+            <span class="profile-field__error" id="error-email"></span>
           </div>
         </div>
 
-        <!-- Phone -->
+        <!-- Phone Numbers (multiple) -->
         <div class="info-grid__item">
-          <div class="info-grid__label" id="label-phone">Loading...</div>
-
-          <!-- View mode -->
-          <div class="info-grid__value profile-edit__value" id="value-phone">-</div>
-
-          <!-- Edit mode -->
-          <div class="profile-edit__input-wrapper" style="display: none;">
-            <input
-              type="tel"
-              class="profile-edit__input"
-              id="input-phone"
-              name="phone"
-              placeholder="780-8188"
-              pattern="[0-9]{7}|[0-9]{3}-[0-9]{4}"
-            />
-            <span class="profile-edit__error" id="error-phone"></span>
+          <div class="info-grid__label info-grid__label--clickable" id="label-phone-numbers">
+            Loading...
+            <span class="expand-icon" id="phone-expand-icon">▼</span>
           </div>
+
+          <!-- Simple phone display (default view) -->
+          <div class="info-grid__value" id="value-phone-simple">-</div>
         </div>
 
-        <!-- Foreign Phone -->
+        <!-- Addresses (collapsible, like phone numbers) -->
         <div class="info-grid__item">
-          <div class="info-grid__label" id="label-foreign-phone">Loading...</div>
-
-          <!-- View mode -->
-          <div class="info-grid__value profile-edit__value" id="value-foreign-phone">-</div>
-
-          <!-- Edit mode -->
-          <div class="profile-edit__input-wrapper" style="display: none;">
-            <input
-              type="tel"
-              class="profile-edit__input"
-              id="input-foreign-phone"
-              name="foreign-phone"
-            />
-            <span class="profile-edit__error" id="error-foreign-phone"></span>
+          <div class="info-grid__label info-grid__label--clickable" id="label-addresses">
+            Loading...
+            <span class="expand-icon" id="address-expand-icon">▼</span>
           </div>
-        </div>
 
-        <!-- Living Status Selector (edit mode only) -->
-        <div class="info-grid__item info-grid__item--full-width">
-          <div class="profile-edit__input-wrapper" id="living-status-selector" style="display: none;">
-            <div class="info-grid__label" id="label-living-status">Loading...</div>
-            <div class="profile-edit__radio-group">
-              <label class="profile-edit__radio-label">
-                <input type="radio" name="living-status" value="iceland" id="radio-iceland" checked>
-                <span id="living-status-iceland">Loading...</span>
-              </label>
-              <label class="profile-edit__radio-label">
-                <input type="radio" name="living-status" value="abroad" id="radio-abroad">
-                <span id="living-status-abroad">Loading...</span>
-              </label>
-              <label class="profile-edit__radio-label">
-                <input type="radio" name="living-status" value="both" id="radio-both">
-                <span id="living-status-both">Loading...</span>
-              </label>
-            </div>
-          </div>
+          <!-- Simple address display (default view) -->
+          <div class="info-grid__value" id="value-address-simple">-</div>
         </div>
       </div>
 
-      <!-- Edit/Save/Cancel Buttons -->
-      <div class="profile-edit__actions">
-        <!-- Edit button (default visible) -->
-        <button
-          type="button"
-          id="btn-edit"
-          class="btn btn--primary profile-edit__btn-edit"
-        >
-          <span id="btn-edit-text">Breyta upplýsingum</span>
+      <!-- Expandable phone numbers section (below grid, full width) -->
+      <div id="phone-numbers-section" class="phone-numbers-section" style="display: none;">
+        <!-- Phone numbers list (rendered by JS) -->
+        <div id="phone-numbers-list" class="phone-numbers-list">
+          <!-- Populated by renderPhoneNumbers() -->
+        </div>
+
+        <!-- Add phone button -->
+        <button type="button" id="btn-add-phone" class="btn btn--secondary btn--small">
+          <span id="btn-add-phone-text">+ Bæta við símanúmeri</span>
         </button>
 
-        <!-- Save button (hidden by default) -->
-        <button
-          type="button"
-          id="btn-save"
-          class="btn btn--primary profile-edit__btn-save"
-          style="display: none;"
-        >
-          <span id="btn-save-text">Vista breytingar</span>
-        </button>
-
-        <!-- Cancel button (hidden by default) -->
-        <button
-          type="button"
-          id="btn-cancel"
-          class="btn btn--secondary profile-edit__btn-cancel"
-          style="display: none;"
-        >
-          <span id="btn-cancel-text">Hætta við</span>
-        </button>
+        <span class="profile-field__status" id="status-phone-numbers"></span>
+        <span class="profile-field__error" id="error-phone-numbers"></span>
       </div>
 
-      <!-- Success/error messages -->
+      <!-- Expandable addresses section (below grid, full width) -->
+      <div id="addresses-section" class="collapsible-section" style="display: none;">
+        <!-- Addresses list (rendered by JS) -->
+        <div id="addresses-list" class="collapsible-list">
+          <!-- Populated by renderAddresses() -->
+        </div>
+
+        <!-- Add address button -->
+        <button type="button" id="btn-add-address" class="btn btn--secondary btn--small">
+          <span id="btn-add-address-text">+ Bæta við heimilisfangi</span>
+        </button>
+
+        <span class="profile-field__status" id="status-addresses"></span>
+        <span class="profile-field__error" id="error-addresses"></span>
+      </div>
+
+      <!-- Success/error messages (kept for backwards compatibility) -->
       <div id="profile-success" class="profile-edit__success" style="display: none;">
         <p id="success-message"></p>
       </div>
 
       <div id="profile-error" class="profile-edit__error-message" style="display: none;">
         <p id="error-message"></p>
-      </div>
-    </div>
-
-    <!-- Address Information -->
-    <div class="card">
-      <h3 class="card__title" id="section-address-info">Loading...</h3>
-
-      <!-- Address Display (view mode) -->
-      <div id="address-display-view">
-        <div class="info-grid">
-          <!-- Iceland Address -->
-          <div id="iceland-address-section" style="display: none;">
-            <div class="info-grid__item">
-              <div class="info-grid__label" id="label-address">Loading...</div>
-              <div class="info-grid__value" id="value-address">-</div>
-            </div>
-            <div class="info-grid__item">
-              <div class="info-grid__label" id="label-postal-code">Loading...</div>
-              <div class="info-grid__value" id="value-postal-code">-</div>
-            </div>
-            <div class="info-grid__item">
-              <div class="info-grid__label" id="label-city">Loading...</div>
-              <div class="info-grid__value" id="value-city">-</div>
-            </div>
-          </div>
-
-          <!-- Foreign Address -->
-          <div id="foreign-address-section" style="display: none;">
-            <div class="info-grid__item">
-              <div class="info-grid__label" id="label-country">Loading...</div>
-              <div class="info-grid__value" id="value-country">-</div>
-            </div>
-            <div class="info-grid__item">
-              <div class="info-grid__label" id="label-foreign-address">Loading...</div>
-              <div class="info-grid__value" id="value-foreign-address">-</div>
-            </div>
-            <div class="info-grid__item">
-              <div class="info-grid__label" id="label-foreign-postal">Loading...</div>
-              <div class="info-grid__value" id="value-foreign-postal">-</div>
-            </div>
-            <div class="info-grid__item">
-              <div class="info-grid__label" id="label-foreign-municipality">Loading...</div>
-              <div class="info-grid__value" id="value-foreign-municipality">-</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Foreign Address Form (edit mode) -->
-      <div id="foreign-address-form" style="display: none;">
-        <div class="info-grid">
-          <!-- Country Selector (Autocomplete) -->
-          <div class="info-grid__item">
-            <div class="info-grid__label" id="label-country-select">Loading...</div>
-            <div class="profile-edit__input-wrapper">
-              <!-- Text input for search (visible) -->
-              <input
-                type="text"
-                class="profile-edit__input"
-                id="input-country"
-                name="country"
-                autocomplete="off"
-                role="combobox"
-                aria-autocomplete="list"
-                aria-controls="country-dropdown"
-                aria-expanded="false"
-              />
-              <!-- Hidden input to store selected country code (for validation) -->
-              <input type="hidden" id="input-country-code" name="country-code" />
-              <!-- Dropdown for autocomplete suggestions -->
-              <ul
-                id="country-dropdown"
-                class="autocomplete-dropdown"
-                role="listbox"
-                style="display: none;"
-              >
-                <!-- Populated dynamically by JS -->
-              </ul>
-              <span class="profile-edit__error" id="error-country"></span>
-            </div>
-          </div>
-
-          <!-- Foreign Address -->
-          <div class="info-grid__item">
-            <div class="info-grid__label" id="label-foreign-address-input">Loading...</div>
-            <div class="profile-edit__input-wrapper">
-              <input
-                type="text"
-                class="profile-edit__input"
-                id="input-foreign-address"
-                name="foreign-address"
-                placeholder="Nørrebrogade 10A"
-                maxlength="200"
-              />
-              <span class="profile-edit__error" id="error-foreign-address"></span>
-            </div>
-          </div>
-
-          <!-- Foreign Postal Code -->
-          <div class="info-grid__item">
-            <div class="info-grid__label" id="label-foreign-postal-input">Loading...</div>
-            <div class="profile-edit__input-wrapper">
-              <input
-                type="text"
-                class="profile-edit__input"
-                id="input-foreign-postal"
-                name="foreign-postal"
-                placeholder="2100"
-                maxlength="16"
-              />
-              <span class="profile-edit__error" id="error-foreign-postal"></span>
-            </div>
-          </div>
-
-          <!-- Foreign Municipality -->
-          <div class="info-grid__item">
-            <div class="info-grid__label" id="label-foreign-municipality-input">Loading...</div>
-            <div class="profile-edit__input-wrapper">
-              <input
-                type="text"
-                class="profile-edit__input"
-                id="input-foreign-municipality"
-                name="foreign-municipality"
-                placeholder="Copenhagen"
-                maxlength="100"
-              />
-              <span class="profile-edit__error" id="error-foreign-municipality"></span>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
 
