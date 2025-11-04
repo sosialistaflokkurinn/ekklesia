@@ -119,17 +119,17 @@ For full list and details, see Audits & Reviews (see scripts/admin/).
 ### 👨‍💻 Developer
 - [Setup Guide](./setup/MEMBERS_DEPLOYMENT_GUIDE.md)
 - [Architecture](./design/SYSTEM_ARCHITECTURE_OVERVIEW.md)
-- [API Documentation](./ARCHITECTURE_RECOMMENDATIONS.md)
+- [API Documentation](./architecture/ARCHITECTURE_RECOMMENDATIONS.md)
 
 ### 🔐 DevOps/SRE
 - [Deployment Procedures](./setup/MEMBERS_DEPLOYMENT_GUIDE.md)
-- [Operational Procedures](./maintenance/OPERATIONAL_PROCEDURES.md)
-- [Audit Logging](./guides/AUDIT_LOGGING.md)
+- [Operational Procedures](./operations/OPERATIONAL_PROCEDURES.md)
+- [Audit Logging](./development/guides/admin/AUDIT_LOGGING.md)
 
 ### 🧪 QA/Tester
-- [Testing Guide](./testing/TESTING_GUIDE.md)
-- [Voting Flow Test](./testing/END_TO_END_VOTING_FLOW_TEST.md)
-- [Admin Reset Checklist](./testing/ADMIN_RESET_CHECKLIST.md)
+- [Testing Guide](./testing/)
+- [Voting Flow Test](./testing/)
+- [Admin Reset Checklist](./testing/)
 
 ---
 
@@ -160,8 +160,8 @@ docs/
 1. **New to the project?** Start with [Project Overview](../DOCUMENTATION_MAP.md)
 2. **Setting up locally?** See [Setup Guide](./setup/MEMBERS_DEPLOYMENT_GUIDE.md)
 3. **Understanding the system?** Read [Architecture](./design/SYSTEM_ARCHITECTURE_OVERVIEW.md)
-4. **Need to maintain it?** Check [Operations](./maintenance/OPERATIONAL_PROCEDURES.md)
-5. **Want to test?** See [Testing Docs](./testing/INDEX.md)
+4. **Need to maintain it?** Check [Operations](./operations/OPERATIONAL_PROCEDURES.md)
+5. **Want to test?** See [Testing Docs](./testing/)
 
 ---
 

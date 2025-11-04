@@ -387,7 +387,7 @@ git commit -m "chore: split .gitignore into template and personal config"
 
 - [OPERATIONAL_PROCEDURES.md](../../operations/OPERATIONAL_PROCEDURES.md) - System operations
 - [USAGE_CONTEXT.md](workflows/USAGE_CONTEXT.md) - Development patterns
-- [REPO_RESTRUCTURING_PLAN.md](../../roadmap/REPO_RESTRUCTURING_PLAN.md) - Repository organization
+- REPO_RESTRUCTURING_PLAN.md (TBD) - Repository organization
 
 ---
 

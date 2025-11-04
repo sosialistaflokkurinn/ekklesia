@@ -19,7 +19,7 @@
 Understand how Ekklesia is designed and structured.
 - **[System Architecture Overview](./design/SYSTEM_ARCHITECTURE_OVERVIEW.md)** - Complete system design
 - **[Phase 6 Architecture Recommendations](./architecture/ARCHITECTURE_DESIGN_PHASE6.md)** - Future scaling plans
-- **[Events Service Design](./design/EVENTS_SERVICE_MVP.md)** - Voting infrastructure
+- **Events Service Design (see services/events/)** - Voting infrastructure
 - **[CSS Design System](./architecture/CSS_DESIGN_SYSTEM.md)** - UI/UX standards
 
 ### 🎯 Features
@@ -68,15 +68,15 @@ Security policies, hardening guides, and compliance information.
 ### 📊 Operations
 DevOps, deployment, monitoring, and infrastructure guides.
 - **[Deployment](./setup/)** - Cloud Run deployment procedures
-- **[Monitoring & Alerts](./status/OPERATIONAL_PROCEDURES.md)** - Health checks and alerting
+- **[Monitoring & Alerts](./operations/OPERATIONAL_PROCEDURES.md)** - Health checks and alerting
 - **[Infrastructure](./development/guides/infrastructure/README.md)** - GCP setup and configuration
-- **[Incident Response](./status/OPERATIONAL_PROCEDURES.md)** - Emergency procedures
+- **[Incident Response](./operations/OPERATIONAL_PROCEDURES.md)** - Emergency procedures
 
 ### 📚 Reference
 Technical specifications and reference documentation.
 - **[API Endpoints](./design/)** - Service API documentation
 - **[Database Schema](./integration/DJANGO_DATABASE_SCHEMA.md)** - PostgreSQL schema documentation
-- **[Glossary](./DOCUMENTATION_MAP.md)** - Terms and definitions
+- **[Glossary](../DOCUMENTATION_MAP.md)** - Terms and definitions
 
 ---
 
@@ -117,7 +117,7 @@ Choose your path based on your role:
 ### For Product Managers / Non-Technical Stakeholders
 1. [System Architecture Overview](./design/SYSTEM_ARCHITECTURE_OVERVIEW.md)
 2. [Feature Documentation](./features/election-voting/)
-3. [Operations Guide](./status/OPERATIONAL_PROCEDURES.md)
+3. [Operations Guide](./operations/OPERATIONAL_PROCEDURES.md)
 
 ### For Frontend Developers
 1. [Getting Started](./development/guides/github/README.md)
@@ -129,20 +129,20 @@ Choose your path based on your role:
 1. [Getting Started](./development/guides/github/README.md)
 2. **[Code Standards](./CODE_STANDARDS.md)** - JavaScript, testing, and documentation standards
 3. [System Architecture](./architecture/)
-4. [Service Design Documentation](./design/EVENTS_SERVICE_MVP.md)
+4. Service Design Documentation (see services/)
 5. [Database Schema](./integration/DJANGO_DATABASE_SCHEMA.md)
 
 ### For DevOps / Infrastructure
 1. [Infrastructure Guide](./development/guides/infrastructure/README.md)
 2. [Deployment Procedures](./setup/)
-3. [Monitoring & Alerting](./status/OPERATIONAL_PROCEDURES.md)
+3. [Monitoring & Alerting](./operations/OPERATIONAL_PROCEDURES.md)
 4. [Security Policies](./security/)
 
 ### For Security / Compliance Teams
 1. [Security Policies](./security/)
 2. [Audit Logging](./development/guides/admin/AUDIT_LOGGING.md)
 3. [Threat Analysis](./security/)
-4. [Incident Response](./status/OPERATIONAL_PROCEDURES.md)
+4. [Incident Response](./operations/OPERATIONAL_PROCEDURES.md)
 
 ---
 

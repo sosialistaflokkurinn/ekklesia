@@ -117,7 +117,7 @@ The voting system consists of three main components:
 
 **Decision**: Build custom Events and Voting services for election administration.
 
-**See**: [archive/ekklesia-platform-evaluation/README.md](../../archive/ekklesia-platform-evaluation/README.md) for Ekklesia evaluation details.
+**See**: archive/ekklesia-platform-evaluation (archived) for Ekklesia evaluation details.
 
 ---
 
@@ -176,8 +176,8 @@ The voting system consists of three main components:
 **Implementation Timeline**: 1 day (4 phases completed Oct 9, 2025)
 
 **See**:
-- [EVENTS_SERVICE_MVP.md](./EVENTS_SERVICE_MVP.md) - Design document
-- [../archive/testing-logs/EVENTS_SERVICE_TESTING_LOG.md](../archive/testing-logs/EVENTS_SERVICE_TESTING_LOG.md) - Testing journey & deployment (archived Oct 11)
+- Events Service (see ../../services/events/) - Design document
+- EVENTS_SERVICE_TESTING_LOG.md (archived) - Testing journey & deployment (archived Oct 11)
 
 ### Elections System (`Kosningar`) - ✅ Production (Oct 9, 2025)
 
@@ -201,7 +201,7 @@ The voting system consists of three main components:
 - `POST /api/vote` - Submit ballot (public, token-based)
 - `GET /api/token-status` - Check token validity (public, token-based)
 
-**See**: [ELECTIONS_SERVICE_MVP.md](./ELECTIONS_SERVICE_MVP.md) - Design document
+**See**: Elections Service (see ../../services/elections/) - Design document
 
 ---
 
@@ -224,7 +224,7 @@ The voting system consists of three main components:
 ### Decommissioned Services (Oct 2025)
 - **Portal Service**: ❌ Decommissioned from Cloud Run (Oct 8, 2025)
   - Reason: External Ekklesia Portal does not match election requirements
-  - See: [archive/ekklesia-platform-evaluation/README.md](../../archive/ekklesia-platform-evaluation/README.md)
+  - See: archive/ekklesia-platform-evaluation (archived)
 
 ---
 
@@ -232,7 +232,7 @@ The voting system consists of three main components:
 
 **Current Implementation**:
 - [CURRENT_PRODUCTION_STATUS.md](../status/CURRENT_DEVELOPMENT_STATUS.md) - Production infrastructure
-- [DOCUMENTATION_MAP.md](../DOCUMENTATION_MAP.md) - Complete documentation index
+- [DOCUMENTATION_MAP.md](../../DOCUMENTATION_MAP.md) - Complete documentation index
 - [services/members/README.md](../../services/members/README.md) - Members service (production)
 
 **Design & Planning**:

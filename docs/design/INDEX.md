@@ -47,7 +47,7 @@
 
 - [Setup Guide](../setup/INDEX.md) - Deployment and setup
 - [Testing Guide](../testing/) - Test procedures
-- [Maintenance](../maintenance/INDEX.md) - Operational procedures
+- Maintenance (see operations/) - Operational procedures
 - [Main Hub](../INDEX.md) - Documentation overview
 
 ---

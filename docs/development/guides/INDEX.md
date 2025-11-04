@@ -245,7 +245,7 @@ Available guides for GitHub management and integration
 | Update project board | [GITHUB_PROJECT_MANAGEMENT.md](github/GITHUB_PROJECT_MANAGEMENT.md) | 15-20 min |
 | Audit MFA compliance | [MFA_ENFORCEMENT.md](admin/MFA_ENFORCEMENT.md) | 30-45 min |
 | Configure alerts | [ADMIN_ALERTS.md](admin/ADMIN_ALERTS.md) | 10-15 min |
-| Set up private ops | [PRIVATE_OPS_REPO.md](PRIVATE_OPS_REPO.md) | 20-30 min |
+| Set up private ops | [PRIVATE_OPS_REPO.md](infrastructure/PRIVATE_OPS_REPO.md) | 20-30 min |
 | Understand roles | [ROLES_AND_PERMISSIONS.md](admin/ROLES_AND_PERMISSIONS.md) | 10 min |
 
 ---

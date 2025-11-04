@@ -45,7 +45,7 @@ All evolving documentation files should follow semantic versioning: `MAJOR.MINOR
 
 | Document | Version | Last Updated | Status |
 |----------|---------|--------------|--------|
-| [guides/INDEX.md](guides/INDEX.md) | v2.0 | 2025-10-20 | ✅ Current |
+| guides/ (no INDEX file) | v2.0 | 2025-10-20 | ✅ Current |
 | [guides/MFA_ENFORCEMENT.md](guides/MFA_ENFORCEMENT.md) | v1.1 | 2025-10-20 | ✅ Current |
 | [guides/PRIVATE_OPS_REPO.md](guides/PRIVATE_OPS_REPO.md) | v1.1 | 2025-10-20 | ✅ Current |
 | [guides/OAUTH_TROUBLESHOOTING.md](guides/OAUTH_TROUBLESHOOTING.md) | v1.0 | 2025-10-20 | ✅ Current |

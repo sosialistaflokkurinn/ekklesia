@@ -745,7 +745,7 @@ This complete audit trail enables:
 
 - [EPIC_24_ADMIN_LIFECYCLE.md](EPIC_24_ADMIN_LIFECYCLE.md) - Epic specification and requirements
 - [PHASE_5_WEEK_1_IMPLEMENTATION.md](PHASE_5_WEEK_1_IMPLEMENTATION.md) - Week 1 implementation plan
-- [ELECTIONS_SERVICE_MVP.md](ELECTIONS_SERVICE_MVP.md) - Elections service voting infrastructure
+- Elections Service (see services/elections/) - Elections service voting infrastructure
 - [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md) - Database schema and relationships
 
 ---

@@ -345,7 +345,7 @@
 - Test page: `events/test-production.html` (use with Members service)
 
 **Design Document**: [docs/design/EVENTS_SERVICE_MVP.md](../design/EVENTS_SERVICE_MVP.md)
-**Testing Log**: [archive/testing-logs/EVENTS_SERVICE_TESTING_LOG.md](../../archive/testing-logs/EVENTS_SERVICE_TESTING_LOG.md) (archived Oct 11)
+**Testing Log**: EVENTS_SERVICE_TESTING_LOG.md (archived) (archived Oct 11)
 
 ---
 

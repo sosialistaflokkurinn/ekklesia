@@ -601,4 +601,4 @@ gh pr view 29 --comments | tail -20
 - ✅ Average 2.5 min per response
 - ✅ Python subprocess method (reliable string handling)
 
-**See Also**: [PR29_CAMPAIGN_LEARNINGS.md](PR29_CAMPAIGN_LEARNINGS.md) for real-world best practices and velocity analysis
+**See Also**: [PR29_CAMPAIGN_LEARNINGS.md](../workflows/PR29_CAMPAIGN_LEARNINGS.md) for real-world best practices and velocity analysis

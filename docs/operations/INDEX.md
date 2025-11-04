@@ -57,7 +57,7 @@ Documentation validation is part of regular maintenance:
 | validate-links.py | Link checking | Monthly |
 | fix-documentation.py | Auto-fix issues | As needed |
 
-For details, see [Audits & Reviews](../audits/INDEX.md).
+For details, see Audits & Reviews (see scripts/admin/).
 
 ---
 
@@ -65,8 +65,8 @@ For details, see [Audits & Reviews](../audits/INDEX.md).
 
 - [Setup](../setup/INDEX.md) - Initial deployment
 - [Architecture](../design/INDEX.md) - System design
-- [Testing](../testing/INDEX.md) - Validation procedures
-- [Audits](../audits/INDEX.md) - Audit tools and reports
+- [Testing](../testing/) - Validation procedures
+- Audits (see scripts/admin/) - Audit tools and reports
 - [Main Hub](../INDEX.md) - Documentation overview
 
 ---
