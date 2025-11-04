@@ -117,7 +117,7 @@ The voting system consists of three main components:
 
 **Decision**: Build custom Events and Voting services for election administration.
 
-**See**: [archive/ekklesia-platform-evaluation/README.md](../archive/ekklesia-platform-evaluation/README.md) for Ekklesia evaluation details.
+**See**: [archive/ekklesia-platform-evaluation/README.md](../../archive/ekklesia-platform-evaluation/README.md) for Ekklesia evaluation details.
 
 ---
 
@@ -138,7 +138,7 @@ The voting system consists of three main components:
 - Firestore (user profiles)
 - Firebase Storage (membership list)
 
-**See**: [members/README.md](../members/README.md) and [CURRENT_PRODUCTION_STATUS.md](../CURRENT_PRODUCTION_STATUS.md)
+**See**: [services/members/README.md](../../services/members/README.md) and [CURRENT_PRODUCTION_STATUS.md](../status/CURRENT_DEVELOPMENT_STATUS.md)
 
 ### Events System (`Atburðir`) - ✅ Production (MVP)
 
@@ -176,7 +176,7 @@ The voting system consists of three main components:
 **Implementation Timeline**: 1 day (4 phases completed Oct 9, 2025)
 
 **See**:
-- [design/EVENTS_SERVICE_MVP.md](design/EVENTS_SERVICE_MVP.md) - Design document
+- [EVENTS_SERVICE_MVP.md](./EVENTS_SERVICE_MVP.md) - Design document
 - [../archive/testing-logs/EVENTS_SERVICE_TESTING_LOG.md](../archive/testing-logs/EVENTS_SERVICE_TESTING_LOG.md) - Testing journey & deployment (archived Oct 11)
 
 ### Elections System (`Kosningar`) - ✅ Production (Oct 9, 2025)
@@ -201,7 +201,7 @@ The voting system consists of three main components:
 - `POST /api/vote` - Submit ballot (public, token-based)
 - `GET /api/token-status` - Check token validity (public, token-based)
 
-**See**: [design/ELECTIONS_SERVICE_MVP.md](design/ELECTIONS_SERVICE_MVP.md) - Design document
+**See**: [ELECTIONS_SERVICE_MVP.md](./ELECTIONS_SERVICE_MVP.md) - Design document
 
 ---
 
@@ -224,16 +224,16 @@ The voting system consists of three main components:
 ### Decommissioned Services (Oct 2025)
 - **Portal Service**: ❌ Decommissioned from Cloud Run (Oct 8, 2025)
   - Reason: External Ekklesia Portal does not match election requirements
-  - See: [archive/ekklesia-platform-evaluation/README.md](../archive/ekklesia-platform-evaluation/README.md)
+  - See: [archive/ekklesia-platform-evaluation/README.md](../../archive/ekklesia-platform-evaluation/README.md)
 
 ---
 
 ## Related Documentation
 
 **Current Implementation**:
-- [CURRENT_PRODUCTION_STATUS.md](../CURRENT_PRODUCTION_STATUS.md) - Production infrastructure
-- [docs/DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md) - Complete documentation index
-- [members/README.md](../members/README.md) - Members service (production)
+- [CURRENT_PRODUCTION_STATUS.md](../status/CURRENT_DEVELOPMENT_STATUS.md) - Production infrastructure
+- [DOCUMENTATION_MAP.md](../DOCUMENTATION_MAP.md) - Complete documentation index
+- [services/members/README.md](../../services/members/README.md) - Members service (production)
 
 **Design & Planning**:
 - [ELECTIONS_SERVICE_MVP.md](ELECTIONS_SERVICE_MVP.md) - Elections MVP design (one election, one question)
@@ -241,12 +241,12 @@ The voting system consists of three main components:
 
 **Archived Evaluations**:
 - [archive/ekklesia-platform-evaluation/](../archive/ekklesia-platform-evaluation/) - Ekklesia platform evaluation (Oct 2025)
-- [docs/ABOUT_EKKLESIA_PLATFORM.md](ABOUT_EKKLESIA_PLATFORM.md) - What is Ekklesia?
-- [docs/UPDATED_SYSTEM_VISION.md](UPDATED_SYSTEM_VISION.md) - Proposition-based vision (archived)
-- [docs/NAMING_CLARIFICATION.md](NAMING_CLARIFICATION.md) - Naming analysis
+- archive docs (see archive/) - What is Ekklesia?
+- archive docs (see archive/) - Proposition-based vision (archived)
+- archive docs (see archive/) - Naming analysis
 
 **Historical**:
-- [docs/archive/](archive/) - ZITADEL-era documentation (deprecated)
+- [archive/](../../archive/) - ZITADEL-era documentation (deprecated)
 
 ---
 

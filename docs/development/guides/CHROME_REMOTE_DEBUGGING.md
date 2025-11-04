@@ -171,7 +171,7 @@ Make sure:
 ## Related Documentation
 
 - [Chrome DevTools Protocol Documentation](https://chromedevtools.github.io/devtools-protocol/)
-- [CDP Monitor Script](../../scripts/chrome_console_monitor.py)
+- [CDP Monitor Script](../../../scripts/chrome_console_monitor.py)
 - [Ekklesia Debug Logging](./DEBUG_LOGGING.md)
 
 ---

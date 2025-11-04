@@ -304,8 +304,8 @@ google-chrome --remote-debugging-port=9222 --user-data-dir=/tmp/chrome-debug
 ## Related Documentation
 
 - [Chrome Remote Debugging Setup](./CHROME_REMOTE_DEBUGGING.md)
-- [MCP Chrome DevTools Config](../../.claude/mcp-chrome-devtools.md)
-- [CDP Monitor Script Usage](../../scripts/chrome_console_monitor.py)
+- [MCP Chrome DevTools Config](../../../.claude/mcp-chrome-devtools.md)
+- [CDP Monitor Script Usage](../../../scripts/chrome_console_monitor.py)
 
 ---
 

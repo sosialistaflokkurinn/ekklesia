@@ -17,7 +17,7 @@
 ### Service-Specific Design
 | Document | Purpose | Status |
 |----------|---------|--------|
-| [ARCHITECTURE_REFACTOR.md](./ARCHITECTURE_REFACTOR.md) | Members service architecture refactoring | ✅ Oct 15 |
+| Architecture Refactor (TBD) | Members service architecture refactoring | ✅ Oct 15 |
 
 ### Frontend & UI
 | Document | Purpose | Status |
@@ -39,14 +39,14 @@
 
 ### For Frontend Developers
 - [CSS_DESIGN_SYSTEM.md](./CSS_DESIGN_SYSTEM.md) - Design system and patterns
-- [ARCHITECTURE_REFACTOR.md](./ARCHITECTURE_REFACTOR.md) - Frontend structure
+- Architecture Refactor (TBD) - Frontend structure
 
 ---
 
 ## 🔗 Related Documentation
 
 - [Setup Guide](../setup/INDEX.md) - Deployment and setup
-- [Testing Guide](../testing/INDEX.md) - Test procedures
+- [Testing Guide](../testing/) - Test procedures
 - [Maintenance](../maintenance/INDEX.md) - Operational procedures
 - [Main Hub](../INDEX.md) - Documentation overview
 

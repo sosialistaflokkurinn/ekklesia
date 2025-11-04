@@ -7,9 +7,9 @@
 ## 🚀 Quick Start
 
 **New to Ekklesia?** Start here:
-- **[Getting Started Guide](./development/guides/github/README.md)** - Environment setup and first steps
-- **[Architecture Overview](./architecture/SYSTEM_ARCHITECTURE_OVERVIEW.md)** - How the system works
-- **[Development Workflow](./development/guides/git/README.md)** - Git workflow and contribution guidelines
+- **[Getting Started Guide](./development/guides/github/)** - Environment setup and first steps
+- **[Architecture Overview](./design/SYSTEM_ARCHITECTURE_OVERVIEW.md)** - How the system works
+- **[Development Workflow](./development/guides/git/)** - Git workflow and contribution guidelines
 
 ---
 
@@ -17,17 +17,17 @@
 
 ### 🏗️ Architecture
 Understand how Ekklesia is designed and structured.
-- **[System Architecture Overview](./architecture/SYSTEM_ARCHITECTURE_OVERVIEW.md)** - Complete system design
+- **[System Architecture Overview](./design/SYSTEM_ARCHITECTURE_OVERVIEW.md)** - Complete system design
 - **[Phase 6 Architecture Recommendations](./architecture/ARCHITECTURE_DESIGN_PHASE6.md)** - Future scaling plans
-- **[Events Service Design](./architecture/EVENTS_SERVICE_MVP.md)** - Voting infrastructure
+- **[Events Service Design](./design/EVENTS_SERVICE_MVP.md)** - Voting infrastructure
 - **[CSS Design System](./architecture/CSS_DESIGN_SYSTEM.md)** - UI/UX standards
 
 ### 🎯 Features
 Detailed information about each major feature and epic.
-- **[Election Discovery](./features/)** - Member election discovery and listing
-- **[Admin Election Lifecycle](./features/)** - Election management workflow
-- **[Membership Sync](./features/)** - Django integration and member synchronization
-- **[Member Election Voting](./features/)** - Complete voting flow
+- **[Election Discovery](./features/election-voting/EPIC_87_ELECTION_DISCOVERY.md)** - Member election discovery and listing
+- **[Admin Election Lifecycle](./features/election-voting/EPIC_24_ADMIN_LIFECYCLE.md)** - Election management workflow
+- **[Membership Sync](./features/election-voting/EPIC_43_MEMBER_MANAGEMENT_SYSTEM.md)** - Django integration and member synchronization
+- **[Member Election Voting](./features/election-voting/)** - Complete voting flow
 
 ### 🔗 Integration & External Systems
 Django backend integration, API connectivity, and data synchronization.
@@ -53,30 +53,30 @@ Django backend integration, API connectivity, and data synchronization.
 
 ### 🛠️ Development
 Guides for developers contributing to Ekklesia.
-- **[GitHub Workflow](./development/guides/github/README.md)** - Issue tracking and PRs
-- **[Git Best Practices](./development/guides/git/README.md)** - Commit standards and branching
-- **[Admin Guides](./development/guides/admin/README.md)** - Admin operations
-- **[Troubleshooting](./development/guides/troubleshooting/README.md)** - Common issues and solutions
-- **[Workflows & Processes](./development/guides/workflows/README.md)** - Multi-agent workflow, project workflows
+- **[GitHub Workflow](./development/guides/github/)** - Issue tracking and PRs
+- **[Git Best Practices](./development/guides/git/)** - Commit standards and branching
+- **[Admin Guides](./development/guides/admin/)** - Admin operations
+- **[Troubleshooting](./development/guides/troubleshooting/)** - Common issues and solutions
+- **[Workflows & Processes](./development/guides/workflows/)** - Multi-agent workflow, project workflows
 
 ### 🔒 Security
 Security policies, hardening guides, and compliance information.
-- **[Security Policies](./security/policies/)** - Security standards and requirements
-- **[Audit Logging](./security/)** - Compliance and audit trails
+- **[Security Policies](./security/)** - Security standards and requirements
+- **[Audit Logging](./development/guides/admin/AUDIT_LOGGING.md)** - Compliance and audit trails
 - **[Threat Analysis](./security/)** - Security assessments
 
 ### 📊 Operations
 DevOps, deployment, monitoring, and infrastructure guides.
-- **[Deployment](./operations/)** - Cloud Run deployment procedures
-- **[Monitoring & Alerts](./operations/)** - Health checks and alerting
+- **[Deployment](./setup/)** - Cloud Run deployment procedures
+- **[Monitoring & Alerts](./status/OPERATIONAL_PROCEDURES.md)** - Health checks and alerting
 - **[Infrastructure](./development/guides/infrastructure/README.md)** - GCP setup and configuration
-- **[Incident Response](./operations/)** - Emergency procedures
+- **[Incident Response](./status/OPERATIONAL_PROCEDURES.md)** - Emergency procedures
 
 ### 📚 Reference
 Technical specifications and reference documentation.
-- **[API Endpoints](./reference/)** - Service API documentation
-- **[Database Schema](./reference/)** - PostgreSQL schema documentation
-- **[Glossary](./reference/)** - Terms and definitions
+- **[API Endpoints](./design/)** - Service API documentation
+- **[Database Schema](./integration/DJANGO_DATABASE_SCHEMA.md)** - PostgreSQL schema documentation
+- **[Glossary](./DOCUMENTATION_MAP.md)** - Terms and definitions
 
 ---
 
@@ -115,34 +115,34 @@ ekklesia/
 Choose your path based on your role:
 
 ### For Product Managers / Non-Technical Stakeholders
-1. [System Architecture Overview](./architecture/SYSTEM_ARCHITECTURE_OVERVIEW.md)
-2. [Feature Documentation](./features/)
-3. [Operations Guide](./operations/)
+1. [System Architecture Overview](./design/SYSTEM_ARCHITECTURE_OVERVIEW.md)
+2. [Feature Documentation](./features/election-voting/)
+3. [Operations Guide](./status/OPERATIONAL_PROCEDURES.md)
 
 ### For Frontend Developers
 1. [Getting Started](./development/guides/github/README.md)
 2. **[Code Standards](./CODE_STANDARDS.md)** - HTML, CSS, JavaScript, i18n standards
-3. [Members Service Architecture](./architecture/)
-4. [Feature Guides](./features/)
+3. [Members Service Architecture](./architecture/SYSTEM_ARCHITECTURE_OVERVIEW.md)
+4. [Feature Guides](./features/election-voting/)
 
 ### For Backend Developers
 1. [Getting Started](./development/guides/github/README.md)
 2. **[Code Standards](./CODE_STANDARDS.md)** - JavaScript, testing, and documentation standards
 3. [System Architecture](./architecture/)
-4. [Service Design Documentation](./architecture/EVENTS_SERVICE_MVP.md)
-5. [Database Schema](./reference/)
+4. [Service Design Documentation](./design/EVENTS_SERVICE_MVP.md)
+5. [Database Schema](./integration/DJANGO_DATABASE_SCHEMA.md)
 
 ### For DevOps / Infrastructure
 1. [Infrastructure Guide](./development/guides/infrastructure/README.md)
-2. [Deployment Procedures](./operations/)
-3. [Monitoring & Alerting](./operations/)
-4. [Security Policies](./security/policies/)
+2. [Deployment Procedures](./setup/)
+3. [Monitoring & Alerting](./status/OPERATIONAL_PROCEDURES.md)
+4. [Security Policies](./security/)
 
 ### For Security / Compliance Teams
-1. [Security Policies](./security/policies/)
-2. [Audit Logging](./security/)
+1. [Security Policies](./security/)
+2. [Audit Logging](./development/guides/admin/AUDIT_LOGGING.md)
 3. [Threat Analysis](./security/)
-4. [Incident Response](./operations/)
+4. [Incident Response](./status/OPERATIONAL_PROCEDURES.md)
 
 ---
 

@@ -43,7 +43,7 @@ Our code standards prioritize:
 
 ### 1. CSS Standards
 
-**Guide**: [CSS & BEM Guide](/docs/standards/CSS_BEM_GUIDE.md)
+**Guide**: [CSS & BEM Guide](standards/CSS_BEM_GUIDE.md)
 
 **Summary**:
 - Use canonical BEM methodology (Block Element Modifier)
@@ -71,15 +71,15 @@ Our code standards prioritize:
 ```
 
 **Quick Links**:
-- [BEM Naming Rules](/docs/standards/CSS_BEM_GUIDE.md#naming-convention)
-- [CSS Variables Reference](/docs/standards/CSS_BEM_GUIDE.md#css-variables)
-- [Component Organization](/docs/standards/CSS_BEM_GUIDE.md#file-structure)
+- [BEM Naming Rules](standards/CSS_BEM_GUIDE.md#naming-convention)
+- [CSS Variables Reference](standards/CSS_BEM_GUIDE.md#css-variables)
+- [Component Organization](standards/CSS_BEM_GUIDE.md#file-structure)
 
 ---
 
 ### 2. HTML Standards
 
-**Guide**: [HTML Structure Guide](/docs/standards/HTML_GUIDE.md)
+**Guide**: [HTML Structure Guide](standards/HTML_GUIDE.md)
 
 **Summary**:
 - Use semantic HTML5 elements
@@ -109,15 +109,15 @@ Our code standards prioritize:
 ```
 
 **Quick Links**:
-- [Semantic HTML Reference](/docs/standards/HTML_GUIDE.md#semantic-elements)
-- [Accessibility Checklist](/docs/standards/HTML_GUIDE.md#accessibility)
-- [Form Best Practices](/docs/standards/HTML_GUIDE.md#forms)
+- [Semantic HTML Reference](standards/HTML_GUIDE.md#semantic-elements)
+- [Accessibility Checklist](standards/HTML_GUIDE.md#accessibility)
+- [Form Best Practices](standards/HTML_GUIDE.md#forms)
 
 ---
 
 ### 3. JavaScript Standards
 
-**Guide**: [JavaScript Style Guide](/docs/standards/JAVASCRIPT_GUIDE.md)
+**Guide**: [JavaScript Style Guide](standards/JAVASCRIPT_GUIDE.md)
 
 **Summary**:
 - ES6+ modern JavaScript
@@ -156,16 +156,16 @@ function savePhoneNumbers(phoneNumbers, callback) {
 ```
 
 **Quick Links**:
-- [Module System](/docs/standards/JAVASCRIPT_GUIDE.md#modules)
-- [Async Patterns](/docs/standards/JAVASCRIPT_GUIDE.md#async-await)
-- [Error Handling](/docs/standards/JAVASCRIPT_GUIDE.md#error-handling)
-- [Naming Conventions](/docs/standards/JAVASCRIPT_GUIDE.md#naming)
+- [Module System](standards/JAVASCRIPT_GUIDE.md#modules)
+- [Async Patterns](standards/JAVASCRIPT_GUIDE.md#async-await)
+- [Error Handling](standards/JAVASCRIPT_GUIDE.md#error-handling)
+- [Naming Conventions](standards/JAVASCRIPT_GUIDE.md#naming)
 
 ---
 
 ### 4. Internationalization (i18n)
 
-**Guide**: [i18n & R.string Guide](/docs/standards/I18N_GUIDE.md)
+**Guide**: [i18n & R.string Guide](standards/I18N_GUIDE.md)
 
 **Summary**:
 - XML-based strings (Android R.string pattern)
@@ -192,16 +192,16 @@ document.getElementById('btn-save').textContent = 'Vista';
 ```
 
 **Quick Links**:
-- [R.string Setup](/docs/standards/I18N_GUIDE.md#setup)
-- [Adding Translations](/docs/standards/I18N_GUIDE.md#adding-languages)
-- [String Format Placeholders](/docs/standards/I18N_GUIDE.md#formatting)
-- [Configuration Values](/docs/standards/I18N_GUIDE.md#configuration)
+- [R.string Setup](standards/I18N_GUIDE.md#setup)
+- [Adding Translations](standards/I18N_GUIDE.md#adding-languages)
+- [String Format Placeholders](standards/I18N_GUIDE.md#formatting)
+- [Configuration Values](standards/I18N_GUIDE.md#configuration)
 
 ---
 
 ### 5. Data Quality & UX
 
-**Guide**: [Data Quality & UX Guide](/docs/standards/DATA_QUALITY_UX.md)
+**Guide**: [Data Quality & UX Guide](standards/DATA_QUALITY_UX.md)
 
 **Summary**:
 - Always validate user input
@@ -241,15 +241,15 @@ async function saveEmail(email) {
 - **Pattern 4**: Clear error messages (not just "Error")
 
 **Quick Links**:
-- [Validation Rules](/docs/standards/DATA_QUALITY_UX.md#validation)
-- [Status Feedback Pattern](/docs/standards/DATA_QUALITY_UX.md#status-feedback)
-- [Search UX Patterns](/docs/standards/DATA_QUALITY_UX.md#search-patterns)
+- [Validation Rules](standards/DATA_QUALITY_UX.md#validation)
+- [Status Feedback Pattern](standards/DATA_QUALITY_UX.md#status-feedback)
+- [Search UX Patterns](standards/DATA_QUALITY_UX.md#search-patterns)
 
 ---
 
 ### 6. Documentation Standards
 
-**Guide**: [Documentation Guide](/docs/standards/DOCUMENTATION_GUIDE.md)
+**Guide**: [Documentation Guide](standards/DOCUMENTATION_GUIDE.md)
 
 **Summary**:
 - JSDoc for all public functions
@@ -282,15 +282,15 @@ function showStatusFeedback(statusElement, state, clearDelayMs = 2000) {
 ```
 
 **Quick Links**:
-- [JSDoc Template](/docs/standards/DOCUMENTATION_GUIDE.md#jsdoc)
-- [README Template](/docs/standards/DOCUMENTATION_GUIDE.md#readme)
-- [ADR Process](/docs/standards/DOCUMENTATION_GUIDE.md#adr)
+- [JSDoc Template](standards/DOCUMENTATION_GUIDE.md#jsdoc)
+- [README Template](standards/DOCUMENTATION_GUIDE.md#readme)
+- [ADR Process](standards/DOCUMENTATION_GUIDE.md#adr)
 
 ---
 
 ### 7. Git Workflow
 
-**Guide**: [Git Workflow Guide](/docs/standards/GIT_WORKFLOW_GUIDE.md)
+**Guide**: [Git Workflow Guide](standards/GIT_WORKFLOW_GUIDE.md)
 
 **Summary**:
 - Feature branches from `main`
@@ -324,15 +324,15 @@ git commit -m "Fixed stuff"
 - `chore`: Maintenance (dependencies, config)
 
 **Quick Links**:
-- [Branch Naming](/docs/standards/GIT_WORKFLOW_GUIDE.md#branches)
-- [Commit Message Format](/docs/standards/GIT_WORKFLOW_GUIDE.md#commits)
-- [Pull Request Template](/docs/standards/GIT_WORKFLOW_GUIDE.md#pull-requests)
+- [Branch Naming](standards/GIT_WORKFLOW_GUIDE.md#branches)
+- [Commit Message Format](standards/GIT_WORKFLOW_GUIDE.md#commits)
+- [Pull Request Template](standards/GIT_WORKFLOW_GUIDE.md#pull-requests)
 
 ---
 
 ### 8. Quality & Testing
 
-**Guide**: [Quality & Testing Guide](/docs/standards/QUALITY_TESTING_GUIDE.md)
+**Guide**: [Quality & Testing Guide](standards/QUALITY_TESTING_GUIDE.md)
 
 **Summary**:
 - Unit tests for business logic
@@ -370,9 +370,9 @@ test('rejects invalid kennitala', () => {
 ```
 
 **Quick Links**:
-- [Testing Checklist](/docs/standards/QUALITY_TESTING_GUIDE.md#checklist)
-- [Pre-commit Hooks](/docs/standards/QUALITY_TESTING_GUIDE.md#hooks)
-- [Load Testing](/docs/standards/QUALITY_TESTING_GUIDE.md#load-testing)
+- [Testing Checklist](standards/QUALITY_TESTING_GUIDE.md#checklist)
+- [Pre-commit Hooks](standards/QUALITY_TESTING_GUIDE.md#hooks)
+- [Load Testing](standards/QUALITY_TESTING_GUIDE.md#load-testing)
 
 ---
 
@@ -681,10 +681,10 @@ element.style.top = `${calculatedTop}px`;
 ## Resources & Further Reading
 
 ### Internal Documentation
-- [BEM Methodology](/docs/standards/CSS_BEM_GUIDE.md)
-- [i18n System](/docs/standards/I18N_GUIDE.md)
-- [JavaScript Patterns](/docs/standards/JAVASCRIPT_GUIDE.md)
-- [Git Workflow](/docs/standards/GIT_WORKFLOW_GUIDE.md)
+- [BEM Methodology](standards/CSS_BEM_GUIDE.md)
+- [i18n System](standards/I18N_GUIDE.md)
+- [JavaScript Patterns](standards/JAVASCRIPT_GUIDE.md)
+- [Git Workflow](standards/GIT_WORKFLOW_GUIDE.md)
 
 ### External References
 - [BEM Official Guide](http://getbem.com/)
