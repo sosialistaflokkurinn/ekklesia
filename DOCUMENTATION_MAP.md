@@ -1,6 +1,6 @@
 # 🗺️ Ekklesia Platform - Master Documentation Map
 
-**Version**: 8.1.2
+**Version**: 8.1.3
 **Last Updated**: 2025-11-04
 **Status**: ✅ Phase 5 Complete - Full Voting System Operational (Members ✅ + Events ✅ + Elections ✅) + Epic #159 Profile & Admin UI Implementation + Comprehensive Documentation Organization (120+ docs indexed)
 
@@ -43,7 +43,7 @@
 | **Identity Provider** | Firebase/Identity Platform | ✅ Production (Free Tier) |
 | **National eID** | Kenni.is OAuth PKCE | ✅ Production |
 | **Members Service** | Firebase Hosting + Python Cloud Functions | ✅ Production |
-| **Membership Verification** | Firebase Storage + Cloud Functions | ✅ Production (2,273 members) |
+| **Membership Verification** | Firebase Storage + Cloud Functions | ✅ Production |
 | **Events Service** | Node.js + Express on Cloud Run | ✅ Production (Oct 9-10) |
 | **Elections Service** | Node.js + Express on Cloud Run | ✅ Production (Oct 9-10) |
 | **Database** | Cloud SQL PostgreSQL 15 | ✅ Production (2 schemas: public, elections) |
