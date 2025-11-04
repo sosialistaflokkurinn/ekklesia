@@ -408,6 +408,29 @@ ekklesia/
 │   ├── package.json                  Node.js dependencies
 │   └── README.md                     📖 Service documentation
 │
+├── scripts/                          🛠️ Deployment & Maintenance Scripts ⭐ NEW - Comprehensive READMEs
+│   ├── admin/                        📋 Documentation audit & validation tools
+│   │   ├── audit-documentation.py    Comprehensive doc quality audit
+│   │   ├── validate-links.py         Markdown link validation
+│   │   ├── fix-documentation.py      Automated link fixing
+│   │   └── README.md                 📖 Admin scripts guide (180 lines)
+│   ├── database/                     🗄️ Cloud SQL connection tools
+│   │   ├── start-proxy.sh            Start Cloud SQL Auth Proxy
+│   │   ├── psql-cloud.sh             Quick psql connection
+│   │   └── README.md                 📖 Database scripts guide (200 lines)
+│   ├── deployment/                   🚀 Environment & deployment tools
+│   │   ├── load-env.sh               Load environment variables
+│   │   ├── set-env.sh                Interactive environment setup
+│   │   ├── get-secret.sh             Retrieve secrets from Secret Manager
+│   │   ├── setup-claude-credentials.sh  Claude Code session setup
+│   │   ├── install-git-hooks.sh      Install pre-commit hooks
+│   │   └── README.md                 📖 Deployment scripts guide (300 lines)
+│   ├── git-hooks/                    🔒 Git pre-commit hooks
+│   │   ├── pre-commit                Security scanning & validation
+│   │   ├── install-hooks.sh          Hook installation script
+│   │   └── README.md                 📖 Git hooks documentation
+│   └── README.md                     📖 Scripts overview
+│
 └── archive/                          📦 Archived Code & Documentation
     ├── audits/                       Code audits (superseded versions)
     ├── deployments/                  Historical deployment docs
