@@ -86,9 +86,15 @@ audits/
 # Symlink created by setup scripts
 services/members/public
 
-# Admin portal directories (content is built or managed elsewhere)
+# Admin portal build output only (source code should be tracked)
 public/admin/
-apps/members-portal/admin/
+
+# Admin portal PII protection (screenshots, test data)
+apps/members-portal/admin/**/*.png
+apps/members-portal/admin/**/*.jpg
+apps/members-portal/admin/**/*.jpeg
+apps/members-portal/admin/**/*test-data*
+apps/members-portal/admin/**/*sample-data*
 
 # Temporary directory for Playwright screenshots
 .playwright-mcp/

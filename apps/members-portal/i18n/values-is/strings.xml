@@ -101,6 +101,7 @@
     <string name="label_kennitala">Kennitala</string>
     <string name="label_email">Netfang</string>
     <string name="label_phone">Símanúmer</string>
+    <string name="label_phone_numbers">Símanúmer</string>
     <string name="label_uid">Notandaauðkenni</string>
     <string name="label_status">Staða</string>
     <string name="label_django_id">Django ID</string>
@@ -129,6 +130,31 @@
     <string name="validation_name_too_long">Nafn má ekki vera lengra en 100 stafir</string>
     <string name="validation_email_invalid">Ógilt netfang</string>
     <string name="validation_phone_invalid">Ógilt símanúmer (7 tölustafir)</string>
+
+    <!-- Phone Numbers Management -->
+    <string name="profile_no_phone_numbers">Engin símanúmer skráð</string>
+    <string name="profile_phone_default_set">Aðalsímanúmer</string>
+    <string name="profile_phone_set_default">Setja sem aðalsímanúmer</string>
+    <string name="profile_phone_delete">Eyða símanúmeri</string>
+    <string name="profile_phone_cannot_delete_last">Ekki hægt að eyða síðasta símanúmerinu</string>
+    <string name="profile_phone_saved">Símanúmer uppfært</string>
+    <string name="profile_phone_save_error">Villa við vistun símanúmers</string>
+    <string name="btn_add_phone_text">+ Bæta við símanúmeri</string>
+
+    <!-- Address Management -->
+    <string name="label_addresses">Heimilisföng</string>
+    <string name="label_street">Götuheiti og húsnúmer</string>
+    <string name="label_postal_code">Póstnúmer</string>
+    <string name="label_city">Bær/Sveitarfélag</string>
+    <string name="label_country">Land</string>
+    <string name="profile_no_addresses">Engin heimilisföng skráð</string>
+    <string name="profile_address_default_set">Aðalheimilisfang</string>
+    <string name="profile_address_set_default">Setja sem aðalheimilisfang</string>
+    <string name="profile_address_delete">Eyða heimilisfangi</string>
+    <string name="profile_address_cannot_delete_last">Ekki hægt að eyða síðasta heimilisfanginu</string>
+    <string name="profile_address_saved">Heimilisfang uppfært</string>
+    <string name="profile_address_save_error">Villa við vistun heimilisfangs</string>
+    <string name="btn_add_address_text">+ Bæta við heimilisfangi</string>
 
     <!-- ========================================== -->
     <!-- EVENTS PAGE (events.html) -->
@@ -459,4 +485,8 @@
     <string name="placeholder_country_search">Leita að landi... (t.d. Banda, US, United)</string>
     <string name="country_no_results">Ekkert land fannst</string>
     <string name="country_search_help">Þú getur leitað með íslensku nafni, ensku nafni eða landskóða</string>
+
+    <!-- Auto-save notifications -->
+    <string name="profile_autosave_success">Uppfært sjálfkrafa</string>
+    <string name="profile_autosave_error">Villa við vistun</string>
 </resources>
