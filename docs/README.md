@@ -120,15 +120,15 @@ Choose your path based on your role:
 3. [Operations Guide](./operations/OPERATIONAL_PROCEDURES.md)
 
 ### For Frontend Developers
-1. [Getting Started](./development/guides/github/README.md)
+1. [Getting Started](./development/guides/github/)
 2. **[Code Standards](./CODE_STANDARDS.md)** - HTML, CSS, JavaScript, i18n standards
-3. [Members Service Architecture](./architecture/SYSTEM_ARCHITECTURE_OVERVIEW.md)
+3. [Members Service Architecture](./design/SYSTEM_ARCHITECTURE_OVERVIEW.md)
 4. [Feature Guides](./features/election-voting/)
 
 ### For Backend Developers
-1. [Getting Started](./development/guides/github/README.md)
+1. [Getting Started](./development/guides/github/)
 2. **[Code Standards](./CODE_STANDARDS.md)** - JavaScript, testing, and documentation standards
-3. [System Architecture](./architecture/)
+3. [System Architecture](./design/)
 4. Service Design Documentation (see services/)
 5. [Database Schema](./integration/DJANGO_DATABASE_SCHEMA.md)
 

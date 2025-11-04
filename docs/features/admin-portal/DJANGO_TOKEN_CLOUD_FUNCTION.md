@@ -321,7 +321,7 @@ gcloud secrets add-iam-policy-binding django-api-token \
 
 - **Epic #116**: [EPIC_116_MEMBER_DETAIL_EDIT_PLAN.md](EPIC_116_MEMBER_DETAIL_EDIT_PLAN.md)
 - **Django API Upgrade**: [docs/integration/DJANGO_API_UPGRADE_EPIC_116.md](../../integration/DJANGO_API_UPGRADE_EPIC_116.md)
-- **Secret Manager Setup**: [docs/setup/SECRET_MANAGER_SETUP.md](../../setup/SECRET_MANAGER_SETUP.md)
+- **Secret Manager Setup**: Secret Manager setup (see GCP documentation)
 - **Roles & Permissions**: [docs/development/guides/admin/ROLES_AND_PERMISSIONS.md](../../development/guides/admin/ROLES_AND_PERMISSIONS.md)
 
 ---

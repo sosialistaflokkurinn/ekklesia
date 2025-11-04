@@ -503,10 +503,10 @@ SELECT used FROM voting_tokens WHERE token_hash = $1 FOR UPDATE NOWAIT;
 
 ## Related Documentation
 
-- [docs/SYSTEM_ARCHITECTURE_OVERVIEW.md](SYSTEM_ARCHITECTURE_OVERVIEW.md) - Overall architecture
+- [SYSTEM_ARCHITECTURE_OVERVIEW.md](../../../design/SYSTEM_ARCHITECTURE_OVERVIEW.md) - Overall architecture
 - Events Service design (see services/events/) - Events service design
 - Elections Service design (see services/elections/) - Elections service design
-- [docs/status/CURRENT_PRODUCTION_STATUS.md](status/CURRENT_PRODUCTION_STATUS.md) - Production status
+- [CURRENT_DEVELOPMENT_STATUS.md](../../../status/CURRENT_DEVELOPMENT_STATUS.md) - Production status
 
 ---
 

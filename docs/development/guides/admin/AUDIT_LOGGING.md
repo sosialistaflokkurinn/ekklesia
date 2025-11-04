@@ -388,7 +388,7 @@ Key indicators to monitor:
 
 **Last Verified**: 2025-10-19
 
-**Test Case**: Admin reset operation (see [ADMIN_RESET_TEST_REPORT.md](../testing/ADMIN_RESET_TEST_REPORT.md))
+**Test Case**: Admin reset operation (see ADMIN_RESET_TEST_REPORT.md (see testing/))
 
 **Production Logs**: Verified in `events-service` Cloud Run logs
 

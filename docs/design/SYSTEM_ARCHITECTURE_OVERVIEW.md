@@ -236,11 +236,11 @@ The voting system consists of three main components:
 - [services/members/README.md](../../services/members/README.md) - Members service (production)
 
 **Design & Planning**:
-- [ELECTIONS_SERVICE_MVP.md](ELECTIONS_SERVICE_MVP.md) - Elections MVP design (one election, one question)
-- [../archive/migrations/FIREBASE_MIGRATION_STATUS.md](../archive/migrations/FIREBASE_MIGRATION_STATUS.md) - Migration history (archived Oct 11)
+- Elections Service (see ../../services/elections/) - Elections MVP design (one election, one question)
+- FIREBASE_MIGRATION_STATUS.md (archived) - Migration history (archived Oct 11)
 
 **Archived Evaluations**:
-- [archive/ekklesia-platform-evaluation/](../archive/ekklesia-platform-evaluation/) - Ekklesia platform evaluation (Oct 2025)
+- archive/ekklesia-platform-evaluation/ (archived) - Ekklesia platform evaluation (Oct 2025)
 - archive docs (see archive/) - What is Ekklesia?
 - archive docs (see archive/) - Proposition-based vision (archived)
 - archive docs (see archive/) - Naming analysis

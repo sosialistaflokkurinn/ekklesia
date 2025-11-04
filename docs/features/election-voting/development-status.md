@@ -73,7 +73,7 @@
 
 ### Phase 4: Architecture Decision - Direct Cloud Run URLs (Oct 13, 2025)
 - ✅ **Decision**: Use native Cloud Run URLs (*.run.app) instead of custom domains
-- ✅ **Rationale**: Cost-benefit analysis (see [SECURITY_DEFENSE_ANALYSIS.md](../security/SECURITY_DEFENSE_ANALYSIS.md))
+- ✅ **Rationale**: Cost-benefit analysis (see SECURITY_DEFENSE_ANALYSIS.md (see security/))
   - Custom domains via Load Balancer: $216/year = 138% cost increase
   - Custom domains via Cloudflare Pro: $240/year = 154% cost increase
   - Direct URLs: $0 = cosmetic trade-off for cost efficiency
@@ -85,8 +85,8 @@
 - ✅ **Security Maintained**: Authentication, authorization, audit logging all active
 
 **Documentation**:
-- [docs/status/SECURITY_HARDENING_PLAN.md](SECURITY_HARDENING_PLAN.md) - Complete hardening plan
-- [docs/security/CLOUDFLARE_SETUP.md](../security/CLOUDFLARE_SETUP.md) - Cloudflare infrastructure guide
+- SECURITY_HARDENING_PLAN.md (see security/) - Complete hardening plan
+- CLOUDFLARE_SETUP.md (see security/) - Cloudflare infrastructure guide
 - [docs/security/SECURITY_DEFENSE_ANALYSIS.md](../security/SECURITY_DEFENSE_ANALYSIS.md) - Security assessment & architecture decisions
 - [docs/security/CLOUDFLARE_HOST_HEADER_INVESTIGATION.md](../security/CLOUDFLARE_HOST_HEADER_INVESTIGATION.md) - Technical investigation
 - [scripts/README.md](../../scripts/README.md) - Automation scripts guide
