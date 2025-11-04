@@ -1,8 +1,8 @@
 # 🗺️ Ekklesia Platform - Master Documentation Map
 
-**Version**: 8.0.0
-**Last Updated**: 2025-10-27
-**Status**: ✅ Phase 5 Complete - Full Voting System Operational (Members ✅ + Events ✅ + Elections ✅) + Security Improvements + Documentation Quality Audit & Enhancement + Repository Structure Consolidated
+**Version**: 8.1.0
+**Last Updated**: 2025-11-04
+**Status**: ✅ Phase 5 Complete - Full Voting System Operational (Members ✅ + Events ✅ + Elections ✅) + Epic #159 Profile & Admin UI Implementation + Comprehensive Documentation Organization (120+ docs indexed)
 
 ---
 
@@ -425,35 +425,86 @@ ekklesia/
 
 **Purpose**: Architecture documentation, plans, and production status
 
+### 📖 Overview & Reference
+
+**Top-level documentation** providing project context and navigation.
+
+| Document | Purpose | Status |
+|----------|---------|--------|
+| `README.md` | Documentation hub - entry point with learning paths by role | ✅ Current (Nov 4) |
+| `INDEX.md` | Comprehensive documentation index | ✅ Current (Oct 20) |
+| `ENVIRONMENT_CLARIFICATION.md` | Production tools vs development system clarification | ✅ Current (Oct 15) |
+| `SCRIPT_IMPROVEMENTS_APPLIED.md` | Script improvements and automation enhancements | ✅ Current (Oct 23) |
+
 ### 🏗️ Architecture Documents
 
 | Document | Purpose | Status |
 |----------|---------|--------|
 | `ARCHITECTURE_DESIGN_PHASE6.md` | Phase 6 architecture design (5 challenges, ADRs, roadmap) | ✅ Current (Oct 13) |
+| `architecture/ARCHITECTURE_RECOMMENDATIONS.md` | Architecture recommendations from AI analysis and audits | ✅ Current (Oct 15) |
 | `SYSTEM_ARCHITECTURE_OVERVIEW.md` | Primary architectural vision (3-service architecture) | ✅ Active (Oct 10) |
 | `USAGE_CONTEXT.md` | Load patterns and capacity planning (300 votes/sec) | ✅ Active (Oct 9) |
 | `OPERATIONAL_PROCEDURES.md` | Meeting day operations manual (scaling, monitoring) | ✅ Active (Oct 9) |
 | `DATABASE_REFERENCE.md` | Complete database reference (schemas, tables, security) | ✅ Active (Oct 9) |
+| `design/INDEX.md` | Design documentation master index | ✅ Current (Oct 20) |
+
+### 📐 Code Standards & Style Guides
+
+**Required reading for all developers.** Unified code standards establishing patterns, conventions, and best practices across the Ekklesia codebase.
+
+| Document | Purpose | Status |
+|----------|---------|--------|
+| `docs/CODE_STANDARDS.md` | **Master index** - Overview of all code standards and quick reference | ✅ Current (Nov 4) |
+| `docs/standards/CSS_BEM_GUIDE.md` | CSS methodology with BEM naming, design system, component patterns | ✅ Current (Nov 4) |
+| `docs/standards/HTML_GUIDE.md` | Semantic HTML5, accessibility (WCAG 2.1 AA), ARIA patterns | ✅ Current (Nov 4) |
+| `docs/standards/JAVASCRIPT_GUIDE.md` | ES6+ standards, async/await, modules, JSDoc conventions | ✅ Current (Nov 4) |
+| `docs/standards/I18N_GUIDE.md` | Internationalization with R.string pattern (Android-style XML) | ✅ Current (Nov 4) |
+| `docs/standards/DATA_QUALITY_UX.md` | User experience principles, validation, auto-correction patterns | ✅ Current (Nov 4) |
+| `docs/standards/DOCUMENTATION_GUIDE.md` | Writing JSDoc, READMEs, ADRs, and code comments | ✅ Current (Nov 4) |
+| `docs/standards/GIT_WORKFLOW_GUIDE.md` | Git branching strategy, conventional commits, PR process | ✅ Current (Nov 4) |
+| `docs/standards/QUALITY_TESTING_GUIDE.md` | Testing philosophy, unit/integration/E2E, pre-commit hooks | ✅ Current (Nov 4) |
+
+**Tooling**: `.eslintrc.json`, `.prettierrc.json`, `.github/pull_request_template.md`
 
 ### 📊 Status & Deployment Documents
 
 | Document | Purpose | Status |
 |----------|---------|--------|
 | `status/CURRENT_PRODUCTION_STATUS.md` | Production infrastructure status (all services) | ✅ Current (Oct 15) |
-| `docs/status/README.md` | Status documents guide | ✅ Current (Oct 11) |
-| `docs/status/ongoing/ELECTIONS_SCHEMA_MIGRATION_CHECKLIST.md` | Elections schema migration verification | ✅ Current (Oct 20) |
-| `docs/status/historical/2025-10-16/LOGIN_INCIDENT.md` | Login incident postmortem (Oct 16) | ✅ Current (Oct 16) |
-| `docs/status/historical/2025-10-19/SESSION_Phase5_Validation_Prep.md` | Phase 5 validation prep session notes | ✅ Current (Oct 19) |
+| `status/README.md` | Status documents guide and index | ✅ Current (Oct 11) |
+| `status/EPIC24_CURRENT_STATUS.md` | Epic #24 current implementation status | ✅ Current (Oct 24) |
+| `status/EPIC24_FIXES_COMPREHENSIVE_SUMMARY.md` | Epic #24 fixes comprehensive summary | ✅ Current (Oct 24) |
+| `status/EPIC24_MIGRATION_VERIFICATION_PLAN.md` | Epic #24 migration verification plan | ✅ Current (Oct 24) |
+| `status/ongoing/README.md` | Ongoing status documents index | ✅ Current (Oct 20) |
+| `status/ongoing/ELECTIONS_SCHEMA_MIGRATION_CHECKLIST.md` | Elections schema migration verification | ✅ Current (Oct 20) |
+| `status/historical/README.md` | Historical status documents index | ✅ Current (Oct 19) |
+| `status/historical/2025-10-16/README.md` | Oct 16 incidents index | ✅ Current (Oct 16) |
+| `status/historical/2025-10-16/LOGIN_INCIDENT.md` | Login incident postmortem (Oct 16) | ✅ Current (Oct 16) |
+| `status/historical/2025-10-19/README.md` | Oct 19 sessions index | ✅ Current (Oct 19) |
+| `status/historical/2025-10-19/SESSION_Phase5_Validation_Prep.md` | Phase 5 validation prep session notes | ✅ Current (Oct 19) |
+| `status/historical/2025-10-27-audit/SESSION_AUDIT_2025-10-27.md` | Session audit Oct 27 | ✅ Current (Oct 27) |
+| `status/historical/2025-10-27-audit/members-area-audit.md` | Members area audit | ✅ Current (Oct 27) |
+| `status/historical/2025-10-27-audit/scripts-audit-report.md` | Scripts audit report | ✅ Current (Oct 27) |
+| `status/historical/2025-10-27-audit/security_audit_summary.md` | Security audit summary | ✅ Current (Oct 27) |
+| `status/historical/2025-10-27-audit/setup-scripts-audit.md` | Setup scripts audit | ✅ Current (Oct 27) |
+| `status/historical/2025-10-27-audit/testing-directory-audit.md` | Testing directory audit | ✅ Current (Oct 27) |
 
 ### 🧪 Testing Documentation
 
 | Document | Purpose | Status |
 |----------|---------|--------|
-| `docs/audits/historical/ARCHIVE-INFLATED-CLAIMS/AUDIT_2025-10-20.md` | Comprehensive documentation audit report | ✅ Current (Oct 20) |
-| `docs/audits/historical/ARCHIVE-INFLATED-CLAIMS/AUDIT_2025-10-20_DETAILED.md` | Detailed file-by-file audit analysis | ✅ Current (Oct 20) |
-| `docs/audits/historical/ARCHIVE-INFLATED-CLAIMS/LINK_VALIDATION_REPORT_2025-10-20.md` | Internal link validation and remediation plan | ✅ Current (Oct 20) |
-| `docs/operations/DOCUMENTATION_CHANGELOG.md` | Documentation version control and maintenance | ✅ Current (Oct 20) |
+| `testing/EPIC_43_MEMBER_SYNC_TEST_REPORT.md` | Epic #43 member sync test report | ✅ Current (Oct 27) |
+| `audits/historical/ARCHIVE-INFLATED-CLAIMS/AUDIT_2025-10-20.md` | Comprehensive documentation audit report | ✅ Current (Oct 20) |
+| `audits/historical/ARCHIVE-INFLATED-CLAIMS/AUDIT_2025-10-20_DETAILED.md` | Detailed file-by-file audit analysis | ✅ Current (Oct 20) |
+| `audits/historical/ARCHIVE-INFLATED-CLAIMS/LINK_VALIDATION_REPORT_2025-10-20.md` | Internal link validation and remediation plan | ✅ Current (Oct 20) |
+| `operations/DOCUMENTATION_CHANGELOG.md` | Documentation version control and maintenance | ✅ Current (Oct 20) |
 | `validate-links.py` | Link validation script for automated link checking | ✅ Current (Oct 20) |
+
+### 📝 Reports & Documentation Maintenance
+
+| Document | Purpose | Status |
+|----------|---------|--------|
+| `reports/DOCUMENTATION_UPDATE_REPORT.md` | Documentation update report and changelog | ✅ Current (Oct 21) |
 
 ### 📦 Archived Status Documents
 
@@ -495,6 +546,21 @@ ekklesia/
 | `docs/development/guides/github/GITHUB_PR_MANAGEMENT.md` | Complete PR management guide for gh CLI workflows | ✅ Current (Oct 15) |
 | `docs/development/guides/github/GITHUB_PR_QUICK_REFERENCE.md` | One-page gh CLI cheat sheet for PR commands | ✅ Current (Oct 20) |
 | `docs/development/guides/github/GITHUB_PR_REVIEW_REPLY_WORKFLOW.md` | GitHub PR review response workflow | ✅ Production-Tested (Oct 15) |
+| `development/DATA_QUALITY_POLICY.md` | Data quality policy and UX principles (now at `standards/DATA_QUALITY_UX.md`) | ⚠️ Relocated (Nov 4) |
+| `development/guides/CHROME_REMOTE_DEBUGGING.md` | Chrome DevTools remote debugging guide for Firebase hosting | ✅ Current (Oct 29) |
+| `development/guides/CLAUDE_CODE_SETUP.md` | Claude Code AI assistant setup and configuration | ✅ Current (Oct 27) |
+| `development/guides/DEBUG_LOGGING.md` | Debug logging strategies and Chrome console monitoring | ✅ Current (Oct 29) |
+| `development/guides/GITIGNORE_STRATEGY.md` | Git ignore strategy and .gitignore management | ✅ Current (Oct 30) |
+| `development/guides/GIT_IGNORE_STRATEGY.md` | Alternative git ignore strategy guide | ✅ Current (Oct 30) |
+| `development/guides/README.md` | Development guides directory index | ✅ Current (Oct 20) |
+| `development/guides/admin/README.md` | Admin guides directory index | ✅ Current (Oct 20) |
+| `development/guides/git/ADVANCED_GIT_OPERATIONS.md` | Advanced git operations (rebase, squash, cherry-pick) | ✅ Current (Oct 23) |
+| `development/guides/git/GIT_TROUBLESHOOTING_GUIDE.md` | Git troubleshooting and error recovery | ✅ Current (Oct 23) |
+| `development/guides/git/GIT_WORKFLOW_EXAMPLES.md` | Git workflow examples and common patterns | ✅ Current (Oct 23) |
+| `development/guides/infrastructure/README.md` | Infrastructure guides directory index | ✅ Current (Oct 20) |
+| `development/guides/troubleshooting/README.md` | Troubleshooting guides directory index | ✅ Current (Oct 20) |
+| `development/guides/workflows/MULTI_AGENT_WORKFLOW.md` | Multi-agent AI development workflow | ✅ Current (Oct 21) |
+| `development/guides/workflows/README.md` | Workflow guides directory index | ✅ Current (Oct 21) |
 
 ### 📝 Security & Planning Documents
 
@@ -508,18 +574,104 @@ ekklesia/
 | `docs/security/responses/ISSUES_31-40_SECURITY_REVIEW_RESPONSE.md` | Response to security issues #31-40 | ✅ Current (Oct 20) |
 | `docs/security/responses/ISSUES_41-50_CRITICAL_REVIEW.md` | Critical review for security issues #41-50 | ✅ Current (Oct 20) |
 | `docs/audits/workflows/reviews/CRITICAL_REVIEW_RESPONSE.md` | Critical review response document | ✅ Current (Oct 15) |
-| `docs/design/ARCHITECTURE_RECOMMENDATIONS.md` | Architecture recommendations (AI analysis) | ✅ Current (Oct 15) |
+
+**Security Directory Structure:**
+- `security/README.md`, `security/INDEX.md` - Security documentation index
+- `security/current/README.md` - Current security issues index
+- `security/historical/README.md`, `security/historical/2025-10-16/README.md` - Historical security audits indexes
+- `security/policies/README.md` - Security policies index
+- `security/responses/README.md` - Security responses index
+
+### 📋 Audits & Quality Documentation
+
+**Comprehensive audits** of code, documentation, and system quality.
+
+**Audit Directory Structure:**
+- `audits/README.md` - Main audits index and guide
+- `audits/current/README.md`, `audits/current/findings/*`, `audits/current/reference/*`, `audits/current/supplementary/*` - Current audit findings and reports
+- `audits/historical/README.md`, `audits/historical/ARCHIVE-INFLATED-CLAIMS/*` - Historical audits and archived claims
+- `audits/planning/README.md` - Audit planning and corrective actions
+- `audits/tools/README.md` - Audit tooling documentation
+- `audits/workflows/README.md`, `audits/workflows/remediation/INDEX.md`, `audits/workflows/reviews/INDEX.md`, `audits/workflows/sessions/INDEX.md` - Audit workflows and processes
+
+**Notable Audit Reports:**
+- `audits/FRONTEND_CONSISTENCY_AUDIT_2025-10-23.md` - Frontend consistency audit (Oct 23)
+- `audits/HAMBURGER_MENU_CODE_REVIEW_2025-10-23.md` - Hamburger menu code review (Oct 23)
+- `audits/NAVIGATION_UPDATE_AUDIT_2025-10-23.md` - Navigation update audit (Oct 23)
+- `audits/LATEST_AUDIT_LINK.md` - Link to most recent audit
+- `audits/REORGANIZATION_GUIDE.md` - Audit reorganization guide
+
+### 🔧 Setup & Operations Indexes
+
+**Directory indexes** for setup and operations documentation.
+
+| Document | Purpose | Status |
+|----------|---------|--------|
+| `setup/INDEX.md` | Setup documentation index | ✅ Current (Oct 20) |
+| `operations/INDEX.md` | Operations documentation index | ✅ Current (Oct 20) |
 
 ### 💬 Prompt Templates
 
 | Document | Purpose | Status |
 |----------|---------|--------|
 
-### 📝 Future Plans
+### 🎯 Features & Epics
 
-| Document | Purpose | Status | Estimated Effort |
-|----------|---------|--------|------------------|
-| `docs/roadmap/EPIC_24_IMPLEMENTATION_PLAN.md` | Phase 1: Admin member management interface | 📋 Planning (Oct 20) | 3-5 days |
+**Epic-level feature documentation** for major development initiatives across the Ekklesia platform.
+
+#### Election & Voting Features
+
+| Document | Purpose | Status |
+|----------|---------|--------|
+| `features/election-voting/EPIC_24_ADMIN_LIFECYCLE.md` | Epic #24: Admin election lifecycle management (create, schedule, open, close, publish) | ✅ Current (Oct 22) |
+| `features/election-voting/EPIC_43_MEMBER_MANAGEMENT_SYSTEM.md` | Epic #43: Membership sync with Django backend (hourly automatic sync) | ✅ Current (Oct 27) |
+| `features/election-voting/EPIC_43_PHASE_2_IMPLEMENTATION.md` | Epic #43 Phase 2: Firestore members collection and Facebook events migration | ✅ Current (Oct 27) |
+| `features/election-voting/EPIC_87_ELECTION_DISCOVERY.md` | Epic #87: Member election discovery & voting interface (complete) | ✅ Current (Oct 22) |
+| `features/election-voting/PHASE_5_WEEK_1_IMPLEMENTATION.md` | Phase 5 Week 1 implementation details and task breakdown | ✅ Current (Oct 22) |
+| `features/election-voting/PHASE_5_WEEK_1_MEMBER_UI.md` | Phase 5 Week 1 member UI implementation guide | ✅ Current (Oct 22) |
+| `features/election-voting/ADMIN_API_REFERENCE.md` | Admin API endpoint reference documentation | ✅ Current (Oct 22) |
+| `docs/features/election-voting/development-status.md` | Election voting features development status | ✅ Current (Oct 22) |
+
+#### Admin Portal Features
+
+| Document | Purpose | Status |
+|----------|---------|--------|
+| `features/admin-portal/EPIC_116_MEMBER_DETAIL_EDIT_PLAN.md` | Epic #116: Member detail & edit pages implementation plan | ✅ Current (Oct 29) |
+| `features/admin-portal/DJANGO_TOKEN_CLOUD_FUNCTION.md` | Django API token management via Cloud Function | ✅ Current (Oct 27) |
+
+### 📝 Roadmap & Future Plans
+
+| Document | Purpose | Status |
+|----------|---------|--------|
+| `roadmap/PHASE_5_OVERVIEW.md` | Phase 5 overview: Three parallel epics (Admin UI, Membership Sync, Member Discovery) | ✅ Current (Oct 22) |
+
+### 🐛 Bugfixes & Troubleshooting
+
+**Incident reports, bug documentation, and resolution guides.**
+
+| Document | Purpose | Status |
+|----------|---------|--------|
+| `bugfixes/MEMBER_EDIT_FORM_BUGS_2025_10_31.md` | Member edit form bugs discovered and fixed (Oct 31) | ✅ Current (Oct 31) |
+| `troubleshooting/GIT_IGNORE_ISSUE_RESOLUTION.md` | Git ignore issues and resolution strategies | ✅ Current (Oct 30) |
+| `troubleshooting/ROLE_LOSS_INCIDENT_2025-10-23.md` | Role loss incident postmortem (Oct 23) | ✅ Current (Oct 23) |
+| `troubleshooting/SCHEMA_MISMATCH_EPIC_24_2025-10-23.md` | Schema mismatch issues in Epic #24 (Oct 23) | ✅ Current (Oct 23) |
+
+### 🔧 Refactoring & Technical Debt
+
+**Refactoring plans, code quality improvements, and technical requirements.**
+
+| Document | Purpose | Status |
+|----------|---------|--------|
+| `refactoring/ADMIN_CARD_COMPONENT_DUPLICATION.md` | Admin card component duplication analysis and refactoring plan | ✅ Current (Oct 29) |
+| `requirements/DJANGO_FOREIGN_ADDRESS_REQUIREMENTS.md` | Django foreign address requirements specification | ✅ Current (Oct 30) |
+
+### 🔄 Migration & Data Management
+
+**Database migrations, data cleanup, and schema changes.**
+
+| Document | Purpose | Status |
+|----------|---------|--------|
+| `migration/DUPLICATE_SSN_CLEANUP_2025-10-26.md` | Duplicate SSN cleanup procedure (Oct 26) | ✅ Current (Oct 26) |
 
 ### 📦 Archived Documentation
 
@@ -541,10 +693,28 @@ ekklesia/
 
 ### 🔗 Integration Documentation
 
+**Django backend integration** - API connectivity, data synchronization, and migration strategies.
+
 | Document | Purpose | Status |
 |----------|---------|--------|
-| `docs/integration/DJANGO_TO_EKKLESIA_MIGRATION.md` | Django to Ekklesia migration guide | ✅ Current |
-| `docs/integration/DJANGO_SYNC_IMPLEMENTATION.md` | Django sync implementation details | ✅ Current |
+| `integration/DJANGO_ADDRESS_SYSTEM_DEEP_DIVE.md` | Complete guide to Django address architecture (1,106 lines) | ✅ Current (Nov 1) |
+| `integration/DJANGO_DATABASE_SCHEMA.md` | Complete Django database schema and field mappings | ✅ Current (Oct 29) |
+| `integration/DJANGO_API_IMPLEMENTATION.md` | Django API endpoint implementation guide | ✅ Current (Oct 29) |
+| `integration/DJANGO_API_UPGRADE_EPIC_116.md` | Django API read/write changes for Epic #116 (includes address sync bug) | ✅ Current (Oct 29) |
+| `integration/EPIC_116_MEMBERS_ADMIN_COMPLETION.md` | Epic #116 completion summary - Members admin UI and Django integration | ✅ Current (Nov 1) |
+| `integration/DJANGO_TO_EKKLESIA_MIGRATION.md` | Long-term Django to Ekklesia migration strategy | ✅ Current |
+| `integration/DJANGO_SYNC_IMPLEMENTATION.md` | Member synchronization process and implementation | ✅ Current |
+| `integration/REYKJAVIK_ADDRESS_API_RESEARCH.md` | Research on Reykjavík address validation API | ✅ Current (Oct 30) |
+
+### 🖥️ Systems & Infrastructure Documentation
+
+**External systems, infrastructure, and operational documentation.**
+
+| Document | Purpose | Status |
+|----------|---------|--------|
+| `systems/DJANGO_BACKEND_SYSTEM.md` | **Comprehensive Django backend system documentation** (1,199 lines) | ✅ Current (Nov 2) |
+| `infrastructure/CLOUD_RUN_SERVICES.md` | Cloud Run services configuration and deployment reference (800 lines) | ✅ Current (Nov 1) |
+| `operations/GITHUB_WORKFLOWS_STATUS.md` | GitHub Actions workflows status and configuration (563 lines) | ✅ Current (Oct 27) |
 
 ### 🗄️ Legacy Documentation
 
@@ -878,8 +1048,8 @@ ekklesia/
 
 ---
 
-**Document Version**: 6.3.0
-**Last Reviewed**: 2025-10-15
-**Changes**: Added guides section (PR29_CAMPAIGN_LEARNINGS, GITHUB_PR_REVIEW_REPLY_WORKFLOW, GITHUB_PROJECT_MANAGEMENT); added reviews, integration, legacy sections; updated status docs (removed archived files)
-**Validated With**: validate_documentation_map.py
-**Next Review**: 2026-01-15 (Quarterly)
+**Document Version**: 8.1.0
+**Last Reviewed**: 2025-11-04
+**Changes**: Major documentation organization update - Added 75+ new document references across 15 new sections: Code Standards (9 docs), Features & Epics (11 docs), Django Integration (8 docs), Systems & Infrastructure (3 docs), Development Guides (15 docs), Bugfixes & Troubleshooting (4 docs), Refactoring & Migration (3 docs), Status Documents (16 docs), Testing & Reports (2 docs), Overview & Reference (4 docs), Audits & Quality (50+ docs with structure), Security & Operations indexes
+**Validated With**: validate_documentation_map.py (ongoing)
+**Next Review**: 2026-02-04 (Quarterly)
