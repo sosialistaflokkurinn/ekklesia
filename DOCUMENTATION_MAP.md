@@ -1,6 +1,6 @@
 # 🗺️ Ekklesia Platform - Master Documentation Map
 
-**Version**: 8.1.0
+**Version**: 8.1.1
 **Last Updated**: 2025-11-04
 **Status**: ✅ Phase 5 Complete - Full Voting System Operational (Members ✅ + Events ✅ + Elections ✅) + Epic #159 Profile & Admin UI Implementation + Comprehensive Documentation Organization (120+ docs indexed)
 
@@ -277,7 +277,7 @@ ekklesia/
 ├── services/                    ← Backend services (members, events, elections)
 ├── apps/                        ← Frontend applications
 ├── docs/                        ← Project documentation
-├── infrastructure/              ← Infrastructure-as-Code (Terraform, Cloud Run)
+├── data/                        ← Data files (gitignored - Stadfangaskra.csv address database)
 ├── testing/                     ← E2E tests & test utilities
 ├── scripts/                     ← Deployment & maintenance scripts
 ├── archive/                     ← Deprecated/historical code
@@ -286,6 +286,8 @@ ekklesia/
 ├── DOCUMENTATION_MAP.md         ← This file (master documentation index)
 └── [config files]               ← .gitignore, package.json, etc.
 ```
+
+**Note**: Infrastructure documentation exists in `docs/infrastructure/`, not at root level.
 
 ### 🏢 Services Directory (`/services/`)
 
