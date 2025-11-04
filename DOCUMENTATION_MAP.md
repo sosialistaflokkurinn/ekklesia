@@ -1,6 +1,6 @@
 # 🗺️ Ekklesia Platform - Master Documentation Map
 
-**Version**: 8.1.4
+**Version**: 8.2.0
 **Last Updated**: 2025-11-04
 **Status**: ✅ Phase 5 Complete - Full Voting System Operational (Members ✅ + Events ✅ + Elections ✅) + Epic #159 Profile & Admin UI Implementation + Comprehensive Documentation Organization (120+ docs indexed)
 
@@ -560,22 +560,22 @@ ekklesia/
 
 | Document | Purpose | Status |
 |----------|---------|--------|
-| `README.md` | Documentation hub - entry point with learning paths by role | ✅ Current (Nov 4) |
-| `INDEX.md` | Comprehensive documentation index | ✅ Current (Oct 20) |
-| `ENVIRONMENT_CLARIFICATION.md` | Production tools vs development system clarification | ✅ Current (Oct 15) |
-| `SCRIPT_IMPROVEMENTS_APPLIED.md` | Script improvements and automation enhancements | ✅ Current (Oct 23) |
+| [`README.md`](README.md) | Documentation hub - entry point with learning paths by role | ✅ Current (Nov 4) |
+| [`INDEX.md`](docs/INDEX.md) | Comprehensive documentation index | ✅ Current (Oct 20) |
+| [`ENVIRONMENT_CLARIFICATION.md`](docs/ENVIRONMENT_CLARIFICATION.md) | Production tools vs development system clarification | ✅ Current (Oct 15) |
+| [`SCRIPT_IMPROVEMENTS_APPLIED.md`](docs/SCRIPT_IMPROVEMENTS_APPLIED.md) | Script improvements and automation enhancements | ✅ Current (Oct 23) |
 
 ### 🏗️ Architecture Documents
 
 | Document | Purpose | Status |
 |----------|---------|--------|
-| `ARCHITECTURE_DESIGN_PHASE6.md` | Phase 6 architecture design (5 challenges, ADRs, roadmap) | ✅ Current (Oct 13) |
-| `architecture/ARCHITECTURE_RECOMMENDATIONS.md` | Architecture recommendations from AI analysis and audits | ✅ Current (Oct 15) |
-| `SYSTEM_ARCHITECTURE_OVERVIEW.md` | Primary architectural vision (3-service architecture) | ✅ Active (Oct 10) |
-| `USAGE_CONTEXT.md` | Load patterns and capacity planning (300 votes/sec) | ✅ Active (Oct 9) |
-| `OPERATIONAL_PROCEDURES.md` | Meeting day operations manual (scaling, monitoring) | ✅ Active (Oct 9) |
-| `DATABASE_REFERENCE.md` | Complete database reference (schemas, tables, security) | ✅ Active (Oct 9) |
-| `design/INDEX.md` | Design documentation master index | ✅ Current (Oct 20) |
+| [`ARCHITECTURE_DESIGN_PHASE6.md`](docs/design/ARCHITECTURE_DESIGN_PHASE6.md) | Phase 6 architecture design (5 challenges, ADRs, roadmap) | ✅ Current (Oct 13) |
+| [`ARCHITECTURE_RECOMMENDATIONS.md`](docs/architecture/ARCHITECTURE_RECOMMENDATIONS.md) | Architecture recommendations from AI analysis and audits | ✅ Current (Oct 15) |
+| [`SYSTEM_ARCHITECTURE_OVERVIEW.md`](docs/design/SYSTEM_ARCHITECTURE_OVERVIEW.md) | Primary architectural vision (3-service architecture) | ✅ Active (Oct 10) |
+| [`USAGE_CONTEXT.md`](docs/development/guides/workflows/USAGE_CONTEXT.md) | Load patterns and capacity planning (300 votes/sec) | ✅ Active (Oct 9) |
+| [`OPERATIONAL_PROCEDURES.md`](docs/operations/OPERATIONAL_PROCEDURES.md) | Meeting day operations manual (scaling, monitoring) | ✅ Active (Oct 9) |
+| [`DJANGO_DATABASE_SCHEMA.md`](docs/integration/DJANGO_DATABASE_SCHEMA.md) | Django backend database schema reference | ✅ Current (Oct 31) |
+| [`design/INDEX.md`](docs/design/INDEX.md) | Design documentation master index | ✅ Current (Oct 20) |
 
 ### 📐 Code Standards & Style Guides
 
@@ -583,15 +583,15 @@ ekklesia/
 
 | Document | Purpose | Status |
 |----------|---------|--------|
-| `docs/CODE_STANDARDS.md` | **Master index** - Overview of all code standards and quick reference | ✅ Current (Nov 4) |
-| `docs/standards/CSS_BEM_GUIDE.md` | CSS methodology with BEM naming, design system, component patterns | ✅ Current (Nov 4) |
-| `docs/standards/HTML_GUIDE.md` | Semantic HTML5, accessibility (WCAG 2.1 AA), ARIA patterns | ✅ Current (Nov 4) |
-| `docs/standards/JAVASCRIPT_GUIDE.md` | ES6+ standards, async/await, modules, JSDoc conventions | ✅ Current (Nov 4) |
-| `docs/standards/I18N_GUIDE.md` | Internationalization with R.string pattern (Android-style XML) | ✅ Current (Nov 4) |
-| `docs/standards/DATA_QUALITY_UX.md` | User experience principles, validation, auto-correction patterns | ✅ Current (Nov 4) |
-| `docs/standards/DOCUMENTATION_GUIDE.md` | Writing JSDoc, READMEs, ADRs, and code comments | ✅ Current (Nov 4) |
-| `docs/standards/GIT_WORKFLOW_GUIDE.md` | Git branching strategy, conventional commits, PR process | ✅ Current (Nov 4) |
-| `docs/standards/QUALITY_TESTING_GUIDE.md` | Testing philosophy, unit/integration/E2E, pre-commit hooks | ✅ Current (Nov 4) |
+| [`docs/CODE_STANDARDS.md`](docs/CODE_STANDARDS.md) | **Master index** - Overview of all code standards and quick reference | ✅ Current (Nov 4) |
+| [`docs/standards/CSS_BEM_GUIDE.md`](docs/standards/CSS_BEM_GUIDE.md) | CSS methodology with BEM naming, design system, component patterns | ✅ Current (Nov 4) |
+| [`docs/standards/HTML_GUIDE.md`](docs/standards/HTML_GUIDE.md) | Semantic HTML5, accessibility (WCAG 2.1 AA), ARIA patterns | ✅ Current (Nov 4) |
+| [`docs/standards/JAVASCRIPT_GUIDE.md`](docs/standards/JAVASCRIPT_GUIDE.md) | ES6+ standards, async/await, modules, JSDoc conventions | ✅ Current (Nov 4) |
+| [`docs/standards/I18N_GUIDE.md`](docs/standards/I18N_GUIDE.md) | Internationalization with R.string pattern (Android-style XML) | ✅ Current (Nov 4) |
+| [`docs/standards/DATA_QUALITY_UX.md`](docs/standards/DATA_QUALITY_UX.md) | User experience principles, validation, auto-correction patterns | ✅ Current (Nov 4) |
+| [`docs/standards/DOCUMENTATION_GUIDE.md`](docs/standards/DOCUMENTATION_GUIDE.md) | Writing JSDoc, READMEs, ADRs, and code comments | ✅ Current (Nov 4) |
+| [`docs/standards/GIT_WORKFLOW_GUIDE.md`](docs/standards/GIT_WORKFLOW_GUIDE.md) | Git branching strategy, conventional commits, PR process | ✅ Current (Nov 4) |
+| [`docs/standards/QUALITY_TESTING_GUIDE.md`](docs/standards/QUALITY_TESTING_GUIDE.md) | Testing philosophy, unit/integration/E2E, pre-commit hooks | ✅ Current (Nov 4) |
 
 **Tooling**: `.eslintrc.json`, `.prettierrc.json`, `.github/pull_request_template.md`
 
@@ -599,14 +599,14 @@ ekklesia/
 
 | Document | Purpose | Status |
 |----------|---------|--------|
-| `status/CURRENT_PRODUCTION_STATUS.md` | Production infrastructure status (all services) | ✅ Current (Oct 15) |
-| `status/README.md` | Status documents guide and index | ✅ Current (Oct 11) |
-| `status/EPIC24_CURRENT_STATUS.md` | Epic #24 current implementation status | ✅ Current (Oct 24) |
-| `status/EPIC24_FIXES_COMPREHENSIVE_SUMMARY.md` | Epic #24 fixes comprehensive summary | ✅ Current (Oct 24) |
-| `status/EPIC24_MIGRATION_VERIFICATION_PLAN.md` | Epic #24 migration verification plan | ✅ Current (Oct 24) |
-| `status/ongoing/README.md` | Ongoing status documents index | ✅ Current (Oct 20) |
-| `status/ongoing/ELECTIONS_SCHEMA_MIGRATION_CHECKLIST.md` | Elections schema migration verification | ✅ Current (Oct 20) |
-| `status/historical/README.md` | Historical status documents index | ✅ Current (Oct 19) |
+| [`status/CURRENT_PRODUCTION_STATUS.md`](docs/status/CURRENT_PRODUCTION_STATUS.md) | Production infrastructure status (all services) | ✅ Current (Oct 15) |
+| [`status/README.md`](docs/status/README.md) | Status documents guide and index | ✅ Current (Oct 11) |
+| [`status/EPIC24_CURRENT_STATUS.md`](docs/status/EPIC24_CURRENT_STATUS.md) | Epic #24 current implementation status | ✅ Current (Oct 24) |
+| [`status/EPIC24_FIXES_COMPREHENSIVE_SUMMARY.md`](docs/status/EPIC24_FIXES_COMPREHENSIVE_SUMMARY.md) | Epic #24 fixes comprehensive summary | ✅ Current (Oct 24) |
+| [`status/EPIC24_MIGRATION_VERIFICATION_PLAN.md`](docs/status/EPIC24_MIGRATION_VERIFICATION_PLAN.md) | Epic #24 migration verification plan | ✅ Current (Oct 24) |
+| [`status/ongoing/README.md`](docs/status/ongoing/README.md) | Ongoing status documents index | ✅ Current (Oct 20) |
+| [`status/ongoing/ELECTIONS_SCHEMA_MIGRATION_CHECKLIST.md`](docs/status/ongoing/ELECTIONS_SCHEMA_MIGRATION_CHECKLIST.md) | Elections schema migration verification | ✅ Current (Oct 20) |
+| [`status/historical/README.md`](docs/status/historical/README.md) | Historical status documents index | ✅ Current (Oct 19) |
 | `status/historical/2025-10-16/README.md` | Oct 16 incidents index | ✅ Current (Oct 16) |
 | `status/historical/2025-10-16/LOGIN_INCIDENT.md` | Login incident postmortem (Oct 16) | ✅ Current (Oct 16) |
 | `status/historical/2025-10-19/README.md` | Oct 19 sessions index | ✅ Current (Oct 19) |
