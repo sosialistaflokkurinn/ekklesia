@@ -12,7 +12,7 @@
  */
 
 import { MockElectionsAPI } from './elections-mock.js';
-import { debug } from './utils/debug.js';
+import { debug } from '../utils/debug.js';
 import { authenticatedFetch } from '../auth.js';
 
 // DEVELOPMENT FLAG: Toggle between mock and real API
