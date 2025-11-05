@@ -207,4 +207,19 @@
   <string name="validation_foreign_phone_invalid">Vinsamlegast byrjaðu á + og landskóða. Dæmi: +45 12345678 eða +1 206-555-0142</string>
   <string name="profile_autosave_success">Uppfært sjálfkrafa</string>
   <string name="profile_autosave_error">Villa við vistun</string>
+  
+  <!-- Profile error messages -->
+  <string name="profile_django_save_error">Villa við vistun í Django. Breytingar voru ekki vistaðar. Reyndu aftur.</string>
+  <string name="profile_phone_delete">Eyða símanúmeri</string>
+  <string name="profile_address_delete">Eyða heimilisfangi</string>
+  <string name="profile_phone_save_error">Villa við vistun símanúmers</string>
+  <string name="profile_address_save_error">Villa við vistun heimilisfangs</string>
+  
+  <!-- API error messages -->
+  <string name="error_django_update">Villa við uppfærslu Django gagnagrunns: %s</string>
+  <string name="error_django_address_update">Villa við uppfærslu Django erlends heimilisfangs: %s</string>
+  
+  <!-- SearchableSelect component -->
+  <string name="search_country">Leita að landi...</string>
+  <string name="no_results">Engar niðurstöður</string>
 </resources>
