@@ -34,8 +34,12 @@ from get_django_token import get_django_token
 # Foreign address management (Epic #159, Issue #161)
 from update_member_foreign_address import updatememberforeignaddress
 
+# Bi-directional sync (Epic #159)
+from bidirectional_sync import bidirectional_sync
+from track_member_changes import track_firestore_changes
+
 # Re-export at module level so Firebase discovers it
-__all__ = ['auditmemberchanges', 'get_django_token', 'updatememberforeignaddress']
+__all__ = ['auditmemberchanges', 'get_django_token', 'updatememberforeignaddress', 'bidirectional_sync', 'track_firestore_changes']
 
 # --- SETUP ---
 if not firebase_admin._apps:
