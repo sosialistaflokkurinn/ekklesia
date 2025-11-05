@@ -326,6 +326,24 @@ ekklesia/
 - **Hosted**: Firebase Hosting (ekklesia-prod-10-2025.web.app)
 - **Status**: ✅ Active
 
+**Structure**:
+```
+apps/members-portal/
+├── admin/              ← Admin pages (members CRUD)
+├── members-area/       ← Member dashboard pages
+├── js/                 ← JavaScript modules (ES6)
+├── styles/             ← CSS (BEM methodology)
+├── i18n/               ← Internationalization (Icelandic)
+├── firebase/           ← Firebase service layer
+├── session/            ← Auth modules
+├── ui/                 ← DOM helpers
+├── index.html          ← Login page
+├── favicon.ico         ← Multi-resolution favicon (16, 32, 48, 64px)
+└── favicon.svg         ← Vector favicon
+```
+
+**⚠️ Important**: This directory is symlinked as `services/members/public/` for Firebase Hosting deployment. **Always edit files here**, not in the symlink.
+
 ### 🛠️ Scripts Directory (`/scripts/`)
 
 **Deployment, maintenance, and utility scripts** organized by function.
@@ -444,14 +462,8 @@ ekklesia/
 │   ├── src/                          💻 Application code (legacy)
 │   ├── functions/                    ☁️ Cloud Functions (Python 3.11)
 │   │   └── main.py                   handleKenniAuth & verifyMembership
-│   ├── public/                       🎨 Static assets & test pages
-│   │   ├── index.html                Login page
-│   │   ├── dashboard.html            Member dashboard
-│   │   ├── profile.html              Member profile
-│   │   ├── test-events.html          Events service test page (with voting)
-│   │   ├── styles/                   Component CSS
-│   │   ├── js/                       JavaScript modules
-│   │   └── i18n/                     Icelandic translations
+│   ├── public/                       🔗 SYMLINK → ../../apps/members-portal
+│   │   └── (Real files in apps/members-portal/ - see below)
 │   ├── data/                         📊 Membership data
 │   │   └── kennitalas.txt            Verified member kennitalas (not in git)
 │   ├── firebase.json                 Firebase configuration

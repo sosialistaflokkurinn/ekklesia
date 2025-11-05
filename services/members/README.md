@@ -12,7 +12,7 @@
 
 ### What's Running
 
-- **Firebase Hosting**: Static HTML from `public/` (dashboard.html, profile.html, test.html, test-events.html)
+- **Firebase Hosting**: Static HTML from `public/` → `apps/members-portal/` (symlink)
 - **Cloud Functions** (Python 3.11, 2nd gen):
   - `handleKenniAuth` - OAuth token exchange with Kenni.is
   - `verifyMembership` - Kennitala verification against membership list
@@ -103,7 +103,8 @@ const text = R.string.login_title; // "Innskráning"
 cd members
 firebase deploy --only functions --project ekklesia-prod-10-2025
 
-# Deploy hosting (if changes to public/)
+# Deploy hosting (if changes to apps/members-portal/)
+# Note: Firebase reads from public/ symlink → apps/members-portal/
 firebase deploy --only hosting --project ekklesia-prod-10-2025
 ```
 
@@ -124,12 +125,30 @@ firebase auth:export users.json --project ekklesia-prod-10-2025
 
 ## Architecture
 
+### Directory Structure Note
+
+⚠️ **Important**: The `public/` directory in `services/members/` is a **symbolic link** to `../../apps/members-portal/`.
+
+**Why?**
+- Firebase Hosting requires files to be in a `public/` directory relative to `firebase.json`
+- The actual source files live in `apps/members-portal/` for better organization
+- The symlink allows Firebase to deploy from `apps/members-portal/` without moving files
+
+**For developers:**
+- ✅ **Edit files in**: `apps/members-portal/` (the real location)
+- ❌ **Don't edit**: `services/members/public/` (it's just a link)
+- 🔍 **VS Code users**: The symlink is hidden via `.vscode/settings.json` to avoid confusion
+
+**Git:**
+- The symlink itself is tracked in git (`services/members/public` → `../../apps/members-portal`)
+- Files are only in `apps/members-portal/` (not duplicated)
+
 ### Current Structure (Production)
 
 ```
 members/
-├── public/                           ✅ PRODUCTION - Firebase Hosting
-│   └── test.html                     OAuth test page
+├── public/                           ⚠️ SYMLINK → ../../apps/members-portal
+│   └── (see apps/members-portal/ for actual files)
 │
 ├── functions/                        ✅ PRODUCTION - Cloud Functions (2nd gen)
 │   ├── main.py                       handleKenniAuth & verifyMembership (Python 3.11)

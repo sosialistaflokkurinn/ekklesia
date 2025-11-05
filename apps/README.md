@@ -41,6 +41,11 @@ members-portal/
 - Symlink: `services/members/public → ../../apps/members-portal`
 - **All files deployed from this single location**
 
+**Developer Note**:
+- ✅ **Edit files here**: `apps/members-portal/`
+- ❌ **Never edit**: `services/members/public/` (it's just a symlink)
+- 🔍 **VS Code**: Symlink hidden via `.vscode/settings.json` to reduce confusion
+
 **URLs**:
 - Landing page: `/index.html` (login)
 - Member pages: `/members-area/dashboard.html`, `/members-area/elections.html`, etc.
