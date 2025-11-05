@@ -18,6 +18,7 @@
 import { getFirebaseFirestore, httpsCallable } from '../../firebase/app.js';
 import { debug } from '../utils/debug.js';
 import { doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { R } from '../../i18n/strings-loader.js';
 
 /**
  * Generic Firestore document updater
@@ -114,7 +115,7 @@ async function updateDjangoMember(kennitala, updates, region = 'europe-west2') {
     return result.data;
   } catch (error) {
     debug.error('❌ Django update failed:', error);
-    throw new Error(`Villa við uppfærslu Django gagnagrunns: ${error.message}`);
+    throw new Error(R.format(R.string.error_django_update, error.message));
   }
 }
 
@@ -255,7 +256,7 @@ async function updateDjangoForeignAddress(kennitala, foreignAddress, region = 'e
     return result.data;
   } catch (error) {
     debug.error('❌ Django foreign address update failed:', error);
-    throw new Error(`Villa við uppfærslu Django erlends heimilisfangs: ${error.message}`);
+    throw new Error(R.format(R.string.error_django_address_update, error.message));
   }
 }
 
