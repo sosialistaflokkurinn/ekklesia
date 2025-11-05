@@ -9,15 +9,10 @@
 import { R } from '/i18n/strings-loader.js';
 import { debug } from './utils/debug.js';
 import { getCurrentUser, auth, appCheck } from '/js/auth.js';
-import { debug } from './utils/debug.js';
 import { signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import { debug } from './utils/debug.js';
 import { getApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { debug } from './utils/debug.js';
 import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js';
-import { debug } from './utils/debug.js';
 import { getToken as getAppCheckToken } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app-check.js';
-import { debug } from './utils/debug.js';
 
 /**
  * Base64 URL encode a buffer

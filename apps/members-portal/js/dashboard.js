@@ -16,17 +16,11 @@
 import { R } from '../i18n/strings-loader.js';
 import { debug } from './utils/debug.js';
 import { initAuthenticatedPage } from './page-init.js';
-import { debug } from './utils/debug.js';
 import { requireAuth, getUserData, signOut, AuthenticationError } from '../session/auth.js';
-import { debug } from './utils/debug.js';
 import { httpsCallable, getFirebaseAuth, getFirebaseFirestore } from '../firebase/app.js';
-import { debug } from './utils/debug.js';
 import { setTextContent, setInnerHTML, addEventListener, setDisabled, validateElements } from '../ui/dom.js';
-import { debug } from './utils/debug.js';
 import { formatPhone, normalizePhoneForComparison } from './utils/format.js';
-import { debug } from './utils/debug.js';
 import { updateMemberProfile } from './api/members-client.js';
-import { debug } from './utils/debug.js';
 
 /**
  * Required DOM elements for dashboard page

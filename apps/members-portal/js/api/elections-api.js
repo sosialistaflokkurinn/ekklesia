@@ -14,7 +14,6 @@
 import { MockElectionsAPI } from './elections-mock.js';
 import { debug } from './utils/debug.js';
 import { authenticatedFetch } from '../auth.js';
-import { debug } from './utils/debug.js';
 
 // DEVELOPMENT FLAG: Toggle between mock and real API
 const USE_MOCK_API = true;

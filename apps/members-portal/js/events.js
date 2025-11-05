@@ -10,9 +10,7 @@
 import { R } from '../i18n/strings-loader.js';
 import { debug } from './utils/debug.js';
 import { initAuthenticatedPage } from './page-init.js';
-import { debug } from './utils/debug.js';
 import { setTextContent, setInnerHTML } from '../ui/dom.js';
-import { debug } from './utils/debug.js';
 
 /**
  * Set page title and header text

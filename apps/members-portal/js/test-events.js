@@ -15,11 +15,8 @@
 import { R } from '../i18n/strings-loader.js';
 import { debug } from './utils/debug.js';
 import { initAuthenticatedPage } from './page-init.js';
-import { debug } from './utils/debug.js';
 import { requireAuth, getUserData, signOut, authenticatedFetch, AuthenticationError } from '../session/auth.js';
-import { debug } from './utils/debug.js';
 import { setTextContent, setDisabled, setInnerHTML, validateElements, getElementByIdSafe } from '../ui/dom.js';
-import { debug } from './utils/debug.js';
 
 /**
  * Required DOM elements for test events page

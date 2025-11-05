@@ -12,11 +12,8 @@
 import { initAuthenticatedPage } from './page-init.js';
 import { debug } from './utils/debug.js';
 import { R } from '../i18n/strings-loader.js';
-import { debug } from './utils/debug.js';
 import { getElections } from './api/elections-api.js';
-import { debug } from './utils/debug.js';
 import { escapeHTML } from './utils/format.js';
-import { debug } from './utils/debug.js';
 
 // State
 let currentFilter = 'all';

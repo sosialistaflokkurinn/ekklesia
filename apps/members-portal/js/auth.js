@@ -7,13 +7,11 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { debug } from './utils/debug.js';
 import {
-import { debug } from './utils/debug.js';
   getAuth,
   onAuthStateChanged as firebaseOnAuthStateChanged,
   signOut as firebaseSignOut
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import {
-import { debug } from './utils/debug.js';
   initializeAppCheck,
   ReCaptchaEnterpriseProvider,
   getToken as getAppCheckToken

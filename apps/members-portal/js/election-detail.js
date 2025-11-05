@@ -11,13 +11,9 @@
 import { initAuthenticatedPage } from './page-init.js';
 import { debug } from './utils/debug.js';
 import { R } from '../i18n/strings-loader.js';
-import { debug } from './utils/debug.js';
 import { getElectionById, submitVote, getResults } from './api/elections-api.js';
-import { debug } from './utils/debug.js';
 import { auth } from './auth.js';
-import { debug } from './utils/debug.js';
 import { escapeHTML } from './utils/format.js';
-import { debug } from './utils/debug.js';
 
 // State
 let currentElection = null;
