@@ -1,17 +1,13 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
-  <!-- Admin Navigation -->
   <string name="admin_brand">Ekklesia Stjórnkerfi</string>
   <string name="nav_admin_dashboard">Yfirlit</string>
   <string name="nav_admin_sync">Samstilla félagaskrá</string>
   <string name="nav_admin_history">Samstillingasaga</string>
   <string name="nav_back_to_member">Aftur á félagavef</string>
   <string name="nav_logout">Útskrá</string>
-
-  <!-- Admin Dashboard -->
   <string name="admin_dashboard_title">Yfirlit</string>
   <string name="last_sync_title">Síðasta samstilling</string>
-  <string name="admin_welcome_title">Velkomin/n í stjórnkerfið</string>
   <string name="admin_welcome_male">Velkominn, %s</string>
   <string name="admin_welcome_female">Velkomin, %s</string>
   <string name="admin_welcome_neutral">Velkomin/n, %s</string>
@@ -21,41 +17,26 @@
   <string name="quick_action_sync_desc">Keyra samstillingu úr eldra Django-kerfi</string>
   <string name="quick_action_history_label">Samstillingasaga</string>
   <string name="quick_action_history_desc">Skoða yfirlit yfir fyrri samstillingar</string>
-
-  <!-- Sync Members Page -->
   <string name="sync_members_title">Samstilla félagaskrá</string>
   <string name="sync_members_subtitle">Handvirk samstilling félagaskrár úr eldra Django-kerfi</string>
   <string name="sync_trigger_title">Hefja samstillingu</string>
   <string name="sync_trigger_description">Þetta mun samstilla félagaskrá úr eldra Django kerfi yfir í nýja Firestore gagnagrunninn.</string>
   <string name="sync_trigger_btn">Keyra samstillingu</string>
   <string name="sync_trigger_confirm">Ertu viss um að þú viljir keyra samstillingu? Þetta gæti tekið 1-2 mínútur.</string>
-
-  <!-- Sync Status -->
   <string name="sync_status_title">Samstilling í gangi</string>
   <string name="sync_status_with_errors">⚠️ Með villum</string>
   <string name="sync_status_success_simple">✅ Tókst</string>
   <string name="sync_progress_message">Sæki gögn úr Django og uppfæri gagnagrunn...</string>
   <string name="sync_success_title">Samstilling tókst</string>
-  <string name="sync_success_message">Samstillingu lauk árangursríkt</string>
   <string name="sync_failed_title">Samstilling mistókst</string>
-  <string name="sync_failed_message">Villa kom upp við samstillingu: %s</string>
-
-  <!-- Sync Stats -->
   <string name="stat_total_label">Samtals</string>
   <string name="stat_synced_label">Samstillt</string>
   <string name="stat_failed_label">Mistókust</string>
-  <string name="stat_skipped_label">Sleppt</string>
   <string name="stat_duration_label">Tímalengd</string>
-  <string name="stat_pages_label">Síður</string>
   <string name="stat_status_label">Staða</string>
   <string name="stat_time_label">Tímalengd</string>
-
-  <!-- Roles -->
   <string name="role_admin">Stjórnandi</string>
   <string name="role_election_manager">Kosningastjóri</string>
-  <string name="role_event_manager">Viðburðastjóri</string>
-
-  <!-- Sync History Page -->
   <string name="history_title">Samstillingasaga</string>
   <string name="history_subtitle">Yfirlit yfir fyrri keyrslur</string>
   <string name="history_table_date">Dagsetning</string>
@@ -67,8 +48,6 @@
   <string name="history_status_success">Tókst</string>
   <string name="history_status_failed">Mistókst</string>
   <string name="history_empty">Engin samstillingasaga fannst</string>
-
-  <!-- Members Admin (Epic #116) -->
   <string name="nav_admin_members">Félagar</string>
   <string name="members_list_title">Félagar</string>
   <string name="members_list_subtitle">Skoða og breyta félagaskrá</string>
@@ -79,14 +58,11 @@
   <string name="member_status">Staða</string>
   <string name="member_actions">Aðgerðir</string>
   <string name="member_create_button">+ Nýr félagi</string>
-  <string name="member_search_placeholder">Leita að nafni eða kennitölu...</string>
   <string name="pagination_previous">‹ Fyrri</string>
   <string name="pagination_next">Næsta ›</string>
   <string name="members_loading">Hleð félagaskrá...</string>
   <string name="members_searching">Leita í öllum félögum...</string>
   <string name="members_error_loading">Villa kom upp við að hlaða félagaskrá</string>
-  <string name="members_empty">Engir félagar fundust</string>
-  <string name="members_error">Villa kom upp við að hlaða félagaskrá</string>
   <string name="members_btn_view">Skoða</string>
   <string name="members_btn_edit">Breyta</string>
   <string name="members_status_active">Virkur</string>
@@ -95,27 +71,15 @@
   <string name="members_status_all_plural">allir</string>
   <string name="members_status_active_plural">virkir</string>
   <string name="members_status_inactive_plural">óvirkir</string>
-
-  <!-- Errors & Messages -->
-  <string name="error_unauthorized">Þú hefur ekki heimild til að nota stjórnkerfið</string>
   <string name="error_unauthorized_admin">Þú hefur ekki aðgang að stjórnkerfi. Aðeins notendur með 'admin' eða 'superuser' hlutverk hafa aðgang.</string>
-  <string name="error_auth_required">Innskráning er nauðsynleg</string>
-  <string name="error_network">Netvilla: %s</string>
   <string name="error_sync_trigger">Gat ekki hafið samstillingu: %s</string>
   <string name="error_load_history">Gat ekki sótt samstillingasögu: %s</string>
   <string name="error_page_load">Villa við að hlaða síðu: %s</string>
   <string name="error_permission_denied">Þú hefur ekki réttindi til að skoða þessa síðu</string>
-
-  <!-- Buttons -->
   <string name="btn_retry">Reyna aftur</string>
   <string name="btn_back_to_dashboard">Aftur í yfirlit</string>
   <string name="btn_view_history">Skoða keyrslusögu</string>
-
-  <!-- Loading States -->
-  <string name="loading">Hleð inn...</string>
   <string name="loading_sync_logs">Sæki samstillingasögu...</string>
-
-  <!-- Month Names (for date formatting) -->
   <string name="month_january">janúar</string>
   <string name="month_february">febrúar</string>
   <string name="month_march">mars</string>
@@ -128,31 +92,20 @@
   <string name="month_october">október</string>
   <string name="month_november">nóvember</string>
   <string name="month_december">desember</string>
-
-  <!-- Member Detail Page (Epic #116, Issue #136) -->
   <string name="member_detail_title">Félagsupplýsingar</string>
   <string name="member_detail_subtitle">Skoða upplýsingar um félaga</string>
   <string name="member_detail_basic_info">Grunnupplýsingar</string>
   <string name="member_detail_address">Heimilisfang</string>
   <string name="member_detail_membership">Félagsaðild</string>
   <string name="member_detail_metadata">Kerfisgögn</string>
-  <string name="member_detail_edit_button">Breyta félaga</string>
-  <string name="member_detail_back">Til baka til félaga</string>
-  <string name="member_detail_not_found">Félagi fannst ekki</string>
   <string name="member_detail_error">Villa kom upp við að hlaða félaga</string>
-  <string name="member_detail_loading">Hleð upplýsingum...</string>
-
-  <!-- Member Edit Page (Epic #116, Issue #137) -->
   <string name="member_edit_title">Breyta félaga</string>
   <string name="member_edit_subtitle">Uppfæra upplýsingar um félaga</string>
   <string name="member_edit_save_button">Vista breytingar</string>
   <string name="member_edit_cancel_button">Hætta við</string>
-  <string name="member_edit_loading">Hleð upplýsingum...</string>
   <string name="member_edit_saving">Vista breytingar...</string>
-  <string name="member_edit_success">Breytingar vistaðar</string>
   <string name="member_edit_error">Villa kom upp við að vista</string>
   <string name="member_edit_validation_error">Vinsamlegast leiðréttu villurnar</string>
-  <string name="member_edit_not_found">Félagi fannst ekki</string>
   <string name="member_edit_missing_django_id">Ekki er hægt að breyta þessum félaga (vantar Django ID)</string>
   <string name="member_edit_loading_error">Villa kom upp við að hlaða félaga</string>
   <string name="member_edit_cancel_confirm">Ertu viss um að þú viljir hætta við? Óvistaðar breytingar tapast.</string>
@@ -169,9 +122,6 @@
   <string name="member_edit_field_postal_code">Póstnúmer</string>
   <string name="member_edit_field_city">Staður</string>
   <string name="member_edit_readonly_note">* Kennitala og ID er ekki hægt að breyta</string>
-  <string name="member_edit_address_readonly_note">⚠️ Heimilisfang notar Staðfangaskrá og er ekki hægt að breyta hér. Notaðu Django admin til að uppfæra heimilisfang.</string>
-
-  <!-- Validation Messages (shared with member portal) -->
   <string name="validation_required">Þetta svæði er nauðsynlegt</string>
   <string name="validation_invalid_email">Ógilt netfang</string>
   <string name="validation_invalid_phone">Símanúmer verður að vera 7 tölustafir</string>
