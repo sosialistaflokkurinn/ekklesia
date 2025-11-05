@@ -31,6 +31,7 @@ Our code standards prioritize:
 | **CSS** | Use BEM methodology | `.nav__link--active` |
 | **HTML** | Semantic elements | `<nav>`, `<main>`, `<article>` |
 | **JavaScript** | ES6+ modules | `import { R } from './strings-loader.js'` |
+| **Python** | Type hints + docstrings | `def foo(x: str) -> int:` |
 | **i18n** | R.string pattern | `R.string.page_title` |
 | **Data Quality** | Always validate input | `validateKennitala(kt)` |
 | **Documentation** | JSDoc for functions | `/** @param {string} name */` |
@@ -163,7 +164,74 @@ function savePhoneNumbers(phoneNumbers, callback) {
 
 ---
 
-### 4. Internationalization (i18n)
+### 4. Python Standards
+
+**Guide**: [Python Style Guide](standards/PYTHON_GUIDE.md)
+
+**Summary**:
+- Python 3.11+ modern syntax
+- Type hints for function signatures
+- Docstrings (Google style) for all public functions
+- PEP 8 formatting (use `black` or `ruff`)
+- Virtual environments for dependencies
+
+**Key Conventions**:
+```python
+# ✅ Good: Modern Python with type hints and docstrings
+from typing import Optional
+from pathlib import Path
+
+def normalize_kennitala(kennitala: str) -> Optional[str]:
+    """Normalize kennitala format to DDMMYY-XXXX.
+
+    Args:
+        kennitala: Raw kennitala string with or without hyphen
+
+    Returns:
+        Normalized kennitala with hyphen, or None if invalid
+
+    Example:
+        >>> normalize_kennitala("1234567890")
+        "123456-7890"
+    """
+    if not kennitala:
+        return None
+
+    kennitala = kennitala.strip()
+    if '-' in kennitala:
+        return kennitala
+
+    if len(kennitala) == 10:
+        return f"{kennitala[:6]}-{kennitala[6:]}"
+
+    return None
+
+# ❌ Bad: No type hints, no docstring
+def normalize_kennitala(kennitala):
+    if not kennitala:
+        return None
+    kennitala = kennitala.strip()
+    if '-' in kennitala:
+        return kennitala
+    if len(kennitala) == 10:
+        return kennitala[:6] + '-' + kennitala[6:]
+    return None
+```
+
+**Where Python is Used**:
+- **Cloud Functions** (`services/members/functions/`) - Production code for Firebase
+- **Admin Scripts** (`scripts/admin/`) - Documentation audit, i18n validation, database tools
+- **Audit Tools** (`docs/audits/tools/`) - Legacy documentation audit scripts
+
+**Quick Links**:
+- [Type Hints Reference](standards/PYTHON_GUIDE.md#type-hints)
+- [Docstring Format](standards/PYTHON_GUIDE.md#docstrings)
+- [Error Handling](standards/PYTHON_GUIDE.md#error-handling)
+- [Cloud Functions Patterns](standards/PYTHON_GUIDE.md#cloud-functions)
+
+---
+
+### 5. Internationalization (i18n)
 
 **Guide**: [i18n & R.string Guide](standards/I18N_GUIDE.md)
 
@@ -199,7 +267,7 @@ document.getElementById('btn-save').textContent = 'Vista';
 
 ---
 
-### 5. Data Quality & UX
+### 6. Data Quality & UX
 
 **Guide**: [Data Quality & UX Guide](standards/DATA_QUALITY_UX.md)
 
@@ -247,7 +315,7 @@ async function saveEmail(email) {
 
 ---
 
-### 6. Documentation Standards
+### 7. Documentation Standards
 
 **Guide**: [Documentation Guide](standards/DOCUMENTATION_GUIDE.md)
 
@@ -288,7 +356,7 @@ function showStatusFeedback(statusElement, state, clearDelayMs = 2000) {
 
 ---
 
-### 7. Git Workflow
+### 8. Git Workflow
 
 **Guide**: [Git Workflow Guide](standards/GIT_WORKFLOW_GUIDE.md)
 
@@ -330,7 +398,7 @@ git commit -m "Fixed stuff"
 
 ---
 
-### 8. Quality & Testing
+### 9. Quality & Testing
 
 **Guide**: [Quality & Testing Guide](standards/QUALITY_TESTING_GUIDE.md)
 
