@@ -10,7 +10,7 @@ import requests
 import jwt
 from datetime import datetime, timedelta, timezone
 import uuid
-from typing import Optional
+from typing import Optional, Dict, Any
 from jwt import PyJWKClient
 
 import firebase_admin
