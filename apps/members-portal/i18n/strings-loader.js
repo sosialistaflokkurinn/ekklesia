@@ -13,6 +13,8 @@
  *   const formatted = R.format(R.string.error_authentication, errorMsg);
  */
 
+import { debug } from '../js/utils/debug.js';
+
 class StringsLoader {
   constructor() {
     this.strings = {};
