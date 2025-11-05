@@ -17,28 +17,23 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { debug } from '../js/utils/debug.js';
 import {
-import { debug } from '../js/utils/debug.js';
   getAuth,
   onAuthStateChanged,
   signOut as firebaseSignOut
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import {
-import { debug } from '../js/utils/debug.js';
   initializeAppCheck,
   ReCaptchaEnterpriseProvider,
   getToken as getAppCheckToken
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app-check.js';
 import {
-import { debug } from '../js/utils/debug.js';
   getFunctions as firebaseGetFunctions,
   httpsCallable as firebaseHttpsCallable
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js';
 import {
-import { debug } from '../js/utils/debug.js';
   signInWithCustomToken as firebaseSignInWithCustomToken
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import {
-import { debug } from '../js/utils/debug.js';
   getFirestore
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
