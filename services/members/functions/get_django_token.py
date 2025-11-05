@@ -8,7 +8,8 @@ Token is stored in Secret Manager and only accessible to admin/superuser roles.
 
 import os
 import logging
-from flask import jsonify
+from typing import Tuple, Any
+from flask import jsonify, Request
 from google.cloud import secretmanager
 import firebase_admin
 from firebase_admin import auth
@@ -20,7 +21,7 @@ logger = logging.getLogger(__name__)
 # Initialize Secret Manager client
 secret_client = secretmanager.SecretManagerServiceClient()
 
-def get_django_token(request: https_fn.Request) -> https_fn.Response:
+def get_django_token(request: Request) -> Tuple[Any, int, dict]:
     """
     HTTP Cloud Function to retrieve Django API token.
 
