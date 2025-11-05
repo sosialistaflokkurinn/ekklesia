@@ -11,7 +11,7 @@ except ImportError:
     from security_utils import _rate_limit_bucket_id, validate_auth_input
 
 
-def test_rate_limit_bucket_id():
+def test_rate_limit_bucket_id() -> None:
     """Verify time-bucketed document IDs are correct and change across buckets."""
     now = datetime(2025, 10, 16, 12, 0, 0, tzinfo=timezone.utc)
     doc_id = _rate_limit_bucket_id("192.0.2.1", now, 10)
@@ -34,12 +34,14 @@ essential_valid = [
 ]
 
 
-def test_validate_auth_input_valid():
+def test_validate_auth_input_valid() -> None:
+    """Test that valid auth codes and verifiers pass validation."""
     for code, ver in essential_valid:
         assert validate_auth_input(code, ver) is True
 
 
-def test_validate_auth_input_too_long():
+def test_validate_auth_input_too_long() -> None:
+    """Test that excessively long auth codes and verifiers are rejected."""
     try:
         validate_auth_input("a" * 501, "ok")
         raise AssertionError("Expected ValueError for long auth code")
@@ -53,7 +55,8 @@ def test_validate_auth_input_too_long():
         assert "PKCE verifier too long" in str(e)
 
 
-def test_validate_auth_input_missing():
+def test_validate_auth_input_missing() -> None:
+    """Test that empty or missing auth codes and verifiers are rejected."""
     try:
         validate_auth_input("", "ok")
         raise AssertionError("Expected ValueError for missing auth code")

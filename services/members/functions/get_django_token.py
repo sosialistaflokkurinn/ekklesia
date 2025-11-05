@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 # Initialize Secret Manager client
 secret_client = secretmanager.SecretManagerServiceClient()
 
-def get_django_token(request):
+def get_django_token(request: https_fn.Request) -> https_fn.Response:
     """
     HTTP Cloud Function to retrieve Django API token.
 

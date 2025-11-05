@@ -29,7 +29,7 @@ class DetailedDocumentationAudit:
         self.file_refs_seen = set()
         self.code_blocks_by_file = {}
         
-    def scan_all_docs(self):
+    def scan_all_docs(self) -> Any:
         """Scan all markdown files"""
         md_files = list(self.docs_root.glob('**/*.md'))
         print(f"\n🔍 Found {len(md_files)} markdown files")
@@ -39,7 +39,7 @@ class DetailedDocumentationAudit:
             
         return self.findings
     
-    def process_file(self, md_file: Path):
+    def process_file(self, md_file: Path) -> Any:
         """Process a single markdown file"""
         rel_path = md_file.relative_to(self.docs_root)
         
@@ -80,7 +80,7 @@ class DetailedDocumentationAudit:
         
         self.code_blocks_by_file[str(rel_path)] = blocks_in_file
     
-    def analyze_block(self, block_info: Dict):
+    def analyze_block(self, block_info: Dict) -> Any:
         """Analyze a single code block for issues"""
         code = block_info["full_code"]
         doc_file = block_info["file"]
@@ -252,7 +252,7 @@ class DetailedDocumentationAudit:
                 "code_length": len(code)
             })
     
-    def generate_report(self, output_file: str = None):
+    def generate_report(self, output_file: str = None) -> None:
         """Generate audit report"""
         if output_file:
             with open(output_file, 'w') as f:
@@ -261,7 +261,7 @@ class DetailedDocumentationAudit:
         
         return self.findings
     
-    def print_summary(self):
+    def print_summary(self) -> None:
         """Print summary of findings"""
         print("\n" + "="*70)
         print("CODE-DOCUMENTATION COMPLIANCE AUDIT - DETAILED FINDINGS")

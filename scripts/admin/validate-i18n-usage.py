@@ -33,7 +33,7 @@ class Colors:
     RESET = '\033[0m'
     BOLD = '\033[1m'
 
-def find_i18n_xml_files(base_path):
+def find_i18n_xml_files(base_path: Path) -> Any:
     """Find all i18n XML files in the project"""
     xml_files = []
 
@@ -49,7 +49,7 @@ def find_i18n_xml_files(base_path):
 
     return xml_files
 
-def extract_string_keys(xml_path):
+def extract_string_keys(xml_path: Path) -> Any:
     """Extract all string keys from an XML file"""
     tree = ET.parse(xml_path)
     root = tree.getroot()
@@ -67,7 +67,7 @@ def extract_string_keys(xml_path):
 
     return strings
 
-def find_dynamic_string_families(base_path, context):
+def find_dynamic_string_families(base_path: Path, context: str) -> Any:
     """
     Find dynamic string access patterns like R.string[key] or adminStrings.get(variable)
     Returns set of string prefixes that are accessed dynamically (e.g., 'role_badge_')
@@ -119,7 +119,7 @@ def find_dynamic_string_families(base_path, context):
 
     return families
 
-def search_string_usage(base_path, string_name, context, dynamic_families):
+def search_string_usage(base_path: Path, string_name: str, context: str, dynamic_families: List) -> Any:
     """
     Search for usage of a string key in JavaScript and HTML files
     Enhanced to detect multiple patterns including dynamic access
@@ -183,7 +183,8 @@ def search_string_usage(base_path, string_name, context, dynamic_families):
 
     return usage_locations
 
-def main():
+def main() -> None:
+    """Main entry point for i18n string usage validation."""
     base_path = Path(__file__).parent.parent.parent
 
     print(f"{Colors.BOLD}=== i18n String Usage Validation (Enhanced) ==={Colors.RESET}\n")

@@ -11,6 +11,7 @@ import jwt
 from datetime import datetime, timedelta, timezone
 import uuid
 from typing import Optional
+from jwt import PyJWKClient
 
 import firebase_admin
 from firebase_admin import initialize_app, auth, firestore
@@ -83,7 +84,7 @@ def _cors_headers_for_origin(origin: str) -> dict:
 
 # --- HELPER FUNCTIONS ---
 
-def get_kenni_is_jwks_client(issuer_url: str):
+def get_kenni_is_jwks_client(issuer_url: str) -> PyJWKClient:
     """TTL-based cached JWKS client (see utils: util_jwks). TTL configurable via JWKS_CACHE_TTL_SECONDS."""
     return get_jwks_client_cached_ttl(issuer_url)
 
@@ -695,7 +696,7 @@ from sync_members import sync_all_members, create_sync_log
 
 
 @https_fn.on_call(timeout_sec=540, memory=512)
-def syncmembers(req: https_fn.CallableRequest):
+def syncmembers(req: https_fn.CallableRequest) -> Dict[str, Any]:
     """
     Epic #43: Manual trigger to sync all members from Django to Firestore.
 
@@ -751,7 +752,7 @@ def syncmembers(req: https_fn.CallableRequest):
 
 
 @https_fn.on_call(timeout_sec=30, memory=256)
-def updatememberprofile(req: https_fn.CallableRequest):
+def updatememberprofile(req: https_fn.CallableRequest) -> Dict[str, Any]:
     """
     Update member profile from Kenni.is data to Django backend.
 

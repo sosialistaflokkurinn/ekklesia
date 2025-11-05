@@ -21,6 +21,7 @@ import argparse
 import websockets
 import urllib.request
 from datetime import datetime
+from typing import Dict, Any, Optional
 
 
 class ChromeConsoleMonitor:
@@ -31,7 +32,7 @@ class ChromeConsoleMonitor:
         self.websocket = None
         self.message_id = 0
 
-    def get_websocket_url(self):
+    def get_websocket_url(self) -> str:
         """Get WebSocket URL for the first Chrome tab"""
         try:
             url = f"http://localhost:{self.port}/json"
@@ -62,7 +63,7 @@ class ChromeConsoleMonitor:
         await self.websocket.send(json.dumps(message))
         return self.message_id
 
-    def format_log(self, entry):
+    def format_log(self, entry: Dict[str, Any]) -> str:
         """Format console log entry for output"""
         timestamp = datetime.now().isoformat()
         level = entry.get("level", "log").upper()
@@ -95,7 +96,7 @@ class ChromeConsoleMonitor:
 
         return f"{emoji} [{timestamp}] {level}: {message}"
 
-    def write_output(self, text):
+    def write_output(self, text: str) -> None:
         """Write to stdout and optionally to file"""
         print(text, flush=True)
 
@@ -187,7 +188,8 @@ class ChromeConsoleMonitor:
             sys.exit(0)
 
 
-def main():
+def main() -> None:
+    """Main entry point for Chrome console monitoring CLI."""
     parser = argparse.ArgumentParser(
         description="Monitor Chrome console logs via Chrome DevTools Protocol"
     )

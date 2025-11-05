@@ -20,7 +20,14 @@ def sanitize_fields(data: Dict[str, Any]) -> Dict[str, Any]:
     return _sanitize(data)  # type: ignore
 
 
-def log_json(level: str, message: str, **kwargs):
+def log_json(level: str, message: str, **kwargs: Any) -> None:
+    """Log structured JSON message to Cloud Logging.
+
+    Args:
+        level: Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+        message: Human-readable log message
+        **kwargs: Additional structured fields
+    """
     payload = {
         "severity": level.upper(),
         "message": message,
