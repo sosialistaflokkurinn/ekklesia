@@ -11,17 +11,14 @@
 
 // Import from member portal public directory
 import { initSession } from '../../session/init.js';
+import { initNavigation } from '../../js/nav.js';
 import { debug } from '../../js/utils/debug.js';
 import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
-import { debug } from '../../js/utils/debug.js';
 import MembersAPI from './api/members-api.js';
-import { debug } from '../../js/utils/debug.js';
 import { formatPhone, maskKennitala } from '../../js/utils/format.js';
-import { debug } from '../../js/utils/debug.js';
 import { filterMembersByDistrict, getElectoralDistrictName } from './utils/electoral-districts.js';
-import { debug } from '../../js/utils/debug.js';
 import { createListPageStates } from './utils/ui-states.js';
-import { debug } from '../../js/utils/debug.js';
+import { initSearchableSelects } from '../../js/components/searchable-select.js';
 
 // Initialize Firebase services
 const auth = getFirebaseAuth();
@@ -79,6 +76,12 @@ const adminStrings = new Map();
     // Load i18n strings early (before auth check so UI shows proper text)
     await loadStrings();
 
+    // Initialize searchable selects after strings are loaded
+    initSearchableSelects({
+      searchPlaceholder: adminStrings.get('search_placeholder') || 'Leita...',
+      noResultsText: adminStrings.get('no_results') || 'Engar niðurstöður'
+    });
+
     // Check authentication
     auth.onAuthStateChanged(async (user) => {
       if (!user) {
@@ -95,6 +98,9 @@ const adminStrings = new Map();
         uiStates.showError(adminStrings.get('error_permission_denied'));
         return;
       }
+
+      // Initialize navigation (hamburger menu)
+      initNavigation();
 
       // Set up event listeners
       setupEventListeners();
@@ -196,22 +202,61 @@ const adminStrings = new Map();
 
     // Table headers
     const headerName = document.getElementById('header-name');
-    if (headerName) headerName.textContent = R.string.member_name || 'Nafn';
+    if (headerName) headerName.textContent = R.string.members_table_header_name || R.string.member_name || 'Nafn';
+
+    const headerId = document.getElementById('header-id');
+    if (headerId) headerId.textContent = R.string.members_table_header_id || 'Django ID';
 
     const headerKennitala = document.getElementById('header-kennitala');
-    if (headerKennitala) headerKennitala.textContent = R.string.member_kennitala || 'Kennitala';
+    if (headerKennitala) headerKennitala.textContent = R.string.members_table_header_kennitala || R.string.member_kennitala || 'Kennitala';
 
     const headerEmail = document.getElementById('header-email');
-    if (headerEmail) headerEmail.textContent = R.string.member_email || 'Netfang';
+    if (headerEmail) headerEmail.textContent = R.string.members_table_header_email || R.string.member_email || 'Netfang';
 
     const headerPhone = document.getElementById('header-phone');
     if (headerPhone) headerPhone.textContent = R.string.member_phone || 'Sími';
 
     const headerStatus = document.getElementById('header-status');
-    if (headerStatus) headerStatus.textContent = R.string.member_status || 'Staða';
+    if (headerStatus) headerStatus.textContent = R.string.members_table_header_status || R.string.member_status || 'Staða';
 
     const headerActions = document.getElementById('header-actions');
-    if (headerActions) headerActions.textContent = R.string.member_actions || 'Aðgerðir';
+    if (headerActions) headerActions.textContent = R.string.members_table_header_actions || R.string.member_actions || 'Aðgerðir';
+
+    // Filter dropdown options
+    const filterStatusAll = document.getElementById('filter-status-all');
+    if (filterStatusAll) filterStatusAll.textContent = R.string.filter_status_all || 'Allir';
+
+    const filterStatusActive = document.getElementById('filter-status-active');
+    if (filterStatusActive) filterStatusActive.textContent = R.string.filter_status_active || 'Virkir';
+
+    const filterStatusInactive = document.getElementById('filter-status-inactive');
+    if (filterStatusInactive) filterStatusInactive.textContent = R.string.filter_status_inactive || 'Óvirkir';
+
+    // Electoral district dropdown options
+    const filterDistrictAll = document.getElementById('filter-district-all');
+    if (filterDistrictAll) filterDistrictAll.textContent = R.string.district_all || 'Öll kjördæmi';
+
+    const filterDistrictReykjavik = document.getElementById('filter-district-reykjavik');
+    if (filterDistrictReykjavik) filterDistrictReykjavik.textContent = R.string.district_reykjavik || 'Reykjavíkurkjördæmi';
+
+    const filterDistrictSudvestur = document.getElementById('filter-district-sudvestur');
+    if (filterDistrictSudvestur) filterDistrictSudvestur.textContent = R.string.district_sudvestur || 'Suðvesturkjördæmi';
+
+    const filterDistrictSudur = document.getElementById('filter-district-sudur');
+    if (filterDistrictSudur) filterDistrictSudur.textContent = R.string.district_sudur || 'Suðurkjördæmi';
+
+    const filterDistrictNordvestur = document.getElementById('filter-district-nordvestur');
+    if (filterDistrictNordvestur) filterDistrictNordvestur.textContent = R.string.district_nordvestur || 'Norðvesturkjördæmi';
+
+    const filterDistrictNordaustur = document.getElementById('filter-district-nordaustur');
+    if (filterDistrictNordaustur) filterDistrictNordaustur.textContent = R.string.district_nordaustur || 'Norðausturkjördæmi';
+
+    // UI text
+    const btnRetry = document.getElementById('btn-retry');
+    if (btnRetry) btnRetry.textContent = R.string.members_retry_button || R.string.btn_retry || 'Reyna aftur';
+
+    const emptyMessage = document.getElementById('members-empty-message');
+    if (emptyMessage) emptyMessage.textContent = R.string.members_empty_message || 'Engir félagar fundust';
 
     // Create button
     const btnCreateText = document.getElementById('btn-create-member-text');
@@ -426,16 +471,10 @@ const adminStrings = new Map();
       actionsCell.className = 'members-table__cell members-table__cell--actions';
 
       const viewBtn = document.createElement('a');
-      viewBtn.href = `/admin/member-detail.html?id=${member.kennitala}`;
+      viewBtn.href = `/admin/member-profile.html?id=${member.kennitala}`;
       viewBtn.className = 'members-table__action';
       viewBtn.textContent = adminStrings.get('members_btn_view');
       actionsCell.appendChild(viewBtn);
-
-      const editBtn = document.createElement('a');
-      editBtn.href = `/admin/member-edit.html?id=${member.kennitala}`;
-      editBtn.className = 'members-table__action';
-      editBtn.textContent = adminStrings.get('members_btn_edit');
-      actionsCell.appendChild(editBtn);
 
       row.appendChild(actionsCell);
 

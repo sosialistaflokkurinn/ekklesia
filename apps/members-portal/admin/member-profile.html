@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Félagsupplýsingar - Ekklesia</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+  <!-- Reuse member portal styles -->
+  <link rel="stylesheet" href="/styles/global.css">
+  <link rel="stylesheet" href="/styles/components/nav.css">
+  <link rel="stylesheet" href="/styles/components/page.css">
+  <link rel="stylesheet" href="/styles/components/form.css?v=20251105">
+  <link rel="stylesheet" href="/styles/components/profile-edit.css?v=20251105">
+  <link rel="stylesheet" href="/styles/components/toast.css?v=20251105">
+  <link rel="stylesheet" href="/styles/components/searchable-select.css?v=20251105">
+
+  <!-- Admin-specific styles -->
+  <link rel="stylesheet" href="/admin/styles/admin.css">
+  <link rel="stylesheet" href="/admin/styles/admin-shared.css">
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+</head>
+<body class="authenticated admin">
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="nav__container">
+      <a href="/admin/admin.html" class="nav__brand" id="nav-brand">Ekklesia</a>
+
+      <!-- Hamburger Button (mobile only) -->
+      <button class="nav__hamburger" id="nav-hamburger" aria-expanded="false">
+        <span class="nav__hamburger-line"></span>
+        <span class="nav__hamburger-line"></span>
+        <span class="nav__hamburger-line"></span>
+      </button>
+
+      <!-- Overlay for mobile menu -->
+      <div class="nav__overlay" id="nav-overlay"></div>
+
+      <!-- Navigation Drawer -->
+      <div class="nav__drawer" id="nav-drawer" aria-hidden="true">
+        <!-- Close button (mobile only) -->
+        <button class="nav__close" id="nav-close">
+          <span class="nav__close-icon">✕</span>
+        </button>
+
+        <div class="nav__links">
+          <a href="/admin/admin.html" class="nav__link" id="nav-admin-dashboard">Stjórnborð</a>
+          <a href="/admin/members.html" class="nav__link nav__link--active" id="nav-admin-members">Félagar</a>
+          <a href="/admin/sync-members.html" class="nav__link" id="nav-admin-sync">Samstilling</a>
+          <a href="/admin/sync-history.html" class="nav__link" id="nav-admin-history">Saga</a>
+          <a href="/members-area/dashboard.html" class="nav__link" id="nav-back-to-member">Til baka</a>
+          <a href="#" class="nav__link nav__link--logout" id="nav-logout">Útskrá</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="page">
+    <div class="page__container">
+      <!-- Back Navigation -->
+      <div class="admin-back">
+        <a href="/admin/members.html" class="admin-back__link" id="back-to-members">
+          ← <span id="back-to-members-text">Til baka til félaga</span>
+        </a>
+      </div>
+
+      <!-- Page Header -->
+      <header class="page__header">
+        <h1 class="page__title" id="page-header-title">Félagsupplýsingar</h1>
+      </header>
+
+      <!-- Loading State -->
+      <div id="member-loading" class="admin-loading">
+        <div class="spinner"></div>
+        <p id="member-loading-text">Hleð upplýsingum...</p>
+      </div>
+
+      <!-- Error State -->
+      <div id="member-error" class="admin-error" style="display: none;">
+        <p class="admin-error__message" id="member-error-message"></p>
+        <button class="btn btn--secondary" id="btn-retry">Reyna aftur</button>
+      </div>
+
+      <!-- Not Found State -->
+      <div id="member-not-found" class="admin-not-found" style="display: none;">
+        <p class="admin-not-found__message" id="member-not-found-message">Félagi fannst ekki</p>
+        <a href="/admin/members.html" class="btn btn--secondary">Til baka til félaga</a>
+      </div>
+
+      <!-- Member Profile -->
+      <div id="member-profile" style="display: none;">
+        <!-- Basic Information -->
+        <div class="card">
+          <h3 class="card__title" id="section-personal-info">Grunnupplýsingar</h3>
+          <div class="info-grid">
+            <!-- Name -->
+            <div class="info-grid__item">
+              <div class="info-grid__label" id="label-name">Nafn</div>
+              <div class="profile-field">
+                <input
+                  type="text"
+                  class="profile-field__input"
+                  id="input-name"
+                  name="name"
+                  required
+                  maxlength="100"
+                />
+                <span class="profile-field__status" id="status-name" aria-live="polite" aria-atomic="true"></span>
+                <span class="profile-field__error" id="error-name" role="alert"></span>
+              </div>
+            </div>
+
+            <!-- Kennitala (readonly) -->
+            <div class="info-grid__item">
+              <div class="info-grid__label" id="label-kennitala">Kennitala</div>
+              <div class="info-grid__value" id="value-kennitala">-</div>
+            </div>
+
+            <!-- Email -->
+            <div class="info-grid__item">
+              <div class="info-grid__label" id="label-email">Netfang</div>
+              <div class="profile-field">
+                <input
+                  type="email"
+                  class="profile-field__input"
+                  id="input-email"
+                  name="email"
+                  placeholder="nafn@example.is"
+                />
+                <span class="profile-field__status" id="status-email" aria-live="polite" aria-atomic="true"></span>
+                <span class="profile-field__error" id="error-email" role="alert"></span>
+              </div>
+            </div>
+
+            <!-- Birthday -->
+            <div class="info-grid__item">
+              <div class="info-grid__label" id="label-birthday">Fæðingardagur</div>
+              <div class="profile-field">
+                <input
+                  type="date"
+                  class="profile-field__input"
+                  id="input-birthday"
+                  name="birthday"
+                />
+                <span class="profile-field__status" id="status-birthday" aria-live="polite" aria-atomic="true"></span>
+                <span class="profile-field__error" id="error-birthday" role="alert"></span>
+              </div>
+            </div>
+
+            <!-- Gender -->
+            <div class="info-grid__item">
+              <div class="info-grid__label" id="label-gender">Kyn</div>
+              <div class="profile-field">
+                <select id="input-gender" name="gender" class="profile-field__input" data-searchable>
+                  <option value="">Veldu...</option>
+                  <option value="0" id="option-gender-m">Karl</option>
+                  <option value="1" id="option-gender-f">Kona</option>
+                </select>
+                <span class="profile-field__status" id="status-gender" aria-live="polite" aria-atomic="true"></span>
+                <span class="profile-field__error" id="error-gender" role="alert"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Phone Numbers -->
+        <div class="card">
+          <h3 class="card__title expandable" id="label-phone-numbers">
+            <span id="phone-numbers-title">Símanúmer</span>
+            <span class="expand-icon" id="phone-expand-icon">▼</span>
+          </h3>
+
+          <!-- Simple Display (collapsed) -->
+          <div class="info-grid__value" id="value-phone-simple" style="display: block;">-</div>
+
+          <!-- Expanded Section -->
+          <div id="phone-numbers-section" style="display: none;">
+            <div id="phone-numbers-list"></div>
+            <button type="button" class="btn btn--secondary" id="btn-add-phone">
+              <span id="btn-add-phone-text">+ Bæta við símanúmeri</span>
+            </button>
+            <span class="profile-field__status" id="status-phone-numbers"></span>
+          </div>
+        </div>
+
+        <!-- Addresses -->
+        <div class="card">
+          <h3 class="card__title expandable" id="label-addresses">
+            <span id="addresses-title">Heimilisföng</span>
+            <span class="expand-icon" id="address-expand-icon">▼</span>
+          </h3>
+
+          <!-- Simple Display (collapsed) -->
+          <div class="info-grid__value" id="value-address-simple" style="display: block;">-</div>
+
+          <!-- Expanded Section -->
+          <div id="addresses-section" style="display: none;">
+            <div id="addresses-list"></div>
+            <button type="button" class="btn btn--secondary" id="btn-add-address">
+              <span id="btn-add-address-text">+ Bæta við heimilisfangi</span>
+            </button>
+            <span class="profile-field__status" id="status-addresses"></span>
+          </div>
+        </div>
+
+        <!-- Membership Info (readonly) -->
+        <div class="card">
+          <h3 class="card__title" id="section-membership">Félagsaðild</h3>
+          <div class="info-grid">
+            <div class="info-grid__item">
+              <div class="info-grid__label" id="label-status">Staða</div>
+              <div class="info-grid__value" id="value-status">
+                <span class="admin-badge" id="status-badge">-</span>
+              </div>
+            </div>
+            <div class="info-grid__item">
+              <div class="info-grid__label" id="label-joined">Skráður</div>
+              <div class="info-grid__value" id="value-joined">-</div>
+            </div>
+            <div class="info-grid__item">
+              <div class="info-grid__label" id="label-django-id">Django ID</div>
+              <div class="info-grid__value" id="value-django-id">-</div>
+            </div>
+            <div class="info-grid__item">
+              <div class="info-grid__label" id="label-synced-at">Síðast samstillt</div>
+              <div class="info-grid__value" id="value-synced-at">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script type="module" src="/admin/js/member-profile.js"></script>
+</body>
+</html>
