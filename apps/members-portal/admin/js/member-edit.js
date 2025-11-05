@@ -8,13 +8,13 @@
 import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
 import { debug } from '../../js/utils/debug.js';
 import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-import { debug } from '../../js/utils/debug.js';
 import { getMemberByDjangoId, updateMember, validateMemberData } from './django-api.js';
-import { debug } from '../../js/utils/debug.js';
 import { formatPhone, maskKennitala, validatePhone } from '../../js/utils/format.js';
-import { debug } from '../../js/utils/debug.js';
 import { createMemberPageStates } from './utils/ui-states.js';
-import { debug } from '../../js/utils/debug.js';
+import { showToast } from '../../js/components/toast.js';
+import { toggleButtonLoading } from '../../js/components/status.js';
+import { showConfirm } from '../../js/components/modal.js';
+import { initSearchableSelects } from '../../js/components/searchable-select.js';
 
 // Initialize Firebase services
 const auth = getFirebaseAuth();
@@ -63,6 +63,12 @@ const adminStrings = new Map();
 
     // Load i18n strings early
     await loadStrings();
+
+    // Initialize searchable selects
+    initSearchableSelects({
+      searchPlaceholder: adminStrings.get('search_placeholder') || 'Leita...',
+      noResultsText: adminStrings.get('no_results') || 'Engar niðurstöður'
+    });
 
     // Get kennitala from URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -336,8 +342,8 @@ const adminStrings = new Map();
       const updatedData = await updateMember(djangoId, formData);
       debug.log('Member updated successfully:', updatedData);
 
-      // Show success message
-      showSuccess();
+      // Show success toast
+      showToast(adminStrings.get('member_edit_success') || 'Upplýsingar vistaðar', 'success');
 
       // Redirect to detail page after 2 seconds
       setTimeout(() => {
@@ -444,9 +450,17 @@ const adminStrings = new Map();
   }
 
   // Handle cancel button
-  function handleCancel(e) {
+  async function handleCancel(e) {
     e.preventDefault();
-    if (confirm(adminStrings.get('member_edit_cancel_confirm'))) {
+    const confirmed = await showConfirm(
+      adminStrings.get('member_edit_cancel_confirm_title'),
+      adminStrings.get('member_edit_cancel_confirm_message'),
+      { 
+        confirmText: adminStrings.get('btn_cancel'), 
+        cancelText: adminStrings.get('member_edit_continue_editing')
+      }
+    );
+    if (confirmed) {
       window.location.href = `/admin/member-detail.html?id=${currentKennitala}`;
     }
   }
@@ -493,28 +507,13 @@ const adminStrings = new Map();
     elements.formErrors.style.display = 'block';
   }
 
-  // Show success message
-  function showSuccess() {
-    elements.successMessage.style.display = 'block';
-  }
-
-  // Hide success message
-  function hideSuccess() {
-    elements.successMessage.style.display = 'none';
-  }
-
   // Set saving state
   function setSavingState(saving) {
-    const btnSaveText = document.getElementById('btn-save-text');
-    if (saving) {
-      elements.btnSave.disabled = true;
-      elements.btnCancel.disabled = true;
-      if (btnSaveText) btnSaveText.textContent = adminStrings.get('member_edit_saving');
-    } else {
-      elements.btnSave.disabled = false;
-      elements.btnCancel.disabled = false;
-      if (btnSaveText) btnSaveText.textContent = adminStrings.get('member_edit_save_button');
-    }
+    toggleButtonLoading(elements.btnSave, saving, {
+      loadingText: adminStrings.get('member_edit_saving'),
+      originalText: adminStrings.get('member_edit_save_button')
+    });
+    elements.btnCancel.disabled = saving;
   }
 
   // Initialize on DOM ready

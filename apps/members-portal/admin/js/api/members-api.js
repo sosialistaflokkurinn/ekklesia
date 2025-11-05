@@ -7,10 +7,9 @@
 
 // Import Firestore from member portal
 import { getFirebaseFirestore } from '../../../firebase/app.js';
-import { debug } from '../../js/utils/debug.js';
+import { debug } from '../../../js/utils/debug.js';
 // Import Firestore v9 modular functions
 import {
-import { debug } from '../../js/utils/debug.js';
   collection,
   query,
   where,

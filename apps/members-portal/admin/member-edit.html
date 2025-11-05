@@ -13,6 +13,9 @@
   <link rel="stylesheet" href="/styles/global.css">
   <link rel="stylesheet" href="/styles/components/nav.css">
   <link rel="stylesheet" href="/styles/components/page.css">
+  <link rel="stylesheet" href="/styles/components/form.css?v=20251105">
+  <link rel="stylesheet" href="/styles/components/toast.css?v=20251105">
+  <link rel="stylesheet" href="/styles/components/searchable-select.css?v=20251105">
 
   <!-- Admin-specific styles -->
   <link rel="stylesheet" href="/admin/styles/admin.css">
@@ -175,7 +178,7 @@
               <!-- Gender -->
               <div class="admin-field">
                 <label for="input-gender" class="admin-field__label" id="label-gender">Kyn</label>
-                <select id="input-gender" name="gender" class="member-edit__select">
+                <select id="input-gender" name="gender" class="member-edit__select" data-searchable>
                   <option value="">Veldu...</option>
                   <option value="0" id="option-gender-m">Karl</option>
                   <option value="1" id="option-gender-f">Kona</option>

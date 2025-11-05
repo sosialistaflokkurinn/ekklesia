@@ -2,16 +2,23 @@
  * Member Edit Page Styles - Epic #116, Issue #137
  * BEM Methodology
  *
- * Shared styles moved to admin-shared.css
- * This file only contains page-specific form styles
+ * Updated: 2025-11-05
+ * Migration: Moved duplicate form styles to shared /styles/components/form.css
+ * Now this file only contains admin-specific overrides
  */
 
-/* Member Edit Container */
+/* ===========================
+   Member Edit Container
+   =========================== */
+
 .member-edit {
   max-width: 800px;
 }
 
-/* Form Note */
+/* ===========================
+   Form Note (Admin-specific warning)
+   =========================== */
+
 .member-edit__note {
   background: var(--color-warning-bg);
   border: 1px solid var(--color-warning-border);
@@ -22,7 +29,12 @@
   color: var(--color-warning-dark);
 }
 
-/* Form Inputs */
+/* ===========================
+   Legacy Form Input Classes
+   Note: New code should use .form-field__input from form.css
+   These are kept for backwards compatibility
+   =========================== */
+
 .member-edit__input,
 .member-edit__select {
   font-size: 1rem;
@@ -63,7 +75,10 @@
   display: block;
 }
 
-/* Form Actions */
+/* ===========================
+   Form Actions
+   =========================== */
+
 .member-edit__actions {
   margin-top: 2rem;
   display: flex;
@@ -74,7 +89,10 @@
   min-width: 150px;
 }
 
-/* Form Errors */
+/* ===========================
+   Form Messages
+   =========================== */
+
 .member-edit__form-errors {
   background: var(--color-error-bg-light);
   border: 1px solid var(--color-error);
@@ -93,7 +111,6 @@
   margin: 0.5rem 0;
 }
 
-/* Success Message */
 .member-edit__success {
   background: var(--color-success-bg-light);
   border: 1px solid var(--color-success-border);
@@ -105,7 +122,10 @@
   font-weight: 500;
 }
 
-/* Responsive Design - Page Specific */
+/* ===========================
+   Responsive Design
+   =========================== */
+
 @media (max-width: 768px) {
   .member-edit__actions {
     flex-direction: column;

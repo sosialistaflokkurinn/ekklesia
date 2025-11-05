@@ -6,15 +6,12 @@
 
 // Import from member portal public directory (two levels up from /admin/js/)
 import { initSession } from '../../session/init.js';
+import { initNavigation } from '../../js/nav.js';
 import { debug } from '../../js/utils/debug.js';
 import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
-import { debug } from '../../js/utils/debug.js';
 import { collection, query, orderBy, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-import { debug } from '../../js/utils/debug.js';
 import { adminStrings } from './i18n/admin-strings-loader.js';
-import { debug } from '../../js/utils/debug.js';
 import { checkAdminAccess, calculateDuration } from './utils/admin-helpers.js';
-import { debug } from '../../js/utils/debug.js';
 
 // Initialize Firebase services
 const auth = getFirebaseAuth();
@@ -224,13 +221,16 @@ async function init() {
     // 3. Check admin access (developer role required)
     checkAdminAccess(userData);
 
-    // 4. Set page text
+    // 4. Initialize navigation (hamburger menu)
+    initNavigation();
+
+    // 5. Set page text
     setPageText(strings);
 
-    // 5. Setup event listeners
+    // 6. Setup event listeners
     setupEventListeners();
 
-    // 6. Load sync history
+    // 7. Load sync history
     await loadHistory();
 
     debug.log('✓ Sync history page initialized');

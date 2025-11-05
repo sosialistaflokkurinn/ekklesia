@@ -7,13 +7,14 @@
 
 // Import from member portal public directory (two levels up from /admin/js/)
 import { initSession } from '../../session/init.js';
+import { initNavigation } from '../../js/nav.js';
 import { debug } from '../../js/utils/debug.js';
 import { getFirebaseAuth } from '../../firebase/app.js';
-import { debug } from '../../js/utils/debug.js';
 import { adminStrings } from './i18n/admin-strings-loader.js';
-import { debug } from '../../js/utils/debug.js';
 import { checkAdminAccess, calculateDuration } from './utils/admin-helpers.js';
-import { debug } from '../../js/utils/debug.js';
+import { showToast, showSuccess, showError } from '../../js/components/toast.js';
+import { toggleButtonLoading } from '../../js/components/status.js';
+import { showConfirm } from '../../js/components/modal.js';
 
 // Initialize Firebase Auth
 const auth = getFirebaseAuth();
@@ -186,7 +187,13 @@ async function handleSyncTrigger() {
   const strings = adminStrings.strings;
 
   // Confirm with user
-  if (!confirm(strings.sync_trigger_confirm)) {
+  const confirmed = await showConfirm(
+    strings.sync_trigger_confirm_title,
+    strings.sync_trigger_confirm_message,
+    { confirmText: strings.sync_trigger_confirm_btn, confirmStyle: 'primary' }
+  );
+  
+  if (!confirmed) {
     return;
   }
 
@@ -290,10 +297,13 @@ async function init() {
     // 3. Check admin access (developer role required)
     checkAdminAccess(userData);
 
-    // 4. Set page text
+    // 4. Initialize navigation (hamburger menu)
+    initNavigation();
+
+    // 5. Set page text
     setPageText(strings);
 
-    // 5. Setup event listeners
+    // 6. Setup event listeners
     setupEventListeners();
 
     debug.log('✓ Sync members page initialized');
