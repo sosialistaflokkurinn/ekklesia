@@ -112,6 +112,8 @@
   padding: var(--spacing-sm) var(--spacing-md);
   border-radius: var(--radius-sm);
   transition: background 0.2s;
+  white-space: nowrap; /* Prevent text wrapping that could hide content */
+  min-width: 0; /* Allow flex items to shrink below content size if needed */
 }
 
 .nav__link:hover {
