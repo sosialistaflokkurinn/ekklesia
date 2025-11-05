@@ -116,9 +116,6 @@ scripts/logs/*.jsonl
 .claude/
 .gemini/
 
-# Local debugging files
-apps/members-portal/js/utils/debug.js
-
 # Local data files
 data/Stadfangaskra.csv
 AUDIT_CODE_DOCUMENTATION_2025-10-20.json

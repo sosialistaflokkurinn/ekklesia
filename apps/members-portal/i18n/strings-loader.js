@@ -28,7 +28,7 @@ class StringsLoader {
   async load(locale = 'is') {
     // Check if already loaded for this locale
     if (this.loaded && this.currentLocale === locale) {
-      console.log(`✓ Using cached strings for locale: ${locale} (${Object.keys(this.strings).length} strings)`);
+      debug.log(`✓ Using cached strings for locale: ${locale} (${Object.keys(this.strings).length} strings)`);
       return this.strings;
     }
 
@@ -45,14 +45,14 @@ class StringsLoader {
       this.strings = this.parseXML(xmlText);
       this.loaded = true;
 
-      console.log(`✓ Loaded ${Object.keys(this.strings).length} strings for locale: ${locale}`);
+      debug.log(`✓ Loaded ${Object.keys(this.strings).length} strings for locale: ${locale}`);
       return this.strings;
     } catch (error) {
-      console.error(`Failed to load strings for locale ${locale}:`, error);
+      debug.error(`Failed to load strings for locale ${locale}:`, error);
 
       // Fallback to default locale if not already trying default
       if (locale !== 'is') {
-        console.warn(`Falling back to default locale: is`);
+        debug.warn(`Falling back to default locale: is`);
         return this.load('is');
       }
 
@@ -124,7 +124,7 @@ class StringsLoader {
     const value = this.strings[key];
 
     if (!value) {
-      console.warn(`Missing string key: ${key}`);
+      debug.warn(`Missing string key: ${key}`);
       return key; // Return key as fallback
     }
 

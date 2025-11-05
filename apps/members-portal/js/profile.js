@@ -21,6 +21,7 @@ import { setTextContent, validateElements } from '../ui/dom.js';
 import { formatPhone, validatePhone, formatInternationalPhone, validateInternationalPhone, validateInternationalPostalCode, formatMembershipDuration } from './utils/format.js';
 import { getCountryName, getCountriesSorted, searchCountries, getCountryFlag, getCountryCallingCode } from './utils/countries.js';
 import { updateMemberProfile, updateMemberForeignAddress } from './api/members-client.js';
+import { debug } from './utils/debug.js';
 
 /**
  * Constants
@@ -50,7 +51,7 @@ function expandCollapsibleSection(sectionId, expandIconId, simpleDisplayId) {
   const simpleDisplay = document.getElementById(simpleDisplayId);
 
   if (section && section.style.display === 'none') {
-    console.log(`   📂 Expanding section: ${sectionId}`);
+    debug.log(`   📂 Expanding section: ${sectionId}`);
     section.style.display = 'block';
     if (simpleDisplay) simpleDisplay.style.display = 'none';
     if (expandIcon) expandIcon.classList.add('expand-icon--expanded');
@@ -67,16 +68,16 @@ function expandCollapsibleSection(sectionId, expandIconId, simpleDisplayId) {
  * @param {string} itemType - Type of item (for logging)
  */
 async function setDefaultItem(items, index, renderFn, saveFn, itemType) {
-  console.log(`⭐ Set default ${itemType} (index ${index})`);
-  console.log(`   Current default: ${items.findIndex(item => item.is_default)}`);
+  debug.log(`⭐ Set default ${itemType} (index ${index})`);
+  debug.log(`   Current default: ${items.findIndex(item => item.is_default)}`);
 
   // Unset all other defaults
   items.forEach((item, i) => {
     item.is_default = (i === index);
   });
 
-  console.log(`   New default: ${index}`);
-  console.log(`   Updated ${itemType}s:`, items);
+  debug.log(`   New default: ${index}`);
+  debug.log(`   Updated ${itemType}s:`, items);
 
   // Save and re-render
   await saveFn();
@@ -660,7 +661,7 @@ async function verifyMembership() {
     const result = await verifyMembershipFn();
     return result.data.isMember;
   } catch (error) {
-    console.error('Failed to verify membership:', error);
+    debug.error('Failed to verify membership:', error);
     // Return false on error (conservative approach)
     return false;
   }
@@ -936,7 +937,7 @@ async function saveChanges() {
     });
 
   } catch (error) {
-    console.error('Save failed:', error);
+    debug.error('Save failed:', error);
 
     showError('Villa við vistun í Django. Breytingar voru ekki vistaðar. Reyndu aftur.');
   } finally {
@@ -1145,7 +1146,7 @@ async function autoSaveField(fieldName, newValue) {
     // showToast(R.string.profile_autosave_success || 'Uppfært sjálfkrafa', 'success');
 
   } catch (error) {
-    console.error(`Auto-save failed for ${fieldName}:`, error);
+    debug.error(`Auto-save failed for ${fieldName}:`, error);
 
     // Show error icon
     showFieldStatus(fieldName, 'error');
@@ -1300,22 +1301,22 @@ function migrateOldPhoneFields() {
  * - living_status='both' → 2 addresses (IS + foreign)
  */
 function migrateOldAddressFields() {
-  console.log('🏠 Migrating old address fields...');
-  console.log('   Full currentUserData:', currentUserData);
-  console.log('   Profile data:', currentUserData?.profile);
+  debug.log('🏠 Migrating old address fields...');
+  debug.log('   Full currentUserData:', currentUserData);
+  debug.log('   Profile data:', currentUserData?.profile);
 
   // If addresses already exists, no migration needed
   if (currentUserData?.profile?.addresses && currentUserData.profile.addresses.length > 0) {
-    console.log('   ✅ Using existing addresses array:', currentUserData.profile.addresses);
+    debug.log('   ✅ Using existing addresses array:', currentUserData.profile.addresses);
     addresses = [...currentUserData.profile.addresses];
     return;
   }
 
-  console.log('   📦 No addresses array found, checking old fields...');
+  debug.log('   📦 No addresses array found, checking old fields...');
 
   // Log all profile keys to see what's available
   if (currentUserData?.profile) {
-    console.log('   Available profile keys:', Object.keys(currentUserData.profile));
+    debug.log('   Available profile keys:', Object.keys(currentUserData.profile));
   }
 
   // Check for old fields in multiple possible locations
@@ -1332,10 +1333,10 @@ function migrateOldAddressFields() {
   // Foreign address is an object
   const foreignAddressObj = currentUserData?.profile?.foreign_address || currentUserData?.foreign_address;
 
-  console.log(`   Living status: ${livingStatus}`);
-  console.log(`   Iceland address (string): ${icelandAddress}, ${postalCode} ${city}`);
-  console.log(`   Iceland address (object):`, addressIceland);
-  console.log(`   Foreign address (object):`, foreignAddressObj);
+  debug.log(`   Living status: ${livingStatus}`);
+  debug.log(`   Iceland address (string): ${icelandAddress}, ${postalCode} ${city}`);
+  debug.log(`   Iceland address (object):`, addressIceland);
+  debug.log(`   Foreign address (object):`, foreignAddressObj);
 
   addresses = [];
 
@@ -1353,7 +1354,7 @@ function migrateOldAddressFields() {
     if (icelandAddr.street || icelandAddr.postal_code) {
       addresses.push(icelandAddr);
       hasIcelandAddress = true;
-      console.log('   ✅ Migrated Iceland address (object):', icelandAddr);
+      debug.log('   ✅ Migrated Iceland address (object):', icelandAddr);
     }
   } else if (icelandAddress || postalCode || city) {
     // Flat fields format
@@ -1366,7 +1367,7 @@ function migrateOldAddressFields() {
     };
     addresses.push(icelandAddr);
     hasIcelandAddress = true;
-    console.log('   ✅ Migrated Iceland address (flat):', icelandAddr);
+    debug.log('   ✅ Migrated Iceland address (flat):', icelandAddr);
   }
 
   // Check for foreign address (object format)
@@ -1380,13 +1381,13 @@ function migrateOldAddressFields() {
     };
     if (foreignAddr.street || foreignAddr.country) {
       addresses.push(foreignAddr);
-      console.log('   ✅ Migrated foreign address:', foreignAddr);
+      debug.log('   ✅ Migrated foreign address:', foreignAddr);
     }
   }
 
   // If no addresses migrated, add one empty Iceland address for user to fill
   if (addresses.length === 0) {
-    console.log('   ℹ️ No old address data found, adding empty Iceland address');
+    debug.log('   ℹ️ No old address data found, adding empty Iceland address');
     addresses.push({
       country: 'IS',
       street: '',
@@ -1395,7 +1396,7 @@ function migrateOldAddressFields() {
       is_default: true
     });
   } else {
-    console.log(`   ✅ Migration complete: ${addresses.length} address(es) migrated`);
+    debug.log(`   ✅ Migration complete: ${addresses.length} address(es) migrated`);
   }
 }
 
@@ -1570,17 +1571,17 @@ function renderPhoneNumbers() {
     // Auto-save on change
     countrySelector.addEventListener('change', async (e) => {
       const newCountry = e.target.value;
-      console.log(`🌍 Country change event (index ${index}): "${phone.country}" → "${newCountry}"`);
+      debug.log(`🌍 Country change event (index ${index}): "${phone.country}" → "${newCountry}"`);
 
       if (newCountry !== phone.country) {
-        console.log(`✏️ Country changed, updating...`);
+        debug.log(`✏️ Country changed, updating...`);
         phoneNumbers[index].country = newCountry;
         showStatusFeedback(statusIcon, 'loading');
         await savePhoneNumbers();
         showStatusFeedback(statusIcon, 'success');
         renderPhoneNumbers(); // Re-render to update flag display
       } else {
-        console.log('ℹ️ No change, skipping save');
+        debug.log('ℹ️ No change, skipping save');
       }
     });
 
@@ -1595,16 +1596,16 @@ function renderPhoneNumbers() {
     // Auto-save on blur
     numberInput.addEventListener('blur', async (e) => {
       const newNumber = e.target.value.trim();
-      console.log(`📱 Phone number blur event (index ${index}): "${phone.number}" → "${newNumber}"`);
+      debug.log(`📱 Phone number blur event (index ${index}): "${phone.number}" → "${newNumber}"`);
 
       if (newNumber !== phone.number) {
-        console.log(`✏️ Phone number changed, updating...`);
+        debug.log(`✏️ Phone number changed, updating...`);
         phoneNumbers[index].number = newNumber;
         showStatusFeedback(statusIcon, 'loading');
         await savePhoneNumbers();
         showStatusFeedback(statusIcon, 'success');
       } else {
-        console.log('ℹ️ No change, skipping save');
+        debug.log('ℹ️ No change, skipping save');
       }
     });
 
@@ -1700,10 +1701,10 @@ function renderAddresses() {
     // Country change listener
     countrySelector.addEventListener('change', async (e) => {
       const newCountry = e.target.value;
-      console.log(`🌍 Country change (index ${index}): "${address.country}" → "${newCountry}"`);
+      debug.log(`🌍 Country change (index ${index}): "${address.country}" → "${newCountry}"`);
 
       if (newCountry !== address.country) {
-        console.log('✏️ Country changed, updating...');
+        debug.log('✏️ Country changed, updating...');
         addresses[index].country = newCountry;
         showStatusFeedback(statusIcon, 'loading');
         await saveAddresses();
@@ -1747,16 +1748,16 @@ function renderAddresses() {
     // Auto-save on blur
     streetInput.addEventListener('blur', async (e) => {
       const newStreet = e.target.value.trim();
-      console.log(`🏠 Street blur (index ${index}): "${address.street}" → "${newStreet}"`);
+      debug.log(`🏠 Street blur (index ${index}): "${address.street}" → "${newStreet}"`);
 
       if (newStreet !== address.street) {
-        console.log('✏️ Street changed, updating...');
+        debug.log('✏️ Street changed, updating...');
         addresses[index].street = newStreet;
         showStatusFeedback(statusIcon, 'loading');
         await saveAddresses();
         showStatusFeedback(statusIcon, 'success');
       } else {
-        console.log('ℹ️ No change, skipping save');
+        debug.log('ℹ️ No change, skipping save');
       }
     });
 
@@ -1783,31 +1784,31 @@ function renderAddresses() {
     // Auto-save on blur
     postalInput.addEventListener('blur', async (e) => {
       const newPostal = e.target.value.trim();
-      console.log(`📮 Postal code blur (index ${index}): "${address.postal_code}" → "${newPostal}"`);
+      debug.log(`📮 Postal code blur (index ${index}): "${address.postal_code}" → "${newPostal}"`);
 
       if (newPostal !== address.postal_code) {
-        console.log('✏️ Postal code changed, updating...');
+        debug.log('✏️ Postal code changed, updating...');
         addresses[index].postal_code = newPostal;
         showStatusFeedback(statusIcon, 'loading');
         await saveAddresses();
         showStatusFeedback(statusIcon, 'success');
       } else {
-        console.log('ℹ️ No change, skipping save');
+        debug.log('ℹ️ No change, skipping save');
       }
     });
 
     cityInput.addEventListener('blur', async (e) => {
       const newCity = e.target.value.trim();
-      console.log(`🏙️ City blur (index ${index}): "${address.city}" → "${newCity}"`);
+      debug.log(`🏙️ City blur (index ${index}): "${address.city}" → "${newCity}"`);
 
       if (newCity !== address.city) {
-        console.log('✏️ City changed, updating...');
+        debug.log('✏️ City changed, updating...');
         addresses[index].city = newCity;
         showStatusFeedback(statusIcon, 'loading');
         await saveAddresses();
         showStatusFeedback(statusIcon, 'success');
       } else {
-        console.log('ℹ️ No change, skipping save');
+        debug.log('ℹ️ No change, skipping save');
       }
     });
 
@@ -1835,8 +1836,8 @@ function renderAddresses() {
  * Add new phone number (defaults to Iceland)
  */
 function addPhoneNumber() {
-  console.log('➕ Adding new phone number...');
-  console.log(`   Current phone count: ${phoneNumbers.length}`);
+  debug.log('➕ Adding new phone number...');
+  debug.log(`   Current phone count: ${phoneNumbers.length}`);
 
   // Expand section if collapsed (shared utility)
   expandCollapsibleSection('phone-numbers-section', 'phone-expand-icon', 'value-phone-simple');
@@ -1849,8 +1850,8 @@ function addPhoneNumber() {
   };
   phoneNumbers.push(newPhone);
 
-  console.log(`   ✅ Added new phone: ${JSON.stringify(newPhone)}`);
-  console.log(`   New phone count: ${phoneNumbers.length}`);
+  debug.log(`   ✅ Added new phone: ${JSON.stringify(newPhone)}`);
+  debug.log(`   New phone count: ${phoneNumbers.length}`);
 
   // Re-render
   renderPhoneNumbers();
@@ -1860,7 +1861,7 @@ function addPhoneNumber() {
   const lastInput = inputs[inputs.length - 1];
   if (lastInput) {
     lastInput.focus();
-    console.log('   🎯 Focused on new phone input');
+    debug.log('   🎯 Focused on new phone input');
   }
 }
 
@@ -1868,17 +1869,17 @@ function addPhoneNumber() {
  * Delete phone number by index
  */
 async function deletePhoneNumber(index) {
-  console.log(`🗑️ Delete phone number requested (index ${index})`);
+  debug.log(`🗑️ Delete phone number requested (index ${index})`);
 
   // Can't delete if only one phone left
   if (phoneNumbers.length === 1) {
-    console.log('⚠️ Cannot delete last phone number');
+    debug.log('⚠️ Cannot delete last phone number');
     showToast(R.string.profile_phone_cannot_delete_last || 'Ekki hægt að eyða síðasta símanúmerinu', 'error');
     return;
   }
 
   const wasDefault = phoneNumbers[index].is_default;
-  console.log(`Deleting phone: ${JSON.stringify(phoneNumbers[index])}, was default: ${wasDefault}`);
+  debug.log(`Deleting phone: ${JSON.stringify(phoneNumbers[index])}, was default: ${wasDefault}`);
 
   // Remove phone
   phoneNumbers.splice(index, 1);
@@ -1886,7 +1887,7 @@ async function deletePhoneNumber(index) {
   // If deleted phone was default, set first phone as new default
   if (wasDefault && phoneNumbers.length > 0) {
     phoneNumbers[0].is_default = true;
-    console.log(`Set new default: ${JSON.stringify(phoneNumbers[0])}`);
+    debug.log(`Set new default: ${JSON.stringify(phoneNumbers[0])}`);
   }
 
   // Save and re-render
@@ -1906,7 +1907,7 @@ async function setDefaultPhoneNumber(index) {
  * Save phone numbers to Firestore (optimistic update)
  */
 async function savePhoneNumbers() {
-  console.log('💾 Saving phone numbers to Firestore:', phoneNumbers);
+  debug.log('💾 Saving phone numbers to Firestore:', phoneNumbers);
 
   const statusIcon = document.getElementById('status-phone-numbers');
 
@@ -1914,7 +1915,7 @@ async function savePhoneNumbers() {
     // Show loading spinner
     if (statusIcon) {
       statusIcon.className = 'profile-field__status profile-field__status--loading';
-      console.log('⏳ Showing loading spinner...');
+      debug.log('⏳ Showing loading spinner...');
     }
 
     // Optimistic update: Firestore first
@@ -1922,7 +1923,7 @@ async function savePhoneNumbers() {
     const kennitalaKey = currentUserData.kennitala.replace(/-/g, '');
     const memberDocRef = doc(db, 'members', kennitalaKey);
 
-    console.log('📝 Firestore path: /members/' + kennitalaKey);
+    debug.log('📝 Firestore path: /members/' + kennitalaKey);
 
     // Update Firestore
     await updateDoc(memberDocRef, {
@@ -1930,17 +1931,17 @@ async function savePhoneNumbers() {
       'profile.updated_at': new Date()
     });
 
-    console.log('✅ Phone numbers saved successfully to Firestore');
+    debug.log('✅ Phone numbers saved successfully to Firestore');
 
     // Show success checkmark
     if (statusIcon) {
       statusIcon.className = 'profile-field__status profile-field__status--success';
-      console.log('✓ Showing success checkmark');
+      debug.log('✓ Showing success checkmark');
 
       // Clear after 2 seconds
       setTimeout(() => {
         statusIcon.className = 'profile-field__status';
-        console.log('ℹ️ Cleared status icon');
+        debug.log('ℹ️ Cleared status icon');
       }, 2000);
     }
 
@@ -1951,15 +1952,15 @@ async function savePhoneNumbers() {
 
     // Show success toast
     showToast(R.string.profile_phone_saved || 'Símanúmer uppfært', 'success');
-    console.log('🎉 Toast notification shown');
+    debug.log('🎉 Toast notification shown');
 
   } catch (error) {
-    console.error('❌ Failed to save phone numbers:', error);
+    debug.error('❌ Failed to save phone numbers:', error);
 
     // Show error icon
     if (statusIcon) {
       statusIcon.className = 'profile-field__status profile-field__status--error';
-      console.log('✕ Showing error icon');
+      debug.log('✕ Showing error icon');
 
       // Clear after 3 seconds
       setTimeout(() => {
@@ -1968,7 +1969,7 @@ async function savePhoneNumbers() {
     }
 
     showToast(R.string.profile_phone_save_error || 'Villa við vistun símanúmers', 'error');
-    console.log('⚠️ Error toast notification shown');
+    debug.log('⚠️ Error toast notification shown');
   }
 }
 
@@ -1976,8 +1977,8 @@ async function savePhoneNumbers() {
  * Add new address (defaults to Iceland)
  */
 function addAddress() {
-  console.log('➕ Adding new address...');
-  console.log(`   Current address count: ${addresses.length}`);
+  debug.log('➕ Adding new address...');
+  debug.log(`   Current address count: ${addresses.length}`);
 
   // Expand section if collapsed (shared utility)
   expandCollapsibleSection('addresses-section', 'address-expand-icon', 'value-address-simple');
@@ -1992,8 +1993,8 @@ function addAddress() {
   };
   addresses.push(newAddress);
 
-  console.log(`   ✅ Added new address: ${JSON.stringify(newAddress)}`);
-  console.log(`   New address count: ${addresses.length}`);
+  debug.log(`   ✅ Added new address: ${JSON.stringify(newAddress)}`);
+  debug.log(`   New address count: ${addresses.length}`);
 
   // Re-render
   renderAddresses();
@@ -2004,7 +2005,7 @@ function addAddress() {
     const lastInput = inputs[inputs.length - 3];  // Street input (3rd from end)
     if (lastInput) {
       lastInput.focus();
-      console.log('   🎯 Focused on new street input');
+      debug.log('   🎯 Focused on new street input');
     }
   }
 }
@@ -2013,17 +2014,17 @@ function addAddress() {
  * Delete address by index
  */
 async function deleteAddress(index) {
-  console.log(`🗑️ Delete address requested (index ${index})`);
+  debug.log(`🗑️ Delete address requested (index ${index})`);
 
   // Can't delete if only one address left
   if (addresses.length === 1) {
-    console.log('⚠️ Cannot delete last address');
+    debug.log('⚠️ Cannot delete last address');
     showToast(R.string.profile_address_cannot_delete_last || 'Ekki hægt að eyða síðasta heimilisfanginu', 'error');
     return;
   }
 
   const wasDefault = addresses[index].is_default;
-  console.log(`Deleting address: ${JSON.stringify(addresses[index])}, was default: ${wasDefault}`);
+  debug.log(`Deleting address: ${JSON.stringify(addresses[index])}, was default: ${wasDefault}`);
 
   // Remove address
   addresses.splice(index, 1);
@@ -2031,7 +2032,7 @@ async function deleteAddress(index) {
   // If deleted address was default, set first address as new default
   if (wasDefault && addresses.length > 0) {
     addresses[0].is_default = true;
-    console.log(`Set new default: ${JSON.stringify(addresses[0])}`);
+    debug.log(`Set new default: ${JSON.stringify(addresses[0])}`);
   }
 
   // Save and re-render
@@ -2051,7 +2052,7 @@ async function setDefaultAddress(index) {
  * Save addresses to Firestore (optimistic update)
  */
 async function saveAddresses() {
-  console.log('💾 Saving addresses to Firestore:', addresses);
+  debug.log('💾 Saving addresses to Firestore:', addresses);
 
   const statusIcon = document.getElementById('status-addresses');
 
@@ -2059,7 +2060,7 @@ async function saveAddresses() {
     // Show loading spinner
     if (statusIcon) {
       statusIcon.className = 'profile-field__status profile-field__status--loading';
-      console.log('⏳ Showing loading spinner...');
+      debug.log('⏳ Showing loading spinner...');
     }
 
     // Optimistic update: Firestore first
@@ -2067,7 +2068,7 @@ async function saveAddresses() {
     const kennitalaKey = currentUserData.kennitala.replace(/-/g, '');
     const memberDocRef = doc(db, 'members', kennitalaKey);
 
-    console.log('📝 Firestore path: /members/' + kennitalaKey);
+    debug.log('📝 Firestore path: /members/' + kennitalaKey);
 
     // Update Firestore
     await updateDoc(memberDocRef, {
@@ -2075,17 +2076,17 @@ async function saveAddresses() {
       'profile.updated_at': new Date()
     });
 
-    console.log('✅ Addresses saved successfully to Firestore');
+    debug.log('✅ Addresses saved successfully to Firestore');
 
     // Show success checkmark
     if (statusIcon) {
       statusIcon.className = 'profile-field__status profile-field__status--success';
-      console.log('✓ Showing success checkmark');
+      debug.log('✓ Showing success checkmark');
 
       // Clear after 2 seconds
       setTimeout(() => {
         statusIcon.className = 'profile-field__status';
-        console.log('ℹ️ Cleared status icon');
+        debug.log('ℹ️ Cleared status icon');
       }, 2000);
     }
 
@@ -2096,15 +2097,15 @@ async function saveAddresses() {
 
     // Show success toast
     showToast(R.string.profile_address_saved || 'Heimilisfang uppfært', 'success');
-    console.log('🎉 Toast notification shown');
+    debug.log('🎉 Toast notification shown');
 
   } catch (error) {
-    console.error('❌ Failed to save addresses:', error);
+    debug.error('❌ Failed to save addresses:', error);
 
     // Show error icon
     if (statusIcon) {
       statusIcon.className = 'profile-field__status profile-field__status--error';
-      console.log('✕ Showing error icon');
+      debug.log('✕ Showing error icon');
 
       // Clear after 3 seconds
       setTimeout(() => {
@@ -2113,7 +2114,7 @@ async function saveAddresses() {
     }
 
     showToast(R.string.profile_address_save_error || 'Villa við vistun heimilisfangs', 'error');
-    console.log('⚠️ Error toast notification shown');
+    debug.log('⚠️ Error toast notification shown');
   }
 }
 
@@ -2242,7 +2243,7 @@ async function init() {
     }
 
     // Other errors
-    console.error('Profile page initialization failed:', error);
+    debug.error('Profile page initialization failed:', error);
   }
 }
 

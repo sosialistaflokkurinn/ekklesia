@@ -6,10 +6,15 @@
  */
 
 import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
+import { debug } from '../../js/utils/debug.js';
 import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { debug } from '../../js/utils/debug.js';
 import { getMemberByDjangoId, updateMember, validateMemberData } from './django-api.js';
+import { debug } from '../../js/utils/debug.js';
 import { formatPhone, maskKennitala, validatePhone } from '../../js/utils/format.js';
+import { debug } from '../../js/utils/debug.js';
 import { createMemberPageStates } from './utils/ui-states.js';
+import { debug } from '../../js/utils/debug.js';
 
 // Initialize Firebase services
 const auth = getFirebaseAuth();
@@ -114,7 +119,7 @@ const adminStrings = new Map();
     try {
       const response = await fetch('/admin/i18n/values-is/strings.xml');
       if (!response.ok) {
-        console.warn('Could not load admin i18n strings');
+        debug.warn('Could not load admin i18n strings');
         return;
       }
 
@@ -136,7 +141,7 @@ const adminStrings = new Map();
       // Apply strings to DOM
       applyStrings(R);
     } catch (error) {
-      console.warn('Error loading i18n strings:', error);
+      debug.warn('Error loading i18n strings:', error);
     }
   }
 
@@ -260,7 +265,7 @@ const adminStrings = new Map();
       djangoId = firestoreData.metadata?.django_id;
 
       if (!djangoId) {
-        console.error('No Django ID found for member');
+        debug.error('No Django ID found for member');
         uiStates.showError(adminStrings.get('member_edit_missing_django_id'));
         return;
       }
@@ -273,7 +278,7 @@ const adminStrings = new Map();
       uiStates.showContent();
 
     } catch (error) {
-      console.error('Error loading member:', error);
+      debug.error('Error loading member:', error);
       uiStates.showError(`${adminStrings.get('member_edit_loading_error')}: ${error.message}`);
     }
   }
@@ -329,7 +334,7 @@ const adminStrings = new Map();
 
     try {
       const updatedData = await updateMember(djangoId, formData);
-      console.log('Member updated successfully:', updatedData);
+      debug.log('Member updated successfully:', updatedData);
 
       // Show success message
       showSuccess();
@@ -340,7 +345,7 @@ const adminStrings = new Map();
       }, 2000);
 
     } catch (error) {
-      console.error('Error saving member:', error);
+      debug.error('Error saving member:', error);
       showFormError(`${adminStrings.get('member_edit_error')}: ${error.message}`);
     } finally {
       isSaving = false;

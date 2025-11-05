@@ -10,9 +10,13 @@
  */
 
 import { initAuthenticatedPage } from './page-init.js';
+import { debug } from './utils/debug.js';
 import { R } from '../i18n/strings-loader.js';
+import { debug } from './utils/debug.js';
 import { getElections } from './api/elections-api.js';
+import { debug } from './utils/debug.js';
 import { escapeHTML } from './utils/format.js';
+import { debug } from './utils/debug.js';
 
 // State
 let currentFilter = 'all';
@@ -64,7 +68,7 @@ async function init() {
     await loadElections();
 
   } catch (error) {
-    console.error('Error initializing elections page:', error);
+    debug.error('Error initializing elections page:', error);
     showError(R.string.error_load_elections);
   }
 }
@@ -124,7 +128,7 @@ async function loadElections() {
     hideLoading();
 
   } catch (error) {
-    console.error('Error loading elections:', error);
+    debug.error('Error loading elections:', error);
     showError(R.string.error_load_elections);
   }
 }

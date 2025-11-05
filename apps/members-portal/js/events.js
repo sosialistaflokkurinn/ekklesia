@@ -8,8 +8,11 @@
  */
 
 import { R } from '../i18n/strings-loader.js';
+import { debug } from './utils/debug.js';
 import { initAuthenticatedPage } from './page-init.js';
+import { debug } from './utils/debug.js';
 import { setTextContent, setInnerHTML } from '../ui/dom.js';
+import { debug } from './utils/debug.js';
 
 /**
  * Set page title and header text
@@ -144,7 +147,7 @@ async function loadEvents(filter = 'upcoming') {
     }
 
   } catch (error) {
-    console.error('Failed to load events:', error);
+    debug.error('Failed to load events:', error);
     showError(R.string.events_error || 'Villa kom upp');
   }
 }
@@ -189,10 +192,10 @@ async function init() {
     // Load initial events (upcoming)
     await loadEvents('upcoming');
 
-    console.log('✓ Events page initialized');
+    debug.log('✓ Events page initialized');
 
   } catch (error) {
-    console.error('Failed to initialize events page:', error);
+    debug.error('Failed to initialize events page:', error);
     showError(error.message);
   }
 }

@@ -9,10 +9,15 @@
  */
 
 import { initAuthenticatedPage } from './page-init.js';
+import { debug } from './utils/debug.js';
 import { R } from '../i18n/strings-loader.js';
+import { debug } from './utils/debug.js';
 import { getElectionById, submitVote, getResults } from './api/elections-api.js';
+import { debug } from './utils/debug.js';
 import { auth } from './auth.js';
+import { debug } from './utils/debug.js';
 import { escapeHTML } from './utils/format.js';
+import { debug } from './utils/debug.js';
 
 // State
 let currentElection = null;
@@ -93,7 +98,7 @@ async function init() {
     await loadElection(electionId);
 
   } catch (error) {
-    console.error('Error initializing election detail page:', error);
+    debug.error('Error initializing election detail page:', error);
     showError(R.string.error_load_election_detail);
   }
 }
@@ -116,7 +121,7 @@ async function loadElection(electionId) {
     hideLoading();
 
   } catch (error) {
-    console.error('Error loading election:', error);
+    debug.error('Error loading election:', error);
     showError(R.string.error_load_election_detail);
   }
 }
@@ -269,7 +274,7 @@ async function confirmVote() {
     }, 2000);
 
   } catch (error) {
-    console.error('Error submitting vote:', error);
+    debug.error('Error submitting vote:', error);
     showError(R.string.error_submit_vote);
   }
 }
@@ -313,7 +318,7 @@ async function showResults(electionId) {
     document.getElementById('results-section').classList.remove('u-hidden');
 
   } catch (error) {
-    console.error('Error loading results:', error);
+    debug.error('Error loading results:', error);
     showError(R.string.error_load_results);
   }
 }

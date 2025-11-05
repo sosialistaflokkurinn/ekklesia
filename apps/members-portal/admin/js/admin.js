@@ -7,10 +7,15 @@
 
 // Import from member portal public directory (two levels up from /admin/js/)
 import { initSession } from '../../session/init.js';
+import { debug } from '../../js/utils/debug.js';
 import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
+import { debug } from '../../js/utils/debug.js';
 import { collection, query, orderBy, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { debug } from '../../js/utils/debug.js';
 import { adminStrings } from './i18n/admin-strings-loader.js';
+import { debug } from '../../js/utils/debug.js';
 import { checkAdminAccess, calculateDuration } from './utils/admin-helpers.js';
+import { debug } from '../../js/utils/debug.js';
 
 // Initialize Firebase services
 const auth = getFirebaseAuth();
@@ -34,7 +39,7 @@ async function loadRecentSync() {
     const recentLog = querySnapshot.docs[0].data();
     displayRecentSync(recentLog);
   } catch (error) {
-    console.error('Failed to load recent sync:', error);
+    debug.error('Failed to load recent sync:', error);
     // Don't show error, just hide the card
     document.getElementById('recent-sync-card').classList.add('u-hidden');
   }
@@ -173,9 +178,9 @@ function setPageText(strings, userData) {
   document.getElementById('nav-logout').textContent = strings.nav_logout;
 
   // Welcome card - with personalized greeting
-  console.log('Building welcome message for:', userData.displayName);
+  debug.log('Building welcome message for:', userData.displayName);
   const welcomeMessage = buildWelcomeMessage(userData.displayName, strings);
-  console.log('Welcome message result:', welcomeMessage);
+  debug.log('Welcome message result:', welcomeMessage);
   document.getElementById('admin-welcome-title').textContent = welcomeMessage;
   document.getElementById('admin-welcome-subtitle').textContent = strings.admin_welcome_subtitle;
 
@@ -204,8 +209,8 @@ async function init() {
     // 2. Init session (loads member portal strings + authenticates)
     const { user, userData } = await initSession();
 
-    console.log('userData from initSession:', userData);
-    console.log('userData.roles:', userData.roles);
+    debug.log('userData from initSession:', userData);
+    debug.log('userData.roles:', userData.roles);
 
     // 3. Check admin access (developer role required)
     checkAdminAccess(userData);
@@ -216,10 +221,10 @@ async function init() {
     // 5. Load recent sync status
     await loadRecentSync();
 
-    console.log('✓ Admin dashboard initialized');
+    debug.log('✓ Admin dashboard initialized');
 
   } catch (error) {
-    console.error('Failed to initialize admin dashboard:', error);
+    debug.error('Failed to initialize admin dashboard:', error);
 
     // Check if unauthorized
     if (error.message.includes('Unauthorized')) {
@@ -235,7 +240,7 @@ async function init() {
     }
 
     // Other errors
-    console.error('Error loading admin dashboard:', error);
+    debug.error('Error loading admin dashboard:', error);
     alert(adminStrings.get('error_page_load').replace('%s', error.message));
   }
 }

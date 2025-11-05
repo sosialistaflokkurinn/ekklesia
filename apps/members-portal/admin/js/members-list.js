@@ -11,11 +11,17 @@
 
 // Import from member portal public directory
 import { initSession } from '../../session/init.js';
+import { debug } from '../../js/utils/debug.js';
 import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
+import { debug } from '../../js/utils/debug.js';
 import MembersAPI from './api/members-api.js';
+import { debug } from '../../js/utils/debug.js';
 import { formatPhone, maskKennitala } from '../../js/utils/format.js';
+import { debug } from '../../js/utils/debug.js';
 import { filterMembersByDistrict, getElectoralDistrictName } from './utils/electoral-districts.js';
+import { debug } from '../../js/utils/debug.js';
 import { createListPageStates } from './utils/ui-states.js';
+import { debug } from '../../js/utils/debug.js';
 
 // Initialize Firebase services
 const auth = getFirebaseAuth();
@@ -122,7 +128,7 @@ const adminStrings = new Map();
     try {
       const response = await fetch('/admin/i18n/values-is/strings.xml');
       if (!response.ok) {
-        console.warn('Could not load admin i18n strings');
+        debug.warn('Could not load admin i18n strings');
         return;
       }
 
@@ -144,7 +150,7 @@ const adminStrings = new Map();
       // Apply strings to DOM
       applyStrings(R);
     } catch (error) {
-      console.warn('Error loading i18n strings:', error);
+      debug.warn('Error loading i18n strings:', error);
       return;
     }
   }
@@ -152,7 +158,7 @@ const adminStrings = new Map();
   // Apply i18n strings to DOM elements
   function applyStrings(R) {
     if (!R || !R.string) {
-      console.warn('i18n strings not loaded');
+      debug.warn('i18n strings not loaded');
       return;
     }
 
@@ -334,7 +340,7 @@ const adminStrings = new Map();
       }
 
     } catch (error) {
-      console.error('Error loading members:', error);
+      debug.error('Error loading members:', error);
       uiStates.showError(error.message || adminStrings.get('members_error_loading'));
     } finally {
       isLoading = false;
@@ -372,7 +378,7 @@ const adminStrings = new Map();
         elements.countText.textContent = `${count} ${statusText} félagar`;
       }
     } catch (error) {
-      console.error('Error getting member count:', error);
+      debug.error('Error getting member count:', error);
       elements.countText.textContent = adminStrings.get('members_list_title') || 'Félagar';
     }
   }
@@ -428,7 +434,7 @@ const adminStrings = new Map();
       const editBtn = document.createElement('a');
       editBtn.href = `/admin/member-edit.html?id=${member.kennitala}`;
       editBtn.className = 'members-table__action';
-      editBtn.textContent = 'Breyta';
+      editBtn.textContent = adminStrings.get('members_btn_edit');
       actionsCell.appendChild(editBtn);
 
       row.appendChild(actionsCell);

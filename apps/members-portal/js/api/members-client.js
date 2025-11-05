@@ -16,7 +16,9 @@
  */
 
 import { getFirebaseFirestore, httpsCallable } from '../../firebase/app.js';
+import { debug } from './utils/debug.js';
 import { doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { debug } from './utils/debug.js';
 
 /**
  * Generic Firestore document updater
@@ -78,7 +80,7 @@ async function updateFirestoreMember(kennitala, updates) {
   // Use shared helper to update Firestore
   const fields = await updateFirestoreDoc(kennitala, firestoreUpdates);
 
-  console.log('✅ Firestore updated:', {
+  debug.log('✅ Firestore updated:', {
     kennitala: kennitala.replace(/-/g, ''),
     fields
   });
@@ -104,7 +106,7 @@ async function updateDjangoMember(kennitala, updates, region = 'europe-west2') {
     });
 
     // Log success without exposing full member data (PII protection)
-    console.log('✅ Django updated:', {
+    debug.log('✅ Django updated:', {
       success: result.data.success,
       django_id: result.data.django_id,
       updated_fields: result.data.updated_fields
@@ -112,7 +114,7 @@ async function updateDjangoMember(kennitala, updates, region = 'europe-west2') {
 
     return result.data;
   } catch (error) {
-    console.error('❌ Django update failed:', error);
+    debug.error('❌ Django update failed:', error);
     throw new Error(`Villa við uppfærslu Django gagnagrunns: ${error.message}`);
   }
 }
@@ -137,7 +139,7 @@ async function rollbackFirestore(kennitala, originalData) {
   // Use shared helper to update Firestore (don't add new timestamp on rollback)
   const fields = await updateFirestoreDoc(kennitala, rollbackUpdates, false);
 
-  console.log('🔄 Firestore rolled back:', {
+  debug.log('🔄 Firestore rolled back:', {
     kennitala: kennitala.replace(/-/g, ''),
     fields
   });
@@ -185,12 +187,12 @@ export async function updateMemberProfile(kennitala, updates, originalData, regi
     // Success! Both Firestore and Django updated
   } catch (error) {
     // Step 3: Django failed - Roll back Firestore changes
-    console.warn('⚠️ Rolling back Firestore due to Django failure');
+    debug.warn('⚠️ Rolling back Firestore due to Django failure');
 
     try {
       await rollbackFirestore(kennitalaNoHyphen, originalData);
     } catch (rollbackError) {
-      console.error('❌ Rollback failed:', rollbackError);
+      debug.error('❌ Rollback failed:', rollbackError);
       // Even if rollback fails, we still throw the original error
     }
 
@@ -216,7 +218,7 @@ async function updateFirestoreForeignAddress(kennitala, foreignAddress) {
   // Use shared helper to update Firestore
   await updateFirestoreDoc(kennitala, firestoreUpdates);
 
-  console.log('✅ Firestore foreign address updated:', {
+  debug.log('✅ Firestore foreign address updated:', {
     kennitala: kennitala.replace(/-/g, ''),
     country: foreignAddress.country
   });
@@ -245,7 +247,7 @@ async function updateDjangoForeignAddress(kennitala, foreignAddress, region = 'e
       foreign_address: foreignAddress
     });
 
-    console.log('✅ Django foreign address updated:', {
+    debug.log('✅ Django foreign address updated:', {
       success: result.data.success,
       django_id: result.data.django_id,
       method: result.data.method  // 'POST' or 'PATCH'
@@ -253,7 +255,7 @@ async function updateDjangoForeignAddress(kennitala, foreignAddress, region = 'e
 
     return result.data;
   } catch (error) {
-    console.error('❌ Django foreign address update failed:', error);
+    debug.error('❌ Django foreign address update failed:', error);
     throw new Error(`Villa við uppfærslu Django erlends heimilisfangs: ${error.message}`);
   }
 }
@@ -279,7 +281,7 @@ async function rollbackFirestoreForeignAddress(kennitala, originalForeignAddress
   // Use shared helper to update Firestore (don't add new timestamp on rollback)
   await updateFirestoreDoc(kennitala, rollbackUpdates, false);
 
-  console.log('🔄 Firestore foreign address rolled back:', {
+  debug.log('🔄 Firestore foreign address rolled back:', {
     kennitala: kennitala.replace(/-/g, '')
   });
 }
@@ -329,12 +331,12 @@ export async function updateMemberForeignAddress(kennitala, foreignAddress, orig
     // Success! Both Firestore and Django updated
   } catch (error) {
     // Step 3: Django failed - Roll back Firestore changes
-    console.warn('⚠️ Rolling back Firestore foreign address due to Django failure');
+    debug.warn('⚠️ Rolling back Firestore foreign address due to Django failure');
 
     try {
       await rollbackFirestoreForeignAddress(kennitalaNoHyphen, originalForeignAddress);
     } catch (rollbackError) {
-      console.error('❌ Foreign address rollback failed:', rollbackError);
+      debug.error('❌ Foreign address rollback failed:', rollbackError);
       // Even if rollback fails, we still throw the original error
     }
 

@@ -14,12 +14,19 @@
  */
 
 import { R } from '../i18n/strings-loader.js';
+import { debug } from './utils/debug.js';
 import { initAuthenticatedPage } from './page-init.js';
+import { debug } from './utils/debug.js';
 import { requireAuth, getUserData, signOut, AuthenticationError } from '../session/auth.js';
+import { debug } from './utils/debug.js';
 import { httpsCallable, getFirebaseAuth, getFirebaseFirestore } from '../firebase/app.js';
+import { debug } from './utils/debug.js';
 import { setTextContent, setInnerHTML, addEventListener, setDisabled, validateElements } from '../ui/dom.js';
+import { debug } from './utils/debug.js';
 import { formatPhone, normalizePhoneForComparison } from './utils/format.js';
+import { debug } from './utils/debug.js';
 import { updateMemberProfile } from './api/members-client.js';
+import { debug } from './utils/debug.js';
 
 /**
  * Required DOM elements for dashboard page
@@ -228,7 +235,7 @@ async function verifyMembership(user) {
       return false;
     }
   } catch (error) {
-    console.error('Membership verification error:', error);
+    debug.error('Membership verification error:', error);
 
     const html = `
       <div style="color: var(--color-error-text);">
@@ -245,7 +252,7 @@ async function verifyMembership(user) {
       const refreshed = await user.getIdTokenResult(true);
       updateRoleBadges(refreshed.claims.roles);
     } catch (refreshError) {
-      console.warn('Failed to refresh claims after verification error', refreshError);
+      debug.warn('Failed to refresh claims after verification error', refreshError);
     }
 
     throw error;
@@ -286,7 +293,7 @@ async function checkProfileDiscrepancies(userData) {
     const memberDoc = await getDoc(memberDocRef);
 
     if (!memberDoc.exists()) {
-      console.log('No member document found - skipping profile check');
+      debug.log('No member document found - skipping profile check');
       return;
     }
 
@@ -333,12 +340,12 @@ async function checkProfileDiscrepancies(userData) {
 
     // If discrepancies found, show modal
     if (discrepancies.length > 0) {
-      console.log('Profile discrepancies found:', discrepancies);
+      debug.log('Profile discrepancies found:', discrepancies);
       await showProfileUpdateModal(discrepancies, userData, memberData);
     }
 
   } catch (error) {
-    console.error('Error checking profile discrepancies:', error);
+    debug.error('Error checking profile discrepancies:', error);
     // Don't block dashboard load on error
   }
 }
@@ -399,8 +406,8 @@ async function showProfileUpdateModal(discrepancies, userData, memberData) {
 
         resolve(true);
       } catch (error) {
-        console.error('Failed to update profile:', error);
-        console.error('Error details:', {
+        debug.error('Failed to update profile:', error);
+        debug.error('Error details:', {
           message: error.message,
           stack: error.stack,
           name: error.name
@@ -509,7 +516,7 @@ async function init() {
     }
 
     // Other errors
-    console.error('Dashboard initialization failed:', error);
+    debug.error('Dashboard initialization failed:', error);
   }
 }
 

@@ -88,6 +88,7 @@
   <string name="members_empty">Engir félagar fundust</string>
   <string name="members_error">Villa kom upp við að hlaða félagaskrá</string>
   <string name="members_btn_view">Skoða</string>
+  <string name="members_btn_edit">Breyta</string>
   <string name="members_status_active">Virkur</string>
   <string name="members_status_inactive">Óvirkur</string>
   <string name="members_status_unknown">Óþekkt</string>

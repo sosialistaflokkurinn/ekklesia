@@ -7,8 +7,10 @@
 
 // Import Firestore from member portal
 import { getFirebaseFirestore } from '../../../firebase/app.js';
+import { debug } from '../../js/utils/debug.js';
 // Import Firestore v9 modular functions
 import {
+import { debug } from '../../js/utils/debug.js';
   collection,
   query,
   where,
@@ -108,7 +110,7 @@ const MembersAPI = {
       };
 
     } catch (error) {
-      console.error('Error fetching members:', error);
+      debug.error('Error fetching members:', error);
       throw new Error(`Failed to fetch members: ${error.message}`);
     }
   },
@@ -143,7 +145,7 @@ const MembersAPI = {
       return count;
 
     } catch (error) {
-      console.error('Error getting members count:', error);
+      debug.error('Error getting members count:', error);
       throw new Error(`Failed to get members count: ${error.message}`);
     }
   },
@@ -190,7 +192,7 @@ const MembersAPI = {
       };
 
     } catch (error) {
-      console.error('Error fetching member:', error);
+      debug.error('Error fetching member:', error);
       throw new Error(`Failed to fetch member: ${error.message}`);
     }
   }

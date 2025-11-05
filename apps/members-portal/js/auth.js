@@ -5,12 +5,15 @@
  */
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { debug } from './utils/debug.js';
 import {
+import { debug } from './utils/debug.js';
   getAuth,
   onAuthStateChanged as firebaseOnAuthStateChanged,
   signOut as firebaseSignOut
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import {
+import { debug } from './utils/debug.js';
   initializeAppCheck,
   ReCaptchaEnterpriseProvider,
   getToken as getAppCheckToken
@@ -39,9 +42,9 @@ try {
     provider: new ReCaptchaEnterpriseProvider('6LfDgOgrAAAAAIKly84yNibZNZsEGD31PnFQLYpM'),
     isTokenAutoRefreshEnabled: true  // Automatically refresh tokens
   });
-  console.log('✅ Firebase App Check initialized (reCAPTCHA Enterprise)');
+  debug.log('✅ Firebase App Check initialized (reCAPTCHA Enterprise)');
 } catch (error) {
-  console.warn('⚠️ Firebase App Check initialization failed (will degrade gracefully):', error);
+  debug.warn('⚠️ Firebase App Check initialization failed (will degrade gracefully):', error);
 }
 
 export { appCheck };
@@ -118,7 +121,7 @@ export async function getUserData(user) {
  */
 async function getAppCheckTokenValue() {
   if (!appCheck) {
-    console.warn('App Check not initialized, requests will not include App Check token');
+    debug.warn('App Check not initialized, requests will not include App Check token');
     return null;
   }
 
@@ -126,7 +129,7 @@ async function getAppCheckTokenValue() {
     const tokenResponse = await getAppCheckToken(appCheck);
     return tokenResponse.token;
   } catch (error) {
-    console.error('Failed to get App Check token:', error);
+    debug.error('Failed to get App Check token:', error);
     // Degrade gracefully - return null instead of throwing
     return null;
   }

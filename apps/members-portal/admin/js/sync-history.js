@@ -6,10 +6,15 @@
 
 // Import from member portal public directory (two levels up from /admin/js/)
 import { initSession } from '../../session/init.js';
+import { debug } from '../../js/utils/debug.js';
 import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
+import { debug } from '../../js/utils/debug.js';
 import { collection, query, orderBy, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { debug } from '../../js/utils/debug.js';
 import { adminStrings } from './i18n/admin-strings-loader.js';
+import { debug } from '../../js/utils/debug.js';
 import { checkAdminAccess, calculateDuration } from './utils/admin-helpers.js';
+import { debug } from '../../js/utils/debug.js';
 
 // Initialize Firebase services
 const auth = getFirebaseAuth();
@@ -159,10 +164,10 @@ async function loadHistory() {
     const logs = await fetchSyncLogs();
     renderHistoryTable(logs);
 
-    console.log(`✓ Loaded ${logs.length} sync logs`);
+    debug.log(`✓ Loaded ${logs.length} sync logs`);
 
   } catch (error) {
-    console.error('Failed to load sync history:', error);
+    debug.error('Failed to load sync history:', error);
     showHistoryError(error);
   }
 }
@@ -228,10 +233,10 @@ async function init() {
     // 6. Load sync history
     await loadHistory();
 
-    console.log('✓ Sync history page initialized');
+    debug.log('✓ Sync history page initialized');
 
   } catch (error) {
-    console.error('Failed to initialize sync history page:', error);
+    debug.error('Failed to initialize sync history page:', error);
 
     // Check if unauthorized
     if (error.message.includes('Unauthorized')) {
@@ -247,7 +252,7 @@ async function init() {
     }
 
     // Other errors
-    console.error('Error loading sync history page:', error);
+    debug.error('Error loading sync history page:', error);
     alert(adminStrings.get('error_page_load').replace('%s', error.message));
   }
 }

@@ -7,9 +7,13 @@
 
 // Import from member portal public directory (two levels up from /admin/js/)
 import { initSession } from '../../session/init.js';
+import { debug } from '../../js/utils/debug.js';
 import { getFirebaseAuth } from '../../firebase/app.js';
+import { debug } from '../../js/utils/debug.js';
 import { adminStrings } from './i18n/admin-strings-loader.js';
+import { debug } from '../../js/utils/debug.js';
 import { checkAdminAccess, calculateDuration } from './utils/admin-helpers.js';
+import { debug } from '../../js/utils/debug.js';
 
 // Initialize Firebase Auth
 const auth = getFirebaseAuth();
@@ -80,12 +84,12 @@ function showSyncInProgress() {
  * Show sync success with stats
  */
 function showSyncSuccess(result) {
-  console.log('showSyncSuccess called with result:', result);
+  debug.log('showSyncSuccess called with result:', result);
 
   const strings = adminStrings.strings;
   const stats = result.stats || {};
 
-  console.log('Stats extracted:', stats);
+  debug.log('Stats extracted:', stats);
 
   try {
     // Update title
@@ -98,14 +102,14 @@ function showSyncSuccess(result) {
     const progressEl = document.getElementById('sync-progress');
     if (progressEl) {
       progressEl.classList.add('u-hidden');
-      console.log('Progress hidden');
+      debug.log('Progress hidden');
     }
 
     // Show stats
     const statsContainer = document.getElementById('sync-stats');
     if (statsContainer) {
       statsContainer.classList.remove('u-hidden');
-      console.log('Stats container shown');
+      debug.log('Stats container shown');
     }
 
     // Set stat labels
@@ -130,7 +134,7 @@ function showSyncSuccess(result) {
     if (failedValue) failedValue.textContent = stats.failed || 0;
     if (durationValue) durationValue.textContent = calculateDuration(stats);
 
-    console.log('Stats updated:', {
+    debug.log('Stats updated:', {
       total: stats.total_members,
       synced: stats.synced,
       failed: stats.failed
@@ -140,7 +144,7 @@ function showSyncSuccess(result) {
     const actionsContainer = document.getElementById('sync-actions');
     if (actionsContainer) {
       actionsContainer.classList.remove('u-hidden');
-      console.log('Actions shown');
+      debug.log('Actions shown');
     }
 
     const viewHistoryBtn = document.getElementById('view-history-btn');
@@ -149,10 +153,10 @@ function showSyncSuccess(result) {
     if (viewHistoryBtn) viewHistoryBtn.textContent = strings.btn_view_history || 'Skoða keyrslusögu';
     if (backDashboardBtn) backDashboardBtn.textContent = strings.btn_back_to_dashboard || 'Aftur í yfirlit';
 
-    console.log('✓ showSyncSuccess completed successfully');
+    debug.log('✓ showSyncSuccess completed successfully');
 
   } catch (error) {
-    console.error('Error in showSyncSuccess:', error);
+    debug.error('Error in showSyncSuccess:', error);
     throw error;
   }
 }
@@ -193,13 +197,13 @@ async function handleSyncTrigger() {
     // Trigger sync
     const result = await triggerSync();
 
-    console.log('Sync completed:', result);
+    debug.log('Sync completed:', result);
 
     // Show success
     showSyncSuccess(result);
 
   } catch (error) {
-    console.error('Sync failed:', error);
+    debug.error('Sync failed:', error);
     showSyncError(error);
   }
 }
@@ -292,10 +296,10 @@ async function init() {
     // 5. Setup event listeners
     setupEventListeners();
 
-    console.log('✓ Sync members page initialized');
+    debug.log('✓ Sync members page initialized');
 
   } catch (error) {
-    console.error('Failed to initialize sync members page:', error);
+    debug.error('Failed to initialize sync members page:', error);
 
     // Check if unauthorized
     if (error.message.includes('Unauthorized')) {
@@ -311,7 +315,7 @@ async function init() {
     }
 
     // Other errors
-    console.error('Error loading sync members page:', error);
+    debug.error('Error loading sync members page:', error);
     alert(adminStrings.get('error_page_load').replace('%s', error.message));
   }
 }

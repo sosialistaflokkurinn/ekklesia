@@ -31,7 +31,7 @@ class AdminStringsLoader {
 
       return this.strings;
     } catch (error) {
-      console.error('Failed to load admin strings:', error);
+      debug.error('Failed to load admin strings:', error);
       throw error;
     }
   }

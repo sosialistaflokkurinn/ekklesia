@@ -6,7 +6,9 @@
  */
 
 import { getFirebaseAuth } from '../../firebase/app.js';
+import { debug } from '../../js/utils/debug.js';
 import { validatePhone } from '../../js/utils/format.js';
+import { debug } from '../../js/utils/debug.js';
 
 const auth = getFirebaseAuth();
 
@@ -57,7 +59,7 @@ async function getDjangoToken() {
     return cachedToken;
 
   } catch (error) {
-    console.error('getDjangoToken error:', error);
+    debug.error('getDjangoToken error:', error);
     throw error;
   }
 }
@@ -77,7 +79,7 @@ async function djangoRequest(endpoint, options = {}) {
     const url = `${DJANGO_API_BASE}${endpoint}`;
 
     // Debug logging
-    console.log('Django API Request:', {
+    debug.log('Django API Request:', {
       method: options.method || 'GET',
       url,
       body: options.body
@@ -94,13 +96,13 @@ async function djangoRequest(endpoint, options = {}) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Django API Error Response:', errorText);
+      debug.error('Django API Error Response:', errorText);
 
       let errorMessage;
 
       try {
         const errorJson = JSON.parse(errorText);
-        console.error('Django API Error JSON:', errorJson);
+        debug.error('Django API Error JSON:', errorJson);
         errorMessage = errorJson.detail || errorJson.message || JSON.stringify(errorJson);
       } catch (e) {
         errorMessage = `HTTP ${response.status}: ${response.statusText} - ${errorText}`;
@@ -112,7 +114,7 @@ async function djangoRequest(endpoint, options = {}) {
     return await response.json();
 
   } catch (error) {
-    console.error('Django API request error:', error);
+    debug.error('Django API request error:', error);
     throw error;
   }
 }
