@@ -1,0 +1,179 @@
+/**
+ * Toast Notification Component Styles
+ * 
+ * Unified toast notification styles for member portal and admin portal.
+ * Used by /js/components/toast.js
+ * 
+ * Features:
+ * - Slide-in animation from bottom
+ * - Auto-dismissible with fade-out
+ * - Success, error, info, warning variants
+ * - Accessible (ARIA roles, keyboard dismissal)
+ * 
+ * @requires CSS variables from global.css (--color-*, --spacing-*, --radius-*)
+ */
+
+/* Toast container (positioned at bottom-center) */
+.toast {
+  position: fixed;
+  bottom: var(--spacing-lg, 24px);
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 8px);
+  
+  min-width: 300px;
+  max-width: 500px;
+  padding: var(--spacing-md, 16px) var(--spacing-lg, 24px);
+  
+  background: white;
+  border-radius: var(--radius-lg, 8px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15),
+              0 0 0 1px rgba(0, 0, 0, 0.05);
+  
+  opacity: 0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  
+  z-index: 10000;
+  pointer-events: all;
+}
+
+/* Show state (slide up and fade in) */
+.toast--show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+/* Toast message text */
+.toast__message {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--color-gray-800, #1a202c);
+}
+
+/* Dismiss button */
+.toast__dismiss {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  
+  font-size: 20px;
+  line-height: 1;
+  color: var(--color-gray-500, #718096);
+  
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.toast__dismiss:hover {
+  background: var(--color-gray-100, #edf2f7);
+  color: var(--color-gray-700, #2d3748);
+}
+
+.toast__dismiss:focus {
+  outline: 2px solid var(--color-primary, #d32f2f);
+  outline-offset: 2px;
+}
+
+/* Success variant (green) */
+.toast--success {
+  border-left: 4px solid var(--color-success, #48bb78);
+  background: var(--color-success-bg, #c6f6d5);
+}
+
+.toast--success .toast__message {
+  color: var(--color-success-text, #22543d);
+}
+
+/* Error variant (orange/red) */
+.toast--error {
+  border-left: 4px solid var(--color-error, #ff9800);
+  background: var(--color-error-bg, #fff3e0);
+}
+
+.toast--error .toast__message {
+  color: var(--color-error-text, #e65100);
+}
+
+/* Info variant (blue) */
+.toast--info {
+  border-left: 4px solid var(--color-info, #63b3ed);
+  background: var(--color-info-bg, #ebf8ff);
+}
+
+.toast--info .toast__message {
+  color: var(--color-info-text, #2c5282);
+}
+
+/* Warning variant (yellow/orange) */
+.toast--warning {
+  border-left: 4px solid var(--color-warning, #f3b41b);
+  background: var(--color-warning-bg, #fffbeb);
+}
+
+.toast--warning .toast__message {
+  color: var(--color-warning-text, #7c2d12);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .toast {
+    bottom: var(--spacing-md, 16px);
+    left: var(--spacing-md, 16px);
+    right: var(--spacing-md, 16px);
+    min-width: auto;
+    max-width: none;
+    transform: translateX(0) translateY(100px);
+  }
+
+  .toast--show {
+    transform: translateX(0) translateY(0);
+  }
+}
+
+/* Stack multiple toasts */
+.toast + .toast {
+  bottom: calc(var(--spacing-lg, 24px) + 80px);
+}
+
+@media (max-width: 768px) {
+  .toast + .toast {
+    bottom: calc(var(--spacing-md, 16px) + 80px);
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .toast {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    transition: opacity 0.2s ease;
+  }
+
+  .toast--show {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  @media (max-width: 768px) {
+    .toast--show {
+      transform: translateX(0) translateY(0);
+    }
+  }
+}
