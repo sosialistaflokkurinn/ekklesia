@@ -285,10 +285,10 @@ gcloud functions deploy get_django_token \
 **Fix**:
 ```bash
 # Check user roles
-firebase auth:get 200978-3589 --project=ekklesia-prod-10-2025
+firebase auth:get 010190-1234 --project=ekklesia-prod-10-2025
 
 # Set admin role
-firebase auth:set-claims 200978-3589 '{"roles":["admin"]}' --project=ekklesia-prod-10-2025
+firebase auth:set-claims 010190-1234 '{"roles":["admin"]}' --project=ekklesia-prod-10-2025
 ```
 
 ### Issue: Function Returns 500 Error

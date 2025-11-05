@@ -29,12 +29,12 @@ This plan outlines how to implement the "Skoða" (View/Detail) and "Breyta" (Edi
    - "Skoða" and "Breyta" buttons (not functional yet)
 
 2. **Firestore Members Collection**:
-   - Document ID: kennitala (e.g., `3009805039`)
+   - Document ID: kennitala (e.g., `0101901234`)
    - Structure (from Django sync):
      ```json
      {
        "profile": {
-         "kennitala": "3009805039",
+         "kennitala": "0101901234",
          "name": "Andri Sigurðsson",
          "email": "email@example.com",
          "phone": "1234567",
@@ -296,7 +296,7 @@ curl -X PUT http://172.105.71.207/felagar/api/full/3445/ \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Andri Sigurðsson",
-    "ssn": "3009805039",
+    "ssn": "0101901234",
     "email": "newemail@example.com",
     "phone": "9876543"
   }'
