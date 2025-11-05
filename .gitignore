@@ -48,7 +48,10 @@ yarn-error.log*
 .eslintcache
 
 # --- IDEs & Editors ---
-.vscode/
+# .vscode/ - Now tracked in git (shared workspace settings)
+# .vscode/settings.json contains:
+#   - files.exclude for hiding symlinks
+#   - other shared project settings
 .idea/
 *.swp
 *.swo
