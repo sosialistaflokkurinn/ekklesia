@@ -22,6 +22,8 @@ import { setTextContent, setInnerHTML, addEventListener, setDisabled, validateEl
 import { formatPhone, normalizePhoneForComparison } from './utils/format.js';
 import { updateMemberProfile } from './api/members-client.js';
 import { createButton } from './components/button.js';
+import { showModal } from './components/modal.js';
+import { showToast } from './components/toast.js';
 
 /**
  * Required DOM elements for dashboard page
@@ -377,80 +379,91 @@ async function checkProfileDiscrepancies(userData) {
  * @param {Array} discrepancies - Array of field discrepancies
  * @param {Object} userData - Current user data from Kenni.is
  * @param {Object} memberData - Current member data from Firestore
- * @returns {Promise<void>}
+ * @returns {Promise<boolean>} Whether user confirmed update
  */
 async function showProfileUpdateModal(discrepancies, userData, memberData) {
-  // Set modal text using i18n
-  setTextContent('profile-update-modal-title', R.string.profile_update_title);
-  setTextContent('profile-update-modal-desc', R.string.profile_update_description);
-  setTextContent('btn-cancel-profile-update', R.string.profile_update_cancel);
-  setTextContent('btn-confirm-profile-update', R.string.profile_update_confirm);
-
   // Build discrepancies list HTML
-  const discrepanciesList = document.getElementById('profile-discrepancies-list');
-  discrepanciesList.innerHTML = discrepancies.map(d => `
-    <div class="profile-discrepancy">
-      <div class="profile-discrepancy__label">${d.label}:</div>
-      <div class="profile-discrepancy__values">
-        <div class="profile-discrepancy__old">
-          <strong>${R.string.profile_discrepancy_old_label}</strong> ${d.members}
+  const discrepanciesHtml = `
+    <p>${R.string.profile_update_description}</p>
+    <div class="profile-discrepancies">
+      ${discrepancies.map(d => `
+        <div class="profile-discrepancy">
+          <div class="profile-discrepancy__label">${d.label}:</div>
+          <div class="profile-discrepancy__values">
+            <div class="profile-discrepancy__old">
+              <strong>${R.string.profile_discrepancy_old_label}</strong> ${d.members}
+            </div>
+            <div class="profile-discrepancy__new">
+              <strong>${R.string.profile_discrepancy_new_label}</strong> ${d.kenni}
+            </div>
+          </div>
         </div>
-        <div class="profile-discrepancy__new">
-          <strong>${R.string.profile_discrepancy_new_label}</strong> ${d.kenni}
-        </div>
-      </div>
+      `).join('')}
     </div>
-  `).join('');
-
-  // Show modal
-  const modal = document.getElementById('profile-update-modal');
-  modal.style.display = 'block';
+  `;
 
   // Return promise that resolves when user makes choice
   return new Promise((resolve) => {
-    const btnConfirm = document.getElementById('btn-confirm-profile-update');
-    const btnCancel = document.getElementById('btn-cancel-profile-update');
+    let isUpdating = false;
 
-    const handleConfirm = async () => {
-      btnConfirm.disabled = true;
-      btnConfirm.textContent = R.string.profile_updating;
+    // Show modal with buttons
+    const modal = showModal({
+      title: R.string.profile_update_title,
+      content: discrepanciesHtml,
+      size: 'md',
+      closeOnOverlay: false, // Don't close on overlay click during update
+      buttons: [
+        {
+          text: R.string.profile_update_cancel,
+          onClick: () => {
+            if (!isUpdating) {
+              modal.close();
+              resolve(false);
+            }
+          }
+        },
+        {
+          text: R.string.profile_update_confirm,
+          primary: true,
+          onClick: async (event) => {
+            const button = event.target;
 
-      try {
-        // Update both Firestore and Django
-        await updateProfileData(userData, discrepancies);
+            // Prevent double-click
+            if (isUpdating) return;
 
-        // Close modal
-        modal.style.display = 'none';
+            isUpdating = true;
+            button.disabled = true;
+            button.textContent = R.string.profile_updating;
 
-        // Show success message
-        alert(R.string.profile_updated_success);
+            try {
+              // Update both Firestore and Django
+              await updateProfileData(userData, discrepancies, memberData);
 
-        resolve(true);
-      } catch (error) {
-        debug.error('Failed to update profile:', error);
-        // Stack trace already logged by debug.error() if debug mode is enabled
-        alert(R.string.profile_update_error.replace('%s', error.message || error));
-        btnConfirm.disabled = false;
-        btnConfirm.textContent = R.string.profile_update_confirm;
-        resolve(false);
-      }
+              // Close modal
+              modal.close();
 
-      // Cleanup
-      btnConfirm.removeEventListener('click', handleConfirm);
-      btnCancel.removeEventListener('click', handleCancel);
-    };
+              // Show success toast
+              showToast(R.string.profile_updated_success, 'success');
 
-    const handleCancel = () => {
-      modal.style.display = 'none';
-      resolve(false);
+              resolve(true);
+            } catch (error) {
+              debug.error('Failed to update profile:', error);
 
-      // Cleanup
-      btnConfirm.removeEventListener('click', handleConfirm);
-      btnCancel.removeEventListener('click', handleCancel);
-    };
+              // Show error toast
+              const errorMessage = R.string.profile_update_error.replace('%s', error.message || error);
+              showToast(errorMessage, 'error', { duration: 5000 });
 
-    btnConfirm.addEventListener('click', handleConfirm);
-    btnCancel.addEventListener('click', handleCancel);
+              // Re-enable button
+              button.disabled = false;
+              button.textContent = R.string.profile_update_confirm;
+              isUpdating = false;
+
+              resolve(false);
+            }
+          }
+        }
+      ]
+    });
   });
 }
 
