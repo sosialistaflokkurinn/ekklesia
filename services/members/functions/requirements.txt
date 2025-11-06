@@ -1,7 +1,7 @@
 firebase-admin==6.5.0
 firebase-functions==0.4.1
 PyJWT[crypto]==2.8.0
-requests==2.31.0
+requests==2.32.5
 google-cloud-storage==2.18.2
 google-cloud-secret-manager==2.16.4
 python-dotenv==1.0.1
