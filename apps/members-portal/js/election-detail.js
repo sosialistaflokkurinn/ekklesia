@@ -155,8 +155,7 @@ function displayElection(election) {
     descSection.style.display = 'block';
   }
 
-  // Question
-  document.getElementById('question-text').textContent = election.question;
+  // Note: Question is now displayed inside voting-form component
 
   // Show appropriate section based on status and voting state
   if (election.status === 'active' && !election.has_voted) {
