@@ -1,7 +1,7 @@
 # GitHub Issue Creation Checklist
 
 **Purpose:** Ensure all GitHub issues are properly structured, labeled, and linked.
-**Last Updated:** 2025-11-06
+**Last Updated:** 2025-11-06 (Updated with closing workflow and PII protection)
 **Status:** ✅ Active Reference
 
 ---
@@ -15,6 +15,7 @@ Before creating an issue, verify:
 - [ ] **Epic identified** - Know which Epic this belongs to (or standalone)
 - [ ] **Priority assessed** - Critical, High, Medium, or Low
 - [ ] **Type determined** - Bug, Enhancement, Task, User Story, or Epic
+- [ ] **No PII in examples** - Use fake data only (010190-2939, example@example.com)
 
 ---
 
@@ -334,6 +335,7 @@ After creating issue, verify:
 - [ ] **Estimate** - Included in body
 - [ ] **Relationships** - Linked (if blockers/dependencies)
 - [ ] **Assignee** - Set (if work started)
+- [ ] **No PII** - No real kennitalas, names, emails, phone numbers
 
 ---
 
@@ -357,9 +359,81 @@ EOF
 )"
 ```
 
-### Close Issue
+### Close Issue (Proper Workflow)
+
+**IMPORTANT:** When closing an issue, follow these steps:
+
+#### Step 1: Update Issue Body
+Update the issue body to reflect what was actually implemented:
+
 ```bash
-gh issue close [NUMBER] --comment "✅ Complete - [brief summary]"
+gh issue edit [NUMBER] --body "$(cat <<'EOF'
+## ✅ Completed Implementation
+
+**What Was Done:**
+- Implemented feature X
+- Fixed bug Y
+- Refactored component Z
+
+**Commits:**
+- abc1234 - Description
+- def5678 - Description
+
+**Files Modified:**
+- path/to/file1.js
+- path/to/file2.css
+
+**Acceptance Criteria Met:**
+- [x] Criterion 1 ✅
+- [x] Criterion 2 ✅
+- [x] Tests pass ✅
+
+**Related:**
+- Epic #XXX
+- Issue #YYY (dependency)
+
+**Original Estimate:** 2-3 hours
+**Actual Time:** 3 hours
+EOF
+)"
+```
+
+#### Step 2: Delete Implementation Comments
+Remove work-in-progress comments that are no longer relevant:
+
+```bash
+# List all comments
+gh api repos/sosialistaflokkurinn/ekklesia/issues/[NUMBER]/comments
+
+# Delete specific comment by ID
+gh api -X DELETE repos/sosialistaflokkurinn/ekklesia/issues/[NUMBER]/comments/[COMMENT_ID]
+```
+
+**Comments to Delete:**
+- ❌ "Starting work on this"
+- ❌ "WIP: First attempt"
+- ❌ "Need to test X before continuing"
+- ❌ Progress updates during implementation
+
+**Comments to Keep:**
+- ✅ Final summary/completion comment
+- ✅ Important decisions or discoveries
+- ✅ Links to related issues or discussions
+- ✅ Known limitations or future work
+
+#### Step 3: Close with Summary
+```bash
+gh issue close [NUMBER] --comment "$(cat <<'EOF'
+## ✅ Complete
+
+[Brief 1-2 sentence summary of what was accomplished]
+
+See updated issue body for full details.
+
+**Commits:** abc1234, def5678
+**Related:** Epic #XXX
+EOF
+)"
 ```
 
 ### Reopen Issue
@@ -496,6 +570,86 @@ As a [user type], I want [goal] so that [benefit].
 
 ---
 
+## 🔒 PII Protection Guidelines
+
+**CRITICAL:** Never include Personally Identifiable Information (PII) in GitHub issues.
+
+### What is PII?
+
+**Personal Information to NEVER include:**
+- ❌ Real Icelandic kennitalas (SSN)
+- ❌ Real names of members
+- ❌ Real email addresses
+- ❌ Real phone numbers
+- ❌ Real physical addresses
+- ❌ Real Firebase UIDs
+- ❌ Screenshots containing personal data
+
+### Safe Examples to Use
+
+**Always use fake data in examples:**
+
+```markdown
+# ✅ GOOD - Fake data
+- Kennitala: 010190-2939 (fake example)
+- Name: Jón Jónsson
+- Email: example@example.com
+- Phone: 555-1234
+- Address: Austurstræti 1, 101 Reykjavík
+- Firebase UID: abc123ExampleUserUID456
+
+# ❌ BAD - Real data
+- Kennitala: 150588-XXXX (real person)
+- Name: [Real member name]
+- Email: real.person@gmail.com
+```
+
+### Before Creating/Updating Issue
+
+**Checklist:**
+- [ ] No real kennitalas (use 010190-2939 or 010190-1234)
+- [ ] No real names (use Jón Jónsson, Anna Önnudóttir)
+- [ ] No real emails (use example@example.com)
+- [ ] No real phone numbers (use 555-1234)
+- [ ] No real addresses (use fictional locations)
+- [ ] No screenshots with personal data visible
+- [ ] Code examples use placeholder data
+
+### Pre-commit Hook Protection
+
+The repository has a pre-commit hook that scans for PII:
+
+```bash
+# Hook checks for:
+- Icelandic kennitala patterns (DDMMYY-NNNN)
+- Real email addresses (excludes example.com)
+- Phone number patterns
+- Long alphanumeric UIDs
+
+# If blocked:
+git commit --no-verify  # ONLY if you're sure it's safe
+```
+
+**When Hook Blocks:**
+1. Review the detected pattern
+2. Replace with fake example data
+3. Commit normally (without --no-verify)
+
+### Reporting PII Exposure
+
+If you accidentally commit PII:
+
+1. **Immediate:** Delete the commit/comment
+2. **Notify:** File urgent issue with "Security" label
+3. **Scrub:** Use `git filter-branch` or BFG to remove from history
+4. **Rotate:** Change any exposed credentials
+
+**Related:**
+- Pre-commit hook: `.git/hooks/pre-commit`
+- Security incidents: Label "Security"
+
+---
+
 ## 🚫 Common Mistakes
 
 ### ❌ Don't Do
@@ -518,6 +672,10 @@ As a [user type], I want [goal] so that [benefit].
 
 6. **Creating duplicate issues**
    - Search first!
+
+7. **Including PII (Personal Information)**
+   - Never include real kennitalas, names, emails, phone numbers
+   - Use fake example data: 010190-2939, example@example.com
 
 ---
 
