@@ -16,7 +16,7 @@
 
 /* Question Section */
 .voting-form__question {
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
 }
 
 .voting-form__question-title {
@@ -45,10 +45,11 @@
 }
 
 .voting-form__voting-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--color-gray-800);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-gray-900);
   margin-bottom: var(--spacing-lg);
+  letter-spacing: -0.01em;
 }
 
 /* Selection Helper (for multi-select) */
@@ -171,7 +172,7 @@
   }
 
   .voting-form__voting-title {
-    font-size: 1rem;
+    font-size: 1.25rem;
   }
 
   .voting-form__answer-option {
