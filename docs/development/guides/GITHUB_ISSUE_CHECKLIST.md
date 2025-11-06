@@ -1,8 +1,8 @@
 # GitHub Issue Creation Checklist
 
 **Purpose:** Ensure all GitHub issues are properly structured, labeled, and linked.
-**Last Updated:** 2025-11-06 (Updated with closing workflow and PII protection)
-**Status:** ✅ Active Reference
+**Last Updated:** 2025-11-06 (Updated with closing workflow, PII protection, and real-world examples)
+**Status:** ✅ Active Reference - Battle-tested on Issue #195
 
 ---
 
@@ -321,6 +321,72 @@ gh issue view 195
 - [x] Epic reference: #191
 - [x] Estimate: 2-3 hours
 
+### Step 4: Close Issue (When Work Complete)
+
+**After implementation is done:**
+
+```bash
+# Step 4a: Update issue body with actual implementation
+gh issue edit 195 --body "$(cat <<'EOF'
+## ✅ Completed Implementation
+
+**What Was Done:**
+- Created button component (244 lines)
+- Refactored 5 buttons across 3 pages
+- Implemented complex toggle pattern
+
+**Commits:**
+- 07650b3 - Button component system
+- c354a25 - Elections retry buttons
+- 131c5da - Events tab buttons
+
+**Files Modified:**
+- apps/members-portal/js/components/button.js (created)
+- apps/members-portal/js/dashboard.js (modified)
+- [... 7 more files]
+
+**Acceptance Criteria Met:**
+- [x] createButton() function created ✅
+- [x] Component documented ✅
+- [x] All variants work ✅
+
+**Estimate:** 2-3 hours → **Actual:** 4 hours
+
+**Related:** Epic #191
+EOF
+)"
+
+# Step 4b: List and identify WIP comments to delete
+gh api repos/sosialistaflokkurinn/ekklesia/issues/195/comments \
+  --jq '.[] | {id: .id, body: .body | split("\n")[0]}'
+
+# Step 4c: Delete WIP comments (requires issue to be open)
+# Note: Issue #195 was already closed, so reopen first
+gh issue reopen 195 --comment "Reopening to clean up comments"
+gh api -X DELETE repos/sosialistaflokkurinn/ekklesia/issues/comments/3498998957
+gh api -X DELETE repos/sosialistaflokkurinn/ekklesia/issues/comments/3499019489
+
+# Step 4d: Close with final summary
+gh issue close 195 --comment "$(cat <<'EOF'
+## ✅ Complete
+
+Created reusable button component and refactored 5 functional buttons.
+All hardcoded "Loading..." buttons eliminated.
+
+See updated issue body for full details.
+
+**Commits:** 07650b3, c354a25, 131c5da
+**Related:** Epic #191
+EOF
+)"
+```
+
+**Result:** Issue #195 properly closed with:
+- ✅ Body reflects actual implementation
+- ✅ WIP comments deleted
+- ✅ Clean final summary
+- ✅ Complete audit trail preserved
+
 ---
 
 ## ✅ Post-Creation Checklist
@@ -401,27 +467,40 @@ EOF
 #### Step 2: Delete Implementation Comments
 Remove work-in-progress comments that are no longer relevant:
 
-```bash
-# List all comments
-gh api repos/sosialistaflokkurinn/ekklesia/issues/[NUMBER]/comments
+**IMPORTANT:** Comment deletion only works when issue is **OPEN**. If issue is already closed:
 
-# Delete specific comment by ID
-gh api -X DELETE repos/sosialistaflokkurinn/ekklesia/issues/[NUMBER]/comments/[COMMENT_ID]
+```bash
+# 1. Reopen issue first
+gh issue reopen [NUMBER] --comment "Reopening to clean up comments per checklist"
+
+# 2. List all comments and their IDs
+gh api repos/sosialistaflokkurinn/ekklesia/issues/[NUMBER]/comments \
+  --jq '.[] | {id: .id, created: .created_at, body: .body | split("\n")[0:2] | join(" ")}'
+
+# 3. Delete specific WIP comments by ID
+gh api -X DELETE repos/sosialistaflokkurinn/ekklesia/issues/comments/[COMMENT_ID]
+
+# 4. Verify deletion
+gh issue view [NUMBER] --comments
 ```
 
 **Comments to Delete:**
 - ❌ "Starting work on this"
 - ❌ "WIP: First attempt"
 - ❌ "Need to test X before continuing"
-- ❌ Progress updates during implementation
+- ❌ Progress updates during implementation ("Progress Update - X Complete")
 
 **Comments to Keep:**
 - ✅ Final summary/completion comment
 - ✅ Important decisions or discoveries
 - ✅ Links to related issues or discussions
 - ✅ Known limitations or future work
+- ✅ Epic references
 
 #### Step 3: Close with Summary
+
+**Note:** If you reopened the issue in Step 2 to delete comments, this will close it again with proper summary.
+
 ```bash
 gh issue close [NUMBER] --comment "$(cat <<'EOF'
 ## ✅ Complete
@@ -434,6 +513,20 @@ See updated issue body for full details.
 **Related:** Epic #XXX
 EOF
 )"
+```
+
+**Example Summary Format:**
+```markdown
+## ✅ Complete
+
+Created reusable button component and refactored 5 functional buttons
+across dashboard, elections, and events pages. All hardcoded "Loading..."
+buttons eliminated.
+
+**See updated issue body for full implementation details.**
+
+**Commits:** 07650b3, c354a25, 131c5da
+**Related:** Epic #191
 ```
 
 ### Reopen Issue
