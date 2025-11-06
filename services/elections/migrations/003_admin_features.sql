@@ -37,6 +37,16 @@ COMMENT ON COLUMN elections.voting_type IS 'Voting type: single-choice (radio bu
 ALTER TABLE elections
 ADD COLUMN IF NOT EXISTS max_selections INTEGER DEFAULT 1;
 
+-- Fix existing data: Set max_selections = 1 for elections with 0 answers
+UPDATE elections
+SET max_selections = 1
+WHERE jsonb_array_length(answers) = 0;
+
+-- Fix existing data: Set max_selections = answer_count for elections where max > answer_count
+UPDATE elections
+SET max_selections = jsonb_array_length(answers)
+WHERE max_selections > jsonb_array_length(answers);
+
 ALTER TABLE elections
 ADD CONSTRAINT valid_max_selections CHECK (
     max_selections >= 1 AND max_selections <= jsonb_array_length(answers)
@@ -82,10 +92,15 @@ COMMENT ON COLUMN elections.updated_by IS 'Firebase UID of user who last modifie
 -- Update Existing Status Constraint
 -- =====================================================
 
+-- Migrate old 'open' status to 'published' (if any exist)
+UPDATE elections
+SET status = 'published'
+WHERE status = 'open';
+
 -- Remove the old constraint that included 'deleted' status
 ALTER TABLE elections DROP CONSTRAINT IF EXISTS valid_status;
 
--- Add new constraint without 'deleted' (we use hidden flag instead)
+-- Add new constraint without 'deleted' and 'open' (we use hidden flag instead of deleted, and 'published' instead of 'open')
 ALTER TABLE elections
 ADD CONSTRAINT valid_status CHECK (
     status IN ('draft', 'published', 'paused', 'closed', 'archived')
