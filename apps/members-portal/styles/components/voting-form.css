@@ -39,7 +39,7 @@
 /* Voting Section */
 .voting-form__voting {
   background-color: var(--color-gray-50);
-  padding: var(--spacing-md);
+  padding: var(--spacing-sm);
   border-radius: var(--radius-md);
   margin-bottom: var(--spacing-lg);
 }
@@ -160,7 +160,7 @@
 /* Responsive */
 @media (max-width: 768px) {
   .voting-form__voting {
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm);
   }
 
   .voting-form__question-title {
