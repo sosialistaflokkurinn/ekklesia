@@ -17,7 +17,7 @@ import { getElectionById } from './api/elections-api.js';
 import { escapeHTML } from './utils/format.js';
 
 // Version check - REMOVE AFTER DEBUGGING
-console.log('🔵 election-detail.js VERSION 20251106-4 loaded');
+console.log('🔵 election-detail.js VERSION 20251106-5 loaded');
 
 // State
 let currentElection = null;
@@ -169,16 +169,27 @@ function displayElection(election) {
  * Display voting section with answer options
  */
 function displayVotingSection(election) {
+  console.log('🟢 displayVotingSection called', { election_id: election.id, answers_count: election.answers.length });
+
   const votingSection = document.getElementById('voting-section');
   const answerOptionsContainer = document.getElementById('answer-options');
   const voteButton = document.getElementById('vote-button');
   const votingForm = document.getElementById('voting-form');
 
+  console.log('🟢 DOM elements found:', {
+    votingSection: !!votingSection,
+    answerOptionsContainer: !!answerOptionsContainer,
+    voteButton: !!voteButton,
+    votingForm: !!votingForm
+  });
+
   // Clear previous options
   answerOptionsContainer.innerHTML = '';
 
   // Create radio buttons for each answer
+  console.log('🟢 Creating radio buttons for', election.answers.length, 'answers');
   election.answers.forEach((answer, index) => {
+    console.log(`🟢 Creating radio button ${index}:`, { id: answer.id, text: answer.text });
     const optionDiv = document.createElement('div');
     optionDiv.className = 'election-detail__answer-option';
 
