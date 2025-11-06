@@ -3,7 +3,7 @@
  * Multi-step form for creating elections
  */
 
-import { auth } from '../../firebase/firebase-init.js';
+import { auth } from '../../firebase/app.js';
 import { getCurrentUserRole, requireRole } from './rbac.js';
 import { R } from '../../i18n/strings-loader.js';
 
