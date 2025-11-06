@@ -85,14 +85,16 @@
 
 .btn--outline {
   position: relative;
-  background: white;
-  color: var(--color-primary);  /* Red text */
+  background: var(--color-primary-pale);  /* Very light pink - visible on white */
+  color: var(--color-primary-deep);  /* Darker red for better contrast */
   border: 2px solid var(--color-primary);  /* Red border */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);  /* Subtle shadow for depth */
 }
 
 .btn--outline:hover:not(:disabled) {
-  background: var(--color-primary-pale);  /* Very light pink on hover */
+  background: white;  /* Lighter on hover for "lift" effect */
   border-color: var(--color-primary-dark);
+  color: var(--color-primary-dark);
   box-shadow: var(--shadow-primary);
   transform: translateY(-1px);
 }
