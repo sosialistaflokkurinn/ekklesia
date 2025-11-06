@@ -104,6 +104,97 @@ toggleButtonLoading(saveBtn, false);
 
 ---
 
+### 🔘 button.js - Button Factory
+
+Unified button creation system with consistent styling and behavior.
+
+**File**: `/js/components/button.js` (262 lines)
+**CSS**: `/styles/components/button.css` (123 lines)
+
+**Usage**:
+```javascript
+import { createButton, createOutlineButton } from '../../js/components/button.js';
+
+// Primary button with click handler
+const saveButton = createButton({
+  text: 'Save Changes',
+  variant: 'primary',
+  onClick: () => saveData()
+});
+container.appendChild(saveButton.element);
+
+// Outline button with loading state
+const verifyButton = createButton({
+  text: 'Verify Membership',
+  variant: 'outline',
+  onClick: async () => {
+    verifyButton.setLoading(true, 'Verifying...');
+    await verifyMembership();
+    verifyButton.setLoading(false);
+  }
+});
+
+// Convenience functions
+const primaryBtn = createPrimaryButton({ text: 'Primary' });
+const secondaryBtn = createSecondaryButton({ text: 'Secondary' });
+const outlineBtn = createOutlineButton({ text: 'Outline' });
+const dangerBtn = createDangerButton({ text: 'Delete' });
+
+// Small danger button
+const deleteBtn = createButton({
+  text: 'Delete',
+  variant: 'danger',
+  size: 'small'
+});
+
+// Button API methods
+saveButton.disable();
+saveButton.enable();
+saveButton.setText('Updated Text');
+saveButton.destroy();  // Cleanup when removing
+```
+
+**Features**:
+- 4 variants: primary (red), secondary (light red), outline (white bg + red border), danger (dark red)
+- 3 sizes: small, medium, large
+- Built-in loading state management
+- Automatic event listener cleanup
+- BEM class structure
+- Type-safe button types (button, submit, reset)
+
+**Variants**:
+| Variant | Background | Text | Border | Use Case |
+|---------|------------|------|--------|----------|
+| `primary` | Red | White | None | Main actions (default) |
+| `secondary` | Light Red | White | None | Secondary actions |
+| `outline` | White | Red | Red 2px | Tertiary actions |
+| `danger` | Dark Red | White | None | Destructive actions |
+
+**HTML Integration**:
+```html
+<link rel="stylesheet" href="/styles/components/button.css">
+```
+
+**Migration from Hardcoded HTML**:
+```html
+<!-- Before: Hardcoded HTML button -->
+<button class="btn btn--outline" id="verify-btn">Loading...</button>
+```
+```javascript
+// Before: Update text later
+setTextContent('verify-btn', R.string.btn_verify);
+```
+```javascript
+// After: Create button with JS
+const verifyBtn = createButton({
+  text: R.string.btn_verify,
+  variant: 'outline'
+});
+container.appendChild(verifyBtn.element);
+```
+
+---
+
 ### 💬 modal.js - Dialog System
 
 Unified modal/dialog system for confirmations, forms, and alerts.
@@ -201,6 +292,7 @@ export async function checkAdminAccess() {
 │   ├── README.md            # This file
 │   ├── toast.js             # Notification system (140 lines)
 │   ├── status.js            # Status feedback (182 lines)
+│   ├── button.js            # 🆕 Button factory (262 lines)
 │   └── modal.js             # 🆕 Dialog system (315 lines)
 │
 ├── core/                    # Core functionality
@@ -222,6 +314,7 @@ export async function checkAdminAccess() {
 
 /styles/components/
 ├── toast.css                # Toast notification styles (179 lines)
+├── button.css               # Button styles (123 lines)
 └── modal.css                # 🆕 Modal dialog styles (240 lines)
 ```
 
@@ -267,8 +360,9 @@ showToast('Profile updated!', 'success');
 |-----------|-------------|----------------------|-------------|
 | toast.js | profile.js, member-edit.js, (future admin pages) | ~40 lines | ~120 lines |
 | status.js | profile.js, (future admin pages) | ~25 lines | ~75 lines |
+| button.js | dashboard.html, elections.html, events.html, profile.html | ~10 lines | ~90 lines |
 | modal.js | (replacing inline confirms) | ~30 lines | ~90 lines |
-| **Total** | **Multiple files** | **~95 lines** | **~285 lines** |
+| **Total** | **Multiple files** | **~105 lines** | **~375 lines** |
 
 **Additional Benefits**:
 - Easier to add new features (e.g., toast stacking, custom icons)
@@ -318,6 +412,20 @@ Keep code local when:
 - [ ] Button loading state disables button
 - [ ] Button text changes to "Saving..."
 - [ ] Button restores original text after completion
+
+**Button Component**:
+- [ ] Primary button: Red background + white text
+- [ ] Secondary button: Light red background + white text
+- [ ] Outline button: White background + red text + red border
+- [ ] Danger button: Dark red background + white text
+- [ ] Small size renders correctly
+- [ ] Large size renders correctly
+- [ ] Loading state: disables button + changes text
+- [ ] Loading state: restores original text after complete
+- [ ] disable() / enable() methods work
+- [ ] setText() updates button text
+- [ ] onClick handler fires
+- [ ] destroy() removes event listeners
 
 **Modal Component**:
 - [ ] Confirmation dialog shows with correct title/message

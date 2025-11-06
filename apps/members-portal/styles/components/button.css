@@ -41,6 +41,7 @@
 
 .btn:disabled {
   background: var(--color-gray-300);
+  color: var(--color-gray-600);  /* Dark gray text on light gray bg - GOOD contrast */
   cursor: not-allowed;
   opacity: 0.6;
 }
@@ -64,12 +65,12 @@
 }
 
 .btn--secondary {
-  background: var(--color-error-border);
+  background: var(--color-primary-light);  /* Lighter red - matches design system */
+  color: white;
 }
 
 .btn--secondary:hover {
-  background: var(--color-error-border);
-  filter: brightness(0.9);
+  background: var(--color-primary);  /* Standard red on hover */
 }
 
 .btn--danger {
@@ -84,14 +85,14 @@
 
 .btn--outline {
   position: relative;
-  background: var(--color-primary);
-  color: white;
-  border: 1px solid var(--color-border-subtle);
+  background: white;
+  color: var(--color-primary);  /* Red text */
+  border: 2px solid var(--color-primary);  /* Red border */
 }
 
 .btn--outline:hover:not(:disabled) {
-  background: var(--color-primary-dark);
-  border-color: var(--color-border-subtle-hover);
+  background: var(--color-primary-pale);  /* Very light pink on hover */
+  border-color: var(--color-primary-dark);
   box-shadow: var(--shadow-primary);
   transform: translateY(-1px);
 }

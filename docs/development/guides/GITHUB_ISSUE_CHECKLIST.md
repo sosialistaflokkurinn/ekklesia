@@ -1,0 +1,534 @@
+# GitHub Issue Creation Checklist
+
+**Purpose:** Ensure all GitHub issues are properly structured, labeled, and linked.
+**Last Updated:** 2025-11-06
+**Status:** ✅ Active Reference
+
+---
+
+## 📋 Pre-Creation Checklist
+
+Before creating an issue, verify:
+
+- [ ] **Issue doesn't already exist** - Search existing issues
+- [ ] **Clear scope** - Issue is focused and actionable
+- [ ] **Epic identified** - Know which Epic this belongs to (or standalone)
+- [ ] **Priority assessed** - Critical, High, Medium, or Low
+- [ ] **Type determined** - Bug, Enhancement, Task, User Story, or Epic
+
+---
+
+## 🆕 Issue Creation Steps
+
+### 1. Create Issue with Title
+
+**Command:**
+```bash
+gh issue create --repo sosialistaflokkurinn/ekklesia \
+  --title "type(scope): brief description" \
+  --body "$(cat <<'EOF'
+[Issue body - see template below]
+EOF
+)"
+```
+
+**Title Format Examples:**
+- `fix(auth): Login redirect fails after session timeout`
+- `feat(elections): Add multi-choice voting support`
+- `refactor(dashboard): Use reusable modal component`
+- `docs(api): Document Elections API endpoints`
+- `chore(cleanup): Remove obsolete member-detail files`
+
+**Title Types:**
+- `fix` - Bug fix
+- `feat` - New feature
+- `refactor` - Code improvement (no behavior change)
+- `docs` - Documentation only
+- `chore` - Maintenance (cleanup, deps, build)
+- `test` - Testing
+- `perf` - Performance improvement
+- `style` - Formatting, CSS
+
+---
+
+### 2. Issue Body Template
+
+```markdown
+## Problem / Current State
+
+[Describe what's wrong or what's missing]
+
+**Example:**
+- Current behavior: X happens
+- Expected behavior: Y should happen
+- Impact: Z users affected
+
+## Proposed Solution
+
+[Clear description of what needs to be done]
+
+**Implementation:**
+1. Step one
+2. Step two
+3. Step three
+
+## Files to Modify/Create
+
+- `path/to/file1.js` - What changes
+- `path/to/file2.css` - What changes
+
+## Acceptance Criteria
+
+- [ ] Criterion 1
+- [ ] Criterion 2
+- [ ] Tests pass
+- [ ] Documentation updated
+
+## Benefits
+
+1. ✅ Benefit one
+2. ✅ Benefit two
+
+---
+
+**Related:** [Epic #XXX | Issue #YYY]
+**Priority:** [Critical | High | Medium | Low]
+**Estimate:** [X hours / X days]
+**Status:** [Planning | In Progress | Blocked | Complete]
+```
+
+---
+
+### 3. Add Labels
+
+**Required Labels:**
+
+```bash
+# Add type label (choose ONE)
+gh issue edit [NUMBER] --add-label "Bug"           # Something broken
+gh issue edit [NUMBER] --add-label "Enhancement"   # New feature/improvement
+gh issue edit [NUMBER] --add-label "Task"          # Work item
+gh issue edit [NUMBER] --add-label "User Story"    # User-facing feature
+gh issue edit [NUMBER] --add-label "Epic"          # Collection of stories
+
+# Add area label (choose ONE or MORE)
+gh issue edit [NUMBER] --add-label "Frontend"      # UI/JS work
+gh issue edit [NUMBER] --add-label "Backend"       # Server/API work
+gh issue edit [NUMBER] --add-label "DevOps"        # Infrastructure
+gh issue edit [NUMBER] --add-label "Security"      # Security-related
+gh issue edit [NUMBER] --add-label "UI"            # Design/CSS
+
+# Add priority label (choose ONE)
+gh issue edit [NUMBER] --add-label "Priority: Critical"  # Production blocker
+gh issue edit [NUMBER] --add-label "Priority: High"      # Important fix
+gh issue edit [NUMBER] --add-label "Priority: Medium"    # Should fix soon
+gh issue edit [NUMBER] --add-label "Priority: Low"       # Nice to have
+```
+
+**Available Labels:**
+| Label | Description | When to Use |
+|-------|-------------|-------------|
+| `Bug` | Something broken | User-facing issue, error, crash |
+| `Enhancement` | New feature/improvement | Adding functionality |
+| `Task` | Work item | Part of larger epic |
+| `User Story` | User-facing feature | Delivers user value |
+| `Epic` | Collection of stories | Multiple related issues |
+| `Frontend` | UI/JS work | HTML, CSS, JavaScript |
+| `Backend` | Server/API work | Node.js, Python, Cloud Functions |
+| `DevOps` | Infrastructure | Deployment, CI/CD, GCP |
+| `Security` | Security-related | Auth, vulnerabilities, hardening |
+| `UI` | Design/CSS | Visual design, styling |
+| `Firebase` | Firebase services | Auth, Firestore, Functions |
+| `Blocked` | Cannot proceed | Waiting on dependency |
+| `Verified` | Fix verified | Test evidence provided |
+| `Partial` | Partially implemented | Simplified or deferred |
+| `Superseded` | Replaced by different approach | Architecture change |
+| `Won't Do` | Intentional no-implement | Documented decision |
+
+---
+
+### 4. Add Milestone
+
+**Command:**
+```bash
+gh issue edit [NUMBER] --milestone "Phase 5: Events and Elections Services"
+```
+
+**Available Milestones:**
+- `Phase 5: Events and Elections Services` - Current phase (Epic #24, #43, #87, #192)
+- `Phase 6: Production Readiness` - Future (load testing, monitoring)
+- `Backlog` - Future work, not scheduled
+
+**When to Use Milestone:**
+- ✅ Issue is part of current/planned work
+- ✅ Issue has clear delivery timeline
+- ❌ Exploratory/research issues (no milestone until scoped)
+- ❌ Won't Do / Superseded issues
+
+---
+
+### 5. Link to Epic
+
+**Method 1: In Issue Body**
+```markdown
+**Related:** Epic #191 (Component Library)
+```
+
+**Method 2: As Comment**
+```bash
+gh issue comment [NUMBER] --body "**Related:** Epic #191 (Component Library)"
+```
+
+**Method 3: In Epic Body**
+Update the Epic issue to list sub-issues:
+```markdown
+## Sub-Issues
+- #193 - Dashboard modal refactoring
+- #195 - createButton() component
+- #196 - Button color fixes ✅
+```
+
+**Epic Mapping:**
+| Epic | Description | Active Issues |
+|------|-------------|---------------|
+| #192 | Admin Elections Dashboard | In progress |
+| #191 | Component Library | Closed (but ongoing work) |
+| #186 | Member Voting Experience | In progress |
+| #165 | Production Infrastructure | Blocked |
+| #159 | Foreign Address Management | Future |
+
+---
+
+### 6. Add Projects (Optional)
+
+**Current Projects:**
+- None active (GitHub Projects not in use)
+
+**Skip this step** unless project board is created.
+
+---
+
+### 7. Assign Owner (Optional)
+
+**Command:**
+```bash
+gh issue edit [NUMBER] --add-assignee @gudrodur
+```
+
+**When to Assign:**
+- ✅ Work has started (mark in-progress)
+- ✅ Specific person is responsible
+- ❌ Issue is in backlog (leave unassigned)
+
+---
+
+### 8. Add Estimate (In Body)
+
+**Format in Issue Body:**
+```markdown
+**Estimate:** 2-3 hours
+**Estimate:** 1-2 days
+**Estimate:** 1 week
+```
+
+**Guidelines:**
+- Small task: < 4 hours
+- Medium task: 1-2 days
+- Large task: 3-5 days
+- Epic: Weeks (break down into smaller issues)
+
+---
+
+### 9. Link Relationships (Optional)
+
+**Blockers:**
+```bash
+gh issue comment [NUMBER] --body "Blocked by: #XXX"
+```
+
+**Dependencies:**
+```bash
+gh issue comment [NUMBER] --body "Depends on: #XXX, #YYY"
+```
+
+**Related Work:**
+```bash
+gh issue comment [NUMBER] --body "Related: #XXX (similar issue)"
+```
+
+**Duplicates:**
+```bash
+gh issue close [NUMBER] --comment "Duplicate of #XXX"
+```
+
+---
+
+## 📊 Complete Example
+
+**Scenario:** Create issue for button component
+
+### Step 1: Create Issue
+```bash
+gh issue create --repo sosialistaflokkurinn/ekklesia \
+  --title "component: Create reusable button component (createButton)" \
+  --body "$(cat <<'EOF'
+## Problem
+
+Buttons are inconsistently created across the app.
+
+## Proposed Solution
+
+Create `/js/components/button.js` with `createButton()` factory function.
+
+## Files to Create
+
+- `apps/members-portal/js/components/button.js`
+
+## Acceptance Criteria
+
+- [ ] createButton() function created
+- [ ] Component documented
+- [ ] Loading state works
+- [ ] All variants render correctly
+
+**Related:** Epic #191 (Component Library)
+**Priority:** Medium
+**Estimate:** 2-3 hours
+EOF
+)" \
+  --label "Enhancement,Frontend" \
+  --milestone "Phase 5: Events and Elections Services"
+```
+
+**Result:** Issue #195 created
+
+### Step 2: Add Epic Reference (if not in body)
+```bash
+gh issue comment 195 --body "**Related:** Epic #191 (Component Library)"
+```
+
+### Step 3: Verify Metadata
+```bash
+gh issue view 195
+```
+
+**Check:**
+- [x] Title follows format
+- [x] Body has Problem, Solution, Acceptance Criteria
+- [x] Labels: Enhancement, Frontend
+- [x] Milestone: Phase 5
+- [x] Epic reference: #191
+- [x] Estimate: 2-3 hours
+
+---
+
+## ✅ Post-Creation Checklist
+
+After creating issue, verify:
+
+- [ ] **Title** - Clear, follows format
+- [ ] **Body** - Complete (Problem, Solution, Acceptance Criteria)
+- [ ] **Labels** - Type + Area + Priority
+- [ ] **Milestone** - Assigned (if applicable)
+- [ ] **Epic Link** - Referenced in body or comment
+- [ ] **Estimate** - Included in body
+- [ ] **Relationships** - Linked (if blockers/dependencies)
+- [ ] **Assignee** - Set (if work started)
+
+---
+
+## 🔄 Updating Existing Issues
+
+### Add Labels
+```bash
+gh issue edit [NUMBER] --add-label "Priority: High"
+```
+
+### Change Milestone
+```bash
+gh issue edit [NUMBER] --milestone "Phase 6: Production Readiness"
+```
+
+### Update Body
+```bash
+gh issue edit [NUMBER] --body "$(cat <<'EOF'
+[New body content]
+EOF
+)"
+```
+
+### Close Issue
+```bash
+gh issue close [NUMBER] --comment "✅ Complete - [brief summary]"
+```
+
+### Reopen Issue
+```bash
+gh issue reopen [NUMBER] --comment "Reopening - [reason]"
+```
+
+---
+
+## 🏷️ Label Quick Reference
+
+**Copy-paste commands:**
+
+```bash
+# Type (choose ONE)
+--add-label "Bug"
+--add-label "Enhancement"
+--add-label "Task"
+--add-label "User Story"
+--add-label "Epic"
+
+# Area (choose ONE or MORE)
+--add-label "Frontend"
+--add-label "Backend"
+--add-label "DevOps"
+--add-label "Security"
+--add-label "UI"
+--add-label "Firebase"
+
+# Priority (choose ONE)
+--add-label "Priority: Critical"
+--add-label "Priority: High"
+--add-label "Priority: Medium"
+--add-label "Priority: Low"
+
+# Status (optional)
+--add-label "Blocked"
+--add-label "Verified"
+--add-label "Partial"
+```
+
+---
+
+## 📝 Issue Templates
+
+### Bug Report
+```markdown
+## Problem
+
+**What's broken:**
+[Description]
+
+**Steps to reproduce:**
+1. Step 1
+2. Step 2
+3. See error
+
+**Expected behavior:**
+[What should happen]
+
+**Actual behavior:**
+[What actually happens]
+
+**Environment:**
+- Browser: Chrome 120
+- Device: Desktop
+- URL: /members-area/dashboard.html
+
+## Solution
+
+[How to fix]
+
+## Files to Modify
+
+- `path/to/file.js` - Fix X
+
+**Priority:** High
+**Estimate:** 2 hours
+```
+
+### Feature Request
+```markdown
+## User Story
+
+As a [user type], I want [goal] so that [benefit].
+
+## Current State
+
+[What exists now]
+
+## Proposed Solution
+
+[What to build]
+
+## Acceptance Criteria
+
+- [ ] Feature works as described
+- [ ] Tests added
+- [ ] Documentation updated
+
+**Related:** Epic #XXX
+**Priority:** Medium
+**Estimate:** 1 week
+```
+
+### Refactoring Task
+```markdown
+## Problem
+
+[Why code needs refactoring]
+
+## Proposed Solution
+
+[What to refactor]
+
+**Before:**
+```javascript
+// Old code
+```
+
+**After:**
+```javascript
+// New code
+```
+
+## Benefits
+
+1. ✅ Benefit 1
+2. ✅ Benefit 2
+
+**Related:** Epic #191
+**Estimate:** 3 hours
+```
+
+---
+
+## 🚫 Common Mistakes
+
+### ❌ Don't Do
+
+1. **Vague titles**
+   - Bad: "Fix bug"
+   - Good: "fix(auth): Login redirect fails after session timeout"
+
+2. **Missing labels**
+   - Every issue needs: Type + Area + Priority
+
+3. **No Epic link**
+   - Always link to Epic (if applicable)
+
+4. **No acceptance criteria**
+   - How do you know it's done?
+
+5. **No estimate**
+   - Helps with planning and prioritization
+
+6. **Creating duplicate issues**
+   - Search first!
+
+---
+
+## 📚 Related Documentation
+
+- [Git Workflow Examples](../git/GIT_WORKFLOW_EXAMPLES.md)
+- [GitHub Automation Guide](../../../.github/GITHUB_AUTOMATION_GUIDE.md)
+- [Pull Request Template](../../../.github/pull_request_template.md)
+
+---
+
+**Created:** 2025-11-06
+**Maintained By:** Development team
+**Questions:** See GitHub Issues or team documentation

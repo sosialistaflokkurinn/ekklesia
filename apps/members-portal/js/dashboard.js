@@ -21,6 +21,7 @@ import { httpsCallable, getFirebaseAuth, getFirebaseFirestore } from '../firebas
 import { setTextContent, setInnerHTML, addEventListener, setDisabled, validateElements } from '../ui/dom.js';
 import { formatPhone, normalizePhoneForComparison } from './utils/format.js';
 import { updateMemberProfile } from './api/members-client.js';
+import { createButton } from './components/button.js';
 
 /**
  * Required DOM elements for dashboard page
@@ -36,10 +37,12 @@ const DASHBOARD_ELEMENTS = [
   'quick-link-voting-desc',
   'membership-title',
   'membership-status',
-  'verify-membership-btn',
   'verify-button-container',
   'role-badges'
 ];
+
+// Global button instance
+let verifyMembershipButton = null;
 
 /**
  * Validate dashboard DOM structure
@@ -71,7 +74,6 @@ function updateDashboardStrings() {
   // Update membership card
   setTextContent('membership-title', R.string.membership_title, 'dashboard');
   setTextContent('membership-status', R.string.membership_loading, 'dashboard');
-  setTextContent('verify-membership-btn', R.string.btn_verify_membership, 'dashboard');
   setInnerHTML('role-badges', '', 'dashboard');
 }
 
@@ -131,9 +133,12 @@ function updateMembershipUI(isMember) {
   const verifyButtonContainer = document.getElementById('verify-button-container');
   verifyButtonContainer.style.display = 'block';
 
-  const buttonLabel = isMember ? R.string.btn_verify_membership_again : R.string.btn_verify_membership;
-  setTextContent('verify-membership-btn', buttonLabel, 'dashboard');
-  setDisabled('verify-membership-btn', false, 'dashboard');
+  // Update button text using button API
+  if (verifyMembershipButton) {
+    const buttonLabel = isMember ? R.string.btn_verify_membership_again : R.string.btn_verify_membership;
+    verifyMembershipButton.setText(buttonLabel);
+    verifyMembershipButton.enable();
+  }
 }
 
 function renderRoleBadges(roles) {
@@ -189,8 +194,10 @@ async function verifyMembership(user) {
   const region = R.string.config_firebase_region;
   const verifyMembershipFn = httpsCallable('verifyMembership', region);
 
-  setDisabled('verify-membership-btn', true, 'dashboard');
-  setTextContent('verify-membership-btn', R.string.membership_verifying, 'dashboard');
+  // Use button API for loading state
+  if (verifyMembershipButton) {
+    verifyMembershipButton.setLoading(true, R.string.membership_verifying);
+  }
 
   try {
     const result = await verifyMembershipFn();
@@ -207,8 +214,11 @@ async function verifyMembership(user) {
       const refreshed = await user.getIdTokenResult(true);
       updateRoleBadges(refreshed.claims.roles);
 
-      setDisabled('verify-membership-btn', false, 'dashboard');
-  setTextContent('verify-membership-btn', R.string.btn_verify_membership_again, 'dashboard');
+      // Update button to "Verify Again" state
+      if (verifyMembershipButton) {
+        verifyMembershipButton.setLoading(false);
+        verifyMembershipButton.setText(R.string.btn_verify_membership_again);
+      }
 
       return true;
     } else {
@@ -219,8 +229,11 @@ async function verifyMembership(user) {
       `;
       setInnerHTML('membership-status', html, 'dashboard');
 
-      setDisabled('verify-membership-btn', false, 'dashboard');
-  setTextContent('verify-membership-btn', R.string.btn_verify_membership, 'dashboard');
+      // Update button back to normal state
+      if (verifyMembershipButton) {
+        verifyMembershipButton.setLoading(false);
+        verifyMembershipButton.setText(R.string.btn_verify_membership);
+      }
 
       // Refresh token to ensure any downgraded claims propagate
       const refreshed = await user.getIdTokenResult(true);
@@ -238,8 +251,11 @@ async function verifyMembership(user) {
     `;
     setInnerHTML('membership-status', html, 'dashboard');
 
-    setDisabled('verify-membership-btn', false, 'dashboard');
-      setTextContent('verify-membership-btn', R.string.btn_verify_membership, 'dashboard');
+    // Update button back to normal state
+    if (verifyMembershipButton) {
+      verifyMembershipButton.setLoading(false);
+      verifyMembershipButton.setText(R.string.btn_verify_membership);
+    }
 
     // Ensure claims stay in sync even after error
     try {
@@ -259,9 +275,20 @@ async function verifyMembership(user) {
  * @param {Object} user - Firebase user object
  */
 function setupMembershipVerification(user) {
-  addEventListener('verify-membership-btn', 'click', async () => {
-    await verifyMembership(user);
-  }, 'dashboard');
+  // Create button instance
+  verifyMembershipButton = createButton({
+    text: R.string.btn_verify_membership,
+    variant: 'outline',
+    onClick: async () => {
+      await verifyMembership(user);
+    }
+  });
+
+  // Append to container
+  const container = document.getElementById('verify-button-container');
+  if (container) {
+    container.appendChild(verifyMembershipButton.element);
+  }
 }
 
 /**
