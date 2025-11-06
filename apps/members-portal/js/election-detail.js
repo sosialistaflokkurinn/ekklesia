@@ -17,7 +17,7 @@ import { getElectionById } from './api/elections-api.js';
 import { escapeHTML } from './utils/format.js';
 
 // Version check - REMOVE AFTER DEBUGGING
-console.log('🔵 election-detail.js VERSION 20251106-6-REAL-API loaded');
+console.log('🔵 election-detail.js VERSION 20251106-7-DEBUG-MODAL loaded');
 
 // State
 let currentElection = null;
@@ -162,7 +162,9 @@ function displayElection(election) {
   }
 
   // Show election content
-  document.getElementById('election-content').classList.remove('u-hidden');
+  const electionContent = document.getElementById('election-content');
+  electionContent.classList.remove('u-hidden');
+  console.log('🟢 Election content visible:', !electionContent.classList.contains('u-hidden'));
 }
 
 /**
@@ -229,6 +231,14 @@ function displayVotingSection(election) {
   console.log('🟢 Showing voting section (removing u-hidden)');
   votingSection.classList.remove('u-hidden');
   console.log('🟢 Voting section visible:', !votingSection.classList.contains('u-hidden'));
+
+  // Debug: Check if modal is accidentally visible
+  const modal = document.getElementById('confirmation-modal');
+  console.log('🔍 Modal state after showing voting section:', {
+    hasUHidden: modal.classList.contains('u-hidden'),
+    isHidden: modal.classList.contains('u-hidden'),
+    classList: Array.from(modal.classList)
+  });
 }
 
 /**
@@ -293,7 +303,9 @@ function showConfirmationModal() {
   console.log('✅ Setting modal answer text:', selectedAnswer.text);
   modalAnswerElement.textContent = R.string.your_answer + ': ' + selectedAnswer.text;
 
+  console.log('🔴 Opening modal (removing u-hidden)');
   modal.classList.remove('u-hidden');
+  console.log('🔴 Modal visible:', !modal.classList.contains('u-hidden'));
 
   // Setup modal event listeners
   const confirmButton = document.getElementById('modal-confirm');
