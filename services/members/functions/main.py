@@ -932,3 +932,83 @@ def updatememberprofile(req: https_fn.CallableRequest) -> Dict[str, Any]:
             code=https_fn.FunctionsErrorCode.INTERNAL,
             message=f"Profile update failed: {str(e)}"
         )
+
+
+@https_fn.on_call(
+    region="europe-west2",
+    memory=options.MemoryOption.MB_256,
+    timeout_sec=300
+)
+def cleanupauditlogs(req: https_fn.CallableRequest) -> dict:
+    """
+    Cleanup old audit logs, keeping only the most recent N entries.
+
+    Requires admin role.
+
+    Request data:
+        keep_count: Number of most recent logs to keep (default: 50)
+
+    Returns:
+        Dict with cleanup statistics
+    """
+    # Import cleanup function
+    from cleanup_audit_logs import cleanup_old_audit_logs
+
+    # Require authentication
+    if not req.auth:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.UNAUTHENTICATED,
+            message="Must be authenticated to cleanup audit logs"
+        )
+
+    uid = req.auth.uid
+
+    # Get user's roles from Firestore
+    db = firestore.client()
+    user_ref = db.collection('users').document(uid)
+    user_doc = user_ref.get()
+
+    if not user_doc.exists:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.PERMISSION_DENIED,
+            message="User not found"
+        )
+
+    user_data = user_doc.to_dict()
+    roles = user_data.get('roles', {})
+
+    # Require admin or superuser role
+    if not (roles.get('admin') or roles.get('superuser')):
+        log_json("warn", "Unauthorized audit log cleanup attempt",
+                 uid=uid,
+                 roles=roles)
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.PERMISSION_DENIED,
+            message="Admin role required"
+        )
+
+    # Get keep_count parameter (default: 50)
+    keep_count = req.data.get('keep_count', 50) if req.data else 50
+
+    log_json("info", "Starting audit log cleanup",
+             uid=uid,
+             keep_count=keep_count)
+
+    try:
+        # Run cleanup
+        result = cleanup_old_audit_logs(keep_count=keep_count)
+
+        log_json("info", "Audit log cleanup completed",
+                 uid=uid,
+                 result=result)
+
+        return result
+
+    except Exception as e:
+        log_json("error", "Audit log cleanup failed",
+                 uid=uid,
+                 error=str(e))
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INTERNAL,
+            message=f"Cleanup failed: {str(e)}"
+        )
