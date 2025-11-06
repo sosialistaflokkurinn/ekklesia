@@ -7,7 +7,7 @@
  * Used when USE_MOCK_API = true in elections-api.js
  */
 
-// Mock data: Three sample elections
+// Mock data: Single sample election
 const MOCK_ELECTIONS = [
   // Election 1: Active (can vote now)
   {
@@ -24,54 +24,11 @@ const MOCK_ELECTIONS = [
       { id: '1d', text: 'David Brown' }
     ],
     has_voted: false
-  },
-
-  // Election 2: Upcoming (will open soon)
-  {
-    id: '2',
-    title: 'Kosning um verkefnaáætlun 2026',
-    question: 'Styðstu fyrirhuguðu verkefnaáætlun?',
-    status: 'upcoming',
-    voting_starts_at: new Date(Date.now() + 86400000).toISOString(), // Tomorrow
-    voting_ends_at: new Date(Date.now() + 90000000).toISOString(),
-    answers: [
-      { id: '2a', text: 'Já' },
-      { id: '2b', text: 'Nei' },
-      { id: '2c', text: 'Sitja hjá' }
-    ],
-    has_voted: false
-  },
-
-  // Election 3: Closed (results available)
-  {
-    id: '3',
-    title: 'Kosning um félagsgjöld 2025',
-    question: 'Kjósa um hækkun félagsgjaldanna?',
-    status: 'closed',
-    voting_starts_at: new Date(Date.now() - 604800000).toISOString(), // Last week
-    voting_ends_at: new Date(Date.now() - 86400000).toISOString(), // Yesterday
-    answers: [
-      { id: '3a', text: 'Já, styðja hækkun' },
-      { id: '3b', text: 'Nei, engin hækkun' },
-      { id: '3c', text: 'Sitja hjá' }
-    ],
-    has_voted: true
   }
 ];
 
-// Mock results for closed election
-const MOCK_RESULTS = {
-  '3': {
-    id: '3',
-    title: 'Kosning um félagsgjöld 2025',
-    total_votes: 147,
-    answers: [
-      { id: '3a', text: 'Já, styðja hækkun', count: 78 },
-      { id: '3b', text: 'Nei, engin hækkun', count: 51 },
-      { id: '3c', text: 'Sitja hjá', count: 18 }
-    ]
-  }
-};
+// Mock results (empty - no closed elections)
+const MOCK_RESULTS = {};
 
 /**
  * Simulate network delay
