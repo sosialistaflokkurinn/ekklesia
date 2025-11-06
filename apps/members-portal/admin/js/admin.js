@@ -171,6 +171,7 @@ function setPageText(strings, userData) {
   document.getElementById('nav-admin-dashboard').textContent = strings.nav_admin_dashboard;
   document.getElementById('nav-admin-members').textContent = strings.nav_admin_members;
   document.getElementById('nav-admin-sync').textContent = strings.nav_admin_sync;
+  document.getElementById('nav-admin-queue').textContent = strings.nav_admin_queue;
   document.getElementById('nav-admin-history').textContent = strings.nav_admin_history;
   document.getElementById('nav-back-to-member').textContent = strings.nav_back_to_member;
   document.getElementById('nav-logout').textContent = strings.nav_logout;

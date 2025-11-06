@@ -33,6 +33,100 @@ let phoneManager = null;
 let addressManager = null;
 
 /**
+ * Set all i18n strings on the page
+ */
+function setI18nStrings() {
+  // Page title
+  document.title = R.string.member_profile_page_title || 'Félagsupplýsingar - Ekklesia';
+
+  // Navigation (back button)
+  const backToMembersText = document.getElementById('back-to-members-text');
+  if (backToMembersText) backToMembersText.textContent = R.string.back_to_members || 'Til baka til félaga';
+
+  // Page header
+  const pageHeaderTitle = document.getElementById('page-header-title');
+  if (pageHeaderTitle) pageHeaderTitle.textContent = R.string.member_profile_title || 'Félagsupplýsingar';
+
+  // Loading state
+  const memberLoadingText = document.getElementById('member-loading-text');
+  if (memberLoadingText) memberLoadingText.textContent = R.string.member_loading_text || 'Hleð upplýsingum...';
+
+  // Error state
+  const btnRetry = document.getElementById('btn-retry');
+  if (btnRetry) btnRetry.textContent = R.string.btn_retry || 'Reyna aftur';
+
+  // Not found state
+  const memberNotFoundMessage = document.getElementById('member-not-found-message');
+  if (memberNotFoundMessage) memberNotFoundMessage.textContent = R.string.member_not_found_message || 'Félagi fannst ekki';
+
+  const btnBackToMembers = document.getElementById('btn-back-to-members');
+  if (btnBackToMembers) btnBackToMembers.textContent = R.string.back_to_members || 'Til baka til félaga';
+
+  // Section titles
+  const sectionPersonalInfo = document.getElementById('section-personal-info');
+  if (sectionPersonalInfo) sectionPersonalInfo.textContent = R.string.section_personal_info || 'Grunnupplýsingar';
+
+  const sectionMembership = document.getElementById('section-membership');
+  if (sectionMembership) sectionMembership.textContent = R.string.section_membership || 'Félagsaðild';
+
+  // Labels
+  const labelName = document.getElementById('label-name');
+  if (labelName) labelName.textContent = R.string.label_name || 'Nafn';
+
+  const labelKennitala = document.getElementById('label-kennitala');
+  if (labelKennitala) labelKennitala.textContent = R.string.label_kennitala || 'Kennitala';
+
+  const labelEmail = document.getElementById('label-email');
+  if (labelEmail) labelEmail.textContent = R.string.label_email || 'Netfang';
+
+  const labelBirthday = document.getElementById('label-birthday');
+  if (labelBirthday) labelBirthday.textContent = R.string.label_birthday || 'Fæðingardagur';
+
+  const labelGender = document.getElementById('label-gender');
+  if (labelGender) labelGender.textContent = R.string.label_gender || 'Kyn';
+
+  const labelStatus = document.getElementById('label-status');
+  if (labelStatus) labelStatus.textContent = R.string.label_status || 'Staða';
+
+  const labelJoined = document.getElementById('label-joined');
+  if (labelJoined) labelJoined.textContent = R.string.label_joined || 'Skráður';
+
+  const labelDjangoId = document.getElementById('label-django-id');
+  if (labelDjangoId) labelDjangoId.textContent = R.string.label_django_id || 'Django ID';
+
+  const labelSyncedAt = document.getElementById('label-synced-at');
+  if (labelSyncedAt) labelSyncedAt.textContent = R.string.label_synced_at || 'Síðast samstillt';
+
+  // Gender options
+  const optionGenderNone = document.getElementById('option-gender-none');
+  if (optionGenderNone) optionGenderNone.textContent = R.string.option_gender_none || 'Veldu...';
+
+  const optionGenderM = document.getElementById('option-gender-m');
+  if (optionGenderM) optionGenderM.textContent = R.string.option_gender_m || 'Karl';
+
+  const optionGenderF = document.getElementById('option-gender-f');
+  if (optionGenderF) optionGenderF.textContent = R.string.option_gender_f || 'Kona';
+
+  // Phone numbers section
+  const phoneNumbersTitle = document.getElementById('phone-numbers-title');
+  if (phoneNumbersTitle) phoneNumbersTitle.textContent = R.string.phone_numbers_title || 'Símanúmer';
+
+  const btnAddPhoneText = document.getElementById('btn-add-phone-text');
+  if (btnAddPhoneText) btnAddPhoneText.textContent = R.string.btn_add_phone || '+ Bæta við símanúmeri';
+
+  // Addresses section
+  const addressesTitle = document.getElementById('addresses-title');
+  if (addressesTitle) addressesTitle.textContent = R.string.addresses_title || 'Heimilisföng';
+
+  const btnAddAddressText = document.getElementById('btn-add-address-text');
+  if (btnAddAddressText) btnAddAddressText.textContent = R.string.btn_add_address || '+ Bæta við heimilisfangi';
+
+  // Email placeholder
+  const inputEmail = document.getElementById('input-email');
+  if (inputEmail) inputEmail.placeholder = R.string.placeholder_email || 'nafn@example.is';
+}
+
+/**
  * Initialize page
  */
 async function init() {
@@ -40,6 +134,9 @@ async function init() {
 
   // Load i18n strings first
   await R.load('is');
+
+  // Set all i18n strings
+  setI18nStrings();
 
   // Get kennitala from URL
   const urlParams = new URLSearchParams(window.location.search);

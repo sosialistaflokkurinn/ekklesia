@@ -222,4 +222,35 @@
   <!-- SearchableSelect component -->
   <string name="search_country">Leita að landi...</string>
   <string name="no_results">Engar niðurstöður</string>
+
+  <!-- Toast messages -->
+  <string name="saved">Vistað</string>
+
+  <!-- Admin navigation -->
+  <string name="back_to_members">Til baka til félaga</string>
+
+  <!-- Admin Member Profile Page -->
+  <string name="member_profile_title">Félagsupplýsingar</string>
+  <string name="member_profile_page_title">Félagsupplýsingar - Ekklesia</string>
+  <string name="member_loading_text">Hleð upplýsingum...</string>
+  <string name="member_not_found_message">Félagi fannst ekki</string>
+  <string name="section_personal_info">Grunnupplýsingar</string>
+  <string name="label_name">Nafn</string>
+  <string name="label_kennitala">Kennitala</string>
+  <string name="label_email">Netfang</string>
+  <string name="label_birthday">Fæðingardagur</string>
+  <string name="label_gender">Kyn</string>
+  <string name="option_gender_none">Veldu...</string>
+  <string name="option_gender_m">Karl</string>
+  <string name="option_gender_f">Kona</string>
+  <string name="phone_numbers_title">Símanúmer</string>
+  <string name="btn_add_phone">+ Bæta við símanúmeri</string>
+  <string name="addresses_title">Heimilisföng</string>
+  <string name="btn_add_address">+ Bæta við heimilisfangi</string>
+  <string name="section_membership">Félagsaðild</string>
+  <string name="label_status">Staða</string>
+  <string name="label_joined">Skráður</string>
+  <string name="label_django_id">Django ID</string>
+  <string name="label_synced_at">Síðast samstillt</string>
+  <string name="placeholder_email">nafn@example.is</string>
 </resources>

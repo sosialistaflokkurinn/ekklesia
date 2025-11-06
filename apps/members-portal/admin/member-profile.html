@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title id="page-title">Félagsupplýsingar - Ekklesia</title>
+  <title id="page-title">Loading...</title>
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -51,12 +51,13 @@
         </button>
 
         <div class="nav__links">
-          <a href="/admin/admin.html" class="nav__link" id="nav-admin-dashboard">Stjórnborð</a>
-          <a href="/admin/members.html" class="nav__link nav__link--active" id="nav-admin-members">Félagar</a>
-          <a href="/admin/sync-members.html" class="nav__link" id="nav-admin-sync">Samstilling</a>
-          <a href="/admin/sync-history.html" class="nav__link" id="nav-admin-history">Saga</a>
-          <a href="/members-area/dashboard.html" class="nav__link" id="nav-back-to-member">Til baka</a>
-          <a href="#" class="nav__link nav__link--logout" id="nav-logout">Útskrá</a>
+          <a href="/admin/admin.html" class="nav__link" id="nav-admin-dashboard"></a>
+          <a href="/admin/members.html" class="nav__link nav__link--active" id="nav-admin-members"></a>
+          <a href="/admin/sync-members.html" class="nav__link" id="nav-admin-sync"></a>
+          <a href="/admin/sync-queue.html" class="nav__link" id="nav-admin-queue"></a>
+          <a href="/admin/sync-history.html" class="nav__link" id="nav-admin-history"></a>
+          <a href="/members-area/dashboard.html" class="nav__link" id="nav-back-to-member"></a>
+          <a href="#" class="nav__link nav__link--logout" id="nav-logout"></a>
         </div>
       </div>
     </div>
@@ -68,42 +69,42 @@
       <!-- Back Navigation -->
       <div class="admin-back">
         <a href="/admin/members.html" class="admin-back__link" id="back-to-members">
-          ← <span id="back-to-members-text">Til baka til félaga</span>
+          ← <span id="back-to-members-text"></span>
         </a>
       </div>
 
       <!-- Page Header -->
       <header class="page__header">
-        <h1 class="page__title" id="page-header-title">Félagsupplýsingar</h1>
+        <h1 class="page__title" id="page-header-title"></h1>
       </header>
 
       <!-- Loading State -->
       <div id="member-loading" class="admin-loading">
         <div class="spinner"></div>
-        <p id="member-loading-text">Hleð upplýsingum...</p>
+        <p id="member-loading-text"></p>
       </div>
 
       <!-- Error State -->
       <div id="member-error" class="admin-error" style="display: none;">
         <p class="admin-error__message" id="member-error-message"></p>
-        <button class="btn btn--secondary" id="btn-retry">Reyna aftur</button>
+        <button class="btn btn--secondary" id="btn-retry"></button>
       </div>
 
       <!-- Not Found State -->
       <div id="member-not-found" class="admin-not-found" style="display: none;">
-        <p class="admin-not-found__message" id="member-not-found-message">Félagi fannst ekki</p>
-        <a href="/admin/members.html" class="btn btn--secondary">Til baka til félaga</a>
+        <p class="admin-not-found__message" id="member-not-found-message"></p>
+        <a href="/admin/members.html" class="btn btn--secondary" id="btn-back-to-members"></a>
       </div>
 
       <!-- Member Profile -->
       <div id="member-profile" style="display: none;">
         <!-- Basic Information -->
         <div class="card">
-          <h3 class="card__title" id="section-personal-info">Grunnupplýsingar</h3>
+          <h3 class="card__title" id="section-personal-info"></h3>
           <div class="info-grid">
             <!-- Name -->
             <div class="info-grid__item">
-              <div class="info-grid__label" id="label-name">Nafn</div>
+              <div class="info-grid__label" id="label-name"></div>
               <div class="profile-field">
                 <input
                   type="text"
@@ -120,20 +121,20 @@
 
             <!-- Kennitala (readonly) -->
             <div class="info-grid__item">
-              <div class="info-grid__label" id="label-kennitala">Kennitala</div>
+              <div class="info-grid__label" id="label-kennitala"></div>
               <div class="info-grid__value" id="value-kennitala">-</div>
             </div>
 
             <!-- Email -->
             <div class="info-grid__item">
-              <div class="info-grid__label" id="label-email">Netfang</div>
+              <div class="info-grid__label" id="label-email"></div>
               <div class="profile-field">
                 <input
                   type="email"
                   class="profile-field__input"
                   id="input-email"
                   name="email"
-                  placeholder="nafn@example.is"
+                  placeholder=""
                 />
                 <span class="profile-field__status" id="status-email" aria-live="polite" aria-atomic="true"></span>
                 <span class="profile-field__error" id="error-email" role="alert"></span>
@@ -142,7 +143,7 @@
 
             <!-- Birthday -->
             <div class="info-grid__item">
-              <div class="info-grid__label" id="label-birthday">Fæðingardagur</div>
+              <div class="info-grid__label" id="label-birthday"></div>
               <div class="profile-field">
                 <input
                   type="date"
@@ -157,12 +158,12 @@
 
             <!-- Gender -->
             <div class="info-grid__item">
-              <div class="info-grid__label" id="label-gender">Kyn</div>
+              <div class="info-grid__label" id="label-gender"></div>
               <div class="profile-field">
                 <select id="input-gender" name="gender" class="profile-field__input" data-searchable>
-                  <option value="">Veldu...</option>
-                  <option value="0" id="option-gender-m">Karl</option>
-                  <option value="1" id="option-gender-f">Kona</option>
+                  <option value="" id="option-gender-none"></option>
+                  <option value="0" id="option-gender-m"></option>
+                  <option value="1" id="option-gender-f"></option>
                 </select>
                 <span class="profile-field__status" id="status-gender" aria-live="polite" aria-atomic="true"></span>
                 <span class="profile-field__error" id="error-gender" role="alert"></span>
@@ -174,7 +175,7 @@
         <!-- Phone Numbers -->
         <div class="card">
           <h3 class="card__title expandable" id="label-phone-numbers">
-            <span id="phone-numbers-title">Símanúmer</span>
+            <span id="phone-numbers-title"></span>
             <span class="expand-icon" id="phone-expand-icon">▼</span>
           </h3>
 
@@ -185,7 +186,7 @@
           <div id="phone-numbers-section" style="display: none;">
             <div id="phone-numbers-list"></div>
             <button type="button" class="btn btn--secondary" id="btn-add-phone">
-              <span id="btn-add-phone-text">+ Bæta við símanúmeri</span>
+              <span id="btn-add-phone-text"></span>
             </button>
             <span class="profile-field__status" id="status-phone-numbers"></span>
           </div>
@@ -194,7 +195,7 @@
         <!-- Addresses -->
         <div class="card">
           <h3 class="card__title expandable" id="label-addresses">
-            <span id="addresses-title">Heimilisföng</span>
+            <span id="addresses-title"></span>
             <span class="expand-icon" id="address-expand-icon">▼</span>
           </h3>
 
@@ -205,7 +206,7 @@
           <div id="addresses-section" style="display: none;">
             <div id="addresses-list"></div>
             <button type="button" class="btn btn--secondary" id="btn-add-address">
-              <span id="btn-add-address-text">+ Bæta við heimilisfangi</span>
+              <span id="btn-add-address-text"></span>
             </button>
             <span class="profile-field__status" id="status-addresses"></span>
           </div>
@@ -213,24 +214,24 @@
 
         <!-- Membership Info (readonly) -->
         <div class="card">
-          <h3 class="card__title" id="section-membership">Félagsaðild</h3>
+          <h3 class="card__title" id="section-membership"></h3>
           <div class="info-grid">
             <div class="info-grid__item">
-              <div class="info-grid__label" id="label-status">Staða</div>
+              <div class="info-grid__label" id="label-status"></div>
               <div class="info-grid__value" id="value-status">
                 <span class="admin-badge" id="status-badge">-</span>
               </div>
             </div>
             <div class="info-grid__item">
-              <div class="info-grid__label" id="label-joined">Skráður</div>
+              <div class="info-grid__label" id="label-joined"></div>
               <div class="info-grid__value" id="value-joined">-</div>
             </div>
             <div class="info-grid__item">
-              <div class="info-grid__label" id="label-django-id">Django ID</div>
+              <div class="info-grid__label" id="label-django-id"></div>
               <div class="info-grid__value" id="value-django-id">-</div>
             </div>
             <div class="info-grid__item">
-              <div class="info-grid__label" id="label-synced-at">Síðast samstillt</div>
+              <div class="info-grid__label" id="label-synced-at"></div>
               <div class="info-grid__value" id="value-synced-at">-</div>
             </div>
           </div>

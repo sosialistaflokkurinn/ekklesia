@@ -184,6 +184,9 @@ const adminStrings = new Map();
     const navAdminSync = document.getElementById('nav-admin-sync');
     if (navAdminSync) navAdminSync.textContent = R.string.nav_admin_sync || 'Samstilling';
 
+    const navAdminQueue = document.getElementById('nav-admin-queue');
+    if (navAdminQueue) navAdminQueue.textContent = R.string.nav_admin_queue || 'Biðröð';
+
     const navAdminHistory = document.getElementById('nav-admin-history');
     if (navAdminHistory) navAdminHistory.textContent = R.string.nav_admin_history || 'Saga';
 
@@ -268,6 +271,10 @@ const adminStrings = new Map();
 
     const btnPageNextText = document.getElementById('btn-page-next-text');
     if (btnPageNextText) btnPageNextText.textContent = R.string.pagination_next || 'Næsta ›';
+
+    // Search input placeholder
+    const searchInput = document.getElementById('members-search-input');
+    if (searchInput) searchInput.placeholder = R.string.members_search_placeholder || 'Leita að nafni eða kennitölu...';
   }
 
   // Set up event listeners
@@ -369,7 +376,8 @@ const adminStrings = new Map();
         // Hide pagination when searching or filtering by district (showing all results)
         if (needsClientSideFiltering) {
           elements.paginationContainer.style.display = 'none';
-          elements.paginationInfo.textContent = `Sýni ${filteredMembers.length} niðurstöður`;
+          const template = adminStrings.get('pagination_showing_results') || 'Sýni %d niðurstöður';
+          elements.paginationInfo.textContent = template.replace('%d', filteredMembers.length);
         } else {
           updatePagination(result.hasMore, filteredMembers.length);
           elements.paginationContainer.style.display = 'flex';
@@ -413,14 +421,16 @@ const adminStrings = new Map();
         const districtName = getElectoralDistrictName(currentDistrict);
 
         // Simple count without status metadata
-        elements.countText.textContent = `${count} félagar í ${districtName}`;
+        const districtTemplate = adminStrings.get('members_count_in_district') || '%d félagar í %s';
+        elements.countText.textContent = districtTemplate.replace('%d', count).replace('%s', districtName);
       } else {
         // Normal count (no district filter)
         const count = await MembersAPI.getMembersCount(currentStatus);
         const statusText = currentStatus === 'all' ? adminStrings.get('members_status_all_plural') :
                           currentStatus === 'active' ? adminStrings.get('members_status_active_plural') :
                           adminStrings.get('members_status_inactive_plural');
-        elements.countText.textContent = `${count} ${statusText} félagar`;
+        const countTemplate = adminStrings.get('members_count_with_status') || '%d %s félagar';
+        elements.countText.textContent = countTemplate.replace('%d', count).replace('%s', statusText);
       }
     } catch (error) {
       debug.error('Error getting member count:', error);
@@ -487,10 +497,12 @@ const adminStrings = new Map();
     // Update pagination info
     const start = (currentPage - 1) * 50 + 1;
     const end = (currentPage - 1) * 50 + currentCount;
-    elements.paginationInfo.textContent = `Sýni ${start}-${end}`;
+    const showingTemplate = adminStrings.get('pagination_showing') || 'Sýni %d-%d';
+    elements.paginationInfo.textContent = showingTemplate.replace('%d', start).replace('%d', end);
 
     // Update current page
-    elements.paginationCurrent.textContent = `Síða ${currentPage}`;
+    const pageTemplate = adminStrings.get('pagination_page') || 'Síða %d';
+    elements.paginationCurrent.textContent = pageTemplate.replace('%d', currentPage);
 
     // Enable/disable previous button
     elements.btnPagePrev.disabled = currentPage === 1;

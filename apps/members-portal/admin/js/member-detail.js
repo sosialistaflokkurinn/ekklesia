@@ -156,6 +156,10 @@ const adminStrings = new Map();
     const navLogout = document.getElementById('nav-logout');
     if (navLogout) navLogout.textContent = R.string.nav_logout || 'Útskrá';
 
+    // Back button
+    const backToMembersText = document.getElementById('back-to-members-text');
+    if (backToMembersText) backToMembersText.textContent = R.string.back_to_members || 'Til baka til félaga';
+
     // Page strings
     const pageTitle = document.getElementById('page-header-title');
     if (pageTitle) pageTitle.textContent = R.string.member_detail_title || 'Félagsupplýsingar';

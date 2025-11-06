@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title id="page-title"></title>
-  
+
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
@@ -46,8 +46,8 @@
           <a href="/admin/admin.html" class="nav__link" id="nav-admin-dashboard"></a>
           <a href="/admin/members.html" class="nav__link" id="nav-admin-members"></a>
           <a href="/admin/sync-members.html" class="nav__link" id="nav-admin-sync"></a>
-          <a href="/admin/sync-queue.html" class="nav__link" id="nav-admin-queue"></a>
-          <a href="/admin/sync-history.html" class="nav__link nav__link--active" id="nav-admin-history"></a>
+          <a href="/admin/sync-queue.html" class="nav__link nav__link--active" id="nav-admin-queue"></a>
+          <a href="/admin/sync-history.html" class="nav__link" id="nav-admin-history"></a>
           <a href="/members-area/dashboard.html" class="nav__link" id="nav-back-to-member"></a>
           <a href="#" class="nav__link nav__link--logout" id="nav-logout"></a>
         </div>
@@ -59,12 +59,12 @@
   <div class="page__container">
     <!-- Page Header -->
     <div class="card">
-      <h1 id="history-title"></h1>
-      <p class="u-text-muted" id="history-subtitle"></p>
+      <h1 id="queue-title"></h1>
+      <p class="u-text-muted" id="queue-subtitle"></p>
     </div>
 
     <!-- Loading State -->
-    <div id="history-loading" class="card u-hidden">
+    <div id="queue-loading" class="card u-hidden">
       <div class="sync-progress">
         <div class="spinner"></div>
         <p id="loading-message"></p>
@@ -72,31 +72,30 @@
     </div>
 
     <!-- Error State -->
-    <div id="history-error" class="card u-hidden">
+    <div id="queue-error" class="card u-hidden">
       <p class="u-text-error" id="error-message"></p>
       <button id="retry-button" class="btn u-margin-top-md"></button>
     </div>
 
     <!-- Empty State -->
-    <div id="history-empty" class="card u-hidden">
+    <div id="queue-empty" class="card u-hidden">
       <p id="empty-message"></p>
     </div>
 
-    <!-- History Table -->
-    <div id="history-content" class="card u-hidden">
+    <!-- Queue Table -->
+    <div id="queue-content" class="card u-hidden">
       <div class="history-table-container">
         <table class="history-table">
           <thead>
             <tr>
-              <th id="th-date"></th>
+              <th id="th-created"></th>
+              <th id="th-member"></th>
+              <th id="th-action"></th>
+              <th id="th-field"></th>
               <th id="th-status"></th>
-              <th id="th-total"></th>
-              <th id="th-synced"></th>
-              <th id="th-failed"></th>
-              <th id="th-duration"></th>
             </tr>
           </thead>
-          <tbody id="history-tbody">
+          <tbody id="queue-tbody">
             <!-- Rows will be inserted here by JavaScript -->
           </tbody>
         </table>
@@ -104,6 +103,6 @@
     </div>
   </div>
 
-  <script type="module" src="/admin/js/sync-history.js?v=20251027"></script>
+  <script type="module" src="/admin/js/sync-queue.js?v=20251106"></script>
 </body>
 </html>

@@ -53,6 +53,7 @@
           <a href="/admin/admin.html" class="nav__link" id="nav-admin-dashboard">Loading...</a>
           <a href="/admin/members.html" class="nav__link nav__link--active" id="nav-admin-members">Loading...</a>
           <a href="/admin/sync-members.html" class="nav__link" id="nav-admin-sync">Loading...</a>
+          <a href="/admin/sync-queue.html" class="nav__link" id="nav-admin-queue">Loading...</a>
           <a href="/admin/sync-history.html" class="nav__link" id="nav-admin-history">Loading...</a>
           <a href="/members-area/dashboard.html" class="nav__link" id="nav-back-to-member">Loading...</a>
           <a href="#" class="nav__link nav__link--logout" id="nav-logout">Loading...</a>
@@ -78,7 +79,7 @@
             type="text"
             id="members-search-input"
             class="members-controls__search-input"
-            placeholder="Leita að nafni eða kennitölu..."
+            placeholder=""
           >
         </div>
 
@@ -106,7 +107,7 @@
         <!-- Create Button -->
         <div class="members-controls__actions">
           <a href="/admin/member-create.html" class="btn" id="btn-create-member">
-            <span id="btn-create-member-text">+ Nýr félagi</span>
+            <span id="btn-create-member-text"></span>
           </a>
         </div>
       </div>
@@ -119,7 +120,7 @@
       <!-- Loading State -->
       <div id="members-loading" class="members-loading">
         <div class="spinner"></div>
-        <p id="members-loading-text">Hleð félagaskrá...</p>
+        <p id="members-loading-text"></p>
       </div>
 
       <!-- Error State -->
@@ -155,15 +156,15 @@
       <!-- Pagination -->
       <div id="members-pagination" class="members-pagination" style="display: none;">
         <div class="members-pagination__info">
-          <span id="pagination-info">Showing 1-50 of 2,118</span>
+          <span id="pagination-info"></span>
         </div>
         <div class="members-pagination__controls">
           <button class="btn btn--outline btn--sm" id="btn-page-prev" disabled>
-            <span id="btn-page-prev-text">‹ Fyrri</span>
+            <span id="btn-page-prev-text"></span>
           </button>
-          <span class="members-pagination__page" id="pagination-current">Page 1</span>
+          <span class="members-pagination__page" id="pagination-current"></span>
           <button class="btn btn--outline btn--sm" id="btn-page-next">
-            <span id="btn-page-next-text">Næsta ›</span>
+            <span id="btn-page-next-text"></span>
           </button>
         </div>
       </div>
