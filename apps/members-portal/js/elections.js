@@ -14,6 +14,7 @@ import { debug } from './utils/debug.js';
 import { R } from '../i18n/strings-loader.js';
 import { getElections } from './api/elections-api.js';
 import { escapeHTML } from './utils/format.js';
+import { createButton } from './components/button.js';
 
 // State
 let currentFilter = 'all';
@@ -24,6 +25,9 @@ let electionCounts = {
   upcoming: 0,
   closed: 0
 };
+
+// Button instances
+let retryButton = null;
 
 /**
  * Initialize elections list page
@@ -55,10 +59,7 @@ async function init() {
     document.getElementById('filter-upcoming-text').textContent = R.string.filter_upcoming;
     document.getElementById('filter-closed-text').textContent = R.string.filter_closed;
 
-    // Update retry button
-    document.getElementById('retry-button').textContent = R.string.btn_retry;
-
-    // Setup filter buttons
+    // Setup filter buttons and retry button
     setupFilters();
 
     // Load elections
@@ -88,10 +89,23 @@ function setupFilters() {
     });
   });
 
-  // Retry button
-  const retryButton = document.getElementById('retry-button');
-  if (retryButton) {
-    retryButton.addEventListener('click', loadElections);
+  // Create retry button
+  retryButton = createButton({
+    text: R.string.btn_retry,
+    variant: 'primary',
+    onClick: loadElections
+  });
+
+  // Append to error state container
+  const errorContainer = document.getElementById('elections-error');
+  if (errorContainer) {
+    // Find existing button placeholder or append
+    const existingButton = document.getElementById('retry-button');
+    if (existingButton) {
+      existingButton.replaceWith(retryButton.element);
+    } else {
+      errorContainer.appendChild(retryButton.element);
+    }
   }
 }
 

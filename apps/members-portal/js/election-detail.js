@@ -20,10 +20,14 @@ import { showModal } from './components/modal.js';
 import { electionState } from './utils/election-state.js';
 import { createScheduleDisplay } from './components/schedule-display.js';
 import { createVotingForm } from './components/voting-form.js';
+import { createButton } from './components/button.js';
 
 // State
 let currentElection = null;
 let scheduleDisplay = null;
+
+// Button instances
+let retryButton = null;
 let votingForm = null;
 
 /**
@@ -67,7 +71,6 @@ function updateStaticText() {
   document.getElementById('back-text').textContent = R.string.back_to_elections;
   document.getElementById('loading-message').textContent = R.string.loading_election;
   document.getElementById('error-message').textContent = R.string.error_load_election;
-  document.getElementById('retry-button').textContent = R.string.btn_retry;
   document.getElementById('results-title').textContent = R.string.results_title;
   document.getElementById('results-total-votes-label').textContent = R.string.results_total_votes;
   document.getElementById('voted-badge-text').textContent = R.string.election_already_voted;
@@ -342,14 +345,31 @@ function showError(message) {
   document.getElementById('election-loading').classList.add('u-hidden');
   document.getElementById('election-content').classList.add('u-hidden');
 
-  // Retry button
-  const retryButton = document.getElementById('retry-button');
-  retryButton.onclick = () => {
-    const electionId = getElectionIdFromURL();
-    if (electionId) {
-      loadElection(electionId);
+  // Create retry button if not exists
+  if (!retryButton) {
+    retryButton = createButton({
+      text: R.string.btn_retry,
+      variant: 'primary',
+      onClick: () => {
+        const electionId = getElectionIdFromURL();
+        if (electionId) {
+          loadElection(electionId);
+        }
+      }
+    });
+
+    // Append to error container
+    const errorContainer = document.getElementById('election-error');
+    if (errorContainer) {
+      // Find existing button placeholder or append
+      const existingButton = document.getElementById('retry-button');
+      if (existingButton) {
+        existingButton.replaceWith(retryButton.element);
+      } else {
+        errorContainer.appendChild(retryButton.element);
+      }
     }
-  };
+  }
 }
 
 // Initialize when DOM is ready
