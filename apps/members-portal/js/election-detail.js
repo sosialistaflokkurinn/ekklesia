@@ -17,7 +17,7 @@ import { getElectionById } from './api/elections-api.js';
 import { escapeHTML } from './utils/format.js';
 
 // Version check - REMOVE AFTER DEBUGGING
-console.log('🔵 election-detail.js VERSION 20251106-5 loaded');
+console.log('🔵 election-detail.js VERSION 20251106-6-REAL-API loaded');
 
 // State
 let currentElection = null;
@@ -220,12 +220,15 @@ function displayVotingSection(election) {
   // Handle vote form submission
   votingForm.addEventListener('submit', (e) => {
     e.preventDefault();
+    console.log('🟡 Form submitted, selectedAnswerId:', selectedAnswerId);
     if (selectedAnswerId) {
       showConfirmationModal();
     }
   });
 
+  console.log('🟢 Showing voting section (removing u-hidden)');
   votingSection.classList.remove('u-hidden');
+  console.log('🟢 Voting section visible:', !votingSection.classList.contains('u-hidden'));
 }
 
 /**

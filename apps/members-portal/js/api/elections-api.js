@@ -16,7 +16,7 @@ import { debug } from '../utils/debug.js';
 import { authenticatedFetch } from '../auth.js';
 
 // DEVELOPMENT FLAG: Toggle between mock and real API
-const USE_MOCK_API = true;
+const USE_MOCK_API = false;  // Switched to real API for testing
 
 // Production Elections Service URL
 const ELECTIONS_API_BASE = 'https://elections-service-ymzrguoifa-nw.a.run.app';
