@@ -1,68 +1,24 @@
 /**
- * Election Detail & Voting Page
+ * Election Detail Page
  *
- * Displays election details and handles voting.
- * - Shows voting form for active elections
- * - Shows "Already voted" message for voted elections
- * - Shows results for closed elections
- * - Two-step voting: confirmation modal before submission
+ * Display full election information and voting interface.
+ * Handles:
+ * - Election info display (title, question, schedule, status)
+ * - Voting UI (radio buttons for answers)
+ * - Vote submission with confirmation
+ * - Results display (for closed elections)
+ * - Already voted state
  */
 
 import { initAuthenticatedPage } from './page-init.js';
 import { debug } from './utils/debug.js';
 import { R } from '../i18n/strings-loader.js';
-import { getElectionById, submitVote, getResults } from './api/elections-api.js';
-import { auth } from './auth.js';
+import { getElectionById } from './api/elections-api.js';
 import { escapeHTML } from './utils/format.js';
 
 // State
 let currentElection = null;
-let pendingAnswer = null;
-
-/**
- * Update all static HTML text with R.string values
- */
-function updateHTMLStrings() {
-  // Page title (will be overridden with election title later)
-  document.getElementById('page-title').textContent = R.string.page_title_election_detail;
-
-  // Back link
-  document.getElementById('back-link').textContent = R.string.election_detail_back_link;
-
-  // Loading message
-  document.getElementById('loading-message').textContent = R.string.loading_election_detail;
-
-  // Error messages
-  document.getElementById('error-message').textContent = R.string.error_load_election_detail;
-  document.getElementById('error-back-link').textContent = R.string.btn_back_to_elections;
-
-  // Election title (placeholder, will be replaced with API data)
-  document.getElementById('election-title').textContent = R.string.election_detail_title;
-
-  // Voting section
-  document.getElementById('voting-title').textContent = R.string.voting_section_title;
-  document.getElementById('submit-vote-btn').textContent = R.string.btn_vote;
-
-  // Already voted section
-  document.getElementById('already-voted-msg').textContent = R.string.msg_already_voted;
-
-  // Upcoming section
-  document.getElementById('upcoming-text').textContent = R.string.msg_upcoming_election;
-
-  // Results section
-  document.getElementById('results-title').textContent = R.string.results_title;
-
-  // Confirmation modal
-  document.getElementById('confirm-title').textContent = R.string.modal_confirm_title;
-  document.getElementById('confirm-message').textContent = R.string.modal_confirm_message;
-  document.getElementById('confirm-cancel-text').textContent = R.string.btn_cancel;
-  document.getElementById('confirm-submit-text').textContent = R.string.btn_confirm;
-
-  // Success modal
-  document.getElementById('success-title').textContent = R.string.modal_success_title;
-  document.getElementById('success-message').textContent = R.string.modal_success_message;
-  document.getElementById('success-back-link').textContent = R.string.btn_back_to_elections;
-}
+let selectedAnswerId = null;
 
 /**
  * Initialize election detail page
@@ -72,251 +28,271 @@ async function init() {
     // Load i18n strings
     await R.load('is');
 
-    // Update all static HTML text with R.string values
-    updateHTMLStrings();
-
-    // Initialize authenticated page
+    // Initialize authenticated page (header, navigation, auth check)
     await initAuthenticatedPage();
 
-    // Update elections navigation link (page-specific)
+    // Update voting navigation link
     document.getElementById('nav-voting').textContent = R.string.nav_voting;
 
+    // Update static text elements
+    updateStaticText();
+
     // Get election ID from URL
-    const params = new URLSearchParams(window.location.search);
-    const electionId = params.get('id');
+    const electionId = getElectionIdFromURL();
 
     if (!electionId) {
-      showError(R.string.error_no_election_selected);
+      showError(R.string.error_missing_election_id);
       return;
     }
 
-    // Load election
+    // Load election data
     await loadElection(electionId);
 
   } catch (error) {
     debug.error('Error initializing election detail page:', error);
-    showError(R.string.error_load_election_detail);
+    showError(R.string.error_load_election);
   }
 }
 
 /**
- * Load election details from API
+ * Update all static text elements with i18n strings
+ */
+function updateStaticText() {
+  document.getElementById('back-text').textContent = R.string.back_to_elections;
+  document.getElementById('loading-message').textContent = R.string.loading_election;
+  document.getElementById('error-message').textContent = R.string.error_load_election;
+  document.getElementById('retry-button').textContent = R.string.btn_retry;
+  document.getElementById('question-title-label').textContent = R.string.election_question_label;
+  document.getElementById('voting-title').textContent = R.string.voting_select_answer;
+  document.getElementById('vote-button-text').textContent = R.string.btn_vote;
+  document.getElementById('results-title').textContent = R.string.results_title;
+  document.getElementById('results-total-votes-label').textContent = R.string.results_total_votes;
+  document.getElementById('schedule-starts-label').textContent = R.string.election_starts;
+  document.getElementById('schedule-ends-label').textContent = R.string.election_ends;
+  document.getElementById('voted-badge-text').textContent = R.string.election_already_voted;
+  document.getElementById('upcoming-message').textContent = R.string.election_upcoming_message;
+
+  // Modal text
+  document.getElementById('modal-title').textContent = R.string.confirm_vote_title;
+  document.getElementById('modal-message').textContent = R.string.confirm_vote_message;
+  document.getElementById('modal-cancel').textContent = R.string.btn_cancel;
+  document.getElementById('modal-confirm').textContent = R.string.btn_confirm;
+}
+
+/**
+ * Get election ID from URL query parameter
+ */
+function getElectionIdFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('id');
+}
+
+/**
+ * Load election data from API
  */
 async function loadElection(electionId) {
   try {
     showLoading();
 
-    const election = await getElectionById(electionId);
-    currentElection = election;
+    // Fetch election details
+    currentElection = await getElectionById(electionId);
 
-    document.title = `${election.title} - ${R.string.app_name}`;
+    // Update page title
+    document.title = currentElection.title + ' - ' + R.string.app_name;
 
     // Display election
-    displayElection(election);
+    displayElection(currentElection);
 
     hideLoading();
 
   } catch (error) {
-    debug.error('Error loading election:', error);
-    showError(R.string.error_load_election_detail);
+    debug.error('Error loading election ' + electionId + ':', error);
+    showError(R.string.error_load_election);
   }
 }
 
 /**
- * Display election based on status
+ * Display election information
  */
 function displayElection(election) {
-  // Hide all sections first
-  document.getElementById('voting-section').classList.add('u-hidden');
-  document.getElementById('already-voted-section').classList.add('u-hidden');
-  document.getElementById('upcoming-section').classList.add('u-hidden');
-  document.getElementById('results-section').classList.add('u-hidden');
-
-  // Show main election detail
-  document.getElementById('election-detail').classList.remove('u-hidden');
-
   // Update header
   document.getElementById('election-title').textContent = election.title;
-  document.getElementById('election-question').textContent = election.question;
 
-  // Update status and date
-  let statusText = '';
-  if (election.status === 'active') {
-    statusText = R.string.status_active;
-  } else if (election.status === 'upcoming') {
-    statusText = R.string.status_upcoming;
-  } else if (election.status === 'closed') {
-    statusText = R.string.status_closed;
-  }
-  const statusClass = `election-detail__status--${election.status}`;
-  document.getElementById('election-status').textContent = statusText;
-  document.getElementById('election-status').className = `election-detail__status ${statusClass}`;
-  document.getElementById('election-date').textContent = formatDate(election.voting_starts_at);
+  // Status badge
+  const statusBadge = document.getElementById('election-status-badge');
+  statusBadge.className = 'election-detail__status-badge election-detail__status-badge--' + election.status;
 
-  // Show appropriate section based on status
   if (election.status === 'active') {
-    if (election.has_voted) {
-      document.getElementById('already-voted-section').classList.remove('u-hidden');
-    } else {
-      showVotingSection(election);
-    }
+    statusBadge.textContent = R.string.status_active;
   } else if (election.status === 'upcoming') {
-    document.getElementById('upcoming-section').classList.remove('u-hidden');
+    statusBadge.textContent = R.string.status_upcoming;
   } else if (election.status === 'closed') {
-    showResults(election.id);
+    statusBadge.textContent = R.string.status_closed;
   }
+
+  // Already voted badge
+  if (election.has_voted) {
+    document.getElementById('already-voted-badge').classList.remove('u-hidden');
+  }
+
+  // Schedule
+  document.getElementById('schedule-starts-value').textContent = formatDate(election.voting_starts_at);
+  document.getElementById('schedule-ends-value').textContent = formatDate(election.voting_ends_at);
+
+  // Description (if available)
+  if (election.description) {
+    document.getElementById('election-description').innerHTML = '<p>' + escapeHTML(election.description) + '</p>';
+  }
+
+  // Question
+  document.getElementById('question-text').textContent = election.question;
+
+  // Show appropriate section based on status and voting state
+  if (election.status === 'active' && !election.has_voted) {
+    displayVotingSection(election);
+  } else if (election.status === 'closed') {
+    displayResultsSection(election);
+  } else if (election.status === 'upcoming') {
+    displayUpcomingSection();
+  } else if (election.has_voted) {
+    displayAlreadyVotedSection();
+  }
+
+  // Show election content
+  document.getElementById('election-content').classList.remove('u-hidden');
 }
 
 /**
- * Show voting section with vote form
+ * Display voting section with answer options
  */
-function showVotingSection(election) {
+function displayVotingSection(election) {
   const votingSection = document.getElementById('voting-section');
-  const optionsContainer = document.getElementById('vote-options');
-
-  votingSection.classList.remove('u-hidden');
+  const answerOptionsContainer = document.getElementById('answer-options');
+  const voteButton = document.getElementById('vote-button');
+  const votingForm = document.getElementById('voting-form');
 
   // Clear previous options
-  optionsContainer.innerHTML = '';
+  answerOptionsContainer.innerHTML = '';
 
   // Create radio buttons for each answer
-  election.answers.forEach(answer => {
-    const label = document.createElement('label');
-    label.className = 'voting__option';
+  election.answers.forEach((answer, index) => {
+    const optionDiv = document.createElement('div');
+    optionDiv.className = 'election-detail__answer-option';
 
     const radio = document.createElement('input');
     radio.type = 'radio';
+    radio.id = 'answer-' + answer.id;
     radio.name = 'answer';
     radio.value = answer.id;
-    radio.required = true;
+    radio.className = 'election-detail__answer-radio';
 
-    const labelText = document.createElement('span');
-    labelText.className = 'voting__option-label';
-    labelText.textContent = answer.text;
-
-    label.appendChild(radio);
-    label.appendChild(labelText);
-    optionsContainer.appendChild(label);
-  });
-
-  // Setup form submission
-  const form = document.getElementById('vote-form');
-  form.removeEventListener('submit', handleVoteSubmit);
-  form.addEventListener('submit', handleVoteSubmit);
-
-  // Setup confirmation modal
-  setupConfirmationModal();
-}
-
-/**
- * Handle vote form submission (show confirmation modal)
- */
-function handleVoteSubmit(e) {
-  e.preventDefault();
-
-  // Get selected answer
-  const selectedRadio = document.querySelector('input[name="answer"]:checked');
-  if (!selectedRadio) {
-    return;
-  }
-
-  pendingAnswer = selectedRadio.value;
-
-  // Show confirmation modal
-  const modal = document.getElementById('confirm-modal');
-  modal.classList.remove('u-hidden');
-}
-
-/**
- * Setup confirmation modal buttons
- */
-function setupConfirmationModal() {
-  const modal = document.getElementById('confirm-modal');
-  const cancelBtn = document.getElementById('confirm-cancel');
-  const submitBtn = document.getElementById('confirm-submit');
-
-  cancelBtn.addEventListener('click', () => {
-    modal.classList.add('u-hidden');
-    pendingAnswer = null;
-  });
-
-  submitBtn.addEventListener('click', async () => {
-    modal.classList.add('u-hidden');
-    await confirmVote();
-  });
-}
-
-/**
- * Confirm vote and submit to API
- */
-async function confirmVote() {
-  if (!pendingAnswer || !currentElection) {
-    return;
-  }
-
-  try {
-    showLoading();
-
-    // Submit vote
-    await submitVote(currentElection.id, pendingAnswer);
-
-    // Show success modal
-    const successModal = document.getElementById('success-modal');
-    successModal.classList.remove('u-hidden');
-
-    // Reload election after 2 seconds
-    setTimeout(() => {
-      window.location.reload();
-    }, 2000);
-
-  } catch (error) {
-    debug.error('Error submitting vote:', error);
-    showError(R.string.error_submit_vote);
-  }
-}
-
-/**
- * Load and display election results
- */
-async function showResults(electionId) {
-  try {
-    const results = await getResults(electionId);
-
-    // Calculate percentages
-    const totalVotes = results.answers.reduce((sum, a) => sum + a.count, 0);
-    const answersWithPercent = results.answers.map(a => ({
-      ...a,
-      percentage: totalVotes > 0 ? Math.round((a.count / totalVotes) * 100) : 0
-    }));
-
-    // Display results
-    const resultsContainer = document.getElementById('results-container');
-    resultsContainer.innerHTML = '';
-
-    answersWithPercent.forEach(answer => {
-      const resultItem = document.createElement('div');
-      resultItem.className = 'results__item';
-
-      resultItem.innerHTML = `
-        <div class="results__item-header">
-          <span class="results__item-label">${escapeHTML(answer.text)}</span>
-          <span class="results__item-percentage">${answer.percentage}%</span>
-        </div>
-        <div class="results__bar">
-          <div class="results__bar-fill" style="width: ${answer.percentage}%"></div>
-        </div>
-        <span class="results__votes">${R.format(R.string.results_votes, answer.count)}</span>
-      `;
-
-      resultsContainer.appendChild(resultItem);
+    // Enable vote button when answer is selected
+    radio.addEventListener('change', () => {
+      selectedAnswerId = answer.id;
+      voteButton.disabled = false;
     });
 
-    document.getElementById('results-section').classList.remove('u-hidden');
+    const label = document.createElement('label');
+    label.htmlFor = 'answer-' + answer.id;
+    label.className = 'election-detail__answer-label';
+    label.textContent = answer.text;
 
-  } catch (error) {
-    debug.error('Error loading results:', error);
-    showError(R.string.error_load_results);
+    optionDiv.appendChild(radio);
+    optionDiv.appendChild(label);
+    answerOptionsContainer.appendChild(optionDiv);
+  });
+
+  // Handle vote form submission
+  votingForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (selectedAnswerId) {
+      showConfirmationModal();
+    }
+  });
+
+  votingSection.classList.remove('u-hidden');
+}
+
+/**
+ * Display results section (for closed elections)
+ */
+function displayResultsSection(election) {
+  const resultsSection = document.getElementById('results-section');
+  const resultsList = document.getElementById('results-list');
+
+  // TODO: Fetch and display actual results (Day 4)
+  // For now, just show placeholder
+  resultsList.innerHTML = '<p>Results will be displayed here (Day 4 implementation)</p>';
+
+  resultsSection.classList.remove('u-hidden');
+}
+
+/**
+ * Display upcoming section
+ */
+function displayUpcomingSection() {
+  document.getElementById('upcoming-section').classList.remove('u-hidden');
+}
+
+/**
+ * Display already voted section
+ */
+function displayAlreadyVotedSection() {
+  const votingSection = document.getElementById('voting-section');
+  votingSection.innerHTML = '<div class="election-detail__already-voted"><p>' + R.string.election_already_voted_message + '</p></div>';
+  votingSection.classList.remove('u-hidden');
+}
+
+/**
+ * Show confirmation modal before submitting vote
+ */
+function showConfirmationModal() {
+  const modal = document.getElementById('confirmation-modal');
+  const selectedAnswer = currentElection.answers.find(a => a.id === selectedAnswerId);
+
+  if (selectedAnswer) {
+    document.getElementById('modal-selected-answer').textContent = R.string.your_answer + ': ' + selectedAnswer.text;
   }
+
+  modal.classList.remove('u-hidden');
+
+  // Setup modal event listeners
+  const confirmButton = document.getElementById('modal-confirm');
+  const cancelButton = document.getElementById('modal-cancel');
+  const closeButton = document.getElementById('modal-close');
+
+  confirmButton.onclick = () => {
+    hideConfirmationModal();
+    submitVote();
+  };
+
+  cancelButton.onclick = hideConfirmationModal;
+  closeButton.onclick = hideConfirmationModal;
+
+  // Close on overlay click
+  document.querySelector('.modal__overlay').onclick = hideConfirmationModal;
+}
+
+/**
+ * Hide confirmation modal
+ */
+function hideConfirmationModal() {
+  document.getElementById('confirmation-modal').classList.add('u-hidden');
+}
+
+/**
+ * Submit vote (placeholder for Day 3)
+ */
+async function submitVote() {
+  debug.log('Vote submission (Day 3): Election ' + currentElection.id + ', Answer ' + selectedAnswerId);
+
+  // TODO: Implement actual vote submission on Day 3
+  // For now, just show success message
+  alert(R.string.vote_submitted_success + '\n\n(Actual submission will be implemented on Day 3)');
+
+  // Simulate "has_voted" state
+  currentElection.has_voted = true;
+  displayElection(currentElection);
 }
 
 /**
@@ -325,7 +301,7 @@ async function showResults(electionId) {
 function showLoading() {
   document.getElementById('election-loading').classList.remove('u-hidden');
   document.getElementById('election-error').classList.add('u-hidden');
-  document.getElementById('election-detail').classList.add('u-hidden');
+  document.getElementById('election-content').classList.add('u-hidden');
 }
 
 /**
@@ -342,11 +318,20 @@ function showError(message) {
   document.getElementById('election-error').classList.remove('u-hidden');
   document.getElementById('error-message').textContent = message;
   document.getElementById('election-loading').classList.add('u-hidden');
-  document.getElementById('election-detail').classList.add('u-hidden');
+  document.getElementById('election-content').classList.add('u-hidden');
+
+  // Retry button
+  const retryButton = document.getElementById('retry-button');
+  retryButton.onclick = () => {
+    const electionId = getElectionIdFromURL();
+    if (electionId) {
+      loadElection(electionId);
+    }
+  };
 }
 
 /**
- * Utility: Format date for display
+ * Format date for display
  */
 function formatDate(dateString) {
   if (!dateString) return '';

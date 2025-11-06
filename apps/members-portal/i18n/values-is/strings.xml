@@ -198,6 +198,25 @@
   <string name="modal_confirm_message">Viltu staðfesta atkvæði þitt?</string>
   <string name="modal_success_title">✓ Atkvæði skráð</string>
   <string name="modal_success_message">Atkvæði þitt hefur verið skráð.</string>
+
+  <!-- Election Detail Page -->
+  <string name="back_to_elections">Til baka í kosningayfirlit</string>
+  <string name="loading_election">Hleð inn kosningu...</string>
+  <string name="error_load_election">Ekki tókst að sækja kosninguna</string>
+  <string name="error_missing_election_id">Kosningarnúmer vantar</string>
+  <string name="election_question_label">Spurning</string>
+  <string name="voting_select_answer">Veldu þitt svar</string>
+  <string name="results_total_votes">Heildaratkvæði:</string>
+  <string name="election_starts">Kosning hefst:</string>
+  <string name="election_ends">Kosning lýkur:</string>
+  <string name="election_already_voted">✓ Þú hefur kosið</string>
+  <string name="election_already_voted_message">Þú hefur þegar kosið í þessari kosningu.</string>
+  <string name="election_upcoming_message">Þessi kosning hefur ekki enn opnað. Kosning hefst á tilgreindum tíma.</string>
+  <string name="confirm_vote_title">Staðfesta atkvæði</string>
+  <string name="confirm_vote_message">Ertu viss um að þú viljir kjósa þetta svar? Ekki er hægt að breyta atkvæðinu þínu eftir að það er staðfest.</string>
+  <string name="your_answer">Þitt svar</string>
+  <string name="vote_submitted_success">✓ Atkvæðið þitt hefur verið skráð!</string>
+
   <string name="label_street">Gata</string>
   <string name="label_postal_code">Póstnúmer</string>
   <string name="label_city">Staður</string>
