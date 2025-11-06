@@ -6,85 +6,16 @@
 
 // Import from member portal public directory (two levels up from /admin/js/)
 import { initSession } from '../../session/init.js';
+import { initNavigation } from '../../js/nav.js';
+import { debug } from '../../js/utils/debug.js';
 import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
 import { collection, query, orderBy, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { adminStrings } from './i18n/admin-strings-loader.js';
+import { checkAdminAccess, calculateDuration } from './utils/admin-helpers.js';
 
 // Initialize Firebase services
 const auth = getFirebaseAuth();
 const db = getFirebaseFirestore();
-
-/**
- * Load admin-specific strings from admin portal i18n
- */
-class AdminStringsLoader {
-  constructor() {
-    this.strings = {};
-    this.loaded = false;
-  }
-
-  async load() {
-    if (this.loaded) return this.strings;
-
-    try {
-      const response = await fetch('/admin/i18n/values-is/strings.xml');
-      if (!response.ok) {
-        throw new Error(`Failed to load admin strings: ${response.statusText}`);
-      }
-
-      const xmlText = await response.text();
-      this.strings = this.parseXML(xmlText);
-      this.loaded = true;
-
-      return this.strings;
-    } catch (error) {
-      console.error('Failed to load admin strings:', error);
-      throw error;
-    }
-  }
-
-  parseXML(xmlText) {
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-
-    const parserError = xmlDoc.querySelector('parsererror');
-    if (parserError) {
-      throw new Error(`XML parsing error: ${parserError.textContent}`);
-    }
-
-    const strings = {};
-    const stringElements = xmlDoc.querySelectorAll('string');
-
-    stringElements.forEach(element => {
-      const name = element.getAttribute('name');
-      const value = element.textContent;
-      if (name) {
-        strings[name] = value;
-      }
-    });
-
-    return strings;
-  }
-
-  get(key) {
-    return this.strings[key] || key;
-  }
-}
-
-const adminStrings = new AdminStringsLoader();
-
-/**
- * Check if user has developer role
- */
-function checkAdminAccess(userData) {
-  const roles = userData.roles || [];
-  const isAdmin = roles.includes('developer');
-
-  if (!isAdmin) {
-    throw new Error('Unauthorized: Developer role required');
-  }
-
-  return true;
-}
 
 /**
  * Fetch sync logs from Firestore
@@ -221,23 +152,6 @@ function createHistoryRow(log, strings) {
 }
 
 /**
- * Calculate duration from stats
- */
-function calculateDuration(stats) {
-  if (!stats.started_at || !stats.completed_at) return 'N/A';
-
-  const start = new Date(stats.started_at);
-  const end = new Date(stats.completed_at);
-  const durationSec = Math.floor((end - start) / 1000);
-
-  if (durationSec < 60) return `${durationSec}s`;
-
-  const minutes = Math.floor(durationSec / 60);
-  const seconds = durationSec % 60;
-  return `${minutes}m ${seconds}s`;
-}
-
-/**
  * Load and display sync history
  */
 async function loadHistory() {
@@ -247,10 +161,10 @@ async function loadHistory() {
     const logs = await fetchSyncLogs();
     renderHistoryTable(logs);
 
-    console.log(`✓ Loaded ${logs.length} sync logs`);
+    debug.log(`✓ Loaded ${logs.length} sync logs`);
 
   } catch (error) {
-    console.error('Failed to load sync history:', error);
+    debug.error('Failed to load sync history:', error);
     showHistoryError(error);
   }
 }
@@ -265,9 +179,11 @@ function setPageText(strings) {
   // Navigation
   document.getElementById('nav-brand').textContent = strings.admin_brand;
   document.getElementById('nav-admin-dashboard').textContent = strings.nav_admin_dashboard;
+  document.getElementById('nav-admin-members').textContent = strings.nav_admin_members;
   document.getElementById('nav-admin-sync').textContent = strings.nav_admin_sync;
   document.getElementById('nav-admin-history').textContent = strings.nav_admin_history;
   document.getElementById('nav-back-to-member').textContent = strings.nav_back_to_member;
+  document.getElementById('nav-logout').textContent = strings.nav_logout;
 
   // Page header
   document.getElementById('history-title').textContent = strings.history_title;
@@ -307,23 +223,26 @@ async function init() {
     // 3. Check admin access (developer role required)
     checkAdminAccess(userData);
 
-    // 4. Set page text
+    // 4. Initialize navigation (hamburger menu)
+    initNavigation();
+
+    // 5. Set page text
     setPageText(strings);
 
-    // 5. Setup event listeners
+    // 6. Setup event listeners
     setupEventListeners();
 
-    // 6. Load sync history
+    // 7. Load sync history
     await loadHistory();
 
-    console.log('✓ Sync history page initialized');
+    debug.log('✓ Sync history page initialized');
 
   } catch (error) {
-    console.error('Failed to initialize sync history page:', error);
+    debug.error('Failed to initialize sync history page:', error);
 
     // Check if unauthorized
     if (error.message.includes('Unauthorized')) {
-      alert('Þú hefur ekki aðgang að stjórnkerfi. Aðeins notendur með developer role hafa aðgang.');
+      alert(adminStrings.get('error_unauthorized_admin'));
       window.location.href = '/members-area/dashboard.html';
       return;
     }
@@ -335,8 +254,8 @@ async function init() {
     }
 
     // Other errors
-    console.error('Error loading sync history page:', error);
-    alert(`Villa við að hlaða síðu: ${error.message}`);
+    debug.error('Error loading sync history page:', error);
+    alert(adminStrings.get('error_page_load').replace('%s', error.message));
   }
 }
 

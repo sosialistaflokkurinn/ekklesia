@@ -2,104 +2,105 @@
 
 Custom e-democracy voting platform for **Sósíalistaflokkur Íslands** (Socialist Party of Iceland).
 
+[![Test Cloud Functions](https://github.com/sosialistaflokkurinn/ekklesia/actions/workflows/test-functions.yml/badge.svg)](https://github.com/sosialistaflokkurinn/ekklesia/actions/workflows/test-functions.yml)
+[![Security Hygiene](https://github.com/sosialistaflokkurinn/ekklesia/actions/workflows/security-hygiene.yml/badge.svg)](https://github.com/sosialistaflokkurinn/ekklesia/actions/workflows/security-hygiene.yml)
+
 Regnhlífarverkefni fyrir kosningakerfi Sósíalistaflokksins ásamt meðlima og atburðakerfi.
-
----
-
-## 🚀 Production Services
-
-**Status**: ✅ All services operational (October 2025)
-**Project**: ekklesia-prod-10-2025
-**Region**: europe-west2 (London)
-
-| Service | Technology | Status | URL |
-|---------|-----------|--------|-----|
-| **Members** (Meðlimir) | Firebase + Python Functions | ✅ Production | https://ekklesia-prod-10-2025.web.app |
-| **Events** (Atburðir) | Node.js + Cloud Run | ✅ Production | https://events-service-ymzrguoifa-nw.a.run.app |
-| **Elections** (Kosningar) | Node.js + Cloud Run | ✅ Production | https://elections-service-ymzrguoifa-nw.a.run.app |
-
-### Architecture
-
-- **Members Service**: Firebase Hosting + Cloud Functions - National eID (Kenni.is) authentication and membership verification
-- **Events Service**: Node.js + Express on Cloud Run - Election administration and voting token issuance
-- **Elections Service**: Node.js + Express on Cloud Run - Anonymous ballot recording (no PII)
-- **Database**: Cloud SQL PostgreSQL 15 (2 schemas: public, elections)
-- **Authentication**: Firebase Auth + Kenni.is OAuth PKCE
 
 ---
 
 ## 📚 Documentation
 
-**Master Index**: [DOCUMENTATION_MAP.md](DOCUMENTATION_MAP.md) - Complete documentation map
+**Start Here**: [DOCUMENTATION_MAP.md](DOCUMENTATION_MAP.md) - Master documentation index with complete system overview
 
-**Quick Links**:
-- [Documentation Hub](docs/README.md) - All documentation
-- [Repository Structure](DOCUMENTATION_MAP.md#-repository-structure) - Complete repository guide (in Documentation Map)
-- [System Architecture](docs/architecture/SYSTEM_ARCHITECTURE_OVERVIEW.md) - Overall system design
-- [Current Status](docs/features/election-voting/production-status.md) - Production infrastructure
-- [Services](services/) - Member, Events, and Elections services
+**Essential Links**:
+- [Current Status](DOCUMENTATION_MAP.md#current-status) - Production services, recent milestones, current work
+- [Repository Structure](DOCUMENTATION_MAP.md#-repository-structure) - Complete repository organization
+- [System Architecture](docs/design/SYSTEM_ARCHITECTURE_OVERVIEW.md) - Overall system design
+- [Getting Started Guide](docs/README.md) - Documentation hub for all topics
+- [Scripts Documentation](scripts/README.md) - Deployment and maintenance tools
+
+---
+
+## 🚀 Production Services
+
+**Status**: ✅ All services operational (November 2025)
+**Project**: ekklesia-prod-10-2025
+**Region**: europe-west2 (London)
+
+| Service | Technology | Status |
+|---------|-----------|--------|
+| **Members** (Meðlimir) | Firebase + Python Functions | ✅ Production |
+| **Events** (Atburðir) | Node.js + Cloud Run | ✅ Production |
+| **Elections** (Kosningar) | Node.js + Cloud Run | ✅ Production |
+| **Database** | Cloud SQL PostgreSQL 15 | ✅ Production |
+
+**Live URLs**: See [DOCUMENTATION_MAP.md](DOCUMENTATION_MAP.md#-production-services-november-4-2025) for service endpoints.
+
+### Architecture Overview
+
+- **Members Service**: Firebase Hosting + Cloud Functions - National eID (Kenni.is) authentication
+- **Events Service**: Node.js + Express - Election administration and voting token issuance
+- **Elections Service**: Node.js + Express - Anonymous ballot recording (no PII)
+- **Authentication**: Firebase Auth + Kenni.is OAuth PKCE
+
+**Detailed Architecture**: See [docs/design/SYSTEM_ARCHITECTURE_OVERVIEW.md](docs/design/SYSTEM_ARCHITECTURE_OVERVIEW.md)
 
 ---
 
 ## 🏗️ Key Features
 
 - **Secure Authentication**: National eID integration via Kenni.is
-- **Member Verification**: 2,273 active members (January 2025 roster)
+- **Member Verification**: Automatic sync from Django backend
 - **Anonymous Voting**: Zero-knowledge ballot recording (no PII in Elections service)
 - **Token-Based Security**: One-time SHA-256 hashed tokens
-- **Full Audit Trail**: Complete vote tracking in Events service (with member identity)
-- **S2S Integration**: Secure server-to-server communication between services
-- **Icelandic Language**: Full UI in Icelandic (Íslenska)
+- **Full Audit Trail**: Complete vote tracking with member identity (Events service only)
+- **S2S Integration**: Secure server-to-server communication
+- **Icelandic Language**: Full UI in Íslenska
 
----
-
-## 💰 Cost
-
-**Monthly**: ~$7-13/month
-- Members Service: $0 (Firebase free tier)
-- Events Service: $0-3 (Cloud Run free tier)
-- Elections Service: $0-3 (Cloud Run free tier)
-- Cloud SQL: ~$7 (db-f1-micro)
+**Feature Details**: See [DOCUMENTATION_MAP.md](DOCUMENTATION_MAP.md#-repository-structure) for complete feature documentation.
 
 ---
 
 ## 🔒 Security
 
-- **National eID**: Government-issued Kenni.is authentication
-- **OAuth 2.0 PKCE**: RFC 7636 public client flow
-- **CSRF Protection**: State parameter validation (Issue #33 ✅)
-- **Firestore Security Rules**: Role-based access control (Issue #30 ✅)
-- **Rate Limiting**: Cloudflare protection - 100 req/10sec per IP (Issue #31 ✅)
-- **Origin Protection**: CF-Ray header + IP validation on all services
-- **Idempotency**: Race condition protection for user creation (Issue #32 ✅)
-- **Anonymity**: Elections service has zero member identity knowledge
-- **Audit Logging**: Complete trail in Events service (with PII), system-only logs in Elections (no PII)
-- **One-Vote-Per-Token**: Database constraints enforce single vote
-- **SHA-256 Hashing**: All tokens cryptographically hashed
-- **SSL/TLS**: Full (strict) encryption via Cloudflare
+**Security Status**: 8.5/10 - Production-ready with comprehensive protections
+
+Key security features:
+- National eID (Kenni.is) authentication
+- OAuth 2.0 PKCE flow (RFC 7636)
+- CSRF protection with state validation
+- Firestore security rules (role-based access)
+- Rate limiting (Cloudflare, 100 req/10sec per IP)
+- Anonymous voting (Elections service has zero PII)
+- SHA-256 token hashing
+- SSL/TLS Full (strict) encryption
+
+**Security Documentation**: See [docs/security/](docs/security/) for complete security analysis and responses.
+
+---
+
+## 💰 Cost
+
+**Monthly**: ~$7-13/month (optimized for infrequent meetings)
+
+- Members Service: $0 (Firebase free tier)
+- Events + Elections: $0-3 each (Cloud Run free tier)
+- Cloud SQL: ~$7 (db-f1-micro)
+
+**Cost Details**: See [docs/development/guides/workflows/USAGE_CONTEXT.md](docs/development/guides/workflows/USAGE_CONTEXT.md) for load patterns and scaling strategy.
 
 ---
 
 ## 🧑‍💻 Development
 
 ### Prerequisites
+
 - Node.js 18+
 - Python 3.11+
 - Firebase CLI
 - gcloud CLI
 - PostgreSQL client (psql)
-
-### Repository Structure
-
-```
-ekklesia/
-├── services/           # Backend services (Members, Events, Elections)
-├── docs/               # Complete documentation (start: docs/README.md)
-├── testing/            # Test infrastructure and reports
-├── scripts/            # Deployment and utility scripts
-├── infrastructure/     # Infrastructure-as-Code configs
-└── [config files]
-```
 
 ### Quick Start
 
@@ -108,29 +109,58 @@ ekklesia/
 git clone https://github.com/sosialistaflokkurinn/ekklesia.git
 cd ekklesia
 
-# For new developers: Read docs/README.md for learning paths
-# For service-specific setup: See services/{members|events|elections}/README.md
+# Read documentation
+cat docs/README.md  # Start here for learning paths
+
+# See service-specific setup
+cat services/members/README.md
+cat services/events/README.md
+cat services/elections/README.md
 ```
+
+### Repository Structure
+
+```
+ekklesia/
+├── apps/               # Frontend applications (members-portal)
+├── services/           # Backend services (members, events, elections)
+├── docs/               # Complete documentation (start: docs/README.md)
+├── data/               # Data files (gitignored - address database)
+├── scripts/            # Deployment and maintenance scripts
+├── testing/            # E2E tests and test utilities
+├── archive/            # Historical/deprecated code
+└── .github/            # GitHub workflows and templates
+```
+
+**Complete Structure**: See [DOCUMENTATION_MAP.md#-repository-structure](DOCUMENTATION_MAP.md#-repository-structure)
 
 ---
 
-## 📊 Project Timeline
+## 📊 Current Work (November 2025)
 
-- **Oct 1, 2025**: Project created, GCP setup
-- **Oct 6-7, 2025**: Firebase migration (replaced ZITADEL)
-- **Oct 8, 2025**: Members service operational
-- **Oct 9, 2025**: Events + Elections services deployed
-- **Oct 10, 2025**: Full S2S integration complete
-- **Oct 12, 2025**: Security hardening complete (Phase 1-3: Firestore rules, CSRF, rate limiting, Cloudflare automation)
+- **Epic #159**: 🔄 Profile Editing & Admin UI (in progress)
+- **Epic #103**: ✅ Documentation Organization (complete)
+- **Epic #116**: ✅ Members Admin UI (complete)
+
+**Detailed Status**: See [DOCUMENTATION_MAP.md#-current-work](DOCUMENTATION_MAP.md#-current-work) and [DOCUMENTATION_MAP.md#-recent-milestones-november-2025](DOCUMENTATION_MAP.md#-recent-milestones-november-2025)
+
+---
+
+## ⚠️ Note on "prod" Naming
+
+Þetta verkefni notar framleiðslu-innviði (production-grade GCP infrastructure) með `prod` í nafni (verkefni: `ekklesia-prod-10-2025`) vegna þess að **Kenni.is auðkenning krefst slíks umhverfis** (þeir bjóða ekki upp á sandkassa).
+
+Kerfið sjálft er hins vegar á **þróunarstigi**, með óskráða vefslóð og eingöngu prófunarkosningar.
+
+**Full Explanation**: [docs/status/CURRENT_DEVELOPMENT_STATUS.md](docs/status/CURRENT_DEVELOPMENT_STATUS.md)
 
 ---
 
 ## 📞 Support
 
-**Project**: ekklesia-prod-10-2025
 **Repository**: https://github.com/sosialistaflokkurinn/ekklesia
 **Organization**: Sósíalistaflokkur Íslands
-**Account**: gudrodur@sosialistaflokkurinn.is
+**Project**: ekklesia-prod-10-2025
 
 **Production Consoles**:
 - [Firebase Console](https://console.firebase.google.com/project/ekklesia-prod-10-2025)
@@ -139,5 +169,5 @@ cd ekklesia
 
 ---
 
-**Last Updated**: October 21, 2025 (Restructured for Phase 5+ growth)
-**Repository Status**: ✅ Restructured for scalability - Ready for Phase 5 development
+**Last Updated**: November 4, 2025
+**Status**: ✅ Phase 5 Complete - Full voting system operational

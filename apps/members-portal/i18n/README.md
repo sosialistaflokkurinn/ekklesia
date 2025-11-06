@@ -28,8 +28,10 @@ i18n/
 ├── README.md                      # This file
 ├── strings-loader.js              # XML parser and R.string implementation
 └── values-is/                     # Icelandic locale (default)
-    └── strings.xml                # 200+ Icelandic strings
+    └── strings.xml                # 210 member portal strings
 ```
+
+**Note**: Admin portal has its own separate i18n system at `admin/i18n/` with 129 admin-specific strings.
 
 ### Adding New Locales
 
@@ -434,16 +436,21 @@ R.has('error_message')
 
 ---
 
-## Files Updated
+## Files Using This System
 
-All HTML files now use the XML-based i18n system:
+All member portal HTML files use the XML-based i18n system:
 
-1. ✅ `public/index.html` - Login page
-2. ✅ `public/dashboard.html` - Dashboard
-3. ✅ `public/profile.html` - Profile page
-4. ✅ `public/test-events.html` - Events test page
+1. ✅ `index.html` - Login page
+2. ✅ `members-area/dashboard.html` - Dashboard
+3. ✅ `members-area/profile.html` - Profile page
+4. ✅ `members-area/events.html` - Events page
+5. ✅ `members-area/elections.html` - Elections list
+6. ✅ `members-area/election-detail.html` - Election voting
+7. ✅ `members-area/test-events.html` - Events test page
 
 All files import from `strings-loader.js` and call `await R.load('is')` before accessing strings.
+
+**Admin Portal**: Uses separate i18n system (`admin/i18n/admin-strings-loader.js`)
 
 ---
 
@@ -467,6 +474,7 @@ Possible improvements:
 
 ---
 
-**Last Updated**: 2025-10-12
+**Last Updated**: 2025-11-05
 **Locale**: Icelandic (is) - Default
-**String Count**: 200+ strings in values-is/strings.xml
+**String Count**: 210 strings in values-is/strings.xml (member portal only)
+**Admin Strings**: 129 additional strings in admin/i18n/values-is/strings.xml

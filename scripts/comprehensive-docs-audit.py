@@ -764,7 +764,8 @@ class DocumentationAuditor:
         
         print(f"📄 Created: {remediation_plan}")
 
-def main():
+def main() -> None:
+    """Main entry point for comprehensive documentation audit."""
     project_root = Path("/home/gudro/Development/projects/ekklesia")
     
     print("🚀 Starting Comprehensive Documentation Audit\n")

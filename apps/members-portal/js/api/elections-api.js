@@ -12,6 +12,7 @@
  */
 
 import { MockElectionsAPI } from './elections-mock.js';
+import { debug } from '../utils/debug.js';
 import { authenticatedFetch } from '../auth.js';
 
 // DEVELOPMENT FLAG: Toggle between mock and real API
@@ -60,7 +61,7 @@ export async function getElections(filters = {}) {
     return data.elections || [];
 
   } catch (error) {
-    console.error('Error fetching elections:', error);
+    debug.error('Error fetching elections:', error);
     throw error;
   }
 }
@@ -87,7 +88,7 @@ export async function getElectionById(electionId) {
     return await response.json();
 
   } catch (error) {
-    console.error(`Error fetching election ${electionId}:`, error);
+    debug.error(`Error fetching election ${electionId}:`, error);
     throw error;
   }
 }
@@ -133,7 +134,7 @@ export async function submitVote(electionId, answerId) {
     return await response.json();
 
   } catch (error) {
-    console.error(`Error submitting vote for election ${electionId}:`, error);
+    debug.error(`Error submitting vote for election ${electionId}:`, error);
     throw error;
   }
 }
@@ -177,7 +178,7 @@ export async function getResults(electionId) {
     return await response.json();
 
   } catch (error) {
-    console.error(`Error fetching results for election ${electionId}:`, error);
+    debug.error(`Error fetching results for election ${electionId}:`, error);
     throw error;
   }
 }

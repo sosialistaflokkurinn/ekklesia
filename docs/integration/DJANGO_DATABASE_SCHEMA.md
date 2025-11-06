@@ -650,7 +650,7 @@ match /members/{kennitala} {
 ## Related Documentation
 
 - [EPIC_43_MEMBER_MANAGEMENT_SYSTEM.md](../features/election-voting/EPIC_43_MEMBER_MANAGEMENT_SYSTEM.md) - Main Epic #43 spec
-- [DJANGO_LEGACY_SYSTEM.md](../../archive/docs-legacy/DJANGO_LEGACY_SYSTEM.md) - Django system overview
+- DJANGO_LEGACY_SYSTEM.md (archived) - Django system overview
 - [REYKJAVIK_ADDRESS_API_RESEARCH.md](REYKJAVIK_ADDRESS_API_RESEARCH.md) - Address lookup research
 
 ---

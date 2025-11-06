@@ -1,0 +1,350 @@
+/**
+ * Shared Status Icon Component Styles
+ *
+ * Created: 2025-11-05
+ * Purpose: Unified status icons (success, error, warning, info)
+ * Consolidates: Checkmarks, X marks, warning icons across portals
+ *
+ * Usage:
+ *   <span class="status-icon status-icon--success"></span>
+ *   <span class="status-icon status-icon--error"></span>
+ *   <span class="status-icon status-icon--loading"></span>
+ */
+
+/* ===========================
+   Base Status Icon
+   =========================== */
+
+.status-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+/* Hide when empty */
+.status-icon:empty {
+  display: none;
+}
+
+/* ===========================
+   Size Variants
+   =========================== */
+
+.status-icon--xs {
+  width: 14px;
+  height: 14px;
+  font-size: 11px;
+}
+
+.status-icon--sm {
+  width: 18px;
+  height: 18px;
+  font-size: 14px;
+}
+
+.status-icon--md {
+  width: 20px;
+  height: 20px;
+  font-size: 16px;
+}
+
+.status-icon--lg {
+  width: 24px;
+  height: 24px;
+  font-size: 20px;
+}
+
+.status-icon--xl {
+  width: 32px;
+  height: 32px;
+  font-size: 24px;
+}
+
+/* ===========================
+   Success Icon (Checkmark)
+   =========================== */
+
+.status-icon--success {
+  display: inline-flex !important;
+  color: var(--color-success);
+}
+
+.status-icon--success::after {
+  content: "✓";
+}
+
+/* Alternative checkmark styles */
+.status-icon--success.status-icon--circle {
+  background: var(--color-success-bg);
+  border: 2px solid var(--color-success);
+  border-radius: 50%;
+  color: var(--color-success);
+}
+
+.status-icon--success.status-icon--filled {
+  background: var(--color-success);
+  border-radius: 50%;
+  color: white;
+}
+
+/* ===========================
+   Error Icon (X mark)
+   =========================== */
+
+.status-icon--error {
+  display: inline-flex !important;
+  color: var(--color-error);
+}
+
+.status-icon--error::after {
+  content: "✕";
+}
+
+.status-icon--error.status-icon--circle {
+  background: var(--color-error-bg);
+  border: 2px solid var(--color-error);
+  border-radius: 50%;
+  color: var(--color-error);
+}
+
+.status-icon--error.status-icon--filled {
+  background: var(--color-error);
+  border-radius: 50%;
+  color: white;
+}
+
+/* ===========================
+   Warning Icon
+   =========================== */
+
+.status-icon--warning {
+  display: inline-flex !important;
+  color: var(--color-warning);
+}
+
+.status-icon--warning::after {
+  content: "⚠";
+}
+
+.status-icon--warning.status-icon--circle {
+  background: var(--color-warning-bg);
+  border: 2px solid var(--color-warning-border);
+  border-radius: 50%;
+  color: var(--color-warning-dark);
+}
+
+.status-icon--warning.status-icon--filled {
+  background: var(--color-warning);
+  border-radius: 50%;
+  color: white;
+}
+
+/* ===========================
+   Info Icon
+   =========================== */
+
+.status-icon--info {
+  display: inline-flex !important;
+  color: var(--color-info);
+}
+
+.status-icon--info::after {
+  content: "ℹ";
+}
+
+.status-icon--info.status-icon--circle {
+  background: var(--color-info-bg);
+  border: 2px solid var(--color-info-border);
+  border-radius: 50%;
+  color: var(--color-info-text);
+}
+
+.status-icon--info.status-icon--filled {
+  background: var(--color-info);
+  border-radius: 50%;
+  color: white;
+}
+
+/* ===========================
+   Loading Icon (Spinner)
+   =========================== */
+
+.status-icon--loading {
+  display: inline-flex !important;
+}
+
+.status-icon--loading::after {
+  content: "";
+  display: block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--color-gray-300);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: status-icon-spin 0.6s linear infinite;
+}
+
+.status-icon--loading.status-icon--lg::after {
+  width: 20px;
+  height: 20px;
+  border-width: 3px;
+}
+
+@keyframes status-icon-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===========================
+   Pending/Processing Icon
+   =========================== */
+
+.status-icon--pending {
+  display: inline-flex !important;
+  color: var(--color-gray-500);
+}
+
+.status-icon--pending::after {
+  content: "⋯";
+  letter-spacing: 2px;
+  animation: status-icon-blink 1.4s ease-in-out infinite;
+}
+
+@keyframes status-icon-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* ===========================
+   Custom Icons (Unicode)
+   =========================== */
+
+.status-icon--check {
+  display: inline-flex !important;
+}
+
+.status-icon--check::after {
+  content: "✓";
+}
+
+.status-icon--cross {
+  display: inline-flex !important;
+}
+
+.status-icon--cross::after {
+  content: "✕";
+}
+
+.status-icon--question {
+  display: inline-flex !important;
+}
+
+.status-icon--question::after {
+  content: "?";
+}
+
+.status-icon--exclamation {
+  display: inline-flex !important;
+}
+
+.status-icon--exclamation::after {
+  content: "!";
+}
+
+/* ===========================
+   Interactive Status Icons
+   =========================== */
+
+.status-icon--clickable {
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.status-icon--clickable:hover {
+  transform: scale(1.2);
+  opacity: 0.8;
+}
+
+.status-icon--clickable:active {
+  transform: scale(1);
+}
+
+/* ===========================
+   Status Icon with Text
+   =========================== */
+
+.status-icon-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-icon-group__text {
+  font-size: 0.9375rem;
+  color: var(--color-gray-700);
+}
+
+.status-icon-group--success .status-icon-group__text {
+  color: var(--color-success-text);
+}
+
+.status-icon-group--error .status-icon-group__text {
+  color: var(--color-error-text);
+}
+
+.status-icon-group--warning .status-icon-group__text {
+  color: var(--color-warning-dark);
+}
+
+.status-icon-group--info .status-icon-group__text {
+  color: var(--color-info-text);
+}
+
+/* ===========================
+   Accessibility
+   =========================== */
+
+/* For screen readers - provide text alternative */
+.status-icon[aria-label]::before {
+  content: attr(aria-label);
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ===========================
+   Responsive Design
+   =========================== */
+
+@media (max-width: 640px) {
+  .status-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 14px;
+  }
+
+  .status-icon--lg {
+    width: 22px;
+    height: 22px;
+    font-size: 18px;
+  }
+
+  .status-icon--xl {
+    width: 28px;
+    height: 28px;
+    font-size: 22px;
+  }
+}

@@ -73,7 +73,7 @@
 
 ### Phase 4: Architecture Decision - Direct Cloud Run URLs (Oct 13, 2025)
 - ✅ **Decision**: Use native Cloud Run URLs (*.run.app) instead of custom domains
-- ✅ **Rationale**: Cost-benefit analysis (see [SECURITY_DEFENSE_ANALYSIS.md](../security/SECURITY_DEFENSE_ANALYSIS.md))
+- ✅ **Rationale**: Cost-benefit analysis (see SECURITY_DEFENSE_ANALYSIS.md (see security/))
   - Custom domains via Load Balancer: $216/year = 138% cost increase
   - Custom domains via Cloudflare Pro: $240/year = 154% cost increase
   - Direct URLs: $0 = cosmetic trade-off for cost efficiency
@@ -85,11 +85,11 @@
 - ✅ **Security Maintained**: Authentication, authorization, audit logging all active
 
 **Documentation**:
-- [docs/status/SECURITY_HARDENING_PLAN.md](SECURITY_HARDENING_PLAN.md) - Complete hardening plan
-- [docs/security/CLOUDFLARE_SETUP.md](../security/CLOUDFLARE_SETUP.md) - Cloudflare infrastructure guide
-- [docs/security/SECURITY_DEFENSE_ANALYSIS.md](../security/SECURITY_DEFENSE_ANALYSIS.md) - Security assessment & architecture decisions
-- [docs/security/CLOUDFLARE_HOST_HEADER_INVESTIGATION.md](../security/CLOUDFLARE_HOST_HEADER_INVESTIGATION.md) - Technical investigation
-- [scripts/README.md](../../scripts/README.md) - Automation scripts guide
+- SECURITY_HARDENING_PLAN.md (see security/) - Complete hardening plan
+- CLOUDFLARE_SETUP.md (see security/) - Cloudflare infrastructure guide
+- SECURITY_DEFENSE_ANALYSIS.md (see security/) - Security assessment & architecture decisions
+- CLOUDFLARE_HOST_HEADER_INVESTIGATION.md (see security/current/) - Technical investigation
+- scripts/ (no README) - Automation scripts guide
 
 **Architecture Justification**:
 - ✅ Threat level appropriate (monthly meetings, low-profile target)
@@ -132,7 +132,7 @@
 
 **Test Environment**: Production services  
 **Test Page**: https://ekklesia-prod-10-2025.web.app/test-events.html  
-**Detailed Log**: [docs/testing/END_TO_END_VOTING_FLOW_TEST.md](../testing/END_TO_END_VOTING_FLOW_TEST.md)
+**Detailed Log**: END_TO_END_VOTING_FLOW_TEST.md (see testing/)
 
 **Results**: All stages successful
 1. ✅ Authentication (Kenni.is → Firebase custom token)
@@ -321,7 +321,7 @@
 - Max instances: 10
 - Min instances: 0
 - Timeout: 60s
-- Cloud SQL connector: ekklesia-prod-10-2025:europe-west2:ekklesia-db
+- Cloud SQL connector: $DB_CONNECTION_NAME
 - Public access: Allowed (Firebase auth enforced at app level)
 
 **Testing Results**:
@@ -344,8 +344,8 @@
 - Image: `gcr.io/ekklesia-prod-10-2025/events-service`
 - Test page: `events/test-production.html` (use with Members service)
 
-**Design Document**: [docs/design/EVENTS_SERVICE_MVP.md](../design/EVENTS_SERVICE_MVP.md)
-**Testing Log**: [archive/testing-logs/EVENTS_SERVICE_TESTING_LOG.md](../../archive/testing-logs/EVENTS_SERVICE_TESTING_LOG.md) (archived Oct 11)
+**Design Document**: EVENTS_SERVICE_MVP.md (see services/events/)
+**Testing Log**: EVENTS_SERVICE_TESTING_LOG.md (archived) (archived Oct 11)
 
 ---
 
@@ -402,9 +402,9 @@
 2. End-to-end integration testing
 3. Load testing (300 votes/sec spike - see USAGE_CONTEXT.md)
 
-**Design Document**: [docs/design/ELECTIONS_SERVICE_MVP.md](../design/ELECTIONS_SERVICE_MVP.md)
-**Load Patterns**: [docs/USAGE_CONTEXT.md](../USAGE_CONTEXT.md)
-**Operations**: [docs/OPERATIONAL_PROCEDURES.md](../OPERATIONAL_PROCEDURES.md)
+**Design Document**: ELECTIONS_SERVICE_MVP.md (see services/elections/)
+**Load Patterns**: [USAGE_CONTEXT.md](../../development/guides/workflows/USAGE_CONTEXT.md)
+**Operations**: [OPERATIONAL_PROCEDURES.md](../../operations/OPERATIONAL_PROCEDURES.md)
 
 ---
 

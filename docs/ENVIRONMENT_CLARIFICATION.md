@@ -270,8 +270,8 @@ Even though we're using production infrastructure and real authentication, we ha
 
 **Questions?** Ask the development team or refer to:
 - [CURRENT_DEVELOPMENT_STATUS.md](status/CURRENT_DEVELOPMENT_STATUS.md) - System status
-- [OPERATIONAL_PROCEDURES.md](OPERATIONAL_PROCEDURES.md) - Meeting operations
-- [USAGE_CONTEXT.md](USAGE_CONTEXT.md) - Usage patterns
+- [OPERATIONAL_PROCEDURES.md](operations/OPERATIONAL_PROCEDURES.md) - Meeting operations
+- [USAGE_CONTEXT.md](development/guides/workflows/USAGE_CONTEXT.md) - Usage patterns
 
 ---
 

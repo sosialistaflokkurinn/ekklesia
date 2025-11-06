@@ -31,7 +31,8 @@ KENNITALA=${3:-""}
 EMAIL=${4:-""}
 PHONE=${5:-""}
 
-PROJECT_ID="ekklesia-prod-10-2025"
+# Source centralized environment variables
+source "$(dirname "$0")/../../../scripts/deployment/set-env.sh"
 
 echo "⚠️  WARNING: This script overwrites ALL custom claims."
 echo ""

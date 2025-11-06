@@ -14,7 +14,7 @@ DOC_MAP = REPO_ROOT / "DOCUMENTATION_MAP.md"
 # Read list of broken links
 BROKEN_LINKS_FILE = Path("/tmp/all_broken_links.txt")
 
-def remove_dead_links():
+def remove_dead_links() -> Any:
     """Remove references to files that don't exist"""
 
     print(f"Reading {DOC_MAP}")

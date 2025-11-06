@@ -13,6 +13,7 @@
  */
 
 import { R } from '../i18n/strings-loader.js';
+import { debug } from './utils/debug.js';
 import { initAuthenticatedPage } from './page-init.js';
 import { requireAuth, getUserData, signOut, authenticatedFetch, AuthenticationError } from '../session/auth.js';
 import { setTextContent, setDisabled, setInnerHTML, validateElements, getElementByIdSafe } from '../ui/dom.js';
@@ -350,37 +351,37 @@ async function init() {
     // Enable common buttons always after auth
     enableButtons(true);
 
-    // Gate admin reset section by role (developer only)
+    // Gate admin reset section by role (superuser only)
     try {
-      console.log('=== RBAC Debug ===');
-      console.log('userData:', userData);
-      console.log('userData.roles:', userData.roles);
-      console.log('Is array?', Array.isArray(userData.roles));
+      debug.log('=== RBAC Debug ===');
+      debug.log('userData:', userData);
+      debug.log('userData.roles:', userData.roles);
+      debug.log('Is array?', Array.isArray(userData.roles));
 
       const resetSectionTitle = document.getElementById('test-7-title');
       const resetButton = document.getElementById('btn-reset-election');
-      const hasDeveloperRole = Array.isArray(userData.roles) && userData.roles.includes('developer');
+      const hasDeveloperRole = Array.isArray(userData.roles) && userData.roles.includes('superuser');
 
-      console.log('hasDeveloperRole:', hasDeveloperRole);
+      debug.log('hasDeveloperRole:', hasDeveloperRole);
 
       if (!hasDeveloperRole) {
-        console.log('❌ No developer role - hiding section');
+        debug.log('❌ No superuser role - hiding section');
         // Hide the entire section by collapsing elements
         if (resetSectionTitle) {
           const section = resetSectionTitle.closest('.test-section');
           if (section) {
             section.style.display = 'none';
-            console.log('Section hidden');
+            debug.log('Section hidden');
           }
         }
       } else {
-        console.log('✅ Developer role found - showing section');
+        debug.log('✅ Developer role found - showing section');
         // Ensure reset button is enabled for devs
         if (resetButton) resetButton.disabled = false;
       }
     } catch (e) {
       // Non-fatal UI gating error; continue without exposing controls
-      console.warn('Role-gating error:', e);
+      debug.warn('Role-gating error:', e);
     }
 
     // Get API URLs from config
@@ -397,7 +398,7 @@ async function init() {
     }
 
     // Other errors
-    console.error('Test events page initialization failed:', error);
+    debug.error('Test events page initialization failed:', error);
   }
 }
 

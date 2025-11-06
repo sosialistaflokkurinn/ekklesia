@@ -200,11 +200,10 @@ Get election results
    NODE_ENV=development
    ```
 
-5. Start the Cloud SQL Auth Proxy in a separate terminal (requires gcloud CLI 420+):
+5. Start the Cloud SQL Auth Proxy in a separate terminal:
    ```bash
-   cloud-sql-proxy \
-     --port 5433 \
-     ekklesia-prod-10-2025:europe-west2:ekklesia-db
+   # This script sources the DB_CONNECTION_NAME from the central set-env.sh file
+   ./scripts/database/start-proxy.sh
    ```
 
 6. Run migrations (if not already applied):

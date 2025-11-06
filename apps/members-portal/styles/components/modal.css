@@ -1,0 +1,261 @@
+/**
+ * Modal Dialog Component Styles
+ * 
+ * Unified modal dialog styles for member portal and admin portal.
+ * Used by /js/components/modal.js
+ * 
+ * Features:
+ * - Centered modal with backdrop
+ * - Fade-in/scale animation
+ * - Multiple sizes (sm, md, lg, xl)
+ * - Mobile responsive
+ * - Accessible (focus trap, keyboard support)
+ * 
+ * @requires CSS variables from global.css (--color-*, --spacing-*, --radius-*)
+ */
+
+/* Modal overlay (backdrop) */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-lg, 24px);
+  
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+  
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  
+  z-index: 9999;
+  overflow-y: auto;
+}
+
+/* Show state (fade in) */
+.modal-overlay--show {
+  opacity: 1;
+}
+
+.modal-overlay--show .modal {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* Modal container */
+.modal {
+  position: relative;
+  
+  background: white;
+  border-radius: var(--radius-xl, 12px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  
+  transform: scale(0.95);
+  opacity: 0;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  
+  max-height: 90vh;
+  overflow: hidden;
+  
+  display: flex;
+  flex-direction: column;
+}
+
+/* Modal sizes */
+.modal--sm {
+  width: 100%;
+  max-width: 400px;
+}
+
+.modal--md {
+  width: 100%;
+  max-width: 600px;
+}
+
+.modal--lg {
+  width: 100%;
+  max-width: 800px;
+}
+
+.modal--xl {
+  width: 100%;
+  max-width: 1000px;
+}
+
+/* Modal header */
+.modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md, 16px);
+  
+  padding: var(--spacing-lg, 24px);
+  border-bottom: 1px solid var(--color-gray-200, #e2e8f0);
+}
+
+.modal__title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-gray-800, #1a202c);
+}
+
+.modal__close {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm, 4px);
+  
+  font-size: 24px;
+  line-height: 1;
+  color: var(--color-gray-500, #718096);
+  
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.modal__close:hover {
+  background: var(--color-gray-100, #edf2f7);
+  color: var(--color-gray-700, #2d3748);
+}
+
+.modal__close:focus {
+  outline: 2px solid var(--color-primary, #d32f2f);
+  outline-offset: 2px;
+}
+
+/* Modal body */
+.modal__body {
+  flex: 1;
+  padding: var(--spacing-lg, 24px);
+  overflow-y: auto;
+}
+
+.modal__message {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--color-gray-700, #2d3748);
+}
+
+/* Modal footer */
+.modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--spacing-sm, 8px);
+  
+  padding: var(--spacing-lg, 24px);
+  border-top: 1px solid var(--color-gray-200, #e2e8f0);
+}
+
+.modal__footer .btn {
+  min-width: 100px;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .modal-overlay {
+    padding: var(--spacing-md, 16px);
+    align-items: flex-end;
+  }
+
+  .modal {
+    max-height: 85vh;
+  }
+
+  .modal--sm,
+  .modal--md,
+  .modal--lg,
+  .modal--xl {
+    width: 100%;
+    max-width: none;
+  }
+
+  .modal__header,
+  .modal__body,
+  .modal__footer {
+    padding: var(--spacing-md, 16px);
+  }
+
+  .modal__footer {
+    flex-direction: column-reverse;
+  }
+
+  .modal__footer .btn {
+    width: 100%;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .modal {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .modal-overlay,
+  .modal {
+    transition: opacity 0.1s ease;
+  }
+
+  .modal {
+    transform: none;
+  }
+
+  .modal-overlay--show .modal {
+    transform: none;
+  }
+}
+
+/* Prevent body scroll when modal is open */
+body.modal-open {
+  overflow: hidden;
+}
+
+/* Dark mode support (optional - can be enabled later) */
+@media (prefers-color-scheme: dark) {
+  .modal-overlay {
+    background: rgba(0, 0, 0, 0.7);
+  }
+
+  .modal {
+    background: var(--color-gray-800, #1a202c);
+  }
+
+  .modal__title {
+    color: white;
+  }
+
+  .modal__message {
+    color: var(--color-gray-200, #e2e8f0);
+  }
+
+  .modal__header,
+  .modal__footer {
+    border-color: var(--color-gray-700, #2d3748);
+  }
+
+  .modal__close {
+    color: var(--color-gray-400, #a0aec0);
+  }
+
+  .modal__close:hover {
+    background: var(--color-gray-700, #2d3748);
+    color: white;
+  }
+}

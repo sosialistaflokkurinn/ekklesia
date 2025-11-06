@@ -7,6 +7,7 @@
  */
 
 import { R } from '/i18n/strings-loader.js';
+import { debug } from './utils/debug.js';
 import { getCurrentUser, auth, appCheck } from '/js/auth.js';
 import { signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { getApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
@@ -98,9 +99,9 @@ async function handleOAuthCallback(authCode, functions) {
     let appCheckTokenResponse;
     try {
       appCheckTokenResponse = await getAppCheckToken(appCheck, false);
-      console.log('✅ App Check token obtained for handleKenniAuth');
+      debug.log('✅ App Check token obtained for handleKenniAuth');
     } catch (error) {
-      console.warn('⚠️ App Check token unavailable, continuing without it:', error);
+      debug.warn('⚠️ App Check token unavailable, continuing without it:', error);
     }
 
     // Call Cloud Function to exchange code for token
@@ -134,7 +135,7 @@ async function handleOAuthCallback(authCode, functions) {
         }
       } catch (readError) {
         // If we can't read the response, use status text
-        console.error('Failed to read error response:', readError);
+        debug.error('Failed to read error response:', readError);
       }
 
       throw new Error(errorMessage);
@@ -153,16 +154,16 @@ async function handleOAuthCallback(authCode, functions) {
     try {
       const verifyMembership = httpsCallable(functions, 'verifyMembership');
       await verifyMembership();
-      console.log(R.string.log_membership_verified);
+      debug.log(R.string.log_membership_verified);
     } catch (verifyError) {
-      console.warn(R.string.log_membership_verify_failed, verifyError);
+      debug.warn(R.string.log_membership_verify_failed, verifyError);
       // Continue to dashboard even if verification fails
     }
 
     // Redirect to dashboard
     window.location.href = R.string.path_dashboard;
   } catch (error) {
-    console.error(R.string.log_authentication_error, error);
+    debug.error(R.string.log_authentication_error, error);
     statusEl.className = 'status error';
     statusTextEl.textContent = R.format(R.string.error_authentication, error.message);
     authButtonsEl.style.display = 'block';
@@ -223,7 +224,7 @@ function validateCSRF(returnedState) {
   const statusTextEl = document.getElementById('status-text');
   const storedState = sessionStorage.getItem('oauth_state');
 
-  console.log('CSRF validation:', {
+  debug.log('CSRF validation:', {
     returnedState: returnedState ? `${returnedState.substring(0, 8)}...` : 'null',
     storedState: storedState ? `${storedState.substring(0, 8)}...` : 'null',
     match: returnedState === storedState
@@ -233,8 +234,8 @@ function validateCSRF(returnedState) {
     statusEl.textContent = R.string.error_csrf_title;
     statusTextEl.textContent = R.string.error_csrf_message;
     statusTextEl.style.color = 'red';
-    console.error(R.string.log_csrf_failed);
-    console.error('CSRF mismatch - this usually means you opened the OAuth redirect in a different browser tab');
+    debug.error(R.string.log_csrf_failed);
+    debug.error('CSRF mismatch - this usually means you opened the OAuth redirect in a different browser tab');
     sessionStorage.removeItem('oauth_state');
     sessionStorage.removeItem('pkce_code_verifier');
     return false;
@@ -295,5 +296,5 @@ async function init() {
 
 // Run initialization
 init().catch(error => {
-  console.error('Login initialization failed:', error);
+  debug.error('Login initialization failed:', error);
 });

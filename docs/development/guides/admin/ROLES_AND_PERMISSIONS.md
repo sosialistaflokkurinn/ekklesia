@@ -1,161 +1,233 @@
 # Roles and Permissions (RBAC)
 
-**Classification**: Public - Architecture
-**Sensitive Operations**: See internal documentation
+**Classification**: Public - Architecture  
+**Last Updated**: 2025-11-01  
+**Status**: ✅ Active - Django Integration Complete
 
-This document defines the roles for the Ekklesia platform at a high level. The goal is to follow the principle of least privilege, keep operational actions auditable, and make it easy to reason about who can do what.
+This document defines the roles for the Ekklesia platform. The goal is to follow the principle of least privilege, keep operational actions auditable, and make it easy to reason about who can do what.
 
-**NOTE**: Detailed role assignment procedures and operational runbooks are maintained separately for authorized administrators only.
+## Role Definitions
 
-## Role definitions
+Roles are synchronized from Django User model to Firebase custom claims:
 
-- developer (highest privileges)
-  - Intended for core platform developers and SREs.
-  - Full administrative capabilities across non-voting-critical operations in lower environments; restricted and audited in production.
-  - Can perform destructive reset operations during testing (e.g., election data resets), manage config, and run maintenance scripts.
+### superuser
+- **Source**: Django `User.is_superuser = True`
+- **Permissions**: Full administrative capabilities including destructive operations
+- **Use Cases**:
+  - Platform developers and SREs
+  - Destructive reset operations during testing (e.g., election data resets)
+  - System configuration and maintenance scripts
+  - Database migrations and schema changes
 
-- meeting_election_manager
-  - Responsible for a specific meeting/election lifecycle.
-  - Can prepare and open/close elections, monitor progress, and access results dashboards.
-  - Cannot perform general platform administration outside election management.
+### admin  
+- **Source**: Django `User.is_staff = True`
+- **Permissions**: Administrative operations (non-destructive)
+- **Use Cases**:
+  - Election lifecycle management (create, publish, close)
+  - Event metadata management
+  - Member data administration
+  - Results dashboards and monitoring
 
-- event_manager
-  - Manages Events service data and schedules (e.g., configuring event metadata, timelines, announcements).
-  - Cannot change election tallies or bypass security boundaries.
+### member
+- **Source**: All authenticated party members (automatic)
+- **Permissions**: Basic authenticated access
+- **Use Cases**:
+  - Authenticate via Kenni.is
+  - Request voting tokens (when eligible)
+  - Cast votes in open elections
+  - View permitted results
 
-- member
-  - Regular authenticated party member.
-  - Can authenticate, request a voting token (when eligible), vote, and view permitted results.
+**Notes**:
+- Role names are lowercase identifiers used in Firebase custom claims (e.g., `roles: ["superuser", "admin", "member"]`)
+- The `member` role is automatically assigned to all authenticated party members
+- A user can have multiple roles (e.g., both `admin` and `superuser`)
 
-Notes:
-- Role names are lowercase identifiers used in Firebase custom claims (e.g., `roles: ["developer", "meeting_election_manager"]`).
-- The `member` capability may be inferred from `isMember: true` claim; adding `member` to the roles array is optional but can help with UI gating.
+---
 
-## Permission matrix (current services)
+## Permission Matrix
 
 Legend:
 - ✅ allowed
 - ❌ forbidden
-- — not applicable / not required by role
 
-### Admin Actions Permission Matrix
+### Admin Actions
 
-| Action | Endpoint | developer | meeting_election_manager | event_manager | member |
-|--------|----------|-----------|--------------------------|---------------|---------|
-| **Election Lifecycle** | | | | | |
-| Create election (draft) | POST /api/admin/elections | ✅ | ✅ | ❌ | ❌ |
-| Edit draft election | PATCH /api/admin/elections/:id/draft | ✅ | ✅ | ❌ | ❌ |
-| Publish election | POST /api/admin/elections/:id/publish | ✅ | ✅ | ❌ | ❌ |
-| Pause election | POST /api/admin/elections/:id/pause | ✅ | ✅ | ❌ | ❌ |
-| Resume election | POST /api/admin/elections/:id/resume | ✅ | ✅ | ❌ | ❌ |
-| Close election | POST /api/admin/elections/:id/close | ✅ | ✅ | ❌ | ❌ |
-| Archive election | POST /api/admin/elections/:id/archive | ✅ | ✅ | ❌ | ❌ |
-| Delete draft (soft) | DELETE /api/admin/elections/:id | ✅ | ❌ | ❌ | ❌ |
-| **Metadata Management** | | | | | |
-| Edit election metadata | PATCH /api/admin/elections/:id/metadata | ✅ | ✅ | ✅ | ❌ |
-| **Viewing & Monitoring** | | | | | |
-| List elections (admin) | GET /api/admin/elections | ✅ | ✅ | ✅ | ❌ |
-| Preview election detail | GET /api/admin/elections/:id | ✅ | ✅ | ✅ | ❌ |
-| **Developer Operations** | | | | | |
-| Reset election data | POST /api/admin/reset-election | ✅ | ❌ | ❌ | ❌ |
+| Action | Endpoint | superuser | admin | member |
+|--------|----------|-----------|-------|--------|
+| **Election Lifecycle** | | | | |
+| Create election (draft) | POST /api/admin/elections | ✅ | ✅ | ❌ |
+| Edit draft election | PATCH /api/admin/elections/:id/draft | ✅ | ✅ | ❌ |
+| Publish election | POST /api/admin/elections/:id/publish | ✅ | ✅ | ❌ |
+| Pause election | POST /api/admin/elections/:id/pause | ✅ | ✅ | ❌ |
+| Resume election | POST /api/admin/elections/:id/resume | ✅ | ✅ | ❌ |
+| Close election | POST /api/admin/elections/:id/close | ✅ | ✅ | ❌ |
+| Archive election | POST /api/admin/elections/:id/archive | ✅ | ✅ | ❌ |
+| **Destructive Operations** | | | | |
+| Delete draft (soft) | DELETE /api/admin/elections/:id | ✅ | ❌ | ❌ |
+| Reset election data | POST /api/admin/reset-election | ✅ | ❌ | ❌ |
+| **Metadata Management** | | | | |
+| Edit election metadata | PATCH /api/admin/elections/:id/metadata | ✅ | ✅ | ❌ |
+| **Viewing & Monitoring** | | | | |
+| List elections (admin) | GET /api/admin/elections | ✅ | ✅ | ❌ |
+| Preview election detail | GET /api/admin/elections/:id | ✅ | ✅ | ❌ |
 
 **Notes**:
-- **developer**: Full access to all admin operations including destructive actions
-- **meeting_election_manager**: Can manage full election lifecycle (create → close → archive) but cannot delete or reset
-- **event_manager**: Can only edit metadata (title, description, dates) - no lifecycle control
+- **superuser**: Full access including destructive operations
+- **admin**: Can manage elections but cannot delete or reset
 - **member**: No admin access (public endpoints only)
 
-### Members service (Cloud Functions)
-- handleKenniAuth (OAuth/PKCE sign-in): member (no special role required beyond authentication)
-- verify membership: member
-- Admin actions: none exposed currently
+---
 
-### Members portal (Upcoming: Epic #87 Phase 2)
-- `/elections` list: visible to authenticated members; contents filtered by eligibility data supplied by Events API (#65).
-- `/elections/:id` detail view: member read-only; references eligibility explanation derived from this guide.
-- `/roles` page (#68):
-  - Renders a trimmed version of the matrix above for self-service transparency.
-  - Surfaces contact guidance for requesting elevated roles (links to internal ops docs).
-  - References Phase 5 admin tooling once endpoints (#71-#79) are deployed.
+## Storage and Propagation
 
-### Events service (Node/Express)
-**Public (with Firebase auth)**:
-- GET /api/election: member ✅
-- POST /api/request-token: member ✅
-- GET /api/my-status: member ✅
-- GET /api/my-token: member ✅ (returns guidance in MVP)
-- GET /api/results: member ✅ (graceful if Elections unavailable)
+### Source of Truth: Django Database
 
-**Admin (role-protected)**:
-- POST /api/admin/reset-election: `requireRole('developer')`
-  - Scope "mine": delete caller's Events token only (safe)
-  - Scope "all": truncate Elections ballots/tokens and clear Events tokens (destructive; confirmation required)
-- POST /api/admin/elections: `requireAnyRoles(['developer', 'meeting_election_manager'])`
-- PATCH /api/admin/elections/:id/draft: `requireAnyRoles(['developer', 'meeting_election_manager'])`
-- POST /api/admin/elections/:id/publish: `requireAnyRoles(['developer', 'meeting_election_manager'])`
-- POST /api/admin/elections/:id/close: `requireAnyRoles(['developer', 'meeting_election_manager'])`
-- PATCH /api/admin/elections/:id/metadata: `requireAnyRoles(['developer', 'meeting_election_manager', 'event_manager'])`
-- GET /api/admin/elections: `requireAnyRoles(['developer', 'meeting_election_manager', 'event_manager'])`
-- DELETE /api/admin/elections/:id: `requireRole('developer')`
+```python
+# Django User model
+class User(models.Model):
+    username = models.CharField(max_length=150, unique=True)
+    is_staff = models.BooleanField(default=False)      # → admin role
+    is_superuser = models.BooleanField(default=False)  # → superuser role
+```
 
-### Elections service (Node/Express)
-**Public voting**:
-- POST /api/vote: token-based (no roles)
-- GET /api/token-status: token-based (no roles)
+### Synchronization Flow
 
-**S2S (secured by X-API-Key)**:
-- POST /api/s2s/register-token: Events → Elections (no roles)
-- GET  /api/s2s/results: Events → Elections (no roles)
+```
+Django User Model
+    ↓ (member sync)
+Firestore /users/{uid}
+    roles: ["member", "admin", "superuser"]
+    ↓ (on login)
+Firebase Custom Claims
+    ↓ (ID token)
+Frontend + Backend Services
+```
 
-**Future admin**:
-- Protected admin endpoints (e.g., audit exports, sealed results) guarded by roles (developer/meeting_election_manager) with additional audit logging.
+**Implementation Details**:
 
-## Storage and propagation of roles
+1. **Django API** (`/felagar/api/full/`) includes `is_staff` and `is_superuser` fields
+2. **Member Sync** (`sync_members.py`) reads these fields and writes to Firestore
+3. **Firebase Auth** (`handleKenniAuth`) reads from Firestore and sets custom claims
+4. **Frontend** reads roles from ID token and gates UI
+5. **Backend** verifies ID token and checks roles for authorization
 
-- Source of truth: Firebase Auth custom claims on the user record.
-  - Example payload: `{ isMember: true, kennitala: "DDMMYY-XXXX", roles: ["developer", "meeting_election_manager"] }`.
-- Propagation:
-  - Frontend: read via ID token (`getIdTokenResult()`) and expose to UI for gating.
-  - Backend: verify ID token server-side and read roles array for authorization checks.
+---
 
-## How to assign roles
+## How to Assign Roles
 
-Roles are assigned via Firebase custom claims using admin tooling.
+Roles are managed in Django admin interface or Django shell:
 
-**Operational guidance**:
-- Keep the set of `developer` users very small and audited quarterly
-- Prefer `meeting_election_manager` for day-to-day election operations
-- `event_manager` manages non-voting event content/configuration
-- All role assignments must be logged and approved
+### Via Django Admin
 
-**Implementation details**: See internal operations documentation for authorized administrators.
+1. Login to Django admin: https://starf.sosialistaflokkurinn.is/admin/
+2. Navigate to Users
+3. Edit user
+4. Check "Staff status" for admin role
+5. Check "Superuser status" for superuser role
+6. Save
 
-## Enforcement patterns (implementation outline)
+### Via Django Shell
 
-- Backend (Node):
-  - Extend auth middleware to attach `req.user.roles = decodedToken.roles || []`.
-  - Add `requireRole('developer')` and `requireAny(['meeting_election_manager', 'developer'])` helpers.
-  - Apply to admin routes (e.g., `/api/admin/reset-election`).
+```bash
+ssh root@172.105.71.207
+cd /home/manager/socialism
+sudo -u manager venv/bin/python manage.py shell
+```
 
-- Frontend:
-  - Include `roles` in `userData` for UI gating (hide dangerous controls if role missing).
+```python
+from django.contrib.auth.models import User
 
-- Members Cloud Function:
-  - When issuing Firebase custom token, preserve `roles` from stored user profile (if applicable) or set via admin tools outside auth flow.
+# Get user (username is Comrade.id as string)
+user = User.objects.get(username='813')
 
-## Auditing and safety
+# Assign admin role
+user.is_staff = True
+user.save()
 
-- All admin routes should:
-  - Log structured, sanitized events with `performed_by` (UID) and correlation IDs.
-  - Require confirmation steps for destructive actions (as implemented for reset-all: "RESET ALL").
-  - Return before/after counters for transparency.
-- Consider a read-only “dry-run” parameter for future admin endpoints.
+# Assign superuser role
+user.is_superuser = True
+user.save()
+```
 
-## Next steps
+### Propagation
 
-- Implement `roles` extraction in Events auth middleware and add `requireRole` helpers.
-- Gate the test page’s reset section by `developer` role.
-- Provide a small CLI script for setting roles (or documented `node` one-liner).
-- Add basic unit tests for role middleware.
-- Publish member-facing summary snippets for `/roles` page (#68) once Phase 2 UI lands.
-- Document admin role request workflow alongside the new weekly membership sync (#88-#92).
+After changing roles in Django:
+
+1. **Manual Sync**: Admin portal → Sync Members page → "Sync All Members"
+2. **Automatic Sync**: Runs hourly (when implemented)
+3. **Next Login**: User gets updated custom claims
+
+---
+
+## Enforcement Patterns
+
+### Backend (Node.js)
+
+```javascript
+const { requireRole, requireAnyRoles } = require('../middleware/roles');
+
+// Require specific role
+router.post('/reset-election', requireRole('superuser'), handler);
+
+// Allow any of multiple roles
+router.post('/elections', requireAnyRoles(['superuser', 'admin']), handler);
+```
+
+### Frontend
+
+```javascript
+// Check user roles
+const userData = await getUserData();
+const roles = userData.roles || [];
+
+// Gate UI elements
+if (roles.includes('admin') || roles.includes('superuser')) {
+  showAdminPanel();
+}
+
+// Gate destructive operations
+if (roles.includes('superuser')) {
+  showResetButton();
+}
+```
+
+---
+
+## Auditing and Safety
+
+All admin routes:
+- Log structured events with `performed_by` (UID) and correlation IDs
+- Require confirmation for destructive actions
+- Return before/after counters for transparency
+
+Example audit log entry:
+```json
+{
+  "action": "reset_election",
+  "performed_by": "wElbKqQ8mLfYmxhpiUGAnv0vx2g1",
+  "roles": ["superuser", "admin", "member"],
+  "timestamp": "2025-11-01T12:00:00Z",
+  "scope": "mine",
+  "result": "success"
+}
+```
+
+---
+
+## Migration Notes
+
+**Previous System** (deprecated):
+- `developer` → Now `superuser`
+- `meeting_election_manager` → Now `admin`
+- `event_manager` → Now `admin`
+
+**Migration Date**: 2025-11-01  
+**Breaking Changes**: None (roles auto-synced from Django)
+
+---
+
+## Related Documentation
+
+- **Django Integration**: `docs/integration/DJANGO_DATABASE_SCHEMA.md`
+- **Member Sync**: `docs/features/election-voting/EPIC_43_MEMBER_MANAGEMENT_SYSTEM.md`
+- **Admin API**: `docs/features/election-voting/ADMIN_API_REFERENCE.md`

@@ -42,8 +42,8 @@ See [MEMBERS_DEPLOYMENT_GUIDE.md](./MEMBERS_DEPLOYMENT_GUIDE.md) for:
 ## 🔗 Related Documentation
 
 - [Architecture](../design/INDEX.md) - System design
-- [Operations](../maintenance/INDEX.md) - Day-to-day operations
-- [Testing](../testing/INDEX.md) - Deployment validation
+- [Operations](../operations/) - Day-to-day operations
+- [Testing](../testing/) - Deployment validation
 - [Main Hub](../INDEX.md) - Documentation overview
 
 ---

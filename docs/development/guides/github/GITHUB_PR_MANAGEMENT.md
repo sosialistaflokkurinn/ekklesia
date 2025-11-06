@@ -567,4 +567,4 @@ gh pr edit 34 \
 
 **Last Updated**: 2025-10-14
 **Author**: Ekklesia Development Team
-**Related**: [BRANCH_STRATEGY.md](../../archive/docs/docs-2025-10-13/docs/development/guides/BRANCH_STRATEGY.md)
+**Related**: BRANCH_STRATEGY.md (archived)

@@ -1,0 +1,427 @@
+/**
+ * Shared Form Component Styles
+ *
+ * Created: 2025-11-05
+ * Purpose: Unified form styles for member and admin portals
+ * Based on: profile-edit.css (best patterns)
+ *
+ * Usage:
+ *   <div class="form-field">
+ *     <label class="form-field__label">Name</label>
+ *     <div class="form-field__input-wrapper">
+ *       <input class="form-field__input" type="text">
+ *       <span class="form-field__status"></span>
+ *     </div>
+ *     <span class="form-field__error"></span>
+ *   </div>
+ */
+
+/* ===========================
+   Form Field Container
+   =========================== */
+
+.form-field {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.form-field--inline {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ===========================
+   Form Field Label
+   =========================== */
+
+.form-field__label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-gray-700);
+  margin-bottom: 0.5rem;
+}
+
+.form-field__label--required::after {
+  content: " *";
+  color: var(--color-error);
+}
+
+/* ===========================
+   Input Wrapper (with status icon)
+   =========================== */
+
+.form-field__input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ===========================
+   Form Inputs (text, email, etc.)
+   =========================== */
+
+.form-field__input,
+.form-field__select,
+.form-field__textarea {
+  flex: 1;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  font-family: inherit;
+  color: var(--color-gray-900);
+  background-color: var(--color-gray-50);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  cursor: text;
+  box-shadow: var(--shadow-inset-sm);
+}
+
+.form-field__textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* Hover State */
+.form-field__input:hover:not(:focus):not(:disabled),
+.form-field__select:hover:not(:focus):not(:disabled),
+.form-field__textarea:hover:not(:focus):not(:disabled) {
+  border-color: var(--color-gray-300);
+  background-color: var(--color-white);
+  box-shadow: var(--shadow-inset-sm), 0 0 0 1px var(--color-primary-alpha-10);
+}
+
+/* Focus State */
+.form-field__input:focus,
+.form-field__select:focus,
+.form-field__textarea:focus {
+  outline: none;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-primary);
+  box-shadow: var(--shadow-focus-primary);
+}
+
+/* Placeholder */
+.form-field__input::placeholder,
+.form-field__textarea::placeholder {
+  color: var(--color-gray-400);
+}
+
+/* ===========================
+   Input States
+   =========================== */
+
+/* Read-only */
+.form-field__input--readonly,
+.form-field__select--readonly,
+.form-field__textarea--readonly {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-600);
+  cursor: not-allowed;
+  border-color: var(--color-gray-200);
+}
+
+.form-field__input--readonly:hover,
+.form-field__select--readonly:hover,
+.form-field__textarea--readonly:hover {
+  background-color: var(--color-gray-100);
+  box-shadow: var(--shadow-inset-sm);
+}
+
+/* Disabled */
+.form-field__input:disabled,
+.form-field__select:disabled,
+.form-field__textarea:disabled {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-500);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Error State */
+.form-field__input.error,
+.form-field__input--error,
+.form-field__select.error,
+.form-field__select--error,
+.form-field__textarea.error,
+.form-field__textarea--error {
+  border-color: var(--color-error);
+  background-color: var(--color-error-bg);
+}
+
+.form-field__input.error:focus,
+.form-field__select.error:focus,
+.form-field__textarea.error:focus {
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+}
+
+/* Success State */
+.form-field__input--success,
+.form-field__select--success,
+.form-field__textarea--success {
+  border-color: var(--color-success-border);
+  background-color: var(--color-white);
+}
+
+/* ===========================
+   Status Icons
+   =========================== */
+
+.form-field__status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.form-field__status:empty {
+  display: none;
+}
+
+/* Loading Spinner */
+.form-field__status--loading {
+  display: inline-flex !important; /* Override :empty rule */
+}
+
+.form-field__status--loading::after {
+  content: "";
+  display: block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--color-gray-300);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: form-spin 0.6s linear infinite;
+}
+
+@keyframes form-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Success Checkmark */
+.form-field__status--success {
+  display: inline-flex !important;
+}
+
+.form-field__status--success::after {
+  content: "✓";
+  display: block;
+  color: var(--color-success);
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+/* Error Icon */
+.form-field__status--error {
+  display: inline-flex !important;
+}
+
+.form-field__status--error::after {
+  content: "✕";
+  display: block;
+  color: var(--color-error);
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+/* ===========================
+   Error & Success Messages
+   =========================== */
+
+.form-field__error {
+  color: var(--color-error);
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  display: none;
+}
+
+.form-field__error:not(:empty) {
+  display: block;
+}
+
+.form-field__success {
+  color: var(--color-success-text);
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  display: none;
+}
+
+.form-field__success:not(:empty) {
+  display: block;
+}
+
+/* ===========================
+   Form Actions (buttons)
+   =========================== */
+
+.form-actions {
+  margin-top: 2rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-start;
+}
+
+.form-actions--center {
+  justify-content: center;
+}
+
+.form-actions--end {
+  justify-content: flex-end;
+}
+
+.form-actions .btn {
+  min-width: 150px;
+}
+
+/* ===========================
+   Form-level Messages
+   =========================== */
+
+.form-message {
+  padding: 1rem;
+  border-radius: 4px;
+  margin-top: 1rem;
+  font-size: 0.9375rem;
+}
+
+.form-message--success {
+  background-color: var(--color-success-bg);
+  border: 1px solid var(--color-success-border);
+  color: var(--color-success-text);
+}
+
+.form-message--error {
+  background-color: var(--color-error-bg);
+  border: 1px solid var(--color-error-border);
+  color: var(--color-error-text);
+}
+
+.form-message--warning {
+  background-color: var(--color-warning-bg);
+  border: 1px solid var(--color-warning-border);
+  color: var(--color-warning-text);
+}
+
+.form-message--info {
+  background-color: var(--color-info-bg);
+  border: 1px solid var(--color-info-border);
+  color: var(--color-info-text);
+}
+
+.form-message__title {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.form-message__list {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.form-message__list li {
+  margin: 0.25rem 0;
+}
+
+/* ===========================
+   Form Grid Layout
+   =========================== */
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.form-grid--2col {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.form-grid--3col {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.form-field--full-width {
+  grid-column: 1 / -1;
+}
+
+/* ===========================
+   Radio & Checkbox Groups
+   =========================== */
+
+.form-radio-group,
+.form-checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.form-radio-group--inline,
+.form-checkbox-group--inline {
+  flex-direction: row;
+  gap: 1.5rem;
+}
+
+.form-radio-label,
+.form-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.9375rem;
+  color: var(--color-gray-700);
+}
+
+.form-radio-label:hover,
+.form-checkbox-label:hover {
+  color: var(--color-gray-900);
+}
+
+.form-radio-label input[type="radio"],
+.form-checkbox-label input[type="checkbox"] {
+  width: 1.125rem;
+  height: 1.125rem;
+  cursor: pointer;
+  margin: 0;
+  accent-color: var(--color-primary);
+}
+
+.form-radio-label input[type="radio"]:focus,
+.form-checkbox-label input[type="checkbox"]:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ===========================
+   Responsive Design
+   =========================== */
+
+@media (max-width: 768px) {
+  .form-grid--2col,
+  .form-grid--3col {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .form-actions .btn {
+    width: 100%;
+  }
+
+  .form-radio-group--inline,
+  .form-checkbox-group--inline {
+    flex-direction: column;
+  }
+}

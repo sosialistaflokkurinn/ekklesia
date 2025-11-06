@@ -7,83 +7,17 @@
 
 // Import from member portal public directory (two levels up from /admin/js/)
 import { initSession } from '../../session/init.js';
+import { initNavigation } from '../../js/nav.js';
+import { debug } from '../../js/utils/debug.js';
 import { getFirebaseAuth } from '../../firebase/app.js';
+import { adminStrings } from './i18n/admin-strings-loader.js';
+import { checkAdminAccess, calculateDuration } from './utils/admin-helpers.js';
+import { showToast, showSuccess, showError } from '../../js/components/toast.js';
+import { toggleButtonLoading } from '../../js/components/status.js';
+import { showConfirm } from '../../js/components/modal.js';
 
 // Initialize Firebase Auth
 const auth = getFirebaseAuth();
-
-/**
- * Load admin-specific strings from admin portal i18n
- */
-class AdminStringsLoader {
-  constructor() {
-    this.strings = {};
-    this.loaded = false;
-  }
-
-  async load() {
-    if (this.loaded) return this.strings;
-
-    try {
-      const response = await fetch('/admin/i18n/values-is/strings.xml');
-      if (!response.ok) {
-        throw new Error(`Failed to load admin strings: ${response.statusText}`);
-      }
-
-      const xmlText = await response.text();
-      this.strings = this.parseXML(xmlText);
-      this.loaded = true;
-
-      return this.strings;
-    } catch (error) {
-      console.error('Failed to load admin strings:', error);
-      throw error;
-    }
-  }
-
-  parseXML(xmlText) {
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-
-    const parserError = xmlDoc.querySelector('parsererror');
-    if (parserError) {
-      throw new Error(`XML parsing error: ${parserError.textContent}`);
-    }
-
-    const strings = {};
-    const stringElements = xmlDoc.querySelectorAll('string');
-
-    stringElements.forEach(element => {
-      const name = element.getAttribute('name');
-      const value = element.textContent;
-      if (name) {
-        strings[name] = value;
-      }
-    });
-
-    return strings;
-  }
-
-  get(key) {
-    return this.strings[key] || key;
-  }
-}
-
-const adminStrings = new AdminStringsLoader();
-
-/**
- * Check if user has developer role
- */
-function checkAdminAccess(userData) {
-  const roles = userData.roles || [];
-  const isAdmin = roles.includes('developer');
-
-  if (!isAdmin) {
-    throw new Error('Unauthorized: Developer role required');
-  }
-
-  return true;
-}
 
 /**
  * Call syncmembers Cloud Function
@@ -151,12 +85,12 @@ function showSyncInProgress() {
  * Show sync success with stats
  */
 function showSyncSuccess(result) {
-  console.log('showSyncSuccess called with result:', result);
+  debug.log('showSyncSuccess called with result:', result);
 
   const strings = adminStrings.strings;
   const stats = result.stats || {};
 
-  console.log('Stats extracted:', stats);
+  debug.log('Stats extracted:', stats);
 
   try {
     // Update title
@@ -165,45 +99,57 @@ function showSyncSuccess(result) {
       titleEl.textContent = strings.sync_success_title || 'Samstilling tókst';
     }
 
-    // Hide progress
+    // Hide progress and stop spinner animation
     const progressEl = document.getElementById('sync-progress');
     if (progressEl) {
       progressEl.classList.add('u-hidden');
-      console.log('Progress hidden');
+
+      // Stop spinner animation by removing spinner class
+      const spinner = progressEl.querySelector('.spinner');
+      if (spinner) {
+        spinner.classList.remove('spinner');
+      }
+
+      debug.log('Progress hidden and spinner stopped');
     }
 
     // Show stats
     const statsContainer = document.getElementById('sync-stats');
     if (statsContainer) {
       statsContainer.classList.remove('u-hidden');
-      console.log('Stats container shown');
+      debug.log('Stats container shown');
     }
 
     // Set stat labels
     const totalLabel = document.getElementById('stat-total-label');
     const syncedLabel = document.getElementById('stat-synced-label');
+    const skippedLabel = document.getElementById('stat-skipped-label');
     const failedLabel = document.getElementById('stat-failed-label');
     const durationLabel = document.getElementById('stat-duration-label');
 
-    if (totalLabel) totalLabel.textContent = strings.stat_total_label || 'Heildarfjöldi';
+    if (totalLabel) totalLabel.textContent = strings.stat_total_label || 'Samtals';
     if (syncedLabel) syncedLabel.textContent = strings.stat_synced_label || 'Samstillt';
-    if (failedLabel) failedLabel.textContent = strings.stat_failed_label || 'Mistókst';
-    if (durationLabel) durationLabel.textContent = strings.stat_duration_label || 'Tími';
+    if (skippedLabel) skippedLabel.textContent = strings.stat_skipped_label || 'Sleppt';
+    if (failedLabel) failedLabel.textContent = strings.stat_failed_label || 'Mistókust';
+    if (durationLabel) durationLabel.textContent = strings.stat_duration_label || 'Tímalengd';
 
     // Set stat values
     const totalValue = document.getElementById('stat-total-value');
     const syncedValue = document.getElementById('stat-synced-value');
+    const skippedValue = document.getElementById('stat-skipped-value');
     const failedValue = document.getElementById('stat-failed-value');
     const durationValue = document.getElementById('stat-duration-value');
 
     if (totalValue) totalValue.textContent = stats.total_members || 0;
     if (syncedValue) syncedValue.textContent = stats.synced || 0;
+    if (skippedValue) skippedValue.textContent = stats.skipped || 0;
     if (failedValue) failedValue.textContent = stats.failed || 0;
     if (durationValue) durationValue.textContent = calculateDuration(stats);
 
-    console.log('Stats updated:', {
+    debug.log('Stats updated:', {
       total: stats.total_members,
       synced: stats.synced,
+      skipped: stats.skipped,
       failed: stats.failed
     });
 
@@ -211,19 +157,19 @@ function showSyncSuccess(result) {
     const actionsContainer = document.getElementById('sync-actions');
     if (actionsContainer) {
       actionsContainer.classList.remove('u-hidden');
-      console.log('Actions shown');
+      debug.log('Actions shown');
     }
 
     const viewHistoryBtn = document.getElementById('view-history-btn');
     const backDashboardBtn = document.getElementById('back-dashboard-btn');
 
-    if (viewHistoryBtn) viewHistoryBtn.textContent = strings.btn_view_history || 'Skoða sögu';
-    if (backDashboardBtn) backDashboardBtn.textContent = strings.btn_back_to_dashboard || 'Til baka';
+    if (viewHistoryBtn) viewHistoryBtn.textContent = strings.btn_view_history || 'Skoða keyrslusögu';
+    if (backDashboardBtn) backDashboardBtn.textContent = strings.btn_back_to_dashboard || 'Aftur í yfirlit';
 
-    console.log('✓ showSyncSuccess completed successfully');
+    debug.log('✓ showSyncSuccess completed successfully');
 
   } catch (error) {
-    console.error('Error in showSyncSuccess:', error);
+    debug.error('Error in showSyncSuccess:', error);
     throw error;
   }
 }
@@ -247,30 +193,19 @@ function showSyncError(error) {
 }
 
 /**
- * Calculate duration from stats
- */
-function calculateDuration(stats) {
-  if (!stats.started_at || !stats.completed_at) return 'N/A';
-
-  const start = new Date(stats.started_at);
-  const end = new Date(stats.completed_at);
-  const durationSec = Math.floor((end - start) / 1000);
-
-  if (durationSec < 60) return `${durationSec}s`;
-
-  const minutes = Math.floor(durationSec / 60);
-  const seconds = durationSec % 60;
-  return `${minutes}m ${seconds}s`;
-}
-
-/**
  * Handle sync trigger button click
  */
 async function handleSyncTrigger() {
   const strings = adminStrings.strings;
 
   // Confirm with user
-  if (!confirm(strings.sync_trigger_confirm)) {
+  const confirmed = await showConfirm(
+    strings.sync_trigger_confirm_title,
+    strings.sync_trigger_confirm_message,
+    { confirmText: strings.sync_trigger_confirm_btn, confirmStyle: 'primary' }
+  );
+  
+  if (!confirmed) {
     return;
   }
 
@@ -281,13 +216,13 @@ async function handleSyncTrigger() {
     // Trigger sync
     const result = await triggerSync();
 
-    console.log('Sync completed:', result);
+    debug.log('Sync completed:', result);
 
     // Show success
     showSyncSuccess(result);
 
   } catch (error) {
-    console.error('Sync failed:', error);
+    debug.error('Sync failed:', error);
     showSyncError(error);
   }
 }
@@ -302,9 +237,11 @@ function setPageText(strings) {
   // Navigation
   document.getElementById('nav-brand').textContent = strings.admin_brand;
   document.getElementById('nav-admin-dashboard').textContent = strings.nav_admin_dashboard;
+  document.getElementById('nav-admin-members').textContent = strings.nav_admin_members;
   document.getElementById('nav-admin-sync').textContent = strings.nav_admin_sync;
   document.getElementById('nav-admin-history').textContent = strings.nav_admin_history;
   document.getElementById('nav-back-to-member').textContent = strings.nav_back_to_member;
+  document.getElementById('nav-logout').textContent = strings.nav_logout;
 
   // Page header
   document.getElementById('sync-title').textContent = strings.sync_members_title;
@@ -312,7 +249,29 @@ function setPageText(strings) {
 
   // Trigger card
   document.getElementById('sync-trigger-title').textContent = strings.sync_trigger_title;
+  document.getElementById('sync-description').textContent = strings.sync_trigger_description;
+
+
   document.getElementById('sync-trigger-btn').textContent = strings.sync_trigger_btn;
+
+  // Sync status card (initial state)
+  document.getElementById('sync-status-title').textContent = strings.sync_status_title;
+  document.getElementById('sync-progress-message').textContent = strings.sync_progress_message;
+
+  // Stats labels
+  document.getElementById('stat-total-label').textContent = strings.stat_total_label;
+  document.getElementById('stat-synced-label').textContent = strings.stat_synced_label;
+  document.getElementById('stat-skipped-label').textContent = strings.stat_skipped_label || 'Sleppt';
+  document.getElementById('stat-failed-label').textContent = strings.stat_failed_label;
+  document.getElementById('stat-duration-label').textContent = strings.stat_duration_label;
+
+  // Action buttons
+  document.getElementById('view-history-btn').textContent = strings.btn_view_history;
+  document.getElementById('back-dashboard-btn').textContent = strings.btn_back_to_dashboard;
+
+  // Error card
+  document.getElementById('sync-error-title').textContent = strings.sync_failed_title;
+  document.getElementById('sync-retry-btn').textContent = strings.btn_retry;
 }
 
 /**
@@ -352,20 +311,23 @@ async function init() {
     // 3. Check admin access (developer role required)
     checkAdminAccess(userData);
 
-    // 4. Set page text
+    // 4. Initialize navigation (hamburger menu)
+    initNavigation();
+
+    // 5. Set page text
     setPageText(strings);
 
-    // 5. Setup event listeners
+    // 6. Setup event listeners
     setupEventListeners();
 
-    console.log('✓ Sync members page initialized');
+    debug.log('✓ Sync members page initialized');
 
   } catch (error) {
-    console.error('Failed to initialize sync members page:', error);
+    debug.error('Failed to initialize sync members page:', error);
 
     // Check if unauthorized
     if (error.message.includes('Unauthorized')) {
-      alert('Þú hefur ekki aðgang að stjórnkerfi. Aðeins notendur með developer role hafa aðgang.');
+      alert(adminStrings.get('error_unauthorized_admin'));
       window.location.href = '/members-area/dashboard.html';
       return;
     }
@@ -377,8 +339,8 @@ async function init() {
     }
 
     // Other errors
-    console.error('Error loading sync members page:', error);
-    alert(`Villa við að hlaða síðu: ${error.message}`);
+    debug.error('Error loading sync members page:', error);
+    alert(adminStrings.get('error_page_load').replace('%s', error.message));
   }
 }
 

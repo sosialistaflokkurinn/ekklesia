@@ -2,7 +2,7 @@ import time
 import os
 import requests
 import jwt
-from typing import Dict, Tuple, Optional
+from typing import Dict, Tuple, Optional, Any
 from utils_logging import log_json
 
 # Simple TTL cache for JWKS clients keyed by issuer URL
@@ -26,6 +26,22 @@ if DEFAULT_TTL <= 0:
 
 
 def get_jwks_client_cached_ttl(issuer_url: str, ttl_seconds: Optional[int] = None) -> jwt.PyJWKClient:
+    """Get or create cached JWKS client with TTL-based expiration.
+
+    Fetches the JWKS URI from the OIDC configuration endpoint and creates
+    a PyJWKClient for JWT signature verification. Results are cached with
+    a configurable TTL to reduce external API calls.
+
+    Args:
+        issuer_url: OAuth issuer URL (e.g., 'https://login.kenni.is')
+        ttl_seconds: Cache TTL in seconds (defaults to JWKS_CACHE_TTL_SECONDS env var or 3600)
+
+    Returns:
+        Cached or newly created PyJWKClient instance
+
+    Raises:
+        requests.HTTPError: If OIDC configuration or JWKS endpoint unreachable
+    """
     ttl = ttl_seconds if ttl_seconds is not None else DEFAULT_TTL
     global _cache
     info = _cache.get(issuer_url)
@@ -55,7 +71,15 @@ def get_jwks_client_cached_ttl(issuer_url: str, ttl_seconds: Optional[int] = Non
     return client
 
 
-def get_jwks_cache_stats():
+def get_jwks_cache_stats() -> Dict[str, Any]:
+    """Get aggregated cache statistics for monitoring and debugging.
+
+    Returns:
+        Dict with cache metrics:
+            - hits: Total cache hits across all cached issuers
+            - misses: Total cache misses (expired or not cached)
+            - size: Number of issuers currently cached
+    """
     # Aggregate simple totals for debugging
     total_hits = sum(v[2] for v in _cache.values())
     total_misses = sum(v[3] for v in _cache.values())

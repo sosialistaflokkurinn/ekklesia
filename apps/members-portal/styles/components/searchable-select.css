@@ -1,0 +1,440 @@
+/**
+ * Searchable Select Component Styles
+ * 
+ * Google-style dropdown with search capability
+ * Uses BEM methodology
+ * 
+ * @see /js/components/searchable-select.js
+ */
+
+/* ============================================
+   Base Component
+   ============================================ */
+
+.searchable-select {
+  position: relative;
+  width: 100%;
+  font-family: var(--font-family-base, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+}
+
+/* ============================================
+   Trigger Button
+   ============================================ */
+
+.searchable-select__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 16px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #1a202c;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.searchable-select__trigger:hover {
+  border-color: #cbd5e0;
+  background: #f7fafc;
+}
+
+.searchable-select__trigger:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+}
+
+.searchable-select__trigger:disabled {
+  background: #f7fafc;
+  color: #a0aec0;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.searchable-select--open .searchable-select__trigger {
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+}
+
+/* ============================================
+   Trigger Label & Icon
+   ============================================ */
+
+.searchable-select__label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.searchable-select__icon {
+  margin-left: 8px;
+  color: #718096;
+  transition: transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.searchable-select--open .searchable-select__icon {
+  transform: rotate(180deg);
+}
+
+.searchable-select__icon svg {
+  display: block;
+}
+
+/* ============================================
+   Dropdown Panel
+   ============================================ */
+
+.searchable-select__dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1),
+              0 4px 10px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  animation: dropdownSlideIn 0.2s ease;
+}
+
+@keyframes dropdownSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   Search Input
+   ============================================ */
+
+.searchable-select__search {
+  position: relative;
+  padding: 12px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f7fafc;
+}
+
+.searchable-select__search-icon {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #a0aec0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+.searchable-select__input {
+  width: 100%;
+  padding: 8px 12px 8px 36px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1.5;
+  background: white;
+  color: #1a202c;
+  transition: all 0.2s ease;
+}
+
+.searchable-select__input:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+}
+
+.searchable-select__input::placeholder {
+  color: #a0aec0;
+}
+
+/* ============================================
+   Options List
+   ============================================ */
+
+.searchable-select__list {
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* max-height set via JS or inline style */
+}
+
+/* Scrollbar styling */
+.searchable-select__list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.searchable-select__list::-webkit-scrollbar-track {
+  background: #f7fafc;
+}
+
+.searchable-select__list::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 4px;
+}
+
+.searchable-select__list::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
+/* ============================================
+   Options
+   ============================================ */
+
+.searchable-select__option {
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  color: #1a202c;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.searchable-select__option:hover {
+  background: #f7fafc;
+}
+
+.searchable-select__option--focused {
+  background: #ebf8ff;
+}
+
+.searchable-select__option--selected {
+  background: #bee3f8;
+  color: #2c5282;
+  font-weight: 500;
+  position: relative;
+}
+
+.searchable-select__option--selected::after {
+  content: '✓';
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #2c5282;
+  font-weight: bold;
+}
+
+.searchable-select__option--disabled {
+  color: #a0aec0;
+  cursor: not-allowed;
+  background: transparent !important;
+}
+
+/* ============================================
+   No Results Message
+   ============================================ */
+
+.searchable-select__no-results {
+  padding: 16px;
+  text-align: center;
+  color: #718096;
+  font-size: 14px;
+}
+
+/* ============================================
+   Disabled State
+   ============================================ */
+
+.searchable-select--disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* ============================================
+   Mobile Optimizations
+   ============================================ */
+
+@media (max-width: 640px) {
+  .searchable-select__dropdown {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-radius: 16px 16px 0 0;
+    max-height: 70vh;
+    animation: dropdownSlideUp 0.3s ease;
+  }
+
+  @keyframes dropdownSlideUp {
+    from {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .searchable-select__list {
+    max-height: calc(70vh - 70px) !important;
+  }
+
+  .searchable-select__option {
+    padding: 14px 16px;
+    font-size: 16px; /* Prevent iOS zoom */
+  }
+
+  .searchable-select__input {
+    font-size: 16px; /* Prevent iOS zoom */
+  }
+}
+
+/* ============================================
+   Dark Mode Support (Optional)
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+  .searchable-select__trigger {
+    background: #2d3748;
+    border-color: #4a5568;
+    color: #e2e8f0;
+  }
+
+  .searchable-select__trigger:hover {
+    background: #374151;
+    border-color: #718096;
+  }
+
+  .searchable-select__dropdown {
+    background: #2d3748;
+    border-color: #4a5568;
+  }
+
+  .searchable-select__search {
+    background: #1a202c;
+    border-color: #4a5568;
+  }
+
+  .searchable-select__input {
+    background: #374151;
+    border-color: #4a5568;
+    color: #e2e8f0;
+  }
+
+  .searchable-select__option {
+    color: #e2e8f0;
+  }
+
+  .searchable-select__option:hover {
+    background: #374151;
+  }
+
+  .searchable-select__option--focused {
+    background: #2c5282;
+  }
+
+  .searchable-select__option--selected {
+    background: #2b6cb0;
+    color: #e2e8f0;
+  }
+
+  .searchable-select__option--selected::after {
+    color: #e2e8f0;
+  }
+
+  .searchable-select__list::-webkit-scrollbar-track {
+    background: #1a202c;
+  }
+
+  .searchable-select__list::-webkit-scrollbar-thumb {
+    background: #4a5568;
+  }
+}
+
+/* ============================================
+   Accessibility - High Contrast Mode
+   ============================================ */
+
+@media (prefers-contrast: high) {
+  .searchable-select__trigger {
+    border-width: 2px;
+  }
+
+  .searchable-select__trigger:focus {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+
+  .searchable-select__option--selected {
+    outline: 2px solid currentColor;
+    outline-offset: -2px;
+  }
+}
+
+/* ============================================
+   Custom Variants
+   ============================================ */
+
+/* Small size */
+.searchable-select--sm .searchable-select__trigger {
+  padding: 6px 12px;
+  font-size: 14px;
+}
+
+.searchable-select--sm .searchable-select__option {
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+/* Large size */
+.searchable-select--lg .searchable-select__trigger {
+  padding: 14px 20px;
+  font-size: 16px;
+}
+
+.searchable-select--lg .searchable-select__option {
+  padding: 12px 20px;
+  font-size: 16px;
+}
+
+/* Error state */
+.searchable-select--error .searchable-select__trigger {
+  border-color: #fc8181;
+}
+
+.searchable-select--error .searchable-select__trigger:focus {
+  border-color: #f56565;
+  box-shadow: 0 0 0 3px rgba(245, 101, 101, 0.1);
+}
+
+/* Success state */
+.searchable-select--success .searchable-select__trigger {
+  border-color: #68d391;
+}
+
+/* ============================================
+   Loading State
+   ============================================ */
+
+.searchable-select--loading .searchable-select__icon {
+  animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

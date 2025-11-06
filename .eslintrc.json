@@ -1,0 +1,84 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "node": true
+  },
+  "extends": [
+    "eslint:recommended"
+  ],
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  "rules": {
+    // Error Prevention
+    "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "no-undef": "error",
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "no-debugger": "error",
+    "no-alert": "warn",
+
+    // Best Practices
+    "eqeqeq": ["error", "always"],
+    "curly": ["error", "all"],
+    "no-eval": "error",
+    "no-implied-eval": "error",
+    "no-with": "error",
+    "no-return-await": "error",
+    "require-await": "warn",
+    "no-throw-literal": "error",
+
+    // Code Quality
+    "prefer-const": "error",
+    "no-var": "error",
+    "prefer-arrow-callback": "warn",
+    "arrow-body-style": ["warn", "as-needed"],
+    "object-shorthand": ["warn", "always"],
+    "prefer-template": "warn",
+    "prefer-destructuring": ["warn", {
+      "array": false,
+      "object": true
+    }],
+
+    // Async/Await
+    "no-async-promise-executor": "error",
+    "prefer-promise-reject-errors": "error",
+
+    // Spacing & Formatting (Prettier handles most of this)
+    "semi": ["error", "always"],
+    "quotes": ["warn", "single", { "avoidEscape": true }],
+    "comma-dangle": ["warn", "never"],
+    "no-trailing-spaces": "warn",
+    "no-multiple-empty-lines": ["warn", { "max": 2 }],
+
+    // Functions
+    "func-style": ["warn", "declaration", { "allowArrowFunctions": true }],
+    "no-unused-expressions": "error",
+
+    // Comments & Documentation
+    "spaced-comment": ["warn", "always"],
+    "capitalized-comments": "off",
+
+    // ES6+
+    "prefer-rest-params": "error",
+    "prefer-spread": "error",
+    "no-useless-constructor": "warn",
+
+    // Security
+    "no-eval": "error",
+    "no-new-func": "error",
+    "no-script-url": "error"
+  },
+  "overrides": [
+    {
+      "files": ["**/*.test.js", "**/*.spec.js"],
+      "env": {
+        "jest": true
+      },
+      "rules": {
+        "no-console": "off"
+      }
+    }
+  ]
+}

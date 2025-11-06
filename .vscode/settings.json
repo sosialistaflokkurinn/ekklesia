@@ -1,0 +1,8 @@
+{
+    // Hide symbolic link to avoid confusion in file explorer
+    // services/members/public -> ../../apps/members-portal
+    // The real files are in apps/members-portal/
+    "files.exclude": {
+        "**/services/members/public": true
+    }
+}

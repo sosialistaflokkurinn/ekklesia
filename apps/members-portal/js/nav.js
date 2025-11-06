@@ -33,7 +33,7 @@ export function initNavigation() {
 
   // Check if elements exist (safety check)
   if (!hamburger || !drawer || !overlay || !closeBtn) {
-    console.warn('[Nav] Navigation elements not found');
+    debug.warn('[Nav] Navigation elements not found');
     return;
   }
 

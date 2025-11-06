@@ -239,14 +239,14 @@ Available guides for GitHub management and integration
 
 | Task | Guide | Time |
 |------|-------|------|
-| Set up OAuth login | [OAUTH_TROUBLESHOOTING.md](OAUTH_TROUBLESHOOTING.md) | 5-10 min |
+| Set up OAuth login | [OAUTH_TROUBLESHOOTING.md](troubleshooting/OAUTH_TROUBLESHOOTING.md) | 5-10 min |
 | Manage a PR | [GITHUB_PR_MANAGEMENT.md](github/GITHUB_PR_MANAGEMENT.md) | 10-15 min |
 | Quick PR command | [GITHUB_PR_QUICK_REFERENCE.md](github/GITHUB_PR_QUICK_REFERENCE.md) | 1-2 min |
 | Update project board | [GITHUB_PROJECT_MANAGEMENT.md](github/GITHUB_PROJECT_MANAGEMENT.md) | 15-20 min |
-| Audit MFA compliance | [MFA_ENFORCEMENT.md](MFA_ENFORCEMENT.md) | 30-45 min |
-| Configure alerts | [ADMIN_ALERTS.md](ADMIN_ALERTS.md) | 10-15 min |
-| Set up private ops | [PRIVATE_OPS_REPO.md](PRIVATE_OPS_REPO.md) | 20-30 min |
-| Understand roles | [ROLES_AND_PERMISSIONS.md](ROLES_AND_PERMISSIONS.md) | 10 min |
+| Audit MFA compliance | [MFA_ENFORCEMENT.md](admin/MFA_ENFORCEMENT.md) | 30-45 min |
+| Configure alerts | [ADMIN_ALERTS.md](admin/ADMIN_ALERTS.md) | 10-15 min |
+| Set up private ops | [PRIVATE_OPS_REPO.md](infrastructure/PRIVATE_OPS_REPO.md) | 20-30 min |
+| Understand roles | [ROLES_AND_PERMISSIONS.md](admin/ROLES_AND_PERMISSIONS.md) | 10 min |
 
 ---
 

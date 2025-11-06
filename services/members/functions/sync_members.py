@@ -13,6 +13,62 @@ from google.cloud import firestore
 from google.cloud.secretmanager import SecretManagerServiceClient
 from utils_logging import log_json
 
+# Django API Base URL
+DJANGO_API_BASE_URL = "https://starf.sosialistaflokkurinn.is/felagar"
+
+
+def normalize_kennitala(kennitala: str) -> str:
+    """
+    Normalize kennitala to 10 digits without hyphen (for use as Firestore document ID).
+
+    Example: "010101-2980" -> "0101012980"
+    """
+    if not kennitala:
+        return None
+
+    # Remove any whitespace and hyphens
+    kennitala = kennitala.strip().replace('-', '')
+
+    # Validate it's 10 digits
+    if len(kennitala) == 10 and kennitala.isdigit():
+        return kennitala
+
+    return kennitala
+
+
+def normalize_phone(phone: str) -> str:
+    """Normalize Icelandic phone number to XXX-XXXX format
+
+    Handles various input formats:
+    - +3545551234 -> 555-1234
+    - 003545551234 -> 555-1234
+    - 5551234 -> 555-1234
+    - 555 1234 -> 555-1234
+    - 5551-234 -> 555-1234
+
+    Returns None if phone is None or empty.
+    Returns original string if format is invalid (not 7 digits after normalization).
+    """
+    if not phone:
+        return None
+
+    # Remove all whitespace, dashes, parentheses, and other separators
+    phone = phone.strip()
+    digits = ''.join(c for c in phone if c.isdigit())
+
+    # Remove Iceland country code prefix if present
+    # +354 or 00354 -> 10 digits total
+    if digits.startswith('354') and len(digits) == 10:
+        digits = digits[3:]  # Remove '354' prefix
+
+    # Validate: should be exactly 7 digits for Icelandic phone
+    if len(digits) != 7:
+        log_json("warn", "Invalid phone number format", original=phone, digits=digits, length=len(digits))
+        return phone  # Return original if invalid
+
+    # Format as XXX-XXXX (3 digits - hyphen - 4 digits)
+    return f"{digits[:3]}-{digits[3:]}"
+
 
 def get_django_api_token() -> str:
     """
@@ -109,14 +165,40 @@ def transform_django_member_to_firestore(django_member: Dict[str, Any]) -> Dict[
                      date_joined=date_joined_str,
                      member_id=django_member.get('id'))
 
+    # Normalize phone number to XXX-XXXX format
+    raw_phone = contact_info.get('phone', '')
+    normalized_phone = normalize_phone(raw_phone) if raw_phone else ''
+
+    # Foreign phone (keep international format as-is, e.g., +45 12345678)
+    foreign_phone = contact_info.get('foreign_phone', '') or ''
+
+    # Normalize kennitala to 10 digits (no hyphen) for consistency
+    raw_kennitala = django_member.get('ssn', '')
+    normalized_kennitala = normalize_kennitala(raw_kennitala) if raw_kennitala else ''
+
+    # Extract foreign addresses
+    foreign_addresses_raw = django_member.get('foreign_addresses', []) or []
+    foreign_addresses = []
+    for fa in foreign_addresses_raw:
+        foreign_addr = {
+            'id': fa.get('pk'),
+            'country': fa.get('country'),  # ISO country code or ID
+            'current': fa.get('current', False),
+            'municipality': fa.get('municipality', ''),
+            'postal_code': fa.get('postal_code', ''),
+            'address': fa.get('address', '')
+        }
+        foreign_addresses.append(foreign_addr)
+
     # Create Firestore document
     firestore_doc = {
         'profile': {
-            'kennitala': django_member.get('ssn', ''),
+            'kennitala': normalized_kennitala,
             'name': django_member.get('name', ''),
             'birthday': django_member.get('birthday'),
             'email': contact_info.get('email', ''),
-            'phone': contact_info.get('phone', ''),
+            'phone': normalized_phone,
+            'foreign_phone': foreign_phone,  # ← NEW: International phone
             'facebook': contact_info.get('facebook', ''),
             'gender': django_member.get('gender'),
             'reachable': django_member.get('reachable', True),
@@ -131,6 +213,7 @@ def transform_django_member_to_firestore(django_member: Dict[str, Any]) -> Dict[
             'city': local_address.get('city', ''),
             'from_reykjavik': False  # Will be enhanced later with API lookup
         },
+        'foreign_addresses': foreign_addresses,  # ← NEW: Foreign addresses array
         'membership': {
             'date_joined': date_joined,
             'status': 'active',  # Default, will be enhanced with actual status
@@ -145,6 +228,83 @@ def transform_django_member_to_firestore(django_member: Dict[str, Any]) -> Dict[
     }
 
     return firestore_doc
+
+
+def update_user_roles_from_django(db: firestore.Client, django_member: Dict[str, Any]) -> bool:
+    """
+    Update /users/{uid} with roles from Django member data.
+
+    Epic #116: Sync roles from Django User model to Firestore /users/ collection.
+
+    Args:
+        db: Firestore client
+        django_member: Django API member object with is_admin, is_superuser fields
+
+    Returns:
+        True if successful, False otherwise
+    """
+    kennitala = django_member.get('ssn')
+    if not kennitala:
+        return False
+
+    # Normalize kennitala (remove hyphen if present)
+    kennitala_normalized = kennitala.replace('-', '')
+
+    # Find Firebase UID by querying /users/ collection with kennitala field
+    users_ref = db.collection('users')
+    query = users_ref.where('kennitala', '==', kennitala_normalized).limit(1)
+    existing_users = list(query.stream())
+
+    if not existing_users:
+        # User hasn't logged in yet - skip (roles will be set on first login)
+        log_json('DEBUG', 'No Firebase user found for kennitala',
+                 event='update_user_roles_skipped_no_firebase_user',
+                 kennitala=f"{kennitala[:6]}****",
+                 django_id=django_member.get('id'))
+        return False
+
+    uid = existing_users[0].id  # Firebase UID
+
+    # Determine roles from Django User model flags
+    # Direct mapping from Django to Ekklesia:
+    # - is_superuser → superuser (full system access)
+    # - is_staff → admin (administrative access)
+    # - all members → member (default)
+    roles = ['member']  # Default role for all members
+
+    is_staff = django_member.get('is_staff', False)
+    is_superuser = django_member.get('is_superuser', False)
+
+    if is_superuser:
+        roles.append('superuser')  # Full system access
+
+    if is_staff:
+        roles.append('admin')  # Administrative access
+
+    # Update /users/{uid} with roles
+    try:
+        users_ref.document(uid).update({
+            'roles': roles,
+            'django_id': django_member.get('id'),
+            'lastRoleSync': firestore.SERVER_TIMESTAMP
+        })
+
+        log_json('INFO', 'Updated user roles',
+                 event='user_roles_updated',
+                 uid=uid,
+                 kennitala=f"{kennitala[:6]}****",
+                 roles=roles,
+                 django_id=django_member.get('id'))
+
+        return True
+
+    except Exception as e:
+        log_json('ERROR', 'Failed to update user roles',
+                 event='update_user_roles_error',
+                 uid=uid,
+                 kennitala=f"{kennitala[:6]}****",
+                 error=str(e))
+        return False
 
 
 def sync_member_to_firestore(db: firestore.Client, django_member: Dict[str, Any]) -> bool:
@@ -166,11 +326,14 @@ def sync_member_to_firestore(db: firestore.Client, django_member: Dict[str, Any]
                  member_name=django_member.get('name'))
         return False
 
+    # Normalize kennitala for use as document ID
+    normalized_kennitala = normalize_kennitala(kennitala)
+
     try:
         firestore_doc = transform_django_member_to_firestore(django_member)
 
-        # Write to Firestore
-        member_ref = db.collection('members').document(kennitala)
+        # Write to Firestore /members/ collection (use normalized kennitala as document ID)
+        member_ref = db.collection('members').document(normalized_kennitala)
         member_ref.set(firestore_doc, merge=True)
 
         log_json('INFO', 'Member synced to Firestore',
@@ -178,6 +341,9 @@ def sync_member_to_firestore(db: firestore.Client, django_member: Dict[str, Any]
                  kennitala=kennitala,
                  name=django_member.get('name'),
                  django_id=django_member.get('id'))
+
+        # Epic #116: Also update /users/ collection with roles
+        update_user_roles_from_django(db, django_member)
 
         return True
 
@@ -283,3 +449,114 @@ def create_sync_log(db: firestore.Client, stats: Dict[str, Any]) -> str:
     })
 
     return log_ref.id
+
+
+def get_django_member_by_kennitala(kennitala: str) -> Dict[str, Any]:
+    """
+    Fetch a single Django member by kennitala.
+
+    Args:
+        kennitala: Icelandic national ID (kennitala), normalized (no hyphen)
+
+    Returns:
+        Django member data dict, or None if not found
+    """
+    try:
+        django_token = get_django_api_token()
+        api_url = f"{DJANGO_API_BASE_URL}/api/full/"
+
+        log_json('DEBUG', 'Django API lookup',
+                 event='get_django_member_by_kennitala_request',
+                 url=api_url,
+                 ssn_param=f"{kennitala[:6]}****")
+
+        response = requests.get(
+            api_url,
+            headers={'Authorization': f'Token {django_token}'},
+            params={'ssn': kennitala},
+            timeout=30
+        )
+
+        log_json('DEBUG', f'Django API response status: {response.status_code}',
+                 event='get_django_member_by_kennitala_response',
+                 status_code=response.status_code)
+
+        if response.status_code == 200:
+            data = response.json()
+            results = data.get('results', [])
+            count = len(results)
+
+            log_json('DEBUG', f'Django API returned {count} results',
+                     event='get_django_member_by_kennitala_results',
+                     count=count)
+
+            if results:
+                member = results[0]
+                log_json('DEBUG', 'Returning first member',
+                         event='get_django_member_by_kennitala_found',
+                         django_id=member.get('id'),
+                         django_ssn=f"{member.get('ssn', '')[:6]}****")
+                return member
+            return None
+        else:
+            log_json('ERROR', f'Django API error: {response.status_code}',
+                     event='get_django_member_by_kennitala_error',
+                     kennitala=f"{kennitala[:6]}****",
+                     response_text=response.text[:200])
+            return None
+
+    except Exception as e:
+        log_json('ERROR', f'Failed to fetch Django member: {str(e)}',
+                 event='get_django_member_by_kennitala_exception',
+                 kennitala=f"{kennitala[:6]}****")
+        return None
+
+
+def update_django_member(django_id: int, updates: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Update a Django member via PATCH request.
+
+    Args:
+        django_id: Django Comrade ID
+        updates: Dict of fields to update {name, contact_info, etc}
+
+    Returns:
+        Updated member data from Django
+
+    Raises:
+        Exception if update fails
+    """
+    try:
+        django_token = get_django_api_token()
+
+        # PATCH request to update member
+        response = requests.patch(
+            f"{DJANGO_API_BASE_URL}/api/full/{django_id}/",
+            headers={
+                'Authorization': f'Token {django_token}',
+                'Content-Type': 'application/json'
+            },
+            json=updates,
+            timeout=30
+        )
+
+        if response.status_code == 200:
+            updated_member = response.json()
+            log_json('INFO', 'Django member updated',
+                     event='update_django_member_success',
+                     django_id=django_id,
+                     updated_fields=list(updates.keys()))
+            return updated_member
+        else:
+            error_msg = f"Django API returned {response.status_code}: {response.text[:200]}"
+            log_json('ERROR', error_msg,
+                     event='update_django_member_error',
+                     django_id=django_id)
+            raise Exception(error_msg)
+
+    except requests.exceptions.RequestException as e:
+        error_msg = f"Django API request failed: {str(e)}"
+        log_json('ERROR', error_msg,
+                 event='update_django_member_exception',
+                 django_id=django_id)
+        raise Exception(error_msg)
