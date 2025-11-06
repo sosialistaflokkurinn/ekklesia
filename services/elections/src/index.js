@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require('cors');
 
 const electionsRouter = require('./routes/elections');
-const adminRouter = require('./routes/admin');
+const adminRouter = require('./routes/admin'); // Admin CRUD routes (Issue #192)
 
 const app = express();
 const PORT = process.env.PORT || 8081;
