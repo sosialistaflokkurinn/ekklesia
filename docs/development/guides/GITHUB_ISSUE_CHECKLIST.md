@@ -15,7 +15,7 @@ Before creating an issue, verify:
 - [ ] **Epic identified** - Know which Epic this belongs to (or standalone)
 - [ ] **Priority assessed** - Critical, High, Medium, or Low
 - [ ] **Type determined** - Bug, Enhancement, Task, User Story, or Epic
-- [ ] **No PII in examples** - Use fake data only (010190-2939, example@example.com)
+- [ ] **No PII in examples** - Use placeholder format (DDMMYY-XXXX, example@example.com)
 
 ---
 
@@ -587,19 +587,19 @@ As a [user type], I want [goal] so that [benefit].
 
 ### Safe Examples to Use
 
-**Always use fake data in examples:**
+**Always use placeholder format in examples:**
 
 ```markdown
-# ✅ GOOD - Fake data
-- Kennitala: 010190-2939 (fake example)
-- Name: Jón Jónsson
+# ✅ GOOD - Placeholder format
+- Kennitala: DDMMYY-XXXX (generic placeholder)
+- Name: Jón Jónsson (generic name)
 - Email: example@example.com
-- Phone: 555-1234
-- Address: Austurstræti 1, 101 Reykjavík
+- Phone: 555-XXXX or NNN-NNNN
+- Address: Austurstræti 1, 101 Reykjavík (generic location)
 - Firebase UID: abc123ExampleUserUID456
 
 # ❌ BAD - Real data
-- Kennitala: 150588-XXXX (real person)
+- Kennitala: 010190-2939 (looks too real)
 - Name: [Real member name]
 - Email: real.person@gmail.com
 ```
@@ -607,11 +607,11 @@ As a [user type], I want [goal] so that [benefit].
 ### Before Creating/Updating Issue
 
 **Checklist:**
-- [ ] No real kennitalas (use 010190-2939 or 010190-1234)
+- [ ] No real kennitalas (use DDMMYY-XXXX placeholder format)
 - [ ] No real names (use Jón Jónsson, Anna Önnudóttir)
 - [ ] No real emails (use example@example.com)
-- [ ] No real phone numbers (use 555-1234)
-- [ ] No real addresses (use fictional locations)
+- [ ] No real phone numbers (use 555-XXXX or NNN-NNNN)
+- [ ] No real addresses (use generic locations)
 - [ ] No screenshots with personal data visible
 - [ ] Code examples use placeholder data
 
@@ -675,7 +675,7 @@ If you accidentally commit PII:
 
 7. **Including PII (Personal Information)**
    - Never include real kennitalas, names, emails, phone numbers
-   - Use fake example data: 010190-2939, example@example.com
+   - Use placeholder format: DDMMYY-XXXX, example@example.com
 
 ---
 
