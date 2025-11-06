@@ -296,6 +296,11 @@
   justify-content: center;
 }
 
+/* Override display when modal is hidden */
+.modal.u-hidden {
+  display: none !important;
+}
+
 .modal__overlay {
   position: absolute;
   top: 0;

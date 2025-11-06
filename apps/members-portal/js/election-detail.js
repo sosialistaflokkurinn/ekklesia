@@ -17,7 +17,7 @@ import { getElectionById } from './api/elections-api.js';
 import { escapeHTML } from './utils/format.js';
 
 // Version check - REMOVE AFTER DEBUGGING
-console.log('🔵 election-detail.js VERSION 20251106-7-DEBUG-MODAL loaded');
+console.log('🔵 election-detail.js VERSION 20251106-8-MODAL-FIX loaded');
 
 // State
 let currentElection = null;
