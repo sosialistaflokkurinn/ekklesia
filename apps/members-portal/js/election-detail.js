@@ -17,7 +17,7 @@ import { getElectionById } from './api/elections-api.js';
 import { escapeHTML } from './utils/format.js';
 
 // Version check - REMOVE AFTER DEBUGGING
-console.log('🔵 election-detail.js VERSION 20251106-3 loaded');
+console.log('🔵 election-detail.js VERSION 20251106-4 loaded');
 
 // State
 let currentElection = null;
@@ -193,7 +193,7 @@ function displayVotingSection(election) {
     radio.addEventListener('change', () => {
       selectedAnswerId = answer.id;
       voteButton.disabled = false;
-      debug.log('Answer selected:', { id: answer.id, text: answer.text });
+      console.log('📍 Answer selected:', { id: answer.id, idType: typeof answer.id, text: answer.text, selectedAnswerId });
     });
 
     const label = document.createElement('label');
@@ -254,16 +254,20 @@ function showConfirmationModal() {
   const modal = document.getElementById('confirmation-modal');
   const modalAnswerElement = document.getElementById('modal-selected-answer');
 
-  debug.log('showConfirmationModal called', {
+  console.log('🔴 showConfirmationModal called', {
     selectedAnswerId,
-    availableAnswers: currentElection.answers.map(a => ({ id: a.id, text: a.text }))
+    selectedAnswerIdType: typeof selectedAnswerId,
+    availableAnswers: currentElection.answers.map(a => ({ id: a.id, idType: typeof a.id, text: a.text }))
   });
 
-  const selectedAnswer = currentElection.answers.find(a => a.id === selectedAnswerId);
+  const selectedAnswer = currentElection.answers.find(a => {
+    console.log('🔍 Comparing:', { a_id: a.id, a_type: typeof a.id, selectedAnswerId, selected_type: typeof selectedAnswerId, match: a.id === selectedAnswerId });
+    return a.id === selectedAnswerId;
+  });
 
   // Validate that we have a selected answer
   if (!selectedAnswer) {
-    debug.error('No answer selected or answer not found', {
+    console.error('❌ No answer selected or answer not found', {
       selectedAnswerId,
       selectedAnswerIdType: typeof selectedAnswerId,
       answers: currentElection.answers.map(a => ({ id: a.id, idType: typeof a.id, text: a.text }))
@@ -272,7 +276,7 @@ function showConfirmationModal() {
   }
 
   // Set the selected answer text
-  debug.log('Setting modal answer text:', selectedAnswer.text);
+  console.log('✅ Setting modal answer text:', selectedAnswer.text);
   modalAnswerElement.textContent = R.string.your_answer + ': ' + selectedAnswer.text;
 
   modal.classList.remove('u-hidden');
