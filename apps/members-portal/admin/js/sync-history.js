@@ -179,9 +179,11 @@ function setPageText(strings) {
   // Navigation
   document.getElementById('nav-brand').textContent = strings.admin_brand;
   document.getElementById('nav-admin-dashboard').textContent = strings.nav_admin_dashboard;
+  document.getElementById('nav-admin-members').textContent = strings.nav_admin_members;
   document.getElementById('nav-admin-sync').textContent = strings.nav_admin_sync;
   document.getElementById('nav-admin-history').textContent = strings.nav_admin_history;
   document.getElementById('nav-back-to-member').textContent = strings.nav_back_to_member;
+  document.getElementById('nav-logout').textContent = strings.nav_logout;
 
   // Page header
   document.getElementById('history-title').textContent = strings.history_title;
