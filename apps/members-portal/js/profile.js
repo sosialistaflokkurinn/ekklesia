@@ -1239,17 +1239,17 @@ function updateSimpleAddressDisplay() {
  * @returns {Promise<void>}
  */
 async function init() {
-  console.log('🚀 INIT FUNCTION STARTED');
+  debug.log('🚀 INIT FUNCTION STARTED');
   try {
-    console.log('🔍 About to validate profile page...');
+    debug.log('🔍 About to validate profile page...');
     // Validate DOM structure
     validateProfilePage();
 
-    console.log('🔍 About to load i18n...');
+    debug.log('🔍 About to load i18n...');
     // Load i18n strings
     await R.load('is');
-    
-    console.log('🔍 About to test SearchableSelect...');
+
+    debug.log('🔍 About to test SearchableSelect...');
     // Test SearchableSelect import
     debug.log('🔍 Testing SearchableSelect availability...');
     if (typeof SearchableSelect === 'undefined') {

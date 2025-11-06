@@ -283,7 +283,7 @@ body.profile-editing .profile-edit__input-wrapper {
 }
 
 .autocomplete-dropdown:empty::after {
-  content: "Ekkert land fannst";
+  /* content removed for i18n compliance; inject via JS */
   display: block;
   padding: 0.75rem;
   color: var(--color-gray-500);

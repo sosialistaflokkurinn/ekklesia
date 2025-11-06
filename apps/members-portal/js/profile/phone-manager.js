@@ -220,8 +220,8 @@ export class PhoneManager {
       try {
         debug.log(`🔧 Initializing SearchableSelect for phone country selector (index ${index})`);
         new SearchableSelect(countrySelector, {
-          searchPlaceholder: R.string.search_country,
-          noResultsText: R.string.no_results,
+          searchPlaceholder: R.string.search_country || 'Search country...',
+          noResultsText: R.string.no_results || 'No results found',
           renderOption: (option) => {
             return `${getCountryFlag(option.value)} ${getCountryCallingCode(option.value)}`;
           },
@@ -311,7 +311,9 @@ export class PhoneManager {
    * Save phone numbers to Firestore
    */
   async save() {
-    debug.log('💾 Saving phone numbers to Firestore:', this.phoneNumbers);
+    debug.log(
+      `💾 Saving phone numbers to Firestore: count=${this.phoneNumbers.length}, countryCodes=[${this.phoneNumbers.map(pn => pn.country_code || 'N/A').join(', ')}]`
+    );
 
     const statusIcon = document.getElementById('status-phone-numbers');
 

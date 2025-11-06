@@ -401,11 +401,7 @@ async function showProfileUpdateModal(discrepancies, userData, memberData) {
         resolve(true);
       } catch (error) {
         debug.error('Failed to update profile:', error);
-        debug.error('Error details:', {
-          message: error.message,
-          stack: error.stack,
-          name: error.name
-        });
+        // Stack trace already logged by debug.error() if debug mode is enabled
         alert(R.string.profile_update_error.replace('%s', error.message || error));
         btnConfirm.disabled = false;
         btnConfirm.textContent = R.string.profile_update_confirm;
