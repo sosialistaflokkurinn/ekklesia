@@ -190,6 +190,7 @@ function displayVotingSection(election) {
     radio.addEventListener('change', () => {
       selectedAnswerId = answer.id;
       voteButton.disabled = false;
+      debug.log('Answer selected:', { id: answer.id, text: answer.text });
     });
 
     const label = document.createElement('label');
@@ -248,11 +249,28 @@ function displayAlreadyVotedSection() {
  */
 function showConfirmationModal() {
   const modal = document.getElementById('confirmation-modal');
+  const modalAnswerElement = document.getElementById('modal-selected-answer');
+
+  debug.log('showConfirmationModal called', {
+    selectedAnswerId,
+    availableAnswers: currentElection.answers.map(a => ({ id: a.id, text: a.text }))
+  });
+
   const selectedAnswer = currentElection.answers.find(a => a.id === selectedAnswerId);
 
-  if (selectedAnswer) {
-    document.getElementById('modal-selected-answer').textContent = R.string.your_answer + ': ' + selectedAnswer.text;
+  // Validate that we have a selected answer
+  if (!selectedAnswer) {
+    debug.error('No answer selected or answer not found', {
+      selectedAnswerId,
+      selectedAnswerIdType: typeof selectedAnswerId,
+      answers: currentElection.answers.map(a => ({ id: a.id, idType: typeof a.id, text: a.text }))
+    });
+    return;
   }
+
+  // Set the selected answer text
+  debug.log('Setting modal answer text:', selectedAnswer.text);
+  modalAnswerElement.textContent = R.string.your_answer + ': ' + selectedAnswer.text;
 
   modal.classList.remove('u-hidden');
 
