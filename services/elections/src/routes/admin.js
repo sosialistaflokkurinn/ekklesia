@@ -337,12 +337,654 @@ router.get('/elections/:id', requireElectionManager, async (req, res) => {
   }
 });
 
-// More endpoints to be added in next file...
-// - PATCH /api/admin/elections/:id (update)
-// - POST /api/admin/elections/:id/open
-// - POST /api/admin/elections/:id/close
-// - POST /api/admin/elections/:id/hide
-// - POST /api/admin/elections/:id/unhide
-// - DELETE /api/admin/elections/:id (superadmin only)
+// =====================================================
+// PATCH /api/admin/elections/:id
+// Update election (draft only)
+// =====================================================
+// Body: {
+//   title?: string,
+//   description?: string,
+//   question?: string,
+//   answers?: string[],
+//   voting_type?: 'single-choice' | 'multi-choice',
+//   max_selections?: number,
+//   eligibility?: 'members' | 'admins' | 'all',
+//   scheduled_start?: ISO timestamp,
+//   scheduled_end?: ISO timestamp
+// }
+
+router.patch('/elections/:id', requireElectionManager, async (req, res) => {
+  const startTime = Date.now();
+  const { id } = req.params;
+  const {
+    title,
+    description,
+    question,
+    answers,
+    voting_type,
+    max_selections,
+    eligibility,
+    scheduled_start,
+    scheduled_end,
+  } = req.body;
+
+  try {
+    // Check election exists and is draft
+    const checkResult = await pool.query(
+      'SELECT status FROM elections.elections WHERE id = $1',
+      [id]
+    );
+
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Election not found',
+      });
+    }
+
+    if (checkResult.rows[0].status !== 'draft') {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Only draft elections can be edited',
+      });
+    }
+
+    // Build dynamic UPDATE query
+    const updates = [];
+    const params = [];
+    let paramIndex = 1;
+
+    if (title !== undefined) {
+      if (!title.trim()) {
+        return res.status(400).json({
+          error: 'Bad Request',
+          message: 'Title cannot be empty',
+        });
+      }
+      updates.push(`title = $${paramIndex}`);
+      params.push(title.trim());
+      paramIndex++;
+    }
+
+    if (description !== undefined) {
+      updates.push(`description = $${paramIndex}`);
+      params.push(description.trim());
+      paramIndex++;
+    }
+
+    if (question !== undefined) {
+      if (!question.trim()) {
+        return res.status(400).json({
+          error: 'Bad Request',
+          message: 'Question cannot be empty',
+        });
+      }
+      updates.push(`question = $${paramIndex}`);
+      params.push(question.trim());
+      paramIndex++;
+    }
+
+    if (answers !== undefined) {
+      if (!Array.isArray(answers) || answers.length < 2) {
+        return res.status(400).json({
+          error: 'Bad Request',
+          message: 'Answers must be an array with at least 2 items',
+        });
+      }
+      updates.push(`answers = $${paramIndex}`);
+      params.push(JSON.stringify(answers));
+      paramIndex++;
+    }
+
+    if (voting_type !== undefined) {
+      if (!['single-choice', 'multi-choice'].includes(voting_type)) {
+        return res.status(400).json({
+          error: 'Bad Request',
+          message: 'voting_type must be single-choice or multi-choice',
+        });
+      }
+      updates.push(`voting_type = $${paramIndex}`);
+      params.push(voting_type);
+      paramIndex++;
+    }
+
+    if (max_selections !== undefined) {
+      updates.push(`max_selections = $${paramIndex}`);
+      params.push(max_selections);
+      paramIndex++;
+    }
+
+    if (eligibility !== undefined) {
+      if (!['members', 'admins', 'all'].includes(eligibility)) {
+        return res.status(400).json({
+          error: 'Bad Request',
+          message: 'eligibility must be members, admins, or all',
+        });
+      }
+      updates.push(`eligibility = $${paramIndex}`);
+      params.push(eligibility);
+      paramIndex++;
+    }
+
+    if (scheduled_start !== undefined) {
+      updates.push(`scheduled_start = $${paramIndex}`);
+      params.push(scheduled_start || null);
+      paramIndex++;
+    }
+
+    if (scheduled_end !== undefined) {
+      updates.push(`scheduled_end = $${paramIndex}`);
+      params.push(scheduled_end || null);
+      paramIndex++;
+    }
+
+    // Always update updated_by
+    updates.push(`updated_by = $${paramIndex}`);
+    params.push(req.user.uid);
+    paramIndex++;
+
+    if (updates.length === 0) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'No fields to update',
+      });
+    }
+
+    // Execute update
+    params.push(id);
+    const result = await pool.query(
+      `
+      UPDATE elections.elections
+      SET ${updates.join(', ')}
+      WHERE id = $${paramIndex}
+      RETURNING *
+    `,
+      params
+    );
+
+    const election = result.rows[0];
+    const duration = Date.now() - startTime;
+
+    logAudit('update_election', true, {
+      uid: req.user.uid,
+      role: req.user.role,
+      election_id: id,
+      updated_fields: Object.keys(req.body),
+      duration_ms: duration,
+    });
+
+    res.json({
+      success: true,
+      election,
+    });
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    console.error('[Admin] Update election error:', error);
+    logAudit('update_election', false, {
+      uid: req.user.uid,
+      election_id: id,
+      error: error.message,
+      duration_ms: duration,
+    });
+
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to update election',
+    });
+  }
+});
+
+// =====================================================
+// POST /api/admin/elections/:id/open
+// Open election (publish)
+// =====================================================
+
+router.post('/elections/:id/open', requireElectionManager, async (req, res) => {
+  const startTime = Date.now();
+  const { id } = req.params;
+
+  try {
+    // Check election exists and is draft
+    const checkResult = await pool.query(
+      'SELECT status, hidden FROM elections.elections WHERE id = $1',
+      [id]
+    );
+
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Election not found',
+      });
+    }
+
+    const { status, hidden } = checkResult.rows[0];
+
+    if (status !== 'draft') {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Only draft elections can be opened',
+      });
+    }
+
+    if (hidden) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Cannot open hidden election - unhide it first',
+      });
+    }
+
+    // Update status to published and set published_at
+    const result = await pool.query(
+      `
+      UPDATE elections.elections
+      SET status = 'published', published_at = NOW(), updated_by = $1
+      WHERE id = $2
+      RETURNING *
+    `,
+      [req.user.uid, id]
+    );
+
+    const election = result.rows[0];
+    const duration = Date.now() - startTime;
+
+    logAudit('open_election', true, {
+      uid: req.user.uid,
+      role: req.user.role,
+      election_id: id,
+      title: election.title,
+      duration_ms: duration,
+    });
+
+    res.json({
+      success: true,
+      election,
+      message: 'Election opened successfully',
+    });
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    console.error('[Admin] Open election error:', error);
+    logAudit('open_election', false, {
+      uid: req.user.uid,
+      election_id: id,
+      error: error.message,
+      duration_ms: duration,
+    });
+
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to open election',
+    });
+  }
+});
+
+// =====================================================
+// POST /api/admin/elections/:id/close
+// Close election (stop voting)
+// =====================================================
+
+router.post('/elections/:id/close', requireElectionManager, async (req, res) => {
+  const startTime = Date.now();
+  const { id } = req.params;
+
+  try {
+    // Check election exists and is published/paused
+    const checkResult = await pool.query(
+      'SELECT status FROM elections.elections WHERE id = $1',
+      [id]
+    );
+
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Election not found',
+      });
+    }
+
+    const { status } = checkResult.rows[0];
+
+    if (!['published', 'paused'].includes(status)) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Only published or paused elections can be closed',
+      });
+    }
+
+    // Update status to closed and set closed_at
+    const result = await pool.query(
+      `
+      UPDATE elections.elections
+      SET status = 'closed', closed_at = NOW(), updated_by = $1
+      WHERE id = $2
+      RETURNING *
+    `,
+      [req.user.uid, id]
+    );
+
+    const election = result.rows[0];
+    const duration = Date.now() - startTime;
+
+    logAudit('close_election', true, {
+      uid: req.user.uid,
+      role: req.user.role,
+      election_id: id,
+      title: election.title,
+      duration_ms: duration,
+    });
+
+    res.json({
+      success: true,
+      election,
+      message: 'Election closed successfully',
+    });
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    console.error('[Admin] Close election error:', error);
+    logAudit('close_election', false, {
+      uid: req.user.uid,
+      election_id: id,
+      error: error.message,
+      duration_ms: duration,
+    });
+
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to close election',
+    });
+  }
+});
+
+// =====================================================
+// POST /api/admin/elections/:id/hide
+// Hide election (soft delete)
+// =====================================================
+
+router.post('/elections/:id/hide', requireElectionManager, async (req, res) => {
+  const startTime = Date.now();
+  const { id } = req.params;
+
+  try {
+    // Check election exists and is not already hidden
+    const checkResult = await pool.query(
+      'SELECT hidden FROM elections.elections WHERE id = $1',
+      [id]
+    );
+
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Election not found',
+      });
+    }
+
+    if (checkResult.rows[0].hidden) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Election is already hidden',
+      });
+    }
+
+    // Update hidden flag
+    const result = await pool.query(
+      `
+      UPDATE elections.elections
+      SET hidden = TRUE, updated_by = $1
+      WHERE id = $2
+      RETURNING *
+    `,
+      [req.user.uid, id]
+    );
+
+    const election = result.rows[0];
+    const duration = Date.now() - startTime;
+
+    logAudit('hide_election', true, {
+      uid: req.user.uid,
+      role: req.user.role,
+      election_id: id,
+      title: election.title,
+      duration_ms: duration,
+    });
+
+    res.json({
+      success: true,
+      election,
+      message: 'Election hidden successfully',
+    });
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    console.error('[Admin] Hide election error:', error);
+    logAudit('hide_election', false, {
+      uid: req.user.uid,
+      election_id: id,
+      error: error.message,
+      duration_ms: duration,
+    });
+
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to hide election',
+    });
+  }
+});
+
+// =====================================================
+// POST /api/admin/elections/:id/unhide
+// Unhide election (restore from soft delete)
+// =====================================================
+
+router.post('/elections/:id/unhide', requireElectionManager, async (req, res) => {
+  const startTime = Date.now();
+  const { id } = req.params;
+
+  try {
+    // Check election exists and is hidden
+    const checkResult = await pool.query(
+      'SELECT hidden FROM elections.elections WHERE id = $1',
+      [id]
+    );
+
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Election not found',
+      });
+    }
+
+    if (!checkResult.rows[0].hidden) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Election is not hidden',
+      });
+    }
+
+    // Update hidden flag
+    const result = await pool.query(
+      `
+      UPDATE elections.elections
+      SET hidden = FALSE, updated_by = $1
+      WHERE id = $2
+      RETURNING *
+    `,
+      [req.user.uid, id]
+    );
+
+    const election = result.rows[0];
+    const duration = Date.now() - startTime;
+
+    logAudit('unhide_election', true, {
+      uid: req.user.uid,
+      role: req.user.role,
+      election_id: id,
+      title: election.title,
+      duration_ms: duration,
+    });
+
+    res.json({
+      success: true,
+      election,
+      message: 'Election restored successfully',
+    });
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    console.error('[Admin] Unhide election error:', error);
+    logAudit('unhide_election', false, {
+      uid: req.user.uid,
+      election_id: id,
+      error: error.message,
+      duration_ms: duration,
+    });
+
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to restore election',
+    });
+  }
+});
+
+// =====================================================
+// DELETE /api/admin/elections/:id
+// Permanently delete election (superadmin only)
+// =====================================================
+// DANGER: This is irreversible - deletes all data
+
+router.delete('/elections/:id', requireSuperadmin, async (req, res) => {
+  const startTime = Date.now();
+  const { id } = req.params;
+
+  try {
+    // Check election exists
+    const checkResult = await pool.query(
+      'SELECT title, status FROM elections.elections WHERE id = $1',
+      [id]
+    );
+
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Election not found',
+      });
+    }
+
+    const { title, status } = checkResult.rows[0];
+
+    // Safety check: don't allow deleting active elections
+    if (status === 'published') {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Cannot delete active election - close it first',
+      });
+    }
+
+    // Permanently delete election
+    await pool.query('DELETE FROM elections.elections WHERE id = $1', [id]);
+
+    const duration = Date.now() - startTime;
+
+    logAudit('delete_election', true, {
+      uid: req.user.uid,
+      role: req.user.role,
+      election_id: id,
+      title,
+      status,
+      duration_ms: duration,
+    });
+
+    res.json({
+      success: true,
+      message: 'Election permanently deleted',
+      election_id: id,
+      title,
+    });
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    console.error('[Admin] Delete election error:', error);
+    logAudit('delete_election', false, {
+      uid: req.user.uid,
+      election_id: id,
+      error: error.message,
+      duration_ms: duration,
+    });
+
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to delete election',
+    });
+  }
+});
+
+// =====================================================
+// GET /api/admin/elections/:id/results
+// Get election results
+// =====================================================
+
+router.get('/elections/:id/results', requireElectionManager, async (req, res) => {
+  const startTime = Date.now();
+  const { id } = req.params;
+
+  try {
+    // Check election exists
+    const electionResult = await pool.query(
+      'SELECT title, question, answers, status, closed_at FROM elections.elections WHERE id = $1',
+      [id]
+    );
+
+    if (electionResult.rows.length === 0) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Election not found',
+      });
+    }
+
+    const election = electionResult.rows[0];
+
+    // Only allow viewing results for closed elections
+    if (election.status !== 'closed' && election.status !== 'archived') {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Results only available for closed elections',
+      });
+    }
+
+    // TODO: Implement ballot counting from ballots table
+    // For now, return placeholder structure
+    // This will need to be implemented when ballot schema is finalized
+
+    const results = {
+      election_id: id,
+      title: election.title,
+      question: election.question,
+      answers: JSON.parse(election.answers),
+      status: election.status,
+      closed_at: election.closed_at,
+      results: {}, // TODO: Count ballots per answer
+      total_votes: 0, // TODO: Count total ballots
+    };
+
+    const duration = Date.now() - startTime;
+
+    logAudit('get_results', true, {
+      uid: req.user.uid,
+      role: req.user.role,
+      election_id: id,
+      duration_ms: duration,
+    });
+
+    res.json(results);
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    console.error('[Admin] Get results error:', error);
+    logAudit('get_results', false, {
+      uid: req.user.uid,
+      election_id: id,
+      error: error.message,
+      duration_ms: duration,
+    });
+
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to get results',
+    });
+  }
+});
 
 module.exports = router;
