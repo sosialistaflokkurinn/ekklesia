@@ -70,6 +70,14 @@ h1 {
 
   /* Additional color variants */
   --color-primary-light: #ff6b6b;  /* Lighter red for gradients */
+  --color-primary-pale: #ffebee;   /* Very light pink for backgrounds - GOOD contrast */
+  --color-primary-deep: #b71c1c;   /* Darker red for text on light bg - GOOD contrast */
+
+  /* Success color variants for badges */
+  --color-success-bg-light: #e8f5e9;  /* Very light green background */
+  --color-success-green: #2e7d32;     /* Dark green text - 6.4:1 contrast */
+  --color-success-darker: #1b5e20;    /* Darkest green - 8.2:1 contrast */
+
   --color-white: #ffffff;
   --color-black: #000000;
 
@@ -189,97 +197,9 @@ body {
   color: var(--color-error-text);
 }
 
-/* === Buttons (Global Component) === */
-
-.btn {
-  display: inline-block;
-  padding: 12px var(--spacing-lg);
-  background: var(--color-primary);
-  color: white;
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  text-decoration: none;
-  transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
-}
-
-.btn:hover {
-  background: var(--color-primary-dark);
-}
-
-.btn:active:not(:disabled) {
-  transform: scale(0.98);
-}
-
-.btn:disabled {
-  background: var(--color-gray-300);
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.btn:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.7);
-  outline-offset: 2px;
-}
-
-/* Button Variants */
-
-.btn--secondary {
-  background: var(--color-error-border);
-}
-
-.btn--secondary:hover {
-  background: var(--color-error-border);
-  filter: brightness(0.9);
-}
-
-.btn--danger {
-  background: var(--color-primary);
-  filter: brightness(0.75);
-}
-
-.btn--danger:hover {
-  background: var(--color-primary);
-  filter: brightness(0.6);
-}
-
-.btn--outline {
-  position: relative;
-  background: var(--color-primary);
-  color: white;
-  border: 1px solid var(--color-border-subtle);
-}
-
-.btn--outline:hover:not(:disabled) {
-  background: var(--color-primary-dark);
-  border-color: var(--color-border-subtle-hover);
-  box-shadow: var(--shadow-primary);
-  transform: translateY(-1px);
-}
-
-.btn--outline:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.7);
-  outline-offset: 2px;
-}
-
-.btn--outline:active:not(:disabled) {
-  transform: translateY(0);
-  box-shadow: var(--shadow-primary-pressed);
-}
-
-/* Login Form Button Modifier - Full Width */
-.btn--full-width {
-  width: 100%;
-  justify-content: center;
-  margin-bottom: var(--spacing-md);
-}
-
-.btn--sm {
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
-}
+/* === Buttons === */
+/* Button styles moved to /styles/components/button.css (Nov 6, 2025) */
+/* Import button.css in your HTML to use .btn and .btn--* variants */
 
 /* ========================================== */
 /* MODAL STYLES */

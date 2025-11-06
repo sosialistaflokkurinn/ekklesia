@@ -16,6 +16,12 @@
   text-align: center;
 }
 
+/* Override display when hidden */
+.election-detail__loading.u-hidden,
+.election-detail__error.u-hidden {
+  display: none !important;
+}
+
 .election-detail__error {
   color: var(--color-error);
 }
@@ -89,8 +95,9 @@
 .election-detail__voted-badge {
   display: inline-block;
   padding: 0.75rem 1.25rem;
-  background-color: var(--color-primary-light);
-  color: var(--color-primary);
+  background-color: var(--color-success-bg-light);  /* Light green - GOOD contrast */
+  color: var(--color-success-green);                /* Dark green - 6.4:1 ratio */
+  border: 1px solid var(--color-success-border);    /* Green border */
   border-radius: var(--border-radius);
   font-weight: 600;
   margin-top: var(--space-sm);
@@ -191,12 +198,12 @@
 
 .election-detail__answer-option:hover {
   border-color: var(--color-primary);
-  background-color: var(--color-primary-light);
+  background-color: var(--color-primary-pale);  /* Very light pink - GOOD contrast */
 }
 
 .election-detail__answer-option:has(input:checked) {
   border-color: var(--color-primary);
-  background-color: var(--color-primary-light);
+  background-color: var(--color-primary-pale);  /* Very light pink - GOOD contrast */
 }
 
 .election-detail__answer-radio {
@@ -367,9 +374,9 @@
 
 .modal__selected-answer {
   font-weight: 600;
-  color: var(--color-primary);
+  color: var(--color-primary-deep);              /* Darker red - GOOD contrast */
   padding: var(--space-md);
-  background-color: var(--color-primary-light);
+  background-color: var(--color-primary-pale);   /* Very light pink - GOOD contrast */
   border-radius: var(--border-radius);
 }
 
