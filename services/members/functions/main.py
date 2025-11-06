@@ -93,20 +93,20 @@ def get_kenni_is_jwks_client(issuer_url: str) -> PyJWKClient:
     return get_jwks_client_cached_ttl(issuer_url)
 
 def normalize_kennitala(kennitala: str) -> str:
-    """Normalize kennitala format to DDMMYY-XXXX"""
+    """
+    Normalize kennitala to 10 digits without hyphen (for use as Firestore document ID).
+
+    Example: "010101-2980" -> "0101012980"
+    """
     if not kennitala:
         return None
 
-    # Remove any whitespace
-    kennitala = kennitala.strip()
+    # Remove any whitespace and hyphens
+    kennitala = kennitala.strip().replace('-', '')
 
-    # Already has hyphen
-    if '-' in kennitala:
-        return kennitala
-
-    # Add hyphen if missing (assumes 10 digits)
+    # Validate it's 10 digits
     if len(kennitala) == 10 and kennitala.isdigit():
-        return f"{kennitala[:6]}-{kennitala[6:]}"
+        return kennitala
 
     return kennitala
 

@@ -18,20 +18,20 @@ DJANGO_API_BASE_URL = "https://starf.sosialistaflokkurinn.is/felagar"
 
 
 def normalize_kennitala(kennitala: str) -> str:
-    """Normalize kennitala format to DDMMYY-XXXX"""
+    """
+    Normalize kennitala to 10 digits without hyphen (for use as Firestore document ID).
+
+    Example: "010101-2980" -> "0101012980"
+    """
     if not kennitala:
         return None
 
-    # Remove any whitespace
-    kennitala = kennitala.strip()
+    # Remove any whitespace and hyphens
+    kennitala = kennitala.strip().replace('-', '')
 
-    # Already has hyphen
-    if '-' in kennitala:
-        return kennitala
-
-    # Add hyphen if missing (assumes 10 digits)
+    # Validate it's 10 digits
     if len(kennitala) == 10 and kennitala.isdigit():
-        return f"{kennitala[:6]}-{kennitala[6:]}"
+        return kennitala
 
     return kennitala
 
@@ -172,7 +172,7 @@ def transform_django_member_to_firestore(django_member: Dict[str, Any]) -> Dict[
     # Foreign phone (keep international format as-is, e.g., +45 12345678)
     foreign_phone = contact_info.get('foreign_phone', '') or ''
 
-    # Normalize kennitala to DDMMYY-XXXX format
+    # Normalize kennitala to 10 digits (no hyphen) for consistency
     raw_kennitala = django_member.get('ssn', '')
     normalized_kennitala = normalize_kennitala(raw_kennitala) if raw_kennitala else ''
 
