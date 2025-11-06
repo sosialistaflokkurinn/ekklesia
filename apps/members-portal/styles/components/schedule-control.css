@@ -1,0 +1,234 @@
+/**
+ * Schedule Control Component Styles (Admin View)
+ *
+ * Interactive election scheduling controls.
+ * BEM methodology.
+ */
+
+/* Main container */
+.schedule-control {
+  background-color: var(--color-white);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Status section */
+.schedule-control__status {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+  background-color: var(--color-gray-100);
+  border-radius: var(--radius-md);
+  border-left: 6px solid var(--color-gray-400);
+}
+
+.schedule-control__status--upcoming {
+  background-color: var(--color-error-bg-lighter);
+  border-left-color: var(--color-error-deep-orange);
+}
+
+.schedule-control__status--active {
+  background-color: var(--color-success-bg-light);
+  border-left-color: var(--color-success-green);
+}
+
+.schedule-control__status--closed {
+  background-color: var(--color-gray-100);
+  border-left-color: var(--color-gray-700);
+}
+
+.schedule-control__status-emoji {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.schedule-control__status-text {
+  flex: 1;
+  font-size: 1.25rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.schedule-control__status--upcoming .schedule-control__status-text {
+  color: var(--color-error-deep-orange);
+}
+
+.schedule-control__status--active .schedule-control__status-text {
+  color: var(--color-success-green);
+}
+
+.schedule-control__status--closed .schedule-control__status-text {
+  color: var(--color-gray-700);
+}
+
+.schedule-control__countdown {
+  margin-top: var(--spacing-md);
+  width: 100%;
+}
+
+/* Section */
+.schedule-control__section {
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+  background-color: var(--color-gray-50);
+  border-radius: var(--radius-md);
+  border: 2px solid var(--color-border-light);
+}
+
+.schedule-control__section--close {
+  background-color: var(--color-error-bg);
+  border-color: var(--color-error-border);
+}
+
+/* Headings */
+.schedule-control__heading {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: var(--spacing-sm);
+  color: var(--color-gray-800);
+}
+
+.schedule-control__heading--danger {
+  color: var(--color-error-text);
+}
+
+.schedule-control__description {
+  font-size: 0.875rem;
+  color: var(--color-gray-600);
+  margin-bottom: var(--spacing-lg);
+  line-height: 1.5;
+}
+
+/* Duration selection */
+.schedule-control__duration-group {
+  margin-bottom: var(--spacing-lg);
+}
+
+.schedule-control__label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-gray-700);
+  margin-bottom: var(--spacing-sm);
+}
+
+.schedule-control__duration-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.schedule-control__duration-btn {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 2px solid var(--color-border-medium);
+  background-color: var(--color-white);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-gray-700);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.schedule-control__duration-btn:hover {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-alpha-2);
+}
+
+.schedule-control__duration-btn--active {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  font-weight: 700;
+}
+
+.schedule-control__custom-input {
+  width: 100%;
+  max-width: 200px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 2px solid var(--color-border-medium);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.schedule-control__custom-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-focus-primary);
+}
+
+/* Schedule inputs */
+.schedule-control__inputs {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--spacing-md);
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.schedule-control__input {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 2px solid var(--color-border-medium);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.schedule-control__input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-focus-primary);
+}
+
+/* Action buttons */
+.schedule-control__action-btn {
+  width: 100%;
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .schedule-control {
+    padding: var(--spacing-md);
+  }
+
+  .schedule-control__status {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+
+  .schedule-control__status-emoji {
+    font-size: 1.5rem;
+  }
+
+  .schedule-control__status-text {
+    font-size: 1rem;
+  }
+
+  .schedule-control__duration-buttons {
+    flex-direction: column;
+  }
+
+  .schedule-control__duration-btn {
+    width: 100%;
+  }
+
+  .schedule-control__inputs {
+    grid-template-columns: 1fr;
+  }
+
+  .schedule-control__custom-input,
+  .schedule-control__input {
+    max-width: none;
+    width: 100%;
+  }
+}

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Kosningastjórnun - Admin</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+  <!-- Reuse member portal styles -->
+  <link rel="stylesheet" href="/styles/global.css?v=20251106-24">
+  <link rel="stylesheet" href="/styles/components/button.css?v=20251106-24">
+  <link rel="stylesheet" href="/styles/components/nav.css?v=20251106-24">
+  <link rel="stylesheet" href="/styles/components/page.css?v=20251106-24">
+  <link rel="stylesheet" href="/styles/components/countdown-timer.css?v=20251106-24">
+  <link rel="stylesheet" href="/styles/components/schedule-control.css?v=20251106-24">
+
+  <!-- Admin-specific styles -->
+  <link rel="stylesheet" href="/admin/styles/admin.css?v=20251027b">
+</head>
+<body class="authenticated admin">
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="nav__container">
+      <a href="/admin/admin.html" class="nav__brand" id="nav-brand">Loading...</a>
+
+      <!-- Hamburger Button (mobile only) -->
+      <button class="nav__hamburger" id="nav-hamburger" aria-expanded="false">
+        <span class="nav__hamburger-line"></span>
+        <span class="nav__hamburger-line"></span>
+        <span class="nav__hamburger-line"></span>
+      </button>
+
+      <!-- Overlay for mobile menu -->
+      <div class="nav__overlay" id="nav-overlay"></div>
+
+      <!-- Navigation Drawer -->
+      <div class="nav__drawer" id="nav-drawer" aria-hidden="true">
+        <!-- Close button (mobile only) -->
+        <button class="nav__close" id="nav-close">
+          <span class="nav__close-icon">✕</span>
+        </button>
+
+        <div class="nav__links">
+          <a href="/admin/admin.html" class="nav__link" id="nav-admin-dashboard">Loading...</a>
+          <a href="/admin/members.html" class="nav__link" id="nav-admin-members">Loading...</a>
+          <a href="/admin/election-control.html" class="nav__link nav__link--active">Kosningastjórnun</a>
+          <a href="/members-area/dashboard.html" class="nav__link" id="nav-back-to-member">Loading...</a>
+          <a href="#" class="nav__link nav__link--logout" id="nav-logout">Loading...</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <div class="page__container">
+    <!-- Loading State -->
+    <div id="loading-state" class="card">
+      <p>Hleður kosningu...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="error-state" class="card u-hidden">
+      <h2 style="color: var(--color-error-text);">Villa kom upp</h2>
+      <p id="error-message">Gat ekki hlaðið kosningu</p>
+      <button id="retry-button" class="btn">Reyna aftur</button>
+    </div>
+
+    <!-- Election Control Content -->
+    <div id="election-control-content" class="u-hidden">
+      <!-- Election Header -->
+      <div class="card">
+        <h1 class="card__title" id="election-title">Loading...</h1>
+        <p class="u-text-muted" id="election-question">Loading...</p>
+      </div>
+
+      <!-- Schedule Control Component Container -->
+      <div class="card">
+        <h2 class="card__title">Kosningartíðastjórnun</h2>
+        <div id="schedule-control-container">
+          <!-- Schedule control component will be inserted here by JavaScript -->
+        </div>
+      </div>
+
+      <!-- Member View Preview -->
+      <div class="card">
+        <h2 class="card__title">Forskoðun (þannig sjá félagsmenn þetta)</h2>
+        <p class="u-text-muted" style="margin-bottom: var(--spacing-md);">
+          Breytingar uppfærast sjálfkrafa í rauntíma fyrir alla félagsmenn
+        </p>
+        <div id="member-preview-container">
+          <!-- Member view schedule display will be inserted here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/admin/js/election-control.js?v=20251106-24"></script>
+</body>
+</html>

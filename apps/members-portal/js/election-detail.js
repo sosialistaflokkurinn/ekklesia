@@ -12,13 +12,19 @@
 
 import { initAuthenticatedPage } from './page-init.js';
 import { debug } from './utils/debug.js';
+import { formatDateIcelandic } from './utils/format.js';
 import { R } from '../i18n/strings-loader.js';
 import { getElectionById } from './api/elections-api.js';
 import { escapeHTML } from './utils/format.js';
+import { showModal } from './components/modal.js';
+import { electionState } from './utils/election-state.js';
+import { createScheduleDisplay } from './components/schedule-display.js';
+import { createVotingForm } from './components/voting-form.js';
 
 // State
 let currentElection = null;
-let selectedAnswerId = null;
+let scheduleDisplay = null;
+let votingForm = null;
 
 /**
  * Initialize election detail page
@@ -62,21 +68,12 @@ function updateStaticText() {
   document.getElementById('loading-message').textContent = R.string.loading_election;
   document.getElementById('error-message').textContent = R.string.error_load_election;
   document.getElementById('retry-button').textContent = R.string.btn_retry;
-  document.getElementById('question-title-label').textContent = R.string.election_question_label;
-  document.getElementById('voting-title').textContent = R.string.voting_select_answer;
-  document.getElementById('vote-button-text').textContent = R.string.btn_vote;
   document.getElementById('results-title').textContent = R.string.results_title;
   document.getElementById('results-total-votes-label').textContent = R.string.results_total_votes;
-  document.getElementById('schedule-starts-label').textContent = R.string.election_starts;
-  document.getElementById('schedule-ends-label').textContent = R.string.election_ends;
   document.getElementById('voted-badge-text').textContent = R.string.election_already_voted;
   document.getElementById('upcoming-message').textContent = R.string.election_upcoming_message;
 
-  // Modal text
-  document.getElementById('modal-title').textContent = R.string.confirm_vote_title;
-  document.getElementById('modal-message').textContent = R.string.confirm_vote_message;
-  document.getElementById('modal-cancel').textContent = R.string.btn_cancel;
-  document.getElementById('modal-confirm').textContent = R.string.btn_confirm;
+  // Note: schedule labels and voting form labels are now handled by components
 }
 
 /**
@@ -135,13 +132,27 @@ function displayElection(election) {
     document.getElementById('already-voted-badge').classList.remove('u-hidden');
   }
 
-  // Schedule
-  document.getElementById('schedule-starts-value').textContent = formatDate(election.voting_starts_at);
-  document.getElementById('schedule-ends-value').textContent = formatDate(election.voting_ends_at);
+  // Initialize election state
+  electionState.initialize(election);
+
+  // Create schedule display component
+  if (!scheduleDisplay) {
+    scheduleDisplay = createScheduleDisplay({
+      startLabel: R.string.election_starts,
+      endLabel: R.string.election_ends,
+      showCountdown: true
+    });
+
+    const container = document.getElementById('schedule-display-container');
+    container.appendChild(scheduleDisplay.element);
+  }
 
   // Description (if available)
   if (election.description) {
-    document.getElementById('election-description').innerHTML = '<p>' + escapeHTML(election.description) + '</p>';
+    const descSection = document.getElementById('election-description-section');
+    const descContainer = document.getElementById('election-description');
+    descContainer.innerHTML = '<p>' + escapeHTML(election.description) + '</p>';
+    descSection.style.display = 'block';
   }
 
   // Question
@@ -166,51 +177,30 @@ function displayElection(election) {
  * Display voting section with answer options
  */
 function displayVotingSection(election) {
-  const votingSection = document.getElementById('voting-section');
-  const answerOptionsContainer = document.getElementById('answer-options');
-  const voteButton = document.getElementById('vote-button');
-  const votingForm = document.getElementById('voting-form');
+  const container = document.getElementById('voting-form-container');
 
-  // Clear previous options
-  answerOptionsContainer.innerHTML = '';
+  // Clear previous form if it exists
+  if (votingForm) {
+    votingForm.destroy();
+    votingForm = null;
+  }
 
-  // Create radio buttons for each answer
-  election.answers.forEach((answer) => {
-    const optionDiv = document.createElement('div');
-    optionDiv.className = 'election-detail__answer-option';
+  // Create voting form component
+  votingForm = createVotingForm({
+    question: election.question,
+    answers: election.answers,
+    questionLabel: R.string.election_question_label,
+    votingTitle: R.string.voting_select_answer,
+    voteButtonText: R.string.btn_vote,
 
-    const radio = document.createElement('input');
-    radio.type = 'radio';
-    radio.id = 'answer-' + answer.id;
-    radio.name = 'answer';
-    radio.value = answer.id;
-    radio.className = 'election-detail__answer-radio';
-
-    // Enable vote button when answer is selected
-    radio.addEventListener('change', () => {
-      selectedAnswerId = answer.id;
-      voteButton.disabled = false;
-    });
-
-    const label = document.createElement('label');
-    label.htmlFor = 'answer-' + answer.id;
-    label.className = 'election-detail__answer-label';
-    label.textContent = answer.text;
-
-    optionDiv.appendChild(radio);
-    optionDiv.appendChild(label);
-    answerOptionsContainer.appendChild(optionDiv);
-  });
-
-  // Handle vote form submission
-  votingForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    if (selectedAnswerId) {
-      showConfirmationModal();
+    // Handle vote submission
+    onSubmit: (answerIds) => {
+      showConfirmationModal(answerIds);
     }
   });
 
-  votingSection.classList.remove('u-hidden');
+  // Add to page
+  container.appendChild(votingForm.element);
 }
 
 /**
@@ -238,59 +228,86 @@ function displayUpcomingSection() {
  * Display already voted section
  */
 function displayAlreadyVotedSection() {
-  const votingSection = document.getElementById('voting-section');
-  votingSection.innerHTML = '<div class="election-detail__already-voted"><p>' + R.string.election_already_voted_message + '</p></div>';
-  votingSection.classList.remove('u-hidden');
+  const container = document.getElementById('voting-form-container');
+  container.innerHTML = '<div class="election-detail__already-voted"><p>' + R.string.election_already_voted_message + '</p></div>';
 }
 
 /**
  * Show confirmation modal before submitting vote
+ * @param {Array<string>} answerIds - Selected answer ID(s)
  */
-function showConfirmationModal() {
-  const modal = document.getElementById('confirmation-modal');
-  const modalAnswerElement = document.getElementById('modal-selected-answer');
-
-  const selectedAnswer = currentElection.answers.find(a => a.id === selectedAnswerId);
-
-  // Validate that we have a selected answer
-  if (!selectedAnswer) {
+function showConfirmationModal(answerIds) {
+  // Validate that we have at least one selected answer
+  if (!answerIds || answerIds.length === 0) {
     return;
   }
 
-  // Set the selected answer text
-  modalAnswerElement.textContent = R.string.your_answer + ': ' + selectedAnswer.text;
+  // Get selected answer objects
+  const selectedAnswers = answerIds.map(id =>
+    currentElection.answers.find(a => a.id === id)
+  ).filter(Boolean);
 
-  modal.classList.remove('u-hidden');
+  if (selectedAnswers.length === 0) {
+    return;
+  }
 
-  // Setup modal event listeners
-  const confirmButton = document.getElementById('modal-confirm');
-  const cancelButton = document.getElementById('modal-cancel');
-  const closeButton = document.getElementById('modal-close');
+  // Create selected answer display (single or multiple)
+  let selectedAnswerHtml;
+  if (selectedAnswers.length === 1) {
+    selectedAnswerHtml = `
+      <p class="modal__selected-answer">
+        <strong>${R.string.your_answer}:</strong> ${escapeHTML(selectedAnswers[0].text)}
+      </p>
+    `;
+  } else {
+    const answersList = selectedAnswers.map(a =>
+      `<li>${escapeHTML(a.text)}</li>`
+    ).join('');
+    selectedAnswerHtml = `
+      <div class="modal__selected-answers">
+        <p><strong>${R.string.your_answer}:</strong></p>
+        <ul class="modal__answer-list">
+          ${answersList}
+        </ul>
+      </div>
+    `;
+  }
 
-  confirmButton.onclick = () => {
-    hideConfirmationModal();
-    submitVote();
-  };
+  // Build modal content
+  const content = `
+    <p>${R.string.confirm_vote_message}</p>
+    ${selectedAnswerHtml}
+  `;
 
-  cancelButton.onclick = hideConfirmationModal;
-  closeButton.onclick = hideConfirmationModal;
-
-  // Close on overlay click
-  document.querySelector('.modal__overlay').onclick = hideConfirmationModal;
-}
-
-/**
- * Hide confirmation modal
- */
-function hideConfirmationModal() {
-  document.getElementById('confirmation-modal').classList.add('u-hidden');
+  // Show modal using reusable component
+  const modal = showModal({
+    title: R.string.confirm_vote_title,
+    content: content,
+    buttons: [
+      {
+        text: R.string.btn_cancel,
+        onClick: () => modal.close(),
+        primary: false
+      },
+      {
+        text: R.string.btn_confirm,
+        onClick: () => {
+          modal.close();
+          submitVote(answerIds);
+        },
+        primary: true
+      }
+    ],
+    size: 'md'
+  });
 }
 
 /**
  * Submit vote (placeholder for Day 3)
+ * @param {Array<string>} answerIds - Selected answer ID(s)
  */
-async function submitVote() {
-  debug.log('Vote submission (Day 3): Election ' + currentElection.id + ', Answer ' + selectedAnswerId);
+async function submitVote(answerIds) {
+  debug.log('Vote submission (Day 3): Election ' + currentElection.id + ', Answers ' + answerIds.join(', '));
 
   // TODO: Implement actual vote submission on Day 3
   // For now, just show success message
@@ -334,21 +351,6 @@ function showError(message) {
       loadElection(electionId);
     }
   };
-}
-
-/**
- * Format date for display
- */
-function formatDate(dateString) {
-  if (!dateString) return '';
-  const date = new Date(dateString);
-  return date.toLocaleDateString('is-IS', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
 }
 
 // Initialize when DOM is ready

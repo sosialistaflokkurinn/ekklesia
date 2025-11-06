@@ -8,11 +8,14 @@
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <link rel="stylesheet" href="/styles/global.css?v=20251106-14">
-  <link rel="stylesheet" href="/styles/components/button.css?v=20251106-14">
-  <link rel="stylesheet" href="/styles/components/nav.css?v=20251106-14">
-  <link rel="stylesheet" href="/styles/components/page.css?v=20251106-14">
-  <link rel="stylesheet" href="/styles/components/election-detail.css?v=20251106-14">
+  <link rel="stylesheet" href="/styles/global.css?v=20251106-25">
+  <link rel="stylesheet" href="/styles/components/button.css?v=20251106-25">
+  <link rel="stylesheet" href="/styles/components/modal.css?v=20251106-25">
+  <link rel="stylesheet" href="/styles/components/nav.css?v=20251106-25">
+  <link rel="stylesheet" href="/styles/components/page.css?v=20251106-25">
+  <link rel="stylesheet" href="/styles/components/countdown-timer.css?v=20251106-25">
+  <link rel="stylesheet" href="/styles/components/voting-form.css?v=20251106-25">
+  <link rel="stylesheet" href="/styles/components/election-detail.css?v=20251106-25">
 </head>
 <body class="authenticated">
   <nav class="nav">
@@ -82,45 +85,22 @@
         </div>
       </header>
 
-      <!-- Election Info -->
-      <section class="election-detail__info">
-        <div class="election-detail__schedule">
-          <div class="election-detail__schedule-item">
-            <span class="election-detail__schedule-label" id="schedule-starts-label">Loading...</span>
-            <span class="election-detail__schedule-value" id="schedule-starts-value">Loading...</span>
-          </div>
-          <div class="election-detail__schedule-item">
-            <span class="election-detail__schedule-label" id="schedule-ends-label">Loading...</span>
-            <span class="election-detail__schedule-value" id="schedule-ends-value">Loading...</span>
-          </div>
-        </div>
+      <!-- Election Schedule (populated by schedule-display component) -->
+      <div id="schedule-display-container">
+        <!-- Schedule display component will be inserted here by JavaScript -->
+      </div>
 
+      <!-- Election Description -->
+      <section class="election-detail__info" id="election-description-section" style="display: none;">
         <div class="election-detail__description" id="election-description">
           <!-- Optional description will be inserted here -->
         </div>
       </section>
 
-      <!-- Question -->
-      <section class="election-detail__question">
-        <h2 class="election-detail__question-title" id="question-title-label">Loading...</h2>
-        <p class="election-detail__question-text" id="question-text">Loading...</p>
-      </section>
-
-      <!-- Voting Section (shown if active and not voted) -->
-      <section id="voting-section" class="election-detail__voting u-hidden">
-        <h3 class="election-detail__voting-title" id="voting-title">Loading...</h3>
-
-        <!-- Answer Options -->
-        <form id="voting-form" class="election-detail__voting-form">
-          <div id="answer-options" class="election-detail__answer-options">
-            <!-- Answer options will be inserted dynamically -->
-          </div>
-
-          <button type="submit" id="vote-button" class="btn btn--primary election-detail__vote-btn" disabled>
-            <span id="vote-button-text">Loading...</span>
-          </button>
-        </form>
-      </section>
+      <!-- Voting Form Container (voting-form component inserted here) -->
+      <div id="voting-form-container">
+        <!-- Voting form component will be inserted here by JavaScript -->
+      </div>
 
       <!-- Results Section (shown if closed) -->
       <section id="results-section" class="election-detail__results u-hidden">
@@ -142,26 +122,8 @@
       </section>
     </article>
 
-    <!-- Confirmation Modal -->
-    <div id="confirmation-modal" class="modal u-hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-      <div class="modal__overlay"></div>
-      <div class="modal__container">
-        <div class="modal__header">
-          <h3 id="modal-title" class="modal__title">Loading...</h3>
-          <button id="modal-close" class="modal__close" aria-label="Close">&times;</button>
-        </div>
-        <div class="modal__body">
-          <p id="modal-message">Loading...</p>
-          <p id="modal-selected-answer" class="modal__selected-answer"></p>
-        </div>
-        <div class="modal__footer">
-          <button id="modal-cancel" class="btn btn--secondary">Loading...</button>
-          <button id="modal-confirm" class="btn btn--primary">Loading...</button>
-        </div>
-      </div>
-    </div>
   </div>
 
-  <script type="module" src="/js/election-detail.js?v=20251106-14"></script>
+  <script type="module" src="/js/election-detail.js?v=20251106-25"></script>
 </body>
 </html>

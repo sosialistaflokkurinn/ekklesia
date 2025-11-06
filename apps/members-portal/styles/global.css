@@ -204,53 +204,8 @@ body {
 /* ========================================== */
 /* MODAL STYLES */
 /* ========================================== */
-
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 9999;
-}
-
-.modal__overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
-}
-
-.modal__content {
-  position: relative;
-  max-width: 600px;
-  margin: 10vh auto;
-  background-color: var(--color-white);
-  border-radius: var(--border-radius);
-  padding: var(--spacing-xl);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-}
-
-.modal__title {
-  margin-top: 0;
-  margin-bottom: var(--spacing-md);
-  color: var(--color-primary);
-}
-
-.modal__desc {
-  margin-bottom: var(--spacing-lg);
-  color: var(--color-text);
-  line-height: 1.6;
-}
-
-.modal__actions {
-  display: flex;
-  gap: var(--spacing-md);
-  justify-content: flex-end;
-  margin-top: var(--spacing-xl);
-}
+/* Modal styles moved to /styles/components/modal.css (Nov 6, 2025) */
+/* Import modal.css in your HTML to use modal component */
 
 /* Profile discrepancies list */
 .profile-discrepancies {

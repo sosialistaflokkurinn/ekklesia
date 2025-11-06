@@ -392,3 +392,80 @@ export function formatMembershipDuration(joinDate) {
 
   return durationText;
 }
+
+/**
+ * Icelandic month names (nominative case)
+ */
+const ICELANDIC_MONTHS = [
+  'janúar', 'febrúar', 'mars', 'apríl', 'maí', 'júní',
+  'júlí', 'ágúst', 'september', 'október', 'nóvember', 'desember'
+];
+
+/**
+ * Format date and time in Icelandic format
+ * @param {string|Date} dateInput - Date string or Date object
+ * @returns {string} Formatted as "6. nóvember 2025 kl. 13:30"
+ *
+ * This is the standard Icelandic format for displaying dates with times.
+ * - Day number with period (6.)
+ * - Icelandic month name in lowercase (nóvember)
+ * - Year (2025)
+ * - "kl." (abbreviation for klukkustund = hour)
+ * - 24-hour time (13:30)
+ *
+ * Examples:
+ * - "2025-11-06T13:30:00" -> "6. nóvember 2025 kl. 13:30"
+ * - "2025-01-15T09:05:00" -> "15. janúar 2025 kl. 09:05"
+ * - new Date(2025, 11, 31, 23, 59) -> "31. desember 2025 kl. 23:59"
+ */
+export function formatDateIcelandic(dateInput) {
+  if (!dateInput) return '';
+
+  const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
+
+  // Validate date
+  if (isNaN(date.getTime())) {
+    return '';
+  }
+
+  // Get date components
+  const day = date.getDate();
+  const monthIndex = date.getMonth();
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+
+  // Format: "6. nóvember 2025 kl. 13:30"
+  return `${day}. ${ICELANDIC_MONTHS[monthIndex]} ${year} kl. ${hours}:${minutes}`;
+}
+
+/**
+ * Format date only (without time) in Icelandic format
+ * @param {string|Date} dateInput - Date string or Date object
+ * @returns {string} Formatted as "6. nóvember 2025"
+ *
+ * Same as formatDateIcelandic but without the time component.
+ * Useful for displaying just the date part.
+ *
+ * Examples:
+ * - "2025-11-06" -> "6. nóvember 2025"
+ * - "2025-01-15" -> "15. janúar 2025"
+ */
+export function formatDateOnlyIcelandic(dateInput) {
+  if (!dateInput) return '';
+
+  const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
+
+  // Validate date
+  if (isNaN(date.getTime())) {
+    return '';
+  }
+
+  // Get date components
+  const day = date.getDate();
+  const monthIndex = date.getMonth();
+  const year = date.getFullYear();
+
+  // Format: "6. nóvember 2025"
+  return `${day}. ${ICELANDIC_MONTHS[monthIndex]} ${year}`;
+}

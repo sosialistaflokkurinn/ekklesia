@@ -112,27 +112,39 @@
 }
 
 .election-detail__schedule {
-  display: flex;
-  gap: var(--space-xl);
-  margin-bottom: var(--space-md);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
 }
 
 .election-detail__schedule-item {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-lg);
+  background-color: var(--color-gray-50);
+  border-radius: var(--radius-md);
+  border-left: 4px solid var(--color-primary);
+}
+
+.election-detail__schedule-item:last-child {
+  border-left-color: var(--color-gray-400);
 }
 
 .election-detail__schedule-label {
-  font-size: 0.875rem;
-  color: var(--color-text-secondary);
-  font-weight: 500;
+  font-size: 0.75rem;
+  color: var(--color-gray-600);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .election-detail__schedule-value {
-  font-size: 1rem;
-  color: var(--color-text-primary);
-  font-weight: 600;
+  font-size: 1.125rem;
+  color: var(--color-gray-800);
+  font-weight: 700;
+  line-height: 1.4;
 }
 
 .election-detail__description {
@@ -141,6 +153,63 @@
   border-top: 1px solid var(--color-border);
   color: var(--color-text-secondary);
   line-height: 1.6;
+}
+
+/* Schedule Display Component */
+.schedule-display__status {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  background-color: var(--color-gray-100);
+  border-radius: var(--radius-md);
+  border-left: 4px solid var(--color-gray-400);
+}
+
+.schedule-display__status--upcoming {
+  background-color: var(--color-error-bg-lighter);
+  border-left-color: var(--color-error-deep-orange);
+}
+
+.schedule-display__status--active {
+  background-color: var(--color-success-bg-light);
+  border-left-color: var(--color-success-green);
+}
+
+.schedule-display__status--closed {
+  background-color: var(--color-gray-100);
+  border-left-color: var(--color-gray-600);
+}
+
+.schedule-display__status-emoji {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.schedule-display__status-text {
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.schedule-display__status--upcoming .schedule-display__status-text {
+  color: var(--color-error-deep-orange);
+}
+
+.schedule-display__status--active .schedule-display__status-text {
+  color: var(--color-success-green);
+}
+
+.schedule-display__status--closed .schedule-display__status-text {
+  color: var(--color-gray-700);
+}
+
+.schedule-display__countdown {
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-top: 2px solid var(--color-border-medium);
 }
 
 /* Question Section */
@@ -290,105 +359,16 @@
   margin: 0;
 }
 
-/* Modal */
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Override display when modal is hidden */
-.modal.u-hidden {
-  display: none !important;
-}
-
-.modal__overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-}
-
-.modal__container {
-  position: relative;
-  background-color: var(--color-bg-primary);
-  border-radius: var(--border-radius);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  max-width: 500px;
-  width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.modal__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-lg);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.modal__title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin: 0;
-}
-
-.modal__close {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  padding: 0;
-  width: 2rem;
-  height: 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.2s ease;
-}
-
-.modal__close:hover {
-  color: var(--color-text-primary);
-}
-
-.modal__body {
-  padding: var(--space-lg);
-}
-
-.modal__body p {
-  margin-bottom: var(--space-md);
-  color: var(--color-text-secondary);
-  line-height: 1.6;
-}
+/* Modal - Now using /styles/components/modal.css */
+/* Only election-specific modal styles remain here */
 
 .modal__selected-answer {
   font-weight: 600;
   color: var(--color-primary-deep);              /* Darker red - GOOD contrast */
-  padding: var(--space-md);
+  padding: var(--spacing-md);
   background-color: var(--color-primary-pale);   /* Very light pink - GOOD contrast */
-  border-radius: var(--border-radius);
-}
-
-.modal__footer {
-  display: flex;
-  gap: var(--space-md);
-  padding: var(--space-lg);
-  border-top: 1px solid var(--color-border);
-}
-
-.modal__footer .btn {
-  flex: 1;
+  border-radius: var(--radius-md);
+  margin-top: var(--spacing-md);
 }
 
 /* Responsive */
@@ -403,8 +383,8 @@
   }
 
   .election-detail__schedule {
-    flex-direction: column;
-    gap: var(--space-md);
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
   }
 
   .election-detail__voting,
