@@ -103,6 +103,11 @@ body.admin .members-count {
   animation: spin 1s linear infinite;
 }
 
+/* Stop spinner animation when parent is hidden */
+.u-hidden .spinner {
+  animation: none;
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);

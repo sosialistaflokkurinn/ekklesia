@@ -99,11 +99,18 @@ function showSyncSuccess(result) {
       titleEl.textContent = strings.sync_success_title || 'Samstilling tókst';
     }
 
-    // Hide progress
+    // Hide progress and stop spinner animation
     const progressEl = document.getElementById('sync-progress');
     if (progressEl) {
       progressEl.classList.add('u-hidden');
-      debug.log('Progress hidden');
+
+      // Stop spinner animation by removing spinner class
+      const spinner = progressEl.querySelector('.spinner');
+      if (spinner) {
+        spinner.classList.remove('spinner');
+      }
+
+      debug.log('Progress hidden and spinner stopped');
     }
 
     // Show stats
@@ -116,28 +123,33 @@ function showSyncSuccess(result) {
     // Set stat labels
     const totalLabel = document.getElementById('stat-total-label');
     const syncedLabel = document.getElementById('stat-synced-label');
+    const skippedLabel = document.getElementById('stat-skipped-label');
     const failedLabel = document.getElementById('stat-failed-label');
     const durationLabel = document.getElementById('stat-duration-label');
 
     if (totalLabel) totalLabel.textContent = strings.stat_total_label || 'Samtals';
     if (syncedLabel) syncedLabel.textContent = strings.stat_synced_label || 'Samstillt';
+    if (skippedLabel) skippedLabel.textContent = strings.stat_skipped_label || 'Sleppt';
     if (failedLabel) failedLabel.textContent = strings.stat_failed_label || 'Mistókust';
     if (durationLabel) durationLabel.textContent = strings.stat_duration_label || 'Tímalengd';
 
     // Set stat values
     const totalValue = document.getElementById('stat-total-value');
     const syncedValue = document.getElementById('stat-synced-value');
+    const skippedValue = document.getElementById('stat-skipped-value');
     const failedValue = document.getElementById('stat-failed-value');
     const durationValue = document.getElementById('stat-duration-value');
 
     if (totalValue) totalValue.textContent = stats.total_members || 0;
     if (syncedValue) syncedValue.textContent = stats.synced || 0;
+    if (skippedValue) skippedValue.textContent = stats.skipped || 0;
     if (failedValue) failedValue.textContent = stats.failed || 0;
     if (durationValue) durationValue.textContent = calculateDuration(stats);
 
     debug.log('Stats updated:', {
       total: stats.total_members,
       synced: stats.synced,
+      skipped: stats.skipped,
       failed: stats.failed
     });
 
@@ -248,6 +260,7 @@ function setPageText(strings) {
   // Stats labels
   document.getElementById('stat-total-label').textContent = strings.stat_total_label;
   document.getElementById('stat-synced-label').textContent = strings.stat_synced_label;
+  document.getElementById('stat-skipped-label').textContent = strings.stat_skipped_label || 'Sleppt';
   document.getElementById('stat-failed-label').textContent = strings.stat_failed_label;
   document.getElementById('stat-duration-label').textContent = strings.stat_duration_label;
 

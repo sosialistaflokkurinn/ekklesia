@@ -31,6 +31,7 @@
   <string name="sync_failed_title">Samstilling mistókst</string>
   <string name="stat_total_label">Samtals</string>
   <string name="stat_synced_label">Samstillt</string>
+  <string name="stat_skipped_label">Sleppt</string>
   <string name="stat_failed_label">Mistókust</string>
   <string name="stat_duration_label">Tímalengd</string>
   <string name="stat_status_label">Staða</string>
