@@ -2,9 +2,9 @@
 
 **Purpose:** Comprehensive checklist for implementing election-related features using reusable components.
 
-**Last Updated:** Nov 6, 2025 (v2.0 - Added Schedule Components)
+**Last Updated:** Nov 6, 2025 (v3.0 - Typography & Spacing Standards, Multi-Choice Support)
 **Status:** ✅ Active
-**Related:** Component Library (Epic #191), i18n System, Real-time Election State
+**Related:** Component Library (Epic #191), i18n System, Real-time Election State, Epic #186
 
 ---
 
@@ -104,6 +104,78 @@ document.getElementById('title').textContent = 'Kosning';
 | `formatDateOnlyIcelandic()` | Format date without time | `./utils/format.js` |
 | `escapeHTML()` | Prevent XSS attacks | `./utils/format.js` |
 | `debug.log/error()` | Console logging | `./utils/debug.js` |
+
+---
+
+## 📐 Typography & Spacing Standards
+
+### Typography Hierarchy
+
+**Election Question (Most Important):**
+```css
+/* Desktop */
+font-size: 1.75rem (28px)
+font-weight: 700
+color: var(--color-gray-900)
+
+/* Mobile */
+font-size: 1.375rem (22px)
+```
+
+**Question Label ("SPURNING"):**
+```css
+font-size: 0.875rem (14px)
+font-weight: 600
+color: var(--color-gray-600)
+text-transform: uppercase
+letter-spacing: 0.05em
+```
+
+**Section Titles ("Veldu þitt svar"):**
+```css
+font-size: 1.125rem (18px)
+font-weight: 600
+color: var(--color-gray-800)
+```
+
+**Answer Options (Candidate Names):**
+```css
+/* Desktop */
+font-size: 1.25rem (20px)
+font-weight: 600
+color: var(--color-gray-900)
+
+/* Mobile */
+font-size: 1.125rem (18px)
+```
+
+**Rationale:** Creates clear visual hierarchy where the election question and voter choices are most prominent.
+
+### Spacing Between Sections
+
+**Major Section Spacing:**
+```css
+/* Schedule Display → Voting Form */
+margin-bottom: var(--spacing-xl) /* 40px */
+margin-top: var(--spacing-xl)    /* 40px */
+/* Total: 80px gap */
+
+/* Already Voted Badge → Next Section */
+margin-bottom: var(--spacing-lg) /* 24px */
+```
+
+**Within Component Spacing:**
+```css
+/* Question → Voting Options */
+margin-bottom: 0              /* Question section */
+padding: var(--spacing-sm)    /* Voting section: 8px */
+/* Total: 8px gap (tight grouping) */
+
+/* Answer Options Gap */
+gap: var(--spacing-md)        /* 16px between options */
+```
+
+**Design Principle:** Tight spacing within related content (question + answers), generous spacing between major sections (countdown → question, question → results).
 
 ---
 
