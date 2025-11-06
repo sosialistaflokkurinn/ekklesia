@@ -199,7 +199,7 @@ function createElectionCard(election) {
 
   // Click to navigate to election detail
   card.addEventListener('click', () => {
-    window.location.href = `/election-detail.html?id=${election.id}`;
+    window.location.href = `/members-area/election-detail.html?id=${election.id}`;
   });
 
   return card;
