@@ -8,6 +8,7 @@
 /* Container */
 .voting-form {
   width: 100%;
+  margin-top: var(--spacing-xl);
 }
 
 .voting-form--multiple {

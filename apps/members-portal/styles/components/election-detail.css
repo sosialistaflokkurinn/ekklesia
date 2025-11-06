@@ -101,6 +101,12 @@
   border-radius: var(--border-radius);
   font-weight: 600;
   margin-top: var(--space-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* Schedule Display Container */
+#schedule-display-container {
+  margin-bottom: var(--spacing-xl);
 }
 
 /* Election Info */
