@@ -48,7 +48,7 @@ router.use((req, res, next) => {
 router.use(authenticate);
 
 // 4. Require at least one admin role (fail-secure default)
-router.use(requireAnyRoles(['developer', 'meeting_election_manager', 'event_manager']));
+router.use(requireAnyRoles(['superuser', 'admin']));
 
 /**
  * Helper: Write audit log entry to database
@@ -94,10 +94,10 @@ function isResetAllowed(uid) {
  * POST /api/admin/reset-election
  * Body: { scope: 'all' | 'mine', confirm?: string }
  * Auth: Firebase ID token (applied at router level)
- * Role: developer only (destructive operation)
+ * Role: superuser only (destructive operation)
  * Guards: ADMIN_RESET_ENABLED=true and uid in ALLOWED_RESET_UIDS
  */
-router.post('/reset-election', requireRole('developer'), async (req, res) => {
+router.post('/reset-election', requireRole('superuser'), async (req, res) => {
   try {
     const { uid, kennitala } = req.user || {};
 
@@ -289,10 +289,10 @@ router.post('/reset-election', requireRole('developer'), async (req, res) => {
 /**
  * GET /api/admin/elections
  * List all elections with optional filtering
- * Role: developer, meeting_election_manager, event_manager (read-only)
+ * Role: superuser, admin (read-only)
  * Issue: #78
  */
-router.get('/elections', requireAnyRoles(['developer', 'meeting_election_manager', 'event_manager']), async (req, res) => {
+router.get('/elections', requireAnyRoles(['superuser', 'admin']), async (req, res) => {
   try {
     const { status, limit = 50, offset = 0 } = req.query;
 
@@ -338,10 +338,10 @@ router.get('/elections', requireAnyRoles(['developer', 'meeting_election_manager
 /**
  * GET /api/admin/elections/:id
  * Get election details (preview)
- * Role: developer, meeting_election_manager, event_manager (read-only)
+ * Role: superuser, admin (read-only)
  * Issue: #79
  */
-router.get('/elections/:id', requireAnyRoles(['developer', 'meeting_election_manager', 'event_manager']), async (req, res) => {
+router.get('/elections/:id', requireAnyRoles(['superuser', 'admin']), async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -381,10 +381,10 @@ router.get('/elections/:id', requireAnyRoles(['developer', 'meeting_election_man
 /**
  * POST /api/admin/elections
  * Create new election (draft status)
- * Role: developer, meeting_election_manager
+ * Role: superuser, admin
  * Issue: #71
  */
-router.post('/elections', requireAnyRoles(['developer', 'meeting_election_manager']), async (req, res) => {
+router.post('/elections', requireAnyRoles(['superuser', 'admin']), async (req, res) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -449,10 +449,10 @@ router.post('/elections', requireAnyRoles(['developer', 'meeting_election_manage
 /**
  * PATCH /api/admin/elections/:id/draft
  * Edit draft election
- * Role: developer, meeting_election_manager
+ * Role: superuser, admin
  * Issue: #72
  */
-router.patch('/elections/:id/draft', requireAnyRoles(['developer', 'meeting_election_manager']), async (req, res) => {
+router.patch('/elections/:id/draft', requireAnyRoles(['superuser', 'admin']), async (req, res) => {
   try {
     const { id } = req.params;
     const { title, description, question, answers, voting_starts_at, voting_ends_at } = req.body;
@@ -550,10 +550,10 @@ router.patch('/elections/:id/draft', requireAnyRoles(['developer', 'meeting_elec
 /**
  * PATCH /api/admin/elections/:id/metadata
  * Edit election metadata only (title, description)
- * Role: developer, meeting_election_manager, event_manager
- * Note: event_manager can only edit metadata, not lifecycle
+ * Role: superuser, admin
+ * Note: admin can edit all metadata, not lifecycle
  */
-router.patch('/elections/:id/metadata', requireAnyRoles(['developer', 'meeting_election_manager', 'event_manager']), async (req, res) => {
+router.patch('/elections/:id/metadata', requireAnyRoles(['superuser', 'admin']), async (req, res) => {
   try {
     const { id } = req.params;
     const { title, description } = req.body;
@@ -619,10 +619,10 @@ router.patch('/elections/:id/metadata', requireAnyRoles(['developer', 'meeting_e
 /**
  * POST /api/admin/elections/:id/publish
  * Publish election (draft → published)
- * Role: developer, meeting_election_manager
+ * Role: superuser, admin
  * Issue: #73
  */
-router.post('/elections/:id/publish', requireAnyRoles(['developer', 'meeting_election_manager']), async (req, res) => {
+router.post('/elections/:id/publish', requireAnyRoles(['superuser', 'admin']), async (req, res) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -687,10 +687,10 @@ router.post('/elections/:id/publish', requireAnyRoles(['developer', 'meeting_ele
 /**
  * POST /api/admin/elections/:id/close
  * Close election (published/open → closed)
- * Role: developer, meeting_election_manager
+ * Role: superuser, admin
  * Issue: #74
  */
-router.post('/elections/:id/close', requireAnyRoles(['developer', 'meeting_election_manager']), async (req, res) => {
+router.post('/elections/:id/close', requireAnyRoles(['superuser', 'admin']), async (req, res) => {
   try {
     const { id } = req.params;
     const uid = req.user?.uid;
@@ -735,10 +735,10 @@ router.post('/elections/:id/close', requireAnyRoles(['developer', 'meeting_elect
 /**
  * POST /api/admin/elections/:id/pause
  * Pause election (published → paused)
- * Role: developer, meeting_election_manager
+ * Role: superuser, admin
  * Issue: #75
  */
-router.post('/elections/:id/pause', requireAnyRoles(['developer', 'meeting_election_manager']), async (req, res) => {
+router.post('/elections/:id/pause', requireAnyRoles(['superuser', 'admin']), async (req, res) => {
   try {
     const { id } = req.params;
     const uid = req.user?.uid;
@@ -783,10 +783,10 @@ router.post('/elections/:id/pause', requireAnyRoles(['developer', 'meeting_elect
 /**
  * POST /api/admin/elections/:id/resume
  * Resume election (paused → published)
- * Role: developer, meeting_election_manager
+ * Role: superuser, admin
  * Issue: #75
  */
-router.post('/elections/:id/resume', requireAnyRoles(['developer', 'meeting_election_manager']), async (req, res) => {
+router.post('/elections/:id/resume', requireAnyRoles(['superuser', 'admin']), async (req, res) => {
   try {
     const { id } = req.params;
     const uid = req.user?.uid;
@@ -831,10 +831,10 @@ router.post('/elections/:id/resume', requireAnyRoles(['developer', 'meeting_elec
 /**
  * POST /api/admin/elections/:id/archive
  * Archive election (closed → archived)
- * Role: developer, meeting_election_manager
+ * Role: superuser, admin
  * Issue: #76
  */
-router.post('/elections/:id/archive', requireAnyRoles(['developer', 'meeting_election_manager']), async (req, res) => {
+router.post('/elections/:id/archive', requireAnyRoles(['superuser', 'admin']), async (req, res) => {
   try {
     const { id } = req.params;
     const uid = req.user?.uid;
@@ -879,10 +879,10 @@ router.post('/elections/:id/archive', requireAnyRoles(['developer', 'meeting_ele
 /**
  * DELETE /api/admin/elections/:id
  * Soft delete draft election
- * Role: developer only (destructive operation)
+ * Role: superuser only (destructive operation)
  * Issue: #77
  */
-router.delete('/elections/:id', requireRole('developer'), async (req, res) => {
+router.delete('/elections/:id', requireRole('superuser'), async (req, res) => {
   try {
     const { id } = req.params;
     const uid = req.user?.uid;
@@ -934,7 +934,7 @@ router.delete('/elections/:id', requireRole('developer'), async (req, res) => {
 /**
  * POST /api/admin/elections/:id/open
  * Open voting (published → open, generate voting tokens)
- * Role: developer, meeting_election_manager
+ * Role: superuser, admin
  * Issue: #88
  *
  * Actions:
@@ -943,7 +943,7 @@ router.delete('/elections/:id', requireRole('developer'), async (req, res) => {
  * 3. Record token generation timestamp
  * 4. Log audit event
  */
-router.post('/elections/:id/open', requireAnyRoles(['developer', 'meeting_election_manager']), async (req, res) => {
+router.post('/elections/:id/open', requireAnyRoles(['superuser', 'admin']), async (req, res) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -1066,7 +1066,7 @@ router.post('/elections/:id/open', requireAnyRoles(['developer', 'meeting_electi
 /**
  * GET /api/admin/elections/:id/status
  * Get election current status and statistics
- * Role: developer, meeting_election_manager, event_manager
+ * Role: superuser, admin
  * Issue: #89
  *
  * Returns:
@@ -1077,7 +1077,7 @@ router.post('/elections/:id/open', requireAnyRoles(['developer', 'meeting_electi
  * - Token generation time
  * - Last updated timestamp
  */
-router.get('/elections/:id/status', requireAnyRoles(['developer', 'meeting_election_manager', 'event_manager']), async (req, res) => {
+router.get('/elections/:id/status', requireAnyRoles(['superuser', 'admin']), async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -1159,7 +1159,7 @@ router.get('/elections/:id/status', requireAnyRoles(['developer', 'meeting_elect
 /**
  * GET /api/admin/elections/:id/results
  * Get election results and vote distribution
- * Role: developer, meeting_election_manager, event_manager
+ * Role: superuser, admin
  * Issue: #90
  *
  * Returns:
@@ -1170,7 +1170,7 @@ router.get('/elections/:id/status', requireAnyRoles(['developer', 'meeting_elect
  * - Eligible voters
  * - Participation rate
  */
-router.get('/elections/:id/results', requireAnyRoles(['developer', 'meeting_election_manager', 'event_manager']), async (req, res) => {
+router.get('/elections/:id/results', requireAnyRoles(['superuser', 'admin']), async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -1266,7 +1266,7 @@ router.get('/elections/:id/results', requireAnyRoles(['developer', 'meeting_elec
 /**
  * GET /api/admin/elections/:id/tokens
  * Get voting token distribution statistics
- * Role: developer, meeting_election_manager, event_manager
+ * Role: superuser, admin
  * Issue: #91
  *
  * Returns:
@@ -1276,7 +1276,7 @@ router.get('/elections/:id/results', requireAnyRoles(['developer', 'meeting_elec
  * - Tokens expired
  * - Distribution timeline
  */
-router.get('/elections/:id/tokens', requireAnyRoles(['developer', 'meeting_election_manager', 'event_manager']), async (req, res) => {
+router.get('/elections/:id/tokens', requireAnyRoles(['superuser', 'admin']), async (req, res) => {
   try {
     const { id } = req.params;
 

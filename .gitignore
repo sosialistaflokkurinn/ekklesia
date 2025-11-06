@@ -1,88 +1,106 @@
-# Python
-__pycache__/
-*.py[cod]
-venv/
-env/
+# Ekklesia Platform - Git Ignore Template
+# This file contains project-wide ignore rules.
+# New developers should copy this to .gitignore:
+# cp .gitignore.example .gitignore
 
-# Node
-node_modules/
-npm-debug.log*
+##################################################################
+# --- PROJECT-WIDE IGNORE RULES ---
+# (This file SHOULD be committed to Git)
+##################################################################
 
-# IDEs
-.vscode/
-.idea/
-*.swp
+# --- Local & Personal Files ---
+# Ignore the local .gitignore file so developers can add personal rules.
+.gitignore
 
-# Backup files
-*.backup
-*.bak
-*.old
-*~
-
-# Claude Code settings (contains secrets and MCP server config)
-.claude/
-!.claude/README.md
-!.claude/commands/
-
-# OS
-.DS_Store
-
-# Firebase
-*.log
-.firebase/
-
-# Firebase public symlink (points to apps/members-portal)
-services/members/public
-
-# Prevent duplicate admin portal directory (removed 2025-10-27)
-# All admin files belong in apps/members-portal/admin/
-apps/admin-portal/
-
-# Environment
+# Ignore local environment variables.
 .env
 .env.*
+!*.env.example
 
-# Google Cloud
+# --- Security & Secrets ---
+# Service account keys and other credentials
 *.key.json
+*client_secret*
+*serviceAccount*.json
+firebase-adminsdk-*.json
+
+# --- Python ---
+# Bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+venv/
+env/
+.venv/
+.virtualenv/
+
+# --- Node.js ---
+# Dependencies and logs
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.eslintcache
+
+# --- IDEs & Editors ---
+# .vscode/ - Now tracked in git (shared workspace settings)
+# .vscode/settings.json contains:
+#   - files.exclude for hiding symlinks
+#   - other shared project settings
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+
+# --- OS Specific ---
+.DS_Store
+Thumbs.db
+
+# --- Firebase ---
+.firebase/
+*.log
+
+# --- Google Cloud ---
+# Ignore the Cloud SQL Proxy binary itself
 cloud-sql-proxy*
 
-# Cloud SQL proxy connection directories (temp artifacts)
-# Pattern: instance-name:region:database-name
-*:europe-west*:*
-*:us-central*:*
-*:asia-*:*
+# --- Build & Temp Artifacts ---
+dist/
+build/
+*.backup
+*.backup.xml
+*.bak
+*.old
 
-# Archives (local only)
+# --- Project Specific (Local Only) ---
+
+# Local-only archives and audit results
+# Note: Specific documentation within these folders can be un-ignored
+# with targeted rules if needed, e.g., !archive/docs-plans/
 archive/
 audits/
 
-# EXCEPT: Archive docs-plans (historical planning documents - keep in git)
-!archive/docs-plans/
-!archive/docs-plans/**
+# Symlink created by setup scripts
+services/members/public
 
-# ALLOW ALL DOCUMENTATION
-!docs/
-!docs/**/*.md
-!docs/**/*.MD
-!README.md
-!DIRECTORY.md
-!**/*.md
+# Admin portal build output only (source code should be tracked)
+public/admin/
 
-# Keep some scripts local
-validate_documentation_map.py
+# Admin portal PII protection (screenshots, test data)
+apps/members-portal/admin/**/*.png
+apps/members-portal/admin/**/*.jpg
+apps/members-portal/admin/**/*.jpeg
+apps/members-portal/admin/**/*test-data*
+apps/members-portal/admin/**/*sample-data*
 
-# Example SQL files (database reset - local testing only)
-reset-election.example.sql
-*-reset*.sql
-*-example.sql
-data/Stadfangaskra.csv
-.gitignore
-docs/migration/DUPLICATE_SSN_CLEANUP_2025-10-26.md
-.claude/settings.local.json
-*.pyc
-*.pyo
-
-# Playwright MCP screenshots (temporary cache)
+# Temporary directory for Playwright screenshots
 .playwright-mcp/
 
 # Sensitive temporary documentation (contains PII/kennitalur)
@@ -92,12 +110,17 @@ docs/migration/DUPLICATE_SSN_CLEANUP_2025-10-26.md
 *kennitala*.md
 *pii_redaction*.md
 
-# Temporary analysis files
-/tmp/*.md
-/tmp/**/*.md
-
-# Log files with PII (names, emails, etc.)
+# Log files that may contain PII
 scripts/logs/*.jsonl
 **/logs/*.jsonl
 *.audit.json
 *-audit-*.jsonl
+
+# IDE / Tooling folders (personal, local only)
+.claude/
+.gemini/
+
+# Local data files
+data/Stadfangaskra.csv
+AUDIT_CODE_DOCUMENTATION_2025-10-20.json
+AUDIT_CODE_DOCUMENTATION_DETAILED_2025-10-20.json

@@ -8,8 +8,10 @@ from utils_logging import log_json, sanitize_fields
 from util_jwks import get_jwks_cache_stats
 
 
-def main():
+def main() -> None:
+    """Development sanity check script."""
     # Test structured logging and sanitization
+    # Note: token/access_token values are test data for sanitization testing, not real secrets
     log_json("info", "Sanity: structured log", requestId="test-123", token="secret123", nested={"access_token": "abc"})
 
     masked = sanitize_fields({"password": "hunter2", "ok": True})

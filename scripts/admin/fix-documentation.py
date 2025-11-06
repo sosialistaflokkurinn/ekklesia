@@ -19,12 +19,12 @@ class DocumentationFixer:
         self.fixes_made = []
         self.fixes_failed = []
         
-    def load_audit(self):
+    def load_audit(self) -> Any:
         """Load audit findings"""
         with open(self.audit_file, 'r') as f:
             return json.load(f)
     
-    def fix_broken_examples(self):
+    def fix_broken_examples(self) -> Any:
         """Attempt to fix broken code examples"""
         audit = self.load_audit()
         
@@ -67,7 +67,7 @@ class DocumentationFixer:
         print(f"Summary: {len(self.fixes_failed)} failures")
         print("="*70 + "\n")
     
-    def fix_api_mismatches(self):
+    def fix_api_mismatches(self) -> Any:
         """Fix GraphQL and API syntax errors"""
         audit = self.load_audit()
         
@@ -93,7 +93,7 @@ class DocumentationFixer:
         
         print("\n" + "="*70 + "\n")
     
-    def categorize_missing_files(self):
+    def categorize_missing_files(self) -> Any:
         """Categorize missing file references"""
         audit = self.load_audit()
         

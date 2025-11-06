@@ -8,6 +8,7 @@
  */
 
 import { R } from '../i18n/strings-loader.js';
+import { debug } from './utils/debug.js';
 import { initAuthenticatedPage } from './page-init.js';
 import { setTextContent, setInnerHTML } from '../ui/dom.js';
 
@@ -17,14 +18,14 @@ import { setTextContent, setInnerHTML } from '../ui/dom.js';
 function updateEventsStrings() {
   document.title = R.string.page_title_events || 'Viðburðir';
   setTextContent('events-title', R.string.events_title || 'Viðburðir', 'events page');
-  setTextContent('events-subtitle', R.string.events_subtitle || 'Komandi og liðnir viðburðir flokksins', 'events page');
+  setTextContent('events-subtitle', R.string.events_subtitle || 'Fundir og viðburðir flokksins', 'events page');
 
   // Tab labels
-  setTextContent('tab-upcoming-label', R.string.events_tab_upcoming || 'Komandi', 'events page');
-  setTextContent('tab-past-label', R.string.events_tab_past || 'Liðnir', 'events page');
+  setTextContent('tab-upcoming-label', R.string.events_tab_upcoming || 'Framundan', 'events page');
+  setTextContent('tab-past-label', R.string.events_tab_past || 'Liðnir viðburðir', 'events page');
 
   // Loading message
-  setTextContent('loading-message', R.string.events_loading || 'Hleð inn viðburðum...', 'events page');
+  setTextContent('loading-message', R.string.events_loading || 'Sæki viðburði...', 'events page');
 
   // Empty message
   setTextContent('empty-message', R.string.events_empty || 'Engir viðburðir fundust', 'events page');
@@ -144,8 +145,8 @@ async function loadEvents(filter = 'upcoming') {
     }
 
   } catch (error) {
-    console.error('Failed to load events:', error);
-    showError(R.string.events_error || 'Villa kom upp við að sækja viðburði');
+    debug.error('Failed to load events:', error);
+    showError(R.string.events_error || 'Villa kom upp');
   }
 }
 
@@ -189,10 +190,10 @@ async function init() {
     // Load initial events (upcoming)
     await loadEvents('upcoming');
 
-    console.log('✓ Events page initialized');
+    debug.log('✓ Events page initialized');
 
   } catch (error) {
-    console.error('Failed to initialize events page:', error);
+    debug.error('Failed to initialize events page:', error);
     showError(error.message);
   }
 }

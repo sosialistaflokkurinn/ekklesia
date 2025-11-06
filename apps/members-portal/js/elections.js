@@ -10,8 +10,10 @@
  */
 
 import { initAuthenticatedPage } from './page-init.js';
+import { debug } from './utils/debug.js';
 import { R } from '../i18n/strings-loader.js';
 import { getElections } from './api/elections-api.js';
+import { escapeHTML } from './utils/format.js';
 
 // State
 let currentFilter = 'all';
@@ -63,7 +65,7 @@ async function init() {
     await loadElections();
 
   } catch (error) {
-    console.error('Error initializing elections page:', error);
+    debug.error('Error initializing elections page:', error);
     showError(R.string.error_load_elections);
   }
 }
@@ -123,7 +125,7 @@ async function loadElections() {
     hideLoading();
 
   } catch (error) {
-    console.error('Error loading elections:', error);
+    debug.error('Error loading elections:', error);
     showError(R.string.error_load_elections);
   }
 }
@@ -245,15 +247,6 @@ function showEmpty() {
  */
 function hideEmpty() {
   document.getElementById('elections-empty').classList.add('u-hidden');
-}
-
-/**
- * Utility: Escape HTML to prevent XSS
- */
-function escapeHTML(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
 }
 
 /**

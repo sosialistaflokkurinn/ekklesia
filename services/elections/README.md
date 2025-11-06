@@ -38,7 +38,8 @@ cd elections
 npm install
 
 # 2. Start Cloud SQL Proxy (in separate terminal)
-~/bin/cloud-sql-proxy ekklesia-prod-10-2025:europe-west2:ekklesia-db --port 5433
+# This script now uses the DB_CONNECTION_NAME from scripts/deployment/set-env.sh
+./scripts/database/start-proxy.sh
 
 # 3. (Optional) Export database password manually
 export DB_PASSWORD=$(gcloud secrets versions access latest \

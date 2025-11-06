@@ -1,309 +1,113 @@
 # Ekklesia Platform - Git Ignore Template
-# Copy this to .gitignore and customize for local development
-# Setup: cp .gitignore.example .gitignore
-# DO NOT commit .gitignore to git (it's in this file's ignore rules)
+# This file contains project-wide ignore rules.
+# New developers should copy this to .gitignore:
+# cp .gitignore.example .gitignore
 
-###################
-# Security & Secrets
-###################
+##################################################################
+# --- PROJECT-WIDE IGNORE RULES ---
+# (This file SHOULD be committed to Git)
+##################################################################
 
-# Environment files with secrets
+# --- Local & Personal Files ---
+# Ignore the local .gitignore file so developers can add personal rules.
+.gitignore
+
+# Ignore local environment variables.
 .env
-.env.local
 .env.*
-.env.*.local
-*.env
 !*.env.example
 
-# OAuth/OIDC credentials
-*client_secret*
-*CLIENT_SECRET*
-*service-account*.json
-*serviceAccount*.json
-
-# GCP credentials
-.gcloud/
-gcloud-*.json
+# --- Security & Secrets ---
+# Service account keys and other credentials
 *.key.json
-
-# Firebase service account keys
+*client_secret*
+*serviceAccount*.json
 firebase-adminsdk-*.json
 
-# API keys and tokens
-*api-key*.txt
-*api_key*.json
-*token*.txt
-!docs/**/*token*.txt
-
-###################
-# Python
-###################
-
-# Bytecode
+# --- Python ---
+# Bytecode and caches
 __pycache__/
 *.py[cod]
 *$py.class
-*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
 # Virtual environments
-.Python
 venv/
 env/
-ENV/
 .venv/
 .virtualenv/
 
-# Package management
-*.egg
-*.egg-info/
-.eggs/
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
-.nox/
-
-# Type checking & linting
-.mypy_cache/
-.ruff_cache/
-.pytype/
-.pyre/
-
-###################
-# Node.js / JavaScript
-###################
-
-# Dependencies
+# --- Node.js ---
+# Dependencies and logs
 node_modules/
-jspm_packages/
-
-# Build output
-dist/
-build/
-
-# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-# Lock files (team preference: choose to track or ignore)
-# package-lock.json
-# yarn.lock
-# pnpm-lock.yaml
-
-# ESLint cache
 .eslintcache
 
-###################
-# Firebase
-###################
-
-# Firebase cache
-.firebase/
-*.cache
-
-# Firebase debug logs
-firebase-debug.log
-firestore-debug.log
-ui-debug.log
-database-debug.log
-pubsub-debug.log
-
-# Firebase emulator data
-.firebase/emulator-data/
-
-###################
-# General Development
-###################
-
-# Logs
-*.log
-!docs/**/*.log
-
-# OS files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-desktop.ini
-
-# Editor files
+# --- IDEs & Editors ---
+.vscode/
+.idea/
 *.swp
 *.swo
 *~
-.vscode/
-.idea/
 *.sublime-project
 *.sublime-workspace
-*.code-workspace
 
-###################
-# Database
-###################
+# --- OS Specific ---
+.DS_Store
+Thumbs.db
 
-# Local databases
-*.db
-*.sqlite
-*.sqlite3
-*.db-journal
-*.db-shm
-*.db-wal
+# --- Firebase ---
+.firebase/
+*.log
 
-# PostgreSQL dumps
-*.sql.gz
-*.dump
+# --- Google Cloud ---
+# Ignore the Cloud SQL Proxy binary itself
+cloud-sql-proxy*
 
-###################
-# Backup & Temp
-###################
-
+# --- Build & Temp Artifacts ---
+dist/
+build/
 *.backup
 *.bak
 *.old
-*.orig
-*.tmp
-*.swp
-temp/
-tmp/
-*~.nib
-.temp/
-.tmp/
 
-###################
-# Documentation Strategy
-###################
+# --- Project Specific (Local Only) ---
 
-# Documentation (local only - use DOCUMENTATION_MAP.md to find files)
-# Strategy: Track Markdown in core documentation directories, ignore ad-hoc notes
-*.md
-
-# Essential documentation (tracked)
-!DOCUMENTATION_MAP.md
-!README.md
-
-# Core documentation directories (tracked)
-!docs/
-!docs/**/*.md
-!docs/**/*.MD
-!**/*.md
-
-# GitHub templates (tracked)
-!.github/
-!.github/**/*.md
-!.github/ISSUE_TEMPLATE/*.md
-
-###################
-# Scripts & Tools
-###################
-
-# Shell scripts (local only - available on request)
-*.sh
-!.github/workflows/*.sh
-!events/deploy.sh
-!elections/deploy.sh
-!scripts/*.sh
-
-# Python validation (tracked - needed for CI)
-# validate_documentation_map.py is tracked
-
-###################
-# Git Configuration
-###################
-
-# Git ignore files (keep local only)
-.gitignore
-.gitignore-*
-
-# Git hooks (local configuration)
-.git/hooks/*
-!.git/hooks/*.sample
-
-###################
-# Claude Code Settings
-###################
-
-# Claude Code (local only - personal AI settings)
-.code-rules
-.claude/
-
-# AI prompts (tracked for team sharing)
-!docs/prompts/**/*.md
-
-###################
-# Docker & Containers
-###################
-
-# Docker files (if used locally)
-docker-compose.override.yml
-.dockerignore.local
-
-###################
-# Cloud SQL Proxy
-###################
-
-# Cloud SQL Proxy binary
-cloud-sql-proxy
-cloud-sql-proxy.exe
-cloud-sql-proxy*
-
-# Cloud SQL proxy connection directories (temp artifacts)
-# Pattern: instance-name:region:database-name
-*:europe-west*:*
-*:us-central*:*
-*:asia-*:*
-
-###################
-# Project-Specific
-###################
-
-# Archive directories (historical reference only, not for production)
+# Local-only archives and audit results
+# Note: Specific documentation within these folders can be un-ignored
+# with targeted rules if needed, e.g., !archive/docs-plans/
 archive/
 audits/
 
-# Sensitive data files
-members/data/kennitalas.txt
-kennitalas.txt
-
-# Firebase public symlink (points to apps/members-portal)
+# Symlink created by setup scripts
 services/members/public
 
-# Prevent duplicate admin portal directory
-apps/admin-portal/
+# Admin portal directories (content is built or managed elsewhere)
+public/admin/
+apps/members-portal/admin/
 
-# Example SQL files (database reset - local testing only)
-*-reset*.sql
-*-example.sql
+# Temporary directory for Playwright screenshots
+.playwright-mcp/
 
-# Legacy directories (if they exist)
-template/
-usr/
+# Sensitive temporary documentation (contains PII/kennitalur)
+*KENNITALA*.md
+*DUPLICATE_SSN*.md
+*DJANGO_KENNITALA*.md
+*kennitala*.md
+*pii_redaction*.md
 
-# Test data (local only)
-test-data/
-test-*.json
-test-*.csv
+# Log files that may contain PII
+scripts/logs/*.jsonl
+**/logs/*.jsonl
+*.audit.json
+*-audit-*.jsonl
 
-# Local development overrides
-*.local.js
-*.local.json
-!settings.local.json
+# Temporary files from Gemini
+.gemini/tmp/
 
-###################
-# Comments & Notes
-###################
-
-# This file serves as a template. After copying to .gitignore:
-# 1. Uncomment lock file patterns if your team decides to track them
-# 2. Add any local tools or editors you use
-# 3. Add any project-specific temporary directories
-# 4. Never commit your local .gitignore back to the repository
-# 5. Review security patterns regularly (especially secrets)
+# Local debugging files
+apps/members-portal/js/utils/debug.js

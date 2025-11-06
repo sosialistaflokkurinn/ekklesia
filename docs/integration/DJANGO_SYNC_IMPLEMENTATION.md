@@ -801,9 +801,9 @@ If sync implementation causes issues:
 
 ## Related Documentation
 
-- [docs/legacy/DJANGO_LEGACY_SYSTEM.md](../legacy/DJANGO_LEGACY_SYSTEM.md) - Django system details
-- [docs/status/CURRENT_PRODUCTION_STATUS.md](../status/CURRENT_PRODUCTION_STATUS.md) - Ekklesia production status
-- [members/README.md](../../members/README.md) - Members service documentation
+- DJANGO_LEGACY_SYSTEM.md (archived) - Django system details
+- [CURRENT_DEVELOPMENT_STATUS.md](../status/CURRENT_DEVELOPMENT_STATUS.md) - Ekklesia production status
+- [services/members/README.md](../../services/members/README.md) - Members service documentation
 
 ---
 

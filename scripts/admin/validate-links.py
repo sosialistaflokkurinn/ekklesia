@@ -40,7 +40,7 @@ class LinkValidator:
         self.print_report()
         return len(self.errors), len(self.warnings), self.links_checked
     
-    def validate_file(self, file_path: Path):
+    def validate_file(self, file_path: Path) -> List:
         """Validate all links in a single markdown file"""
         self.files_checked += 1
         
@@ -59,7 +59,7 @@ class LinkValidator:
             self.links_checked += 1
             self.validate_link(file_path, link, text)
     
-    def validate_link(self, from_file: Path, link: str, text: str):
+    def validate_link(self, from_file: Path, link: str, text: str) -> List:
         """Validate a single link"""
         # Skip external links
         if link.startswith('http://') or link.startswith('https://'):
@@ -123,7 +123,7 @@ class LinkValidator:
             except Exception as e:
                 self.warnings.append(f"⚠️  Cannot read {target_file} for anchor validation: {e}")
     
-    def print_report(self):
+    def print_report(self) -> None:
         """Print validation report"""
         print("\n" + "="*70)
         print("📊 LINK VALIDATION REPORT")

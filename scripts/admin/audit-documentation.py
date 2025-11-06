@@ -90,7 +90,7 @@ class DocumentationAudit:
         print(f"\n✅ Total code blocks found: {total_blocks}\n")
         return self.findings
     
-    def validate_code_block(self, block: Dict):
+    def validate_code_block(self, block: Dict) -> List:
         """Validate a single code block"""
         code = block["code"]
         lang = block["language"]
@@ -101,7 +101,7 @@ class DocumentationAudit:
         self.check_api_calls(code, block)
         self.check_syntax(code, block)
     
-    def check_file_references(self, code: str, block: Dict):
+    def check_file_references(self, code: str, block: Dict) -> List:
         """Check if referenced files exist"""
         # Match file paths in code
         file_patterns = [
@@ -123,7 +123,7 @@ class DocumentationAudit:
                         "code_snippet": code[:100]
                     })
     
-    def check_gcloud_commands(self, code: str, block: Dict):
+    def check_gcloud_commands(self, code: str, block: Dict) -> List:
         """Check gcloud commands for validity"""
         if 'gcloud' in code:
             # Extract gcloud command
@@ -139,7 +139,7 @@ class DocumentationAudit:
                         "command": command[:50]
                     })
     
-    def check_api_calls(self, code: str, block: Dict):
+    def check_api_calls(self, code: str, block: Dict) -> List:
         """Check API calls for syntax and endpoints"""
         # Check Firebase API calls
         if 'admin.auth()' in code or 'admin.firestore()' in code:
@@ -159,7 +159,7 @@ class DocumentationAudit:
                     "issue": "Invalid GraphQL syntax"
                 })
     
-    def check_syntax(self, code: str, block: Dict):
+    def check_syntax(self, code: str, block: Dict) -> List:
         """Basic syntax checking"""
         lang = block["language"]
         
@@ -172,7 +172,7 @@ class DocumentationAudit:
         elif lang == 'sql':
             self.check_sql_syntax(code, block)
     
-    def check_shell_syntax(self, code: str, block: Dict):
+    def check_shell_syntax(self, code: str, block: Dict) -> List:
         """Check shell script syntax"""
         # Check for unmatched quotes
         single_quotes = code.count("'")
@@ -192,7 +192,7 @@ class DocumentationAudit:
                 "code_snippet": code[:80]
             })
     
-    def check_python_syntax(self, code: str, block: Dict):
+    def check_python_syntax(self, code: str, block: Dict) -> List:
         """Check Python syntax"""
         try:
             compile(code, '<string>', 'exec')
@@ -204,7 +204,7 @@ class DocumentationAudit:
                 "code_snippet": code[:100]
             })
     
-    def check_js_syntax(self, code: str, block: Dict):
+    def check_js_syntax(self, code: str, block: Dict) -> List:
         """Check JavaScript syntax"""
         # Simple check for common issues
         if code.count('{') != code.count('}'):
@@ -214,7 +214,7 @@ class DocumentationAudit:
                 "code_snippet": code[:80]
             })
     
-    def check_sql_syntax(self, code: str, block: Dict):
+    def check_sql_syntax(self, code: str, block: Dict) -> List:
         """Check SQL syntax"""
         # Check for basic SQL syntax
         required_keywords = ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'CREATE']
@@ -227,7 +227,7 @@ class DocumentationAudit:
                 "issue": "SQL code without recognizable keywords"
             })
     
-    def print_report(self):
+    def print_report(self) -> None:
         """Print audit report"""
         print("\n" + "="*80)
         print("📋 DOCUMENTATION AUDIT REPORT")

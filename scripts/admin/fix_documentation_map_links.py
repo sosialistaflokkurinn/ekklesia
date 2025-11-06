@@ -170,7 +170,7 @@ PATH_MAPPINGS = {
     'members/setup-scripts/README.md': None,  # Doesn't exist
 }
 
-def fix_documentation_map():
+def fix_documentation_map() -> Any:
     """Fix all broken links in DOCUMENTATION_MAP.md"""
 
     print(f"Reading {DOC_MAP}")

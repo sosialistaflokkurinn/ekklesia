@@ -143,6 +143,7 @@ def remap_legacy_path(path: Path, root: Path) -> Path | None:
 
 
 def main() -> None:
+    """Main entry point for documentation map validation."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--map",

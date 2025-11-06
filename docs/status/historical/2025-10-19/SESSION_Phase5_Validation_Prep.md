@@ -6,7 +6,7 @@
 
 > **Note**: This is a historical document from before the repository restructuring (2025-10-21).
 > Path references use the old structure (e.g., `members/` instead of `services/members/`).
-> For current paths, see the [Repository Structure](../../../DIRECTORY.md).
+> For current paths, see the Repository Structure (see DOCUMENTATION_MAP.md).
 
 ---
 
@@ -23,8 +23,8 @@ Completed automated setup for Phase 5 validation (ticket #84): applied database 
 **Status**: Committed and pushed
 
 - Moved 6 GitHub guides to `docs/development/guides/github/` subdirectory
-- Updated [docs/development/guides/INDEX.md](../guides/INDEX.md): 13 guides organized in 4 categories
-- Created [docs/testing/ADMIN_RESET_CHECKLIST.md](../testing/ADMIN_RESET_CHECKLIST.md): Step-by-step validation playbook
+- Updated [development/guides/INDEX.md](../../../development/guides/INDEX.md): 13 guides organized in 4 categories
+- Created ADMIN_RESET_CHECKLIST.md (see testing/): Step-by-step validation playbook
 
 **Verification**:
 ```bash
@@ -40,7 +40,7 @@ git log --oneline feature/security-hardening | head -3
 **Commit**: `3353bed`
 **Status**: Applied to production + committed
 
-**Migration File**: [events/migrations/003_seed_october_2025_election.sql](../../events/migrations/003_seed_october_2025_election.sql)
+**Migration File**: events/migrations/003_seed_october_2025_election.sql (see services/events/migrations/)
 
 **Process**:
 ```bash
@@ -48,7 +48,7 @@ git log --oneline feature/security-hardening | head -3
 export PGPASSWORD="$(gcloud secrets versions access latest --secret=postgres-password --project=ekklesia-prod-10-2025)"
 
 # 2. Started Cloud SQL Proxy
-cloud-sql-proxy ekklesia-prod-10-2025:europe-west2:ekklesia-db --port 5432 &
+./scripts/database/start-proxy.sh
 
 # 3. Applied migration
 psql -h 127.0.0.1 -p 5432 -U postgres -d postgres -f events/migrations/003_seed_october_2025_election.sql
@@ -67,7 +67,7 @@ voting_ends_at: 2025-10-20 21:00:00+00
 -- Clean state for Phase 5 validation
 ```
 
-**Documentation Updated**: [events/migrations/README.md](../../events/migrations/README.md) marked migration 003 as applied (2025-10-19 19:44 UTC)
+**Documentation Updated**: events/migrations/ (see services/events/migrations/) marked migration 003 as applied (2025-10-19 19:44 UTC)
 
 ---
 
@@ -190,7 +190,7 @@ gcloud logging read \
 ## ⚠️ Outstanding Work (Required)
 
 ### Priority 1: Update Test Report
-**File**: [docs/testing/ADMIN_RESET_TEST_REPORT.md](../testing/ADMIN_RESET_TEST_REPORT.md)
+**File**: ADMIN_RESET_TEST_REPORT.md (see testing/)
 **Status**: ❌ **Not updated with fresh test evidence**
 
 **Required Changes**:
@@ -279,7 +279,7 @@ git status
 3. Delete the `role` field (string)
 4. Keep Firebase Auth custom claims unchanged (already correct)
 
-**Reference**: See [ROLES_AND_PERMISSIONS.md](../guides/ROLES_AND_PERMISSIONS.md) lines 113-119:
+**Reference**: See [ROLES_AND_PERMISSIONS.md](../../../development/guides/admin/ROLES_AND_PERMISSIONS.md) lines 113-119:
 > Source of truth: Firebase Auth custom claims on the user record.
 
 ---
@@ -400,7 +400,7 @@ ps aux | grep -E 'cloud.*sql.*proxy' | grep -v grep
 - ❌ Setting `roles` in **Firestore** `users` collection (not read by auth system)
 - ✅ Setting `roles` in **Firebase Auth** `customAttributes` (correct source of truth)
 
-**Code Reference**: [members/functions/main.py:467-481](../../members/functions/main.py#L467-L481)
+**Code Reference**: members/functions/main.py:467-481 (see services/members/)
 
 ---
 
@@ -420,7 +420,7 @@ ps aux | grep -E 'cloud.*sql.*proxy' | grep -v grep
 gcloud auth application-default login
 
 # 2. Start proxy
-cloud-sql-proxy ekklesia-prod-10-2025:europe-west2:ekklesia-db --port 5432 &
+./scripts/database/start-proxy.sh
 
 # 3. Connect via localhost
 psql -h 127.0.0.1 -p 5432 -U postgres -d postgres
@@ -493,13 +493,13 @@ psql -h 127.0.0.1 -p 5432 -U postgres -d postgres
 
 8. ⏳ **RECOMMENDED**: Document role assignment procedure
    - Create `scripts/set_user_role.sh` wrapper around Identity Toolkit API
-   - Add to [ROLES_AND_PERMISSIONS.md](../guides/ROLES_AND_PERMISSIONS.md) "How to assign roles" section (line 121)
+   - Add to [ROLES_AND_PERMISSIONS.md](../../../development/guides/admin/ROLES_AND_PERMISSIONS.md) "How to assign roles" section (line 121)
    - Satisfies TODO on line 158: "Provide a small CLI script for setting roles"
 
 9. ⏳ **RECOMMENDED**: Improve audit log structure
    - Ensure `correlation_id` is logged in all admin operations
    - Add structured fields (`before`, `after`, `scope`) to all log entries
-   - Update [AUDIT_LOGGING.md](../guides/AUDIT_LOGGING.md) with examples
+   - Update [AUDIT_LOGGING.md](../../../development/guides/admin/AUDIT_LOGGING.md) with examples
 
 ---
 

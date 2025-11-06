@@ -8,9 +8,13 @@
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <link rel="stylesheet" href="/styles/global.css?v=20251027">
-  <link rel="stylesheet" href="/styles/components/nav.css?v=20251027">
-  <link rel="stylesheet" href="/styles/components/page.css?v=20251027">
+  <link rel="stylesheet" href="/styles/global.css?v=20251102">
+  <link rel="stylesheet" href="/styles/components/nav.css?v=20251102">
+  <link rel="stylesheet" href="/styles/components/page.css?v=20251102">
+  <link rel="stylesheet" href="/styles/components/form.css?v=20251105">
+  <link rel="stylesheet" href="/styles/components/profile-edit.css?v=20251102">
+  <link rel="stylesheet" href="/styles/components/toast.css?v=20251105">
+  <link rel="stylesheet" href="/styles/components/searchable-select.css?v=20251105">
 </head>
 <body class="authenticated">
   <!-- Navigation -->
@@ -56,22 +60,111 @@
     <div class="card">
       <h3 class="card__title" id="section-personal-info">Loading...</h3>
       <div class="info-grid">
+        <!-- Name -->
         <div class="info-grid__item">
           <div class="info-grid__label" id="label-name">Loading...</div>
-          <div class="info-grid__value" id="value-name">-</div>
+
+          <!-- Always-on edit mode -->
+          <div class="profile-field">
+            <input
+              type="text"
+              class="profile-field__input"
+              id="input-name"
+              name="name"
+              required
+              maxlength="100"
+            />
+            <span class="profile-field__status" id="status-name"></span>
+            <span class="profile-field__error" id="error-name"></span>
+          </div>
         </div>
+
+        <!-- Kennitala (always read-only) -->
         <div class="info-grid__item">
           <div class="info-grid__label" id="label-kennitala">Loading...</div>
           <div class="info-grid__value" id="value-kennitala">-</div>
         </div>
+
+        <!-- Email -->
         <div class="info-grid__item">
           <div class="info-grid__label" id="label-email">Loading...</div>
-          <div class="info-grid__value" id="value-email">-</div>
+
+          <!-- Always-on edit mode -->
+          <div class="profile-field">
+            <input
+              type="email"
+              class="profile-field__input"
+              id="input-email"
+              name="email"
+              placeholder="nafn@example.is"
+            />
+            <span class="profile-field__status" id="status-email"></span>
+            <span class="profile-field__error" id="error-email"></span>
+          </div>
         </div>
+
+        <!-- Phone Numbers (multiple) -->
         <div class="info-grid__item">
-          <div class="info-grid__label" id="label-phone">Loading...</div>
-          <div class="info-grid__value" id="value-phone">-</div>
+          <div class="info-grid__label info-grid__label--clickable" id="label-phone-numbers">
+            Loading...
+            <span class="expand-icon" id="phone-expand-icon">▼</span>
+          </div>
+
+          <!-- Simple phone display (default view) -->
+          <div class="info-grid__value" id="value-phone-simple">-</div>
         </div>
+
+        <!-- Addresses (collapsible, like phone numbers) -->
+        <div class="info-grid__item">
+          <div class="info-grid__label info-grid__label--clickable" id="label-addresses">
+            Loading...
+            <span class="expand-icon" id="address-expand-icon">▼</span>
+          </div>
+
+          <!-- Simple address display (default view) -->
+          <div class="info-grid__value" id="value-address-simple">-</div>
+        </div>
+      </div>
+
+      <!-- Expandable phone numbers section (below grid, full width) -->
+      <div id="phone-numbers-section" class="phone-numbers-section" style="display: none;">
+        <!-- Phone numbers list (rendered by JS) -->
+        <div id="phone-numbers-list" class="phone-numbers-list">
+          <!-- Populated by renderPhoneNumbers() -->
+        </div>
+
+        <!-- Add phone button -->
+        <button type="button" id="btn-add-phone" class="btn btn--secondary btn--small">
+          <span id="btn-add-phone-text">+ Bæta við símanúmeri</span>
+        </button>
+
+        <span class="profile-field__status" id="status-phone-numbers"></span>
+        <span class="profile-field__error" id="error-phone-numbers"></span>
+      </div>
+
+      <!-- Expandable addresses section (below grid, full width) -->
+      <div id="addresses-section" class="collapsible-section" style="display: none;">
+        <!-- Addresses list (rendered by JS) -->
+        <div id="addresses-list" class="collapsible-list">
+          <!-- Populated by renderAddresses() -->
+        </div>
+
+        <!-- Add address button -->
+        <button type="button" id="btn-add-address" class="btn btn--secondary btn--small">
+          <span id="btn-add-address-text">+ Bæta við heimilisfangi</span>
+        </button>
+
+        <span class="profile-field__status" id="status-addresses"></span>
+        <span class="profile-field__error" id="error-addresses"></span>
+      </div>
+
+      <!-- Success/error messages (kept for backwards compatibility) -->
+      <div id="profile-success" class="profile-edit__success" style="display: none;">
+        <p id="success-message"></p>
+      </div>
+
+      <div id="profile-error" class="profile-edit__error-message" style="display: none;">
+        <p id="error-message"></p>
       </div>
     </div>
 
@@ -84,6 +177,18 @@
           <div class="info-grid__value" id="membership-status">-</div>
         </div>
         <div class="info-grid__item">
+          <div class="info-grid__label" id="label-django-id">Loading...</div>
+          <div class="info-grid__value" id="value-django-id">-</div>
+        </div>
+        <div class="info-grid__item">
+          <div class="info-grid__label" id="label-date-joined">Loading...</div>
+          <div class="info-grid__value" id="value-date-joined">-</div>
+        </div>
+        <div class="info-grid__item">
+          <div class="info-grid__label" id="label-member-since">Loading...</div>
+          <div class="info-grid__value" id="value-member-since">-</div>
+        </div>
+        <div class="info-grid__item">
           <div class="info-grid__label" id="label-uid">Loading...</div>
           <div class="info-grid__value" id="value-uid">-</div>
         </div>
@@ -91,6 +196,6 @@
     </div>
   </div>
 
-  <script type="module" src="/js/profile.js?v=20251027"></script>
+  <script type="module" src="/js/profile.js?v=20251105"></script>
 </body>
 </html>

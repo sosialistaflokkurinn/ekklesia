@@ -1,0 +1,30 @@
+/**
+ * Member Detail Page Styles - Epic #116, Issue #136
+ * BEM Methodology
+ *
+ * Shared styles moved to admin-shared.css
+ * This file only contains page-specific styles
+ */
+
+/* Member Detail Container */
+.member-detail {
+  max-width: 800px;
+}
+
+/* Actions (specific to detail page) */
+.member-detail__actions {
+  margin: 1.5rem 0 2rem;
+  display: flex;
+  gap: 1rem;
+}
+
+/* Responsive Design - Page Specific */
+@media (max-width: 768px) {
+  .member-detail__actions {
+    flex-direction: column;
+  }
+
+  .member-detail__actions .btn {
+    width: 100%;
+  }
+}

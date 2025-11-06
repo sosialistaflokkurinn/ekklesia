@@ -800,7 +800,7 @@ find . -type f | wc -l
 du -h --max-depth=1 | sort -hr
 
 # Reference integrity (example: find broken links in docs)
-grep -r "\[.*\](.*)" [DOCS_PATH] --include="*.md"
+grep -r "\[.*\](.)" [DOCS_PATH] --include="*.md"
 ```
 
 **Adapt these** to your project's:

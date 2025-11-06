@@ -33,6 +33,8 @@ h1 {
   /* Primary colors - Socialist red */
   --color-primary: #d32f2f;
   --color-primary-dark: #b71c1c;
+  --color-primary-alpha-10: rgba(211, 47, 47, 0.1);
+  --color-primary-alpha-2: rgba(211, 47, 47, 0.02);
 
   /* Accent */
   --color-accent-gold: #f3b41b;
@@ -86,6 +88,14 @@ h1 {
   --shadow-primary: 0 4px 12px rgba(183, 28, 28, 0.22);
   --shadow-primary-pressed: 0 3px 10px rgba(183, 28, 28, 0.2);
 
+  /* Input & Focus shadows */
+  --shadow-inset-sm: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-focus-primary: 0 0 0 3px var(--color-primary-alpha-10);
+
+  /* Dropdown & overlay shadows */
+  --shadow-dropdown: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-toast: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
   /* Overlay */
   --overlay-bg: rgba(0, 0, 0, 0.5);
 
@@ -93,6 +103,17 @@ h1 {
   --color-warning-bg: #fff3e0;
   --color-warning-text: #e65100;
   --color-warning-border: #ffa726;
+  --color-warning-dark: #856404;
+
+  /* Success color variants (Material Design) */
+  --color-success-bg-light: #e8f5e9;
+  --color-success-green: #2e7d32;
+
+  /* Error color variants (Material Design) */
+  --color-error-bg-light: #ffebee;
+  --color-error-bg-lighter: #fbe9e7;
+  --color-error-red: #c62828;
+  --color-error-deep-orange: #d84315;
 
   /* Spacing */
   --spacing-xs: 4px;
@@ -253,5 +274,116 @@ body {
   width: 100%;
   justify-content: center;
   margin-bottom: var(--spacing-md);
+}
+
+.btn--sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+/* ========================================== */
+/* MODAL STYLES */
+/* ========================================== */
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
+}
+
+.modal__overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+.modal__content {
+  position: relative;
+  max-width: 600px;
+  margin: 10vh auto;
+  background-color: var(--color-white);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-xl);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.modal__title {
+  margin-top: 0;
+  margin-bottom: var(--spacing-md);
+  color: var(--color-primary);
+}
+
+.modal__desc {
+  margin-bottom: var(--spacing-lg);
+  color: var(--color-text);
+  line-height: 1.6;
+}
+
+.modal__actions {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: flex-end;
+  margin-top: var(--spacing-xl);
+}
+
+/* Profile discrepancies list */
+.profile-discrepancies {
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  background-color: var(--color-bg);
+}
+
+.profile-discrepancy {
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.profile-discrepancy:last-child {
+  border-bottom: none;
+}
+
+.profile-discrepancy__label {
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+  color: var(--color-text);
+}
+
+.profile-discrepancy__values {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+}
+
+.profile-discrepancy__old,
+.profile-discrepancy__new {
+  padding: var(--spacing-sm);
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.profile-discrepancy__old {
+  background-color: rgba(200, 0, 0, 0.1);
+  border-left: 3px solid var(--color-error);
+}
+
+.profile-discrepancy__new {
+  background-color: rgba(0, 150, 0, 0.1);
+  border-left: 3px solid var(--color-success);
+}
+
+.profile-discrepancy__old strong,
+.profile-discrepancy__new strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 

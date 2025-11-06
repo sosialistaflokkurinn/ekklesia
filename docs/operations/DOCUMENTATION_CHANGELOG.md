@@ -45,42 +45,42 @@ All evolving documentation files should follow semantic versioning: `MAJOR.MINOR
 
 | Document | Version | Last Updated | Status |
 |----------|---------|--------------|--------|
-| [guides/INDEX.md](guides/INDEX.md) | v2.0 | 2025-10-20 | ✅ Current |
-| [guides/MFA_ENFORCEMENT.md](guides/MFA_ENFORCEMENT.md) | v1.1 | 2025-10-20 | ✅ Current |
-| [guides/PRIVATE_OPS_REPO.md](guides/PRIVATE_OPS_REPO.md) | v1.1 | 2025-10-20 | ✅ Current |
-| [guides/OAUTH_TROUBLESHOOTING.md](guides/OAUTH_TROUBLESHOOTING.md) | v1.0 | 2025-10-20 | ✅ Current |
-| [guides/ADMIN_ALERTS.md](guides/ADMIN_ALERTS.md) | v1.0 | 2025-10-20 | ✅ Current |
-| [guides/AUDIT_LOGGING.md](guides/AUDIT_LOGGING.md) | v1.0 | 2025-10-16 | ✅ Current |
-| [guides/ROLES_AND_PERMISSIONS.md](guides/ROLES_AND_PERMISSIONS.md) | v1.0 | 2025-10-14 | ✅ Current |
-| [guides/MCP_SERVERS.md](guides/MCP_SERVERS.md) | v1.0 | 2025-10-14 | ✅ Current |
+| guides/ (no INDEX file) | v2.0 | 2025-10-20 | ✅ Current |
+| [../development/guides/admin/MFA_ENFORCEMENT.md](../development/guides/admin/MFA_ENFORCEMENT.md) | v1.1 | 2025-10-20 | ✅ Current |
+| [../development/guides/infrastructure/PRIVATE_OPS_REPO.md](../development/guides/infrastructure/PRIVATE_OPS_REPO.md) | v1.1 | 2025-10-20 | ✅ Current |
+| [../development/guides/troubleshooting/OAUTH_TROUBLESHOOTING.md](../development/guides/troubleshooting/OAUTH_TROUBLESHOOTING.md) | v1.0 | 2025-10-20 | ✅ Current |
+| [../development/guides/admin/ADMIN_ALERTS.md](../development/guides/admin/ADMIN_ALERTS.md) | v1.0 | 2025-10-20 | ✅ Current |
+| [../development/guides/admin/AUDIT_LOGGING.md](../development/guides/admin/AUDIT_LOGGING.md) | v1.0 | 2025-10-16 | ✅ Current |
+| [../development/../development/guides/admin/ROLES_AND_PERMISSIONS.md](../development/../development/guides/admin/ROLES_AND_PERMISSIONS.md) | v1.0 | 2025-10-14 | ✅ Current |
+| MCP_SERVERS.md (TBD) | v1.0 | 2025-10-14 | ✅ Current |
 
 ### GitHub Guides
 
 | Document | Version | Last Updated | Status |
 |----------|---------|--------------|--------|
-| [guides/github/GITHUB_PROJECT_MANAGEMENT.md](guides/github/GITHUB_PROJECT_MANAGEMENT.md) | v1.1 | 2025-10-14 | ✅ Current |
-| [guides/github/GITHUB_PROJECT_MANAGEMENT.SUMMARY.md](guides/github/GITHUB_PROJECT_MANAGEMENT.SUMMARY.md) | v1.0 | 2025-10-20 | ✅ Current |
-| [guides/github/GITHUB_PR_MANAGEMENT.md](guides/github/GITHUB_PR_MANAGEMENT.md) | v1.0 | 2025-10-14 | ✅ Current |
-| [guides/github/GITHUB_PR_QUICK_REFERENCE.md](guides/github/GITHUB_PR_QUICK_REFERENCE.md) | v1.0 | 2025-10-20 | ✅ Current |
-| [guides/github/GITHUB_PR_REVIEW_REPLY_WORKFLOW.md](guides/github/GITHUB_PR_REVIEW_REPLY_WORKFLOW.md) | v1.0 | 2025-10-14 | ✅ Current |
-| [guides/github/GITHUB_ISSUE_LABEL_MANAGEMENT.md](guides/github/GITHUB_ISSUE_LABEL_MANAGEMENT.md) | v1.0 | 2025-10-14 | ✅ Current |
-| [guides/PR29_CAMPAIGN_LEARNINGS.md](guides/PR29_CAMPAIGN_LEARNINGS.md) | v1.0 | 2025-10-15 | ✅ Current |
+| [../development/guides/github/GITHUB_PROJECT_MANAGEMENT.md](../development/guides/github/GITHUB_PROJECT_MANAGEMENT.md) | v1.1 | 2025-10-14 | ✅ Current |
+| [../development/guides/github/GITHUB_PROJECT_MANAGEMENT.SUMMARY.md](../development/guides/github/GITHUB_PROJECT_MANAGEMENT.SUMMARY.md) | v1.0 | 2025-10-20 | ✅ Current |
+| [../development/guides/github/GITHUB_PR_MANAGEMENT.md](../development/guides/github/GITHUB_PR_MANAGEMENT.md) | v1.0 | 2025-10-14 | ✅ Current |
+| [../development/guides/github/GITHUB_PR_QUICK_REFERENCE.md](../development/guides/github/GITHUB_PR_QUICK_REFERENCE.md) | v1.0 | 2025-10-20 | ✅ Current |
+| [../development/guides/github/GITHUB_PR_REVIEW_REPLY_WORKFLOW.md](../development/guides/github/GITHUB_PR_REVIEW_REPLY_WORKFLOW.md) | v1.0 | 2025-10-14 | ✅ Current |
+| [guides/github/GITHUB_ISSUE_LABEL_MANAGEMENT.md](../development/guides/github/GITHUB_ISSUE_LABEL_MANAGEMENT.md) | v1.0 | 2025-10-14 | ✅ Current |
+| [../development/guides/workflows/PR29_CAMPAIGN_LEARNINGS.md](../development/guides/workflows/PR29_CAMPAIGN_LEARNINGS.md) | v1.0 | 2025-10-15 | ✅ Current |
 
 ### Operational/Deployment Guides
 
 | Document | Version | Last Updated | Status |
 |----------|---------|--------------|--------|
-| [MEMBERS_DEPLOYMENT_GUIDE.md](MEMBERS_DEPLOYMENT_GUIDE.md) | v1.0 | 2025-10-20 | ✅ Current |
-| [DEPLOYMENT_INSTRUCTIONS.md](DEPLOYMENT_INSTRUCTIONS.md) | v2.0 | 2025-10-20 | ✅ Current |
-| [OPERATIONAL_PROCEDURES.md](OPERATIONAL_PROCEDURES.md) | v1.0 | 2025-10-13 | 🔄 Needs Review |
+| [MEMBERS_DEPLOYMENT_GUIDE.md](../setup/MEMBERS_DEPLOYMENT_GUIDE.md) | v1.0 | 2025-10-20 | ✅ Current |
+| [DEPLOYMENT_INSTRUCTIONS.md](../setup/) | v2.0 | 2025-10-20 | ✅ Current |
+| [OPERATIONAL_PROCEDURES.md](./OPERATIONAL_PROCEDURES.md) | v1.0 | 2025-10-13 | 🔄 Needs Review |
 
 ### Architecture & Design
 
 | Document | Version | Last Updated | Status |
 |----------|---------|--------------|--------|
-| [SYSTEM_ARCHITECTURE_OVERVIEW.md](SYSTEM_ARCHITECTURE_OVERVIEW.md) | v1.0 | 2025-10-13 | 🔄 Needs Review |
-| [ARCHITECTURE_DESIGN_PHASE6.md](ARCHITECTURE_DESIGN_PHASE6.md) | v1.0 | 2025-10-13 | 🔄 Needs Review |
-| [ARCHITECTURE_RECOMMENDATIONS.md](ARCHITECTURE_RECOMMENDATIONS.md) | v1.0 | 2025-10-13 | 🔄 Needs Review |
+| [SYSTEM_ARCHITECTURE_OVERVIEW.md](../design/SYSTEM_ARCHITECTURE_OVERVIEW.md) | v1.0 | 2025-10-13 | 🔄 Needs Review |
+| [ARCHITECTURE_DESIGN_PHASE6.md](../architecture/ARCHITECTURE_DESIGN_PHASE6.md) | v1.0 | 2025-10-13 | 🔄 Needs Review |
+| [ARCHITECTURE_RECOMMENDATIONS.md](../architecture/ARCHITECTURE_RECOMMENDATIONS.md) | v1.0 | 2025-10-13 | 🔄 Needs Review |
 
 ---
 
@@ -92,17 +92,17 @@ All evolving documentation files should follow semantic versioning: `MAJOR.MINOR
 1. Added date headers (`Last Updated: 2025-10-20`) to 7 files
 2. Added status badges (`✅ Current`) to 8 files
 3. Files updated:
-   - `guides/ADMIN_ALERTS.md` → v1.0
-   - `guides/OAUTH_TROUBLESHOOTING.md` → v1.0
-   - `guides/PRIVATE_OPS_REPO.md` → v1.1 (enhanced)
-   - `guides/github/GITHUB_PROJECT_MANAGEMENT.SUMMARY.md` → v1.0
+   - `../development/guides/admin/ADMIN_ALERTS.md` → v1.0
+   - `../development/guides/troubleshooting/OAUTH_TROUBLESHOOTING.md` → v1.0
+   - `../development/guides/infrastructure/PRIVATE_OPS_REPO.md` → v1.1 (enhanced)
+   - `../development/guides/github/GITHUB_PROJECT_MANAGEMENT.SUMMARY.md` → v1.0
    - `guides/github/GITHUB_PR_QUICK_REFERENCE.md` → v1.0
    - `guides/INDEX.md` → v2.0 (expanded from 29 to 200+ lines)
    - `MEMBERS_DEPLOYMENT_GUIDE.md` → v1.0
 
 **HIGH PRIORITY (3 hours) - COMPLETED ✅**
 1. Expanded `guides/INDEX.md` with comprehensive TOC and descriptions
-2. Enhanced `guides/MFA_ENFORCEMENT.md` with:
+2. Enhanced `../development/guides/admin/MFA_ENFORCEMENT.md` with:
    - TOTP configuration examples
    - SMS setup instructions
    - Monthly audit process
@@ -110,7 +110,7 @@ All evolving documentation files should follow semantic versioning: `MAJOR.MINOR
    - Troubleshooting table
    - Version: v1.1
 
-3. Enhanced `guides/PRIVATE_OPS_REPO.md` with:
+3. Enhanced `../development/guides/infrastructure/PRIVATE_OPS_REPO.md` with:
    - Step-by-step setup instructions
    - Full directory structure with files
    - Repository configuration examples

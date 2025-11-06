@@ -2,91 +2,22 @@
  * Admin Dashboard - Epic #43 Phase 2
  *
  * Main admin page with role-based access control.
- * Only users with 'developer' role can access admin portal.
+ * Only users with 'superuser' role can access admin portal.
  */
 
 // Import from member portal public directory (two levels up from /admin/js/)
 import { initSession } from '../../session/init.js';
+import { initNavigation } from '../../js/nav.js';
+import { debug } from '../../js/utils/debug.js';
 import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
 import { collection, query, orderBy, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { adminStrings } from './i18n/admin-strings-loader.js';
+import { checkAdminAccess, calculateDuration } from './utils/admin-helpers.js';
+import { showToast, showError } from '../../js/components/toast.js';
 
 // Initialize Firebase services
 const auth = getFirebaseAuth();
 const db = getFirebaseFirestore();
-
-/**
- * Load admin-specific strings from admin portal i18n
- */
-class AdminStringsLoader {
-  constructor() {
-    this.strings = {};
-    this.loaded = false;
-  }
-
-  async load() {
-    if (this.loaded) return this.strings;
-
-    try {
-      const response = await fetch('/admin/i18n/values-is/strings.xml');
-      if (!response.ok) {
-        throw new Error(`Failed to load admin strings: ${response.statusText}`);
-      }
-
-      const xmlText = await response.text();
-      this.strings = this.parseXML(xmlText);
-      this.loaded = true;
-
-      console.log(`✓ Loaded ${Object.keys(this.strings).length} admin strings`);
-      return this.strings;
-    } catch (error) {
-      console.error('Failed to load admin strings:', error);
-      throw error;
-    }
-  }
-
-  parseXML(xmlText) {
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-
-    const parserError = xmlDoc.querySelector('parsererror');
-    if (parserError) {
-      throw new Error(`XML parsing error: ${parserError.textContent}`);
-    }
-
-    const strings = {};
-    const stringElements = xmlDoc.querySelectorAll('string');
-
-    stringElements.forEach(element => {
-      const name = element.getAttribute('name');
-      const value = element.textContent;
-      if (name) {
-        strings[name] = value;
-      }
-    });
-
-    return strings;
-  }
-
-  get(key) {
-    return this.strings[key] || key;
-  }
-}
-
-const adminStrings = new AdminStringsLoader();
-
-/**
- * Check if user has developer role
- */
-function checkAdminAccess(userData) {
-  const roles = userData.roles || [];
-  const isAdmin = roles.includes('developer');
-
-  if (!isAdmin) {
-    throw new Error('Unauthorized: Developer role required');
-  }
-
-  return true;
-}
 
 /**
  * Load recent sync status from Firestore
@@ -106,7 +37,7 @@ async function loadRecentSync() {
     const recentLog = querySnapshot.docs[0].data();
     displayRecentSync(recentLog);
   } catch (error) {
-    console.error('Failed to load recent sync:', error);
+    debug.error('Failed to load recent sync:', error);
     // Don't show error, just hide the card
     document.getElementById('recent-sync-card').classList.add('u-hidden');
   }
@@ -131,47 +62,30 @@ function displayRecentSync(log) {
 
   // Build summary HTML
   const stats = log.stats || {};
-  const status = stats.failed > 0 ? '⚠️ Með villum' : '✅ Tókst';
+  const status = stats.failed > 0 ? adminStrings.get('sync_status_with_errors') : adminStrings.get('sync_status_success_simple');
 
   summary.innerHTML = `
     <div class="info-grid">
       <div class="info-grid__item">
-        <div class="info-grid__label">Dagsetning</div>
+        <div class="info-grid__label">${adminStrings.get('history_table_date')}</div>
         <div class="info-grid__value">${formattedDate}</div>
       </div>
       <div class="info-grid__item">
-        <div class="info-grid__label">Staða</div>
+        <div class="info-grid__label">${adminStrings.get('stat_status_label')}</div>
         <div class="info-grid__value">${status}</div>
       </div>
       <div class="info-grid__item">
-        <div class="info-grid__label">Samstillt</div>
+        <div class="info-grid__label">${adminStrings.get('stat_synced_label')}</div>
         <div class="info-grid__value">${stats.synced || 0} / ${stats.total_members || 0}</div>
       </div>
       <div class="info-grid__item">
-        <div class="info-grid__label">Tími</div>
+        <div class="info-grid__label">${adminStrings.get('stat_time_label')}</div>
         <div class="info-grid__value">${calculateDuration(stats)}</div>
       </div>
     </div>
   `;
 
   card.classList.remove('u-hidden');
-}
-
-/**
- * Calculate duration from stats
- */
-function calculateDuration(stats) {
-  if (!stats.started_at || !stats.completed_at) return 'N/A';
-
-  const start = new Date(stats.started_at);
-  const end = new Date(stats.completed_at);
-  const durationSec = Math.floor((end - start) / 1000);
-
-  if (durationSec < 60) return `${durationSec}s`;
-
-  const minutes = Math.floor(durationSec / 60);
-  const seconds = durationSec % 60;
-  return `${minutes}m ${seconds}s`;
 }
 
 /**
@@ -209,15 +123,15 @@ function renderRoleBadges(roles) {
 
   // Map role names to Icelandic
   const roleLabels = {
-    'developer': 'Forritari',
-    'admin': 'Stjórnandi',
-    'meeting_election_manager': 'Kosningastjóri',
-    'event_manager': 'Viðburðastjóri'
+    'superuser': 'Kerfisstóri', // This string is from the main app, not admin-specific
+    'admin': adminStrings.get('role_admin'),
+    'admin': adminStrings.get('role_election_manager'),
+    'admin': adminStrings.get('role_admin')
   };
 
   const badges = normalizedRoles.map((role) => {
     // Create a class modifier for each role type
-    const roleClass = role === 'developer' ? 'role-badge--developer' : 'role-badge--admin';
+    const roleClass = role === 'superuser' ? 'role-badge--developer' : 'role-badge--admin';
     const label = roleLabels[role] || role;
     return `<span class="role-badge ${roleClass}">${label}</span>`;
   }).join('');
@@ -255,14 +169,17 @@ function setPageText(strings, userData) {
   // Navigation
   document.getElementById('nav-brand').textContent = strings.admin_brand;
   document.getElementById('nav-admin-dashboard').textContent = strings.nav_admin_dashboard;
+  document.getElementById('nav-admin-members').textContent = strings.nav_admin_members;
   document.getElementById('nav-admin-sync').textContent = strings.nav_admin_sync;
+  document.getElementById('nav-admin-queue').textContent = strings.nav_admin_queue;
   document.getElementById('nav-admin-history').textContent = strings.nav_admin_history;
   document.getElementById('nav-back-to-member').textContent = strings.nav_back_to_member;
+  document.getElementById('nav-logout').textContent = strings.nav_logout;
 
   // Welcome card - with personalized greeting
-  console.log('Building welcome message for:', userData.displayName);
+  debug.log('Building welcome message for:', userData.displayName);
   const welcomeMessage = buildWelcomeMessage(userData.displayName, strings);
-  console.log('Welcome message result:', welcomeMessage);
+  debug.log('Welcome message result:', welcomeMessage);
   document.getElementById('admin-welcome-title').textContent = welcomeMessage;
   document.getElementById('admin-welcome-subtitle').textContent = strings.admin_welcome_subtitle;
 
@@ -275,6 +192,9 @@ function setPageText(strings, userData) {
   document.getElementById('quick-action-sync-desc').textContent = strings.quick_action_sync_desc;
   document.getElementById('quick-action-history-label').textContent = strings.quick_action_history_label;
   document.getElementById('quick-action-history-desc').textContent = strings.quick_action_history_desc;
+
+  // Other titles
+  document.getElementById('last-sync-title').textContent = strings.last_sync_title;
 }
 
 /**
@@ -288,26 +208,29 @@ async function init() {
     // 2. Init session (loads member portal strings + authenticates)
     const { user, userData } = await initSession();
 
-    console.log('userData from initSession:', userData);
-    console.log('userData.roles:', userData.roles);
+    debug.log('userData from initSession:', userData);
+    debug.log('userData.roles:', userData.roles);
 
     // 3. Check admin access (developer role required)
     checkAdminAccess(userData);
 
-    // 4. Set page text (with personalized greeting)
+    // 4. Initialize navigation (hamburger menu)
+    initNavigation();
+
+    // 5. Set page text (with personalized greeting)
     setPageText(strings, userData);
 
-    // 5. Load recent sync status
+    // 6. Load recent sync status
     await loadRecentSync();
 
-    console.log('✓ Admin dashboard initialized');
+    debug.log('✓ Admin dashboard initialized');
 
   } catch (error) {
-    console.error('Failed to initialize admin dashboard:', error);
+    debug.error('Failed to initialize admin dashboard:', error);
 
     // Check if unauthorized
     if (error.message.includes('Unauthorized')) {
-      alert('Þú hefur ekki aðgang að stjórnkerfi. Aðeins notendur með developer role hafa aðgang.');
+      alert(adminStrings.get('error_unauthorized_developer'));
       window.location.href = '/members-area/dashboard.html';
       return;
     }
@@ -319,8 +242,8 @@ async function init() {
     }
 
     // Other errors
-    console.error('Error loading admin dashboard:', error);
-    alert(`Villa við að hlaða stjórnborði: ${error.message}`);
+    debug.error('Error loading admin dashboard:', error);
+    alert(adminStrings.get('error_page_load').replace('%s', error.message));
   }
 }
 

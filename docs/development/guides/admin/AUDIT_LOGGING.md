@@ -193,7 +193,7 @@ All administrative actions that modify elections, user permissions, or system st
 
 ### Current Implementation
 
-All admin endpoints in [services/events/src/routes/admin.js](../../../services/events/src/routes/admin.js) already implement structured audit logging:
+All admin endpoints in [services/events/src/routes/admin.js](../../../../services/events/src/routes/admin.js) already implement structured audit logging:
 
 ```javascript
 console.log(JSON.stringify({
@@ -209,7 +209,7 @@ console.log(JSON.stringify({
 
 ### Middleware Support
 
-**Correlation ID Middleware** ([services/events/src/middleware/roles.js:157-163](../../../services/events/src/middleware/roles.js#L157-L163)):
+**Correlation ID Middleware** ([services/events/src/middleware/roles.js:157-163](../../../../services/events/src/middleware/roles.js#L157-L163)):
 ```javascript
 function attachCorrelationId(req, res, next) {
   if (!req.correlationId) {
@@ -220,7 +220,7 @@ function attachCorrelationId(req, res, next) {
 }
 ```
 
-**RBAC Denial Logging** ([services/events/src/middleware/roles.js:65-93](../../../services/events/src/middleware/roles.js#L65-L93)):
+**RBAC Denial Logging** ([services/events/src/middleware/roles.js:65-93](../../../../services/events/src/middleware/roles.js#L65-L93)):
 ```javascript
 function createForbiddenResponse(req, requiredRoles, mode = 'any') {
   const correlationId = req.correlationId || generateCorrelationId();
@@ -379,7 +379,7 @@ Key indicators to monitor:
 ## Related Documentation
 
 - [ROLES_AND_PERMISSIONS.md](ROLES_AND_PERMISSIONS.md) - RBAC implementation
-- [OPERATIONAL_PROCEDURES.md](../OPERATIONAL_PROCEDURES.md) - Meeting day operations
+- [OPERATIONAL_PROCEDURES.md](../../../operations/OPERATIONAL_PROCEDURES.md) - Meeting day operations
 - [Issue #82](https://github.com/sosialistaflokkurinn/ekklesia/issues/82) - Audit logging format specification
 
 ---
@@ -388,7 +388,7 @@ Key indicators to monitor:
 
 **Last Verified**: 2025-10-19
 
-**Test Case**: Admin reset operation (see [ADMIN_RESET_TEST_REPORT.md](../testing/ADMIN_RESET_TEST_REPORT.md))
+**Test Case**: Admin reset operation (see ADMIN_RESET_TEST_REPORT.md (see testing/))
 
 **Production Logs**: Verified in `events-service` Cloud Run logs
 

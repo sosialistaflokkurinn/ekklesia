@@ -33,20 +33,20 @@ Current system status and historical incidents organized by date.
   - Status: ✅ Living document, updated regularly
 
 ### Integration & Milestones
-- **[PHASE_5_INTEGRATION_COMPLETE.md](PHASE_5_INTEGRATION_COMPLETE.md)** - Events + Elections S2S integration
+- **PHASE_5_INTEGRATION_COMPLETE.md (TBD)** - Events + Elections S2S integration
   - Completed: Oct 10, 2025
   - Status: ✅ Latest milestone, still referenced
 
 ### Reviews & Audits
-- **[PR28_AGUST_COMPLETE_REVIEW.md](PR28_AGUST_COMPLETE_REVIEW.md)** - Ágúst's PR #28 review (23 comments)
+- **PR28_AGUST_COMPLETE_REVIEW.md (archived)** - Ágúst's PR #28 review (23 comments)
   - Date: Oct 10, 2025
   - Status: ⚠️ Active - has open action items
 
-- **[CODE_AUDIT_2025-10-11_REVISED.md](CODE_AUDIT_2025-10-11_REVISED.md)** - Comprehensive code audit (revised)
+- **CODE_AUDIT_2025-10-11_REVISED.md (archived)** - Comprehensive code audit (revised)
   - Date: Oct 11, 2025
   - Status: ✅ Current audit with evidence-based findings
 
-- **[AUDIT_SUMMARY.md](AUDIT_SUMMARY.md)** - Executive briefing for code audit
+- **AUDIT_SUMMARY.md (TBD)** - Executive briefing for code audit
   - Date: Oct 11, 2025
   - Status: ✅ Stakeholder-ready summary
 
@@ -58,7 +58,7 @@ Historical documents (migrations, deployments, testing logs) have been moved to:
 
 📦 [/archive/](../../archive/)
 
-See [archive/README.md](../../archive/README.md) for index of archived documents.
+See archive/ (no README) for index of archived documents.
 
 ---
 

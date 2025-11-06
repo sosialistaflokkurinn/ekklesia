@@ -11,10 +11,16 @@ permissions:
   issues: write
   contents: read
 
+# Don't cancel security checks - let them complete
+concurrency:
+  group: security-hygiene
+  cancel-in-progress: false
+
 jobs:
   security-audit:
     runs-on: ubuntu-latest
     name: Automated Security Checks
+    timeout-minutes: 10
 
     steps:
       - name: Checkout repository

@@ -8,16 +8,16 @@ import os
 import re
 import json
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional, Any
 from datetime import datetime
 
-def analyze_file(md_file: Path):
+def analyze_file(md_file: Path) -> Optional[Dict[str, Any]]:
     """Analyze a single markdown file in detail"""
     try:
         with open(md_file, 'r') as f:
             content = f.read()
             lines = content.split('\n')
-    except:
+    except (OSError, IOError) as e:
         return None
     
     analysis = {
@@ -69,7 +69,8 @@ def analyze_file(md_file: Path):
     
     return analysis
 
-def main():
+def main() -> None:
+    """Main entry point for detailed documentation analysis."""
     docs_dir = Path("/home/gudro/Development/projects/ekklesia/docs")
     md_files = sorted(docs_dir.rglob("*.md"))
     

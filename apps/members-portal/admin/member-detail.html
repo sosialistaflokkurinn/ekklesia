@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Félagsupplýsingar - Ekklesia</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+  <!-- Reuse member portal styles -->
+  <link rel="stylesheet" href="/styles/global.css">
+  <link rel="stylesheet" href="/styles/components/nav.css">
+  <link rel="stylesheet" href="/styles/components/page.css">
+  <link rel="stylesheet" href="/styles/components/toast.css?v=20251105">
+  <link rel="stylesheet" href="/styles/components/modal.css?v=20251105">
+  <link rel="stylesheet" href="/styles/components/badge.css?v=20251105">
+
+  <!-- Admin-specific styles -->
+  <link rel="stylesheet" href="/admin/styles/admin.css">
+  <link rel="stylesheet" href="/admin/styles/admin-shared.css">
+  <link rel="stylesheet" href="/admin/styles/member-detail.css">
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+</head>
+<body class="authenticated admin">
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="nav__container">
+      <a href="/admin/admin.html" class="nav__brand" id="nav-brand">Ekklesia</a>
+
+      <!-- Hamburger Button (mobile only) -->
+      <button class="nav__hamburger" id="nav-hamburger" aria-expanded="false">
+        <span class="nav__hamburger-line"></span>
+        <span class="nav__hamburger-line"></span>
+        <span class="nav__hamburger-line"></span>
+      </button>
+
+      <!-- Overlay for mobile menu -->
+      <div class="nav__overlay" id="nav-overlay"></div>
+
+      <!-- Navigation Drawer -->
+      <div class="nav__drawer" id="nav-drawer" aria-hidden="true">
+        <!-- Close button (mobile only) -->
+        <button class="nav__close" id="nav-close">
+          <span class="nav__close-icon">✕</span>
+        </button>
+
+        <div class="nav__links">
+          <a href="/admin/admin.html" class="nav__link" id="nav-admin-dashboard">Stjórnborð</a>
+          <a href="/admin/members.html" class="nav__link nav__link--active" id="nav-admin-members">Félagar</a>
+          <a href="/admin/sync-members.html" class="nav__link" id="nav-admin-sync">Samstilling</a>
+          <a href="/admin/sync-queue.html" class="nav__link" id="nav-admin-queue">Biðröð</a>
+          <a href="/admin/sync-history.html" class="nav__link" id="nav-admin-history">Saga</a>
+          <a href="/members-area/dashboard.html" class="nav__link" id="nav-back-to-member">Til baka</a>
+          <a href="#" class="nav__link nav__link--logout" id="nav-logout">Útskrá</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="page">
+    <div class="page__container">
+      <!-- Back Navigation -->
+      <div class="admin-back">
+        <a href="/admin/members.html" class="admin-back__link" id="back-to-members">
+          ← <span id="back-to-members-text"></span>
+        </a>
+      </div>
+
+      <!-- Page Header -->
+      <header class="page__header">
+        <h1 class="page__title" id="page-header-title">Félagsupplýsingar</h1>
+        <p class="page__subtitle" id="page-header-subtitle">Skoða upplýsingar um félaga</p>
+      </header>
+
+      <!-- Action Buttons -->
+      <div class="member-detail__actions">
+        <a href="#" class="btn btn--primary" id="btn-edit-member">
+          <span id="btn-edit-member-text">Breyta félaga</span>
+        </a>
+      </div>
+
+      <!-- Loading State -->
+      <div id="member-loading" class="admin-loading">
+        <div class="spinner"></div>
+        <p id="member-loading-text">Hleð upplýsingum...</p>
+      </div>
+
+      <!-- Error State -->
+      <div id="member-error" class="admin-error" style="display: none;">
+        <p class="admin-error__message" id="member-error-message"></p>
+        <button class="btn btn--secondary" id="btn-retry">Reyna aftur</button>
+      </div>
+
+      <!-- Not Found State -->
+      <div id="member-not-found" class="admin-not-found" style="display: none;">
+        <p class="admin-not-found__message" id="member-not-found-message">Félagi fannst ekki</p>
+        <a href="/admin/members.html" class="btn btn--secondary">Til baka til félaga</a>
+      </div>
+
+      <!-- Member Details -->
+      <div id="member-details" class="member-detail" style="display: none;">
+        <!-- Basic Information -->
+        <section class="admin-section">
+          <h2 class="admin-section__title" id="section-basic-info">Grunnupplýsingar</h2>
+          <div class="admin-grid">
+            <div class="admin-field">
+              <label class="admin-field__label" id="label-name">Nafn</label>
+              <p class="admin-field__value" id="value-name">-</p>
+            </div>
+            <div class="admin-field">
+              <label class="admin-field__label" id="label-kennitala">Kennitala</label>
+              <p class="admin-field__value" id="value-kennitala">-</p>
+            </div>
+            <div class="admin-field">
+              <label class="admin-field__label" id="label-email">Netfang</label>
+              <p class="admin-field__value" id="value-email">-</p>
+            </div>
+            <div class="admin-field">
+              <label class="admin-field__label" id="label-phone">Sími</label>
+              <p class="admin-field__value" id="value-phone">-</p>
+            </div>
+            <div class="admin-field">
+              <label class="admin-field__label" id="label-birthday">Fæðingardagur</label>
+              <p class="admin-field__value" id="value-birthday">-</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Address -->
+        <section class="admin-section">
+          <h2 class="admin-section__title" id="section-address">Heimilisfang</h2>
+          <div class="admin-grid">
+            <div class="admin-field">
+              <label class="admin-field__label" id="label-street">Gata</label>
+              <p class="admin-field__value" id="value-street">-</p>
+            </div>
+            <div class="admin-field">
+              <label class="admin-field__label" id="label-postal-code">Póstnúmer</label>
+              <p class="admin-field__value" id="value-postal-code">-</p>
+            </div>
+            <div class="admin-field">
+              <label class="admin-field__label" id="label-city">Staður</label>
+              <p class="admin-field__value" id="value-city">-</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Membership -->
+        <section class="admin-section">
+          <h2 class="admin-section__title" id="section-membership">Félagsaðild</h2>
+          <div class="admin-grid">
+            <div class="admin-field">
+              <label class="admin-field__label" id="label-status">Staða</label>
+              <p class="admin-field__value" id="value-status">
+                <span class="admin-badge" id="status-badge">-</span>
+              </p>
+            </div>
+            <div class="admin-field">
+              <label class="admin-field__label" id="label-joined">Skráður</label>
+              <p class="admin-field__value" id="value-joined">-</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- System Metadata -->
+        <section class="admin-section">
+          <h2 class="admin-section__title" id="section-metadata">Kerfisgögn</h2>
+          <div class="admin-grid">
+            <div class="admin-field">
+              <label class="admin-field__label" id="label-django-id">Django ID</label>
+              <p class="admin-field__value" id="value-django-id">-</p>
+            </div>
+            <div class="admin-field">
+              <label class="admin-field__label" id="label-synced-at">Síðast samstillt</label>
+              <p class="admin-field__value" id="value-synced-at">-</p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script type="module" src="/admin/js/member-detail.js"></script>
+</body>
+</html>

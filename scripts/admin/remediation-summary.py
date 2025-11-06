@@ -13,12 +13,12 @@ import json
 from pathlib import Path
 from typing import Dict, List
 
-def load_audit():
+def load_audit() -> Any:
     """Load detailed audit results"""
     with open('AUDIT_CODE_DOCUMENTATION_DETAILED_2025-10-20.json') as f:
         return json.load(f)
 
-def create_remediation_summary():
+def create_remediation_summary() -> Any:
     """Create comprehensive remediation summary"""
     audit = load_audit()
     
@@ -107,7 +107,7 @@ def create_remediation_summary():
     
     return summary
 
-def print_comprehensive_report(summary):
+def print_comprehensive_report(summary: str) -> None:
     """Print comprehensive remediation report"""
     print("\n" + "="*80)
     print("CODE-DOCUMENTATION COMPLIANCE - COMPREHENSIVE REMEDIATION REPORT")
