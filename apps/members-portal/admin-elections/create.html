@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Loading...</title>
+  
+  <!-- Global Styles -->
+  <link rel="stylesheet" href="../styles/global.css">
+  <link rel="stylesheet" href="../admin/styles/admin.css">
+  <link rel="stylesheet" href="./styles/admin-elections.css">
+  <link rel="stylesheet" href="./styles/election-wizard.css">
+  
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  
+  <!-- Firebase Init -->
+  <script type="module" src="../firebase/firebase-init.js"></script>
+</head>
+<body>
+  
+  <!-- Navigation -->
+  <nav class="admin-nav">
+    <div class="admin-nav__container">
+      <div class="admin-nav__logo">
+        <a href="/admin/" id="admin-brand">Loading...</a>
+      </div>
+      <div class="admin-nav__links">
+        <a href="/admin/" id="nav-overview">Loading...</a>
+        <a href="/admin-elections/" class="active" id="nav-elections">Loading...</a>
+        <a href="/admin/members.html" id="nav-members">Loading...</a>
+        <a href="/admin/events.html" id="nav-events">Loading...</a>
+      </div>
+      <div class="admin-nav__user">
+        <span id="user-role-indicator" class="role-indicator"></span>
+        <span id="user-email"></span>
+        <button id="logout-btn" class="btn btn-sm">Loading...</button>
+      </div>
+    </div>
+  </nav>
+  
+  <!-- Main Content -->
+  <main class="admin-main">
+    <div class="wizard-container">
+      
+      <!-- Header -->
+      <header class="wizard-header">
+        <a href="/admin-elections/" class="back-link" id="back-link">← Loading...</a>
+        <h1 id="page-heading">Loading...</h1>
+      </header>
+      
+      <!-- Progress Steps -->
+      <div class="wizard-progress">
+        <div class="wizard-step active" data-step="1">
+          <div class="step-number">1</div>
+          <div class="step-label" id="wizard-step-1-label">Loading...</div>
+        </div>
+        <div class="wizard-step" data-step="2">
+          <div class="step-number">2</div>
+          <div class="step-label" id="wizard-step-2-label">Loading...</div>
+        </div>
+        <div class="wizard-step" data-step="3">
+          <div class="step-number">3</div>
+          <div class="step-label" id="wizard-step-3-label">Loading...</div>
+        </div>
+        <div class="wizard-step" data-step="4">
+          <div class="step-number">4</div>
+          <div class="step-label" id="wizard-step-4-label">Loading...</div>
+        </div>
+      </div>
+      
+      <!-- Wizard Form -->
+      <form id="election-wizard-form" class="wizard-form">
+        
+        <!-- Step 1: Basic Info -->
+        <div class="wizard-content" data-step="1">
+          <h2 id="step-1-title">Loading...</h2>
+          <p class="step-description" id="step-1-description">Loading...</p>
+          
+          <div class="form-group">
+            <label for="election-title" class="required" id="label-election-title">Loading...</label>
+            <input 
+              type="text" 
+              id="election-title" 
+              name="title" 
+              class="form-control" 
+              placeholder="Loading..."
+              required
+              maxlength="200"
+            >
+            <small class="form-text" id="help-election-title">Loading...</small>
+          </div>
+          
+          <div class="form-group">
+            <label for="election-question" class="required" id="label-election-question">Loading...</label>
+            <input 
+              type="text" 
+              id="election-question" 
+              name="question" 
+              class="form-control" 
+              placeholder="Loading..."
+              required
+              maxlength="500"
+            >
+            <small class="form-text" id="help-election-question">Loading...</small>
+          </div>
+          
+          <div class="form-group">
+            <label for="election-description" id="label-election-description">Loading...</label>
+            <textarea 
+              id="election-description" 
+              name="description" 
+              class="form-control" 
+              rows="4"
+              placeholder="Loading..."
+              maxlength="2000"
+            ></textarea>
+            <small class="form-text" id="help-election-description">Loading...</small>
+          </div>
+        </div>
+        
+        <!-- Step 2: Answer Options -->
+        <div class="wizard-content" data-step="2" style="display: none;">
+          <h2 id="step-2-title">Loading...</h2>
+          <p class="step-description" id="step-2-description">Loading...</p>
+          
+          <!-- Voting Type -->
+          <div class="form-group">
+            <label class="required" id="label-voting-type">Loading...</label>
+            <div class="radio-group">
+              <label class="radio-label">
+                <input 
+                  type="radio" 
+                  name="voting_type" 
+                  value="single-choice" 
+                  checked
+                >
+                <span class="radio-text">
+                  <strong id="voting-type-single">Loading...</strong>
+                  <small id="voting-type-single-desc">Loading...</small>
+                </span>
+              </label>
+              <label class="radio-label">
+                <input 
+                  type="radio" 
+                  name="voting_type" 
+                  value="multi-choice"
+                >
+                <span class="radio-text">
+                  <strong id="voting-type-multi">Loading...</strong>
+                  <small id="voting-type-multi-desc">Loading...</small>
+                </span>
+              </label>
+            </div>
+          </div>
+          
+          <!-- Max Selections (for multi-choice) -->
+          <div id="max-selections-group" class="form-group" style="display: none;">
+            <label for="max-selections" class="required" id="label-max-selections">Loading...</label>
+            <input 
+              type="number" 
+              id="max-selections" 
+              name="max_selections" 
+              class="form-control" 
+              min="1" 
+              max="10" 
+              value="2"
+            >
+            <small class="form-text" id="help-max-selections">Loading...</small>
+          </div>
+          
+          <!-- Answer Options -->
+          <div class="form-group">
+            <label class="required" id="label-answer-options">Loading...</label>
+            <div id="answers-container">
+              <!-- Answer items will be added here -->
+            </div>
+            <button type="button" id="add-answer-btn" class="btn btn-secondary">
+              Loading...
+            </button>
+            <small class="form-text" id="help-answer-options">Loading...</small>
+          </div>
+        </div>
+        
+        <!-- Step 3: Schedule -->
+        <div class="wizard-content" data-step="3" style="display: none;">
+          <h2 id="step-3-title">Loading...</h2>
+          <p class="step-description" id="step-3-description">Loading...</p>
+          
+          <div class="form-group">
+            <label class="required" id="label-start-timing">Loading...</label>
+            <div class="radio-group">
+              <label class="radio-label">
+                <input 
+                  type="radio" 
+                  name="start_timing" 
+                  value="immediate" 
+                  checked
+                >
+                <span class="radio-text">
+                  <strong id="start-immediate">Loading...</strong>
+                  <small id="start-immediate-desc">Loading...</small>
+                </span>
+              </label>
+              <label class="radio-label">
+                <input 
+                  type="radio" 
+                  name="start_timing" 
+                  value="scheduled"
+                >
+                <span class="radio-text">
+                  <strong id="start-scheduled">Loading...</strong>
+                  <small id="start-scheduled-desc">Loading...</small>
+                </span>
+              </label>
+            </div>
+          </div>
+          
+          <!-- Scheduled Start Time -->
+          <div id="scheduled-start-group" class="form-group" style="display: none;">
+            <label for="scheduled-start" id="label-scheduled-start">Loading...</label>
+            <input 
+              type="datetime-local" 
+              id="scheduled-start" 
+              name="scheduled_start" 
+              class="form-control"
+            >
+          </div>
+          
+          <!-- Duration -->
+          <div class="form-group">
+            <label class="required" id="label-duration">Loading...</label>
+            <div class="duration-options">
+              <button type="button" class="duration-btn" data-minutes="15" id="duration-15min">Loading...</button>
+              <button type="button" class="duration-btn" data-minutes="30" id="duration-30min">Loading...</button>
+              <button type="button" class="duration-btn active" data-minutes="60" id="duration-1hr">Loading...</button>
+              <button type="button" class="duration-btn" data-minutes="90" id="duration-1-5hr">Loading...</button>
+              <button type="button" class="duration-btn" data-minutes="120" id="duration-2hr">Loading...</button>
+              <button type="button" class="duration-btn" data-minutes="custom" id="duration-custom">Loading...</button>
+            </div>
+            <input 
+              type="hidden" 
+              id="duration-minutes" 
+              name="duration_minutes" 
+              value="60"
+            >
+          </div>
+          
+          <!-- Custom Duration -->
+          <div id="custom-duration-group" class="form-group" style="display: none;">
+            <label for="custom-duration" id="label-custom-duration">Loading...</label>
+            <input 
+              type="number" 
+              id="custom-duration" 
+              class="form-control" 
+              min="5" 
+              max="10080" 
+              placeholder="Loading..."
+            >
+            <small class="form-text" id="help-custom-duration">Loading...</small>
+          </div>
+          
+          <!-- Or Manual End Time -->
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="use-manual-end-time">
+              <span id="label-use-manual-end">Loading...</span>
+            </label>
+          </div>
+          
+          <div id="manual-end-time-group" class="form-group" style="display: none;">
+            <label for="scheduled-end" id="label-scheduled-end">Loading...</label>
+            <input 
+              type="datetime-local" 
+              id="scheduled-end" 
+              name="scheduled_end" 
+              class="form-control"
+            >
+          </div>
+        </div>
+        
+        <!-- Step 4: Review -->
+        <div class="wizard-content" data-step="4" style="display: none;">
+          <h2 id="step-4-title">Loading...</h2>
+          <p class="step-description" id="step-4-description">Loading...</p>
+          
+          <div class="review-section">
+            <h3 id="review-section-basic">Loading...</h3>
+            <dl class="review-list">
+              <dt id="review-label-title">Loading...</dt>
+              <dd id="review-title">-</dd>
+              
+              <dt id="review-label-question">Loading...</dt>
+              <dd id="review-question">-</dd>
+              
+              <dt id="review-label-description">Loading...</dt>
+              <dd id="review-description">-</dd>
+            </dl>
+          </div>
+          
+          <div class="review-section">
+            <h3 id="review-section-answers">Loading...</h3>
+            <dl class="review-list">
+              <dt id="review-label-voting-type">Loading...</dt>
+              <dd id="review-voting-type">-</dd>
+              
+              <dt id="review-label-max-selections">Loading...</dt>
+              <dd id="review-max-selections">-</dd>
+              
+              <dt id="review-label-answers">Loading...</dt>
+              <dd>
+                <ol id="review-answers">
+                  <!-- Will be populated -->
+                </ol>
+              </dd>
+            </dl>
+          </div>
+          
+          <div class="review-section">
+            <h3 id="review-section-schedule">Loading...</h3>
+            <dl class="review-list">
+              <dt id="review-label-start-time">Loading...</dt>
+              <dd id="review-start-time">-</dd>
+              
+              <dt id="review-label-duration">Loading...</dt>
+              <dd id="review-duration">-</dd>
+              
+              <dt id="review-label-end-time">Loading...</dt>
+              <dd id="review-end-time">-</dd>
+            </dl>
+          </div>
+        </div>
+        
+        <!-- Navigation Buttons -->
+        <div class="wizard-navigation">
+          <button 
+            type="button" 
+            id="prev-btn" 
+            class="btn btn-secondary"
+            style="display: none;"
+          >
+            Loading...
+          </button>
+          
+          <div class="wizard-nav-right">
+            <button 
+              type="button" 
+              id="next-btn" 
+              class="btn btn-primary"
+            >
+              Loading...
+            </button>
+            
+            <button 
+              type="button" 
+              id="create-draft-btn" 
+              class="btn btn-secondary"
+              style="display: none;"
+            >
+              Loading...
+            </button>
+            
+            <button 
+              type="submit" 
+              id="create-open-btn" 
+              class="btn btn-primary"
+              style="display: none;"
+            >
+              Loading...
+            </button>
+          </div>
+        </div>
+        
+      </form>
+      
+    </div>
+  </main>
+  
+  <!--  Loading Overlay -->
+  <div id="loading-overlay" class="loading-overlay" style="display: none;">
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+      <p id="loading-text">Loading...</p>
+    </div>
+  </div>
+  
+  <!-- i18n Initialization -->
+  <script type="module">
+    import { R } from '../i18n/strings-loader.js';
+    
+    // Load i18n strings before anything else
+    await R.load('is');
+    
+    // Set page title and static text
+    document.getElementById('page-title').textContent = R.string.create_election_page_title;
+    document.getElementById('admin-brand').textContent = R.string.admin_brand;
+    document.getElementById('nav-overview').textContent = R.string.admin_nav_overview;
+    document.getElementById('nav-elections').textContent = R.string.admin_nav_elections;
+    document.getElementById('nav-members').textContent = R.string.admin_nav_members;
+    document.getElementById('nav-events').textContent = R.string.admin_nav_events;
+    document.getElementById('logout-btn').textContent = R.string.admin_nav_logout;
+    document.getElementById('back-link').textContent = R.string.back_to_list;
+    document.getElementById('page-heading').textContent = R.string.create_election_heading;
+    
+    // Progress steps
+    document.getElementById('wizard-step-1-label').textContent = R.string.wizard_step_1;
+    document.getElementById('wizard-step-2-label').textContent = R.string.wizard_step_2;
+    document.getElementById('wizard-step-3-label').textContent = R.string.wizard_step_3;
+    document.getElementById('wizard-step-4-label').textContent = R.string.wizard_step_4;
+    
+    // Step 1
+    document.getElementById('step-1-title').textContent = R.string.step_1_title;
+    document.getElementById('step-1-description').textContent = R.string.step_1_description;
+    document.getElementById('label-election-title').textContent = R.string.label_election_title;
+    document.getElementById('election-title').placeholder = R.string.placeholder_election_title;
+    document.getElementById('help-election-title').textContent = R.string.help_election_title;
+    document.getElementById('label-election-question').textContent = R.string.label_election_question;
+    document.getElementById('election-question').placeholder = R.string.placeholder_election_question;
+    document.getElementById('help-election-question').textContent = R.string.help_election_question;
+    document.getElementById('label-election-description').textContent = R.string.label_election_description;
+    document.getElementById('election-description').placeholder = R.string.placeholder_election_description;
+    document.getElementById('help-election-description').textContent = R.string.help_election_description;
+    
+    // Step 2
+    document.getElementById('step-2-title').textContent = R.string.step_2_title;
+    document.getElementById('step-2-description').textContent = R.string.step_2_description;
+    document.getElementById('label-voting-type').textContent = R.string.label_voting_type;
+    document.getElementById('voting-type-single').textContent = R.string.voting_type_single;
+    document.getElementById('voting-type-single-desc').textContent = R.string.voting_type_single_desc;
+    document.getElementById('voting-type-multi').textContent = R.string.voting_type_multi;
+    document.getElementById('voting-type-multi-desc').textContent = R.string.voting_type_multi_desc;
+    document.getElementById('label-max-selections').textContent = R.string.label_max_selections;
+    document.getElementById('help-max-selections').textContent = R.string.help_max_selections;
+    document.getElementById('label-answer-options').textContent = R.string.label_answer_options;
+    document.getElementById('add-answer-btn').textContent = R.string.btn_add_answer;
+    document.getElementById('help-answer-options').textContent = R.string.help_answer_options;
+    
+    // Step 3
+    document.getElementById('step-3-title').textContent = R.string.step_3_title;
+    document.getElementById('step-3-description').textContent = R.string.step_3_description;
+    document.getElementById('label-start-timing').textContent = R.string.label_start_timing;
+    document.getElementById('start-immediate').textContent = R.string.start_immediate;
+    document.getElementById('start-immediate-desc').textContent = R.string.start_immediate_desc;
+    document.getElementById('start-scheduled').textContent = R.string.start_scheduled;
+    document.getElementById('start-scheduled-desc').textContent = R.string.start_scheduled_desc;
+    document.getElementById('label-scheduled-start').textContent = R.string.label_scheduled_start;
+    document.getElementById('label-duration').textContent = R.string.label_duration;
+    document.getElementById('duration-15min').textContent = R.string.duration_15min;
+    document.getElementById('duration-30min').textContent = R.string.duration_30min;
+    document.getElementById('duration-1hr').textContent = R.string.duration_1hr;
+    document.getElementById('duration-1-5hr').textContent = R.string.duration_1_5hr;
+    document.getElementById('duration-2hr').textContent = R.string.duration_2hr;
+    document.getElementById('duration-custom').textContent = R.string.duration_custom;
+    document.getElementById('label-custom-duration').textContent = R.string.label_custom_duration;
+    document.getElementById('custom-duration').placeholder = R.string.placeholder_custom_duration;
+    document.getElementById('help-custom-duration').textContent = R.string.help_custom_duration;
+    document.getElementById('label-use-manual-end').textContent = R.string.label_use_manual_end;
+    document.getElementById('label-scheduled-end').textContent = R.string.label_scheduled_end;
+    
+    // Step 4
+    document.getElementById('step-4-title').textContent = R.string.step_4_title;
+    document.getElementById('step-4-description').textContent = R.string.step_4_description;
+    document.getElementById('review-section-basic').textContent = R.string.review_section_basic;
+    document.getElementById('review-label-title').textContent = R.string.review_title;
+    document.getElementById('review-label-question').textContent = R.string.review_question;
+    document.getElementById('review-label-description').textContent = R.string.review_description;
+    document.getElementById('review-section-answers').textContent = R.string.review_section_answers;
+    document.getElementById('review-label-voting-type').textContent = R.string.review_voting_type;
+    document.getElementById('review-label-max-selections').textContent = R.string.review_max_selections;
+    document.getElementById('review-label-answers').textContent = R.string.review_answers;
+    document.getElementById('review-section-schedule').textContent = R.string.review_section_schedule;
+    document.getElementById('review-label-start-time').textContent = R.string.review_start_time;
+    document.getElementById('review-label-duration').textContent = R.string.review_duration;
+    document.getElementById('review-label-end-time').textContent = R.string.review_end_time;
+    
+    // Navigation buttons
+    document.getElementById('prev-btn').textContent = R.string.btn_prev;
+    document.getElementById('next-btn').textContent = R.string.btn_next;
+    document.getElementById('create-draft-btn').textContent = R.string.btn_save_draft;
+    document.getElementById('create-open-btn').textContent = R.string.btn_create_open;
+    
+    // Loading text
+    document.getElementById('loading-text').textContent = R.string.loading_create_election;
+  </script>
+  
+  <!-- Scripts -->
+  <script type="module">
+    import { auth } from '../firebase/firebase-init.js';
+    
+    // Handle logout
+    document.getElementById('logout-btn')?.addEventListener('click', async () => {
+      await auth.signOut();
+      window.location.href = '/';
+    });
+    
+    // Show user email
+    auth.onAuthStateChanged(user => {
+      const emailEl = document.getElementById('user-email');
+      if (emailEl && user) {
+        emailEl.textContent = user.email;
+      }
+    });
+  </script>
+  
+  <!-- Main App -->
+  <script type="module" src="./js/election-create.js"></script>
+  
+</body>
+</html>

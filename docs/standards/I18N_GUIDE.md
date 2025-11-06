@@ -391,6 +391,8 @@ CSS should never contain user-facing text (use content injection instead):
 
 ✅ **Good** (text in HTML/JS):
 ```html
+✅ **Good** (text in HTML/JS):
+```html
 <button id="btn-save" class="btn">Loading...</button>
 
 <script type="module">
@@ -399,6 +401,146 @@ await R.load('is');
 
 document.getElementById('btn-save').textContent = R.string.btn_save;
 </script>
+```
+
+---
+
+## Reusable HTML Initialization Pattern
+
+**Pattern Used**: Admin Elections Dashboard, Create Wizard, Edit Forms
+
+### Overview
+
+For pages with many text elements (20+ strings), use a consistent initialization pattern that loads i18n strings before the page renders.
+
+### Implementation Steps
+
+**1. Add IDs to ALL text elements in HTML**
+
+```html
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <title id="page-title">Loading...</title>
+</head>
+<body>
+  <nav>
+    <a href="/" id="nav-home">Loading...</a>
+    <a href="/about" id="nav-about">Loading...</a>
+    <button id="logout-btn">Loading...</button>
+  </nav>
+  
+  <main>
+    <h1 id="page-heading">Loading...</h1>
+    <p id="page-description">Loading...</p>
+    
+    <form>
+      <label for="name" id="label-name">Loading...</label>
+      <input id="name" type="text" placeholder="Loading...">
+      <small id="help-name">Loading...</small>
+      
+      <button type="submit" id="btn-submit">Loading...</button>
+    </form>
+  </main>
+</body>
+</html>
+```
+
+**2. Add i18n initialization script BEFORE other scripts**
+
+```html
+<!-- i18n Initialization -->
+<script type="module">
+  import { R } from '../i18n/strings-loader.js';
+  
+  // Load i18n strings before anything else
+  await R.load('is');
+  
+  // Set page metadata
+  document.getElementById('page-title').textContent = R.string.page_title;
+  
+  // Set navigation
+  document.getElementById('nav-home').textContent = R.string.nav_home;
+  document.getElementById('nav-about').textContent = R.string.nav_about;
+  document.getElementById('logout-btn').textContent = R.string.btn_logout;
+  
+  // Set main content
+  document.getElementById('page-heading').textContent = R.string.page_heading;
+  document.getElementById('page-description').textContent = R.string.page_description;
+  
+  // Set form labels and placeholders
+  document.getElementById('label-name').textContent = R.string.label_name;
+  document.getElementById('name').placeholder = R.string.placeholder_name;
+  document.getElementById('help-name').textContent = R.string.help_name;
+  document.getElementById('btn-submit').textContent = R.string.btn_submit;
+</script>
+
+<!-- Other scripts AFTER i18n -->
+<script type="module" src="./app.js"></script>
+```
+
+**3. Follow naming conventions in strings.xml**
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- Page metadata -->
+  <string name="page_title">Page Title - Company Name</string>
+  
+  <!-- Navigation -->
+  <string name="nav_home">Home</string>
+  <string name="nav_about">About</string>
+  <string name="btn_logout">Log out</string>
+  
+  <!-- Content -->
+  <string name="page_heading">Main Heading</string>
+  <string name="page_description">Page description text</string>
+  
+  <!-- Form -->
+  <string name="label_name">Name</string>
+  <string name="placeholder_name">Enter your name...</string>
+  <string name="help_name">Full legal name</string>
+  <string name="btn_submit">Submit Form</string>
+</resources>
+```
+
+### Naming Conventions
+
+| Element Type | Convention | Example |
+|--------------|------------|---------|
+| Page titles | `{page}_page_title` | `admin_elections_page_title` |
+| Navigation | `nav_{section}` or `admin_nav_{section}` | `nav_home`, `admin_nav_elections` |
+| Headings | `{page}_heading` or `{section}_title` | `create_election_heading`, `step_1_title` |
+| Labels | `label_{field}` | `label_election_title` |
+| Placeholders | `placeholder_{field}` | `placeholder_election_description` |
+| Help text | `help_{field}` | `help_election_title` |
+| Buttons | `btn_{action}` | `btn_save`, `btn_create` |
+| Progress steps | `wizard_step_{n}` | `wizard_step_1` |
+| Step content | `step_{n}_title`, `step_{n}_description` | `step_2_description` |
+
+### Benefits
+
+✅ **Consistent**: Same pattern across all admin pages  
+✅ **Maintainable**: Easy to find and update strings  
+✅ **Translatable**: All text centralized for translators  
+✅ **Searchable**: Clear naming makes code grep-friendly  
+✅ **Type-safe**: IDE autocomplete with R.string  
+✅ **Reusable**: Pattern works for any multi-step form or dashboard  
+
+### Real-World Example
+
+**Used in**: 
+- `apps/members-portal/admin-elections/index.html` (Elections List - 30+ strings)
+- `apps/members-portal/admin-elections/create.html` (Create Wizard - 50+ strings)
+
+**Files**: 
+- HTML: Add IDs to elements
+- JavaScript: Import R, no hardcoded strings
+- strings.xml: All user-facing text
+
+See [Epic #192](https://github.com/sosialistaflokkurinn/ekklesia/issues/192) for full implementation details.
+
+---
 ```
 
 **Exception**: Icons and decorative symbols (not language-specific) are OK:

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Loading...</title>
+  
+  <!-- Global Styles -->
+  <link rel="stylesheet" href="../styles/global.css">
+  <link rel="stylesheet" href="../admin/styles/admin.css">
+  <link rel="stylesheet" href="./styles/admin-elections.css">
+  
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  
+  <!-- Firebase Init -->
+  <script type="module" src="../firebase/firebase-init.js"></script>
+</head>
+<body>
+  
+  <!-- Navigation -->
+  <nav class="admin-nav">
+    <div class="admin-nav__container">
+      <div class="admin-nav__logo">
+        <a href="/admin/" id="admin-brand">Loading...</a>
+      </div>
+      <div class="admin-nav__links">
+        <a href="/admin/" id="nav-overview">Loading...</a>
+        <a href="/admin-elections/" class="active" id="nav-elections">Loading...</a>
+        <a href="/admin/members.html" id="nav-members">Loading...</a>
+        <a href="/admin/events.html" id="nav-events">Loading...</a>
+      </div>
+      <div class="admin-nav__user">
+        <span id="user-role-indicator" class="role-indicator"></span>
+        <span id="user-email"></span>
+        <button id="logout-btn" class="btn btn-sm">Loading...</button>
+      </div>
+    </div>
+  </nav>
+  
+  <!-- Main Content -->
+  <main class="admin-main">
+    <div class="admin-container">
+      
+      <!-- Header -->
+      <header class="admin-header">
+        <h1 id="page-heading">Loading...</h1>
+      </header>
+      
+      <!-- Filters and Search -->
+      <!-- Elections Controls -->
+      <div class="elections-controls">
+        <div class="filters">
+          <button class="filter-btn active" data-filter="all" id="filter-all">Loading...</button>
+          <button class="filter-btn" data-filter="draft" id="filter-draft">Loading...</button>
+          <button class="filter-btn" data-filter="published" id="filter-published">Loading...</button>
+          <button class="filter-btn" data-filter="closed" id="filter-closed">Loading...</button>
+          <button class="filter-btn" data-filter="hidden" id="filter-hidden">Loading...</button>
+        </div>
+        
+        <div class="elections-controls-right">
+          <div class="search-box">
+            <input 
+              type="text" 
+              id="search-input" 
+              placeholder="Loading..." 
+              class="search-input"
+            >
+          </div>
+          
+          <button id="create-election-btn" class="btn btn-primary">
+            Loading...
+          </button>
+        </div>
+      </div>
+      
+      <!-- Results Count -->
+      <div class="results-info">
+        <span id="results-count">Loading...</span>
+      </div>
+      
+      <!-- Loading Spinner -->
+      <div id="loading-spinner" class="loading-spinner" style="display: none;">
+        <div class="spinner"></div>
+        <p id="loading-text">Loading...</p>
+      </div>
+      
+      <!-- Elections Table -->
+      <div class="elections-table-container">
+        <table id="elections-table" class="elections-table">
+          <thead>
+            <tr>
+              <th id="table-header-title">Loading...</th>
+              <th id="table-header-status">Loading...</th>
+              <th id="table-header-dates">Loading...</th>
+              <th id="table-header-votes">Loading...</th>
+              <th id="table-header-actions">Loading...</th>
+            </tr>
+          </thead>
+          <tbody id="elections-tbody">
+            <!-- Rows will be inserted by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Empty State -->
+      <div id="empty-state" class="empty-state" style="display: none;">
+        <div class="empty-state__icon">🗳️</div>
+        <h2 id="empty-state-title">Loading...</h2>
+        <p id="empty-state-description">Loading...</p>
+        <button class="btn btn-primary" id="empty-state-btn">
+          Loading...
+        </button>
+      </div>
+      
+    </div>
+  </main>
+  
+  <!-- Scripts -->
+  <script type="module">
+    import { auth } from '../firebase/firebase-init.js';
+    import { R } from '../i18n/strings-loader.js';
+    
+    // Load strings first
+    await R.load('is');
+    
+    // Set page title and static text
+    document.getElementById('page-title').textContent = R.string.admin_elections_page_title;
+    document.getElementById('admin-brand').textContent = 'Admin - ' + R.string.app_name;
+    document.getElementById('nav-overview').textContent = R.string.admin_nav_overview;
+    document.getElementById('nav-elections').textContent = R.string.admin_nav_elections;
+    document.getElementById('nav-members').textContent = R.string.admin_nav_members;
+    document.getElementById('nav-events').textContent = R.string.admin_nav_events;
+    document.getElementById('logout-btn').textContent = R.string.admin_nav_logout;
+    document.getElementById('page-heading').textContent = R.string.admin_elections_title;
+    document.getElementById('filter-all').textContent = R.string.filter_all;
+    document.getElementById('filter-draft').textContent = R.string.filter_draft;
+    document.getElementById('filter-published').textContent = R.string.filter_published;
+    document.getElementById('filter-closed').textContent = R.string.filter_closed;
+    document.getElementById('filter-hidden').textContent = R.string.filter_hidden;
+    document.getElementById('search-input').placeholder = R.string.search_placeholder;
+    document.getElementById('create-election-btn').textContent = R.string.btn_create_election;
+    document.getElementById('loading-text').textContent = R.string.loading_elections;
+    document.getElementById('table-header-title').textContent = R.string.table_header_title;
+    document.getElementById('table-header-status').textContent = R.string.table_header_status;
+    document.getElementById('table-header-dates').textContent = R.string.table_header_dates;
+    document.getElementById('table-header-votes').textContent = R.string.table_header_votes;
+    document.getElementById('table-header-actions').textContent = R.string.table_header_actions;
+    document.getElementById('empty-state-title').textContent = R.string.empty_state_title;
+    document.getElementById('empty-state-description').textContent = R.string.empty_state_description;
+    document.getElementById('empty-state-btn').textContent = R.string.btn_create_election;
+    
+    // Empty state button handler
+    document.getElementById('empty-state-btn').addEventListener('click', () => {
+      document.getElementById('create-election-btn').click();
+    });
+    
+    // Handle logout
+    document.getElementById('logout-btn')?.addEventListener('click', async () => {
+      await auth.signOut();
+      window.location.href = '/';
+    });
+    
+    // Show user email
+    auth.onAuthStateChanged(user => {
+      const emailEl = document.getElementById('user-email');
+      if (emailEl && user) {
+        emailEl.textContent = user.email;
+      }
+    });
+  </script>
+  
+  <!-- Main App -->
+  <script type="module" src="./js/elections-list.js"></script>
+  
+</body>
+</html>
