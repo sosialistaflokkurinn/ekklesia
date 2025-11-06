@@ -16,7 +16,7 @@
 
 /* Question Section */
 .voting-form__question {
-  margin-bottom: var(--spacing-sm);
+  margin-bottom: 0;
 }
 
 .voting-form__question-title {
@@ -39,7 +39,7 @@
 /* Voting Section */
 .voting-form__voting {
   background-color: var(--color-gray-50);
-  padding: var(--spacing-lg);
+  padding: var(--spacing-md);
   border-radius: var(--radius-md);
   margin-bottom: var(--spacing-lg);
 }
