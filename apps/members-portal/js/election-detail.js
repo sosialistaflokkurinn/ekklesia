@@ -16,6 +16,9 @@ import { R } from '../i18n/strings-loader.js';
 import { getElectionById } from './api/elections-api.js';
 import { escapeHTML } from './utils/format.js';
 
+// Version check - REMOVE AFTER DEBUGGING
+console.log('🔵 election-detail.js VERSION 20251106-3 loaded');
+
 // State
 let currentElection = null;
 let selectedAnswerId = null;
