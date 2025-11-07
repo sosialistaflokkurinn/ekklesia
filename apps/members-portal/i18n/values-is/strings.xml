@@ -48,7 +48,9 @@
   <string name="dashboard_roles_label">Hlutverk</string>
   <string name="role_badge_admin">Stjórnandi</string>
   <string name="role_badge_superuser">Kerfisstjóri</string>
+  <string name="role_badge_election_manager">Kosningastjóri</string>
   <string name="role_badge_member">Félagi</string>
+  <string name="role_badge_title_open_admin">Opna stjórnborð</string>
   <string name="profile_title">Prófíll</string>
   <string name="section_personal_info">Mínar upplýsingar</string>
   <string name="label_name">Nafn</string>

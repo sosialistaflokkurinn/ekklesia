@@ -155,7 +155,7 @@ function renderRoleBadges(roles) {
 
     // Make admin/superuser badges clickable links to admin portal
     if (role === 'admin' || role === 'superuser') {
-      return `<a href="/admin/admin.html" class="role-badge role-badge--clickable" title="Opna stjórnborð">${label}</a>`;
+      return `<a href="/admin/admin.html" class="role-badge role-badge--clickable" title="${R.string.role_badge_title_open_admin}">${label}</a>`;
     }
 
     return `<span class="role-badge">${label}</span>`;

@@ -14,6 +14,7 @@ import { collection, query, orderBy, limit, getDocs } from 'https://www.gstatic.
 import { adminStrings } from './i18n/admin-strings-loader.js';
 import { checkAdminAccess, calculateDuration } from './utils/admin-helpers.js';
 import { showToast, showError } from '../../js/components/toast.js';
+import { R } from '../../js/i18n.js';
 
 // Initialize Firebase services
 const auth = getFirebaseAuth();
@@ -121,18 +122,12 @@ function renderRoleBadges(roles) {
     return '';
   }
 
-  // Map role names to Icelandic
-  const roleLabels = {
-    'superuser': 'Kerfisstóri', // This string is from the main app, not admin-specific
-    'admin': adminStrings.get('role_admin'),
-    'admin': adminStrings.get('role_election_manager'),
-    'admin': adminStrings.get('role_admin')
-  };
-
   const badges = normalizedRoles.map((role) => {
+    const key = `role_badge_${role}`;
+    const label = R.string[key] || role;
+    
     // Create a class modifier for each role type
     const roleClass = role === 'superuser' ? 'role-badge--developer' : 'role-badge--admin';
-    const label = roleLabels[role] || role;
     return `<span class="role-badge ${roleClass}">${label}</span>`;
   }).join('');
 
