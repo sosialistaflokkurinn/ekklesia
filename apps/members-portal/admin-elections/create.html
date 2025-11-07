@@ -486,7 +486,9 @@
   
   <!-- Scripts -->
   <script type="module">
-    import { auth } from '../firebase/app.js';
+    import { getFirebaseAuth } from '../firebase/app.js';
+    
+    const auth = getFirebaseAuth();
     
     // Handle logout
     document.getElementById('logout-btn')?.addEventListener('click', async () => {

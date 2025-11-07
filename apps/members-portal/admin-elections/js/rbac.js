@@ -8,7 +8,9 @@
  * - superadmin: Can do everything + permanently delete elections
  */
 
-import { auth } from '../../firebase/app.js';
+import { getFirebaseAuth } from '../../firebase/app.js';
+
+const auth = getFirebaseAuth();
 
 /**
  * Get current user's role from Firebase custom claims
