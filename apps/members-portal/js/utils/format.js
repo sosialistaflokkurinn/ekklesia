@@ -69,8 +69,8 @@ export function normalizePhoneForComparison(phone) {
  * @returns {string} Formatted as DDMMYY-XXXX
  *
  * Handles formats:
- * - 0103003390 -> 010300-3390
- * - 010300-3390 -> 010300-3390 (already formatted)
+ * - 9999999999 -> 999999-9999
+ * - 999999-9999 -> 999999-9999 (already formatted)
  */
 export function formatKennitala(kennitala) {
   if (!kennitala) return '';
@@ -95,8 +95,8 @@ export function formatKennitala(kennitala) {
  * Shows birthdate (first 6 digits) but masks personal identifier (last 4 digits)
  *
  * Examples:
- * - 010300-3390 -> 010300-****
- * - 0103003390 -> 010300-****
+ * - 999999-9999 -> 010300-****
+ * - 9999999999 -> 010300-****
  */
 export function maskKennitala(kennitala) {
   if (!kennitala) return '-';
@@ -146,8 +146,8 @@ export function validatePhone(phone) {
  * @returns {boolean} True if valid format (does NOT verify checksum)
  *
  * Accepts:
- * - 010300-3390 (with hyphen)
- * - 0103003390 (without hyphen)
+ * - 999999-9999 (with hyphen)
+ * - 9999999999 (without hyphen)
  *
  * Note: This only validates format (10 digits), not the mathematical checksum.
  * Kenni.is OAuth has already validated the kennitala, so we trust it.
@@ -169,7 +169,7 @@ export function validateKennitala(kennitala) {
  *
  * Accepts E.164 format: +[country code][number]
  * Examples:
- * - +354 775-8492 (Iceland)
+ * - +354 999-9999 (Iceland)
  * - +45 12345678 (Denmark)
  * - +1 (555) 123-4567 (USA)
  * - +44 20 7946 0958 (UK)
@@ -202,7 +202,7 @@ export function validateInternationalPhone(phone) {
  * - If no formatting, adds space after country code
  *
  * Examples:
- * - +3547758492 -> +354 775-8492 (Iceland)
+ * - +354-999-9999 -> +354 999-9999 (Iceland)
  * - +4512345678 -> +45 12345678 (Denmark)
  */
 export function formatInternationalPhone(phone) {

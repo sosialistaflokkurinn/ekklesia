@@ -81,7 +81,7 @@ async function saveField(fieldName, value, statusElement) {
 /sync_queue/{auto-id}
   - source: "firestore"
   - target: "django"
-  - kennitala: "010300-3390"
+  - kennitala: "999999-9999"
   - django_id: 3584
   - action: "update"
   - changes: {
@@ -434,7 +434,7 @@ def push_to_django(db: firestore.Client, changes: list, token: str):
     {
         "changes": [
             {
-                "kennitala": "010300-3390",
+                "kennitala": "999999-9999",
                 "django_id": 3584,
                 "action": "update",
                 "changes": {

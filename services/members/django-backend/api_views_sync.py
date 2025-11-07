@@ -41,7 +41,7 @@ def get_pending_changes(request):
             "changes": [
                 {
                     "id": 123,
-                    "ssn": "0103003390",
+                    "ssn": "9999999999",
                     "action": "update",
                     "fields_changed": {"name": "New Name"},
                     "created_at": "2025-11-05T10:30:00Z"
@@ -100,7 +100,7 @@ def apply_firestore_changes(request):
         {
             "changes": [
                 {
-                    "kennitala": "010300-3390",
+                    "kennitala": "999999-9999",
                     "action": "update",
                     "changes": {
                         "profile.email": "new@email.is",
@@ -114,7 +114,7 @@ def apply_firestore_changes(request):
         {
             "results": [
                 {
-                    "ssn": "0103003390",
+                    "ssn": "9999999999",
                     "status": "success"
                 }
             ]
@@ -304,7 +304,7 @@ def get_member_by_ssn(request, ssn):
     
     Response:
         {
-            "ssn": "0103003390",
+            "ssn": "9999999999",
             "name": "Jon Jonsson",
             "birthday": "1970-01-01",
             "gender": 1,

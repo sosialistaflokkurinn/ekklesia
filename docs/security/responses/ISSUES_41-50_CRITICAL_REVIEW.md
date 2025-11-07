@@ -871,7 +871,7 @@ kennitala_normalized = normalize_kennitala(kennitala)
 # Test both formats
 curl -X POST https://verifymembership-....run.app \
   -H "Content-Type: application/json" \
-  -d '{"kennitala": "010190-1234"}'  # With hyphen
+  -d '{"kennitala": "111111-1111"}'  # With hyphen
 
 curl -X POST https://verifymembership-....run.app \
   -H "Content-Type: application/json" \

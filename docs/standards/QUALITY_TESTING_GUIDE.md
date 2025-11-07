@@ -84,7 +84,7 @@ import { validateKennitala, isValidEmail } from './validators.js';
 describe('validateKennitala', () => {
   test('accepts valid 10-digit kennitala', () => {
     // Arrange
-    const validKennitala = '0103003390';
+    const validKennitala = '9999999999';
 
     // Act
     const result = validateKennitala(validKennitala);

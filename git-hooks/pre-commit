@@ -105,23 +105,25 @@ PII_PATTERNS=(
 )
 
 # Known fake/example values to ALLOW (will be filtered out)
+# Use obviously fake values that cannot be real data
 FAKE_VALUES=(
-  "010190-2939"
-  "010190-1234"
-  "0101902939"
-  "0101901234"
-  "010300-3390"
-  "0103003390"
-  "111111-1111"
+  "000000-0000"  # Invalid kennitala (impossible date)
+  "999999-9999"  # Invalid kennitala (impossible date)
+  "9999999999"   # Invalid kennitala without hyphen
+  "111111-1111"  # Clearly fake kennitala
+  "123456-7890"  # Sequential fake kennitala
+  "0101901234"   # Example without hyphen
   "example@example.com"
   "nafn@example.is"
   "old@example.com"
   "new@example.com"
+  "new@email.is"
   "test@example.com"
   "test@example.is"
   "jon@example.com"
   "jon@example.is"
   "jon@test.is"
+  "jon.jonsson@example.com"
   "newemail@example.is"
   "demo@example.com"
   "sample@example.com"
@@ -129,13 +131,26 @@ FAKE_VALUES=(
   "your.email@example.com"
   "user.name@domain.co.uk"
   "gudrodur@sosialistaflokkurinn.is"
-  "555-1234"
-  "5551234"
-  "775-8492"
-  "780-8188"
-  "9876543"
-  "+45 12345678"
-  "+1 206-555-0142"
+  "gudrodur@example.com"
+  "real.person@gmail.com"
+  "ekklesia-sync@ekklesia-prod-10-2025.iam.gserviceaccount.com"
+  "521240388393-compute@developer.gserviceaccount.com"
+  "555-0000"  # North American fake number pattern
+  "555-0100"  # Reserved for fictional use
+  "555-0199"  # Reserved range
+  "555-1234"  # Common fake number
+  "5551234"   # Common fake number without hyphen
+  "999-9999"  # Clearly fake Icelandic pattern
+  "9999999"   # Clearly fake without hyphen
+  "000-0000"  # Clearly fake
+  "0000000"   # Clearly fake without hyphen
+  "775-8493"  # Example numbers from docs
+  "7758493"   # Example numbers from docs
+  "780-8189"  # Example numbers from docs
+  "+1-555-0100"  # International fake format
+  "+354-999-9999"  # Iceland fake with country code
+  "+3545551234"  # Example international format
+  "0035455551234"  # Example E.164 format
   "abc123XYZ789ExampleUserUID456"
 )
 
@@ -253,7 +268,7 @@ if [ "$SECRETS_FOUND" = true ] || [ "$PII_FOUND" = true ]; then
 
   if [ "$PII_FOUND" = true ]; then
     echo "🔒 PII DETECTED:"
-    echo "  - Replace real kennitalas with fake examples (010190-2939, 010190-1234)"
+    echo "  - Replace real kennitalas with fake examples (000000-0000, 111111-1111)"
     echo "  - Replace real emails with example@example.com"
     echo "  - Replace real phone numbers with 555-1234"
     echo "  - Replace real names with 'Jón Jónsson' or similar"

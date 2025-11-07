@@ -154,7 +154,7 @@ Emergency role assignment using Identity Toolkit REST API. Use this when `set-us
 
 **Set developer role with all claims** (recommended):
 ```bash
-./emergency-set-role.sh abc123XYZ789ExampleUserUID456 developer 010190-2939 jon.jonsson@example.com +3545551234
+./emergency-set-role.sh abc123XYZ789ExampleUserUID456 developer 000000-0000 jon.jonsson@example.com +3545551234
 ```
 
 ### ⚠️ Warning
@@ -205,7 +205,7 @@ User Information:
 Custom Claims (customAttributes):
 {
   "roles": ["developer"],
-  "kennitala": "010190-2939",
+  "kennitala": "000000-0000",
   "isMember": true,
   "email": "jon.jonsson@example.com",
   "phoneNumber": "+3545551234"

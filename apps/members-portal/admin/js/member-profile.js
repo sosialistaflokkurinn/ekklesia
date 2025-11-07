@@ -149,7 +149,7 @@ async function init() {
     return;
   }
 
-  // Handle both formats: with dash (010300-3390) or without (0103003390)
+  // Handle both formats: with dash (999999-9999) or without (9999999999)
   if (currentKennitala && !currentKennitala.includes('-') && currentKennitala.length === 10) {
     // Add dash if missing
     currentKennitala = `${currentKennitala.slice(0, 6)}-${currentKennitala.slice(6)}`;

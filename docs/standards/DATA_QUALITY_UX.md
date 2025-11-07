@@ -145,10 +145,10 @@ function searchCountries(query) {
 **Implementation**:
 ```javascript
 // Storage: E.164 format (international standard)
-database.phone = "+3547758492";  // 12 chars, + prefix
+database.phone = "+354-999-9999";  // 12 chars, + prefix
 
 // Display: Localized format (Icelandic convention)
-displayPhone = formatPhone(phone);  // "775-8492" (8 chars, hyphen)
+displayPhone = formatPhone(phone);  // "999-9999" (8 chars, hyphen)
 ```
 
 **Why**: Storage optimizes for interoperability, display optimizes for readability
@@ -303,8 +303,8 @@ input.addEventListener('blur', async (e) => {
 **Format requirement**: DDMMYY-XXXX (10 digits, hyphen after 6th)
 
 **Auto-correction**:
-- ✅ Auto-format with hyphen on display (010300-3390)
-- ✅ Store without hyphen for querying (0103003390)
+- ✅ Auto-format with hyphen on display (999999-9999)
+- ✅ Store without hyphen for querying (9999999999)
 - ❌ No auto-correction of digits (too risky - these are identity)
 
 **Validation**:
@@ -360,7 +360,7 @@ if (!phone.match(/^\+354\d{7}$/)) {
 **Better**:
 ```
 "Símanúmer þarf að byrja á + og landskóða (t.d. +45 12345678)"
-"Íslensk símanúmer: 7 tölustafir (t.d. 780-8188)"
+"Íslensk símanúmer: 7 tölustafir (t.d. 000-0000)"
 ```
 
 ### ❌ Blocking Valid Edge Cases
@@ -468,7 +468,7 @@ When adding new validation or auto-correction, ask:
 
 **User intent**: Verify their identity
 **Storage format**: 10 digits
-**Natural format**: "010300-3390" or "0103003390"
+**Natural format**: "999999-9999" or "9999999999"
 **Auto-correct**: ??? (can't fix typos - too risky)
 **Visible**: Yes (but what if we guess wrong?)
 **Reversible**: Yes (but damage already done - wrong person identified)
@@ -478,8 +478,8 @@ When adding new validation or auto-correction, ask:
 ### ✅ Good: Auto-Format Phone Display
 
 **User intent**: See their phone number
-**Storage format**: "+3547758492" (E.164)
-**Natural format**: "775-8492" (Icelandic convention)
+**Storage format**: "+354-999-9999" (E.164)
+**Natural format**: "999-9999" (Icelandic convention)
 **Auto-correct**: Format for display only, don't modify stored data
 **Visible**: Yes (user sees formatted version)
 **Reversible**: N/A (display-only, storage unchanged)

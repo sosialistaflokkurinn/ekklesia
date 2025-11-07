@@ -354,7 +354,7 @@ Sample: Gunnar Smári Egilsson
 ```json
 {
   "id": 12345,
-  "ssn": "010190-1234",
+  "ssn": "111111-1111",
   "name": "Jón Jónsson",
   "birthday": "1990-01-01",
   "date_joined": "2024-06-15T14:32:00Z",
@@ -707,7 +707,7 @@ LIMIT 10;
 ```sql
 SELECT id, name, ssn, date_joined, reachable
 FROM membership_comrade
-WHERE ssn = '010190-1234';  -- Example fake SSN
+WHERE ssn = '111111-1111';  -- Example fake SSN
 ```
 
 **Members with Contact Info:**

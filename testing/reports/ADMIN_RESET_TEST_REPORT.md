@@ -25,7 +25,7 @@ This test verified three critical security features against fresh seed data:
 
 ### User Context
 - **Firebase UID**: `abc123XYZ789ExampleUserUID456`
-- **Kennitala**: `010190-2939` (masked in logs as `200978-****`)
+- **Kennitala**: `000000-0000` (masked in logs as `200978-****`)
 - **Membership Status**: Active member (isMember: true)
 - **Roles**: `["developer"]` (verified in Firebase Auth custom claims)
 

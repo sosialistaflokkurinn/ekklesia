@@ -692,7 +692,7 @@ As a [user type], I want [goal] so that [benefit].
 - Firebase UID: abc123ExampleUserUID456
 
 # ❌ BAD - Real data
-- Kennitala: 010190-2939 (looks too real)
+- Kennitala: 000000-0000 (looks too real)
 - Name: [Real member name]
 - Email: real.person@gmail.com
 ```

@@ -848,7 +848,7 @@ Responsive grid for displaying label-value pairs in admin pages.
   </div>
   <div class="admin-field">
     <label class="admin-field__label">Kennitala</label>
-    <p class="admin-field__value">010190-1234</p>
+    <p class="admin-field__value">111111-1111</p>
   </div>
 </div>
 ```
