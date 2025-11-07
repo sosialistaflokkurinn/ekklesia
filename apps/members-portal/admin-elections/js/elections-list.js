@@ -4,7 +4,7 @@
  */
 
 import { getFirebaseAuth } from '../../firebase/app.js';
-import { getCurrentUserRole, canPerformAction } from './rbac.js';
+import { getElectionRole, canPerformAction, requireAdmin, PERMISSIONS, hasPermission } from '../../js/rbac.js';
 import { R } from '../../i18n/strings-loader.js';
 
 const auth = getFirebaseAuth();
@@ -38,23 +38,31 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
     
-    // Check user role
-    const userRole = await getCurrentUserRole();
-    console.log('[Elections List] User role from custom claims:', userRole);
-    
-    if (!userRole || !['election-manager', 'superadmin', 'admin', 'superuser'].includes(userRole)) {
-      alert(R.string.error_not_authorized || 'Þú hefur ekki heimild til að skoða kosningar.');
-      window.location.href = '/members-area/';
-      return;
+    try {
+      // Check admin access (requires admin or superuser role)
+      await requireAdmin();
+      
+      // Get election role for API calls
+      const electionRole = await getElectionRole();
+      console.log('[Elections List] Election role:', electionRole);
+      
+      if (!electionRole) {
+        alert(R.string.error_not_authorized || 'Þú hefur ekki heimild til að skoða kosningar.');
+        window.location.href = '/members-area/';
+        return;
+      }
+      
+      // Store role globally for RBAC checks in UI
+      currentUserRole = electionRole;
+      
+      console.log('[Elections List] User authenticated with election role:', electionRole);
+      
+      // User is authenticated and authorized, initialize UI
+      await initialize();
+    } catch (error) {
+      console.error('[Elections List] Authorization error:', error);
+      // requireAdmin already handles redirect
     }
-    
-    // Store role globally for RBAC checks in UI
-    currentUserRole = userRole;
-    
-    console.log('[Elections List] User authenticated with role:', userRole);
-    
-    // User is authenticated and authorized, initialize UI
-    await initialize();
   });
 });
 

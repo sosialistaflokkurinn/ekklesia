@@ -17,6 +17,7 @@ import { R } from '../i18n/strings-loader.js';
 import { debug } from './utils/debug.js';
 import { initAuthenticatedPage } from './page-init.js';
 import { requireAuth, getUserData, signOut, AuthenticationError } from '../session/auth.js';
+import { requireMember } from './rbac.js';
 import { httpsCallable, getFirebaseAuth, getFirebaseFirestore } from '../firebase/app.js';
 import { setTextContent, setInnerHTML, addEventListener, setDisabled, validateElements } from '../ui/dom.js';
 import { formatPhone, normalizePhoneForComparison } from './utils/format.js';
@@ -516,6 +517,16 @@ async function init() {
 
     // Get authenticated user
     const currentUser = await requireAuth();
+
+    // Check member role (required for member area access)
+    try {
+      await requireMember();
+    } catch (error) {
+      debug.error('Member role required:', error);
+      alert('Þú verður að vera félagsmaður til að sjá þessa síðu.');
+      window.location.href = '/';
+      return;
+    }
 
     // Get user data from custom claims
     const userData = await getUserData(currentUser);

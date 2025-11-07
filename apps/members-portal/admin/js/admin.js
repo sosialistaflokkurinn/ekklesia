@@ -2,7 +2,7 @@
  * Admin Dashboard - Epic #43 Phase 2
  *
  * Main admin page with role-based access control.
- * Only users with 'superuser' role can access admin portal.
+ * Only users with 'admin' or 'superuser' role can access admin portal.
  */
 
 // Import from member portal public directory (two levels up from /admin/js/)
@@ -12,13 +12,32 @@ import { debug } from '../../js/utils/debug.js';
 import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
 import { collection, query, orderBy, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { adminStrings } from './i18n/admin-strings-loader.js';
-import { checkAdminAccess, calculateDuration } from './utils/admin-helpers.js';
+import { requireAdmin } from '../../js/rbac.js';
 import { showToast, showError } from '../../js/components/toast.js';
 import { R } from '../../i18n/strings-loader.js';
 
 // Initialize Firebase services
 const auth = getFirebaseAuth();
 const db = getFirebaseFirestore();
+
+/**
+ * Calculate duration between two timestamps
+ * @param {Object} stats - Object with started_at and completed_at timestamps
+ * @returns {string} - Formatted duration string (e.g., "2m 15s" or "45s")
+ */
+function calculateDuration(stats) {
+  if (!stats.started_at || !stats.completed_at) return 'N/A';
+
+  const start = new Date(stats.started_at);
+  const end = new Date(stats.completed_at);
+  const durationSec = Math.floor((end - start) / 1000);
+
+  if (durationSec < 60) return `${durationSec}s`;
+
+  const minutes = Math.floor(durationSec / 60);
+  const seconds = durationSec % 60;
+  return `${minutes}m ${seconds}s`;
+}
 
 /**
  * Load recent sync status from Firestore
@@ -206,8 +225,8 @@ async function init() {
     debug.log('userData from initSession:', userData);
     debug.log('userData.roles:', userData.roles);
 
-    // 3. Check admin access (developer role required)
-    checkAdminAccess(userData);
+    // 3. Check admin access using unified RBAC (requires admin or superuser)
+    await requireAdmin();
 
     // 4. Initialize navigation (hamburger menu)
     initNavigation();
@@ -223,10 +242,10 @@ async function init() {
   } catch (error) {
     debug.error('Failed to initialize admin dashboard:', error);
 
-    // Check if unauthorized
-    if (error.message.includes('Unauthorized')) {
-      alert(adminStrings.get('error_unauthorized_developer'));
-      window.location.href = '/members-area/dashboard.html';
+    // Check if unauthorized (requireAdmin already redirects, but handle edge cases)
+    if (error.message.includes('Unauthorized') || error.message.includes('Admin role required')) {
+      alert(adminStrings.get('error_unauthorized_developer') || 'Þú hefur ekki aðgang.');
+      window.location.href = '/members-area/';
       return;
     }
 
@@ -238,7 +257,7 @@ async function init() {
 
     // Other errors
     debug.error('Error loading admin dashboard:', error);
-    alert(adminStrings.get('error_page_load').replace('%s', error.message));
+    alert(adminStrings.get('error_page_load')?.replace('%s', error.message) || `Villa: ${error.message}`);
   }
 }
 

@@ -4,7 +4,7 @@
  */
 
 import { getFirebaseAuth } from '../../firebase/app.js';
-import { getCurrentUserRole, requireRole } from './rbac.js';
+import { getElectionRole, requireAdmin, hasPermission, PERMISSIONS } from '../../js/rbac.js';
 import { R } from '../../i18n/strings-loader.js';
 
 const auth = getFirebaseAuth();
@@ -45,23 +45,35 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Require election-manager or superadmin
-    const userRole = await getCurrentUserRole();
-    if (!userRole || !['election-manager', 'superadmin'].includes(userRole)) {
-      alert(R.string.validation_not_authorized);
-      window.location.href = '/admin-elections/';
-      return;
-    }
+    try {
+      // Require admin role
+      await requireAdmin();
+      
+      // Check create permission
+      const canCreate = await hasPermission(PERMISSIONS.CREATE_ELECTION);
+      if (!canCreate) {
+        alert(R.string.error_not_authorized || 'Þú hefur ekki heimild til að stofna kosningar.');
+        window.location.href = '/admin-elections/';
+        return;
+      }
 
-    // Show user role
-    const roleIndicator = document.getElementById('user-role-indicator');
-    if (roleIndicator) {
-      roleIndicator.textContent = userRole === 'superadmin' ? '👑 Superadmin' : '📊 Election Manager';
-      roleIndicator.className = `role-indicator role-${userRole}`;
-    }
+      // Get election role
+      const electionRole = await getElectionRole();
+      console.log('[Create Election] User has election role:', electionRole);
 
-    // Initialize wizard
-    initWizard();
+      // Show user role
+      const roleIndicator = document.getElementById('user-role-indicator');
+      if (roleIndicator) {
+        roleIndicator.textContent = electionRole === 'superadmin' ? '👑 Superadmin' : '📊 Election Manager';
+        roleIndicator.className = `role-indicator role-${electionRole}`;
+      }
+
+      // Initialize wizard
+      initWizard();
+    } catch (error) {
+      console.error('[Create Election] Authorization error:', error);
+      // requireAdmin already handles redirect
+    }
   });
 });
 
