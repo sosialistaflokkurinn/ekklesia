@@ -20,6 +20,7 @@ let elections = [];
 let filteredElections = [];
 let currentFilter = 'all';
 let searchQuery = '';
+let currentUserRole = null; // Store user role for RBAC checks
 
 // ============================================
 // INITIALIZATION
@@ -46,6 +47,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       window.location.href = '/members-area/';
       return;
     }
+    
+    // Store role globally for RBAC checks in UI
+    currentUserRole = userRole;
     
     console.log('[Elections List] User authenticated with role:', userRole);
     
@@ -299,7 +303,7 @@ function getActionButtons(election) {
   }
   
   // Delete button (superadmin ONLY)
-  if (canPerformAction(userRole, 'delete')) {
+  if (canPerformAction(currentUserRole, 'delete')) {
     buttons.push(`
       <button class="btn btn-sm btn-danger btn-delete-election" data-action="delete" data-id="${election.id}">
         ${R.string.btn_delete}
