@@ -11,7 +11,7 @@
 
 ### We optimize for **user completion** over **perfect input**.
 
-Ekklesia is a voting and membership system for real people, not data entry clerks. Our goal is to help users complete tasks successfully, not to block them with pedantic validation.
+Ekklesia is a voting and membership system for real people, not data entry clerks. Our goal is to help users complete tasks successfully, not to block them with pedantic [form validation](https://developer.mozilla.org/en-US/docs/Learn/Forms/Form_validation).
 
 **Guiding Principle**: If we can safely auto-correct user input, we should. If we can't, we should guide them clearly.
 

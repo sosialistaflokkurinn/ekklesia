@@ -12,11 +12,11 @@ This guide defines HTML structure standards for the Ekklesia project. We priorit
 
 ### Core Principles
 
-1. **Semantic HTML** - Use elements that describe their meaning (not just appearance)
-2. **Accessibility First** - ARIA labels, keyboard navigation, screen reader support
+1. **Semantic HTML** - Use [HTML5 elements](https://developer.mozilla.org/en-US/docs/Web/HTML/Element) that describe their meaning (not just appearance)
+2. **Accessibility First** - [ARIA labels](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA), keyboard navigation, screen reader support
 3. **Progressive Enhancement** - Works without JavaScript, enhanced with it
 4. **i18n Ready** - All text loaded via `R.string`, never hardcoded
-5. **Valid HTML5** - Passes W3C validation
+5. **Valid HTML5** - Passes [W3C validation](https://validator.w3.org/)
 
 ---
 
@@ -61,13 +61,13 @@ Always use semantic elements for document structure:
 ```
 
 **Key Elements**:
-- `<nav>` - Navigation menus
-- `<main>` - Primary page content (one per page)
-- `<article>` - Self-contained content (cards, posts)
-- `<section>` - Thematic grouping of content
-- `<aside>` - Sidebar or tangential content
-- `<header>` - Introductory content
-- `<footer>` - Footer content
+- [`<nav>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/nav) - Navigation menus
+- [`<main>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/main) - Primary page content (one per page)
+- [`<article>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/article) - Self-contained content (cards, posts)
+- [`<section>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/section) - Thematic grouping of content
+- [`<aside>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/aside) - Sidebar or tangential content
+- [`<header>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/header) - Introductory content
+- [`<footer>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/footer) - Footer content
 
 ---
 

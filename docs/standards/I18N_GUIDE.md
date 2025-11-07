@@ -13,7 +13,7 @@
 
 ## Overview
 
-This is an XML-based internationalization (i18n) system modeled after Android's `strings.xml` pattern. All user-facing strings are centralized in XML files for easy translation and maintenance.
+This is an [XML-based internationalization (i18n)](https://developer.android.com/guide/topics/resources/string-resource) system modeled after Android's `strings.xml` pattern. All user-facing strings are centralized in XML files for easy translation and maintenance.
 
 **Þrjú Kerfi:**
 1. **Members Portal** (`/i18n/`) - Félagasvæði → `R.string.key`
@@ -24,12 +24,12 @@ This is an XML-based internationalization (i18n) system modeled after Android's 
 
 ### Benefits
 
-- ✅ **Familiar pattern** - Same as Android's `R.string.key_name`
+- ✅ **Familiar pattern** - Same as [Android's R.string.key_name](https://developer.android.com/guide/topics/resources/string-resource#accessing)
 - ✅ **Centralized translations** - All strings in one file per locale
 - ✅ **Easy to add languages** - Just create new `values-xx/strings.xml`
 - ✅ **No build step** - Loads at runtime in browser
 - ✅ **Type-safe** - IDE autocomplete works with R.string
-- ✅ **Standard format** - Compatible with translation tools
+- ✅ **Standard format** - Compatible with [translation tools](https://www.oneskyapp.com/)
 
 ---
 

@@ -12,10 +12,10 @@ This guide defines JavaScript standards for the Ekklesia project. We use modern 
 
 ### Core Principles
 
-1. **Modern ES6+** - Use const/let, arrow functions, destructuring, async/await
-2. **Modular Code** - Import/export for reusability
+1. **Modern ES6+** - Use [const/let](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements), [arrow functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions), [destructuring](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment), [async/await](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function)
+2. **Modular Code** - [Import/export](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules) for reusability
 3. **No jQuery** - Vanilla JavaScript only
-4. **JSDoc Always** - All functions documented
+4. **JSDoc Always** - All functions [documented](https://jsdoc.app/)
 5. **Functional Where Possible** - Prefer pure functions, avoid side effects
 
 ---

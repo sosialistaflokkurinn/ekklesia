@@ -35,9 +35,9 @@ This includes:
 ## Overview
 
 Good documentation is as important as good code. This guide defines standards for:
-- JSDoc comments (inline code documentation)
-- README files (directory/project overviews)
-- Architecture Decision Records (ADRs - why decisions were made)
+- [JSDoc](https://jsdoc.app/) comments (inline code documentation)
+- [README](https://www.makeareadme.com/) files (directory/project overviews)
+- [Architecture Decision Records (ADRs)](https://adr.github.io/) - why decisions were made
 - Guide documents (like this one)
 - API documentation
 

@@ -10,8 +10,8 @@
 
 This guide defines Git workflow standards for the Ekklesia project. We use:
 - Feature branch workflow
-- Conventional commit messages
-- Pull requests for all changes
+- [Conventional commit messages](https://www.conventionalcommits.org/)
+- [Pull requests](https://docs.github.com/en/pull-requests) for all changes
 - Squash merge for clean history
 
 ### Core Principles
@@ -121,7 +121,7 @@ Scope indicates what part of the codebase is affected:
 
 ### Short Description
 
-- Use imperative mood ("add" not "added" or "adds")
+- Use [imperative mood](https://git-scm.com/docs/git-commit#_discussion) ("add" not "added" or "adds")
 - Lowercase first letter
 - No period at end
 - Max 50 characters
