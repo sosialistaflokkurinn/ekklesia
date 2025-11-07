@@ -111,12 +111,15 @@ FAKE_VALUES=(
   "0101902939"
   "0101901234"
   "example@example.com"
+  "nafn@example.is"
   "test@example.com"
   "demo@example.com"
   "sample@example.com"
   "user@example.com"
   "555-1234"
   "5551234"
+  "+45 12345678"
+  "+1 206-555-0142"
   "abc123XYZ789ExampleUserUID456"
 )
 

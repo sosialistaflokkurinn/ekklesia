@@ -17,7 +17,7 @@
   <!-- ========================================== -->
   <!-- ADMIN ELECTIONS - LIST PAGE -->
   <!-- ========================================== -->
-  <string name="admin_elections_page_title">Stjórna kosningum - Sósíalistaflokkurinn</string>
+  <string name="admin_elections_page_title">Rafræn kosningastjórnun - Sósíalistaflokkurinn</string>
   <string name="admin_elections_title">Kosningar</string>
   
   <!-- Filters -->
@@ -29,11 +29,11 @@
   
   <!-- Search and buttons -->
   <string name="search_placeholder">Leita eftir heiti...</string>
-  <string name="btn_create_election">➕ Stofna kosningu</string>
+  <string name="btn_create_election">➕ Ný kosning</string>
   
   <!-- Results info -->
-  <string name="results_showing">Sýni %d kosningar</string>
-  <string name="results_showing_singular">Sýni %d kosningu</string>
+  <string name="results_showing">Sýna %d kosningar</string>
+  <string name="results_showing_singular">Sýnir %d kosningu</string>
   <string name="results_no_elections">Engar kosningar fundust</string>
   
   <!-- Table headers -->
@@ -78,7 +78,20 @@
   <string name="confirm_close_title">Loka kosningu?</string>
   <string name="confirm_close_message">Ertu viss um að þú viljir loka kosningunni "%s"?\n\nEftir að kosningu er lokað geta félagsmenn ekki lengur kosið.\n\nÞú getur síðan skoðað niðurstöðurnar.</string>
   <string name="confirm_delete_title">Eyða kosningu?</string>
-  <string name="confirm_delete_message">⚠️ VARÚÐ: Þessi aðgerð er óafturkræf!\n\nÞú ert að fara að eyða kosningunni "%s" varanlega úr gagnagrunninum.\n\nALL DATA VERÐUR EYTT:\n- Kosningin sjálf\n- Öll atkvæði\n- Öll svarmöguleikar\n- Öll tengd gögn\n\nATH: Kosning verður að vera lokuð (ekki virk) til að hægt sé að eyða henni.\n\nSláðu inn NÁKVÆMLEGA heitið á kosningunni til að staðfesta:\n"%s"</string>
+  <string name="confirm_delete_message">⚠️ AÐVÖRUN: Þessi aðgerð er óafturkræf.
+
+Þú ert um það bil að eyða kosningunni "%s" varanlega.
+
+ÖLL GÖGN MUNU TAPAST:
+- Kosningin sjálf
+- Allir svarmöguleikar
+- Öll greidd atkvæði
+- Önnur tengd gögn
+
+ATH: Einungis er hægt að eyða kosningum sem hefur verið lokað.
+
+Til að staðfesta, sláðu inn heiti kosningarinnar hér fyrir neðan:
+"%s"</string>
   <string name="confirm_delete_placeholder">Sláðu inn heiti kosningar...</string>
   <string name="confirm_delete_title_mismatch">Heitið stemmir ekki. Vinsamlegast reyndu aftur.</string>
   
@@ -110,7 +123,7 @@
   
   <!-- Empty state -->
   <string name="empty_state_title">Engar kosningar ennþá</string>
-  <string name="empty_state_description">Byrjaðu með að búa til fyrstu kosninguna!</string>
+  <string name="empty_state_description">Byrjaðu á því að búa til fyrstu kosninguna þína!</string>
   
   <!-- ========================================== -->
   <!-- ADMIN ELECTIONS - CREATE PAGE -->
@@ -127,15 +140,15 @@
   
   <!-- Step 1: Basic Info -->
   <string name="step_1_title">Grunnupplýsingar</string>
-  <string name="step_1_description">Sláðu inn heiti og spurningu kosningar</string>
+  <string name="step_1_description">Sláðu inn heiti og spurningu fyrir kosninguna</string>
   <string name="label_election_title">Heiti kosningar</string>
   <string name="label_election_question">Spurning</string>
   <string name="label_election_description">Lýsing (valfrjáls)</string>
-  <string name="placeholder_election_title">t.d. Forsetakjör 2025</string>
-  <string name="placeholder_election_question">t.d. Hver á að vera formaður flokksins?</string>
+  <string name="placeholder_election_title">Dæmi: Forsetakjör 2025</string>
+  <string name="placeholder_election_question">Dæmi: Hver á að vera formaður flokksins?</string>
   <string name="placeholder_election_description">Viðbótarupplýsingar um kosninguna...</string>
-  <string name="help_election_title">Stuttlýsandi heiti sem félagsmenn sjá</string>
-  <string name="help_election_question">Aðalspurningin sem kosið er um</string>
+  <string name="help_election_title">Stutt og lýsandi heiti sem birtist félagsmönnum.</string>
+  <string name="help_election_question">Spurningin sem lögð er fyrir í kosningunni.</string>
   <string name="help_election_description">Ítarlegri lýsing ef þörf er á</string>
   
   <!-- Step 2: Answer Options -->
@@ -143,20 +156,20 @@
   <string name="step_2_description">Bættu við svarmöguleikum og veldu tegund atkvæðagreiðslu</string>
   <string name="label_voting_type">Tegund atkvæðagreiðslu</string>
   <string name="voting_type_single">Eitt val</string>
-  <string name="voting_type_single_desc">Félagsmenn geta valið einn svarmöguleika (radiobutton)</string>
+  <string name="voting_type_single_desc">Félagsmenn geta valið einn kost (radiobutton).</string>
   <string name="voting_type_multi">Mörg val</string>
-  <string name="voting_type_multi_desc">Félagsmenn geta valið marga svarmöguleika (checkbox)</string>
+  <string name="voting_type_multi_desc">Félagsmenn geta valið marga kosti (checkbox).</string>
   <string name="label_max_selections">Hámarksfjöldi vala</string>
-  <string name="help_max_selections">Hversu marga svarmöguleika má velja (1-10)</string>
+  <string name="help_max_selections">Hámarksfjöldi kosta sem má velja (1-10).</string>
   <string name="label_answer_options">Svarmöguleikar</string>
   <string name="btn_add_answer">➕ Bæta við svarmöguleika</string>
-  <string name="help_answer_options">Lágmark 2 svarmöguleikar, hámark 10</string>
+  <string name="help_answer_options">Að lágmarki 2 svarmöguleikar, að hámarki 10.</string>
   <string name="placeholder_answer">Svarmöguleiki %d</string>
-  <string name="btn_remove_answer">✕</string>
+  <string name="btn_remove_answer">Fjarlægja</string>
   
   <!-- Step 3: Schedule -->
   <string name="step_3_title">Tímasetning</string>
-  <string name="step_3_description">Veldu hvenær kosningin á að vera virk</string>
+  <string name="step_3_description">Veldu hvenær kosningin skal vera virk.</string>
   <string name="label_start_timing">Hvenær á kosning að byrja?</string>
   <string name="start_immediate">Strax eftir stofnun</string>
   <string name="start_immediate_desc">Kosningin verður virk um leið og hún er búin til</string>
@@ -173,23 +186,23 @@
   <string name="label_custom_duration">Sérsniðin lengd (mínútur)</string>
   <string name="help_custom_duration">5 mínútur til 7 dagar (10,080 mínútur)</string>
   <string name="placeholder_custom_duration">t.d. 240</string>
-  <string name="label_use_manual_end">Nota ákveðinn lokatíma í staðinn</string>
+  <string name="label_use_manual_end">Nota ákveðinn lokatíma frekar en tímalengd.</string>
   <string name="label_scheduled_end">Lokatími</string>
   
   <!-- Step 4: Review -->
   <string name="step_4_title">Yfirlit</string>
-  <string name="step_4_description">Farðu yfir upplýsingarnar áður en þú býrð til kosningu</string>
+  <string name="step_4_description">Farðu yfir upplýsingarnar áður en kosningin er stofnuð.</string>
   <string name="review_section_basic">Grunnupplýsingar</string>
   <string name="review_section_answers">Svarmöguleikar</string>
   <string name="review_section_schedule">Tímasetning</string>
   <string name="review_title">Heiti:</string>
   <string name="review_question">Spurning:</string>
   <string name="review_description">Lýsing:</string>
-  <string name="review_no_description">Engin lýsing</string>
+  <string name="review_no_description">Engin lýsing skráð.</string>
   <string name="review_voting_type">Tegund:</string>
   <string name="review_max_selections">Hámarksval:</string>
   <string name="review_answers">Svarmöguleikar:</string>
-  <string name="review_no_answers">Engir svarmöguleikar</string>
+  <string name="review_no_answers">Engir svarmöguleikar skráðir.</string>
   <string name="review_start_time">Byrjar:</string>
   <string name="review_duration">Lengd:</string>
   <string name="review_end_time">Endar:</string>
@@ -199,17 +212,17 @@
   <!-- Navigation buttons -->
   <string name="btn_prev">← Til baka</string>
   <string name="btn_next">Áfram →</string>
-  <string name="btn_save_draft">💾 Vista sem drög</string>
-  <string name="btn_create_open">🚀 Búa til og opna</string>
+  <string name="btn_save_draft">💾 Vista drög</string>
+  <string name="btn_create_open">🚀 Stofna og opna</string>
   
   <!-- Validation messages -->
-  <string name="validation_title_required">Vinsamlegast sláðu inn heiti kosningar</string>
-  <string name="validation_question_required">Vinsamlegast sláðu inn spurningu</string>
-  <string name="validation_min_answers">Þú þarft að hafa að minnsta kosti 2 svarmöguleika</string>
+  <string name="validation_title_required">Vinsamlegast sláðu inn heiti fyrir kosninguna.</string>
+  <string name="validation_question_required">Vinsamlegast sláðu inn spurningu fyrir kosninguna.</string>
+  <string name="validation_min_answers">Að lágmarki þurfa að vera 2 svarmöguleikar.</string>
   <string name="validation_max_answers">Þú getur ekki haft fleiri en 10 svarmöguleika</string>
-  <string name="validation_empty_answer">Allir svarmöguleikar verða að hafa texta</string>
-  <string name="validation_duplicate_answers">Svarmöguleikar mega ekki vera eins</string>
-  <string name="validation_max_selections_invalid">Hámarksfjöldi vala verður að vera á milli 1 og %d</string>
+  <string name="validation_empty_answer">Allir svarmöguleikar verða að hafa heiti.</string>
+  <string name="validation_duplicate_answers">Svarmöguleikar mega ekki hafa sama heiti.</string>
+  <string name="validation_max_selections_invalid">Hámarksfjöldi valkosta verður að vera á bilinu 1 til %d.</string>
   <string name="validation_scheduled_start_required">Vinsamlegast veldu upphafstíma</string>
   <string name="validation_start_future">Upphafstími verður að vera í framtíðinni</string>
   <string name="validation_scheduled_end_required">Vinsamlegast veldu lokatíma</string>
@@ -220,11 +233,11 @@
   <string name="validation_not_authorized">Þú hefur ekki heimild til að búa til kosningar.</string>
   
   <!-- Success messages -->
-  <string name="success_draft_created">✅ Kosning vistuð sem drög</string>
-  <string name="success_election_created">🚀 Kosning búin til og opin!</string>
+  <string name="success_draft_created">✅ Kosning hefur verið vistuð sem drög.</string>
+  <string name="success_election_created">🚀 Kosning hefur verið stofnuð og opnuð!</string>
   
   <!-- Error messages -->
-  <string name="error_create_election">Villa við að búa til kosningu</string>
+  <string name="error_create_election">Ekki tókst að stofna kosningu.</string>
   <string name="error_create_election_detail">❌ Villa: %s</string>
   <string name="error_message">Villa</string>
   
@@ -235,8 +248,8 @@
   <string name="duration_minutes">%d mínútur</string>
   <string name="duration_hour">%d klukkustund</string>
   <string name="duration_hours">%d klukkustundir</string>
-  <string name="duration_hour_minutes">%d klst %d mín</string>
-  <string name="duration_one_selection">Eitt val</string>
-  <string name="duration_max_selections">Hámark %d val</string>
+  <string name="duration_hour_minutes">%d klst. og %d mín.</string>
+  <string name="duration_one_selection">Einn valkostur</string>
+  <string name="duration_max_selections">Að hámarki %d valkostir</string>
 
 </resources>
