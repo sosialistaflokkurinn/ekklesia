@@ -52,49 +52,57 @@ const MOCK_POLICY_SESSIONS = [
           id: 'section-1',
           heading: 'Liður 1',
           text: 'Að sett verði mannúðleg stefna í málefnum fólks með erlendan bakgrunn, hvort heldur er þeirra sem sækja um alþjóðlega vernd eða annars fólks sem hingað kemur eða hér býr.',
-          order: 1
+          order: 1,
+          has_voted: false
         },
         {
           id: 'section-2',
           heading: 'Liður 2',
           text: 'Að tryggja að málefni fólks af erlendum uppruna séu vel fjármögnuð þannig að fólk sem hingað flyst eða leitar ásjár njóti mannréttinda.',
-          order: 2
+          order: 2,
+          has_voted: false
         },
         {
           id: 'section-3',
           heading: 'Liður 3',
           text: 'Að sett verði á laggirnar ráðuneyti í málefnum flóttafólks og íbúa af erlendum uppruna sem heldur uppi skipulagi, þjónustu og upplýsingum um allt er varðar málefni þeirra.',
-          order: 3
+          order: 3,
+          has_voted: false
         },
         {
           id: 'section-4',
           heading: 'Liður 4',
           text: 'Að útlendingastofnun í núverandi mynd verði lögð niður og í hennar stað verði sett á laggirnar miðstöð sem heyrir undir ráðuneyti fólks af erlendum uppruna. Hún byggi á mannréttindum og mannúð, með djúpum skilningi á heimsvaldastefnu.',
-          order: 4
+          order: 4,
+          has_voted: false
         },
         {
           id: 'section-5',
           heading: 'Liður 5',
           text: 'Að settur verði umboðsmaður í útlendingamálum sem styður við réttindi, þarfir og hagsmuni fólks af erlendum uppruna.',
-          order: 5
+          order: 5,
+          has_voted: false
         },
         {
           id: 'section-6',
           heading: 'Liður 6',
           text: 'Að tryggja að upplýsingar séu auðsóttar, skýrar og réttar og úrskurðum um vernd fylgi ávallt rökstuðningur.',
-          order: 6
+          order: 6,
+          has_voted: false
         },
         {
           id: 'section-7',
           heading: 'Liður 7',
           text: 'Að fólk sem hér fær vernd njóti viðeigandi stuðnings í allt að fimm ár.',
-          order: 7
+          order: 7,
+          has_voted: false
         },
         {
           id: 'section-8',
           heading: 'Liður 8',
           text: 'Að íslenskukennsla fyrir íbúa af erlendum uppruna sé gjaldfrjáls og boðið sé upp á hana á þeim tíma sem hentar fólki, svo sem á vinnutíma.',
-          order: 8
+          order: 8,
+          has_voted: false
         }
       ]
     },
@@ -306,6 +314,46 @@ export const MockElectionsAPI = {
       success: true,
       message: 'Amendment submitted successfully',
       amendment_id: newAmendment.id
+    };
+  },
+
+  /**
+   * Vote on a policy item (original section)
+   */
+  async voteOnPolicyItem(sessionId, itemId, vote) {
+    await delay(500);
+
+    const session = MOCK_POLICY_SESSIONS.find(s => s.id === sessionId);
+
+    if (!session) {
+      throw new Error(`Policy session not found: ${sessionId}`);
+    }
+
+    // Find item in sections
+    const item = session.policy_draft.sections.find(s => s.id === itemId);
+    
+    if (!item) {
+      throw new Error(`Policy item not found: ${itemId}`);
+    }
+
+    // Check if already voted
+    if (item.has_voted) {
+      throw new Error('You have already voted on this item');
+    }
+
+    // Validate vote
+    if (!['yes', 'no'].includes(vote)) {
+      throw new Error('Invalid vote. Must be "yes" or "no"');
+    }
+
+    // Record vote
+    item.has_voted = true;
+
+    return {
+      success: true,
+      message: 'Vote recorded successfully',
+      item_id: itemId,
+      vote: vote
     };
   },
 

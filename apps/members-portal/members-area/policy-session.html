@@ -21,6 +21,7 @@
   <link rel="stylesheet" href="/styles/components/voting-form.css?v=20251106-25">
   <link rel="stylesheet" href="/styles/components/amendment-form.css?v=20251106-26">
   <link rel="stylesheet" href="/styles/components/amendment-vote-card.css?v=20251106-26">
+  <link rel="stylesheet" href="/styles/components/policy-item-vote-card.css?v=20251107-01">
   <link rel="stylesheet" href="/styles/components/policy-results-display.css?v=20251106-26">
   <link rel="stylesheet" href="/styles/components/policy-session.css?v=20251106-26">
 </head>
@@ -116,7 +117,15 @@
         <h2 class="policy-session__phase-title" id="voting-title">...</h2>
         <div class="policy-session__phase-content">
           
-          <!-- Amendment Voting Section -->
+          <!-- Policy Items Voting Section (FIRST) -->
+          <div id="policy-items-voting-section" class="policy-session__policy-items">
+            <h3 class="policy-session__section-heading" id="policy-items-heading">...</h3>
+            <div id="policy-items-list">
+              <!-- Policy item vote cards inserted here by JavaScript -->
+            </div>
+          </div>
+
+          <!-- Amendment Voting Section (SECOND) -->
           <div id="amendments-voting-section" class="policy-session__amendments">
             <h3 class="policy-session__section-heading" id="amendments-heading">...</h3>
             <div id="amendments-list">
@@ -124,7 +133,7 @@
             </div>
           </div>
 
-          <!-- Final Policy Vote Section -->
+          <!-- Final Policy Vote Section (THIRD) -->
           <div id="final-vote-section" class="policy-session__final-vote">
             <h3 class="policy-session__section-heading" id="final-vote-heading">...</h3>
             <p id="final-vote-description" class="policy-session__section-description">

@@ -10,9 +10,10 @@ import { R } from '../i18n/strings-loader.js';
 import { getPolicySession } from './api/elections-api.js';
 import { createAmendmentForm } from './components/amendment-form.js';
 import { createAmendmentVoteCard } from './components/amendment-vote-card.js';
+import { createPolicyItemVoteCard } from './components/policy-item-vote-card.js';
 import { createVotingForm } from './components/voting-form.js';
 import { createPolicyResultsDisplay } from './components/policy-results-display.js';
-import { voteOnFinalPolicy } from './api/elections-api.js';
+import { voteOnFinalPolicy, voteOnPolicyItem } from './api/elections-api.js';
 import { showToast } from './components/toast.js';
 
 // Get session ID from URL query params
@@ -43,6 +44,7 @@ async function init() {
     document.getElementById('discussion-message').textContent = R.string.phase_discussion_message;
     document.getElementById('break-title').textContent = R.string.phase_break_title;
     document.getElementById('voting-title').textContent = R.string.phase_voting_title;
+    document.getElementById('policy-items-heading').textContent = R.string.policy_items_voting_heading;
     document.getElementById('amendments-heading').textContent = R.string.amendments_voting_heading;
     document.getElementById('final-vote-heading').textContent = R.string.final_vote_heading;
     document.getElementById('final-vote-description').textContent = R.string.final_vote_description;
@@ -170,14 +172,37 @@ function renderBreakPhase() {
 // Render voting phase
 function renderVotingPhase() {
   const phaseEl = document.getElementById('phase-voting');
+  const policyItemsList = document.getElementById('policy-items-list');
   const amendmentsList = document.getElementById('amendments-list');
   const finalVoteContainer = document.getElementById('final-vote-form-container');
 
   // Clear previous content
+  policyItemsList.innerHTML = '';
   amendmentsList.innerHTML = '';
   finalVoteContainer.innerHTML = '';
 
-  // Render amendment vote cards
+  // FIRST: Render policy items vote cards
+  if (currentSession.policy_draft && currentSession.policy_draft.sections) {
+    currentSession.policy_draft.sections.forEach(item => {
+      const itemCard = createPolicyItemVoteCard({
+        sessionId: sessionId,
+        item: item,
+        R: R,
+        onVote: async (itemId, vote) => {
+          // Call API to vote
+          return await voteOnPolicyItem(sessionId, itemId, vote);
+        },
+        onVoteSuccess: (data) => {
+          console.log('Policy item vote recorded:', data);
+        }
+      });
+
+      policyItemsList.appendChild(itemCard.element);
+      components.push(itemCard);
+    });
+  }
+
+  // SECOND: Render amendment vote cards
   if (currentSession.amendments && currentSession.amendments.length > 0) {
     currentSession.amendments.forEach(amendment => {
       const voteCard = createAmendmentVoteCard({

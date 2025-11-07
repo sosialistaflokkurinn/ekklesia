@@ -319,6 +319,7 @@
   <string name="phase_discussion_message">Skoðaðu drög að stefnu. Hægt verður að leggja fram breytingatillögur í hlé.</string>
   <string name="phase_break_title">Hlé - Senda inn breytingatillögur</string>
   <string name="phase_voting_title">Atkvæðagreiðsla</string>
+  <string name="policy_items_voting_heading">Kjósa um stefnuliði</string>
   <string name="amendments_voting_heading">Kjósa um breytingatillögur</string>
   <string name="final_vote_heading">Atkvæði um endanlega stefnu</string>
   <string name="final_vote_description">Kjóstu um að samþykkja eða hafna endanlegri stefnu með samþykktum breytingum.</string>

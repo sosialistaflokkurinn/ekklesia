@@ -245,7 +245,7 @@ export async function submitAmendment(sessionId, amendmentData) {
 }
 
 /**
- * Vote on amendment (Yes/No)
+ * Vote on amendment in policy session
  *
  * @param {string} sessionId - Policy session identifier
  * @param {string} amendmentId - Amendment identifier
@@ -272,10 +272,46 @@ export async function voteOnAmendment(sessionId, amendmentId, vote) {
     return await response.json();
 
   } catch (error) {
-    debug.error(`Error voting on amendment ${amendmentId}:`, error);
+    debug.error(`Error voting on amendment:`, error);
     throw error;
   }
 }
+
+/**
+ * Vote on policy item (original section) in policy session
+ *
+ * @param {string} sessionId - Policy session identifier
+ * @param {string} itemId - Policy item/section identifier
+ * @param {string} vote - 'yes' or 'no'
+ * @returns {Promise<Object>} { success, message, vote_id }
+ */
+export async function voteOnPolicyItem(sessionId, itemId, vote) {
+  if (USE_MOCK_API) {
+    return MockElectionsAPI.voteOnPolicyItem(sessionId, itemId, vote);
+  }
+
+  try {
+    const url = `${ELECTIONS_API_BASE}/api/policy-sessions/${sessionId}/items/${itemId}/vote`;
+    const response = await authenticatedFetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vote })
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    return await response.json();
+
+  } catch (error) {
+    debug.error(`Error voting on policy item:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Vote on final policy in policy session
 
 /**
  * Vote on final policy (Yes/No/Abstain)
