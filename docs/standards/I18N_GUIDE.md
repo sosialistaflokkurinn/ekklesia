@@ -1,15 +1,26 @@
 # Ekklesia Internationalization (i18n) Guide
 
-**Last Updated**: 2025-11-04
+**Last Updated**: 2025-11-07
 **Status**: ✅ Active - XML-based R.string Pattern
 **Purpose**: Internationalization system for multilingual support
 **Location**: Relocated from `apps/members-portal/i18n/README.md`
+
+> **⚠️ IMPORTANT: 3 Separate i18n Systems**  
+> Ekklesia hefur **3 aðskilin i18n kerfi** fyrir mismunandi svæði.  
+> Sjá [I18N_ARCHITECTURE.md](./I18N_ARCHITECTURE.md) fyrir ítarlega lýsingu á hverju kerfi.
 
 ---
 
 ## Overview
 
 This is an XML-based internationalization (i18n) system modeled after Android's `strings.xml` pattern. All user-facing strings are centralized in XML files for easy translation and maintenance.
+
+**Þrjú Kerfi:**
+1. **Members Portal** (`/i18n/`) - Félagasvæði → `R.string.key`
+2. **Admin Portal** (`/admin/i18n/`) - Admin almenn → `adminStrings.get(key)`
+3. **Admin Elections** (`/admin-elections/i18n/`) - Kosningastjórnun → `R.string.key`
+
+**Þessi skjöl fjallar aðallega um Members Portal kerfið.** Sjá [I18N_ARCHITECTURE.md](./I18N_ARCHITECTURE.md) fyrir samanburð allra 3 kerfa.
 
 ### Benefits
 
