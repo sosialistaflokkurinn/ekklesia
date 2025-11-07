@@ -35,6 +35,7 @@
   top: 0;
   left: 0;
   right: 0;
+  width: 100%;
   height: var(--admin-nav-height);
   background: var(--admin-nav-bg);
   border-bottom: 1px solid var(--admin-nav-border);
@@ -43,14 +44,17 @@
 }
 
 .admin-nav__container {
-  max-width: 1400px;
-  margin: 0 auto;
+  width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 2rem;
   gap: 2rem;
+}
+
+.admin-nav__logo {
+  flex-shrink: 0;
 }
 
 .admin-nav__logo a {
