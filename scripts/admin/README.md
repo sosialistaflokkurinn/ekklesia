@@ -72,9 +72,56 @@ python3 scripts/admin/validate-links.py
 python3 scripts/admin/validate-links.py --exclude audits archive
 ```
 
-**Recent Results** (2025-11-04):
+**Recent Results** (2025-11-07):
+- Total files checked: 188
+- Total links validated: 596
+- Errors in all docs: 5 (all in historical/ARCHIVE)
+- Errors in active docs: 0 (when excluding audits/archive)
+- Warnings: 14 (missing anchors in existing files)
+- Success rate: 100% for active documentation
+
+**Usage Options**:
+```bash
+# Validate all documentation
+python3 scripts/admin/validate-links.py
+
+# Exclude historical/archived docs (recommended)
+python3 scripts/admin/validate-links.py --exclude audits archive
+```
+
+**Previous Results** (2025-11-04):
 - Initial: 178 broken links
 - After fixes: 0 broken links (100% success)
+
+---
+
+#### `validate-i18n-usage.py`
+**Purpose**: Validate i18n string usage across all 3 systems
+
+**Features**:
+- Validates Members Portal i18n (R.string)
+- Validates Admin Portal i18n (adminStrings.get())
+- Validates Admin Elections i18n (R.string in admin-elections/)
+- Detects dynamic string access patterns
+- Identifies unused translation strings
+- Comprehensive usage statistics
+
+**Usage**:
+```bash
+python3 scripts/admin/validate-i18n-usage.py
+```
+
+**Recent Results** (2025-11-07):
+- **Members Portal**: 227/445 strings used (51.0%)
+- **Admin Portal**: 139/210 strings used (66.2%)
+- **Admin Elections**: 156/177 strings used (88.1%) ⭐
+- **Overall**: 522/832 strings used (62.7%)
+- Dynamic access patterns detected: 5 string families
+
+**Notes**:
+- Admin Elections has excellent usage (88.1%)
+- Members Portal could be cleaned up (51% usage = 218 unused strings)
+- See [I18N_ARCHITECTURE.md](/docs/standards/I18N_ARCHITECTURE.md) for system documentation
 
 ---
 

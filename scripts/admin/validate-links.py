@@ -9,9 +9,12 @@ Checks for:
 3. Links to images and assets
 4. Anchor references
 
-Usage: python3 validate-links.py
+Usage: 
+    python3 validate-links.py
+    python3 validate-links.py --exclude audits archive
 """
 
+import argparse
 import os
 import re
 import sys
@@ -19,8 +22,9 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 
 class LinkValidator:
-    def __init__(self, docs_root: str):
+    def __init__(self, docs_root: str, exclude_dirs: List[str] = None):
         self.docs_root = Path(docs_root)
+        self.exclude_dirs = exclude_dirs or []
         self.errors: List[str] = []
         self.warnings: List[str] = []
         self.files_checked = 0
@@ -31,7 +35,21 @@ class LinkValidator:
         """Validate all markdown files in docs directory"""
         print("🔍 Starting link validation...\n")
         
-        md_files = list(self.docs_root.rglob("*.md"))
+        # Get all markdown files
+        all_md_files = list(self.docs_root.rglob("*.md"))
+        
+        # Filter out excluded directories
+        md_files = []
+        for md_file in all_md_files:
+            # Check if file is in any excluded directory
+            try:
+                relative_path = md_file.relative_to(self.docs_root)
+                parts = relative_path.parts
+                if not any(excluded in parts for excluded in self.exclude_dirs):
+                    md_files.append(md_file)
+            except ValueError:
+                # File is outside docs_root, skip it
+                continue
         print(f"📄 Found {len(md_files)} markdown files")
         
         for md_file in sorted(md_files):
@@ -167,6 +185,31 @@ class LinkValidator:
         sys.exit(len(self.errors))
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description='Validate internal links in documentation markdown files',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog='''
+Examples:
+  # Validate all documentation
+  python3 validate-links.py
+  
+  # Exclude specific directories
+  python3 validate-links.py --exclude audits archive
+  
+  # Exclude historical and archived docs
+  python3 validate-links.py --exclude audits/historical archive
+        '''
+    )
+    parser.add_argument(
+        '--exclude',
+        nargs='+',
+        default=[],
+        metavar='DIR',
+        help='Directories to exclude from validation (e.g., audits archive)'
+    )
+    
+    args = parser.parse_args()
+    
     docs_path = '/home/gudro/Development/projects/ekklesia/docs'
-    validator = LinkValidator(docs_path)
+    validator = LinkValidator(docs_path, exclude_dirs=args.exclude)
     errors, warnings, links = validator.validate_all()
