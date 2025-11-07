@@ -39,52 +39,58 @@ let userPermissions = {
 // ============================================
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Load i18n strings first
-  await R.load('is');
-  
-  // Wait for auth to be ready
-  auth.onAuthStateChanged(async (user) => {
-    if (!user) {
-      // Redirect to login if not authenticated
-      window.location.href = '/session/login.html';
-      return;
-    }
+  try {
+    // Load i18n strings FIRST and wait for it to complete
+    await R.load('is');
+    debug.log('[Elections List] i18n strings loaded');
     
-    try {
-      // Check admin access (requires admin or superuser role)
-      await requireAdmin();
-      
-      // Get election role for API calls
-      const electionRole = await getElectionRole();
-      debug.log('[Elections List] Election role:', electionRole);
-      
-      if (!electionRole) {
-        alert(R.string.error_not_authorized || 'Þú hefur ekki heimild til að skoða kosningar.');
-        window.location.href = '/members-area/';
+    // Wait for auth to be ready
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        // Redirect to login if not authenticated
+        window.location.href = '/session/login.html';
         return;
       }
       
-      // Store role globally for RBAC checks in UI
-      currentUserRole = electionRole;
-      
-      // Cache permission checks ONCE (instead of checking for every election)
-      userPermissions.canDelete = canPerformAction(currentUserRole, 'delete');
-      userPermissions.canEdit = canPerformAction(currentUserRole, 'edit');
-      userPermissions.canManage = canPerformAction(currentUserRole, 'manage');
-      
-      debug.log('[Elections List] User authenticated with election role:', electionRole);
-      debug.log('[Elections List] Permissions cached:', userPermissions);
-      
-      // User is authenticated and authorized, initialize UI
-      await initialize();
-    } catch (error) {
-      console.error('[Elections List] Authorization error:', error);
-      // requireAdmin already handles redirect
-    }
-  });
+      try {
+        // Check admin access (requires admin or superuser role)
+        await requireAdmin();
+        
+        // Get election role for API calls
+        const electionRole = await getElectionRole();
+        debug.log('[Elections List] Election role:', electionRole);
+        
+        if (!electionRole) {
+          alert(R.string.error_not_authorized || 'Þú hefur ekki heimild til að skoða kosningar.');
+          window.location.href = '/members-area/';
+          return;
+        }
+        
+        // Store role globally for RBAC checks in UI
+        currentUserRole = electionRole;
+        
+        // Cache permission checks ONCE (instead of checking for every election)
+        userPermissions.canDelete = canPerformAction(currentUserRole, 'delete');
+        userPermissions.canEdit = canPerformAction(currentUserRole, 'edit');
+        userPermissions.canManage = canPerformAction(currentUserRole, 'manage');
+        
+        debug.log('[Elections List] User authenticated with election role:', electionRole);
+        debug.log('[Elections List] Permissions cached:', userPermissions);
+        
+        // User is authenticated and authorized, initialize UI
+        await initialize();
+      } catch (error) {
+        console.error('[Elections List] Authorization error:', error);
+        // requireAdmin already handles redirect
+      }
+    });
+  } catch (error) {
+    console.error('[Elections List] Initialization error:', error);
+  }
 });
 
 async function initialize() {
+  initializeUITexts();
   initializeNavigation();
   setupFilters();
   setupSearch();
@@ -95,9 +101,55 @@ async function initialize() {
 }
 
 /**
+ * Initialize all UI texts with i18n strings
+ */
+function initializeUITexts() {
+  // Page title and heading
+  document.getElementById('page-title').textContent = R.string.admin_elections_title || 'Kosningar - Admin';
+  document.getElementById('page-heading').textContent = R.string.admin_elections_heading || 'Kosningar';
+  
+  // Filter buttons
+  document.getElementById('filter-all').textContent = R.string.filter_all || 'Allar';
+  document.getElementById('filter-draft').textContent = R.string.filter_draft || 'Drög';
+  document.getElementById('filter-published').textContent = R.string.filter_published || 'Opnar';
+  document.getElementById('filter-closed').textContent = R.string.filter_closed || 'Lokaðar';
+  document.getElementById('filter-hidden').textContent = R.string.filter_hidden || 'Faldar';
+  
+  // Search
+  const searchInput = document.getElementById('search-input');
+  if (searchInput) {
+    searchInput.placeholder = R.string.search_placeholder || 'Leita...';
+  }
+  
+  // Create button
+  const createBtn = document.getElementById('create-election-btn');
+  if (createBtn) {
+    createBtn.textContent = R.string.btn_create_election || '+ Búa til kosningu';
+  }
+  
+  // Table headers
+  document.getElementById('table-header-title').textContent = R.string.table_header_title || 'Heiti';
+  document.getElementById('table-header-status').textContent = R.string.table_header_status || 'Staða';
+  document.getElementById('table-header-dates').textContent = R.string.table_header_dates || 'Dagsetningar';
+  document.getElementById('table-header-votes').textContent = R.string.table_header_votes || 'Atkvæði';
+  document.getElementById('table-header-actions').textContent = R.string.table_header_actions || 'Aðgerðir';
+  
+  // Loading text
+  document.getElementById('loading-text').textContent = R.string.loading_elections || 'Hleð kosningum...';
+  
+  debug.log('[Elections List] UI texts initialized');
+}
+
+/**
  * Initialize navigation with hamburger menu
  */
 function initializeNavigation() {
+  // Defensive check: Ensure strings are loaded
+  if (!R.string || !R.string.admin_brand) {
+    console.error('[Elections List] i18n strings not loaded yet!');
+    return;
+  }
+  
   // Set navigation texts
   document.getElementById('nav-brand').textContent = R.string.admin_brand;
   document.getElementById('nav-overview').textContent = R.string.admin_nav_overview;
@@ -106,6 +158,8 @@ function initializeNavigation() {
   document.getElementById('nav-events').textContent = R.string.admin_nav_events;
   document.getElementById('nav-back-to-member').textContent = R.string.admin_nav_back_to_member;
   document.getElementById('nav-logout').textContent = R.string.admin_nav_logout;
+  
+  debug.log('[Elections List] Navigation initialized');
   
   // Initialize hamburger menu behavior
   initNavigation();
