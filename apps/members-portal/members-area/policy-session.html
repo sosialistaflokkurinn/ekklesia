@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Policy Session - Loading...</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  
+  <!-- Global & Component Styles -->
+  <link rel="stylesheet" href="/styles/global.css?v=20251106-25">
+  <link rel="stylesheet" href="/styles/components/button.css?v=20251106-25">
+  <link rel="stylesheet" href="/styles/components/badge.css?v=20251106-25">
+  <link rel="stylesheet" href="/styles/components/modal.css?v=20251106-25">
+  <link rel="stylesheet" href="/styles/components/toast.css?v=20251106-25">
+  <link rel="stylesheet" href="/styles/components/nav.css?v=20251106-25">
+  <link rel="stylesheet" href="/styles/components/page.css?v=20251106-25">
+  <link rel="stylesheet" href="/styles/components/countdown-timer.css?v=20251106-25">
+  <link rel="stylesheet" href="/styles/components/voting-form.css?v=20251106-25">
+  <link rel="stylesheet" href="/styles/components/amendment-form.css?v=20251106-26">
+  <link rel="stylesheet" href="/styles/components/amendment-vote-card.css?v=20251106-26">
+  <link rel="stylesheet" href="/styles/components/policy-results-display.css?v=20251106-26">
+  <link rel="stylesheet" href="/styles/components/policy-session.css?v=20251106-26">
+</head>
+<body class="authenticated">
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="nav__container">
+      <a href="/members-area/dashboard.html" class="nav__brand" id="nav-brand">Loading...</a>
+
+      <!-- Hamburger Button (mobile only) -->
+      <button class="nav__hamburger" id="nav-hamburger" aria-expanded="false">
+        <span class="nav__hamburger-line"></span>
+        <span class="nav__hamburger-line"></span>
+        <span class="nav__hamburger-line"></span>
+      </button>
+
+      <!-- Overlay for mobile menu -->
+      <div class="nav__overlay" id="nav-overlay"></div>
+
+      <!-- Navigation Drawer -->
+      <div class="nav__drawer" id="nav-drawer" aria-hidden="true">
+        <!-- Close button (mobile only) -->
+        <button class="nav__close" id="nav-close">
+          <span class="nav__close-icon">✕</span>
+        </button>
+
+        <div class="nav__links">
+          <a href="/members-area/dashboard.html" class="nav__link" id="nav-dashboard">Loading...</a>
+          <a href="/members-area/profile.html" class="nav__link" id="nav-profile">Loading...</a>
+          <a href="/members-area/events.html" class="nav__link" id="nav-events">Loading...</a>
+          <a href="/members-area/elections.html" class="nav__link nav__link--active" id="nav-voting">Loading...</a>
+          <a href="#" class="nav__link nav__link--logout" id="nav-logout">Loading...</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page__container">
+    <!-- Loading State -->
+    <div id="session-loading" class="policy-session__loading">
+      <div class="spinner"></div>
+      <p id="loading-message">Loading policy session...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="session-error" class="policy-session__error u-hidden">
+      <p id="error-message">Failed to load policy session</p>
+    </div>
+
+    <!-- Policy Session Content -->
+    <article id="session-content" class="policy-session u-hidden">
+      <!-- Back Button -->
+      <div class="policy-session__back">
+        <a href="/members-area/elections.html" class="policy-session__back-link" id="back-link">
+          ← <span id="back-text">Back to Elections</span>
+        </a>
+      </div>
+
+      <!-- Header -->
+      <header class="policy-session__header">
+        <h1 class="policy-session__title" id="session-title">Policy Session</h1>
+        <span class="policy-session__status-badge" id="session-status-badge">Active</span>
+      </header>
+
+      <!-- Session Timeline (countdown timers) -->
+      <div id="session-timeline" class="policy-session__timeline">
+        <!-- Timeline will be populated by JavaScript -->
+      </div>
+
+      <!-- Phase: Discussion -->
+      <section id="phase-discussion" class="policy-session__phase u-hidden">
+        <h2 class="policy-session__phase-title" id="discussion-title">Discussion Phase</h2>
+        <div class="policy-session__phase-content">
+          <!-- Policy draft sections displayed here -->
+          <div id="policy-draft-display" class="policy-session__policy-draft"></div>
+          <p id="discussion-message" class="policy-session__phase-message">
+            Review the policy draft. Amendment submission opens during the break period.
+          </p>
+        </div>
+      </section>
+
+      <!-- Phase: Break (Amendment Submission) -->
+      <section id="phase-break" class="policy-session__phase u-hidden">
+        <h2 class="policy-session__phase-title" id="break-title">Break - Submit Amendments</h2>
+        <div class="policy-session__phase-content">
+          <!-- Amendment form component inserted here -->
+          <div id="amendment-form-container"></div>
+        </div>
+      </section>
+
+      <!-- Phase: Voting -->
+      <section id="phase-voting" class="policy-session__phase u-hidden">
+        <h2 class="policy-session__phase-title" id="voting-title">Voting Phase</h2>
+        <div class="policy-session__phase-content">
+          
+          <!-- Amendment Voting Section -->
+          <div id="amendments-voting-section" class="policy-session__amendments">
+            <h3 class="policy-session__section-heading" id="amendments-heading">Vote on Amendments</h3>
+            <div id="amendments-list">
+              <!-- Amendment vote cards inserted here by JavaScript -->
+            </div>
+          </div>
+
+          <!-- Final Policy Vote Section -->
+          <div id="final-vote-section" class="policy-session__final-vote">
+            <h3 class="policy-session__section-heading" id="final-vote-heading">Final Policy Vote</h3>
+            <p id="final-vote-description" class="policy-session__section-description">
+              Vote to approve or reject the final policy with accepted amendments.
+            </p>
+            <!-- Voting form component inserted here -->
+            <div id="final-vote-form-container"></div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Phase: Results -->
+      <section id="phase-results" class="policy-session__phase u-hidden">
+        <h2 class="policy-session__phase-title" id="results-title">Results</h2>
+        <div class="policy-session__phase-content">
+          <!-- Results display component inserted here -->
+          <div id="results-display-container"></div>
+        </div>
+      </section>
+
+    </article>
+  </div>
+
+  <!-- JavaScript Modules -->
+  <script type="module" src="/js/policy-session.js?v=20251106-26"></script>
+</body>
+</html>

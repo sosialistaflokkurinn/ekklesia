@@ -277,3 +277,41 @@
   <string name="label_synced_at">Síðast samstillt</string>
   <string name="placeholder_email">nafn@example.is</string>
 
+  <!-- Policy Session Strings -->
+  <string name="amendment_submit">Senda inn breytingatillögu</string>
+  <string name="amendment_submitting">Sendir inn...</string>
+  <string name="amendment_section_label">Veldu kafla til að breyta:</string>
+  <string name="amendment_section_placeholder">Veldu kafla...</string>
+  <string name="amendment_original_text">Núverandi texti:</string>
+  <string name="amendment_proposed_text">Tillaga að breytingu:</string>
+  <string name="amendment_proposed_placeholder">Sláðu inn tillögu að breytingu...</string>
+  <string name="amendment_rationale_label">Rökstuðningur (valfrjálst):</string>
+  <string name="amendment_rationale_placeholder">Útskýrðu hvers vegna þessi breyting bætir stefnuna...</string>
+  <string name="amendment_success">Breytingatillaga send inn!</string>
+  <string name="amendment_confirm_title">Senda inn breytingatillögu?</string>
+  <string name="amendment_confirm_message">Ertu viss um að þú viljir senda inn þessa breytingatillögu? Þú getur ekki breytt henni eftir sendingu.</string>
+  <string name="amendment_error_required">Vinsamlegast veldu kafla og settu fram tillögu</string>
+  <string name="amendment_error_submission">Ekki tókst að senda inn tillögu</string>
+  <string name="amendment_number">Tillaga</string>
+  <string name="vote_yes">Já</string>
+  <string name="vote_no">Nei</string>
+  <string name="vote_abstain">Sitja hjá</string>
+  <string name="vote_confirm_title">Staðfesta atkvæði</string>
+  <string name="vote_confirm_yes">Kjósa JÁ til að samþykkja þessa tillögu?</string>
+  <string name="vote_confirm_no">Kjósa NEI til að hafna þessari tillögu?</string>
+  <string name="vote_success">Atkvæði skráð!</string>
+  <string name="vote_error">Ekki tókst að skrá atkvæði</string>
+  <string name="vote_voting">Skrái atkvæði...</string>
+  <string name="vote_already_voted">Þegar kosið</string>
+  <string name="results_title">Niðurstöður</string>
+  <string name="results_amendments_heading">Niðurstöður breytingatillagna</string>
+  <string name="results_final_policy_heading">Atkvæði um endanlega stefnu</string>
+  <string name="results_participants">Fjöldi þátttakenda:</string>
+  <string name="results_accepted">Samþykkt</string>
+  <string name="results_rejected">Hafnað</string>
+  <string name="results_approved">Samþykkt</string>
+  <string name="results_not_approved">Ekki samþykkt</string>
+  <string name="results_loading">Hleð niðurstöðum...</string>
+  <string name="results_error">Ekki tókst að sækja niðurstöður</string>
+
+
