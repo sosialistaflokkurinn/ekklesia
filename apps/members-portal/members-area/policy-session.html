@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="/styles/components/badge.css?v=20251106-25">
   <link rel="stylesheet" href="/styles/components/modal.css?v=20251106-25">
   <link rel="stylesheet" href="/styles/components/toast.css?v=20251106-25">
-  <link rel="stylesheet" href="/styles/components/nav.css?v=20251106-25">
+  <link rel="stylesheet" href="/styles/components/nav.css?v=20251107-03">
   <link rel="stylesheet" href="/styles/components/page.css?v=20251107-02">
   <link rel="stylesheet" href="/styles/components/countdown-timer.css?v=20251106-25">
   <link rel="stylesheet" href="/styles/components/voting-form.css?v=20251106-25">
@@ -47,6 +47,19 @@
         <button class="nav__close" id="nav-close">
           <span class="nav__close-icon">✕</span>
         </button>
+
+        <!-- Sub-navigation Tabs (mobile) -->
+        <div class="nav__tabs">
+          <a href="/members-area/elections.html" class="nav__tab" id="nav-tab-all-elections">
+            <span id="nav-tab-all-text">Allar kosningar</span>
+          </a>
+          <a href="/members-area/elections.html?filter=policy-sessions" class="nav__tab nav__tab--active" id="nav-tab-policy-sessions">
+            <span id="nav-tab-policy-text">Stefnumótun</span>
+          </a>
+          <a href="/members-area/elections.html?filter=candidate-elections" class="nav__tab" id="nav-tab-candidate-elections">
+            <span id="nav-tab-candidate-text">Framboð</span>
+          </a>
+        </div>
 
         <div class="nav__links">
           <a href="/members-area/dashboard.html" class="nav__link" id="nav-dashboard">Loading...</a>
