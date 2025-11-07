@@ -34,7 +34,7 @@ const MOCK_RESULTS = {};
 const MOCK_POLICY_SESSIONS = [
   {
     id: 'policy-session-001',
-    title: 'Policy Council Working Group Session',
+    title: 'Innflytjendastefna - Vinnuhópur stefnuráðs',
     type: 'policy_session',
     status: 'break', // 'discussion', 'break', 'voting', 'closed'
     
@@ -46,24 +46,24 @@ const MOCK_POLICY_SESSIONS = [
     voting_ends_at: new Date(Date.now() + 7200000).toISOString(),
     
     policy_draft: {
-      title: 'Sample Policy Area',
+      title: 'Innflytjendastefna',
       sections: [
         {
           id: 'section-1',
-          heading: 'Section 1: Background',
-          text: 'Original policy text that can be amended to improve clarity and effectiveness.',
+          heading: 'Kafli 1: Bakgrunnur',
+          text: 'Ísland þarf skýra og mannúðlega innflytjendastefnu sem styður við efnahag og mannréttindi.',
           order: 1
         },
         {
           id: 'section-2', 
-          heading: 'Section 2: Core Proposals',
-          text: 'This section contains the main policy proposals that members will review and potentially modify.',
+          heading: 'Kafli 2: Megintillögur',
+          text: 'Tillögurnar fela í sér aukin réttindi fyrir innflytjendur og skýrari ferli fyrir ríkisborgararétt.',
           order: 2
         },
         {
           id: 'section-3',
-          heading: 'Section 3: Implementation',
-          text: 'Implementation details and timeline for the policy rollout.',
+          heading: 'Kafli 3: Framkvæmd',
+          text: 'Framkvæmdaráætlun með tímalínu fyrir innleiðingu stefnunnar á næstu 2 árum.',
           order: 3
         }
       ]
@@ -73,10 +73,10 @@ const MOCK_POLICY_SESSIONS = [
       {
         id: 'amendment-001',
         section_id: 'section-1',
-        section_heading: 'Section 1: Background',
-        original_text: 'Original policy text that can be amended to improve clarity and effectiveness.',
-        proposed_text: 'Updated policy text with improved clarity, effectiveness, and specific implementation guidelines.',
-        rationale: 'This change clarifies the intent and removes ambiguity while adding concrete implementation steps.',
+        section_heading: 'Kafli 1: Bakgrunnur',
+        original_text: 'Ísland þarf skýra og mannúðlega innflytjendastefnu sem styður við efnahag og mannréttindi.',
+        proposed_text: 'Ísland þarf skýra, mannúðlega og réttláta innflytjendastefnu sem styður við efnahag, mannréttindi og félagslegt réttlæti.',
+        rationale: 'Bæta við "réttláta" og "félagslegt réttlæti" til að undirstrika jafnréttissjónarmið stefnunnar.',
         submitted_at: new Date(Date.now() - 300000).toISOString(),
         voting_order: 1,
         has_voted: false
@@ -84,10 +84,10 @@ const MOCK_POLICY_SESSIONS = [
       {
         id: 'amendment-002',
         section_id: 'section-2',
-        section_heading: 'Section 2: Core Proposals',
-        original_text: 'This section contains the main policy proposals that members will review and potentially modify.',
-        proposed_text: 'This section contains the main policy proposals, including specific metrics and success criteria for evaluation.',
-        rationale: 'Adding measurable outcomes will help track policy effectiveness.',
+        section_heading: 'Kafli 2: Megintillögur',
+        original_text: 'Tillögurnar fela í sér aukin réttindi fyrir innflytjendur og skýrari ferli fyrir ríkisborgararétt.',
+        proposed_text: 'Tillögurnar fela í sér aukin réttindi fyrir innflytjendur, skýrari ferli fyrir ríkisborgararétt og aukinn stuðning við aðlögun.',
+        rationale: 'Bæta við stuðningi við aðlögun sem mikilvægum þætti í velgengi innflytjenda.',
         submitted_at: new Date(Date.now() - 240000).toISOString(),
         voting_order: 2,
         has_voted: false
@@ -95,7 +95,7 @@ const MOCK_POLICY_SESSIONS = [
     ],
     
     final_vote: {
-      question: 'Approve final policy with accepted amendments?',
+      question: 'Samþykkja endanlega stefnu með samþykktum breytingum?',
       has_voted: false
     }
   }

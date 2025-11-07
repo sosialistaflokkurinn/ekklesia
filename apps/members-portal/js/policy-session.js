@@ -34,6 +34,9 @@ async function init() {
 
     // Update elections navigation link (page-specific)
     document.getElementById('nav-voting').textContent = R.string.nav_voting;
+    
+    // Set back link text
+    document.getElementById('back-text').textContent = R.string.back_to_elections;
 
     // Set static page text
     document.getElementById('discussion-title').textContent = R.string.phase_discussion_title;
