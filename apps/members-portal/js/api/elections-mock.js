@@ -36,7 +36,7 @@ const MOCK_POLICY_SESSIONS = [
     id: 'policy-session-001',
     title: 'Málefni umsækjenda um alþjóðlega vernd og íbúa af erlendum uppruna',
     type: 'policy_session',
-    status: 'break', // 'discussion', 'break', 'voting', 'closed'
+    status: 'voting', // 'discussion', 'break', 'voting', 'closed'
     
     // Timeline (use same pattern as elections)
     discussion_starts_at: new Date(Date.now() - 3600000).toISOString(),
