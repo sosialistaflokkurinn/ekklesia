@@ -111,7 +111,11 @@ apps/members-portal/admin/**/*sample-data*
 *pii_redaction*.md
 
 # Scripts that contain potentially real PII in documentation/examples
+# Scripts containing potentially sensitive examples/documentation
 scripts/admin/replace-fake-data.sh
+
+# Policy meeting documentation with personal information
+docs/policy/IMMIGRATION_POLICY_MEETING_2025-11-08.md
 
 # Log files that may contain PII
 scripts/logs/*.jsonl
