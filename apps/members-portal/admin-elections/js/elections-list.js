@@ -3,8 +3,11 @@
  * Displays and manages all elections with RBAC
  */
 
+import { getFirebaseAuth } from '../../firebase/app.js';
 import { getCurrentUserRole, canPerformAction } from './rbac.js';
 import { R } from '../../i18n/strings-loader.js';
+
+const auth = getFirebaseAuth();
 
 // ============================================
 // STATE
@@ -43,7 +46,7 @@ async function loadElections() {
   try {
     showLoading(true);
     
-    const user = firebase.auth().currentUser;
+    const user = auth.currentUser;
     if (!user) {
       throw new Error(R.string.error_not_authenticated);
     }
@@ -333,7 +336,7 @@ async function hideElection(electionId) {
   }
   
   try {
-    const user = firebase.auth().currentUser;
+    const user = auth.currentUser;
     const token = await user.getIdToken();
     
     const response = await fetch(`${ADMIN_API_URL}/${electionId}/hide`, {
@@ -372,7 +375,7 @@ async function unhideElection(electionId) {
   }
   
   try {
-    const user = firebase.auth().currentUser;
+    const user = auth.currentUser;
     const token = await user.getIdToken();
     
     const response = await fetch(`${ADMIN_API_URL}/${electionId}/unhide`, {
@@ -415,7 +418,7 @@ async function deleteElection(electionId) {
   }
   
   try {
-    const user = firebase.auth().currentUser;
+    const user = auth.currentUser;
     const token = await user.getIdToken();
     
     const response = await fetch(`${ADMIN_API_URL}/${electionId}`, {
@@ -483,11 +486,4 @@ function showError(message) {
 function showSuccess(message) {
   // TODO: Use toast notification instead of alert
   console.log('✅', message);
-}
-
-// Initialize on page load
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init);
-} else {
-  init();
 }
