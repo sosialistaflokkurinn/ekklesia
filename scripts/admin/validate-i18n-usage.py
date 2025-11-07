@@ -23,6 +23,7 @@ import re
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from collections import defaultdict
+from typing import Any, List
 
 # Colors for output
 class Colors:
