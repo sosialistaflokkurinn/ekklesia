@@ -10,9 +10,9 @@
 
 ## Overview
 
-Ekklesia uses Google Cloud Run to deploy and manage microservices. The platform consists of **8 independent services** that work together to provide election management, voting, and membership functionality.
+Ekklesia uses [Google Cloud Run](https://cloud.google.com/run) to deploy and manage microservices. The platform consists of **8 independent services** that work together to provide election management, voting, and membership functionality.
 
-**Architecture Philosophy**: Microservices approach with small, single-purpose functions that scale independently.
+**Architecture Philosophy**: [Microservices](https://microservices.io/) approach with small, single-purpose functions that scale independently.
 
 ---
 
@@ -35,10 +35,10 @@ Ekklesia uses Google Cloud Run to deploy and manage microservices. The platform 
 - Results aggregation (server-to-server only)
 
 **Technology Stack**:
-- Node.js 18+
-- Express 4.21.2
-- PostgreSQL (via `pg` 8.11.3)
-- Firebase Admin 13.5.0
+- [Node.js 18+](https://nodejs.org/)
+- [Express 4.21.2](https://expressjs.com/)
+- [PostgreSQL](https://www.postgresql.org/) (via [`pg` 8.11.3](https://node-postgres.com/))
+- [Firebase Admin 13.5.0](https://firebase.google.com/docs/admin/setup)
 
 **Code Location**: `services/elections/`
 
@@ -72,10 +72,10 @@ Ekklesia uses Google Cloud Run to deploy and manage microservices. The platform 
 - Audit logging for token operations
 
 **Technology Stack**:
-- Node.js 18+
-- Express 4.21.2
-- PostgreSQL (via `pg` 8.11.3)
-- Firebase Admin 13.5.0
+- [Node.js 18+](https://nodejs.org/)
+- [Express 4.21.2](https://expressjs.com/)
+- [PostgreSQL](https://www.postgresql.org/) (via [`pg` 8.11.3](https://node-postgres.com/))
+- [Firebase Admin 13.5.0](https://firebase.google.com/docs/admin/setup)
 
 **Code Location**: `services/events/`
 
