@@ -25,10 +25,23 @@ export async function getCurrentUserRole() {
     }
 
     const idTokenResult = await user.getIdTokenResult(true); // Force refresh
-    const role = idTokenResult.claims.role || null;
     
-    console.log('[RBAC] Current user role:', role);
-    return role;
+    // handleKenniAuth sets 'roles' array, we need to map to election roles
+    const roles = idTokenResult.claims.roles || [];
+    console.log('[RBAC] User roles from token:', roles);
+    
+    // Map: admin -> election-manager, superuser -> superadmin
+    if (roles.includes('superuser')) {
+      console.log('[RBAC] Mapped superuser -> superadmin');
+      return 'superadmin';
+    }
+    if (roles.includes('admin')) {
+      console.log('[RBAC] Mapped admin -> election-manager');
+      return 'election-manager';
+    }
+    
+    console.log('[RBAC] No election role found');
+    return null;
   } catch (error) {
     console.error('[RBAC] Error getting user role:', error);
     return null;

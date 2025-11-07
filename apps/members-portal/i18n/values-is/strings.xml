@@ -183,6 +183,7 @@
   <string name="error_no_election_selected">Engin kosning er valin</string>
   <string name="error_submit_vote">Villa við að skrá atkvæði</string>
   <string name="error_load_results">Villa við að hlaða niðurstöðum</string>
+  <string name="error_not_authorized">Þú hefur ekki aðgang. Aðeins notendur með 'election-manager' eða 'superadmin' hlutverk hafa aðgang.</string>
   <string name="empty_no_elections">Engar kosningar fundust</string>
   <string name="btn_retry">Reyna aftur</string>
   <string name="btn_back_to_elections">Aftur í kosningayfirlit</string>
