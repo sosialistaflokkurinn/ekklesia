@@ -134,62 +134,6 @@
     </div>
   </main>
   
-  <!-- Scripts -->
-  <script type="module">
-    import { getFirebaseAuth } from '../firebase/app.js';
-    import { R } from '../i18n/strings-loader.js';
-    
-    const auth = getFirebaseAuth();
-    
-    // Load strings first
-    await R.load('is');
-    
-    // Set page title and static text
-    document.getElementById('page-title').textContent = R.string.admin_elections_page_title;
-    document.getElementById('admin-brand').textContent = 'Admin - ' + R.string.app_name;
-    document.getElementById('nav-overview').textContent = R.string.admin_nav_overview;
-    document.getElementById('nav-elections').textContent = R.string.admin_nav_elections;
-    document.getElementById('nav-members').textContent = R.string.admin_nav_members;
-    document.getElementById('nav-events').textContent = R.string.admin_nav_events;
-    document.getElementById('logout-btn').textContent = R.string.admin_nav_logout;
-    document.getElementById('page-heading').textContent = R.string.admin_elections_title;
-    document.getElementById('filter-all').textContent = R.string.filter_all;
-    document.getElementById('filter-draft').textContent = R.string.filter_draft;
-    document.getElementById('filter-published').textContent = R.string.filter_published;
-    document.getElementById('filter-closed').textContent = R.string.filter_closed;
-    document.getElementById('filter-hidden').textContent = R.string.filter_hidden;
-    document.getElementById('search-input').placeholder = R.string.search_placeholder;
-    document.getElementById('create-election-btn').textContent = R.string.btn_create_election;
-    document.getElementById('loading-text').textContent = R.string.loading_elections;
-    document.getElementById('table-header-title').textContent = R.string.table_header_title;
-    document.getElementById('table-header-status').textContent = R.string.table_header_status;
-    document.getElementById('table-header-dates').textContent = R.string.table_header_dates;
-    document.getElementById('table-header-votes').textContent = R.string.table_header_votes;
-    document.getElementById('table-header-actions').textContent = R.string.table_header_actions;
-    document.getElementById('empty-state-title').textContent = R.string.empty_state_title;
-    document.getElementById('empty-state-description').textContent = R.string.empty_state_description;
-    document.getElementById('empty-state-btn').textContent = R.string.btn_create_election;
-    
-    // Empty state button handler
-    document.getElementById('empty-state-btn').addEventListener('click', () => {
-      document.getElementById('create-election-btn').click();
-    });
-    
-    // Handle logout
-    document.getElementById('logout-btn')?.addEventListener('click', async () => {
-      await auth.signOut();
-      window.location.href = '/';
-    });
-    
-    // Show user email
-    auth.onAuthStateChanged(user => {
-      const emailEl = document.getElementById('user-email');
-      if (emailEl && user) {
-        emailEl.textContent = user.email;
-      }
-    });
-  </script>
-  
   <!-- Main App -->
   <script type="module" src="./js/elections-list.js"></script>
   
