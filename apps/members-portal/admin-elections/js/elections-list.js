@@ -7,6 +7,9 @@ import { getFirebaseAuth } from '../../firebase/app.js';
 import { getElectionRole, canPerformAction, requireAdmin, PERMISSIONS, hasPermission } from '../../js/rbac.js';
 import { R } from '../../i18n/strings-loader.js';
 import { initNavigation } from '../../js/nav.js';
+import { createStatusBadge } from '../../js/components/badge.js';
+import { showModal } from '../../js/components/modal.js';
+import { formatDateIcelandic } from '../../js/utils/format.js';
 
 const auth = getFirebaseAuth();
 
@@ -255,57 +258,67 @@ function renderElections() {
   
   if (emptyState) emptyState.style.display = 'none';
   
-  // Render elections
-  tbody.innerHTML = filteredElections.map(election => {
-    const statusBadge = getStatusBadge(election);
-    const actions = getActionButtons(election);
+  // Clear existing rows
+  tbody.innerHTML = '';
+  
+  // Render elections using DOM manipulation for badges
+  filteredElections.forEach(election => {
+    const row = document.createElement('tr');
+    row.dataset.electionId = election.id;
+    if (election.hidden) row.classList.add('election-hidden');
     
-    return `
-      <tr data-election-id="${election.id}" class="${election.hidden ? 'election-hidden' : ''}">
-        <td class="election-title">
-          <a href="/admin-elections/detail.html?id=${election.id}">
-            ${election.title}
-          </a>
-          ${election.hidden ? `<span class="hidden-indicator">${R.string.label_hidden_indicator}</span>` : ''}
-        </td>
-        <td>${statusBadge}</td>
-        <td class="election-dates">
-          <div class="date-created">${R.string.label_created} ${formatDate(election.created_at)}</div>
-          ${election.opened_at ? `<div class="date-opened">${R.string.label_opened} ${formatDate(election.opened_at)}</div>` : ''}
-          ${election.closed_at ? `<div class="date-closed">${R.string.label_closed} ${formatDate(election.closed_at)}</div>` : ''}
-        </td>
-        <td class="election-stats">
-          ${election.vote_count || 0} ${R.string.label_votes}
-        </td>
-        <td class="election-actions">
-          ${actions}
-        </td>
-      </tr>
+    // Title cell
+    const titleCell = document.createElement('td');
+    titleCell.className = 'election-title';
+    const titleLink = document.createElement('a');
+    titleLink.href = `/admin-elections/detail.html?id=${election.id}`;
+    titleLink.textContent = election.title;
+    titleCell.appendChild(titleLink);
+    if (election.hidden) {
+      const hiddenIndicator = document.createElement('span');
+      hiddenIndicator.className = 'hidden-indicator';
+      hiddenIndicator.textContent = R.string.label_hidden_indicator;
+      titleCell.appendChild(hiddenIndicator);
+    }
+    row.appendChild(titleCell);
+    
+    // Status cell with badge component
+    const statusCell = document.createElement('td');
+    const badge = createStatusBadge(election.status);
+    statusCell.appendChild(badge);
+    row.appendChild(statusCell);
+    
+    // Dates cell
+    const datesCell = document.createElement('td');
+    datesCell.className = 'election-dates';
+    datesCell.innerHTML = `
+      <div class="date-created">${R.string.label_created} ${formatDate(election.created_at)}</div>
+      ${election.opened_at ? `<div class="date-opened">${R.string.label_opened} ${formatDate(election.opened_at)}</div>` : ''}
+      ${election.closed_at ? `<div class="date-closed">${R.string.label_closed} ${formatDate(election.closed_at)}</div>` : ''}
     `;
-  }).join('');
+    row.appendChild(datesCell);
+    
+    // Stats cell
+    const statsCell = document.createElement('td');
+    statsCell.className = 'election-stats';
+    statsCell.textContent = `${election.vote_count || 0} ${R.string.label_votes}`;
+    row.appendChild(statsCell);
+    
+    // Actions cell
+    const actionsCell = document.createElement('td');
+    actionsCell.className = 'election-actions';
+    actionsCell.innerHTML = getActionButtons(election);
+    row.appendChild(actionsCell);
+    
+    tbody.appendChild(row);
+  });
   
   // Attach event listeners to action buttons
   attachActionListeners();
 }
 
 /**
- * Get status badge HTML
- */
-function getStatusBadge(election) {
-  const statusMap = {
-    'draft': { label: R.string.status_draft, class: 'status-draft' },
-    'published': { label: R.string.status_open, class: 'status-active' },
-    'closed': { label: R.string.status_closed, class: 'status-closed' },
-    'archived': { label: R.string.status_hidden, class: 'status-archived' }
-  };
-  
-  const status = statusMap[election.status] || { label: election.status, class: 'status-unknown' };
-  
-  return `<span class="status-badge ${status.class}">${status.label}</span>`;
-}
-
-/**
- * Get action buttons HTML based on election state and user role
+ * Get action buttons for election based on role
  */
 function getActionButtons(election) {
   const buttons = [];
@@ -322,6 +335,24 @@ function getActionButtons(election) {
     buttons.push(`
       <button class="btn btn-sm btn-edit" data-action="edit" data-id="${election.id}">
         ${R.string.btn_edit}
+      </button>
+    `);
+  }
+  
+  // Open button (for draft/upcoming elections that are not hidden)
+  if ((election.status === 'draft') && !election.hidden) {
+    buttons.push(`
+      <button class="btn btn-sm btn-success btn-open" data-action="open" data-id="${election.id}">
+        ${R.string.btn_open}
+      </button>
+    `);
+  }
+  
+  // Close button (for active/published elections)
+  if (election.status === 'published' && !election.hidden) {
+    buttons.push(`
+      <button class="btn btn-sm btn-warning btn-close" data-action="close" data-id="${election.id}">
+        ${R.string.btn_close}
       </button>
     `);
   }
@@ -381,6 +412,14 @@ async function handleAction(event) {
       window.location.href = `/admin-elections/edit.html?id=${electionId}`;
       break;
       
+    case 'open':
+      await openElection(electionId);
+      break;
+      
+    case 'close':
+      await closeElection(electionId);
+      break;
+      
     case 'hide':
       await hideElection(electionId);
       break;
@@ -393,6 +432,145 @@ async function handleAction(event) {
       await deleteElection(electionId);
       break;
   }
+}
+
+/**
+ * Open election with duration selector modal
+ */
+async function openElection(electionId) {
+  const election = elections.find(e => e.id === electionId);
+  if (!election) return;
+  
+  // Create duration selector HTML
+  const durationHTML = `
+    <div style="margin-bottom: 1rem;">
+      <p style="margin-bottom: 0.5rem; font-weight: 600;">${R.string.confirm_open_duration}</p>
+      <select id="duration-select" class="form-control" style="width: 100%; padding: 0.5rem; font-size: 1rem; border: 1px solid var(--color-gray-300); border-radius: 4px;">
+        <option value="15">${R.string.duration_15min}</option>
+        <option value="30" selected>${R.string.duration_30min}</option>
+        <option value="60">${R.string.duration_1hour}</option>
+        <option value="90">${R.string.duration_90min}</option>
+        <option value="120">${R.string.duration_2hours}</option>
+      </select>
+    </div>
+    <p style="color: var(--color-gray-600); font-size: 0.875rem; margin-top: 1rem;">${R.string.confirm_open_note}</p>
+  `;
+  
+  const modal = showModal({
+    title: `${R.string.confirm_open_title} ${election.title}`,
+    content: durationHTML,
+    size: 'md',
+    buttons: [
+      {
+        text: R.string.btn_cancel,
+        onClick: () => modal.close()
+      },
+      {
+        text: R.string.btn_open,
+        primary: true,
+        onClick: async () => {
+          const durationMinutes = parseInt(document.getElementById('duration-select').value);
+          modal.close();
+          
+          try {
+            const user = auth.currentUser;
+            const token = await user.getIdToken();
+            
+            // Calculate end time
+            const now = new Date();
+            const endTime = new Date(now.getTime() + durationMinutes * 60000);
+            
+            const response = await fetch(`${ADMIN_API_URL}/${electionId}/open`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                voting_starts_at: now.toISOString(),
+                voting_ends_at: endTime.toISOString()
+              })
+            });
+            
+            if (!response.ok) {
+              const errorData = await response.json().catch(() => ({}));
+              const errorMessage = errorData.error || errorData.message || `HTTP ${response.status}`;
+              throw new Error(errorMessage);
+            }
+            
+            console.log('[Elections List] Election opened:', electionId, 'Duration:', durationMinutes, 'min');
+            showSuccess(R.string.success_opened);
+            
+            // Reload elections
+            await loadElections();
+            
+          } catch (error) {
+            console.error('[Elections List] Error opening election:', error);
+            showError(R.format(R.string.error_open_failed, error.message));
+          }
+        }
+      }
+    ]
+  });
+}
+
+/**
+ * Close election with confirmation
+ */
+async function closeElection(electionId) {
+  const election = elections.find(e => e.id === electionId);
+  if (!election) return;
+  
+  const modal = showModal({
+    title: R.string.confirm_close_title,
+    content: R.format(R.string.confirm_close_message, election.title),
+    size: 'md',
+    buttons: [
+      {
+        text: R.string.btn_cancel,
+        onClick: () => modal.close()
+      },
+      {
+        text: R.string.btn_close,
+        primary: true,
+        onClick: async () => {
+          modal.close();
+          
+          try {
+            const user = auth.currentUser;
+            const token = await user.getIdToken();
+            
+            const response = await fetch(`${ADMIN_API_URL}/${electionId}/close`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                voting_ends_at: new Date().toISOString()
+              })
+            });
+            
+            if (!response.ok) {
+              const errorData = await response.json().catch(() => ({}));
+              const errorMessage = errorData.error || errorData.message || `HTTP ${response.status}`;
+              throw new Error(errorMessage);
+            }
+            
+            console.log('[Elections List] Election closed:', electionId);
+            showSuccess(R.string.success_closed);
+            
+            // Reload elections
+            await loadElections();
+            
+          } catch (error) {
+            console.error('[Elections List] Error closing election:', error);
+            showError(R.format(R.string.error_close_failed, error.message));
+          }
+        }
+      }
+    ]
+  });
 }
 
 /**

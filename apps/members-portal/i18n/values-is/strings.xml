@@ -345,23 +345,42 @@
   <string name="btn_hide">🙈 Fela</string>
   <string name="btn_unhide">👁️ Sýna</string>
   <string name="btn_delete">🗑️ Eyða</string>
+  <string name="btn_open">🚀 Opna</string>
+  <string name="btn_close">🛑 Loka</string>
   
   <!-- Confirmations -->
   <string name="confirm_hide_title">Fela kosningu?</string>
   <string name="confirm_hide_message">Ertu viss um að þú viljir fela kosninguna "%s"? Hún verður ekki sýnileg félagsmönnum.</string>
   <string name="confirm_unhide_title">Sýna kosningu?</string>
   <string name="confirm_unhide_message">Ertu viss um að þú viljir sýna kosninguna "%s" aftur?</string>
+  <string name="confirm_open_title">Opna kosningu?</string>
+  <string name="confirm_open_duration">Veldu tímalengd kosningar:</string>
+  <string name="confirm_open_note">Kosningin verður virk strax og félagsmenn geta byrjað að kjósa.</string>
+  <string name="confirm_close_title">Loka kosningu?</string>
+  <string name="confirm_close_message">Ertu viss um að þú viljir loka kosningunni "%s"?\n\nEftir að kosningu er lokað geta félagsmenn ekki lengur kosið.\n\nÞú getur síðan skoðað niðurstöðurnar.</string>
   <string name="confirm_delete_title">Eyða kosningu?</string>
   <string name="confirm_delete_message">⚠️ VARÚÐ: Þessi aðgerð er óafturkræf!\n\nÞú ert að fara að eyða kosningunni "%s" varanlega úr gagnagrunninum.\n\nALL DATA VERÐUR EYTT:\n- Kosningin sjálf\n- Öll atkvæði\n- Öll svarmöguleikar\n- Öll tengd gögn\n\nATH: Kosning verður að vera lokuð (ekki virk) til að hægt sé að eyða henni.\n\nSláðu inn NÁKVÆMLEGA heitið á kosningunni til að staðfesta:\n"%s"</string>
   <string name="confirm_delete_placeholder">Sláðu inn heiti kosningar...</string>
   <string name="confirm_delete_title_mismatch">Heitið stemmir ekki. Vinsamlegast reyndu aftur.</string>
   
+  <!-- Duration options -->
+  <string name="duration_15min">15 mínútur</string>
+  <string name="duration_30min">30 mínútur</string>
+  <string name="duration_1hour">1 klukkustund</string>
+  <string name="duration_90min">1,5 klukkustund</string>
+  <string name="duration_2hours">2 klukkustundir</string>
+  <string name="duration_custom">Sérsníða (mínútur)</string>
+  
   <!-- Success/Error messages -->
   <string name="success_hidden">✅ Kosning falin</string>
   <string name="success_unhidden">✅ Kosning sýnd aftur</string>
+  <string name="success_opened">✅ Kosning opnuð</string>
+  <string name="success_closed">✅ Kosningu lokað</string>
   <string name="success_deleted">✅ Kosningu eytt</string>
   <string name="error_hide_failed">❌ Villa við að fela kosningu: %s</string>
   <string name="error_unhide_failed">❌ Villa við að sýna kosningu: %s</string>
+  <string name="error_open_failed">❌ Villa við að opna kosningu: %s</string>
+  <string name="error_close_failed">❌ Villa við að loka kosningu: %s</string>
   <string name="error_delete_failed">❌ Villa við að eyða kosningu: %s</string>
   <string name="error_load_elections">❌ Villa við að sækja kosningar: %s</string>
   <string name="error_not_authenticated">Ekki innskráður</string>
