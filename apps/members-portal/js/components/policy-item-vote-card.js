@@ -81,14 +81,14 @@ export function createPolicyItemVoteCard(options = {}) {
   header.appendChild(title);
 
   // Already voted badge (initially hidden)
-  const votedBadge = createBadge({
-    text: `✓ ${strings.alreadyVoted}`,
-    variant: 'success'
-  });
-  votedBadge.element.classList.add('policy-item-vote-card__voted-badge');
-  votedBadge.element.style.display = hasVoted ? 'inline-block' : 'none';
+  const votedBadge = createBadge(
+    `✓ ${strings.alreadyVoted}`,
+    { variant: 'success' }
+  );
+  votedBadge.classList.add('policy-item-vote-card__voted-badge');
+  votedBadge.style.display = hasVoted ? 'inline-block' : 'none';
   
-  header.appendChild(votedBadge.element);
+  header.appendChild(votedBadge);
 
   // Item text
   const textContainer = document.createElement('div');
@@ -194,7 +194,7 @@ export function createPolicyItemVoteCard(options = {}) {
   function markAsVoted() {
     hasVoted = true;
     votingContainer.style.display = 'none';
-    votedBadge.element.style.display = 'inline-block';
+    votedBadge.style.display = 'inline-block';
   }
 
   /**
@@ -203,7 +203,6 @@ export function createPolicyItemVoteCard(options = {}) {
   function destroy() {
     yesButton.destroy();
     noButton.destroy();
-    votedBadge.destroy();
     container.remove();
   }
 
