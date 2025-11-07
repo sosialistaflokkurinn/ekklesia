@@ -7,13 +7,13 @@
 
 import { initAuthenticatedPage } from './page-init.js';
 import { R } from '../i18n/strings-loader.js';
-import { getPolicySession } from '../api/elections-api.js';
-import { createAmendmentForm } from '../components/amendment-form.js';
-import { createAmendmentVoteCard } from '../components/amendment-vote-card.js';
-import { createVotingForm } from '../components/voting-form.js';
-import { createPolicyResultsDisplay } from '../components/policy-results-display.js';
-import { voteOnFinalPolicy } from '../api/elections-api.js';
-import { showToast } from '../components/toast.js';
+import { getPolicySession } from './api/elections-api.js';
+import { createAmendmentForm } from './components/amendment-form.js';
+import { createAmendmentVoteCard } from './components/amendment-vote-card.js';
+import { createVotingForm } from './components/voting-form.js';
+import { createPolicyResultsDisplay } from './components/policy-results-display.js';
+import { voteOnFinalPolicy } from './api/elections-api.js';
+import { showToast } from './components/toast.js';
 
 // Get session ID from URL query params
 const urlParams = new URLSearchParams(window.location.search);
