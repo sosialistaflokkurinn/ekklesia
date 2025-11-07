@@ -37,7 +37,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
     
-    // User is authenticated, initialize UI
+    // Check user role
+    const userRole = await getCurrentUserRole();
+    if (!userRole || !['election-manager', 'superadmin'].includes(userRole)) {
+      alert(R.string.error_not_authorized || 'Þú hefur ekki heimild til að skoða kosningar.');
+      window.location.href = '/members-area/';
+      return;
+    }
+    
+    console.log('[Elections List] User authenticated with role:', userRole);
+    
+    // User is authenticated and authorized, initialize UI
     await initialize();
   });
 });
@@ -65,6 +75,8 @@ async function loadElections() {
     
     const token = await user.getIdToken();
     
+    console.log('[Elections List] Fetching elections with token...');
+    
     // Fetch all elections including hidden ones (admin view)
     const response = await fetch(`${ADMIN_API_URL}?includeHidden=true`, {
       headers: {
@@ -74,7 +86,9 @@ async function loadElections() {
     });
     
     if (!response.ok) {
-      throw new Error(`API ${R.string.error_message}: ${response.status}`);
+      const errorData = await response.json().catch(() => ({}));
+      console.error('[Elections List] API Error:', response.status, errorData);
+      throw new Error(`API ${R.string.error_message}: ${response.status} - ${errorData.error || 'Unknown error'}`);
     }
     
     const data = await response.json();
