@@ -9,6 +9,9 @@ import { R } from '../../i18n/strings-loader.js';
 
 const auth = getFirebaseAuth();
 
+// API Configuration
+const ADMIN_API_URL = 'https://elections-service-ymzrguoifa-nw.a.run.app/api/admin/elections';
+
 // ============================================
 // STATE
 // ============================================
