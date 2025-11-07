@@ -26,6 +26,13 @@ let currentFilter = 'all';
 let searchQuery = '';
 let currentUserRole = null; // Store user role for RBAC checks
 
+// Cached permission checks (computed once, reused for all elections)
+let userPermissions = {
+  canDelete: false,
+  canEdit: false,
+  canManage: false
+};
+
 // ============================================
 // INITIALIZATION
 // ============================================
@@ -59,7 +66,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Store role globally for RBAC checks in UI
       currentUserRole = electionRole;
       
+      // Cache permission checks ONCE (instead of checking for every election)
+      userPermissions.canDelete = canPerformAction(currentUserRole, 'delete');
+      userPermissions.canEdit = canPerformAction(currentUserRole, 'edit');
+      userPermissions.canManage = canPerformAction(currentUserRole, 'manage');
+      
       console.log('[Elections List] User authenticated with election role:', electionRole);
+      console.log('[Elections List] Permissions cached:', userPermissions);
       
       // User is authenticated and authorized, initialize UI
       await initialize();
@@ -373,7 +386,7 @@ function getActionButtons(election) {
   }
   
   // Delete button (superadmin ONLY)
-  if (canPerformAction(currentUserRole, 'delete')) {
+  if (userPermissions.canDelete) {
     buttons.push(`
       <button class="btn btn-sm btn-danger btn-delete-election" data-action="delete" data-id="${election.id}">
         ${R.string.btn_delete}
