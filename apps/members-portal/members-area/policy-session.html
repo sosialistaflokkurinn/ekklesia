@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="/styles/components/modal.css?v=20251106-25">
   <link rel="stylesheet" href="/styles/components/toast.css?v=20251106-25">
   <link rel="stylesheet" href="/styles/components/nav.css?v=20251106-25">
-  <link rel="stylesheet" href="/styles/components/page.css?v=20251106-25">
+  <link rel="stylesheet" href="/styles/components/page.css?v=20251107-02">
   <link rel="stylesheet" href="/styles/components/countdown-timer.css?v=20251106-25">
   <link rel="stylesheet" href="/styles/components/voting-form.css?v=20251106-25">
   <link rel="stylesheet" href="/styles/components/amendment-form.css?v=20251106-26">
@@ -60,6 +60,19 @@
   </nav>
 
   <div class="page__container">
+    <!-- Sub-navigation Tabs -->
+    <div class="page__tabs">
+      <a href="/members-area/elections.html" class="page__tab" id="tab-all-elections">
+        <span id="tab-all-text">Allar kosningar</span>
+      </a>
+      <a href="/members-area/elections.html?filter=policy-sessions" class="page__tab page__tab--active" id="tab-policy-sessions">
+        <span id="tab-policy-text">Stefnumótun</span>
+      </a>
+      <a href="/members-area/elections.html?filter=candidate-elections" class="page__tab" id="tab-candidate-elections">
+        <span id="tab-candidate-text">Framboð</span>
+      </a>
+    </div>
+
     <!-- Loading State -->
     <div id="session-loading" class="policy-session__loading">
       <div class="spinner"></div>

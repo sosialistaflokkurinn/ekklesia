@@ -39,6 +39,11 @@ async function init() {
     // Set back link text
     document.getElementById('back-text').textContent = R.string.back_to_elections;
 
+    // Set tabs text
+    document.getElementById('tab-all-text').textContent = R.string.tab_all_elections;
+    document.getElementById('tab-policy-text').textContent = R.string.tab_policy_sessions;
+    document.getElementById('tab-candidate-text').textContent = R.string.tab_candidate_elections;
+
     // Set static page text
     document.getElementById('discussion-title').textContent = R.string.phase_discussion_title;
     document.getElementById('discussion-message').textContent = R.string.phase_discussion_message;

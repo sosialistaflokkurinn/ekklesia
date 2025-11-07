@@ -328,4 +328,9 @@
   <string name="final_vote_no">Nei - Hafna stefnu</string>
   <string name="final_vote_abstain">Sitja hjá</string>
 
+  <!-- Page Tabs Navigation -->
+  <string name="tab_all_elections">Allar kosningar</string>
+  <string name="tab_policy_sessions">Stefnumótun</string>
+  <string name="tab_candidate_elections">Framboð</string>
+
 </resources>

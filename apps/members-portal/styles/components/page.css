@@ -18,6 +18,62 @@ body.authenticated {
   padding: var(--spacing-xl) var(--spacing-lg);
 }
 
+/* Page Tabs (Sub-navigation) */
+.page__tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid var(--color-border-light);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.page__tab {
+  padding: 0.75rem 1.5rem;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--color-gray-600);
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s;
+  white-space: nowrap;
+  position: relative;
+  bottom: -2px;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.page__tab:hover {
+  color: var(--color-gray-800);
+  background: var(--color-gray-50);
+}
+
+.page__tab--active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  font-weight: 600;
+}
+
+.page__tab--active:hover {
+  background: transparent;
+}
+
+/* Mobile responsiveness for tabs */
+@media (max-width: 640px) {
+  .page__tabs {
+    margin-left: calc(-1 * var(--spacing-lg));
+    margin-right: calc(-1 * var(--spacing-lg));
+    padding-left: var(--spacing-lg);
+    padding-right: var(--spacing-lg);
+  }
+  
+  .page__tab {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+}
+
 .page__header {
   margin-bottom: var(--spacing-xl);
 }
