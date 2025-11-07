@@ -501,7 +501,10 @@ async function deleteElection(electionId) {
     });
     
     if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.error || errorData.message || `HTTP ${response.status}`;
+      console.error('[Elections List] Delete failed:', response.status, errorData);
+      throw new Error(errorMessage);
     }
     
     console.log('[Elections List] Election deleted:', electionId);
