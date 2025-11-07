@@ -26,8 +26,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Load i18n strings first
   await R.load('is');
   
-  // Initialize UI
-  await initialize();
+  // Wait for auth to be ready
+  auth.onAuthStateChanged(async (user) => {
+    if (!user) {
+      // Redirect to login if not authenticated
+      window.location.href = '/session/login.html';
+      return;
+    }
+    
+    // User is authenticated, initialize UI
+    await initialize();
+  });
 });
 
 async function initialize() {
