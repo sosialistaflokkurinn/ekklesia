@@ -14,7 +14,7 @@ import { collection, query, orderBy, limit, getDocs } from 'https://www.gstatic.
 import { adminStrings } from './i18n/admin-strings-loader.js';
 import { checkAdminAccess, calculateDuration } from './utils/admin-helpers.js';
 import { showToast, showError } from '../../js/components/toast.js';
-import { R } from '../../js/i18n.js';
+import { R } from '/js/i18n.js';
 
 // Initialize Firebase services
 const auth = getFirebaseAuth();
