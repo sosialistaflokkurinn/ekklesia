@@ -150,12 +150,9 @@ function initializeNavigation() {
     return;
   }
   
-  // Set navigation texts
-  document.getElementById('nav-brand').textContent = R.string.admin_brand;
-  document.getElementById('nav-overview').textContent = R.string.admin_nav_overview;
-  document.getElementById('nav-elections').textContent = R.string.admin_nav_elections;
-  document.getElementById('nav-members').textContent = R.string.admin_nav_members;
-  document.getElementById('nav-events').textContent = R.string.admin_nav_events;
+  // Set navigation texts (Elections-specific nav)
+  document.getElementById('nav-brand').textContent = R.string.admin_elections_brand || 'Kosningastjórnun';
+  document.getElementById('nav-elections-list').textContent = R.string.nav_elections_list || 'Kosningar';
   document.getElementById('nav-back-to-member').textContent = R.string.admin_nav_back_to_member;
   document.getElementById('nav-logout').textContent = R.string.admin_nav_logout;
   
