@@ -39,7 +39,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Check user role
     const userRole = await getCurrentUserRole();
-    if (!userRole || !['election-manager', 'superadmin'].includes(userRole)) {
+    console.log('[Elections List] User role from custom claims:', userRole);
+    
+    if (!userRole || !['election-manager', 'superadmin', 'admin', 'superuser'].includes(userRole)) {
       alert(R.string.error_not_authorized || 'Þú hefur ekki heimild til að skoða kosningar.');
       window.location.href = '/members-area/';
       return;
