@@ -13,49 +13,44 @@ import { showAlert } from './modal.js';
 import { submitAmendment } from '../api/elections-api.js';
 
 /**
- * Create amendment submission form
- *
- * @param {Object} options - Configuration options
- * @param {string} options.sessionId - Policy session identifier
- * @param {Array} options.sections - Policy sections [{id, heading, text}]
- * @param {Object} options.i18n - Internationalization strings
- * @param {Function} options.onSubmitSuccess - Callback after successful submission
- * @returns {Object} { element, reset, destroy }
+ * Creates an amendment submission form
+ * @param {Object} options - Form configuration
+ * @param {Array} options.sections - Array of policy sections {id, title, text}
+ * @param {string} options.sessionId - Policy session ID
+ * @param {Object} options.R - i18n strings resource object
+ * @returns {Object} - Form API {element, reset, destroy}
  */
-export function createAmendmentForm(options = {}) {
-  const {
-    sessionId,
-    sections = [],
-    i18n = {},
-    onSubmitSuccess
-  } = options;
-
-  // Validate required options
+export function createAmendmentForm({ sections, sessionId, R }) {
+  // Validate inputs
+  if (!Array.isArray(sections) || sections.length === 0) {
+    throw new Error('Sections array is required and must not be empty');
+  }
+  
   if (!sessionId) {
-    throw new Error('createAmendmentForm requires sessionId');
+    throw new Error('Session ID is required');
   }
 
-  if (!sections || sections.length === 0) {
-    throw new Error('createAmendmentForm requires sections array');
+  if (!R || !R.string) {
+    throw new Error('R strings resource is required');
   }
 
-  // Default i18n strings
+  // Get i18n strings
   const strings = {
-    title: i18n.title || 'Submit Amendment',
-    sectionLabel: i18n.sectionLabel || 'Select section to amend:',
-    sectionPlaceholder: i18n.sectionPlaceholder || 'Choose a section...',
-    originalTextLabel: i18n.originalTextLabel || 'Current text:',
-    proposedTextLabel: i18n.proposedTextLabel || 'Proposed text:',
-    proposedTextPlaceholder: i18n.proposedTextPlaceholder || 'Enter your proposed changes...',
-    rationaleLabel: i18n.rationaleLabel || 'Rationale (optional):',
-    rationalePlaceholder: i18n.rationalePlaceholder || 'Explain why this change improves the policy...',
-    submitButton: i18n.submitButton || 'Submit Amendment',
-    submittingButton: i18n.submittingButton || 'Submitting...',
-    successMessage: i18n.successMessage || 'Amendment submitted successfully!',
-    confirmTitle: i18n.confirmTitle || 'Submit Amendment?',
-    confirmMessage: i18n.confirmMessage || 'Are you sure you want to submit this amendment? You cannot edit it after submission.',
-    errorRequired: i18n.errorRequired || 'Please select a section and provide proposed text',
-    errorSubmission: i18n.errorSubmission || 'Failed to submit amendment'
+    title: R.string.amendment_submit,
+    sectionLabel: R.string.amendment_section_label,
+    sectionPlaceholder: R.string.amendment_section_placeholder,
+    originalTextLabel: R.string.amendment_original_text,
+    proposedTextLabel: R.string.amendment_proposed_text,
+    proposedTextPlaceholder: R.string.amendment_proposed_placeholder,
+    rationaleLabel: R.string.amendment_rationale_label,
+    rationalePlaceholder: R.string.amendment_rationale_placeholder,
+    submitButton: R.string.amendment_submit,
+    submittingButton: R.string.amendment_submitting,
+    successMessage: R.string.amendment_success,
+    confirmTitle: R.string.amendment_confirm_title,
+    confirmMessage: R.string.amendment_confirm_message,
+    errorRequired: R.string.amendment_error_required,
+    errorSubmission: R.string.amendment_error_submission
   };
 
   // Create container element

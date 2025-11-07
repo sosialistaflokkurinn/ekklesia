@@ -35,6 +35,16 @@ async function init() {
     // Update elections navigation link (page-specific)
     document.getElementById('nav-voting').textContent = R.string.nav_voting;
 
+    // Set static page text
+    document.getElementById('discussion-title').textContent = R.string.phase_discussion_title;
+    document.getElementById('discussion-message').textContent = R.string.phase_discussion_message;
+    document.getElementById('break-title').textContent = R.string.phase_break_title;
+    document.getElementById('voting-title').textContent = R.string.phase_voting_title;
+    document.getElementById('amendments-heading').textContent = R.string.amendments_voting_heading;
+    document.getElementById('final-vote-heading').textContent = R.string.final_vote_heading;
+    document.getElementById('final-vote-description').textContent = R.string.final_vote_description;
+    document.getElementById('results-title').textContent = R.string.results_title;
+
     // Load policy session
     await loadPolicySession();
 
@@ -140,6 +150,7 @@ function renderBreakPhase() {
   const amendmentForm = createAmendmentForm({
     sessionId: sessionId,
     sections: currentSession.policy_draft.sections,
+    R: R,
     onSubmitSuccess: (response) => {
       console.log('Amendment submitted:', response);
       // Optionally reload session to show new amendment
@@ -169,6 +180,7 @@ function renderVotingPhase() {
       const voteCard = createAmendmentVoteCard({
         sessionId: sessionId,
         amendment: amendment,
+        R: R,
         onVoteSuccess: (data) => {
           console.log('Amendment vote recorded:', data);
         }
@@ -178,7 +190,7 @@ function renderVotingPhase() {
       components.push(voteCard);
     });
   } else {
-    amendmentsList.innerHTML = '<p>No amendments submitted.</p>';
+    amendmentsList.innerHTML = `<p>${R.string.no_amendments}</p>`;
   }
 
   // Render final policy vote form
@@ -186,19 +198,19 @@ function renderVotingPhase() {
     electionId: sessionId,
     question: currentSession.final_vote.question,
     answers: [
-      { id: 'yes', text: 'Yes - Approve Policy' },
-      { id: 'no', text: 'No - Reject Policy' },
-      { id: 'abstain', text: 'Abstain' }
+      { id: 'yes', text: R.string.final_vote_yes },
+      { id: 'no', text: R.string.final_vote_no },
+      { id: 'abstain', text: R.string.final_vote_abstain }
     ],
     hasVoted: currentSession.final_vote.has_voted,
     onSubmit: async (answerId) => {
       try {
         const response = await voteOnFinalPolicy(sessionId, answerId);
-        showToast('Vote recorded successfully!', 'success');
+        showToast(R.string.vote_success, 'success');
         currentSession.final_vote.has_voted = true;
         return response;
       } catch (error) {
-        showToast(`Failed to record vote: ${error.message}`, 'error');
+        showToast(`${R.string.vote_error}: ${error.message}`, 'error');
         throw error;
       }
     }
@@ -221,6 +233,7 @@ function renderResultsPhase() {
   // Create results display
   const resultsDisplay = createPolicyResultsDisplay({
     sessionId: sessionId,
+    R: R,
     pollInterval: 3000,
     onError: (error) => {
       console.error('Results polling error:', error);

@@ -40,7 +40,7 @@ function escapeHtml(unsafe) {
  * @param {string} options.amendment.proposed_text - Proposed text
  * @param {string} options.amendment.rationale - Explanation (optional)
  * @param {boolean} options.amendment.has_voted - Already voted flag
- * @param {Object} options.i18n - Internationalization strings
+ * @param {Object} options.R - i18n strings resource object
  * @param {Function} options.onVoteSuccess - Callback after successful vote
  * @returns {Object} { element, markAsVoted, destroy }
  */
@@ -48,7 +48,7 @@ export function createAmendmentVoteCard(options = {}) {
   const {
     sessionId,
     amendment,
-    i18n = {},
+    R,
     onVoteSuccess
   } = options;
 
@@ -61,21 +61,25 @@ export function createAmendmentVoteCard(options = {}) {
     throw new Error('createAmendmentVoteCard requires amendment object');
   }
 
-  // Default i18n strings
+  if (!R || !R.string) {
+    throw new Error('R strings resource is required');
+  }
+
+  // Get i18n strings
   const strings = {
-    amendmentNumber: i18n.amendmentNumber || 'Amendment',
-    originalTextLabel: i18n.originalTextLabel || 'Current:',
-    proposedTextLabel: i18n.proposedTextLabel || 'Proposed:',
-    rationaleLabel: i18n.rationaleLabel || 'Rationale:',
-    yesButton: i18n.yesButton || 'Yes',
-    noButton: i18n.noButton || 'No',
-    votingButton: i18n.votingButton || 'Voting...',
-    alreadyVoted: i18n.alreadyVoted || 'Already Voted',
-    successMessage: i18n.successMessage || 'Vote recorded successfully!',
-    confirmTitle: i18n.confirmTitle || 'Confirm Vote',
-    confirmYesMessage: i18n.confirmYesMessage || 'Vote YES to accept this amendment?',
-    confirmNoMessage: i18n.confirmNoMessage || 'Vote NO to reject this amendment?',
-    errorVote: i18n.errorVote || 'Failed to record vote'
+    amendmentNumber: R.string.amendment_number,
+    originalTextLabel: R.string.amendment_original_text,
+    proposedTextLabel: R.string.amendment_proposed_text,
+    rationaleLabel: R.string.amendment_rationale_label,
+    yesButton: R.string.vote_yes,
+    noButton: R.string.vote_no,
+    votingButton: R.string.vote_voting,
+    alreadyVoted: R.string.vote_already_voted,
+    successMessage: R.string.vote_success,
+    confirmTitle: R.string.vote_confirm_title,
+    confirmYesMessage: R.string.vote_confirm_yes,
+    confirmNoMessage: R.string.vote_confirm_no,
+    errorVote: R.string.vote_error
   };
 
   // Track voted state

@@ -19,7 +19,7 @@ import { getPolicyResults } from '../api/elections-api.js';
  * @param {Object} options - Configuration options
  * @param {string} options.sessionId - Policy session identifier
  * @param {number} options.pollInterval - Polling interval in ms (default: 3000)
- * @param {Object} options.i18n - Internationalization strings
+ * @param {Object} options.R - i18n strings resource object
  * @param {Function} options.onError - Callback on error
  * @returns {Object} { element, refresh, startPolling, stopPolling, destroy }
  */
@@ -27,7 +27,7 @@ export function createPolicyResultsDisplay(options = {}) {
   const {
     sessionId,
     pollInterval = 3000,
-    i18n = {},
+    R,
     onError
   } = options;
 
@@ -36,22 +36,25 @@ export function createPolicyResultsDisplay(options = {}) {
     throw new Error('createPolicyResultsDisplay requires sessionId');
   }
 
-  // Default i18n strings
+  if (!R || !R.string) {
+    throw new Error('R strings resource is required');
+  }
+
+  // Get i18n strings
   const strings = {
-    title: i18n.title || 'Results',
-    amendmentsHeading: i18n.amendmentsHeading || 'Amendment Results',
-    finalPolicyHeading: i18n.finalPolicyHeading || 'Final Policy Vote',
-    participantsLabel: i18n.participantsLabel || 'Total Participants:',
-    yesLabel: i18n.yesLabel || 'Yes',
-    noLabel: i18n.noLabel || 'No',
-    abstainLabel: i18n.abstainLabel || 'Abstain',
-    acceptedLabel: i18n.acceptedLabel || 'Accepted',
-    rejectedLabel: i18n.rejectedLabel || 'Rejected',
-    approvedLabel: i18n.approvedLabel || 'Approved',
-    notApprovedLabel: i18n.notApprovedLabel || 'Not Approved',
-    loadingMessage: i18n.loadingMessage || 'Loading results...',
-    errorMessage: i18n.errorMessage || 'Failed to load results',
-    refreshButton: i18n.refreshButton || 'Refresh'
+    title: R.string.results_title,
+    amendmentsHeading: R.string.results_amendments_heading,
+    finalPolicyHeading: R.string.results_final_policy_heading,
+    participantsLabel: R.string.results_participants,
+    yesLabel: R.string.vote_yes,
+    noLabel: R.string.vote_no,
+    abstainLabel: R.string.vote_abstain,
+    acceptedLabel: R.string.results_accepted,
+    rejectedLabel: R.string.results_rejected,
+    approvedLabel: R.string.results_approved,
+    notApprovedLabel: R.string.results_not_approved,
+    loadingMessage: R.string.results_loading,
+    errorMessage: R.string.results_error
   };
 
   // Polling state

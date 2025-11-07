@@ -314,4 +314,21 @@
   <string name="results_loading">Hleð niðurstöðum...</string>
   <string name="results_error">Ekki tókst að sækja niðurstöður</string>
 
+  <!-- Policy Session Page Strings -->
+  <string name="phase_discussion_title">Umræðufasi</string>
+  <string name="phase_discussion_message">Skoðaðu drög að stefnu. Hægt verður að leggja fram breytingatillögur í hlé.</string>
+  <string name="phase_break_title">Hlé - Senda inn breytingatillögur</string>
+  <string name="phase_voting_title">Atkvæðagreiðsla</string>
+  <string name="amendments_voting_heading">Kjósa um breytingatillögur</string>
+  <string name="final_vote_heading">Atkvæði um endanlega stefnu</string>
+  <string name="final_vote_description">Kjóstu um að samþykkja eða hafna endanlegri stefnu með samþykktum breytingum.</string>
+  <string name="no_amendments">Engar tillögur sendar inn.</string>
+  <string name="final_vote_yes">Já - Samþykkja stefnu</string>
+  <string name="final_vote_no">Nei - Hafna stefnu</string>
+  <string name="final_vote_abstain">Sitja hjá</string>
+
+</resources>
+
+```
+
 </resources>
