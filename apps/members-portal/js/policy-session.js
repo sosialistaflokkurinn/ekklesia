@@ -5,8 +5,8 @@
  * Handles phase transitions (discussion → break → voting → results).
  */
 
-import { initializeAuth } from '../auth.js';
-import { initializeNav } from '../ui/nav.js';
+import { initAuthenticatedPage } from './page-init.js';
+import { R } from '../i18n/strings-loader.js';
 import { getPolicySession } from '../api/elections-api.js';
 import { createAmendmentForm } from '../components/amendment-form.js';
 import { createAmendmentVoteCard } from '../components/amendment-vote-card.js';
@@ -26,9 +26,14 @@ let components = [];
 // Initialize page
 async function init() {
   try {
-    // Initialize auth and nav
-    await initializeAuth();
-    initializeNav();
+    // Load i18n strings
+    await R.load('is');
+
+    // Initialize authenticated page (requires member role)
+    await initAuthenticatedPage();
+
+    // Update elections navigation link (page-specific)
+    document.getElementById('nav-voting').textContent = R.string.nav_voting;
 
     // Load policy session
     await loadPolicySession();
