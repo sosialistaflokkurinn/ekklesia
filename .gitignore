@@ -110,6 +110,9 @@ apps/members-portal/admin/**/*sample-data*
 *kennitala*.md
 *pii_redaction*.md
 
+# Scripts that contain potentially real PII in documentation/examples
+scripts/admin/replace-fake-data.sh
+
 # Log files that may contain PII
 scripts/logs/*.jsonl
 **/logs/*.jsonl
