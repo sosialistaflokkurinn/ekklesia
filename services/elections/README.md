@@ -1,7 +1,7 @@
 # Elections Service MVP
 
 **Status**: 🔨 Implementation Complete - Ready for Testing
-**Type**: REST API (Node.js 18 + Express + PostgreSQL)
+**Type**: REST API ([Node.js 18](https://nodejs.org/) + [Express](https://expressjs.com/) + [PostgreSQL](https://www.postgresql.org/))
 **Purpose**: Anonymous ballot recording for Prófunarkosning 2025
 
 ---
@@ -25,10 +25,10 @@ The Elections service is a secure, anonymous ballot recording system that:
 
 ### Prerequisites
 
-- Node.js 18+
-- Cloud SQL Proxy (for local development)
-- PostgreSQL client (psql)
-- gcloud CLI configured
+- [Node.js 18+](https://nodejs.org/)
+- [Cloud SQL Proxy](https://cloud.google.com/sql/docs/postgres/sql-proxy) (for local development)
+- [PostgreSQL client](https://www.postgresql.org/download/) (psql)
+- [gcloud CLI](https://cloud.google.com/sdk/gcloud) configured
 
 ### Local Development Setup
 

@@ -17,6 +17,8 @@ The Events service is a **pure backend API service** that manages elections and 
 
 **MVP Scope**: One election, one question, standalone operation
 
+**Documentation**: See [docs/features/election-voting/](../../docs/features/election-voting/) for detailed architecture
+
 ### 🎨 Frontend Architecture
 
 **Important**: This service has **NO user interface**. All web UI (HTML/CSS/JS) is hosted by the Members service.
@@ -37,11 +39,11 @@ The Events service is a **pure backend API service** that manages elections and 
 
 ## Technology Stack
 
-- **Runtime**: Node.js 18+
-- **Framework**: Express.js
-- **Database**: Cloud SQL PostgreSQL 15 (ekklesia-db)
-- **Auth**: Firebase Admin SDK (verify JWT from Members service)
-- **Deployment**: Cloud Run (✅ Production since Oct 9, 2025)
+- **Runtime**: [Node.js 18+](https://nodejs.org/)
+- **Framework**: [Express.js](https://expressjs.com/)
+- **Database**: [Cloud SQL PostgreSQL 15](https://cloud.google.com/sql/docs/postgres) (ekklesia-db)
+- **Auth**: [Firebase Admin SDK](https://firebase.google.com/docs/admin/setup) (verify JWT from Members service)
+- **Deployment**: [Cloud Run](https://cloud.google.com/run) (✅ Production since Oct 9, 2025)
 
 ---
 
