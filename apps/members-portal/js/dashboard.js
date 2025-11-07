@@ -153,9 +153,9 @@ function renderRoleBadges(roles) {
     const key = `role_badge_${role}`;
     const label = R.string[key] || role;
 
-    // Make admin/superuser badges clickable links to admin portal
+    // Make admin/superuser badges clickable links to admin elections
     if (role === 'admin' || role === 'superuser') {
-      return `<a href="/admin/admin.html" class="role-badge role-badge--clickable" title="${R.string.role_badge_title_open_admin}">${label}</a>`;
+      return `<a href="/admin-elections/" class="role-badge role-badge--clickable" title="${R.string.role_badge_title_open_admin}">${label}</a>`;
     }
 
     return `<span class="role-badge">${label}</span>`;
