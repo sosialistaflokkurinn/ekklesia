@@ -14,7 +14,7 @@ This category map provides navigation to all testing documentation including tes
 
 ## Quick Links
 
-- [Quality & Testing Guide](standards/QUALITY_TESTING_GUIDE.md) - Comprehensive testing guide
+- [Quality & Testing Guide](../docs/standards/QUALITY_TESTING_GUIDE.md) - Comprehensive testing guide
 - [Test Reports](../testing/reports/) - Test execution reports
 
 ---
@@ -22,7 +22,7 @@ This category map provides navigation to all testing documentation including tes
 ## Testing Documentation
 
 ### Testing Guides
-- [Quality & Testing Guide](standards/QUALITY_TESTING_GUIDE.md) - Testing philosophy and practices
+- [Quality & Testing Guide](../docs/standards/QUALITY_TESTING_GUIDE.md) - Testing philosophy and practices
 
 ### Test Reports
 - [Test Reports Directory](../testing/reports/)
@@ -31,9 +31,9 @@ This category map provides navigation to all testing documentation including tes
 
 ## Related Categories
 
-- [Development](DEVELOPMENT_MAP.md) - Development workflows
-- [Code Standards](CODE_STANDARDS_MAP.md) - Code quality standards
+- [Development](../docs/DEVELOPMENT_MAP.md) - Development workflows
+- [Code Standards](../docs/CODE_STANDARDS_MAP.md) - Code quality standards
 
 ---
 
-**See**: [Documentation Philosophy](DOCUMENTATION_PHILOSOPHY.md) for hierarchy explanation
+**See**: [Documentation Philosophy](../docs/DOCUMENTATION_PHILOSOPHY.md) for hierarchy explanation

@@ -44,11 +44,11 @@ Our code standards prioritize:
 
 ### 1. CSS Standards
 
-**Guide**: [CSS & BEM Guide](standards/CSS_BEM_GUIDE.md)
+**Guide**: [CSS & BEM Guide](../docs/standards/CSS_BEM_GUIDE.md)
 
 **Summary**:
-- Use canonical BEM methodology (Block Element Modifier)
-- CSS variables for colors, spacing, and sizing
+- Use canonical [BEM methodology](http://getbem.com/) (Block Element Modifier)
+- [CSS variables](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties) for colors, spacing, and sizing
 - Utility classes with `.u-` prefix
 - Component-based file organization
 - No inline styles
@@ -72,21 +72,21 @@ Our code standards prioritize:
 ```
 
 **Quick Links**:
-- [BEM Naming Rules](standards/CSS_BEM_GUIDE.md#naming-convention)
-- [CSS Variables Reference](standards/CSS_BEM_GUIDE.md#css-variables)
-- [Component Organization](standards/CSS_BEM_GUIDE.md#file-structure)
+- [BEM Naming Rules](../docs/standards/CSS_BEM_GUIDE.md#naming-convention)
+- [CSS Variables Reference](../docs/standards/CSS_BEM_GUIDE.md#css-variables)
+- [Component Organization](../docs/standards/CSS_BEM_GUIDE.md#file-structure)
 
 ---
 
 ### 2. HTML Standards
 
-**Guide**: [HTML Structure Guide](standards/HTML_GUIDE.md)
+**Guide**: [HTML Structure Guide](../docs/standards/HTML_GUIDE.md)
 
 **Summary**:
-- Use semantic HTML5 elements
-- ARIA labels for accessibility
-- Proper heading hierarchy (h1 → h2 → h3)
-- Form validation attributes
+- Use semantic [HTML5 elements](https://developer.mozilla.org/en-US/docs/Web/HTML/Element)
+- [ARIA labels](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) for accessibility
+- Proper [heading hierarchy](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Heading_Elements) (h1 → h2 → h3)
+- [Form validation attributes](https://developer.mozilla.org/en-US/docs/Learn/Forms/Form_validation)
 - i18n-ready with `id` attributes
 
 **Key Conventions**:
@@ -110,22 +110,22 @@ Our code standards prioritize:
 ```
 
 **Quick Links**:
-- [Semantic HTML Reference](standards/HTML_GUIDE.md#semantic-elements)
-- [Accessibility Checklist](standards/HTML_GUIDE.md#accessibility)
-- [Form Best Practices](standards/HTML_GUIDE.md#forms)
+- [Semantic HTML Reference](../docs/standards/HTML_GUIDE.md#semantic-elements)
+- [Accessibility Checklist](../docs/standards/HTML_GUIDE.md#accessibility)
+- [Form Best Practices](../docs/standards/HTML_GUIDE.md#forms)
 
 ---
 
 ### 3. JavaScript Standards
 
-**Guide**: [JavaScript Style Guide](standards/JAVASCRIPT_GUIDE.md)
+**Guide**: [JavaScript Style Guide](../docs/standards/JAVASCRIPT_GUIDE.md)
 
 **Summary**:
-- ES6+ modern JavaScript
-- Modular code with `import`/`export`
-- Async/await for promises
-- JSDoc comments for all functions
-- No jQuery - vanilla JS only
+- [ES6+](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide) modern JavaScript
+- Modular code with [`import`/`export`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
+- [Async/await](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function) for promises
+- [JSDoc](https://jsdoc.app/) comments for all functions
+- No [jQuery](https://jquery.com/) - vanilla JS only
 
 **Key Conventions**:
 ```javascript
@@ -157,23 +157,23 @@ function savePhoneNumbers(phoneNumbers, callback) {
 ```
 
 **Quick Links**:
-- [Module System](standards/JAVASCRIPT_GUIDE.md#modules)
-- [Async Patterns](standards/JAVASCRIPT_GUIDE.md#async-await)
-- [Error Handling](standards/JAVASCRIPT_GUIDE.md#error-handling)
-- [Naming Conventions](standards/JAVASCRIPT_GUIDE.md#naming)
+- [Module System](../docs/standards/JAVASCRIPT_GUIDE.md#modules)
+- [Async Patterns](../docs/standards/JAVASCRIPT_GUIDE.md#async-await)
+- [Error Handling](../docs/standards/JAVASCRIPT_GUIDE.md#error-handling)
+- [Naming Conventions](../docs/standards/JAVASCRIPT_GUIDE.md#naming)
 
 ---
 
 ### 4. Python Standards
 
-**Guide**: [Python Style Guide](standards/PYTHON_GUIDE.md)
+**Guide**: [Python Style Guide](../docs/standards/PYTHON_GUIDE.md)
 
 **Summary**:
-- Python 3.11+ modern syntax
-- Type hints for function signatures
-- Docstrings (Google style) for all public functions
-- PEP 8 formatting (use `black` or `ruff`)
-- Virtual environments for dependencies
+- [Python 3.11+](https://docs.python.org/3.11/) modern syntax
+- [Type hints](https://docs.python.org/3/library/typing.html) for function signatures
+- Docstrings ([Google style](https://google.github.io/styleguide/pyguide.html)) for all public functions
+- [PEP 8](https://peps.python.org/pep-0008/) formatting (use [`black`](https://black.readthedocs.io/) or [`ruff`](https://docs.astral.sh/ruff/))
+- [Virtual environments](https://docs.python.org/3/library/venv.html) for dependencies
 
 **Key Conventions**:
 ```python
@@ -219,24 +219,23 @@ def normalize_kennitala(kennitala):
 ```
 
 **Where Python is Used**:
-- **Cloud Functions** (`services/members/functions/`) - Production code for Firebase
-- **Admin Scripts** (`scripts/admin/`) - Documentation audit, i18n validation, database tools
-- **Audit Tools** (`docs/audits/tools/`) - Legacy documentation audit scripts
+- **Cloud Functions** ([`services/members/functions/`](../services/members/functions/)) - Production code for [Firebase](https://firebase.google.com/docs/functions)
+- **Admin Scripts** ([`scripts/admin/`](../scripts/admin/)) - Documentation audit, i18n validation, database tools
 
 **Quick Links**:
-- [Type Hints Reference](standards/PYTHON_GUIDE.md#type-hints)
-- [Docstring Format](standards/PYTHON_GUIDE.md#docstrings)
-- [Error Handling](standards/PYTHON_GUIDE.md#error-handling)
-- [Cloud Functions Patterns](standards/PYTHON_GUIDE.md#cloud-functions)
+- [Type Hints Reference](../docs/standards/PYTHON_GUIDE.md#type-hints)
+- [Docstring Format](../docs/standards/PYTHON_GUIDE.md#docstrings)
+- [Error Handling](../docs/standards/PYTHON_GUIDE.md#error-handling)
+- [Cloud Functions Patterns](../docs/standards/PYTHON_GUIDE.md#cloud-functions)
 
 ---
 
 ### 5. Internationalization (i18n)
 
-**Guide**: [i18n & R.string Guide](standards/I18N_GUIDE.md)
+**Guide**: [i18n & R.string Guide](../docs/standards/I18N_GUIDE.md)
 
 **Summary**:
-- XML-based strings (Android R.string pattern)
+- [XML-based strings](https://developer.android.com/guide/topics/resources/string-resource) (Android R.string pattern)
 - All user-facing text in `i18n/values-is/strings.xml`
 - Access via `R.string.key_name`
 - Configuration values also in strings.xml
@@ -260,23 +259,23 @@ document.getElementById('btn-save').textContent = 'Vista';
 ```
 
 **Quick Links**:
-- [R.string Setup](standards/I18N_GUIDE.md#setup)
-- [Adding Translations](standards/I18N_GUIDE.md#adding-languages)
-- [String Format Placeholders](standards/I18N_GUIDE.md#formatting)
-- [Configuration Values](standards/I18N_GUIDE.md#configuration)
+- [R.string Setup](../docs/standards/I18N_GUIDE.md#setup)
+- [Adding Translations](../docs/standards/I18N_GUIDE.md#adding-languages)
+- [String Format Placeholders](../docs/standards/I18N_GUIDE.md#formatting)
+- [Configuration Values](../docs/standards/I18N_GUIDE.md#configuration)
 
 ---
 
 ### 6. Data Quality & UX
 
-**Guide**: [Data Quality & UX Guide](standards/DATA_QUALITY_UX.md)
+**Guide**: [Data Quality & UX Guide](../docs/standards/DATA_QUALITY_UX.md)
 
 **Summary**:
-- Always validate user input
+- Always [validate user input](https://developer.mozilla.org/en-US/docs/Learn/Forms/Form_validation)
 - Flexible search patterns (autocomplete over strict format)
 - Clear error messages
 - Status feedback for async operations
-- Graceful degradation
+- [Graceful degradation](https://developer.mozilla.org/en-US/docs/Glossary/Graceful_degradation)
 
 **Key Conventions**:
 ```javascript
@@ -309,20 +308,20 @@ async function saveEmail(email) {
 - **Pattern 4**: Clear error messages (not just "Error")
 
 **Quick Links**:
-- [Validation Rules](standards/DATA_QUALITY_UX.md#validation)
-- [Status Feedback Pattern](standards/DATA_QUALITY_UX.md#status-feedback)
-- [Search UX Patterns](standards/DATA_QUALITY_UX.md#search-patterns)
+- [Validation Rules](../docs/standards/DATA_QUALITY_UX.md#validation)
+- [Status Feedback Pattern](../docs/standards/DATA_QUALITY_UX.md#status-feedback)
+- [Search UX Patterns](../docs/standards/DATA_QUALITY_UX.md#search-patterns)
 
 ---
 
 ### 7. Documentation Standards
 
-**Guide**: [Documentation Guide](standards/DOCUMENTATION_GUIDE.md)
+**Guide**: [Documentation Guide](../docs/standards/DOCUMENTATION_GUIDE.md)
 
 **Summary**:
-- JSDoc for all public functions
-- README.md in every major directory
-- Architecture Decision Records (ADRs) for big changes
+- [JSDoc](https://jsdoc.app/) for all public functions
+- [README.md](https://www.makeareadme.com/) in every major directory
+- Architecture Decision Records ([ADRs](https://adr.github.io/)) for big changes
 - Keep documentation close to code
 - Update docs with code changes
 
@@ -350,22 +349,22 @@ function showStatusFeedback(statusElement, state, clearDelayMs = 2000) {
 ```
 
 **Quick Links**:
-- [JSDoc Template](standards/DOCUMENTATION_GUIDE.md#jsdoc)
-- [README Template](standards/DOCUMENTATION_GUIDE.md#readme)
-- [ADR Process](standards/DOCUMENTATION_GUIDE.md#adr)
+- [JSDoc Template](../docs/standards/DOCUMENTATION_GUIDE.md#jsdoc)
+- [README Template](../docs/standards/DOCUMENTATION_GUIDE.md#readme)
+- [ADR Process](../docs/standards/DOCUMENTATION_GUIDE.md#adr)
 
 ---
 
 ### 8. Git Workflow
 
-**Guide**: [Git Workflow Guide](standards/GIT_WORKFLOW_GUIDE.md)
+**Guide**: [Git Workflow Guide](../docs/standards/GIT_WORKFLOW_GUIDE.md)
 
 **Summary**:
 - Feature branches from `main`
-- Conventional commit messages
-- Pull requests for all changes
+- [Conventional commit messages](https://www.conventionalcommits.org/)
+- [Pull requests](https://docs.github.com/en/pull-requests) for all changes
 - Squash merge for clean history
-- Tag releases with semantic versioning
+- Tag releases with [semantic versioning](https://semver.org/)
 
 **Key Conventions**:
 ```bash
@@ -392,22 +391,22 @@ git commit -m "Fixed stuff"
 - `chore`: Maintenance (dependencies, config)
 
 **Quick Links**:
-- [Branch Naming](standards/GIT_WORKFLOW_GUIDE.md#branches)
-- [Commit Message Format](standards/GIT_WORKFLOW_GUIDE.md#commits)
-- [Pull Request Template](standards/GIT_WORKFLOW_GUIDE.md#pull-requests)
+- [Branch Naming](../docs/standards/GIT_WORKFLOW_GUIDE.md#branches)
+- [Commit Message Format](../docs/standards/GIT_WORKFLOW_GUIDE.md#commits)
+- [Pull Request Template](../docs/standards/GIT_WORKFLOW_GUIDE.md#pull-requests)
 
 ---
 
 ### 9. Quality & Testing
 
-**Guide**: [Quality & Testing Guide](standards/QUALITY_TESTING_GUIDE.md)
+**Guide**: [Quality & Testing Guide](../docs/standards/QUALITY_TESTING_GUIDE.md)
 
 **Summary**:
 - Unit tests for business logic
 - Integration tests for APIs
 - Manual testing checklist for UI
-- Pre-commit hooks for code quality
-- Load testing for production readiness
+- [Pre-commit hooks](https://pre-commit.com/) for code quality
+- [Load testing](https://k6.io/) for production readiness
 
 **Key Conventions**:
 ```javascript
@@ -438,9 +437,9 @@ test('rejects invalid kennitala', () => {
 ```
 
 **Quick Links**:
-- [Testing Checklist](standards/QUALITY_TESTING_GUIDE.md#checklist)
-- [Pre-commit Hooks](standards/QUALITY_TESTING_GUIDE.md#hooks)
-- [Load Testing](standards/QUALITY_TESTING_GUIDE.md#load-testing)
+- [Testing Checklist](../docs/standards/QUALITY_TESTING_GUIDE.md#checklist)
+- [Pre-commit Hooks](../docs/standards/QUALITY_TESTING_GUIDE.md#hooks)
+- [Load Testing](../docs/standards/QUALITY_TESTING_GUIDE.md#load-testing)
 
 ---
 
@@ -487,8 +486,8 @@ npm run format:check
 ### Pre-commit Hooks
 
 Automatically runs before every commit:
-- ESLint checks
-- Prettier formatting
+- [ESLint](https://eslint.org/) checks
+- [Prettier](https://prettier.io/) formatting
 - Kennitala/PII detection
 - File size limits
 
@@ -749,16 +748,23 @@ element.style.top = `${calculatedTop}px`;
 ## Resources & Further Reading
 
 ### Internal Documentation
-- [BEM Methodology](standards/CSS_BEM_GUIDE.md)
-- [i18n System](standards/I18N_GUIDE.md)
-- [JavaScript Patterns](standards/JAVASCRIPT_GUIDE.md)
-- [Git Workflow](standards/GIT_WORKFLOW_GUIDE.md)
+- [BEM Methodology](../docs/standards/CSS_BEM_GUIDE.md)
+- [i18n System](../docs/standards/I18N_GUIDE.md)
+- [JavaScript Patterns](../docs/standards/JAVASCRIPT_GUIDE.md)
+- [Git Workflow](../docs/standards/GIT_WORKFLOW_GUIDE.md)
 
 ### External References
 - [BEM Official Guide](http://getbem.com/)
 - [MDN Web Docs](https://developer.mozilla.org/)
 - [Conventional Commits](https://www.conventionalcommits.org/)
 - [ARIA Authoring Practices](https://www.w3.org/WAI/ARIA/apg/)
+- [JSDoc Documentation](https://jsdoc.app/)
+- [Python Type Hints](https://docs.python.org/3/library/typing.html)
+- [PEP 8 Style Guide](https://peps.python.org/pep-0008/)
+- [Semantic Versioning](https://semver.org/)
+- [Pre-commit Hooks](https://pre-commit.com/)
+- [ESLint](https://eslint.org/)
+- [Prettier](https://prettier.io/)
 
 ---
 

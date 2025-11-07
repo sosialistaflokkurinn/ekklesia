@@ -14,33 +14,36 @@ This category map provides navigation to all operations documentation including 
 
 ## Quick Links
 
-- [Operational Procedures](operations/OPERATIONAL_PROCEDURES.md) - Meeting day operations manual
-- [Production Status](status/CURRENT_DEVELOPMENT_STATUS.md) - Current development status
-- [Deployment Guides](setup/) - Service deployment guides
+- [Operational Procedures](../docs/operations/OPERATIONAL_PROCEDURES.md) - Meeting day operations manual
+- [Production Status](../docs/status/CURRENT_DEVELOPMENT_STATUS.md) - Current development status
+- [Deployment Guides](../docs/setup/) - Service deployment guides
 
 ---
 
 ## Operations Documentation
 
 ### Operational Procedures
-- [Operational Procedures](operations/OPERATIONAL_PROCEDURES.md)
-- [GitHub Workflows Status](operations/GITHUB_WORKFLOWS_STATUS.md)
-- [Documentation Changelog](operations/DOCUMENTATION_CHANGELOG.md)
+- [Operational Procedures](../docs/operations/OPERATIONAL_PROCEDURES.md)
+- [GitHub Workflows Status](../docs/operations/GITHUB_WORKFLOWS_STATUS.md)
+- [Documentation Changelog](../docs/operations/DOCUMENTATION_CHANGELOG.md)
 
 ### Production Status
-- [Current Development Status](status/CURRENT_DEVELOPMENT_STATUS.md)
-- [Status Documents Guide](status/README.md)
+- [Current Development Status](../docs/status/CURRENT_DEVELOPMENT_STATUS.md)
+- [Status Documents Guide](../docs/status/README.md)
 
 ### Deployment
-- [Members Deployment Guide](setup/MEMBERS_DEPLOYMENT_GUIDE.md)
+- [Members Deployment Guide](../docs/setup/MEMBERS_DEPLOYMENT_GUIDE.md)
+
+### Improvement Reports
+- [i18n Icelandic Copy Improvement Report (2025-11-07)](reports/I18N_ICELANDIC_REVIEW_2025-11-07.md)
 
 ---
 
 ## Related Categories
 
-- [Infrastructure](INFRASTRUCTURE_MAP.md) - Cloud infrastructure
-- [Security](SECURITY_MAP.md) - Security procedures
+- [Infrastructure](../docs/INFRASTRUCTURE_MAP.md) - Cloud infrastructure
+- [Security](../docs/SECURITY_MAP.md) - Security procedures
 
 ---
 
-**See**: [Documentation Philosophy](DOCUMENTATION_PHILOSOPHY.md) for hierarchy explanation
+**See**: [Documentation Philosophy](../docs/DOCUMENTATION_PHILOSOPHY.md) for hierarchy explanation
