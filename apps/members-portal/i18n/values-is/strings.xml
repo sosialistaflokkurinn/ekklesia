@@ -287,6 +287,7 @@
   <string name="admin_nav_elections">Kosningar</string>
   <string name="admin_nav_members">Félagsmenn</string>
   <string name="admin_nav_events">Viðburðir</string>
+  <string name="admin_nav_back_to_member">Aftur á félagavef</string>
   <string name="admin_nav_logout">Útskrá</string>
   <string name="role_superadmin">👑 Superadmin</string>
   <string name="role_election_manager">📊 Election Manager</string>

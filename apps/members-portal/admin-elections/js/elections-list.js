@@ -6,6 +6,7 @@
 import { getFirebaseAuth } from '../../firebase/app.js';
 import { getElectionRole, canPerformAction, requireAdmin, PERMISSIONS, hasPermission } from '../../js/rbac.js';
 import { R } from '../../i18n/strings-loader.js';
+import { initNavigation } from '../../js/nav.js';
 
 const auth = getFirebaseAuth();
 
@@ -77,19 +78,25 @@ async function initialize() {
 }
 
 /**
- * Initialize navigation texts
+ * Initialize navigation with hamburger menu
  */
 function initializeNavigation() {
-  // Navigation
-  document.getElementById('admin-brand').textContent = R.string.admin_brand;
+  // Set navigation texts
+  document.getElementById('nav-brand').textContent = R.string.admin_brand;
   document.getElementById('nav-overview').textContent = R.string.admin_nav_overview;
   document.getElementById('nav-elections').textContent = R.string.admin_nav_elections;
   document.getElementById('nav-members').textContent = R.string.admin_nav_members;
   document.getElementById('nav-events').textContent = R.string.admin_nav_events;
-  document.getElementById('logout-btn').textContent = R.string.admin_nav_logout;
+  document.getElementById('nav-back-to-member').textContent = R.string.admin_nav_back_to_member;
+  document.getElementById('nav-logout').textContent = R.string.admin_nav_logout;
+  
+  // Initialize hamburger menu behavior
+  initNavigation();
   
   // Logout handler
-  document.getElementById('logout-btn').addEventListener('click', async () => {
+  const logoutLink = document.getElementById('nav-logout');
+  logoutLink.addEventListener('click', async (e) => {
+    e.preventDefault();
     try {
       await auth.signOut();
       window.location.href = '/';
