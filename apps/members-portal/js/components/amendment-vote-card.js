@@ -100,14 +100,14 @@ export function createAmendmentVoteCard(options = {}) {
   header.appendChild(title);
 
   // Already voted badge (initially hidden)
-  const votedBadge = createBadge({
-    text: `✓ ${strings.alreadyVoted}`,
-    variant: 'success'
-  });
-  votedBadge.element.className += ' amendment-vote-card__voted-badge';
-  votedBadge.element.style.display = hasVoted ? 'inline-flex' : 'none';
+  const votedBadge = createBadge(
+    `✓ ${strings.alreadyVoted}`,
+    { variant: 'success' }
+  );
+  votedBadge.className += ' amendment-vote-card__voted-badge';
+  votedBadge.style.display = hasVoted ? 'inline-flex' : 'none';
 
-  header.appendChild(votedBadge.element);
+  header.appendChild(votedBadge);
 
   // Card body
   const body = document.createElement('div');
@@ -246,7 +246,7 @@ export function createAmendmentVoteCard(options = {}) {
     hasVoted = true;
     
     // Show voted badge
-    votedBadge.element.style.display = 'inline-flex';
+    votedBadge.style.display = 'inline-flex';
     
     // Disable buttons
     yesBtn.setDisabled(true);
@@ -264,7 +264,6 @@ export function createAmendmentVoteCard(options = {}) {
   function destroy() {
     yesBtn.destroy();
     noBtn.destroy();
-    votedBadge.destroy();
     container.remove();
   }
 
