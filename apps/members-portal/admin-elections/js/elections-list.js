@@ -504,6 +504,12 @@ async function deleteElection(electionId) {
       const errorData = await response.json().catch(() => ({}));
       const errorMessage = errorData.error || errorData.message || `HTTP ${response.status}`;
       console.error('[Elections List] Delete failed:', response.status, errorData);
+      
+      // Provide more helpful error message for common cases
+      if (errorMessage.includes('active election')) {
+        throw new Error('Ekki hægt að eyða virkri kosningu. Lokaðu kosningunni fyrst.');
+      }
+      
       throw new Error(errorMessage);
     }
     

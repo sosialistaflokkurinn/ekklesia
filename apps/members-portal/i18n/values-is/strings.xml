@@ -352,7 +352,7 @@
   <string name="confirm_unhide_title">Sýna kosningu?</string>
   <string name="confirm_unhide_message">Ertu viss um að þú viljir sýna kosninguna "%s" aftur?</string>
   <string name="confirm_delete_title">Eyða kosningu?</string>
-  <string name="confirm_delete_message">⚠️ VARÚÐ: Þessi aðgerð er óafturkræf!\n\nÞú ert að fara að eyða kosningunni "%s" varanlega úr gagnagrunninum.\n\nALL DATA VERÐUR EYTT:\n- Kosningin sjálf\n- Öll atkvæði\n- Öll svarmöguleikar\n- Öll tengd gögn\n\nSláðu inn NÁKVÆMLEGA heitið á kosningunni til að staðfesta:\n"%s"</string>
+  <string name="confirm_delete_message">⚠️ VARÚÐ: Þessi aðgerð er óafturkræf!\n\nÞú ert að fara að eyða kosningunni "%s" varanlega úr gagnagrunninum.\n\nALL DATA VERÐUR EYTT:\n- Kosningin sjálf\n- Öll atkvæði\n- Öll svarmöguleikar\n- Öll tengd gögn\n\nATH: Kosning verður að vera lokuð (ekki virk) til að hægt sé að eyða henni.\n\nSláðu inn NÁKVÆMLEGA heitið á kosningunni til að staðfesta:\n"%s"</string>
   <string name="confirm_delete_placeholder">Sláðu inn heiti kosningar...</string>
   <string name="confirm_delete_title_mismatch">Heitið stemmir ekki. Vinsamlegast reyndu aftur.</string>
   
