@@ -147,7 +147,22 @@ Security policies, incident responses, and compliance.
 
 ---
 
-### 🔌 [Integration](docs/INTEGRATION_MAP.md)
+### � [README Files](docs/README_MAP.md)
+Entry points and directory-level documentation across the codebase.
+
+**Quick Links**:
+- [Root README](README.md) - Project overview and getting started
+- [Documentation README](docs/README.md) - Documentation system guide
+- [Scripts README](scripts/README.md) - Available automation scripts
+- [Services README](services/) - Microservices overview
+- [Apps README](apps/README.md) - Applications directory
+- [Security README](docs/security/README.md) - Security documentation index
+
+**Why README files matter**: They guide AI assistants and developers, providing quick orientation and directory-specific context.
+
+---
+
+### �🔌 [Integration](docs/INTEGRATION_MAP.md)
 External system integrations and API documentation.
 
 **Quick Links**:
@@ -209,6 +224,7 @@ ekklesia/
 │   ├── SECURITY_MAP.md          # Security category
 │   ├── INTEGRATION_MAP.md       # Integration category
 │   ├── INFRASTRUCTURE_MAP.md    # Infrastructure category
+│   ├── README_MAP.md            # README files category
 │   │
 │   ├── standards/               # Detailed guides (Level 3)
 │   ├── development/

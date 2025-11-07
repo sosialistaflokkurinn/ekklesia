@@ -10,6 +10,7 @@
 - **[Getting Started Guide](./development/guides/github/)** - Environment setup and first steps
 - **[Architecture Overview](./design/SYSTEM_ARCHITECTURE_OVERVIEW.md)** - How the system works
 - **[Development Workflow](./development/guides/git/)** - Git workflow and contribution guidelines
+- **[DOCUMENTATION_MAP.md](../DOCUMENTATION_MAP.md)** ⭐ **Master Navigation Hub** - Complete system overview
 
 ---
 
@@ -93,8 +94,18 @@ ekklesia/
 │   └── members-portal/         # Members UI (Firebase Hosting)
 │
 ├── docs/                       # This documentation
-│   ├── CODE_STANDARDS_MAP.md   # Code standards category map
-│   ├── standards/              # Code standards and style guides
+│   ├── DOCUMENTATION_MAP.md    # 🗺️ Master navigation hub (Level 1)
+│   ├── CODE_STANDARDS_MAP.md   # Code standards category map (Level 2)
+│   ├── DEVELOPMENT_MAP.md      # Development category map (Level 2)
+│   ├── ARCHITECTURE_MAP.md     # Architecture category map (Level 2)
+│   ├── FEATURES_MAP.md         # Features category map (Level 2)
+│   ├── TESTING_MAP.md          # Testing category map (Level 2)
+│   ├── OPERATIONS_MAP.md       # Operations category map (Level 2)
+│   ├── SECURITY_MAP.md         # Security category map (Level 2)
+│   ├── INTEGRATION_MAP.md      # Integration category map (Level 2)
+│   ├── INFRASTRUCTURE_MAP.md   # Infrastructure category map (Level 2)
+│   ├── README_MAP.md           # README files category map (Level 2)
+│   ├── standards/              # Code standards and style guides (Level 3)
 │   ├── architecture/           # System design
 │   ├── features/               # Feature-specific docs
 │   ├── development/            # Developer guides
@@ -121,16 +132,21 @@ Choose your path based on your role:
 
 ### For Frontend Developers
 1. [Getting Started](./development/guides/github/)
-2. **[Code Standards](./CODE_STANDARDS_MAP.md)** - HTML, CSS, JavaScript, i18n standards
-3. [Members Service Architecture](./design/SYSTEM_ARCHITECTURE_OVERVIEW.md)
-4. [Feature Guides](./features/election-voting/)
+2. **[Code Standards Map](./CODE_STANDARDS_MAP.md)** - HTML, CSS, JavaScript, i18n standards
+3. [HTML Guide](./standards/HTML_GUIDE.md) - [Semantic HTML](https://developer.mozilla.org/en-US/docs/Glossary/Semantics#semantics_in_html) and [WCAG 2.1 AA](https://www.w3.org/WAI/WCAG21/quickref/)
+4. [CSS & BEM Guide](./standards/CSS_BEM_GUIDE.md) - [BEM methodology](http://getbem.com/)
+5. [JavaScript Guide](./standards/JAVASCRIPT_GUIDE.md) - [ES6+](https://developer.mozilla.org/en-US/docs/Web/JavaScript) standards
+6. [i18n Guide](./standards/I18N_GUIDE.md) - [R.string pattern](./standards/I18N_GUIDE.md)
+7. [Members Service Architecture](./design/SYSTEM_ARCHITECTURE_OVERVIEW.md)
+8. [Feature Guides](./features/election-voting/)
 
 ### For Backend Developers
 1. [Getting Started](./development/guides/github/)
-2. **[Code Standards](./CODE_STANDARDS_MAP.md)** - JavaScript, testing, and documentation standards
-3. [System Architecture](./design/)
-4. Service Design Documentation (see services/)
-5. [Database Schema](./integration/DJANGO_DATABASE_SCHEMA.md)
+2. **[Code Standards Map](./CODE_STANDARDS_MAP.md)** - JavaScript, Python, testing, and documentation standards
+3. [Python Guide](./standards/PYTHON_GUIDE.md) - [Python 3.11+](https://www.python.org/), [typing](https://docs.python.org/3/library/typing.html), [Firebase Functions](https://firebase.google.com/docs/functions)
+4. [System Architecture](./design/)
+5. Service Design Documentation (see [services/](../services/))
+6. [Database Schema](./integration/DJANGO_DATABASE_SCHEMA.md) - [PostgreSQL](https://www.postgresql.org/docs/)
 
 ### For DevOps / Infrastructure
 1. [Infrastructure Guide](./development/guides/infrastructure/README.md)

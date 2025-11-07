@@ -30,19 +30,19 @@ Regnhlífarverkefni fyrir kosningakerfi Sósíalistaflokksins ásamt meðlima og
 
 | Service | Technology | Status |
 |---------|-----------|--------|
-| **Members** (Meðlimir) | Firebase + Python Functions | ✅ Production |
-| **Events** (Atburðir) | Node.js + Cloud Run | ✅ Production |
-| **Elections** (Kosningar) | Node.js + Cloud Run | ✅ Production |
-| **Database** | Cloud SQL PostgreSQL 15 | ✅ Production |
+| **Members** (Meðlimir) | [Firebase Hosting](https://firebase.google.com/docs/hosting) + [Python Cloud Functions](https://firebase.google.com/docs/functions) | ✅ Production |
+| **Events** (Atburðir) | [Node.js](https://nodejs.org/) + [Express](https://expressjs.com/) on [Cloud Run](https://cloud.google.com/run) | ✅ Production |
+| **Elections** (Kosningar) | [Node.js](https://nodejs.org/) + [Express](https://expressjs.com/) on [Cloud Run](https://cloud.google.com/run) | ✅ Production |
+| **Database** | [Cloud SQL PostgreSQL 15](https://cloud.google.com/sql/docs/postgres) | ✅ Production |
 
 **Live URLs**: See [DOCUMENTATION_MAP.md](DOCUMENTATION_MAP.md#-production-services-november-4-2025) for service endpoints.
 
 ### Architecture Overview
 
-- **Members Service**: Firebase Hosting + Cloud Functions - National eID (Kenni.is) authentication
-- **Events Service**: Node.js + Express - Election administration and voting token issuance
-- **Elections Service**: Node.js + Express - Anonymous ballot recording (no PII)
-- **Authentication**: Firebase Auth + Kenni.is OAuth PKCE
+- **Members Service**: [Firebase Hosting](https://firebase.google.com/docs/hosting) + [Cloud Functions](https://firebase.google.com/docs/functions) - National eID ([Kenni.is](https://idp.kenni.is/)) authentication
+- **Events Service**: [Node.js](https://nodejs.org/) + [Express](https://expressjs.com/) - Election administration and voting token issuance
+- **Elections Service**: [Node.js](https://nodejs.org/) + [Express](https://expressjs.com/) - Anonymous ballot recording (no PII)
+- **Authentication**: [Firebase Auth](https://firebase.google.com/docs/auth) + [Kenni.is OAuth PKCE](https://oauth.net/2/pkce/)
 
 **Detailed Architecture**: See [docs/design/SYSTEM_ARCHITECTURE_OVERVIEW.md](docs/design/SYSTEM_ARCHITECTURE_OVERVIEW.md)
 
@@ -50,13 +50,13 @@ Regnhlífarverkefni fyrir kosningakerfi Sósíalistaflokksins ásamt meðlima og
 
 ## 🏗️ Key Features
 
-- **Secure Authentication**: National eID integration via Kenni.is
-- **Member Verification**: Automatic sync from Django backend
+- **Secure Authentication**: National eID integration via [Kenni.is](https://idp.kenni.is/)
+- **Member Verification**: Automatic sync from [Django backend](docs/systems/DJANGO_BACKEND_SYSTEM.md)
 - **Anonymous Voting**: Zero-knowledge ballot recording (no PII in Elections service)
-- **Token-Based Security**: One-time SHA-256 hashed tokens
+- **Token-Based Security**: One-time [SHA-256](https://en.wikipedia.org/wiki/SHA-2) hashed tokens
 - **Full Audit Trail**: Complete vote tracking with member identity (Events service only)
 - **S2S Integration**: Secure server-to-server communication
-- **Icelandic Language**: Full UI in Íslenska
+- **Icelandic Language**: Full UI in Íslenska ([R.string pattern](docs/standards/I18N_GUIDE.md))
 
 **Feature Details**: See [DOCUMENTATION_MAP.md](DOCUMENTATION_MAP.md#-repository-structure) for complete feature documentation.
 
@@ -67,14 +67,14 @@ Regnhlífarverkefni fyrir kosningakerfi Sósíalistaflokksins ásamt meðlima og
 **Security Status**: 8.5/10 - Production-ready with comprehensive protections
 
 Key security features:
-- National eID (Kenni.is) authentication
-- OAuth 2.0 PKCE flow (RFC 7636)
-- CSRF protection with state validation
-- Firestore security rules (role-based access)
-- Rate limiting (Cloudflare, 100 req/10sec per IP)
+- National eID ([Kenni.is](https://idp.kenni.is/)) authentication
+- [OAuth 2.0 PKCE flow](https://oauth.net/2/pkce/) ([RFC 7636](https://datatracker.ietf.org/doc/html/rfc7636))
+- [CSRF protection](https://owasp.org/www-community/attacks/csrf) with state validation
+- [Firestore security rules](https://firebase.google.com/docs/firestore/security/get-started) (role-based access)
+- [Rate limiting](https://www.cloudflare.com/learning/bots/what-is-rate-limiting/) ([Cloudflare](https://www.cloudflare.com/), 100 req/10sec per IP)
 - Anonymous voting (Elections service has zero PII)
-- SHA-256 token hashing
-- SSL/TLS Full (strict) encryption
+- [SHA-256](https://en.wikipedia.org/wiki/SHA-2) token hashing
+- [SSL/TLS Full (strict)](https://developers.cloudflare.com/ssl/origin-configuration/ssl-modes/) encryption
 
 **Security Documentation**: See [docs/security/](docs/security/) for complete security analysis and responses.
 
@@ -96,11 +96,11 @@ Key security features:
 
 ### Prerequisites
 
-- Node.js 18+
-- Python 3.11+
-- Firebase CLI
-- gcloud CLI
-- PostgreSQL client (psql)
+- [Node.js 18+](https://nodejs.org/)
+- [Python 3.11+](https://www.python.org/)
+- [Firebase CLI](https://firebase.google.com/docs/cli)
+- [gcloud CLI](https://cloud.google.com/sdk/gcloud)
+- [PostgreSQL client](https://www.postgresql.org/download/) (psql)
 
 ### Quick Start
 
