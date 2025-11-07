@@ -1,133 +1,133 @@
-# i18n Architecture - Þrjú Aðskilin Kerfi
+# i18n Architecture - Three Separate Systems
 
-**Dagsetning:** 7. nóvember 2025  
-**Staða:** Virkt í production
+**Last Updated:** November 7, 2025  
+**Status:** Active in production
 
-## Yfirlit
+## Overview
 
-Ekklesia notar **3 aðskilin i18n (internationalization) kerfi** fyrir mismunandi svæði portalsins. Hvert kerfi hefur sitt eigið XML skráarkerfi og JavaScript loader klasa.
+Ekklesia uses **3 separate i18n (internationalization) systems** for different areas of the portal. Each system has its own XML file structure and JavaScript loader class.
 
-## 🌍 Þrjú i18n Kerfin
+## 🌍 The Three i18n Systems
 
 ### 1. Members Portal (Global) - `R.string`
 
-**Tilgangur:** Almennt félagasvæði (dashboard, profile, voting, etc.)
+**Purpose:** General member area (dashboard, profile, voting, etc.)
 
-**Staðsetning:**
+**Location:**
 ```
 /apps/members-portal/i18n/
 ├── values-is/
-│   └── strings.xml (445 strengir)
+│   └── strings.xml (445 strings)
 └── strings-loader.js
 ```
 
-**Loader Klasi:**
+**Loader Class:**
 ```javascript
 class StringsLoader {
-  // Skilgreint í /i18n/strings-loader.js
+  // Defined in /i18n/strings-loader.js
 }
-export const R = { ... }; // Object með lazy loading
+export const R = { ... }; // Object with lazy loading
 ```
 
-**Notkun í kóða:**
+**Usage in code:**
 ```javascript
 // Import
 import { R } from '/i18n/strings-loader.js';
 
-// Hleðsla
+// Load
 await R.load('is');
 
-// Nota streng
+// Use string
 const title = R.string.login_title;
 const error = R.format(R.string.error_authentication, errorMsg);
 ```
 
-**Dæmi um strengi:**
+**Example strings:**
 - `login_title` - "Innskráning"
 - `dashboard_title` - "Yfirlit"
 - `voting_title` - "Atkvæðagreiðsla"
 - `profile_edit_button` - "Breyta prófíl"
 
-**Skrár sem nota þetta:**
-- `/js/**/*.js` - Allt JavaScript í members-portal
-- `/members-area/**/*.js` - Félagasvæði kóði
-- `/ui/**/*.js` - Almennar UI components
+**Files using this:**
+- `/js/**/*.js` - All JavaScript in members-portal
+- `/members-area/**/*.js` - Member area code
+- `/ui/**/*.js` - Shared UI components
 
 ---
 
 ### 2. Admin Portal - `adminStrings.get()`
 
-**Tilgangur:** Almenn admin stjórnunarborð (sync, members, events)
+**Purpose:** General admin dashboard (sync, members, events)
 
-**Staðsetning:**
+**Location:**
 ```
 /apps/members-portal/admin/
 ├── i18n/
 │   └── values-is/
-│       └── strings.xml (210 strengir)
+│       └── strings.xml (210 strings)
 └── js/
     └── i18n/
         └── admin-strings-loader.js
 ```
 
-**Loader Klasi:**
+**Loader Class:**
 ```javascript
 class AdminStringsLoader {
-  // Skilgreint í /admin/js/i18n/admin-strings-loader.js
+  // Defined in /admin/js/i18n/admin-strings-loader.js
 }
 export const adminStrings = new AdminStringsLoader();
 ```
 
-**Notkun í kóða:**
+**Usage in code:**
 ```javascript
 // Import
 import { adminStrings } from './i18n/admin-strings-loader.js';
 
-// Hleðsla
+// Load
 await adminStrings.load();
 
-// Nota streng
+// Use string
 const title = adminStrings.get('sync_members_title');
 const error = adminStrings.get('error_unauthorized_admin');
 const formatted = adminStrings.get('sync_status_success').replace('%s', count);
 ```
 
-**Dæmi um strengi:**
+**Example strings:**
 - `sync_members_title` - "Samstilla Félaga"
 - `sync_status_success` - "Samstilling tókst"
 - `error_unauthorized_admin` - "Þú hefur ekki admin réttindi"
 - `history_table_date` - "Dagsetning"
 
-**Skrár sem nota þetta:**
+**Files using this:**
 - `/admin/js/admin.js` - Admin dashboard
-- `/admin/js/sync-queue.js` - Sync kerfið
+- `/admin/js/sync-queue.js` - Sync system
 - `/admin/js/sync-history.js` - Sync history
-- `/admin/js/**/*.js` - Allur admin kóði (nema elections)
+- `/admin/js/**/*.js` - All admin code (except elections)
 
-**Athugasemd:** Sumar admin skrár nota **bæði** `adminStrings` OG global `R.string`:
+**Note:** Some admin files use **both** `adminStrings` AND global `R.string`:
 ```javascript
 import { adminStrings } from './i18n/admin-strings-loader.js';
 import { R } from '../../i18n/strings-loader.js';
 
-// adminStrings fyrir admin-specific texta
+// adminStrings for admin-specific text
 const adminTitle = adminStrings.get('sync_members_title');
 
-// R.string fyrir sameiginlega texta (t.d. role badges)
+// R.string for shared text (e.g. role badges)
 const roleText = R.string.role_superadmin;
 ```
 
 ---
 
-### 3. Admin Elections - `R.string` (Aðskilið)
+### 3. Admin Elections - `R.string` (Separate)
 
-**Tilgangur:** Kosningastjórnun (list, create, edit, control, results)
+**Purpose:** Election management (list, create, edit, control, results)
 
-**Staðsetning:**
+**Location:**
 ```
 /apps/members-portal/admin-elections/
 ├── i18n/
 │   ├── values-is/
-│   │   └── strings.xml (177 strengir)
+│   │   └── strings.xml (177 strings)
 │   └── strings-loader.js
 └── js/
     ├── elections-list.js
@@ -135,154 +135,154 @@ const roleText = R.string.role_superadmin;
     └── election-control.js
 ```
 
-**Loader Klasi:**
+**Loader Class:**
 ```javascript
 class AdminElectionsStringsLoader {
-  // Skilgreint í /admin-elections/i18n/strings-loader.js
+  // Defined in /admin-elections/i18n/strings-loader.js
 }
 export const R = new AdminElectionsStringsLoader();
 ```
 
-**Notkun í kóða:**
+**Usage in code:**
 ```javascript
 // Import (relative path!)
 import { R } from '../i18n/strings-loader.js';
 
-// Hleðsla
+// Load
 await R.load('is');
 
-// Nota streng
+// Use string
 const title = R.string.admin_elections_title;
 const label = R.string.create_step_basic_title;
 const error = R.format(R.string.error_load_elections, errorMsg);
 ```
 
-**Dæmi um strengi:**
+**Example strings:**
 - `admin_elections_brand` - "Kosningar"
 - `nav_elections_list` - "Yfirlit Kosninga"
 - `create_step_basic_title` - "Grunnupplýsingar"
 - `filter_status_active` - "Virkar"
 - `btn_create_election` - "Stofna Nýja Kosningu"
 
-**Skrár sem nota þetta:**
+**Files using this:**
 - `/admin-elections/js/elections-list.js`
 - `/admin-elections/js/election-create.js`
 - `/admin-elections/js/election-control.js`
-- `/admin-elections/js/**/*.js` - Allur election admin kóði
+- `/admin-elections/js/**/*.js` - All election admin code
 
 ---
 
-## 🔍 Samanburður Kerfa
+## 🔍 System Comparison
 
-| Eiginleiki | Members Portal | Admin Portal | Admin Elections |
-|-----------|----------------|--------------|-----------------|
+| Feature | Members Portal | Admin Portal | Admin Elections |
+|---------|----------------|--------------|-----------------|
 | **Variable** | `R.string` | `adminStrings` | `R.string` |
-| **Klasanafn** | `StringsLoader` | `AdminStringsLoader` | `AdminElectionsStringsLoader` |
+| **Class Name** | `StringsLoader` | `AdminStringsLoader` | `AdminElectionsStringsLoader` |
 | **XML Path** | `/i18n/values-is/strings.xml` | `/admin/i18n/values-is/strings.xml` | `/admin-elections/i18n/values-is/strings.xml` |
 | **JS Path** | `/i18n/strings-loader.js` | `/admin/js/i18n/admin-strings-loader.js` | `/admin-elections/i18n/strings-loader.js` |
-| **Strengir** | 445 | 210 | 177 |
+| **Strings** | 445 | 210 | 177 |
 | **Usage %** | 51.0% | 66.2% | 88.1% |
 | **API** | `R.string.key`, `R.format()` | `adminStrings.get(key)` | `R.string.key`, `R.format()` |
 | **Import** | `/i18n/strings-loader.js` | `./i18n/admin-strings-loader.js` | `../i18n/strings-loader.js` |
-| **Svæði** | Félagasvæði | Admin almenn | Admin elections |
+| **Area** | Member portal | Admin general | Admin elections |
 
-## 🎯 Hvenær á að nota hvert kerfi?
+## 🎯 When to Use Each System
 
-### Nota Members Portal `R.string` fyrir:
-- ✅ Login/logout texta
-- ✅ Dashboard texta
-- ✅ Profile/settings texta
-- ✅ Atkvæðagreiðslu í félagasvæði
-- ✅ Role badges (notað víða)
-- ✅ Almennar villuskilaboð
-- ✅ Navigation í félagasvæði
-- ✅ UI components sem eru deilt
+### Use Members Portal `R.string` for:
+- ✅ Login/logout text
+- ✅ Dashboard text
+- ✅ Profile/settings text
+- ✅ Voting in member area
+- ✅ Role badges (used everywhere)
+- ✅ Generic error messages
+- ✅ Navigation in member area
+- ✅ Shared UI components
 
-### Nota Admin Portal `adminStrings` fyrir:
-- ✅ Sync management texta
-- ✅ Admin dashboard texta
-- ✅ Member management í admin
-- ✅ Event management í admin
-- ✅ Admin-specific villuskilaboð
-- ✅ Sync history/queue texta
-- ✅ Developer tools texta
+### Use Admin Portal `adminStrings` for:
+- ✅ Sync management text
+- ✅ Admin dashboard text
+- ✅ Member management in admin
+- ✅ Event management in admin
+- ✅ Admin-specific error messages
+- ✅ Sync history/queue text
+- ✅ Developer tools text
 
-### Nota Admin Elections `R.string` fyrir:
-- ✅ Election list texta
+### Use Admin Elections `R.string` for:
+- ✅ Election list text
 - ✅ Election creation wizard
 - ✅ Election control/monitoring
 - ✅ Election results display
 - ✅ Election filters/search
 - ✅ Election-specific validation
-- ✅ Election status texta
+- ✅ Election status text
 
-## 🚨 Algengar Villur
+## 🚨 Common Mistakes
 
-### ❌ Villa 1: Röng R.string breyta
+### ❌ Error 1: Wrong R.string Variable
 
-**Vandamál:**
+**Problem:**
 ```javascript
-// Í /admin-elections/js/elections-list.js
-import { R } from '../../i18n/strings-loader.js'; // ❌ RANGT!
+// In /admin-elections/js/elections-list.js
+import { R } from '../../i18n/strings-loader.js'; // ❌ WRONG!
 
 const title = R.string.admin_elections_title; // undefined!
 ```
 
-**Lausn:**
+**Solution:**
 ```javascript
-// Í /admin-elections/js/elections-list.js
-import { R } from '../i18n/strings-loader.js'; // ✅ RÉTT!
+// In /admin-elections/js/elections-list.js
+import { R } from '../i18n/strings-loader.js'; // ✅ CORRECT!
 
-const title = R.string.admin_elections_title; // ✅ Virkar!
+const title = R.string.admin_elections_title; // ✅ Works!
 ```
 
-### ❌ Villa 2: Nota adminStrings í elections
+### ❌ Error 2: Using adminStrings in Elections
 
-**Vandamál:**
+**Problem:**
 ```javascript
-// Í /admin-elections/js/election-create.js
-import { adminStrings } from '../../admin/js/i18n/admin-strings-loader.js'; // ❌ RANGT!
+// In /admin-elections/js/election-create.js
+import { adminStrings } from '../../admin/js/i18n/admin-strings-loader.js'; // ❌ WRONG!
 
 const title = adminStrings.get('create_step_basic_title'); // undefined!
 ```
 
-**Lausn:**
+**Solution:**
 ```javascript
-// Í /admin-elections/js/election-create.js
-import { R } from '../i18n/strings-loader.js'; // ✅ RÉTT!
+// In /admin-elections/js/election-create.js
+import { R } from '../i18n/strings-loader.js'; // ✅ CORRECT!
 
-const title = R.string.create_step_basic_title; // ✅ Virkar!
+const title = R.string.create_step_basic_title; // ✅ Works!
 ```
 
-### ❌ Villa 3: Blanda saman API
+### ❌ Error 3: Mixing APIs
 
-**Vandamál:**
+**Problem:**
 ```javascript
 // Members portal
-const text = R.get('login_title'); // ❌ R hefur ekki .get() aðferð
+const text = R.get('login_title'); // ❌ R doesn't have .get() method
 
 // Admin elections
-const text = R.format('error_load_elections'); // ❌ Vantar R.string
+const text = R.format('error_load_elections'); // ❌ Missing R.string
 ```
 
-**Lausn:**
+**Solution:**
 ```javascript
 // Members portal
-const text = R.string.login_title; // ✅ Rétt API
+const text = R.string.login_title; // ✅ Correct API
 
 // Admin elections
-const text = R.format(R.string.error_load_elections, error); // ✅ Rétt API
+const text = R.format(R.string.error_load_elections, error); // ✅ Correct API
 ```
 
 ## 📝 Validation
 
-Validation script styður öll 3 kerfin:
+Validation script supports all 3 systems:
 
 ```bash
 python3 scripts/admin/validate-i18n-usage.py
 ```
 
-**Output dæmi:**
+**Example output:**
 ```
 Checking members i18n (apps/members-portal/i18n/values-is/strings.xml)
   Found 445 strings
@@ -297,64 +297,64 @@ Checking admin-elections i18n (apps/members-portal/admin-elections/i18n/values-i
   Used: 156/177 (88.1%)
 ```
 
-## 🔄 Framtíðar Úrbætur
+## 🔄 Future Improvements
 
-### Samræma API (Phase 7?)
+### Unify API (Phase 7?)
 
-Núverandi ósamræmi:
+Current inconsistency:
 - Members/Elections: `R.string.key`
 - Admin: `adminStrings.get(key)`
 
-**Valkostur 1: Samræma á R.string**
+**Option 1: Standardize on R.string**
 ```javascript
-// Breyta admin í að nota R.string
+// Change admin to use R.string
 import { R as adminR } from './i18n/admin-strings-loader.js';
 const text = adminR.string.sync_members_title;
 ```
 
-**Valkostur 2: Samræma á .get()**
+**Option 2: Standardize on .get()**
 ```javascript
-// Breyta öllum í að nota .get()
+// Change all to use .get()
 import { R } from '/i18n/strings-loader.js';
 const text = R.get('login_title');
 ```
 
-**Ákvörðun:** Bíða með þetta þar til:
-1. Öll 3 kerfin virka vel
-2. English translations tilbúnar
-3. Getum gert breaking change með góðri skipulagningu
+**Decision:** Wait until:
+1. All 3 systems work well
+2. English translations ready
+3. Can make breaking change with good planning
 
 ### English Translations
 
-Bæta við stuðningi fyrir ensku í öllum 3 kerfum:
+Add English support to all 3 systems:
 ```
 /i18n/values-en/strings.xml
 /admin/i18n/values-en/strings.xml
 /admin-elections/i18n/values-en/strings.xml
 ```
 
-## 📚 Tengd Skjöl
+## 📚 Related Documents
 
-- [ADMIN_ELECTIONS_I18N.md](./ADMIN_ELECTIONS_I18N.md) - Ítarleg skjölun um admin-elections i18n
-- [ADMIN_ELECTIONS_NAVIGATION_DESIGN.md](./ADMIN_ELECTIONS_NAVIGATION_DESIGN.md) - Navigation hönnun
+- [ADMIN_ELECTIONS_I18N.md](./ADMIN_ELECTIONS_I18N.md) - Detailed admin-elections i18n documentation
+- [ADMIN_ELECTIONS_NAVIGATION_DESIGN.md](./ADMIN_ELECTIONS_NAVIGATION_DESIGN.md) - Navigation design
 - Issue #203 - Admin Elections i18n refactoring
 - Issue #202 - Admin Elections navigation simplification
 
-## 🎓 Samantekt fyrir Developers
+## 🎓 Quick Reference for Developers
 
-**Þumalputtaregla:**
+**Rule of thumb:**
 
-1. **Ertu í `/apps/members-portal/js/` eða `/members-area/`?**
-   → Nota `/i18n/strings-loader.js` → `R.string.key`
+1. **Are you in `/apps/members-portal/js/` or `/members-area/`?**
+   → Use `/i18n/strings-loader.js` → `R.string.key`
 
-2. **Ertu í `/admin/js/` (en EKKI elections)?**
-   → Nota `./i18n/admin-strings-loader.js` → `adminStrings.get(key)`
-   → Gætir þurft `R.string` líka fyrir role badges
+2. **Are you in `/admin/js/` (but NOT elections)?**
+   → Use `./i18n/admin-strings-loader.js` → `adminStrings.get(key)`
+   → May need `R.string` too for role badges
 
-3. **Ertu í `/admin-elections/js/`?**
-   → Nota `../i18n/strings-loader.js` → `R.string.key`
+3. **Are you in `/admin-elections/js/`?**
+   → Use `../i18n/strings-loader.js` → `R.string.key`
 
-**Ef í vafa:**
-- Skoðaðu aðrar skrár í sömu möppu
-- Keyrðu validation: `python3 scripts/admin/validate-i18n-usage.py`
-- Athugaðu hvort strengurinn sé í réttri XML skrá
+**When in doubt:**
+- Check other files in same directory
+- Run validation: `python3 scripts/admin/validate-i18n-usage.py`
+- Check if string exists in correct XML file

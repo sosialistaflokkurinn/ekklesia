@@ -1,8 +1,34 @@
 # Ekklesia Documentation Guide
 
-**Last Updated**: 2025-11-04
+**Last Updated**: 2025-11-07
 **Status**: ✅ Active - Documentation Standards
 **Purpose**: Standards for writing clear, maintainable documentation
+
+---
+
+## 📝 Documentation Language Policy
+
+**CRITICAL RULE: All documentation MUST be written in English.**
+
+This includes:
+- ✅ All `.md` files in `/docs/`
+- ✅ Code comments (JSDoc, Python docstrings, inline comments)
+- ✅ Git commit messages
+- ✅ GitHub issues, PRs, and comments
+- ✅ API documentation
+- ✅ README files at all levels
+- ✅ Architecture Decision Records (ADRs)
+- ✅ Test descriptions and assertions
+
+**Exception**: User-facing text in i18n files (`strings.xml`) should be in the target language (Icelandic/English/etc.)
+
+**Rationale**:
+- Enables international collaboration
+- Follows industry best practices
+- Makes code accessible to AI assistants and tools
+- Ensures consistency across the codebase
+
+**Enforcement**: Code reviews should reject PRs with non-English documentation.
 
 ---
 

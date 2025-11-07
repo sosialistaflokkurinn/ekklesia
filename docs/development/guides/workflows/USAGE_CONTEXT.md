@@ -1,11 +1,24 @@
 # Ekklesia Usage Context & Load Characteristics
 
 **Document Type**: System Requirements - Usage Patterns
-**Last Updated**: 2025-10-27
+**Last Updated**: 2025-11-07
 **Status**: ✅ Active - Critical Design Context
 **Purpose**: Define real-world usage patterns and load characteristics for capacity planning
 
 **Note**: These specifications are pre-production estimates based on analysis of organizational meeting patterns. Will be updated after first production meetings with actual load data.
+
+> **📝 DOCUMENTATION LANGUAGE POLICY**  
+> All documentation MUST be written in **English**, including:
+> - All `.md` files in `/docs/`
+> - Code comments in Python, JavaScript, HTML, CSS
+> - Git commit messages
+> - GitHub issue descriptions and comments
+> - API documentation
+> - README files
+> 
+> **Exception**: User-facing text in i18n files (strings.xml) should be in Icelandic (is) or target language.
+> 
+> **Rationale**: English ensures accessibility for international contributors and follows industry best practices.
 
 ---
 
