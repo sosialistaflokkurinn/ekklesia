@@ -9,7 +9,7 @@
  * Implementation: docs/security/FIREBASE_APP_CHECK_IMPLEMENTATION.md
  */
 
-const admin = require('firebase-admin');
+const admin = require('../firebase'); // Use initialized Firebase Admin SDK
 
 /**
  * Verify Firebase App Check token (ENFORCED)

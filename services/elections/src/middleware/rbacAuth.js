@@ -10,7 +10,7 @@
  * Security: Firebase custom claims for role management
  */
 
-const admin = require('firebase-admin');
+const admin = require('../firebase'); // Use initialized Firebase Admin SDK
 
 /**
  * Verify Firebase ID token and extract user claims
