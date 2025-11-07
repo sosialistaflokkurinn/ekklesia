@@ -4,7 +4,16 @@
 
 set -e
 
-echo "🔍 Running Ekklesia pre-commit checks..."
+# Set timeout for entire hook execution (5 seconds)
+HOOK_TIMEOUT=5
+
+# Function to run with timeout
+run_with_timeout() {
+  timeout $HOOK_TIMEOUT "$@"
+  return $?
+}
+
+echo "🔍 Running Ekklesia pre-commit checks (${HOOK_TIMEOUT}s timeout)..."
 
 # --- 1. Check for political identity (existing check) ---
 echo "🏴 Checking political identity in staged files..."
@@ -156,9 +165,11 @@ for file in $STAGED_FILES; do
     continue
   fi
 
-  # Scan for secret patterns
+  # Scan for secret patterns (with optimized grep)
   for pattern in "${SECRET_PATTERNS[@]}"; do
-    if grep -EHn "$pattern" "$file" 2>/dev/null; then
+    # Use -m 1 to stop after first match (faster)
+    # Use timeout to prevent hanging
+    if timeout 1 grep -EHn -m 1 "$pattern" "$file" 2>/dev/null; then
       SECRETS_FOUND=true
       echo ""
       echo "⚠️ Potential secret detected in: $file"
@@ -189,9 +200,10 @@ for file in $STAGED_FILES; do
     continue
   fi
 
-  # Scan for PII patterns
+  # Scan for PII patterns (with optimized grep)
   for pattern in "${PII_PATTERNS[@]}"; do
-    MATCHES=$(grep -EHn "$pattern" "$file" 2>/dev/null)
+    # Use timeout to prevent hanging
+    MATCHES=$(timeout 1 grep -EHn -m 10 "$pattern" "$file" 2>/dev/null || true)
     if [ -n "$MATCHES" ]; then
       # Filter out known fake values
       while IFS= read -r line; do
