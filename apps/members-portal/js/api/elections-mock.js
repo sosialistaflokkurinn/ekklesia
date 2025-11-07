@@ -34,7 +34,7 @@ const MOCK_RESULTS = {};
 const MOCK_POLICY_SESSIONS = [
   {
     id: 'policy-session-001',
-    title: 'Innflytjendastefna - Vinnuhópur stefnuráðs',
+    title: 'Málefni umsækjenda um alþjóðlega vernd og íbúa af erlendum uppruna',
     type: 'policy_session',
     status: 'break', // 'discussion', 'break', 'voting', 'closed'
     
@@ -46,25 +46,55 @@ const MOCK_POLICY_SESSIONS = [
     voting_ends_at: new Date(Date.now() + 7200000).toISOString(),
     
     policy_draft: {
-      title: 'Innflytjendastefna',
+      title: 'Málefni umsækjenda um alþjóðlega vernd og íbúa af erlendum uppruna',
       sections: [
         {
           id: 'section-1',
-          heading: 'Kafli 1: Bakgrunnur',
-          text: 'Ísland þarf skýra og mannúðlega innflytjendastefnu sem styður við efnahag og mannréttindi.',
+          heading: 'Liður 1',
+          text: 'Að sett verði mannúðleg stefna í málefnum fólks með erlendan bakgrunn, hvort heldur er þeirra sem sækja um alþjóðlega vernd eða annars fólks sem hingað kemur eða hér býr.',
           order: 1
         },
         {
-          id: 'section-2', 
-          heading: 'Kafli 2: Megintillögur',
-          text: 'Tillögurnar fela í sér aukin réttindi fyrir innflytjendur og skýrari ferli fyrir ríkisborgararétt.',
+          id: 'section-2',
+          heading: 'Liður 2',
+          text: 'Að tryggja að málefni fólks af erlendum uppruna séu vel fjármögnuð þannig að fólk sem hingað flyst eða leitar ásjár njóti mannréttinda.',
           order: 2
         },
         {
           id: 'section-3',
-          heading: 'Kafli 3: Framkvæmd',
-          text: 'Framkvæmdaráætlun með tímalínu fyrir innleiðingu stefnunnar á næstu 2 árum.',
+          heading: 'Liður 3',
+          text: 'Að sett verði á laggirnar ráðuneyti í málefnum flóttafólks og íbúa af erlendum uppruna sem heldur uppi skipulagi, þjónustu og upplýsingum um allt er varðar málefni þeirra.',
           order: 3
+        },
+        {
+          id: 'section-4',
+          heading: 'Liður 4',
+          text: 'Að útlendingastofnun í núverandi mynd verði lögð niður og í hennar stað verði sett á laggirnar miðstöð sem heyrir undir ráðuneyti fólks af erlendum uppruna. Hún byggi á mannréttindum og mannúð, með djúpum skilningi á heimsvaldastefnu.',
+          order: 4
+        },
+        {
+          id: 'section-5',
+          heading: 'Liður 5',
+          text: 'Að settur verði umboðsmaður í útlendingamálum sem styður við réttindi, þarfir og hagsmuni fólks af erlendum uppruna.',
+          order: 5
+        },
+        {
+          id: 'section-6',
+          heading: 'Liður 6',
+          text: 'Að tryggja að upplýsingar séu auðsóttar, skýrar og réttar og úrskurðum um vernd fylgi ávallt rökstuðningur.',
+          order: 6
+        },
+        {
+          id: 'section-7',
+          heading: 'Liður 7',
+          text: 'Að fólk sem hér fær vernd njóti viðeigandi stuðnings í allt að fimm ár.',
+          order: 7
+        },
+        {
+          id: 'section-8',
+          heading: 'Liður 8',
+          text: 'Að íslenskukennsla fyrir íbúa af erlendum uppruna sé gjaldfrjáls og boðið sé upp á hana á þeim tíma sem hentar fólki, svo sem á vinnutíma.',
+          order: 8
         }
       ]
     },
@@ -72,22 +102,22 @@ const MOCK_POLICY_SESSIONS = [
     amendments: [
       {
         id: 'amendment-001',
-        section_id: 'section-1',
-        section_heading: 'Kafli 1: Bakgrunnur',
-        original_text: 'Ísland þarf skýra og mannúðlega innflytjendastefnu sem styður við efnahag og mannréttindi.',
-        proposed_text: 'Ísland þarf skýra, mannúðlega og réttláta innflytjendastefnu sem styður við efnahag, mannréttindi og félagslegt réttlæti.',
-        rationale: 'Bæta við "réttláta" og "félagslegt réttlæti" til að undirstrika jafnréttissjónarmið stefnunnar.',
+        section_id: 'section-8',
+        section_heading: 'Liður 8',
+        original_text: 'Að íslenskukennsla fyrir íbúa af erlendum uppruna sé gjaldfrjáls og boðið sé upp á hana á þeim tíma sem hentar fólki, svo sem á vinnutíma.',
+        proposed_text: 'Að íslenskukennsla fyrir íbúa af erlendum uppruna sé gjaldfrjáls.',
+        rationale: 'Stytting á liðnum til að einfalda hann. Tímasetn kennslu er útfærsluatriði sem ekki þarf að tilgreina í stefnunni.',
         submitted_at: new Date(Date.now() - 300000).toISOString(),
         voting_order: 1,
         has_voted: false
       },
       {
         id: 'amendment-002',
-        section_id: 'section-2',
-        section_heading: 'Kafli 2: Megintillögur',
-        original_text: 'Tillögurnar fela í sér aukin réttindi fyrir innflytjendur og skýrari ferli fyrir ríkisborgararétt.',
-        proposed_text: 'Tillögurnar fela í sér aukin réttindi fyrir innflytjendur, skýrari ferli fyrir ríkisborgararétt og aukinn stuðning við aðlögun.',
-        rationale: 'Bæta við stuðningi við aðlögun sem mikilvægum þætti í velgengi innflytjenda.',
+        section_id: 'section-4',
+        section_heading: 'Liður 4',
+        original_text: 'Að útlendingastofnun í núverandi mynd verði lögð niður og í hennar stað verði sett á laggirnar miðstöð sem heyrir undir ráðuneyti fólks af erlendum uppruna. Hún byggi á mannréttindum og mannúð, með djúpum skilningi á heimsvaldastefnu.',
+        proposed_text: 'Að útlendingastofnun verði endurskipulögð og í hennar stað verði sett á laggirnar miðstöð sem heyrir undir ráðuneyti fólks af erlendum uppruna. Hún byggi á mannréttindum og mannúð, með djúpum skilningi á heimsvaldastefnu.',
+        rationale: 'Breyta "lögð niður" í "endurskipulögð" til að vera nákvæmari um að þjónustan heldur áfram en í nýrri mynd.',
         submitted_at: new Date(Date.now() - 240000).toISOString(),
         voting_order: 2,
         has_voted: false
