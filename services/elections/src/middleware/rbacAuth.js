@@ -44,11 +44,23 @@ async function verifyFirebaseToken(req, res, next) {
     // Verify Firebase ID token
     const decodedToken = await admin.auth().verifyIdToken(idToken);
 
+    // Extract role - support both 'role' claim and 'roles' array
+    let userRole = decodedToken.role || null;
+    
+    // If no single 'role' claim, check 'roles' array for admin/superuser
+    if (!userRole && decodedToken.roles) {
+      if (decodedToken.roles.includes('superuser')) {
+        userRole = 'superadmin'; // Map superuser -> superadmin
+      } else if (decodedToken.roles.includes('admin')) {
+        userRole = 'election-manager'; // Map admin -> election-manager
+      }
+    }
+
     // Attach user info to request
     req.user = {
       uid: decodedToken.uid,
       email: decodedToken.email,
-      role: decodedToken.role || null, // Custom claim
+      role: userRole,
       claims: decodedToken, // Full claims object
     };
 
@@ -56,6 +68,7 @@ async function verifyFirebaseToken(req, res, next) {
       uid: req.user.uid,
       email: req.user.email,
       role: req.user.role,
+      originalRoles: decodedToken.roles,
       path: req.path,
     });
 
