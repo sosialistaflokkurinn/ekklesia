@@ -85,7 +85,14 @@ class LinkValidator:
             return
         
         # Resolve file path
-        target_file = (from_file.parent / file_part).resolve()
+        # Handle repository-root-relative paths (starting with /)
+        if file_part.startswith('/'):
+            # Path is relative to repository root
+            repo_root = self.docs_root.parent  # Parent of /docs is repo root
+            target_file = (repo_root / file_part.lstrip('/')).resolve()
+        else:
+            # Path is relative to current file
+            target_file = (from_file.parent / file_part).resolve()
         
         # Check if file exists
         if not target_file.exists():

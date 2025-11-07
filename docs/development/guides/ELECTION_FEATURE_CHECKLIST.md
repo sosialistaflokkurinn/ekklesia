@@ -1438,4 +1438,4 @@ electionState.addEventListener('schedule-changed', (event) => {
 
 **Last Updated:** Nov 6, 2025 (v2.0)
 **Maintained By:** Development Team
-**Questions?** See [Component Library README](/js/components/README.md)
+**Questions?** See [Component Library README](/apps/members-portal/js/components/README.md)

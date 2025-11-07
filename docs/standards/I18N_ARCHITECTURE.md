@@ -336,7 +336,7 @@ Add English support to all 3 systems:
 ## 📚 Related Documents
 
 - [ADMIN_ELECTIONS_I18N.md](./ADMIN_ELECTIONS_I18N.md) - Detailed admin-elections i18n documentation
-- [ADMIN_ELECTIONS_NAVIGATION_DESIGN.md](./ADMIN_ELECTIONS_NAVIGATION_DESIGN.md) - Navigation design
+- [ADMIN_ELECTIONS_NAVIGATION_DESIGN.md](/docs/features/election-voting/ADMIN_ELECTIONS_NAVIGATION_DESIGN.md) - Navigation design
 - Issue #203 - Admin Elections i18n refactoring
 - Issue #202 - Admin Elections navigation simplification
 

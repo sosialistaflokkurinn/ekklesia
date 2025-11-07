@@ -14,7 +14,7 @@ import re
 import json
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 class DetailedDocumentationAudit:
     def __init__(self, docs_root: str):

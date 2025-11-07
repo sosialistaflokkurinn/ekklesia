@@ -774,7 +774,7 @@ If you accidentally commit PII:
 
 ## 📚 Related Documentation
 
-- [Git Workflow Examples](../git/GIT_WORKFLOW_EXAMPLES.md)
+- [Git Workflow Examples](./git/GIT_WORKFLOW_EXAMPLES.md)
 - [GitHub Automation Guide](../../../.github/GITHUB_AUTOMATION_GUIDE.md)
 - [Pull Request Template](../../../.github/pull_request_template.md)
 

@@ -427,7 +427,7 @@ Expected output:
 
 - [Admin Elections Navigation Design](../features/election-voting/ADMIN_ELECTIONS_NAVIGATION_DESIGN.md)
 - [I18n Guide](./I18N_GUIDE.md)
-- [Code Standards](./CODE_STANDARDS.md)
+- [Code Standards](/docs/CODE_STANDARDS.md)
 
 ## Related Issues
 
