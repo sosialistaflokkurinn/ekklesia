@@ -10,7 +10,7 @@
 
 import { initAuthenticatedPage } from '../../js/page-init.js';
 import { debug } from '../../js/utils/debug.js';
-import { R } from '../../i18n/strings-loader.js';
+import { R } from '../i18n/strings-loader.js';
 import { getElectionById } from '../../js/api/elections-api.js';
 import { electionState } from '../../js/utils/election-state.js';
 import { createScheduleControl } from '../../js/components/schedule-control.js';

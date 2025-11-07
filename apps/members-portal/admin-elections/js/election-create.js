@@ -5,7 +5,7 @@
 
 import { getFirebaseAuth } from '../../firebase/app.js';
 import { getElectionRole, requireAdmin, hasPermission, PERMISSIONS } from '../../js/rbac.js';
-import { R } from '../../i18n/strings-loader.js';
+import { R } from '../i18n/strings-loader.js';
 
 const auth = getFirebaseAuth();
 

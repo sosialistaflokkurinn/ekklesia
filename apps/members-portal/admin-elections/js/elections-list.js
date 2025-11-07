@@ -5,7 +5,7 @@
 
 import { getFirebaseAuth } from '../../firebase/app.js';
 import { getElectionRole, canPerformAction, requireAdmin, PERMISSIONS, hasPermission } from '../../js/rbac.js';
-import { R } from '../../i18n/strings-loader.js';
+import { R } from '../i18n/strings-loader.js';
 import { initNavigation } from '../../js/nav.js';
 import { createStatusBadge } from '../../js/components/badge.js';
 import { showModal } from '../../js/components/modal.js';
