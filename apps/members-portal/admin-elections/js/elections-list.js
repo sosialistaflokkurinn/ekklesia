@@ -67,12 +67,36 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function initialize() {
+  initializeNavigation();
   setupFilters();
   setupSearch();
   setupCreateButton();
   
   // Load elections
   await loadElections();
+}
+
+/**
+ * Initialize navigation texts
+ */
+function initializeNavigation() {
+  // Navigation
+  document.getElementById('admin-brand').textContent = R.string.admin_brand;
+  document.getElementById('nav-overview').textContent = R.string.admin_nav_overview;
+  document.getElementById('nav-elections').textContent = R.string.admin_nav_elections;
+  document.getElementById('nav-members').textContent = R.string.admin_nav_members;
+  document.getElementById('nav-events').textContent = R.string.admin_nav_events;
+  document.getElementById('logout-btn').textContent = R.string.admin_nav_logout;
+  
+  // Logout handler
+  document.getElementById('logout-btn').addEventListener('click', async () => {
+    try {
+      await auth.signOut();
+      window.location.href = '/';
+    } catch (error) {
+      console.error('[Elections List] Logout error:', error);
+    }
+  });
 }
 
 /**
