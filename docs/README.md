@@ -41,7 +41,7 @@ Django backend integration, API connectivity, and data synchronization.
 
 ### 📐 Code Standards
 **Required reading for all developers**. Unified code standards and style guides.
-- **[Code Standards (Master Index)](./CODE_STANDARDS.md)** ⭐ **START HERE** - Overview of all standards
+- **[Code Standards (Category Map)](./CODE_STANDARDS_MAP.md)** ⭐ **START HERE** - Overview of all standards
 - **[CSS & BEM Guide](./standards/CSS_BEM_GUIDE.md)** - CSS methodology and design system
 - **[HTML Guide](./standards/HTML_GUIDE.md)** - Semantic HTML and accessibility
 - **[JavaScript Guide](./standards/JAVASCRIPT_GUIDE.md)** - ES6+ standards and patterns
@@ -93,7 +93,7 @@ ekklesia/
 │   └── members-portal/         # Members UI (Firebase Hosting)
 │
 ├── docs/                       # This documentation
-│   ├── CODE_STANDARDS.md       # Master code standards index
+│   ├── CODE_STANDARDS_MAP.md   # Code standards category map
 │   ├── standards/              # Code standards and style guides
 │   ├── architecture/           # System design
 │   ├── features/               # Feature-specific docs
@@ -121,13 +121,13 @@ Choose your path based on your role:
 
 ### For Frontend Developers
 1. [Getting Started](./development/guides/github/)
-2. **[Code Standards](./CODE_STANDARDS.md)** - HTML, CSS, JavaScript, i18n standards
+2. **[Code Standards](./CODE_STANDARDS_MAP.md)** - HTML, CSS, JavaScript, i18n standards
 3. [Members Service Architecture](./design/SYSTEM_ARCHITECTURE_OVERVIEW.md)
 4. [Feature Guides](./features/election-voting/)
 
 ### For Backend Developers
 1. [Getting Started](./development/guides/github/)
-2. **[Code Standards](./CODE_STANDARDS.md)** - JavaScript, testing, and documentation standards
+2. **[Code Standards](./CODE_STANDARDS_MAP.md)** - JavaScript, testing, and documentation standards
 3. [System Architecture](./design/)
 4. Service Design Documentation (see services/)
 5. [Database Schema](./integration/DJANGO_DATABASE_SCHEMA.md)

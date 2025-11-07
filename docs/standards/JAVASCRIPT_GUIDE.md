@@ -1165,7 +1165,7 @@ showToast('Upplýsingar vistaðar', 'success');
 - **HTML Guide**: [/docs/standards/HTML_GUIDE.md](/docs/standards/HTML_GUIDE.md)
 - **CSS & BEM Guide**: [/docs/standards/CSS_BEM_GUIDE.md](/docs/standards/CSS_BEM_GUIDE.md)
 - **i18n Guide**: [/docs/standards/I18N_GUIDE.md](/docs/standards/I18N_GUIDE.md)
-- **Master Code Standards**: [/docs/CODE_STANDARDS.md](/docs/CODE_STANDARDS.md)
+- **Master Code Standards**: [/docs/CODE_STANDARDS_MAP.md](/docs/CODE_STANDARDS_MAP.md)
 
 **External Resources**:
 - **MDN JavaScript Guide**: https://developer.mozilla.org/en-US/docs/Web/JavaScript

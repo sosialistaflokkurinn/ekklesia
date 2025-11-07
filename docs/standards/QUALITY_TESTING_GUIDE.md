@@ -652,7 +652,7 @@ Before marking a feature as "done":
 
 - **JavaScript Guide**: [/docs/standards/JAVASCRIPT_GUIDE.md](/docs/standards/JAVASCRIPT_GUIDE.md) - Testing patterns
 - **Git Workflow Guide**: [/docs/standards/GIT_WORKFLOW_GUIDE.md](/docs/standards/GIT_WORKFLOW_GUIDE.md) - Pre-commit hooks
-- **Master Code Standards**: [/docs/CODE_STANDARDS.md](/docs/CODE_STANDARDS.md)
+- **Master Code Standards**: [/docs/CODE_STANDARDS_MAP.md](/docs/CODE_STANDARDS_MAP.md)
 
 **External Resources**:
 - **Jest Documentation**: https://jestjs.io/

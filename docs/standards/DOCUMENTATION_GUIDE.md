@@ -620,7 +620,7 @@ async function submitVote(electionId, answer) {
 
 ```
 docs/
-├── CODE_STANDARDS.md              # Master index (this file's parent)
+├── CODE_STANDARDS_MAP.md          # Category map (this file's parent)
 ├── standards/                      # All coding standards
 │   ├── CSS_BEM_GUIDE.md
 │   ├── HTML_GUIDE.md
@@ -706,7 +706,7 @@ Before merging code, verify:
 
 - **JavaScript Guide**: [/docs/standards/JAVASCRIPT_GUIDE.md](/docs/standards/JAVASCRIPT_GUIDE.md) - JSDoc syntax
 - **Git Workflow Guide**: [/docs/standards/GIT_WORKFLOW_GUIDE.md](/docs/standards/GIT_WORKFLOW_GUIDE.md) - Commit messages
-- **Master Code Standards**: [/docs/CODE_STANDARDS.md](/docs/CODE_STANDARDS.md)
+- **Master Code Standards**: [/docs/CODE_STANDARDS_MAP.md](/docs/CODE_STANDARDS_MAP.md)
 
 **External Resources**:
 - **JSDoc Reference**: https://jsdoc.app/

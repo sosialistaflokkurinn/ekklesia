@@ -750,7 +750,7 @@ git commit -m "fix: correct commit with right message"
 
 - **Documentation Guide**: [/docs/standards/DOCUMENTATION_GUIDE.md](/docs/standards/DOCUMENTATION_GUIDE.md) - How to write docs
 - **Pull Request Template**: `.github/pull_request_template.md` - PR format
-- **Master Code Standards**: [/docs/CODE_STANDARDS.md](/docs/CODE_STANDARDS.md)
+- **Master Code Standards**: [/docs/CODE_STANDARDS_MAP.md](/docs/CODE_STANDARDS_MAP.md)
 
 **External Resources**:
 - **Conventional Commits**: https://www.conventionalcommits.org/

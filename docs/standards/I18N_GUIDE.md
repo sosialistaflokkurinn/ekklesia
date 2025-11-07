@@ -814,7 +814,7 @@ Possible improvements:
 
 - **HTML Guide**: [/docs/standards/HTML_GUIDE.md](/docs/standards/HTML_GUIDE.md)
 - **JavaScript Guide**: [/docs/standards/JAVASCRIPT_GUIDE.md](/docs/standards/JAVASCRIPT_GUIDE.md)
-- **Master Code Standards**: [/docs/CODE_STANDARDS.md](/docs/CODE_STANDARDS.md)
+- **Master Code Standards**: [/docs/CODE_STANDARDS_MAP.md](/docs/CODE_STANDARDS_MAP.md)
 
 **External Resources**:
 - **Android strings.xml reference**: https://developer.android.com/guide/topics/resources/string-resource

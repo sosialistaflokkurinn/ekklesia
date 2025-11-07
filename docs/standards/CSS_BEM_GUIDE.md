@@ -1075,7 +1075,7 @@ apps/members-portal/admin/styles/
 - **CSS Best Practices**: https://developer.mozilla.org/en-US/docs/Web/CSS
 - **Design Team Standards**: (provided by design team)
 - **Conversion Script**: `scripts/convert-to-bem.js`
-- **Master Code Standards**: [/docs/CODE_STANDARDS.md](/docs/CODE_STANDARDS.md)
+- **Master Code Standards**: [/docs/CODE_STANDARDS_MAP.md](/docs/CODE_STANDARDS_MAP.md)
 
 ---
 
