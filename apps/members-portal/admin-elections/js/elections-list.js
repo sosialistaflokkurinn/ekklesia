@@ -10,6 +10,7 @@ import { initNavigation } from '../../js/nav.js';
 import { createStatusBadge } from '../../js/components/badge.js';
 import { showModal } from '../../js/components/modal.js';
 import { formatDateIcelandic } from '../../js/utils/format.js';
+import { debug } from '../../js/utils/debug.js';
 
 const auth = getFirebaseAuth();
 
@@ -55,7 +56,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       
       // Get election role for API calls
       const electionRole = await getElectionRole();
-      console.log('[Elections List] Election role:', electionRole);
+      debug.log('[Elections List] Election role:', electionRole);
       
       if (!electionRole) {
         alert(R.string.error_not_authorized || 'Þú hefur ekki heimild til að skoða kosningar.');
@@ -71,8 +72,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       userPermissions.canEdit = canPerformAction(currentUserRole, 'edit');
       userPermissions.canManage = canPerformAction(currentUserRole, 'manage');
       
-      console.log('[Elections List] User authenticated with election role:', electionRole);
-      console.log('[Elections List] Permissions cached:', userPermissions);
+      debug.log('[Elections List] User authenticated with election role:', electionRole);
+      debug.log('[Elections List] Permissions cached:', userPermissions);
       
       // User is authenticated and authorized, initialize UI
       await initialize();
@@ -136,7 +137,7 @@ async function loadElections() {
     
     const token = await user.getIdToken();
     
-    console.log('[Elections List] Fetching elections with token...');
+    debug.log('[Elections List] Fetching elections with token...');
     
     // Fetch all elections including hidden ones (admin view)
     const response = await fetch(`${ADMIN_API_URL}?includeHidden=true`, {
@@ -155,7 +156,7 @@ async function loadElections() {
     const data = await response.json();
     elections = data.elections || [];
     
-    console.log('[Elections List] Loaded elections:', elections.length);
+    debug.log('[Elections List] Loaded elections:', elections.length);
     
     // Apply current filters
     filterElections();
@@ -242,7 +243,7 @@ function filterElections() {
     return statusMatch && searchMatch;
   });
   
-  console.log('[Elections List] Filtered:', filteredElections.length, '/', elections.length);
+  debug.log('[Elections List] Filtered:', filteredElections.length, '/', elections.length);
 }
 
 /**
@@ -414,7 +415,7 @@ async function handleAction(event) {
   const action = button.dataset.action;
   const electionId = button.dataset.id;
   
-  console.log('[Elections List] Action:', action, 'Election:', electionId);
+  debug.log('[Elections List] Action:', action, 'Election:', electionId);
   
   switch (action) {
     case 'view':
@@ -511,7 +512,7 @@ async function openElection(electionId) {
               throw new Error(errorMessage);
             }
             
-            console.log('[Elections List] Election opened:', electionId, 'Duration:', durationMinutes, 'min');
+            debug.log('[Elections List] Election opened:', electionId, 'Duration:', durationMinutes, 'min');
             showSuccess(R.string.success_opened);
             
             // Reload elections
@@ -570,7 +571,7 @@ async function closeElection(electionId) {
               throw new Error(errorMessage);
             }
             
-            console.log('[Elections List] Election closed:', electionId);
+            debug.log('[Elections List] Election closed:', electionId);
             showSuccess(R.string.success_closed);
             
             // Reload elections
@@ -613,7 +614,7 @@ async function hideElection(electionId) {
       throw new Error(`API error: ${response.status}`);
     }
     
-    console.log('[Elections List] Election hidden:', electionId);
+    debug.log('[Elections List] Election hidden:', electionId);
     showSuccess(R.string.success_hidden);
     
     // Reload elections
@@ -652,7 +653,7 @@ async function unhideElection(electionId) {
       throw new Error(`API error: ${response.status}`);
     }
     
-    console.log('[Elections List] Election unhidden:', electionId);
+    debug.log('[Elections List] Election unhidden:', electionId);
     showSuccess(R.string.success_unhidden);
     
     // Reload elections
@@ -704,7 +705,7 @@ async function deleteElection(electionId) {
       throw new Error(errorMessage);
     }
     
-    console.log('[Elections List] Election deleted:', electionId);
+    debug.log('[Elections List] Election deleted:', electionId);
     showSuccess(R.string.success_deleted);
     
     // Reload elections
@@ -756,5 +757,5 @@ function showError(message) {
  */
 function showSuccess(message) {
   // TODO: Use toast notification instead of alert
-  console.log('✅', message);
+  debug.log('✅', message);
 }

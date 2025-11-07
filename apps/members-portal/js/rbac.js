@@ -16,6 +16,7 @@
  */
 
 import { getFirebaseAuth } from '../firebase/app.js';
+import { debug } from './utils/debug.js';
 
 const auth = getFirebaseAuth();
 
@@ -185,7 +186,7 @@ export async function getCurrentUserRoles() {
     const idTokenResult = await user.getIdTokenResult(true); // Force refresh
     const roles = idTokenResult.claims.roles || [];
     
-    console.log('[RBAC] User roles from token:', roles);
+    debug.log('[RBAC] User roles from token:', roles);
     return roles;
   } catch (error) {
     console.error('[RBAC] Error getting user roles:', error);
@@ -201,19 +202,19 @@ export async function getCurrentUserRole() {
   const roles = await getCurrentUserRoles();
   
   if (roles.includes(ROLES.SUPERUSER)) {
-    console.log('[RBAC] Highest role: superuser');
+    debug.log('[RBAC] Highest role: superuser');
     return ROLES.SUPERUSER;
   }
   if (roles.includes(ROLES.ADMIN)) {
-    console.log('[RBAC] Highest role: admin');
+    debug.log('[RBAC] Highest role: admin');
     return ROLES.ADMIN;
   }
   if (roles.includes(ROLES.MEMBER)) {
-    console.log('[RBAC] Highest role: member');
+    debug.log('[RBAC] Highest role: member');
     return ROLES.MEMBER;
   }
   
-  console.log('[RBAC] No recognized role found');
+  debug.log('[RBAC] No recognized role found');
   return null;
 }
 
@@ -226,15 +227,15 @@ export async function getElectionRole() {
   const roles = await getCurrentUserRoles();
   
   if (roles.includes(ROLES.SUPERUSER)) {
-    console.log('[RBAC] Mapped superuser -> superadmin (elections)');
+    debug.log('[RBAC] Mapped superuser -> superadmin (elections)');
     return ROLES.SUPERADMIN;
   }
   if (roles.includes(ROLES.ADMIN)) {
-    console.log('[RBAC] Mapped admin -> election-manager (elections)');
+    debug.log('[RBAC] Mapped admin -> election-manager (elections)');
     return ROLES.ELECTION_MANAGER;
   }
   
-  console.log('[RBAC] No election role found');
+  debug.log('[RBAC] No election role found');
   return null;
 }
 
@@ -280,12 +281,12 @@ export async function hasPermission(permission) {
   for (const role of roles) {
     const rolePermissions = ROLE_PERMISSIONS[role] || [];
     if (rolePermissions.includes(permission)) {
-      console.log(`[RBAC] User has permission '${permission}' via role '${role}'`);
+      debug.log(`[RBAC] User has permission '${permission}' via role '${role}'`);
       return true;
     }
   }
   
-  console.log(`[RBAC] User does NOT have permission '${permission}'`);
+  debug.log(`[RBAC] User does NOT have permission '${permission}'`);
   return false;
 }
 
@@ -352,7 +353,7 @@ export function canPerformAction(userRole, action) {
   const userPermissions = permissions[userRole] || [];
   const hasPermission = userPermissions.includes(action);
 
-  console.log(`[RBAC] Can ${userRole} perform '${action}'?`, hasPermission);
+  debug.log(`[RBAC] Can ${userRole} perform '${action}'?`, hasPermission);
   return hasPermission;
 }
 
@@ -380,7 +381,7 @@ export async function requireMember(redirectUrl = '/session/login.html') {
     throw new Error('Member role required');
   }
   
-  console.log('[RBAC] ✓ Member access granted');
+  debug.log('[RBAC] ✓ Member access granted');
   return true;
 }
 
@@ -406,7 +407,7 @@ export async function requireAdmin(redirectUrl = '/members-area/') {
     throw new Error('Admin role required');
   }
   
-  console.log('[RBAC] ✓ Admin access granted');
+  debug.log('[RBAC] ✓ Admin access granted');
   return true;
 }
 
@@ -432,7 +433,7 @@ export async function requireSuperuser(redirectUrl = '/members-area/') {
     throw new Error('Superuser role required');
   }
   
-  console.log('[RBAC] ✓ Superuser access granted');
+  debug.log('[RBAC] ✓ Superuser access granted');
   return true;
 }
 
