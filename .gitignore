@@ -87,6 +87,13 @@ build/
 archive/
 audits/
 
+# ⚠️ USER LOGIN TRACKING SCRIPTS - DO NOT COMMIT TO REMOTE ⚠️
+# These scripts access and display real user login data with PII
+# (names, kennitölur, phone numbers, emails)
+# They should ONLY exist locally for authorized administrators
+services/members/scripts/check-user-logins.js
+services/members/scripts/check-logins-today.js
+
 # Symlink created by setup scripts
 services/members/public
 
