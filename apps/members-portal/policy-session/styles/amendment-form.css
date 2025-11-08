@@ -1,0 +1,153 @@
+/**
+ * Amendment Form Component Styles
+ *
+ * BEM methodology for amendment submission form.
+ */
+
+/* Base component */
+.amendment-form {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Form container */
+.amendment-form__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg, 1.5rem);
+}
+
+/* Form group (label + input) */
+.amendment-form__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 0.5rem);
+  transition: opacity 0.2s ease, max-height 0.3s ease;
+}
+
+.amendment-form__group--hidden {
+  display: none;
+}
+
+/* Labels */
+.amendment-form__label {
+  font-size: var(--font-size-md, 1rem);
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-text-primary, #1a1a1a);
+}
+
+/* Select dropdown */
+.amendment-form__select {
+  padding: var(--spacing-md, 1rem);
+  font-size: var(--font-size-md, 1rem);
+  border: 2px solid var(--color-border, #e0e0e0);
+  border-radius: var(--border-radius-md, 8px);
+  background-color: var(--color-background-white, #ffffff);
+  color: var(--color-text-primary, #1a1a1a);
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.amendment-form__select:hover {
+  border-color: var(--color-border-hover, #b0b0b0);
+}
+
+.amendment-form__select:focus {
+  outline: none;
+  border-color: var(--color-primary, #e5004f);
+  box-shadow: 0 0 0 3px rgba(229, 0, 79, 0.1);
+}
+
+/* Original text display (read-only) */
+.amendment-form__original-text {
+  padding: var(--spacing-md, 1rem);
+  font-size: var(--font-size-md, 1rem);
+  line-height: 1.6;
+  background-color: var(--color-background-light, #f5f5f5);
+  border: 2px solid var(--color-border, #e0e0e0);
+  border-radius: var(--border-radius-md, 8px);
+  color: var(--color-text-secondary, #666666);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Textareas */
+.amendment-form__textarea {
+  padding: var(--spacing-md, 1rem);
+  font-size: var(--font-size-md, 1rem);
+  font-family: inherit;
+  line-height: 1.6;
+  border: 2px solid var(--color-border, #e0e0e0);
+  border-radius: var(--border-radius-md, 8px);
+  background-color: var(--color-background-white, #ffffff);
+  color: var(--color-text-primary, #1a1a1a);
+  resize: vertical;
+  transition: border-color 0.2s ease;
+}
+
+.amendment-form__textarea:hover {
+  border-color: var(--color-border-hover, #b0b0b0);
+}
+
+.amendment-form__textarea:focus {
+  outline: none;
+  border-color: var(--color-primary, #e5004f);
+  box-shadow: 0 0 0 3px rgba(229, 0, 79, 0.1);
+}
+
+.amendment-form__textarea::placeholder {
+  color: var(--color-text-tertiary, #999999);
+}
+
+/* Button group */
+.amendment-form__button-group {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: var(--spacing-md, 1rem);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .amendment-form {
+    padding: 0 var(--spacing-md, 1rem);
+  }
+
+  .amendment-form__form {
+    gap: var(--spacing-md, 1rem);
+  }
+
+  .amendment-form__select,
+  .amendment-form__textarea,
+  .amendment-form__original-text {
+    font-size: var(--font-size-sm, 0.875rem);
+  }
+
+  .amendment-form__button-group {
+    justify-content: stretch;
+  }
+
+  .amendment-form__button-group .button {
+    width: 100%;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .amendment-form__group {
+    transition: none;
+  }
+
+  .amendment-form__select,
+  .amendment-form__textarea {
+    transition: none;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .amendment-form__select,
+  .amendment-form__textarea,
+  .amendment-form__original-text {
+    border-width: 3px;
+  }
+}

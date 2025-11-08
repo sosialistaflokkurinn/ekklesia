@@ -11,7 +11,7 @@
  * - GET /api/elections/:id/results - Get election results
  */
 
-import { MockElectionsAPI } from './elections-mock.js';
+import { MockElectionsAPI } from '../../admin-elections/js/api/elections-admin-mock.js';
 import { debug } from '../utils/debug.js';
 import { authenticatedFetch } from '../auth.js';
 

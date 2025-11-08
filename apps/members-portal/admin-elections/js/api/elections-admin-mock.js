@@ -7,137 +7,120 @@
  * Used when USE_MOCK_API = true in elections-api.js
  */
 
-// Mock data: Single sample election
+// Mock data: Elections with realistic Icelandic scenarios
 const MOCK_ELECTIONS = [
-  // Election 1: Active (can vote now)
+  // Election 1: Active - Formannskosning
   {
-    id: '1',
-    title: 'Árleg félagsfundarkosning 2025',
-    question: 'Hver ætti að vera formaður félagsins?',
+    id: 'election-001',
+    title: 'Formannskosning Sósíalistaflokksins 2025-2026',
+    question: 'Hver á að vera formaður Sósíalistaflokksins á kjörtímabilinu 2025-2026?',
+    description: 'Kjör formanns félagsins fyrir komandi ár. Formaður situr í framkvæmdastjórn og hefur áhrif á stefnumótun.',
     status: 'active',
-    voting_starts_at: new Date().toISOString(),
-    voting_ends_at: new Date(Date.now() + 3600000).toISOString(),
+    voting_starts_at: new Date(Date.now() - 86400000).toISOString(), // Started 1 day ago
+    voting_ends_at: new Date(Date.now() + 172800000).toISOString(), // Ends in 2 days
+    eligibility: 'Öll félagsmenn með virka félagsaðild',
     answers: [
-      { id: '1a', text: 'Alice Johnson' },
-      { id: '1b', text: 'Bob Smith' },
-      { id: '1c', text: 'Carol Williams' },
-      { id: '1d', text: 'David Brown' }
+      { id: '001a', text: 'Lára Björnsdóttir', description: 'Núverandi varaformaður, reynsla í verkalýðshreyfingu' },
+      { id: '001b', text: 'Sigurður Kristjánsson', description: 'Þingmaður, 8 ára reynsla í stjórnmálum' },
+      { id: '001c', text: 'Anna Margrét Jónsdóttir', description: 'Aðstoðarmaður ráðherra, ungir sósíalistar' }
     ],
-    has_voted: false
-  }
-];
+    has_voted: false,
+    type: 'single_choice'
+  },
 
-// Mock results (empty - no closed elections)
-const MOCK_RESULTS = {};
-
-// Mock data: Policy sessions
-const MOCK_POLICY_SESSIONS = [
+  // Election 2: Upcoming - Varaformannskosning
   {
-    id: 'policy-session-001',
-    title: 'Málefni umsækjenda um alþjóðlega vernd og íbúa af erlendum uppruna',
-    type: 'policy_session',
-    status: 'voting', // 'discussion', 'break', 'voting', 'closed'
-    
-    // Timeline (use same pattern as elections)
-    discussion_starts_at: new Date(Date.now() - 3600000).toISOString(),
-    break_starts_at: new Date(Date.now() - 600000).toISOString(),
-    break_ends_at: new Date(Date.now() + 600000).toISOString(),
-    voting_starts_at: new Date(Date.now() + 600000).toISOString(),
-    voting_ends_at: new Date(Date.now() + 7200000).toISOString(),
-    
-    policy_draft: {
-      title: 'Málefni umsækjenda um alþjóðlega vernd og íbúa af erlendum uppruna',
-      sections: [
-        {
-          id: 'section-1',
-          heading: 'Liður 1',
-          text: 'Að sett verði mannúðleg stefna í málefnum fólks með erlendan bakgrunn, hvort heldur er þeirra sem sækja um alþjóðlega vernd eða annars fólks sem hingað kemur eða hér býr.',
-          order: 1,
-          has_voted: false
-        },
-        {
-          id: 'section-2',
-          heading: 'Liður 2',
-          text: 'Að tryggja að málefni fólks af erlendum uppruna séu vel fjármögnuð þannig að fólk sem hingað flyst eða leitar ásjár njóti mannréttinda.',
-          order: 2,
-          has_voted: false
-        },
-        {
-          id: 'section-3',
-          heading: 'Liður 3',
-          text: 'Að sett verði á laggirnar ráðuneyti í málefnum flóttafólks og íbúa af erlendum uppruna sem heldur uppi skipulagi, þjónustu og upplýsingum um allt er varðar málefni þeirra.',
-          order: 3,
-          has_voted: false
-        },
-        {
-          id: 'section-4',
-          heading: 'Liður 4',
-          text: 'Að útlendingastofnun í núverandi mynd verði lögð niður og í hennar stað verði sett á laggirnar miðstöð sem heyrir undir ráðuneyti fólks af erlendum uppruna. Hún byggi á mannréttindum og mannúð, með djúpum skilningi á heimsvaldastefnu.',
-          order: 4,
-          has_voted: false
-        },
-        {
-          id: 'section-5',
-          heading: 'Liður 5',
-          text: 'Að settur verði umboðsmaður í útlendingamálum sem styður við réttindi, þarfir og hagsmuni fólks af erlendum uppruna.',
-          order: 5,
-          has_voted: false
-        },
-        {
-          id: 'section-6',
-          heading: 'Liður 6',
-          text: 'Að tryggja að upplýsingar séu auðsóttar, skýrar og réttar og úrskurðum um vernd fylgi ávallt rökstuðningur.',
-          order: 6,
-          has_voted: false
-        },
-        {
-          id: 'section-7',
-          heading: 'Liður 7',
-          text: 'Að fólk sem hér fær vernd njóti viðeigandi stuðnings í allt að fimm ár.',
-          order: 7,
-          has_voted: false
-        },
-        {
-          id: 'section-8',
-          heading: 'Liður 8',
-          text: 'Að íslenskukennsla fyrir íbúa af erlendum uppruna sé gjaldfrjáls og boðið sé upp á hana á þeim tíma sem hentar fólki, svo sem á vinnutíma.',
-          order: 8,
-          has_voted: false
-        }
-      ]
-    },
-    
-    amendments: [
-      {
-        id: 'amendment-001',
-        section_id: 'section-8',
-        section_heading: 'Liður 8',
-        original_text: 'Að íslenskukennsla fyrir íbúa af erlendum uppruna sé gjaldfrjáls og boðið sé upp á hana á þeim tíma sem hentar fólki, svo sem á vinnutíma.',
-        proposed_text: 'Að íslenskukennsla fyrir íbúa af erlendum uppruna sé gjaldfrjáls.',
-        rationale: 'Stytting á liðnum til að einfalda hann. Tímasetn kennslu er útfærsluatriði sem ekki þarf að tilgreina í stefnunni.',
-        submitted_at: new Date(Date.now() - 300000).toISOString(),
-        voting_order: 1,
-        has_voted: false
-      },
-      {
-        id: 'amendment-002',
-        section_id: 'section-4',
-        section_heading: 'Liður 4',
-        original_text: 'Að útlendingastofnun í núverandi mynd verði lögð niður og í hennar stað verði sett á laggirnar miðstöð sem heyrir undir ráðuneyti fólks af erlendum uppruna. Hún byggi á mannréttindum og mannúð, með djúpum skilningi á heimsvaldastefnu.',
-        proposed_text: 'Að útlendingastofnun verði endurskipulögð og í hennar stað verði sett á laggirnar miðstöð sem heyrir undir ráðuneyti fólks af erlendum uppruna. Hún byggi á mannréttindum og mannúð, með djúpum skilningi á heimsvaldastefnu.',
-        rationale: 'Breyta "lögð niður" í "endurskipulögð" til að vera nákvæmari um að þjónustan heldur áfram en í nýrri mynd.',
-        submitted_at: new Date(Date.now() - 240000).toISOString(),
-        voting_order: 2,
-        has_voted: false
-      }
+    id: 'election-002',
+    title: 'Kjör varaformanns 2025',
+    question: 'Hver á að vera varaformaður Sósíalistaflokksins?',
+    description: 'Varaformaður tekur við hlutverkum formanns þegar þess gerist þörf.',
+    status: 'upcoming',
+    voting_starts_at: new Date(Date.now() + 259200000).toISOString(), // Starts in 3 days
+    voting_ends_at: new Date(Date.now() + 604800000).toISOString(), // Ends in 7 days
+    eligibility: 'Öll félagsmenn með virka félagsaðild',
+    answers: [
+      { id: '002a', text: 'Guðmundur Pétursson' },
+      { id: '002b', text: 'Elín Sveinsdóttir' }
     ],
-    
-    final_vote: {
-      question: 'Samþykkja endanlega stefnu með samþykktum breytingum?',
-      has_voted: false
-    }
+    has_voted: false,
+    type: 'single_choice'
+  },
+
+  // Election 3: Active - Framkvæmdastjórn (multi-choice)
+  {
+    id: 'election-003',
+    title: 'Kjör í framkvæmdastjórn 2025',
+    question: 'Veljið allt að 5 fulltrúa í framkvæmdastjórn félagsins',
+    description: 'Framkvæmdastjórn ber ábyrgð á daglegum rekstri og framkvæmd stefnu flokksins.',
+    status: 'active',
+    voting_starts_at: new Date(Date.now() - 43200000).toISOString(), // Started 12 hours ago
+    voting_ends_at: new Date(Date.now() + 259200000).toISOString(), // Ends in 3 days
+    eligibility: 'Öll félagsmenn með virka félagsaðild',
+    answers: [
+      { id: '003a', text: 'Kristín Davíðsdóttir', description: 'Hagfræðingur, félagsleg réttlæti' },
+      { id: '003b', text: 'Jón Þór Ólafsson', description: 'Umhverfissinni, endurnýjanleg orka' },
+      { id: '003c', text: 'Sigrún Magnúsdóttir', description: 'Kennari, menntamál' },
+      { id: '003d', text: 'Páll Einarsson', description: 'Hjúkrunarfræðingur, heilbrigðismál' },
+      { id: '003e', text: 'María Sigurðardóttir', description: 'Lögfræðingur, mannréttindi' },
+      { id: '003f', text: 'Baldur Árnason', description: 'Verkfræðingur, samgöngumál' },
+      { id: '003g', text: 'Hrefna Jónsdóttir', description: 'Félagsráðgjafi, félagsleg velferð' }
+    ],
+    has_voted: false,
+    type: 'multi_choice',
+    max_choices: 5,
+    min_choices: 1
+  },
+
+  // Election 4: Closed - Past election with results
+  {
+    id: 'election-004',
+    title: 'Framboð til sveitarstjórnarkosninga Reykjavíkur 2024',
+    question: 'Samþykkir þú framboðslista Sósíalistaflokksins til sveitarstjórnarkosninga?',
+    description: 'Atkvæðagreiðsla um framboðslista fyrir sveitarstjórnarkosningar í Reykjavík.',
+    status: 'closed',
+    voting_starts_at: new Date(Date.now() - 2592000000).toISOString(), // 30 days ago
+    voting_ends_at: new Date(Date.now() - 2419200000).toISOString(), // 28 days ago
+    eligibility: 'Félagsmenn í Reykjavík',
+    answers: [
+      { id: '004a', text: 'Samþykki' },
+      { id: '004b', text: 'Hafna' },
+      { id: '004c', text: 'Án álit' }
+    ],
+    has_voted: true,
+    type: 'single_choice'
+  },
+
+  // Election 5: Draft - Being prepared
+  {
+    id: 'election-005',
+    title: 'Kjör fulltrúa á þing Sósíalistaflokksins 2025',
+    question: 'Veljið allt að 3 fulltrúa frá svæðinu þínu',
+    description: 'Kjör fulltrúa á landsþing flokksins sem fer fram í júní 2025.',
+    status: 'draft',
+    voting_starts_at: new Date(Date.now() + 1209600000).toISOString(), // 14 days from now
+    voting_ends_at: new Date(Date.now() + 1814400000).toISOString(), // 21 days from now
+    eligibility: 'Öll félagsmenn',
+    answers: [],
+    has_voted: false,
+    type: 'multi_choice',
+    max_choices: 3
   }
 ];
+
+// Mock results for closed elections
+const MOCK_RESULTS = {
+  'election-004': {
+    election_id: 'election-004',
+    title: 'Framboð til sveitarstjórnarkosninga Reykjavíkur 2024',
+    total_votes: 247,
+    results: [
+      { answer_id: '004a', text: 'Samþykki', votes: 198, percentage: 80.16 },
+      { answer_id: '004b', text: 'Hafna', votes: 31, percentage: 12.55 },
+      { answer_id: '004c', text: 'Án álit', votes: 18, percentage: 7.29 }
+    ],
+    closed_at: new Date(Date.now() - 2419200000).toISOString()
+  }
+};
 
 /**
  * Simulate network delay
