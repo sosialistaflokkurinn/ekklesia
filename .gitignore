@@ -67,6 +67,11 @@ Thumbs.db
 .firebase/
 *.log
 
+# --- Development Tools ---
+# Note: /apps/members-portal/dev-tools/ is tracked in Git
+# These are legitimate debugging tools for development
+# (force-refresh.html, token-debug.html, etc.)
+
 # --- Google Cloud ---
 # Ignore the Cloud SQL Proxy binary itself
 cloud-sql-proxy*
