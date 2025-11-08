@@ -145,14 +145,14 @@ function initializeUITexts() {
  */
 function initializeNavigation() {
   // Defensive check: Ensure strings are loaded
-  if (!R.string || !R.string.admin_brand) {
+  if (!R.string || !R.string.admin_elections_brand) {
     console.error('[Elections List] i18n strings not loaded yet!');
     return;
   }
   
   // Set navigation texts (Elections-specific nav)
-  document.getElementById('nav-brand').textContent = R.string.admin_elections_brand || 'Kosningastjórnun';
-  document.getElementById('nav-elections-list').textContent = R.string.nav_elections_list || 'Kosningar';
+  document.getElementById('nav-brand').textContent = R.string.admin_elections_brand;
+  document.getElementById('nav-elections-list').textContent = R.string.nav_elections_list;
   document.getElementById('nav-back-to-member').textContent = R.string.admin_nav_back_to_member;
   document.getElementById('nav-logout').textContent = R.string.admin_nav_logout;
   

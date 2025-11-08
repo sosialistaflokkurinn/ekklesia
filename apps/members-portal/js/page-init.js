@@ -36,12 +36,19 @@ export async function initI18n() {
  * Also sets ARIA labels for hamburger menu and data attributes for dynamic label toggling.
  */
 export function updateNavigation() {
-  document.getElementById('nav-brand').textContent = R.string.nav_brand;
-  document.getElementById('nav-dashboard').textContent = R.string.nav_dashboard;
-  document.getElementById('nav-profile').textContent = R.string.nav_profile;
-  document.getElementById('nav-events').textContent = R.string.nav_events;
-  document.getElementById('nav-voting').textContent = R.string.nav_voting;
-  document.getElementById('nav-logout').textContent = R.string.nav_logout;
+  const navBrand = document.getElementById('nav-brand');
+  const navDashboard = document.getElementById('nav-dashboard');
+  const navProfile = document.getElementById('nav-profile');
+  const navEvents = document.getElementById('nav-events');
+  const navVoting = document.getElementById('nav-voting');
+  const navLogout = document.getElementById('nav-logout');
+
+  if (navBrand) navBrand.textContent = R.string.nav_brand;
+  if (navDashboard) navDashboard.textContent = R.string.nav_dashboard;
+  if (navProfile) navProfile.textContent = R.string.nav_profile;
+  if (navEvents) navEvents.textContent = R.string.nav_events;
+  if (navVoting) navVoting.textContent = R.string.nav_voting;
+  if (navLogout) navLogout.textContent = R.string.nav_logout;
 
   // Set ARIA labels for hamburger menu button (FIX #5: i18n localization)
   const hamburger = document.getElementById('nav-hamburger');

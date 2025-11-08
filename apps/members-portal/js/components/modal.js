@@ -209,8 +209,8 @@ export function showModal(options = {}) {
  */
 export function showConfirm(title, message, options = {}) {
   const {
-    confirmText = 'Confirm',
-    cancelText = 'Cancel',
+    confirmText = 'Staðfesta',
+    cancelText = 'Hætta við',
     confirmStyle = 'primary'
   } = options;
 
@@ -256,7 +256,7 @@ export function showConfirm(title, message, options = {}) {
  * console.log('User acknowledged');
  */
 export function showAlert(title, message, options = {}) {
-  const { okText = 'OK' } = options;
+  const { okText = 'Í lagi' } = options;
 
   return new Promise((resolve) => {
     const modal = showModal({
