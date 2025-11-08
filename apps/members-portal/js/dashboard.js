@@ -38,6 +38,8 @@ const DASHBOARD_ELEMENTS = [
   'quick-link-events-desc',
   'quick-link-voting-label',
   'quick-link-voting-desc',
+  'quick-link-policy-label',
+  'quick-link-policy-desc',
   'membership-title',
   'membership-status',
   'verify-button-container',
@@ -73,6 +75,8 @@ function updateDashboardStrings() {
   setTextContent('quick-link-events-desc', R.string.quick_links_events_desc, 'dashboard');
   setTextContent('quick-link-voting-label', R.string.quick_links_voting_label, 'dashboard');
   setTextContent('quick-link-voting-desc', R.string.quick_links_voting_desc, 'dashboard');
+  setTextContent('quick-link-policy-label', R.string.quick_links_policy_label, 'dashboard');
+  setTextContent('quick-link-policy-desc', R.string.quick_links_policy_desc, 'dashboard');
 
   // Update membership card
   setTextContent('membership-title', R.string.membership_title, 'dashboard');
@@ -154,9 +158,14 @@ function renderRoleBadges(roles) {
     const key = `role_badge_${role}`;
     const label = R.string[key] || role;
 
-    // Make admin/superuser badges clickable links to admin elections
-    if (role === 'admin' || role === 'superuser') {
-      return `<a href="/admin-elections/" class="role-badge role-badge--clickable" title="${R.string.role_badge_title_open_admin}">${label}</a>`;
+    // Admin → Member management dashboard
+    if (role === 'admin') {
+      return `<a href="/admin/" class="role-badge role-badge--clickable" title="${R.string.role_badge_title_open_member_admin}">${label}</a>`;
+    }
+
+    // Superuser → Elections management dashboard
+    if (role === 'superuser') {
+      return `<a href="/admin-elections/" class="role-badge role-badge--clickable" title="${R.string.role_badge_title_open_elections_admin}">${label}</a>`;
     }
 
     return `<span class="role-badge">${label}</span>`;

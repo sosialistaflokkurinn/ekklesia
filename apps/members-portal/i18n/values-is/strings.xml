@@ -35,7 +35,9 @@
   <string name="quick_links_events_label">Viðburðir</string>
   <string name="quick_links_events_desc">Skoða viðburði og fundi</string>
   <string name="quick_links_voting_label">Kosningar</string>
-  <string name="quick_links_voting_desc">Væntanlegt</string>
+  <string name="quick_links_voting_desc">Skoða kosningar og kjósa</string>
+  <string name="quick_links_policy_label">Stefnumótun</string>
+  <string name="quick_links_policy_desc">Taka þátt í stefnumótun flokksins</string>
   <string name="membership_title">Félagastaða</string>
   <string name="membership_loading">Hleð inn...</string>
   <string name="membership_active">✓ Virk félagsaðild</string>
@@ -50,7 +52,8 @@
   <string name="role_badge_superuser">Kerfisstjóri</string>
   <string name="role_badge_election_manager">Kosningastjóri</string>
   <string name="role_badge_member">Félagi</string>
-  <string name="role_badge_title_open_admin">Opna stjórnborð</string>
+  <string name="role_badge_title_open_member_admin">Opna umsjá félagaskrár</string>
+  <string name="role_badge_title_open_elections_admin">Opna umsjá kosninga</string>
   <string name="profile_title">Prófíllinn minn</string>
   <string name="section_personal_info">Persónuupplýsingar</string>
   <string name="label_name">Nafn</string>
@@ -327,6 +330,12 @@
   <string name="final_vote_yes">Já - Samþykkja stefnu</string>
   <string name="final_vote_no">Nei - Hafna stefnu</string>
   <string name="final_vote_abstain">Sitja hjá</string>
+  
+  <!-- Policy Session Phase Filters -->
+  <string name="filter_discussion">Stefnudrög</string>
+  <string name="filter_break">Breytingatillögur</string>
+  <string name="filter_voting">Atkvæðagreiðsla</string>
+  <string name="filter_closed">Niðurstöður</string>
 
   <!-- Page Tabs Navigation -->
   <string name="tab_all_elections">Allar kosningar</string>
