@@ -42,6 +42,57 @@ Master validation script that runs all documentation checks in logical order.
 
 ---
 
+### Freshness & Maintenance
+
+#### `check-docs-freshness.sh` 🆕
+Checks if key documentation files are up-to-date.
+
+**Purpose:**
+- Monitors freshness of session-start context files
+- Detects stale documentation (default: 7 days)
+- READ-ONLY - does not modify files
+
+**Files monitored:**
+- `docs/status/CURRENT_DEVELOPMENT_STATUS.md`
+- `docs/development/guides/workflows/USAGE_CONTEXT.md`
+- `docs/operations/OPERATIONAL_PROCEDURES.md`
+- `docs/SESSION_START_REMINDER.md`
+
+**Usage:**
+```bash
+./check-docs-freshness.sh        # 7-day threshold (default)
+./check-docs-freshness.sh 14     # 14-day threshold
+```
+
+**Exit codes:**
+- 0 - All docs are fresh
+- 1 - One or more docs are stale/missing
+
+**Last Updated:** Nov 9, 2025 (initial creation)
+
+---
+
+#### `install-git-hook.sh` 🆕
+Installs git post-commit hook for documentation reminders.
+
+**Purpose:**
+- Automatically reminds about doc updates after significant commits
+- Checks if commit includes deployment/infrastructure changes
+- Skips reminder if docs already updated in commit
+
+**Usage:**
+```bash
+./install-git-hook.sh
+```
+
+**What it does:**
+- Creates symlink: `.git/hooks/post-commit` → `post-commit-reminder.sh`
+- Shows reminder after commits with patterns: `feat:`, `deploy`, `infrastructure`, etc.
+
+**Last Updated:** Nov 9, 2025 (initial creation)
+
+---
+
 ### Validation Scripts
 
 #### `validate_documentation_map.py`
@@ -83,7 +134,23 @@ python3 validate-links.py --exclude audits archive
 
 ## 🔄 Workflow
 
+### Setup (One-time)
+
+**Install git hook for documentation reminders:**
+```bash
+./scripts/admin/documentation-maintenance/install-git-hook.sh
+```
+
+This will show a reminder after significant commits to update docs if needed.
+
+---
+
 ### Regular Maintenance (Recommended)
+
+**Check documentation freshness:**
+```bash
+./scripts/admin/documentation-maintenance/check-docs-freshness.sh
+```
 
 **Quick validation:**
 ```bash
@@ -93,12 +160,28 @@ cd /home/gudro/Development/projects/ekklesia
 
 **Individual checks:**
 ```bash
+# Check if docs are up-to-date
+./scripts/admin/documentation-maintenance/check-docs-freshness.sh 7
+
 # Validate DOCUMENTATION_MAP.md only
 python3 scripts/admin/documentation-maintenance/validate_documentation_map.py
 
 # Validate links only
 python3 scripts/admin/documentation-maintenance/validate-links.py
 ```
+
+---
+
+### Automated Workflows
+
+**GitHub Actions:** `.github/workflows/check-docs-freshness.yml`
+
+- Runs weekly on Mondays at 9:00 AM UTC
+- Runs on every push to `main`
+- Creates GitHub issue if docs are stale (>14 days)
+- Adds PR comment if docs need update
+
+**See:** `docs/development/guides/DOCUMENTATION_MAINTENANCE.md` for full automation guide
 
 ---
 
