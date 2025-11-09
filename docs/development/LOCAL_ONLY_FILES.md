@@ -267,6 +267,7 @@ done
 ## Related Documentation
 
 - [GITIGNORE_STRATEGY.md](guides/GITIGNORE_STRATEGY.md) - Overall gitignore approach
+- [SESSION_START_REMINDER.md](../SESSION_START_REMINDER.md) - Session start checklist (includes gitignore reminders)
 - [PII_HANDLING.md](../security/policies/PII_HANDLING.md) - PII protection policies
 - [CHECK_USER_LOGINS.md](../checklists/CHECK_USER_LOGINS.md) - Using login tracking scripts
 - [OPERATIONAL_PROCEDURES.md](../operations/OPERATIONAL_PROCEDURES.md) - System operations

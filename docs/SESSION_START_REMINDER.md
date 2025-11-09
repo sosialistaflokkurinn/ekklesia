@@ -49,10 +49,13 @@
 - Aðgangsorð eða tokens
 - Raunveruleg gögn úr production gagnagrunn
 - Screenshots með PII (nöfn, kennitölur, etc.)
+- Stefnumótandi fundarskýrslur (docs/policy/)
+- Skrár með kennitalum (*KENNITALA*.md, *kennitala*.md)
 
 **Allt í `.gitignore`:**
 - Athugaðu alltaf `.gitignore` áður en þú býrð til nýjar skrár með viðkvæmum gögnum
 - Bættu við reglum ef þarf
+- **Sjá heildaryfirlit**: `docs/development/LOCAL_ONLY_FILES.md` fyrir lista yfir allar gitignored skrár
 
 ---
 
@@ -96,6 +99,8 @@ firebase projects:list
 | Skrá | Staðsetning | Tilgangur |
 |------|-------------|-----------|
 | Git ignore reglur | `.gitignore` | Vernda viðkvæm gögn |
+| **Local-only skrár** | `docs/development/LOCAL_ONLY_FILES.md` | **Listi yfir allar gitignored skrár** |
+| Gitignore stefna | `docs/development/guides/GITIGNORE_STRATEGY.md` | Two-tier .gitignore aðferð |
 | Innskráningstjékklisti | `docs/checklists/CHECK_USER_LOGINS.md` | Skref-fyrir-skref leiðbeiningar |
 | Innskráningarscript | `services/members/scripts/check-user-logins.js` | Aðalverkfæri |
 | Database scripts | `scripts/database/` | PostgreSQL aðgangur |
@@ -113,5 +118,5 @@ firebase projects:list
 
 ---
 
-**Síðast uppfært**: 2025-11-08
-**Ástæða**: Bætt við innskráningarskýrslum og PII verndum
+**Síðast uppfært**: 2025-11-09
+**Ástæða**: Bætt við vísun í LOCAL_ONLY_FILES.md fyrir heildaryfirlit yfir gitignored skrár
