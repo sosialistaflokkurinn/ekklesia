@@ -6,7 +6,7 @@
 
 /* Page layout for authenticated pages */
 body.authenticated {
-  background: var(--color-gray-50);
+  background: var(--color-white);
   min-height: 100vh;
   display: block;
   padding: 0;
@@ -118,8 +118,17 @@ body.authenticated {
 
 .info-grid__item {
   padding: var(--spacing-md);
-  background: var(--color-gray-50);
+  background: white;
   border-radius: var(--radius-sm);
+  border-left: 4px solid var(--color-accent-gold);
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.info-grid__item:hover {
+  background: white;
+  box-shadow: 0 4px 12px rgba(243, 180, 27, 0.15);
+  transform: translateY(-2px);
 }
 
 .info-grid__label {
@@ -148,6 +157,18 @@ body.authenticated {
 
 .card--welcome .card__content {
   color: rgba(255, 255, 255, 0.9);
+}
+
+/* Links card - elevated with shadow */
+.card--links {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+  transform: translateY(0);
+  transition: all 0.3s ease;
+}
+
+.card--links:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
 }
 
 .role-badges {

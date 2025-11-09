@@ -31,7 +31,6 @@ import { showToast } from './components/toast.js';
  */
 const DASHBOARD_ELEMENTS = [
   'welcome-title',
-  'quick-links-title',
   'quick-link-profile-label',
   'quick-link-profile-desc',
   'quick-link-events-label',
@@ -68,7 +67,6 @@ function updateDashboardStrings() {
   document.title = R.string.page_title_dashboard;
 
   // Update quick links
-  setTextContent('quick-links-title', R.string.quick_links_title, 'dashboard');
   setTextContent('quick-link-profile-label', R.string.quick_links_profile_label, 'dashboard');
   setTextContent('quick-link-profile-desc', R.string.quick_links_profile_desc, 'dashboard');
   setTextContent('quick-link-events-label', R.string.quick_links_events_label, 'dashboard');

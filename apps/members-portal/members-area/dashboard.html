@@ -10,7 +10,7 @@
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="stylesheet" href="/styles/global.css?v=20251027">
   <link rel="stylesheet" href="/styles/components/nav.css?v=20251027">
-  <link rel="stylesheet" href="/styles/components/page.css?v=20251027">
+  <link rel="stylesheet" href="/styles/components/page.css?v=20251109-6">
   <link rel="stylesheet" href="/styles/components/button.css?v=20251106">
   <link rel="stylesheet" href="/styles/components/modal.css?v=20251106">
   <link rel="stylesheet" href="/styles/components/toast.css?v=20251106">
@@ -19,11 +19,10 @@
   <!-- Navigation -->
   <nav class="nav">
     <div class="nav__container">
-      <a href="/members-area/dashboard.html" class="nav__brand" id="nav-brand">Loading...</a>
+      <a href="/members-area/dashboard.html" class="nav__brand" id="nav-brand">Sósíalistaflokkurinn</a>
 
       <!-- Hamburger Button (mobile only) -->
-      <button class="nav__hamburger" id="nav-hamburger" aria-expanded="false">
-        <span class="nav__hamburger-line"></span>
+      <button class="nav__hamburger" id="nav-hamburger" aria-expanded="false" aria-label="Opna valmynd" data-open-label="Opna valmynd" data-close-label="Loka valmynd">
         <span class="nav__hamburger-line"></span>
         <span class="nav__hamburger-line"></span>
       </button>
@@ -34,16 +33,14 @@
       <!-- Navigation Drawer -->
       <div class="nav__drawer" id="nav-drawer" aria-hidden="true">
         <!-- Close button (mobile only) -->
-        <button class="nav__close" id="nav-close">
+        <button class="nav__close" id="nav-close" aria-label="Loka valmynd">
           <span class="nav__close-icon">✕</span>
         </button>
 
         <div class="nav__links">
-          <a href="/members-area/dashboard.html" class="nav__link nav__link--active" id="nav-dashboard">Loading...</a>
-          <a href="/members-area/profile.html" class="nav__link" id="nav-profile">Loading...</a>
-          <a href="/events/" class="nav__link" id="nav-events">Loading...</a>
-          <a href="/elections/" class="nav__link" id="nav-voting">Loading...</a>
-          <a href="#" class="nav__link nav__link--logout" id="nav-logout">Loading...</a>
+          <a href="/members-area/dashboard.html" class="nav__link nav__link--active" id="nav-dashboard">Mín síða</a>
+          <a href="/members-area/profile.html" class="nav__link" id="nav-profile">Prófíll</a>
+          <a href="#" class="nav__link nav__link--logout" id="nav-logout">Útskrá</a>
         </div>
       </div>
     </div>
@@ -58,24 +55,23 @@
     </div>
 
     <!-- Quick Links -->
-    <div class="card">
-      <h3 class="card__title" id="quick-links-title">Loading...</h3>
+    <div class="card card--links">
       <div class="info-grid">
         <a href="/members-area/profile.html" class="info-grid__item u-clickable">
-          <div class="info-grid__label" id="quick-link-profile-label">Loading...</div>
-          <div class="info-grid__value" id="quick-link-profile-desc">Loading...</div>
+          <div class="info-grid__label" id="quick-link-profile-label">Prófíllinn minn</div>
+          <div class="info-grid__value" id="quick-link-profile-desc">Skoða og breyta upplýsingunum þínum</div>
         </a>
         <a href="/events/" class="info-grid__item u-clickable">
-          <div class="info-grid__label" id="quick-link-events-label">Loading...</div>
-          <div class="info-grid__value" id="quick-link-events-desc">Loading...</div>
+          <div class="info-grid__label" id="quick-link-events-label">Viðburðir</div>
+          <div class="info-grid__value" id="quick-link-events-desc">Skoða viðburði og fundi</div>
         </a>
         <a href="/elections/" class="info-grid__item u-clickable">
-          <div class="info-grid__label" id="quick-link-voting-label">Loading...</div>
-          <div class="info-grid__value" id="quick-link-voting-desc">Loading...</div>
+          <div class="info-grid__label" id="quick-link-voting-label">Kosningar</div>
+          <div class="info-grid__value" id="quick-link-voting-desc">Skoða kosningar og kjósa</div>
         </a>
         <a href="/policy-session/" class="info-grid__item u-clickable">
-          <div class="info-grid__label" id="quick-link-policy-label">Loading...</div>
-          <div class="info-grid__value" id="quick-link-policy-desc">Loading...</div>
+          <div class="info-grid__label" id="quick-link-policy-label">Stefnumótun</div>
+          <div class="info-grid__value" id="quick-link-policy-desc">Taka þátt í stefnumótun flokksins</div>
         </a>
       </div>
     </div>
@@ -94,6 +90,6 @@
 
   <!-- Profile Update Modal created dynamically by dashboard.js using showModal() component -->
 
-  <script type="module" src="/js/dashboard.js?v=20251106-2"></script>
+  <script type="module" src="/js/dashboard.js?v=20251109"></script>
 </body>
 </html>

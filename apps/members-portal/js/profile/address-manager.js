@@ -9,7 +9,7 @@
 
 import { R } from '../../i18n/strings-loader.js';
 import { getFirebaseFirestore } from '../../firebase/app.js';
-import { doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { doc, updateDoc, deleteField } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { getCountriesSorted, getCountryFlag } from '../utils/countries.js';
 import { debug } from '../utils/debug.js';
 import { showToast } from '../components/toast.js';
@@ -90,10 +90,13 @@ export class AddressManager {
 
     const flag = getCountryFlag(defaultAddress.country);
     const street = defaultAddress.street || '';
+    const number = defaultAddress.number || '';
+    const letter = defaultAddress.letter || '';
     const postal = defaultAddress.postal_code || '';
     const city = defaultAddress.city || '';
 
-    simpleDisplay.textContent = `${flag} ${street}, ${postal} ${city}`.trim();
+    const fullStreet = `${street} ${number}${letter}`.trim();
+    simpleDisplay.textContent = `${flag} ${fullStreet}, ${postal} ${city}`.trim();
   }
 
   /**
@@ -181,15 +184,30 @@ export class AddressManager {
       row1.appendChild(defaultIcon);
       row1.appendChild(deleteBtn);
 
-      // Row 2: Street input
+      // Row 2: Street input + Number + Letter
       const row2 = document.createElement('div');
       row2.className = 'address-item__row';
 
       const streetInput = document.createElement('input');
       streetInput.type = 'text';
-      streetInput.className = 'address-input';
+      streetInput.className = 'address-input address-input--street';
       streetInput.value = address.street || '';
       streetInput.placeholder = R.string.label_street;
+
+      const numberInput = document.createElement('input');
+      numberInput.type = 'text';
+      numberInput.className = 'address-input address-input--number';
+      numberInput.value = address.number || '';
+      numberInput.placeholder = R.string.label_house_number;
+      numberInput.style.width = '80px';
+
+      const letterInput = document.createElement('input');
+      letterInput.type = 'text';
+      letterInput.className = 'address-input address-input--letter';
+      letterInput.value = address.letter || '';
+      letterInput.placeholder = R.string.label_house_letter;
+      letterInput.style.width = '60px';
+      letterInput.maxLength = 2;
 
       streetInput.addEventListener('blur', async (e) => {
         const newStreet = e.target.value.trim();
@@ -206,7 +224,39 @@ export class AddressManager {
         }
       });
 
+      numberInput.addEventListener('blur', async (e) => {
+        const newNumber = e.target.value.trim();
+        debug.log(`🔢 House number blur (index ${index}): "${address.number}" → "${newNumber}"`);
+
+        if (newNumber !== address.number) {
+          debug.log('✏️ House number changed, updating...');
+          this.addresses[index].number = newNumber;
+          showStatus(statusIcon, 'loading', { baseClass: 'profile-field__status' });
+          await this.save();
+          showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
+        } else {
+          debug.log('ℹ️ No change, skipping save');
+        }
+      });
+
+      letterInput.addEventListener('blur', async (e) => {
+        const newLetter = e.target.value.trim().toUpperCase();
+        debug.log(`🔤 House letter blur (index ${index}): "${address.letter}" → "${newLetter}"`);
+
+        if (newLetter !== address.letter) {
+          debug.log('✏️ House letter changed, updating...');
+          this.addresses[index].letter = newLetter;
+          showStatus(statusIcon, 'loading', { baseClass: 'profile-field__status' });
+          await this.save();
+          showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
+        } else {
+          debug.log('ℹ️ No change, skipping save');
+        }
+      });
+
       row2.appendChild(streetInput);
+      row2.appendChild(numberInput);
+      row2.appendChild(letterInput);
 
       // Row 3: Postal code + City
       const row3 = document.createElement('div');
@@ -300,6 +350,8 @@ export class AddressManager {
     const newAddress = {
       country: 'IS',
       street: '',
+      number: '',
+      letter: '',
       postal_code: '',
       city: '',
       is_default: this.addresses.length === 0
@@ -381,12 +433,15 @@ export class AddressManager {
 
       debug.log('📝 Firestore path: /members/' + kennitalaKey);
 
+      // Delete old address field (root level) and save new addresses array
       await updateDoc(memberDocRef, {
         'profile.addresses': this.addresses,
-        'profile.updated_at': new Date()
+        'profile.updated_at': new Date(),
+        'address': deleteField()  // Remove old address structure
       });
 
       debug.log('✅ Addresses saved successfully to Firestore');
+      debug.log('🗑️ Old address field deleted from root level');
 
       if (statusIcon) {
         statusIcon.className = 'profile-field__status profile-field__status--success';
@@ -400,6 +455,9 @@ export class AddressManager {
 
       showToast(R.string.profile_address_saved, 'success');
       debug.log('🎉 Toast notification shown');
+
+      // Update simple display to show changes in collapsed view
+      this.updateSimpleDisplay();
 
     } catch (error) {
       debug.error('❌ Failed to save addresses:', error);

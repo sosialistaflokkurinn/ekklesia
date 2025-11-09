@@ -24,11 +24,10 @@
   <!-- Navigation -->
   <nav class="nav">
     <div class="nav__container">
-      <a href="/admin/admin.html" class="nav__brand" id="nav-brand"></a>
+      <a href="/admin/admin.html" class="nav__brand" id="nav-brand">Ekklesia Stjórnkerfi</a>
 
       <!-- Hamburger Button (mobile only) -->
-      <button class="nav__hamburger" id="nav-hamburger" aria-expanded="false">
-        <span class="nav__hamburger-line"></span>
+      <button class="nav__hamburger" id="nav-hamburger" aria-expanded="false" aria-label="Opna valmynd" data-open-label="Opna valmynd" data-close-label="Loka valmynd">
         <span class="nav__hamburger-line"></span>
         <span class="nav__hamburger-line"></span>
       </button>
@@ -39,18 +38,18 @@
       <!-- Navigation Drawer -->
       <div class="nav__drawer" id="nav-drawer" aria-hidden="true">
         <!-- Close button (mobile only) -->
-        <button class="nav__close" id="nav-close">
+        <button class="nav__close" id="nav-close" aria-label="Loka valmynd">
           <span class="nav__close-icon">✕</span>
         </button>
 
         <div class="nav__links">
-          <a href="/admin/admin.html" class="nav__link" id="nav-admin-dashboard"></a>
-          <a href="/admin/members.html" class="nav__link" id="nav-admin-members"></a>
-          <a href="/admin/sync-members.html" class="nav__link nav__link--active" id="nav-admin-sync"></a>
-          <a href="/admin/sync-queue.html" class="nav__link" id="nav-admin-queue"></a>
-          <a href="/admin/sync-history.html" class="nav__link" id="nav-admin-history"></a>
-          <a href="/members-area/dashboard.html" class="nav__link" id="nav-back-to-member"></a>
-          <a href="#" class="nav__link nav__link--logout" id="nav-logout"></a>
+          <a href="/admin/admin.html" class="nav__link" id="nav-admin-dashboard">Yfirlit</a>
+          <a href="/admin/members.html" class="nav__link" id="nav-admin-members">Félagar</a>
+          <a href="/admin/sync-members.html" class="nav__link nav__link--active" id="nav-admin-sync">Samstilla félagaskrá</a>
+          <a href="/admin/sync-queue.html" class="nav__link" id="nav-admin-queue">Samstillingarbiðröð</a>
+          <a href="/admin/sync-history.html" class="nav__link" id="nav-admin-history">Samstillingasaga</a>
+          <a href="/members-area/dashboard.html" class="nav__link" id="nav-back-to-member">Aftur á félagavef</a>
+          <a href="#" class="nav__link nav__link--logout" id="nav-logout">Útskrá</a>
         </div>
       </div>
     </div>

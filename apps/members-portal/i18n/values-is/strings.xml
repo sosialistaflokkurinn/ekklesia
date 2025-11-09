@@ -84,7 +84,9 @@
   <string name="profile_phone_save_error">Villa við vistun símanúmers</string>
   <string name="btn_add_phone_text">+ Bæta við símanúmeri</string>
   <string name="label_addresses">Heimilisföng</string>
-  <string name="label_street">Götuheiti og húsnúmer</string>
+  <string name="label_street">Götuheiti</string>
+  <string name="label_house_number">Húsnúmer</string>
+  <string name="label_house_letter">Húsbókstafur</string>
   <string name="label_postal_code">Póstnúmer</string>
   <string name="label_city">Bær/Sveitarfélag</string>
   <string name="profile_no_addresses">Engin heimilisföng skráð</string>
@@ -230,7 +232,7 @@
   <string name="validation_country_required">Vinsamlegast veldu land</string>
   <string name="validation_address_required">Heimilisfang má ekki vera tómt</string>
   <string name="validation_postal_code_invalid">Ógilt póstnúmer</string>
-  <string name="validation_foreign_phone_invalid">Vinsamlegast byrjaðu á + og landskóða. Dæmi: +45 12345678 eða +1 206-555-0142</string>
+  <string name="validation_foreign_phone_invalid">Vinsamlegast byrjaðu á + og landskóða. Dæmi: +45 12345555 eða +1 206-555-0100</string>
   <string name="profile_autosave_success">Vistað sjálfkrafa</string>
   <string name="profile_autosave_error">Villa við vistun</string>
   

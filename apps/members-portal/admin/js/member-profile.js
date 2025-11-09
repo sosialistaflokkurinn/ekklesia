@@ -221,7 +221,7 @@ async function loadMemberData() {
     debug.log('📦 Member data loaded:', memberData);
 
     // Render profile
-    renderProfile();
+    await renderProfile();
     showProfile();
 
   } catch (error) {
@@ -235,10 +235,10 @@ async function loadMemberData() {
 /**
  * Render profile data to the page
  * Reads from nested memberData structure (profile.*, membership.*, metadata.*)
- * 
- * @returns {void}
+ *
+ * @returns {Promise<void>}
  */
-function renderProfile() {
+async function renderProfile() {
   // Get profile data (data is in memberData.profile.*)
   const profile = memberData.profile || {};
   
@@ -306,6 +306,12 @@ function renderProfile() {
   addressManager.initialize(migratedAddresses);
   addressManager.setupListeners();
   addressManager.render();
+
+  // Auto-save if migration patched addresses (added missing fields)
+  if (migratedAddresses._needsSave) {
+    debug.log('🔄 Migration patched addresses, auto-saving to Firestore...');
+    await addressManager.save();
+  }
 
   // Setup field listeners for auto-save
   setupFieldListeners();
