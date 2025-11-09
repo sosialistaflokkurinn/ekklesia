@@ -1,7 +1,7 @@
 # Cloud Run Services Architecture
 
 **Document Type**: Infrastructure Documentation
-**Last Updated**: 2025-10-31
+**Last Updated**: 2025-11-09
 **Status**: ✅ Active - Production Services
 **Project**: ekklesia-prod-10-2025
 **Region**: europe-west2 (London)
@@ -22,10 +22,12 @@ Ekklesia uses [Google Cloud Run](https://cloud.google.com/run) to deploy and man
 
 #### 1. elections-service
 **Type**: Node.js Container (Express)
-**Purpose**: Anonymous ballot recording and voting
+**Purpose**: Anonymous ballot recording, voting, and election administration
 **Deployment**: Source-based (Dockerfile)
 **URL**: https://elections-service-521240388393.europe-west2.run.app
-**Authentication**: Public access (token-based voting)
+**Authentication**:
+- Public access (token-based voting)
+- Firebase Auth (admin API)
 **Latest Deploy**: 2025-10-31 (revision 00010-lzw)
 
 **Key Features**:
@@ -33,6 +35,12 @@ Ekklesia uses [Google Cloud Run](https://cloud.google.com/run) to deploy and man
 - One-time token enforcement
 - Vote validation and recording
 - Results aggregation (server-to-server only)
+- **Admin API** (10 endpoints):
+  - Full CRUD for elections management
+  - Lifecycle management (draft → published → closed)
+  - Soft delete (hide/unhide)
+  - Hard delete (superadmin only)
+  - Results retrieval for closed elections
 
 **Technology Stack**:
 - [Node.js 18+](https://nodejs.org/)
@@ -54,6 +62,41 @@ Ekklesia uses [Google Cloud Run](https://cloud.google.com/run) to deploy and man
 ```
 
 **Security Status**: ✅ 0 vulnerabilities (npm audit)
+
+**Admin API Endpoints** (Added Nov 2025 - Issue #192):
+
+*CRUD Operations:*
+1. `GET /api/admin/elections` - List elections (filters: status, hidden, search, pagination)
+2. `POST /api/admin/elections` - Create election (draft status)
+3. `GET /api/admin/elections/:id` - Get single election
+4. `PATCH /api/admin/elections/:id` - Update election (draft only)
+
+*Lifecycle Management:*
+5. `POST /api/admin/elections/:id/open` - Publish election
+6. `POST /api/admin/elections/:id/close` - Close voting
+
+*Soft Delete:*
+7. `POST /api/admin/elections/:id/hide` - Hide election
+8. `POST /api/admin/elections/:id/unhide` - Restore hidden election
+
+*Hard Delete & Results:*
+9. `DELETE /api/admin/elections/:id` - Permanent delete (superadmin only)
+10. `GET /api/admin/elections/:id/results` - Get results (closed elections)
+
+**RBAC Implementation**:
+- Middleware: `services/elections/src/middleware/rbacAuth.js`
+- Roles: `election-manager` (full CRUD), `superadmin` (+ hard delete)
+- Authentication: Firebase token verification with custom claims
+- All admin endpoints require valid Firebase ID token
+
+**Database Schema**:
+- Migration 003 (`003_admin_features.sql`) adds:
+  - `hidden` (BOOLEAN) - Soft delete flag
+  - `voting_type` (VARCHAR) - 'single-choice' or 'multi-choice'
+  - `max_selections` (INTEGER) - Max selections for multi-choice
+  - `eligibility` (VARCHAR) - Who can vote: 'members', 'admins', 'all'
+  - `scheduled_start`/`scheduled_end` (TIMESTAMP) - Optional scheduling
+  - `updated_by` (VARCHAR) - Last modifier UID
 
 ---
 
