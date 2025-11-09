@@ -168,6 +168,20 @@
   <string name="config_api_elections">https://elections-service-ymzrguoifa-nw.a.run.app</string>
   <string name="path_dashboard">/members-area/dashboard.html</string>
   <string name="config_firebase_region">europe-west2</string>
+
+  <!--
+    NOTE: Election-specific strings have been migrated to /elections/i18n/values-is/strings.xml
+
+    The elections area now has its own comprehensive i18n with 117+ strings covering:
+    - Elections list and filtering
+    - Election detail and voting UI
+    - Results display
+    - Error handling
+    - Navigation
+
+    Strings below are kept for backwards compatibility with code that hasn't been migrated yet.
+    For new election features, use the dedicated elections i18n.
+  -->
   <string name="page_title_elections">Kosningar - Sósíalistaflokkurinn</string>
   <string name="page_title_election_detail">Kosning - Sósíalistaflokkurinn</string>
   <string name="elections_title">Kosningar</string>

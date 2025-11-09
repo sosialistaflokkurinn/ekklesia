@@ -63,4 +63,109 @@
   <string name="btn_cancel">Hætta við</string>
   <string name="btn_confirm">Staðfesta</string>
   <string name="loading">Hleður...</string>
+
+  <!-- Filter Tabs -->
+  <string name="filter_all">Allar kosningar</string>
+  <string name="filter_active">Virkar</string>
+  <string name="filter_upcoming">Væntanlegar</string>
+  <string name="filter_closed">Lokaðar</string>
+  <string name="filter_policy">Stefnumótun</string>
+  <string name="filter_candidates">Framboð</string>
+
+  <!-- Election Status -->
+  <string name="status_draft">Drög</string>
+  <string name="status_published">Birt</string>
+  <string name="status_active">Virk</string>
+  <string name="status_voting">Atkvæðagreiðsla</string>
+  <string name="status_upcoming">Væntanleg</string>
+  <string name="status_closed">Lokið</string>
+  <string name="status_hidden">Falið</string>
+
+  <!-- Election Types -->
+  <string name="type_policy_session">Stefnumótun</string>
+  <string name="type_candidate">Framboðskosning</string>
+  <string name="type_board">Stjórnarkjör</string>
+
+  <!-- More Election Card Strings -->
+  <string name="election_card_view">Skoða</string>
+  <string name="election_card_vote">Greiða atkvæði</string>
+  <string name="election_card_results">Sjá niðurstöður</string>
+  <string name="election_card_starts">Byrjar:</string>
+  <string name="election_card_ends">Endar:</string>
+  <string name="election_card_eligible">Þú getur kosið</string>
+  <string name="election_card_not_eligible">Þú getur ekki kosið</string>
+
+  <!-- More Election Detail Strings -->
+  <string name="election_detail_description">Lýsing</string>
+  <string name="election_detail_dates">Dagsetningar</string>
+  <string name="election_detail_eligibility">Kjörgengi</string>
+  <string name="election_detail_status">Staða</string>
+  <string name="election_detail_loading">Hleð kosningum...</string>
+  <string name="election_detail_error">Villa við að sækja kosningar</string>
+  <string name="election_detail_not_found">Kosning fannst ekki</string>
+
+  <!-- More Voting Strings -->
+  <string name="vote_submit">Senda atkvæði</string>
+  <string name="vote_cancel">Hætta við</string>
+  <string name="vote_abstain">Sitja hjá</string>
+  <string name="vote_already_voted">Þú hefur nú þegar kosið</string>
+  <string name="vote_not_eligible">Þú hefur ekki kjörgengi í þessum kosningum</string>
+  <string name="vote_not_open">Atkvæðagreiðsla er ekki opin</string>
+  <string name="vote_error">Villa við að skrá atkvæði</string>
+  <string name="vote_success">Atkvæði skráð</string>
+  <string name="vote_voting">Skrái atkvæði...</string>
+
+  <!-- Ballot -->
+  <string name="ballot_title">Atkvæðaseðill</string>
+  <string name="ballot_instructions">Veldu einn eða fleiri valkosti</string>
+  <string name="ballot_required">Þú verður að velja að minnsta kosti einn valkost</string>
+
+  <!-- Results -->
+  <string name="results_title">Niðurstöður</string>
+  <string name="results_votes_cast">Atkvæði greidd:</string>
+  <string name="results_turnout">Kjörsókn:</string>
+  <string name="results_total_votes">Heildaratkvæði:</string>
+  <string name="results_yes">Já:</string>
+  <string name="results_no">Nei:</string>
+  <string name="results_abstain">Sitja hjá:</string>
+  <string name="results_loading">Hleð niðurstöðum...</string>
+  <string name="results_error">Villa við að sækja niðurstöður</string>
+  <string name="results_not_available">Niðurstöður ekki tiltækar</string>
+  <string name="results_pending">Atkvæðagreiðsla í gangi</string>
+
+  <!-- Candidates (for future candidate elections) -->
+  <string name="candidates_title">Frambjóðendur</string>
+  <string name="candidates_name">Nafn</string>
+  <string name="candidates_bio">Ferill</string>
+  <string name="candidates_select">Velja</string>
+
+  <!-- More Navigation -->
+  <string name="nav_back_to_portal">Aftur á félagsvef</string>
+  <string name="nav_logout">Útskrá</string>
+  <string name="nav_dashboard">Mín síða</string>
+  <string name="nav_profile">Prófíll</string>
+
+  <!-- More Errors -->
+  <string name="error_network">Tengivilla. Vinsamlegast reyndu aftur.</string>
+  <string name="error_server">Villa á þjóni. Vinsamlegast reyndu aftur síðar.</string>
+  <string name="error_unauthorized">Þú hefur ekki heimild til þessarar aðgerðar</string>
+  <string name="error_unknown">Óþekkt villa kom upp</string>
+
+  <!-- Common Actions -->
+  <string name="action_back">Til baka</string>
+  <string name="action_close">Loka</string>
+  <string name="action_confirm">Staðfesta</string>
+  <string name="action_cancel">Hætta við</string>
+  <string name="action_save">Vista</string>
+  <string name="action_refresh">Endurhlaða</string>
+
+  <!-- Date Formatting -->
+  <string name="date_format">dd.MM.yyyy HH:mm</string>
+  <string name="date_today">Í dag</string>
+  <string name="date_tomorrow">Á morgun</string>
+  <string name="date_yesterday">Í gær</string>
+
+  <!-- App Info -->
+  <string name="app_name">Sósíalistaflokkurinn</string>
+  <string name="your_answer">Þitt svar</string>
 </resources>
