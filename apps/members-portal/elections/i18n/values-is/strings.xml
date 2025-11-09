@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- Elections Area Strings -->
+
+  <!-- Page Titles -->
+  <string name="page_title_elections">Kosningar - Sósíalistaflokkurinn</string>
+  <string name="page_title_election_detail">Kosning - Sósíalistaflokkurinn</string>
+
+  <!-- Elections List Page -->
+  <string name="elections_title">Kosningar</string>
+  <string name="elections_subtitle">Taktu þátt í rafrænum kosningum flokksins</string>
+  <string name="loading_elections">Hleð inn kosningum...</string>
+  <string name="error_load_elections">Ekki tókst að sækja kosningar.</string>
+  <string name="empty_no_elections">Engar kosningar fundust</string>
+
+  <!-- Election Card -->
+  <string name="election_card_voted">✓ Þú hefur kosið</string>
+  <string name="election_card_cta">Skoða kosningu →</string>
+
+  <!-- Election Detail Page -->
+  <string name="election_detail_title">Kosning</string>
+  <string name="election_detail_back_link">← Til baka</string>
+  <string name="back_to_elections">Til baka í kosningayfirlit</string>
+  <string name="loading_election_detail">Hleð inn upplýsingum um kosningu...</string>
+  <string name="loading_election">Hleð inn kosningu...</string>
+  <string name="error_load_election_detail">Ekki tókst að sækja upplýsingar um kosningu</string>
+  <string name="error_load_election">Ekki tókst að sækja kosninguna</string>
+  <string name="error_no_election_selected">Engin kosning er valin</string>
+  <string name="error_missing_election_id">Kosningarnúmer vantar</string>
+
+  <!-- Election Information -->
+  <string name="election_question_label">Spurning</string>
+  <string name="election_starts">Kosning hefst:</string>
+  <string name="election_ends">Kosning lýkur:</string>
+
+  <!-- Voting Section -->
+  <string name="voting_section_title">Kjóstu hér</string>
+  <string name="voting_select_answer">Veldu þitt svar</string>
+  <string name="btn_vote">Kjósa</string>
+  <string name="btn_back_to_elections">Aftur í kosningayfirlit</string>
+
+  <!-- Voting States -->
+  <string name="election_already_voted">✓ Þú hefur kosið</string>
+  <string name="election_already_voted_message">Þú hefur þegar kosið í þessari kosningu.</string>
+  <string name="election_upcoming_message">Þessi kosning hefur ekki enn opnað. Kosning hefst á tilgreindum tíma.</string>
+  <string name="msg_upcoming_election">Þessi kosning hefur ekki enn opnað fyrir atkvæðagreiðslu.</string>
+
+  <!-- Vote Confirmation -->
+  <string name="confirm_vote_title">Staðfesta atkvæði</string>
+  <string name="confirm_vote_message">Ertu viss um að þú viljir skila inn þessu atkvæði? Ekki er hægt að breyta því eftir að það hefur verið staðfest.</string>
+  <string name="vote_submitted_success">✓ Atkvæði þitt hefur verið skráð!</string>
+
+  <!-- Common Voting Answers -->
+  <string name="vote_yes">Já</string>
+  <string name="vote_no">Nei</string>
+
+  <!-- Navigation -->
+  <string name="nav_voting">Kosningar</string>
+
+  <!-- Common UI -->
+  <string name="placeholder_not_available">Ekki tiltækt</string>
+  <string name="btn_retry">Reyna aftur</string>
+  <string name="btn_cancel">Hætta við</string>
+  <string name="btn_confirm">Staðfesta</string>
+  <string name="loading">Hleður...</string>
+</resources>
