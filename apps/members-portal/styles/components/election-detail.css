@@ -365,6 +365,112 @@
   margin: 0;
 }
 
+/* Results Section */
+.election-results__empty,
+.election-results__error {
+  text-align: center;
+  padding: var(--space-xl);
+  font-size: 1.125rem;
+  color: var(--color-text-secondary);
+}
+
+.election-results__error {
+  color: var(--color-error);
+}
+
+.election-results__item {
+  margin-bottom: var(--space-lg);
+  padding: var(--space-md);
+  border-radius: var(--border-radius);
+  background-color: var(--color-background-secondary);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.election-results__item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.election-results__item--winner {
+  background-color: var(--color-success-light);
+  border: 2px solid var(--color-success);
+}
+
+.election-results__answer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.election-results__winner-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background-color: var(--color-success);
+  color: white;
+  border-radius: 50%;
+  font-weight: bold;
+  font-size: 0.875rem;
+}
+
+.election-results__answer-text {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.election-results__stats {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.election-results__percentage {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  min-width: 60px;
+}
+
+.election-results__bar-container {
+  height: 32px;
+  background-color: var(--color-background);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  position: relative;
+}
+
+.election-results__bar {
+  height: 100%;
+  border-radius: var(--border-radius);
+  transition: width 0.8s ease-out;
+  position: relative;
+}
+
+.election-results__bar--yes {
+  background: linear-gradient(90deg, var(--color-success) 0%, var(--color-success-dark) 100%);
+}
+
+.election-results__bar--no {
+  background: linear-gradient(90deg, var(--color-error) 0%, var(--color-error-dark) 100%);
+}
+
+.election-results__bar--neutral {
+  background: linear-gradient(90deg, var(--color-info) 0%, var(--color-info-dark) 100%);
+}
+
+.election-results__votes {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  min-width: 100px;
+  text-align: right;
+}
+
 /* Modal - Now using /styles/components/modal.css */
 /* Only election-specific modal styles remain here */
 

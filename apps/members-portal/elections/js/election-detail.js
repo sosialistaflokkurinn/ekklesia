@@ -208,15 +208,81 @@ function displayVotingSection(election) {
 /**
  * Display results section (for closed elections)
  */
-function displayResultsSection(election) {
+async function displayResultsSection(election) {
   const resultsSection = document.getElementById('results-section');
   const resultsList = document.getElementById('results-list');
+  const totalVotesEl = document.getElementById('results-total-votes');
 
-  // TODO: Fetch and display actual results (Day 4)
-  // For now, just show placeholder
-  resultsList.innerHTML = '<p>Results will be displayed here (Day 4 implementation)</p>';
+  try {
+    // Fetch results from API
+    const { getResults } = await import('../../js/api/elections-api.js');
+    const results = await getResults(election.id);
 
-  resultsSection.classList.remove('u-hidden');
+    // Display total votes
+    if (totalVotesEl && results.total_votes !== undefined) {
+      totalVotesEl.textContent = results.total_votes;
+    }
+
+    // Clear previous results
+    resultsList.innerHTML = '';
+
+    // Check if we have results
+    if (!results.results || results.results.length === 0) {
+      resultsList.innerHTML = `<p class="election-results__empty">${R.string.results_not_available}</p>`;
+      resultsSection.classList.remove('u-hidden');
+      return;
+    }
+
+    // Find winner (most votes)
+    const winner = results.results.reduce((max, current) =>
+      current.votes > max.votes ? current : max
+    );
+
+    // Create result items
+    results.results.forEach(result => {
+      const resultItem = document.createElement('div');
+      resultItem.className = 'election-results__item';
+
+      const isWinner = result.answer_id === winner.answer_id && result.votes > 0;
+      if (isWinner) {
+        resultItem.classList.add('election-results__item--winner');
+      }
+
+      // Determine bar color class based on answer
+      let barClass = 'election-results__bar';
+      const answerLower = result.answer_text.toLowerCase();
+      if (answerLower.includes('já') || answerLower.includes('yes')) {
+        barClass += ' election-results__bar--yes';
+      } else if (answerLower.includes('nei') || answerLower.includes('no')) {
+        barClass += ' election-results__bar--no';
+      } else {
+        barClass += ' election-results__bar--neutral';
+      }
+
+      resultItem.innerHTML = `
+        <div class="election-results__answer">
+          ${isWinner ? '<span class="election-results__winner-badge">✓</span>' : ''}
+          <span class="election-results__answer-text">${escapeHTML(result.answer_text)}</span>
+        </div>
+        <div class="election-results__stats">
+          <div class="election-results__percentage">${result.percentage.toFixed(1)}%</div>
+          <div class="election-results__bar-container">
+            <div class="${barClass}" style="width: ${result.percentage}%"></div>
+          </div>
+          <div class="election-results__votes">${result.votes} ${result.votes === 1 ? 'atkvæði' : 'atkvæði'}</div>
+        </div>
+      `;
+
+      resultsList.appendChild(resultItem);
+    });
+
+    resultsSection.classList.remove('u-hidden');
+
+  } catch (error) {
+    debug.error('Error loading results:', error);
+    resultsList.innerHTML = `<p class="election-results__error">${R.string.results_error}</p>`;
+    resultsSection.classList.remove('u-hidden');
+  }
 }
 
 /**
