@@ -2,7 +2,45 @@
 
 Scripts for validating, auditing, and maintaining project documentation.
 
+## 🚀 Quick Start
+
+**Recommended:** Use the master validation script to run all checks:
+
+```bash
+./validate-all.sh
+```
+
+This runs all validation checks in logical order and provides a comprehensive summary.
+
+---
+
 ## 📋 Available Scripts
+
+### Master Script
+
+#### `validate-all.sh` ⭐
+Master validation script that runs all documentation checks in logical order.
+
+**Purpose:**
+- Validates DOCUMENTATION_MAP.md structure
+- Validates all markdown links (internal & external)
+- Provides comprehensive summary with clear pass/fail status
+- READ-ONLY - does not modify any files
+
+**Usage:**
+```bash
+./validate-all.sh
+./validate-all.sh --verbose
+```
+
+**Exit codes:**
+- 0 - All validations passed
+- 1 - One or more validations failed
+- 2 - Script error
+
+**Last Updated:** Nov 9, 2025 (initial creation)
+
+---
 
 ### Validation Scripts
 
@@ -43,134 +81,50 @@ python3 validate-links.py --exclude audits archive
 
 ---
 
-### Audit Scripts
-
-#### `audit-documentation.py`
-Audits documentation for completeness and quality.
-
-**Purpose:**
-- Checks documentation coverage
-- Validates markdown formatting
-- Identifies missing sections
-
-**Usage:**
-```bash
-python3 audit-documentation.py
-```
-
----
-
-#### `audit-documentation-detailed.py`
-Detailed documentation audit with quality metrics.
-
-**Purpose:**
-- Comprehensive documentation analysis
-- Quality scoring
-- Detailed reporting
-
-**Usage:**
-```bash
-python3 audit-documentation-detailed.py
-```
-
----
-
-### Fix/Remediation Scripts
-
-#### `fix_documentation_map_links.py`
-Fixes broken links in DOCUMENTATION_MAP.md.
-
-**Purpose:**
-- Automatically repairs broken links
-- Updates moved file references
-- Suggests corrections
-
-**Usage:**
-```bash
-python3 fix_documentation_map_links.py
-```
-
----
-
-#### `fix-documentation.py`
-General documentation fix utility.
-
-**Purpose:**
-- Fixes common documentation issues
-- Standardizes formatting
-- Repairs broken references
-
-**Usage:**
-```bash
-python3 fix-documentation.py
-```
-
----
-
-#### `remove_dead_links.py`
-Removes dead links from documentation.
-
-**Purpose:**
-- Identifies and removes broken links
-- Updates link references
-- Cleans up documentation
-
-**Usage:**
-```bash
-python3 remove_dead_links.py
-```
-
----
-
-#### `remediation-summary.py`
-Generates summary of documentation fixes.
-
-**Purpose:**
-- Reports on applied fixes
-- Summarizes changes
-- Tracks remediation progress
-
-**Usage:**
-```bash
-python3 remediation-summary.py
-```
-
----
-
 ## 🔄 Workflow
 
-### Regular Maintenance
+### Regular Maintenance (Recommended)
 
-1. **Validate documentation:**
-   ```bash
-   python3 validate_documentation_map.py
-   python3 validate-links.py
-   ```
+**Quick validation:**
+```bash
+cd /home/gudro/Development/projects/ekklesia
+./scripts/admin/documentation-maintenance/validate-all.sh
+```
 
-2. **Audit quality:**
-   ```bash
-   python3 audit-documentation.py
-   ```
+**Individual checks:**
+```bash
+# Validate DOCUMENTATION_MAP.md only
+python3 scripts/admin/documentation-maintenance/validate_documentation_map.py
 
-3. **Fix issues:**
-   ```bash
-   python3 fix_documentation_map_links.py
-   python3 fix-documentation.py
-   ```
-
-4. **Generate summary:**
-   ```bash
-   python3 remediation-summary.py
-   ```
+# Validate links only
+python3 scripts/admin/documentation-maintenance/validate-links.py
+```
 
 ---
 
 ## 📝 Notes
 
 - All scripts support `--help` for detailed usage
-- Scripts exclude archive/ and audits/ directories by default
+- Validation scripts exclude archive/ and audits/ directories by default
 - Run from repository root for best results
-- Some scripts may modify files - commit changes carefully
+- `validate-all.sh` is READ-ONLY and safe to run anytime
+
+---
+
+## 📦 Archived Scripts
+
+Several documentation maintenance scripts have been archived to `/archive/old-documentation-scripts/` as of November 9, 2025:
+
+- `audit-documentation.py` - Too slow, high false positive rate, needs refactoring
+- `audit-documentation-detailed.py` - Times out, not practical for regular use
+- `fix_documentation_map_links.py` - Hardcoded for October 2025 reorganization
+- `fix-documentation.py` - Generic patterns, outdated
+- `remove_dead_links.py` - Too dangerous (automatic removal)
+- `remediation-summary.py` - Tied to specific October 2025 audit
+
+**Philosophy:** Focus on **validation** (detect issues) rather than **automatic fixing** (too risky).
+
+**See:** `/archive/old-documentation-scripts/README.md` for details on why these were archived and what would be needed to restore them.
 
 ---
 
@@ -178,8 +132,13 @@ python3 remediation-summary.py
 
 - `/docs/` - Documentation directory
 - `/scripts/admin/README.md` - Admin scripts overview
+- `/archive/old-documentation-scripts/README.md` - Archived scripts documentation
 - `DOCUMENTATION_MAP.md` - Main documentation map
 
 ---
 
 **Last Updated:** November 9, 2025
+**Recent Changes:**
+- Created `validate-all.sh` master validation script
+- Archived 6 outdated/problematic scripts
+- Simplified workflow to focus on safe validation
