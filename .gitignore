@@ -84,6 +84,12 @@ build/
 *.bak
 *.old
 
+# --- Temporary Working Directory ---
+# Use /tmp/ for all temporary files during development
+# (See .claude/settings.local.json - Project Structure Rule)
+tmp/
+*.tmp
+
 # --- Project Specific (Local Only) ---
 
 # Local-only archives and audit results
