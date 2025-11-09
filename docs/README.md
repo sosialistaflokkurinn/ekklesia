@@ -8,7 +8,6 @@
 
 **New to Ekklesia?** Start here:
 - **[Getting Started Guide](./development/guides/github/)** - Environment setup and first steps
-- **[Architecture Overview](./design/SYSTEM_ARCHITECTURE_OVERVIEW.md)** - How the system works
 - **[Development Workflow](./development/guides/git/)** - Git workflow and contribution guidelines
 - **[DOCUMENTATION_MAP.md](../DOCUMENTATION_MAP.md)** ⭐ **Master Navigation Hub** - Complete system overview
 
@@ -18,9 +17,6 @@
 
 ### 🏗️ Architecture
 Understand how Ekklesia is designed and structured.
-- **[System Architecture Overview](./design/SYSTEM_ARCHITECTURE_OVERVIEW.md)** - Complete system design
-- **[Phase 6 Architecture Recommendations](./architecture/ARCHITECTURE_DESIGN_PHASE6.md)** - Future scaling plans
-- **Events Service Design (see services/events/)** - Voting infrastructure
 - **[CSS Design System](./architecture/CSS_DESIGN_SYSTEM.md)** - UI/UX standards
 
 ### 🎯 Features
@@ -126,9 +122,8 @@ ekklesia/
 Choose your path based on your role:
 
 ### For Product Managers / Non-Technical Stakeholders
-1. [System Architecture Overview](./design/SYSTEM_ARCHITECTURE_OVERVIEW.md)
-2. [Feature Documentation](./features/election-voting/)
-3. [Operations Guide](./operations/OPERATIONAL_PROCEDURES.md)
+1. [Feature Documentation](./features/election-voting/)
+2. [Operations Guide](./operations/OPERATIONAL_PROCEDURES.md)
 
 ### For Frontend Developers
 1. [Getting Started](./development/guides/github/)
@@ -137,16 +132,14 @@ Choose your path based on your role:
 4. [CSS & BEM Guide](./standards/CSS_BEM_GUIDE.md) - [BEM methodology](http://getbem.com/)
 5. [JavaScript Guide](./standards/JAVASCRIPT_GUIDE.md) - [ES6+](https://developer.mozilla.org/en-US/docs/Web/JavaScript) standards
 6. [i18n Guide](./standards/I18N_GUIDE.md) - [R.string pattern](./standards/I18N_GUIDE.md)
-7. [Members Service Architecture](./design/SYSTEM_ARCHITECTURE_OVERVIEW.md)
-8. [Feature Guides](./features/election-voting/)
+7. [Feature Guides](./features/election-voting/)
 
 ### For Backend Developers
 1. [Getting Started](./development/guides/github/)
 2. **[Code Standards Map](./CODE_STANDARDS_MAP.md)** - JavaScript, Python, testing, and documentation standards
 3. [Python Guide](./standards/PYTHON_GUIDE.md) - [Python 3.11+](https://www.python.org/), [typing](https://docs.python.org/3/library/typing.html), [Firebase Functions](https://firebase.google.com/docs/functions)
-4. [System Architecture](./design/)
-5. Service Design Documentation (see [services/](../services/))
-6. [Database Schema](./integration/DJANGO_DATABASE_SCHEMA.md) - [PostgreSQL](https://www.postgresql.org/docs/)
+4. Service Design Documentation (see [services/](../services/))
+5. [Database Schema](./integration/DJANGO_DATABASE_SCHEMA.md) - [PostgreSQL](https://www.postgresql.org/docs/)
 
 ### For DevOps / Infrastructure
 1. [Infrastructure Guide](./development/guides/infrastructure/README.md)
@@ -168,10 +161,8 @@ Choose your path based on your role:
 |----------|---------|----------|
 | [CURRENT_DEVELOPMENT_STATUS.md](./status/CURRENT_DEVELOPMENT_STATUS.md) | Current system status | All |
 | [ENVIRONMENT_CLARIFICATION.md](./ENVIRONMENT_CLARIFICATION.md) | Production tools vs development system | All |
-| [SYSTEM_ARCHITECTURE_OVERVIEW.md](./design/SYSTEM_ARCHITECTURE_OVERVIEW.md) | How the system works | Developers, Architects |
 | [Multi-Agent Workflow](./development/guides/workflows/MULTI_AGENT_WORKFLOW.md) | Development process | Developers, Project Managers |
 | [Security Defense Analysis](./security/) | Security hardening | Security, DevOps |
-| REPO_RESTRUCTURING_PLAN.md (archived) | Repository organization | Technical Leads |
 
 ---
 

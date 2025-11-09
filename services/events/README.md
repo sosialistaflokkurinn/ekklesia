@@ -357,8 +357,6 @@ curl http://localhost:8080/api/results \
 
 ## Related Documentation
 
-- [Design Document](../docs/design/EVENTS_SERVICE_MVP.md) - MVP design and architecture
-- [System Architecture](../docs/SYSTEM_ARCHITECTURE_OVERVIEW.md) - Overall system vision
 - [Database Migrations](migrations/README.md) - Migration guide
 
 ---

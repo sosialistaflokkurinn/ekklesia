@@ -72,7 +72,7 @@ This category map provides navigation to all README.md files in the Ekklesia rep
 - [scripts/git-hooks/README.md](../scripts/git-hooks/README.md) - Git hooks configuration
 
 **Archived Scripts:**
-- [archive/scripts/cloudflare/README.md](../../archive/scripts/cloudflare/README.md) - 🗄️ Cloudflare scripts (not in use)
+- [archive/scripts/cloudflare/README.md](../archive/scripts/cloudflare/README.md) - 🗄️ Cloudflare scripts (not in use)
 
 ### ⚙️ Services (Microservices)
 
@@ -169,9 +169,9 @@ README files are **entry points**, not complete documentation:
 ## Documentation
 
 For detailed guides, see:
-- [Architecture Overview](docs/ARCHITECTURE.md)
-- [API Reference](docs/API.md)
-- [Development Guide](docs/DEVELOPMENT.md)
+- [Architecture Overview](./ARCHITECTURE_MAP.md)
+- [Development Guide](./DEVELOPMENT_MAP.md)
+- [Features Guide](./FEATURES_MAP.md)
 ```
 
 ### 4. Keep It Updated

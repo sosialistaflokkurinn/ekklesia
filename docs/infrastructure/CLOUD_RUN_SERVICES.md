@@ -776,7 +776,7 @@ gcloud logging read "resource.labels.service_name=elections-service AND severity
 
 ## Related Documentation
 
-- [System Architecture Overview](../design/SYSTEM_ARCHITECTURE_OVERVIEW.md)
+- [Django Backend System](../systems/DJANGO_BACKEND_SYSTEM.md) - Backend integration details
 - Elections Service (see services/elections/)
 - Events Service (see services/events/)
 - [Members Deployment Guide](../setup/MEMBERS_DEPLOYMENT_GUIDE.md)

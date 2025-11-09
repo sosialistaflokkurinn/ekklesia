@@ -9,7 +9,7 @@
 
 | Document | Purpose | Status |
 |----------|---------|--------|
-| [TESTING_GUIDE.md](./TESTING_GUIDE.md) | Comprehensive testing guide and procedures | ✅ Current |
+| [Quality & Testing Guide](../../standards/QUALITY_TESTING_GUIDE.md) | Comprehensive testing guide and procedures | ✅ Current |
 | [END_TO_END_VOTING_FLOW_TEST.md](./END_TO_END_VOTING_FLOW_TEST.md) | Complete voting flow validation | ✅ Current |
 | [ADMIN_RESET_CHECKLIST.md](./ADMIN_RESET_CHECKLIST.md) | Admin reset testing procedures | ✅ Current |
 | [ADMIN_RESET_TEST_REPORT.md](./ADMIN_RESET_TEST_REPORT.md) | Test results and findings | ✅ Oct 21 |
@@ -66,11 +66,8 @@
 
 ## 🔗 Related Documentation
 
-- [Setup](../setup/INDEX.md) - Environment setup
-- [Audit Tools](../audits/INDEX.md) - Validation scripts
-- [Operations](../maintenance/INDEX.md) - Operational procedures
-- [Architecture](../design/INDEX.md) - System design
-- [Main Hub](../INDEX.md) - Documentation overview
+- [Operations](../../operations/OPERATIONAL_PROCEDURES.md) - Operational procedures
+- [Main Hub](../../INDEX.md) - Documentation overview
 
 ---
 

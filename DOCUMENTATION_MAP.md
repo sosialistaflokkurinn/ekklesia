@@ -17,9 +17,9 @@ This is the **Level 1 navigation hub** for all Ekklesia documentation. It provid
 ## 🚀 Quick Start
 
 ### For New Developers
-1. [Setup Guide](docs/setup/DEVELOPMENT_ENVIRONMENT_SETUP.md) - Get your development environment running
-2. [Code Standards](docs/CODE_STANDARDS_MAP.md) - Learn our coding conventions
-3. [Development Guides](docs/DEVELOPMENT_MAP.md) - Understand our workflows
+1. [Code Standards](docs/CODE_STANDARDS_MAP.md) - Learn our coding conventions
+2. [Development Guides](docs/DEVELOPMENT_MAP.md) - Understand our workflows
+3. [System Architecture](docs/ARCHITECTURE_MAP.md) - Understand the system design
 
 ### For Product Managers
 1. [System Architecture](docs/ARCHITECTURE_MAP.md) - Understand the system design
@@ -87,11 +87,9 @@ Developer workflows, tools, and implementation guides.
 System design, component architecture, and technical decisions.
 
 **Quick Links**:
-- [System Architecture Overview](docs/design/SYSTEM_ARCHITECTURE_OVERVIEW.md) - Primary vision
 - [Database Schema](docs/integration/DJANGO_DATABASE_SCHEMA.md) - Complete DB schema
 - [Cloud Run Services](docs/infrastructure/CLOUD_RUN_SERVICES.md) - Service architecture (800+ lines)
 - [Django Backend System](docs/systems/DJANGO_BACKEND_SYSTEM.md) - Backend documentation (1,199 lines)
-- [Architecture Design Phase 6](docs/design/ARCHITECTURE_DESIGN_PHASE6.md) - ADRs and roadmap
 - [CSS Design System](docs/architecture/CSS_DESIGN_SYSTEM.md) - Component architecture
 - [Usage Context](docs/development/guides/workflows/USAGE_CONTEXT.md) - Capacity planning
 

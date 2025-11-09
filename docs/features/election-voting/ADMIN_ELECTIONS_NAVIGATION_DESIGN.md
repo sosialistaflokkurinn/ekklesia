@@ -138,7 +138,7 @@ All admin-elections pages should use this same simplified navigation:
 - [Epic #192 - Admin Elections Dashboard](https://github.com/sosialistaflokkurinn/ekklesia/issues/192)
 - [Unified RBAC System](../../architecture/UNIFIED_RBAC_SYSTEM.md)
 - [Election Feature Checklist](../../development/guides/ELECTION_FEATURE_CHECKLIST.md)
-- [CSS Design System](../../design/CSS_DESIGN_SYSTEM.md)
+- [CSS Design System](../../architecture/CSS_DESIGN_SYSTEM.md)
 
 ## Deployment
 

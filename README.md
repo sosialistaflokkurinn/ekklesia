@@ -16,7 +16,6 @@ Regnhlífarverkefni fyrir kosningakerfi Sósíalistaflokksins ásamt meðlima og
 **Essential Links**:
 - [Current Status](DOCUMENTATION_MAP.md#current-status) - Production services, recent milestones, current work
 - [Repository Structure](DOCUMENTATION_MAP.md#-repository-structure) - Complete repository organization
-- [System Architecture](docs/design/SYSTEM_ARCHITECTURE_OVERVIEW.md) - Overall system design
 - [Getting Started Guide](docs/README.md) - Documentation hub for all topics
 - [Scripts Documentation](scripts/README.md) - Deployment and maintenance tools
 
@@ -43,8 +42,6 @@ Regnhlífarverkefni fyrir kosningakerfi Sósíalistaflokksins ásamt meðlima og
 - **Events Service**: [Node.js](https://nodejs.org/) + [Express](https://expressjs.com/) - Election administration and voting token issuance
 - **Elections Service**: [Node.js](https://nodejs.org/) + [Express](https://expressjs.com/) - Anonymous ballot recording (no PII)
 - **Authentication**: [Firebase Auth](https://firebase.google.com/docs/auth) + [Kenni.is OAuth PKCE](https://oauth.net/2/pkce/)
-
-**Detailed Architecture**: See [docs/design/SYSTEM_ARCHITECTURE_OVERVIEW.md](docs/design/SYSTEM_ARCHITECTURE_OVERVIEW.md)
 
 ---
 

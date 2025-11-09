@@ -270,7 +270,6 @@ kenni-client-secret
 
 **Current Implementation**:
 - [../docs/status/CURRENT_PRODUCTION_STATUS.md](../docs/status/CURRENT_PRODUCTION_STATUS.md) - Infrastructure status
-- [../docs/SYSTEM_ARCHITECTURE_OVERVIEW.md](../docs/SYSTEM_ARCHITECTURE_OVERVIEW.md) - System architecture
 
 **Local Documentation** (not in git):
 - `docs/FIREBASE_KENNI_SETUP.md` - Complete setup guide

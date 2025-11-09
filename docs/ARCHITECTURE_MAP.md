@@ -14,7 +14,6 @@ This category map provides navigation to all architecture documentation includin
 
 ## Quick Links
 
-- [System Architecture Overview](../docs/design/SYSTEM_ARCHITECTURE_OVERVIEW.md) - Primary architectural vision
 - [Django Database Schema](../docs/integration/DJANGO_DATABASE_SCHEMA.md) - Complete database schema
 - [Cloud Run Services](../docs/infrastructure/CLOUD_RUN_SERVICES.md) - Service architecture
 
@@ -23,8 +22,6 @@ This category map provides navigation to all architecture documentation includin
 ## Architecture Documentation
 
 ### System Design
-- [System Architecture Overview](../docs/design/SYSTEM_ARCHITECTURE_OVERVIEW.md)
-- [Architecture Design Phase 6](../docs/design/ARCHITECTURE_DESIGN_PHASE6.md)
 - [Architecture Recommendations](../docs/architecture/ARCHITECTURE_RECOMMENDATIONS.md)
 - [CSS Design System](../docs/architecture/CSS_DESIGN_SYSTEM.md)
 

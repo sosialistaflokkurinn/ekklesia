@@ -320,9 +320,7 @@ gcloud logging read "..." --format=json | jq '.'
 ## Related Documentation
 
 - [ADMIN_RESET_TEST_REPORT.md](ADMIN_RESET_TEST_REPORT.md) - Full test report with evidence
-- [AUDIT_LOGGING.md](../guides/AUDIT_LOGGING.md) - Audit logging format specification
-- [events/migrations/003_seed_october_2025_election.sql](../../events/migrations/003_seed_october_2025_election.sql) - Seed data migration
-- [events/src/routes/admin.js](../../events/src/routes/admin.js) - Admin reset endpoint implementation
+- [AUDIT_LOGGING.md](../../development/guides/admin/AUDIT_LOGGING.md) - Audit logging format specification
 
 ---
 

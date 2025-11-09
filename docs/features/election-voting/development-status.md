@@ -344,7 +344,6 @@
 - Image: `gcr.io/ekklesia-prod-10-2025/events-service`
 - Test page: `events/test-production.html` (use with Members service)
 
-**Design Document**: EVENTS_SERVICE_MVP.md (see services/events/)
 **Testing Log**: EVENTS_SERVICE_TESTING_LOG.md (archived) (archived Oct 11)
 
 ---
@@ -402,7 +401,6 @@
 2. End-to-end integration testing
 3. Load testing (300 votes/sec spike - see USAGE_CONTEXT.md)
 
-**Design Document**: ELECTIONS_SERVICE_MVP.md (see services/elections/)
 **Load Patterns**: [USAGE_CONTEXT.md](../../development/guides/workflows/USAGE_CONTEXT.md)
 **Operations**: [OPERATIONAL_PROCEDURES.md](../../operations/OPERATIONAL_PROCEDURES.md)
 

@@ -223,9 +223,7 @@ gcloud logging read \
 
 ## Test Evidence Artifacts
 
-1. **Database Seed Migration**: [events/migrations/003_seed_october_2025_election.sql](../../events/migrations/003_seed_october_2025_election.sql)
-2. **Test Script**: [scripts/test_admin_reset.sh](../../scripts/test_admin_reset.sh)
-3. **Session Summary**: [docs/status/SESSION_2025-10-19_Phase5_Validation_Prep.md](../status/SESSION_2025-10-19_Phase5_Validation_Prep.md)
+Test artifacts have been archived or superseded by current implementation.
 
 ---
 
@@ -243,4 +241,3 @@ Both tests passed successfully against fresh October 2025 seed data:
 
 **Test Report Updated**: 2025-10-19
 **Validated By**: Jón Jónsson (UID: abc123XYZ789ExampleUserUID456)
-**Code Reference**: [events/src/routes/admin.js](../../events/src/routes/admin.js)
