@@ -203,9 +203,9 @@ Examples:
     parser.add_argument(
         '--exclude',
         nargs='+',
-        default=[],
+        default=['audits', 'archive'],  # Exclude historical/archived docs by default
         metavar='DIR',
-        help='Directories to exclude from validation (e.g., audits archive)'
+        help='Directories to exclude from validation (default: audits archive)'
     )
     
     args = parser.parse_args()
