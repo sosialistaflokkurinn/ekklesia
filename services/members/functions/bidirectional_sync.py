@@ -56,32 +56,38 @@ def get_last_sync_time(db: firestore.Client) -> datetime:
 def get_pending_firestore_changes(db: firestore.Client, since: datetime) -> list:
     """
     Get pending changes from Firestore sync queue.
-    
+
+    Gets ALL pending changes regardless of when they were created,
+    since pending items should be processed even if they're old.
+
     Args:
         db: Firestore client
-        since: Only get changes after this time
-    
+        since: Not used (kept for backward compatibility)
+
     Returns:
         list of dicts with change information
     """
     try:
+        # Get ALL pending items, regardless of creation time
+        # Bug fix: Previously filtered by created_at > since, which caused
+        # old pending items to never be processed
         query = db.collection('sync_queue') \
             .where('source', '==', 'firestore') \
             .where('target', '==', 'django') \
             .where('sync_status', '==', 'pending') \
-            .where('created_at', '>', since) \
             .order_by('created_at') \
+            .limit(100) \
             .stream()
-        
+
         changes = []
         for doc in query:
             data = doc.to_dict()
             data['sync_queue_id'] = doc.id
             changes.append(data)
-        
+
         log_json('INFO', 'Fetched Firestore changes', count=len(changes))
         return changes
-    
+
     except Exception as e:
         log_json('ERROR', 'Failed to fetch Firestore changes', error=str(e))
         return []
@@ -101,7 +107,10 @@ def push_to_django(db: firestore.Client, changes: list, token: str) -> dict:
         return {'success': 0, 'failed': 0}
     
     # Group changes by kennitala (merge multiple field updates for same member)
+    # Also track which sync_queue_ids belong to each kennitala
     grouped = {}
+    kennitala_to_queue_ids = {}
+
     for change in changes:
         kennitala = change['kennitala']
         if kennitala not in grouped:
@@ -111,7 +120,11 @@ def push_to_django(db: firestore.Client, changes: list, token: str) -> dict:
                 'action': change['action'],
                 'changes': {}
             }
-        
+            kennitala_to_queue_ids[kennitala] = []
+
+        # Track sync_queue_id for this kennitala
+        kennitala_to_queue_ids[kennitala].append(change['sync_queue_id'])
+
         # Merge field changes
         grouped[kennitala]['changes'].update(change['changes'])
     
@@ -133,26 +146,31 @@ def push_to_django(db: firestore.Client, changes: list, token: str) -> dict:
         results = response.json()['results']
         
         # Update sync queue status
+        # Match results with grouped changes by kennitala
         success_count = 0
         failed_count = 0
-        
+        grouped_list = list(grouped.values())
+
         for i, result in enumerate(results):
-            sync_queue_id = changes[i]['sync_queue_id']
-            
+            kennitala = grouped_list[i]['kennitala']
+            queue_ids = kennitala_to_queue_ids[kennitala]
+
             if result.get('status') == 'success':
-                # Mark as synced
-                db.collection('sync_queue').document(sync_queue_id).update({
-                    'synced_at': firestore.SERVER_TIMESTAMP,
-                    'sync_status': 'synced'
-                })
-                success_count += 1
+                # Mark ALL queue items for this kennitala as synced
+                for sync_queue_id in queue_ids:
+                    db.collection('sync_queue').document(sync_queue_id).update({
+                        'synced_at': firestore.SERVER_TIMESTAMP,
+                        'sync_status': 'synced'
+                    })
+                success_count += len(queue_ids)
             else:
-                # Mark as failed
-                db.collection('sync_queue').document(sync_queue_id).update({
-                    'sync_status': 'failed',
-                    'error_message': result.get('message', 'Unknown error')
-                })
-                failed_count += 1
+                # Mark ALL queue items for this kennitala as failed
+                for sync_queue_id in queue_ids:
+                    db.collection('sync_queue').document(sync_queue_id).update({
+                        'sync_status': 'failed',
+                        'error_message': result.get('message', 'Unknown error')
+                    })
+                failed_count += len(queue_ids)
                 log_json('ERROR', 'Django sync failed',
                          kennitala=result.get('ssn'),
                          error=result.get('message'))
