@@ -1,101 +1,54 @@
-# Admin Scripts - Documentation Management
+# Admin Scripts
 
 **Location**: `/scripts/admin/`
-**Purpose**: Documentation audit, validation, and maintenance scripts
+**Purpose**: Administrative scripts for project maintenance and validation
 
 ---
 
 ## Overview
 
-This directory contains scripts for managing and maintaining the Ekklesia project documentation. These scripts are used for auditing documentation quality, validating links, and applying systematic fixes.
+This directory contains administrative scripts for managing the Ekklesia project, including documentation maintenance, i18n validation, and data management tools.
 
 ---
 
-## Scripts
+## Directory Structure
 
-### Documentation Audit
-
-#### `audit-documentation.py`
-**Purpose**: Comprehensive documentation quality audit
-
-**Features**:
-- Scans all markdown files for issues
-- Validates code blocks for syntax errors
-- Checks for missing file references
-- Identifies API usage issues
-- Generates JSON report
-
-**Usage**:
-```bash
-python3 scripts/admin/audit-documentation.py
 ```
-
-**Output**: `AUDIT_CODE_DOCUMENTATION_YYYY-MM-DD.json`
-
-**Note**: Produces some false positives (91% rate) - see `/tmp/CODE_QUALITY_ANALYSIS.md` for details.
-
----
-
-#### `audit-documentation-detailed.py`
-**Purpose**: Enhanced audit with detailed categorization
-
-**Features**:
-- More detailed error categorization
-- Better file organization
-- Excludes audits/ and archive/ by default
-- Enhanced reporting format
-
-**Usage**:
-```bash
-python3 scripts/admin/audit-documentation-detailed.py
+/scripts/admin/
+├── documentation-maintenance/   ← Documentation validation & audit scripts
+├── validate-i18n-usage.py      ← i18n validation
+├── replace-fake-data.sh         ← PII data management
+└── README.md                    ← This file
 ```
 
 ---
 
-### Link Validation
+## Documentation Maintenance Scripts
 
-#### `validate-links.py`
-**Purpose**: Validate markdown links across documentation
+**Location**: `/scripts/admin/documentation-maintenance/`
 
-**Features**:
-- Checks internal links (relative paths)
-- Validates external links (HTTP/HTTPS)
-- Reports broken links by file
-- Excludes certain directories
+All documentation-related scripts have been organized into a dedicated subdirectory for better organization and maintainability.
 
-**Usage**:
-```bash
-# Validate all documentation
-python3 scripts/admin/validate-links.py
+**See**: [documentation-maintenance/README.md](./documentation-maintenance/README.md) for complete documentation on:
+- `validate_documentation_map.py` - Validate DOCUMENTATION_MAP.md structure
+- `validate-links.py` - Validate markdown links (internal & external)
+- `audit-documentation.py` - Audit documentation quality
+- `audit-documentation-detailed.py` - Enhanced audit with categorization
+- `fix_documentation_map_links.py` - Fix broken links in documentation map
+- `fix-documentation.py` - General documentation fix utility
+- `remove_dead_links.py` - Remove dead links from documentation
+- `remediation-summary.py` - Generate summary of documentation fixes
 
-# Exclude specific directories
-python3 scripts/admin/validate-links.py --exclude audits archive
-```
-
-**Recent Results** (2025-11-07):
-- Total files checked: 188
-- Total links validated: 596
-- Errors in all docs: 5 (all in historical/ARCHIVE)
-- Errors in active docs: 0 (when excluding audits/archive)
-- Warnings: 14 (missing anchors in existing files)
-- Success rate: 100% for active documentation
-
-**Usage Options**:
-```bash
-# Validate all documentation
-python3 scripts/admin/validate-links.py
-
-# Exclude historical/archived docs (recommended)
-python3 scripts/admin/validate-links.py --exclude audits archive
-```
-
-**Previous Results** (2025-11-04):
-- Initial: 178 broken links
-- After fixes: 0 broken links (100% success)
+**Recent Updates** (Nov 9, 2025):
+- Moved all documentation scripts to dedicated subdirectory
+- Added default exclusions for archive/ and audits/ directories
+- Improved validation accuracy (36 errors in active docs)
 
 ---
 
-#### `validate-i18n-usage.py`
+## i18n Validation
+
+### `validate-i18n-usage.py`
 **Purpose**: Validate i18n string usage across all 3 systems
 
 **Features**:
@@ -125,249 +78,94 @@ python3 scripts/admin/validate-i18n-usage.py
 
 ---
 
-#### `validate_documentation_map.py`
-**Purpose**: Validate DOCUMENTATION_MAP.md structure
+## Data Management
 
-**Features**:
-- Ensures all referenced files exist
-- Validates map structure
-- Checks for orphaned files
-- Verifies directory organization
+### `replace-fake-data.sh`
+**Purpose**: Replace fake/test data with real data (PII-sensitive)
 
-**Usage**:
-```bash
-./scripts/admin/validate_documentation_map.py
-```
-
----
-
-### Link Fixing
-
-#### `fix-documentation.py`
-**Purpose**: Automated link fixing based on patterns
-
-**Features**:
-- Pattern-based regex replacements
-- Batch processing
-- Dry-run mode available
-- Backup before changes
+**Security**:
+- ⚠️ This script is gitignored by default
+- Contains or generates PII (personally identifiable information)
+- Only use in authorized, secure contexts
+- Never commit to version control
 
 **Usage**:
 ```bash
-# Dry run (preview changes)
-python3 scripts/admin/fix-documentation.py --dry-run
-
-# Apply fixes
-python3 scripts/admin/fix-documentation.py
+# Only run with proper authorization
+./scripts/admin/replace-fake-data.sh
 ```
 
----
-
-#### `fix_documentation_map_links.py`
-**Purpose**: Fix links specifically in DOCUMENTATION_MAP.md
-
-**Features**:
-- Specialized patterns for documentation map
-- Path normalization
-- Validates after fixing
-
-**Usage**:
-```bash
-python3 scripts/admin/fix_documentation_map_links.py
-```
-
-**Last Run**: 2025-10-27 (fixed multiple map references)
-
----
-
-#### `remove_dead_links.py`
-**Purpose**: Remove or mark dead links that can't be fixed
-
-**Features**:
-- Identifies permanently broken links
-- Marks as (archived) or (TBD)
-- Option to remove entirely
-- Preserves context
-
-**Usage**:
-```bash
-python3 scripts/admin/remove_dead_links.py
-```
-
----
-
-### Reporting
-
-#### `remediation-summary.py`
-**Purpose**: Generate summary of documentation issues and fixes
-
-**Features**:
-- Issue categorization
-- Priority ranking
-- Time estimates for fixes
-- Generates markdown report
-
-**Usage**:
-```bash
-python3 scripts/admin/remediation-summary.py > /tmp/REMEDIATION_SUMMARY.md
-```
-
-**Output**: Summary report with prioritized action items
+**Note**: This script should only be run by authorized administrators who understand the PII implications.
 
 ---
 
 ## Common Workflows
 
-### Full Documentation Audit (Recommended)
+### Full Documentation Audit
 
 ```bash
-# Step 1: Run comprehensive audit
+# Navigate to repository root
 cd /home/gudro/Development/projects/ekklesia
-python3 scripts/admin/audit-documentation.py
 
-# Step 2: Validate links (excluding audits/archive)
-python3 scripts/admin/validate-links.py --exclude audits archive
+# Run comprehensive validation
+python3 scripts/admin/documentation-maintenance/validate_documentation_map.py
+python3 scripts/admin/documentation-maintenance/validate-links.py
 
-# Step 3: Review results
-cat AUDIT_CODE_DOCUMENTATION_$(date +%Y-%m-%d).json
+# Audit quality
+python3 scripts/admin/documentation-maintenance/audit-documentation.py
 ```
 
-### Fixing Broken Links
+### i18n Maintenance
 
 ```bash
-# Step 1: Identify broken links
-python3 scripts/admin/validate-links.py > /tmp/broken_links.txt
+# Validate i18n usage
+python3 scripts/admin/validate-i18n-usage.py
 
-# Step 2: Create fix script (manual)
-# Edit /tmp/fix_links.py with patterns
-
-# Step 3: Apply fixes
-python3 /tmp/fix_links.py
-
-# Step 4: Re-validate
-python3 scripts/admin/validate-links.py
+# Review results and clean up unused strings
+# See output for specific recommendations
 ```
-
-### Documentation Map Maintenance
-
-```bash
-# Validate documentation map
-./scripts/admin/validate_documentation_map.py
-
-# Fix any broken links in map
-python3 scripts/admin/fix_documentation_map_links.py
-
-# Re-validate
-./scripts/admin/validate_documentation_map.py
-```
-
----
-
-## Recent Audit Results (2025-11-04)
-
-### Link Validation
-- **Initial broken links**: 178
-- **Links fixed**: 178 (5 rounds of fixes)
-- **Current broken links**: 0
-- **Success rate**: 100%
-
-See `/tmp/DOCUMENTATION_AUDIT_FINAL_SUMMARY.md` for complete audit report.
-
-### Code Quality Analysis
-- **Code blocks analyzed**: 1,815
-- **Issues reported**: 233
-- **False positives**: 211 (91%)
-- **Real issues**: ~22 (optional improvements)
-
-See `/tmp/CODE_QUALITY_ANALYSIS.md` for detailed analysis.
-
-### GraphQL Validation
-- **Examples validated**: 20+
-- **Syntax errors**: 0
-- **API compliance**: 100%
-
-See `/tmp/GRAPHQL_VALIDATION_REPORT.md` for validation details.
 
 ---
 
 ## Best Practices
 
-### Running Audits
-1. **Exclude audits/ and archive/** - These directories contain historical documentation
-2. **Run after major changes** - Always validate links after restructuring
-3. **Check false positives** - Many "errors" are actually correct (see analysis reports)
-4. **Document findings** - Create reports for future reference
+### Running Scripts
+1. **Run from repository root** - Most scripts expect to be run from project root
+2. **Check documentation** - Each script directory has detailed README
+3. **Understand output** - Review validation results carefully
+4. **Commit thoughtfully** - Group related fixes together
 
-### Fixing Links
-1. **Use pattern-based fixes** - Create reusable fix scripts
-2. **Validate after each round** - Re-run validation to check progress
-3. **Commit in logical groups** - Group related fixes together
-4. **Document patterns** - Note common issues for future prevention
+### Documentation Maintenance
+1. **Regular audits** - Run quarterly to catch documentation drift
+2. **Exclude archive/audits** - Focus validation on active documentation
+3. **Fix broken links** - Address validation errors promptly
+4. **Update maps** - Keep DOCUMENTATION_MAP.md current
 
-### Maintaining Documentation
-1. **Regular audits** - Run quarterly to catch drift
-2. **Update scripts** - Improve to reduce false positives
-3. **Track improvements** - Document success metrics
-4. **Share knowledge** - Update this README with new patterns
-
----
-
-## Integration with Development
-
-### Pre-commit Hook
-The git pre-commit hook (in `.git/hooks/pre-commit`) runs:
-- Political identity checks
-- Secret scanning
-- Basic validation
-
-For documentation-specific validation, run manually before committing large doc changes.
-
-### CI/CD Integration (Future)
-Consider adding to GitHub Actions:
-```yaml
-- name: Validate Documentation
-  run: python3 scripts/admin/validate-links.py
-```
-
----
-
-## Troubleshooting
-
-### Script Fails with Import Error
-**Solution**: Install required dependencies
-```bash
-pip install -r requirements.txt  # If exists
-# Or install manually: requests, beautifulsoup4, etc.
-```
-
-### Too Many False Positives
-**Solution**: Use filtered validation
-```bash
-# Exclude problematic directories
-python3 scripts/admin/validate-links.py --exclude audits archive testing
-```
-
-### Script Takes Too Long
-**Solution**: Run on subset of files
-```bash
-# Validate only specific directory
-python3 scripts/admin/validate-links.py docs/development/
-```
+### i18n Management
+1. **Regular validation** - Run after major i18n changes
+2. **Clean up unused strings** - Remove strings with <50% usage periodically
+3. **Document dynamic patterns** - Note string families for validation
+4. **Maintain consistency** - Follow i18n architecture guidelines
 
 ---
 
 ## Related Documentation
 
-- [Repository Root README](../../README.md) - Project overview
-- [Scripts README](../README.md) - Overview of all scripts
-- [Documentation Guide](../../docs/standards/DOCUMENTATION_GUIDE.md) - Documentation standards
-- [Git Hooks README](../git-hooks/README.md) - Pre-commit hooks
+- [Scripts Overview](../README.md) - Overview of all project scripts
+- [Documentation Maintenance](./documentation-maintenance/README.md) - Documentation tools
+- [i18n Architecture](/docs/standards/I18N_ARCHITECTURE.md) - Internationalization system
+- [Git Hooks](../git-hooks/README.md) - Pre-commit hooks and validation
 
 ---
 
 ## Maintenance Notes
 
-**Last Updated**: 2025-11-04
-**Scripts Count**: 8
-**Last Audit**: 2025-11-04 (100% link validation success)
+**Last Updated**: November 9, 2025
+**Major Changes**:
+- Reorganized documentation scripts into dedicated subdirectory
+- Added comprehensive README for documentation maintenance tools
+- Updated validation scripts to exclude archive/audits by default
+- Improved script organization and discoverability
+
 **Status**: ✅ All scripts operational
+**Scripts Count**: 10 (8 documentation + 2 other)
