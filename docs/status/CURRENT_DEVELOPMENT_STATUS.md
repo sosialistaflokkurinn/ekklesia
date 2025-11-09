@@ -591,7 +591,7 @@ npm run test:smoke
 **Security Contact:** [Your name/role]
 
 For issues or blockers:
-1. Check [Repository Structure](../../DOCUMENTATION_MAP.md#-repository-structure) for file locations
+1. Check [Repository Structure](../../DOCUMENTATION_MAP.md) for file locations
 2. Review [OPERATIONAL_PROCEDURES.md](../operations/OPERATIONAL_PROCEDURES.md) for common tasks
 3. File GitHub issue with label `phase-5` or `epic-{number}`
 

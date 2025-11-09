@@ -9,7 +9,7 @@ Current system status and historical incidents organized by date.
 - **[Current Development Status](CURRENT_DEVELOPMENT_STATUS.md)** - Latest system status
 - **[Ongoing Work](ongoing/)** - Active checklists and in-progress items
 - **[Historical Incidents](historical/)** - Dated incidents and status changes
-- **[DOCUMENTATION_MAP.md](../../DOCUMENTATION_MAP.md#-current-work)** - Overall project status
+- **[DOCUMENTATION_MAP.md](../../DOCUMENTATION_MAP.md)** - Overall project status
 
 ## Overview
 

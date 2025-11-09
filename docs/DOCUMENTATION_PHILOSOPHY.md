@@ -371,7 +371,7 @@ Our CSS uses BEM methodology. Here are the naming rules:
 **Level 2 (CODE_STANDARDS_MAP.md)** - WRONG LINKS:
 ```markdown
 ## Quick Links
-- [Specific CSS rule on line 45](standards/CSS_BEM_GUIDE.md#line-45)
+- [Specific CSS rule on line 45](standards/CSS_BEM_GUIDE.md)
 - Implementation detail link removed (example only, not a real file)
 (No! Level 2 should link to guides, not specific implementation)
 ```

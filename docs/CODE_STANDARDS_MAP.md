@@ -72,9 +72,9 @@ Our code standards prioritize:
 ```
 
 **Quick Links**:
-- [BEM Naming Rules](../docs/standards/CSS_BEM_GUIDE.md#naming-convention)
-- [CSS Variables Reference](../docs/standards/CSS_BEM_GUIDE.md#css-variables)
-- [Component Organization](../docs/standards/CSS_BEM_GUIDE.md#file-structure)
+- [BEM Naming Rules](../docs/standards/CSS_BEM_GUIDE.md)
+- [CSS Variables Reference](../docs/standards/CSS_BEM_GUIDE.md)
+- [Component Organization](../docs/standards/CSS_BEM_GUIDE.md)
 
 ---
 
@@ -110,7 +110,7 @@ Our code standards prioritize:
 ```
 
 **Quick Links**:
-- [Semantic HTML Reference](../docs/standards/HTML_GUIDE.md#semantic-elements)
+- [Semantic HTML Reference](../docs/standards/HTML_GUIDE.md)
 - [Accessibility Checklist](../docs/standards/HTML_GUIDE.md#accessibility)
 - [Form Best Practices](../docs/standards/HTML_GUIDE.md#forms)
 
@@ -157,10 +157,10 @@ function savePhoneNumbers(phoneNumbers, callback) {
 ```
 
 **Quick Links**:
-- [Module System](../docs/standards/JAVASCRIPT_GUIDE.md#modules)
-- [Async Patterns](../docs/standards/JAVASCRIPT_GUIDE.md#async-await)
-- [Error Handling](../docs/standards/JAVASCRIPT_GUIDE.md#error-handling)
-- [Naming Conventions](../docs/standards/JAVASCRIPT_GUIDE.md#naming)
+- [Module System](../docs/standards/JAVASCRIPT_GUIDE.md)
+- [Async Patterns](../docs/standards/JAVASCRIPT_GUIDE.md)
+- [Error Handling](../docs/standards/JAVASCRIPT_GUIDE.md)
+- [Naming Conventions](../docs/standards/JAVASCRIPT_GUIDE.md)
 
 ---
 
@@ -259,10 +259,10 @@ document.getElementById('btn-save').textContent = 'Vista';
 ```
 
 **Quick Links**:
-- [R.string Setup](../docs/standards/I18N_GUIDE.md#setup)
-- [Adding Translations](../docs/standards/I18N_GUIDE.md#adding-languages)
-- [String Format Placeholders](../docs/standards/I18N_GUIDE.md#formatting)
-- [Configuration Values](../docs/standards/I18N_GUIDE.md#configuration)
+- [R.string Setup](../docs/standards/I18N_GUIDE.md)
+- [Adding Translations](../docs/standards/I18N_GUIDE.md)
+- [String Format Placeholders](../docs/standards/I18N_GUIDE.md)
+- [Configuration Values](../docs/standards/I18N_GUIDE.md)
 
 ---
 
@@ -308,9 +308,9 @@ async function saveEmail(email) {
 - **Pattern 4**: Clear error messages (not just "Error")
 
 **Quick Links**:
-- [Validation Rules](../docs/standards/DATA_QUALITY_UX.md#validation)
-- [Status Feedback Pattern](../docs/standards/DATA_QUALITY_UX.md#status-feedback)
-- [Search UX Patterns](../docs/standards/DATA_QUALITY_UX.md#search-patterns)
+- [Validation Rules](../docs/standards/DATA_QUALITY_UX.md)
+- [Status Feedback Pattern](../docs/standards/DATA_QUALITY_UX.md)
+- [Search UX Patterns](../docs/standards/DATA_QUALITY_UX.md)
 
 ---
 
@@ -437,9 +437,9 @@ test('rejects invalid kennitala', () => {
 ```
 
 **Quick Links**:
-- [Testing Checklist](../docs/standards/QUALITY_TESTING_GUIDE.md#checklist)
-- [Pre-commit Hooks](../docs/standards/QUALITY_TESTING_GUIDE.md#hooks)
-- [Load Testing](../docs/standards/QUALITY_TESTING_GUIDE.md#load-testing)
+- [Testing Checklist](../docs/standards/QUALITY_TESTING_GUIDE.md)
+- [Pre-commit Hooks](../docs/standards/QUALITY_TESTING_GUIDE.md)
+- [Load Testing](../docs/standards/QUALITY_TESTING_GUIDE.md)
 
 ---
 
