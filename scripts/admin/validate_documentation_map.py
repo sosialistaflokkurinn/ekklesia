@@ -39,6 +39,7 @@ DEFAULT_SCAN_DIRS = (
 
 DEFAULT_IGNORE_DIRS = (
     "archive",
+    "audits",  # Don't validate audit reports (historical/working docs)
 )
 
 # File suffixes that we consider part of documentation for the purposes of
@@ -48,7 +49,15 @@ DOC_SUFFIXES = (".md", ".markdown", ".mdx", ".rst", ".txt", ".sh")
 INLINE_CODE_PATTERN = re.compile(r"`([^`]+)`")
 PATH_PATTERN = re.compile(r"(?<![\w./-])(docs|members|events|elections|archive)/[\w./-]+")
 
-EXCLUDE_PARTS = {"node_modules", "venv", ".venv", "__pycache__", "site-packages"}
+EXCLUDE_PARTS = {
+    "node_modules",
+    "venv",
+    ".venv",
+    "__pycache__",
+    "site-packages",
+    "archive",  # Exclude archived documentation
+    "audits",   # Exclude audit reports (historical/working docs)
+}
 
 # Directory moves (Oct 13, 2025 archive re-organisation)
 # When DOCUMENTATION_MAP.md references an old path, suggest the new location.
