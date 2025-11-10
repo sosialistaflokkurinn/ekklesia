@@ -60,10 +60,14 @@ app.use('/api/admin', adminRouter);
 
 // 404 handler
 app.use((req, res) => {
-  res.status(404).json({
+  const response = {
     error: 'Not Found',
-    message: `Route ${req.method} ${req.path} not found`,
-    availableRoutes: [
+    message: `Route ${req.method} ${req.path} not found`
+  };
+
+  // Only expose available routes in development (security: prevent information disclosure)
+  if (process.env.NODE_ENV !== 'production') {
+    response.availableRoutes = [
       'GET /health',
       'POST /api/s2s/register-token (S2S only)',
       'GET /api/s2s/results (S2S only)',
@@ -79,8 +83,10 @@ app.use((req, res) => {
       'POST /api/admin/elections/:id/unhide (Admin)',
       'DELETE /api/admin/elections/:id (Superadmin)',
       'GET /api/admin/elections/:id/results (Admin)'
-    ]
-  });
+    ];
+  }
+
+  res.status(404).json(response);
 });
 
 // Error handler
