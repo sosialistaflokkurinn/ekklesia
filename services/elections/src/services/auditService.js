@@ -1,8 +1,9 @@
 const pool = require('../config/database');
+const logger = require('../utils/logger');
 
 /**
  * Log audit event to database
- * IMPORTANT: Never log PII - only token hash prefix for debugging
+ * IMPORTANT: Never log PII - only correlation_id for debugging
  *
  * @param {string} action - Action type (register_token, record_ballot, fetch_results)
  * @param {boolean} success - Whether action succeeded
@@ -15,7 +16,11 @@ function logAudit(action, success, details = {}) {
     // Sanitize details to ensure no PII
     sanitizedDetails = sanitizeDetails(details);
   } catch (error) {
-    console.error('[Audit] Failed to sanitize audit details:', error.message);
+    logger.error('Audit details sanitization failed', {
+      operation: 'audit_sanitization',
+      error: error.message,
+      stack: error.stack
+    });
     sanitizedDetails = { error: 'sanitization_failed' };
   }
 
@@ -25,13 +30,24 @@ function logAudit(action, success, details = {}) {
     [action, success, sanitizedDetails]
   )
     .then(() => {
+      // Log successful audit in development only (reduce noise in production)
       if (process.env.NODE_ENV !== 'production') {
-        console.log('[Audit]', action, success ? '✓' : '✗', sanitizedDetails);
+        logger.debug('Audit event logged', {
+          operation: 'audit_log',
+          action,
+          success,
+          details: sanitizedDetails
+        });
       }
     })
     .catch((error) => {
       // Don't fail the request if audit logging fails
-      console.error('[Audit] Failed to log audit event:', error.message);
+      logger.error('Audit event logging failed', {
+        operation: 'audit_log',
+        action,
+        error: error.message,
+        stack: error.stack
+      });
     });
 }
 
@@ -91,7 +107,12 @@ async function getRecentAuditLogs(limit = 20) {
     );
     return result.rows;
   } catch (error) {
-    console.error('[Audit] Failed to retrieve audit logs:', error.message);
+    logger.error('Failed to retrieve audit logs', {
+      operation: 'get_audit_logs',
+      error: error.message,
+      stack: error.stack,
+      limit
+    });
     throw error;
   }
 }

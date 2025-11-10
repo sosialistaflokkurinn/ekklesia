@@ -4,6 +4,7 @@ const pool = require('../config/database');
 const authenticateS2S = require('../middleware/s2sAuth');
 const { verifyAppCheckOptional } = require('../middleware/appCheck');
 const { logAudit } = require('../services/auditService');
+const logger = require('../utils/logger');
 
 const router = express.Router();
 
@@ -66,7 +67,13 @@ router.post('/s2s/register-token', authenticateS2S, async (req, res) => {
       });
     }
 
-    console.error('[S2S] Register token error:', error);
+    logger.error('Register token failed', {
+      operation: 's2s_register_token',
+      error: error.message,
+      stack: error.stack,
+      correlation_id,
+      duration_ms: duration
+    });
     logAudit('register_token', false, { error: error.message, correlation_id, duration_ms: duration });
 
     res.status(500).json({
@@ -120,7 +127,12 @@ router.get('/s2s/results', authenticateS2S, async (req, res) => {
 
   } catch (error) {
     const duration = Date.now() - startTime;
-    console.error('[S2S] Get results error:', error);
+    logger.error('Fetch results failed', {
+      operation: 's2s_fetch_results',
+      error: error.message,
+      stack: error.stack,
+      duration_ms: duration
+    });
     logAudit('fetch_results', false, { error: error.message, duration_ms: duration });
 
     res.status(500).json({
@@ -233,7 +245,12 @@ router.post('/vote', verifyAppCheckOptional, async (req, res) => {
 
     // Check if lock timeout (FOR UPDATE NOWAIT failed)
     if (error.code === '55P03') { // Lock not available
-      console.warn('[Vote] Lock contention detected');
+      logger.warn('Lock contention detected on vote', {
+        operation: 'record_ballot',
+        errorCode: '55P03',
+        correlation_id,
+        duration_ms: duration
+      });
       logAudit('record_ballot', false, { error: 'Lock contention', correlation_id, duration_ms: duration });
       return res.status(503).json({
         error: 'Service Temporarily Unavailable',
@@ -242,7 +259,13 @@ router.post('/vote', verifyAppCheckOptional, async (req, res) => {
       });
     }
 
-    console.error('[Vote] Ballot submission error:', error);
+    logger.error('Ballot submission failed', {
+      operation: 'record_ballot',
+      error: error.message,
+      stack: error.stack,
+      correlation_id,
+      duration_ms: duration
+    });
     logAudit('record_ballot', false, { error: error.message, correlation_id, duration_ms: duration });
 
     res.status(500).json({
@@ -304,7 +327,11 @@ router.get('/token-status', verifyAppCheckOptional, async (req, res) => {
     });
 
   } catch (error) {
-    console.error('[Token Status] Error:', error);
+    logger.error('Token status check failed', {
+      operation: 'token_status',
+      error: error.message,
+      stack: error.stack
+    });
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to check token status'
