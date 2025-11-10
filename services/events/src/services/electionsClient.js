@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const logger = require('../utils/logger');
 
 /**
  * Elections Service S2S Client
@@ -18,7 +19,10 @@ async function registerToken(tokenHash) {
     throw new Error('S2S_API_KEY not configured');
   }
 
-  console.log(`[Elections S2S] Registering token hash: ${tokenHash.substring(0, 8)}...`);
+  logger.info('Registering token with Elections service', {
+    operation: 's2s_register_token',
+    service: 'elections'
+  });
 
   try {
     const response = await fetch(`${ELECTIONS_SERVICE_URL}/api/s2s/register-token`, {
@@ -33,14 +37,27 @@ async function registerToken(tokenHash) {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('[Elections S2S] Registration failed:', response.status, data);
+      logger.error('Elections service registration failed', {
+        operation: 's2s_register_token',
+        service: 'elections',
+        status: response.status,
+        error: data.message || response.statusText
+      });
       throw new Error(`Elections service registration failed: ${data.message || response.statusText}`);
     }
 
-    console.log('[Elections S2S] Token registered successfully');
+    logger.info('Token registered successfully with Elections service', {
+      operation: 's2s_register_token',
+      service: 'elections'
+    });
     return data;
   } catch (error) {
-    console.error('[Elections S2S] Registration error:', error);
+    logger.error('Elections service registration error', {
+      operation: 's2s_register_token',
+      service: 'elections',
+      error: error.message,
+      stack: error.stack
+    });
     throw new Error(`Failed to register token with Elections service: ${error.message}`);
   }
 }
@@ -54,7 +71,10 @@ async function fetchResults() {
     throw new Error('S2S_API_KEY not configured');
   }
 
-  console.log('[Elections S2S] Fetching results');
+  logger.info('Fetching results from Elections service', {
+    operation: 's2s_fetch_results',
+    service: 'elections'
+  });
 
   try {
     const response = await fetch(`${ELECTIONS_SERVICE_URL}/api/s2s/results`, {
@@ -67,14 +87,28 @@ async function fetchResults() {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('[Elections S2S] Fetch results failed:', response.status, data);
+      logger.error('Elections service results fetch failed', {
+        operation: 's2s_fetch_results',
+        service: 'elections',
+        status: response.status,
+        error: data.message || response.statusText
+      });
       throw new Error(`Elections service results fetch failed: ${data.message || response.statusText}`);
     }
 
-    console.log('[Elections S2S] Results fetched successfully');
+    logger.info('Results fetched successfully from Elections service', {
+      operation: 's2s_fetch_results',
+      service: 'elections',
+      total_ballots: data.total_ballots
+    });
     return data;
   } catch (error) {
-    console.error('[Elections S2S] Fetch results error:', error);
+    logger.error('Elections service fetch results error', {
+      operation: 's2s_fetch_results',
+      service: 'elections',
+      error: error.message,
+      stack: error.stack
+    });
     throw new Error(`Failed to fetch results from Elections service: ${error.message}`);
   }
 }

@@ -1,4 +1,5 @@
 const { Pool } = require('pg');
+const logger = require('../utils/logger');
 
 /**
  * Database Configuration
@@ -20,22 +21,31 @@ const pool = new Pool({
 
 // Test connection on startup
 pool.on('connect', () => {
-  console.log('✓ Connected to Cloud SQL database');
+  logger.info('Connected to Cloud SQL database', {
+    operation: 'database_connect',
+    host: process.env.DATABASE_HOST,
+    database: process.env.DATABASE_NAME
+  });
 });
 
 // Pool error handler (graceful degradation)
 pool.on('error', (err, client) => {
-  console.error('Unexpected error on idle client:', {
+  logger.error('Unexpected error on idle database client', {
+    operation: 'database_pool_error',
     error: err.message,
     code: err.code,
-    timestamp: new Date().toISOString()
+    stack: err.stack
   });
 
   // Let pool handle transient errors - removes bad connections automatically
   // Only exit for unrecoverable errors (database completely down)
   if (err.code === 'ECONNREFUSED' || err.code === '57P03') {
     // Database is unreachable - exit and let Cloud Run restart with backoff
-    console.error('[FATAL] Database unreachable, exiting...');
+    logger.error('FATAL: Database unreachable, exiting', {
+      operation: 'database_fatal_error',
+      error: err.message,
+      code: err.code
+    });
     setTimeout(() => process.exit(1), 1000); // Give time to flush logs
   }
 
@@ -52,10 +62,19 @@ async function query(text, params) {
   try {
     const res = await pool.query(text, params);
     const duration = Date.now() - start;
-    console.log('Executed query', { text, duration, rows: res.rowCount });
+    logger.debug('Executed database query', {
+      operation: 'database_query',
+      duration_ms: duration,
+      rows: res.rowCount
+    });
     return res;
   } catch (error) {
-    console.error('Database query error:', { text, error: error.message });
+    logger.error('Database query failed', {
+      operation: 'database_query',
+      error: error.message,
+      stack: error.stack,
+      code: error.code
+    });
     throw error;
   }
 }
