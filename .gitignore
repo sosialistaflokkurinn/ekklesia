@@ -145,6 +145,9 @@ scripts/logs/*.jsonl
 .claude/
 .gemini/
 
+# Party mark/logo work directory (personal)
+correct-mark-of-the-party/
+
 # Local data files
 data/Stadfangaskra.csv
 AUDIT_CODE_DOCUMENTATION_2025-10-20.json
