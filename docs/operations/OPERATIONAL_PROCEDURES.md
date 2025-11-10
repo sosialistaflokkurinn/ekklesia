@@ -17,7 +17,7 @@ The Ekklesia system is designed for **infrequent, high-load events** (monthly me
 
 **Philosophy**: It's **completely justified** to manually prepare the system before meetings and scale down afterward. Monthly meetings don't require 24/7 high availability.
 
-## System Status (Nov 9, 2025)
+## System Status (Nov 10, 2025)
 
 ✅ **Phase 5 Core Features Complete**:
 - ✅ Admin Elections API - 10 endpoints with RBAC (election-manager, superadmin)
@@ -26,6 +26,8 @@ The Ekklesia system is designed for **infrequent, high-load events** (monthly me
 - ✅ Policy Session - Immigration policy voting with amendments
 - ✅ Project Reorganization - Area-based architecture (/elections/, /events/, /policy-session/)
 - ✅ Documentation Automation - 3-layer maintenance system
+- ✅ Secret Manager Standardization - Unified secret management across all 13 Cloud Run services
+- ✅ Navigation & Accessibility - Logout redirect and WCAG compliance fixes
 
 ✅ **End-to-end voting flow validated** (Oct 15, 2025):
 - All services working together
@@ -39,6 +41,9 @@ The Ekklesia system is designed for **infrequent, high-load events** (monthly me
 - Member sync infrastructure operational (hourly Django → Firestore, daily Firestore → Django)
 - Critical sync bugs fixed (composite index, queue marking)
 - Firestore composite index created for sync_queue
+- Secret Manager unified across all Cloud Functions (environment variable injection)
+- Navigation UX improvements (logout redirect, aria-hidden accessibility fix)
+- Infrastructure documentation updated (13 Cloud Run services documented)
 
 **Remaining**: Load testing (300 votes/sec spike), Integration testing, Production security review
 

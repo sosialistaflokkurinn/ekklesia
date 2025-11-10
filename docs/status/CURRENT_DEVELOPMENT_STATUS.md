@@ -1,6 +1,6 @@
 # Ekklesia Current Development Status
 
-**Last Updated:** 2025-11-09
+**Last Updated:** 2025-11-10
 **Status:** 🟡 Development Phase - Active Feature Development
 **Current Phase:** 5 - Feature Development & Deployment
 **Target Completion:** November 2025
@@ -42,9 +42,42 @@ Ekklesia infrastructure is **stable and ready for development**. Phase 4 complet
 
 ---
 
-## Recent Development Activity (Nov 1-9, 2025)
+## Recent Development Activity (Nov 1-10, 2025)
 
 **Major Features & Infrastructure:**
+
+- ✅ **Secret Manager Standardization (Epic #165)** - Unified secret management across all Cloud Functions
+  - **Issue**: #246 - refactor(members): Unify Secret Manager integration
+  - **Changes**: Removed direct Secret Manager API calls from 5 Cloud Functions
+  - **Pattern**: All secrets now injected via environment variables at Cloud Run startup
+  - **Functions Updated**:
+    - `sync_members.py` - Removed `SecretManagerServiceClient`, use `os.environ.get('DJANGO_API_TOKEN')`
+    - `bidirectional_sync.py` - Removed unused secretmanager import
+    - `update_member_foreign_address.py` - Removed `get_secret()` function
+    - `get_django_token.py` - Removed secret_client global
+  - **Benefits**: Simplified code, faster performance (Cloud Run caches secrets), consistent pattern
+  - **Configuration**: `gcloud run services update SERVICE --set-secrets="DJANGO_API_TOKEN=django-api-token:latest"`
+  - **Documentation**: CLOUD_RUN_SERVICES.md updated with Secret Manager best practices
+
+- ✅ **Navigation & Accessibility Improvements (Epic #186)** - Member portal UX fixes
+  - **Issue**: #245 - fix(nav): Add logout redirect and accessibility fix
+  - **Fix 1: Logout Redirect** - Logout button now redirects to home page after sign out
+    - Updated `page-init.js` - Added `window.location.href = '/'` after `signOut()`
+  - **Fix 2: aria-hidden Accessibility** - Fixed Chrome accessibility warning
+    - Updated `nav.js` - Move focus BEFORE setting `aria-hidden="true"` in `closeDrawer()`
+    - Prevents focused element from becoming aria-hidden (WCAG compliance)
+  - **Deployment**: Firebase Hosting updated (2025-11-10)
+  - **Testing**: Verified working in production
+
+- ✅ **Infrastructure Documentation Update (Epic #165)** - Comprehensive Cloud Run services guide
+  - **Issue**: #247 - docs(infrastructure): Update CLOUD_RUN_SERVICES.md
+  - **Updates**:
+    - Service count: 8 → 13 services (added 5 missing services)
+    - New Secret Manager integration section with philosophy and patterns
+    - Updated technology stacks (Python 3.13 for all member services)
+    - handleKenniAuth PKCE flow documentation (10-step OAuth flow)
+    - Deployment warnings about Firebase deploy resetting --set-secrets
+  - **Session Hooks**: Added Cloud Run services reminder to `.claude/settings.local.json`
 
 - ✅ **Admin Elections API (Epic #24)** - 10 new REST endpoints with RBAC
   - `GET /api/admin/elections` - List elections with filters
@@ -136,7 +169,7 @@ Ekklesia infrastructure is **stable and ready for development**. Phase 4 complet
 
 | Component | Status | Details |
 |-----------|--------|---------|
-| **Cloud Run** | ✅ Deployed | 6 services: elections-service, events-service, handlekenniauth, healthz, syncmembers, verifymembership (europe-west2) |
+| **Cloud Run** | ✅ Deployed | 13 services: handlekenniauth, verifymembership, healthz, syncmembers, bidirectional-sync, updatememberprofile, updatememberforeignaddress, get-django-token, elections-service, events-service, auditmemberchanges (europe-west2) - See [CLOUD_RUN_SERVICES.md](../infrastructure/CLOUD_RUN_SERVICES.md) |
 | **Cloud Functions** | ✅ Deployed | bidirectional_sync (revision 00008-sef), sync_members, track_member_changes |
 | **Cloud SQL** | ✅ Operational | PostgreSQL 15.1, 2 schemas (public, elections) |
 | **Firestore** | ✅ Active | Members collection, sync_queue collection with composite index |
@@ -463,7 +496,7 @@ ekklesia/
 **Git Status:**
 - Current Branch: `feature/epic-186-member-voting-experience` (Policy session work)
 - Latest Commit on main: `6266f77` (Reorganize API structure, 2025-11-09)
-- Latest Commit on branch: `6266f77` (Reorganize API structure, 2025-11-09)
+- Latest Commit on branch: `f2ff4be` (Add Cloud Run Services reminder, 2025-11-10)
 - Feature Branches (Phase 5):
   - `feature/epic-24-admin-lifecycle` ✅ Completed & merged to main (Nov 2025)
   - `feature/epic-43-membership-sync` 🟡 Sync infrastructure complete, admin UI pending
@@ -471,6 +504,10 @@ ekklesia/
   - `feature/epic-186-member-voting-experience` 🟡 Active (policy session)
 
 **Recent Commits (Nov 2025):**
+- f2ff4be - chore(claude): Add Cloud Run Services reminder to session start hooks
+- eb2f5e9 - docs(infrastructure): Update CLOUD_RUN_SERVICES.md with Secret Manager patterns (Issue #247)
+- b39f7f1 - refactor(members): Unify Secret Manager integration across Cloud Functions (Issue #246)
+- 8bbe4c8 - fix(nav): Add logout redirect and fix aria-hidden accessibility (Issue #245)
 - 6266f77 - refactor: Reorganize API structure with area-specific mocks
 - 502eebc - feat: Separate admin role badges to distinct dashboards
 - 1ae29c1 - fix(amendment-vote-card): Fix createBadge usage
@@ -685,7 +722,7 @@ For issues or blockers:
 
 ---
 
-**Status Last Verified:** 2025-11-09
-**Next Status Update Due:** 2025-11-16
+**Status Last Verified:** 2025-11-10
+**Next Status Update Due:** 2025-11-17
 **Phase 5 Status:** Epic #24 Complete ✅ | Epic #87 Complete ✅ | Epic #43 80% Complete
 **Phase 5 Progress:** Week 4 of 5 - Infrastructure Complete, Polish & Testing Phase
