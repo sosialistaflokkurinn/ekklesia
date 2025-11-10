@@ -633,7 +633,7 @@ def verifyMembership(req: https_fn.CallableRequest) -> dict:
         db = firestore.client()
 
         # Normalize kennitala (remove hyphen if present)
-        kennitala_normalized = kennitala.replace('-', '')
+        kennitala_normalized = normalize_kennitala(kennitala)
 
         # Query members collection by document ID (kennitala without hyphen)
         member_doc_ref = db.collection('members').document(kennitala_normalized)
