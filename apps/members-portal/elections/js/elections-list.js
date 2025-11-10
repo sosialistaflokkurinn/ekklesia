@@ -39,11 +39,13 @@ async function init() {
 
     // Initialize authenticated page (header, navigation, auth check)
     // Note: This updates nav-brand, nav-dashboard, nav-profile, and nav-logout
-    // but NOT nav-voting (election-specific link)
     await initAuthenticatedPage();
 
-    // Update elections navigation link (page-specific)
-    document.getElementById('nav-voting').textContent = R.string.nav_voting;
+    // Update elections navigation link (page-specific) if it exists
+    const navVoting = document.getElementById('nav-voting');
+    if (navVoting) {
+      navVoting.textContent = R.string.nav_voting;
+    }
 
     // Update page titles
     document.title = R.string.page_title_elections;
