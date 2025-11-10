@@ -41,8 +41,11 @@ async function init() {
     // Initialize authenticated page (header, navigation, auth check)
     await initAuthenticatedPage();
 
-    // Update voting navigation link
-    document.getElementById('nav-voting').textContent = R.string.nav_voting;
+    // Update voting navigation link if it exists
+    const navVoting = document.getElementById('nav-voting');
+    if (navVoting) {
+      navVoting.textContent = R.string.nav_voting;
+    }
 
     // Update static text elements
     updateStaticText();
