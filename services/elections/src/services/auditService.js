@@ -37,14 +37,19 @@ function logAudit(action, success, details = {}) {
 
 /**
  * Sanitize details object to remove any potential PII
- * Only allow: token_hash_prefix, answer, error messages
+ * Only allow: correlation_id (random), answer, error messages, metrics
+ *
+ * IMPORTANT: Do NOT log token_hash or token_hash_prefix
+ * Reason: Even partial token hash could enable deanonymization attacks
+ *         when combined with timing data or database breach.
  */
 function sanitizeDetails(details) {
   const sanitized = {};
 
-  // Allow token hash prefix (first 8 chars for debugging)
-  if (details.token_hash) {
-    sanitized.token_hash_prefix = details.token_hash.substring(0, 8);
+  // Allow correlation_id (random UUID, not derived from token)
+  // Use for request tracing without deanonymization risk
+  if (details.correlation_id) {
+    sanitized.correlation_id = details.correlation_id;
   }
 
   // Allow answer (yes/no/abstain - no PII)
@@ -69,6 +74,8 @@ function sanitizeDetails(details) {
     sanitized.duration_ms = details.duration_ms;
   }
 
+  // Explicitly drop any token-related fields to prevent accidental logging
+  // This ensures absolute voter anonymity even in audit logs
   return sanitized;
 }
 
