@@ -111,9 +111,14 @@
 | Kosningagögn | PostgreSQL Cloud SQL | `./scripts/database/psql-cloud.sh` |
 
 **Mundu:**
-- PostgreSQL þarf Cloud SQL Proxy
+- PostgreSQL þarf Cloud SQL Proxy **með `--gcloud-auth` flag**
 - Firestore þarf Firebase Admin SDK með réttum credentials
 - Sjá `docs/checklists/CHECK_USER_LOGINS.md` fyrir nákvæmar leiðbeiningar
+
+**🔥 MIKILVÆGT - Database Migrations:**
+- **Sjá**: `scripts/database/MIGRATION_GUIDE.md` - Fljótleg tilvísun með copy-paste skipunum
+- Notaðu ALLTAF `--gcloud-auth` flag til að forðast 403 ADC villur
+- Proxy notar port 5433 (ekki 5432) til að forðast conflicts
 
 ---
 
@@ -145,7 +150,9 @@ firebase projects:list
 | Gitignore stefna | `docs/development/guides/GITIGNORE_STRATEGY.md` | Two-tier .gitignore aðferð |
 | Innskráningstjékklisti | `docs/checklists/CHECK_USER_LOGINS.md` | Skref-fyrir-skref leiðbeiningar |
 | Innskráningarscript | `services/members/scripts/check-user-logins.js` | Aðalverkfæri |
+| **Migration Guide** | `scripts/database/MIGRATION_GUIDE.md` | **Fljótleg tilvísun fyrir DB migrations** |
 | Database scripts | `scripts/database/` | PostgreSQL aðgangur |
+| Database README | `scripts/database/README.md` | Ítarleg skjölun fyrir database aðgang |
 | Environment vars | `scripts/deployment/set-env.sh` | GCP stillingar |
 
 ---
@@ -161,4 +168,6 @@ firebase projects:list
 ---
 
 **Síðast uppfært**: 2025-11-10
-**Ástæða**: Bætt við PII Prevention System (Issue #240) - þriggja laga vörn gegn PII í GitHub issues/PRs
+**Ástæða síðustu uppfærslu**:
+- Bætt við PII Prevention System (Issue #240) - þriggja laga vörn gegn PII í GitHub issues/PRs
+- Bætt við vísun í MIGRATION_GUIDE.md fyrir database migrations (Issue #248)
