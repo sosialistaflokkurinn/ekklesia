@@ -77,12 +77,14 @@ export function updateNavigation() {
  * Setup logout button click handler
  *
  * Attaches event listener to logout link that signs out
- * the user and redirects to login page.
+ * the user and redirects to home page (/).
  */
 export function setupLogout() {
   document.getElementById('nav-logout').addEventListener('click', async (e) => {
     e.preventDefault();
     await signOut();
+    // Redirect to home page after logout
+    window.location.href = '/';
   });
 }
 
