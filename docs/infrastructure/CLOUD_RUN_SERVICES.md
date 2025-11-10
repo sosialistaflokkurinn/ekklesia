@@ -1,7 +1,7 @@
 # Cloud Run Services Architecture
 
 **Document Type**: Infrastructure Documentation
-**Last Updated**: 2025-11-09
+**Last Updated**: 2025-11-10
 **Status**: ✅ Active - Production Services
 **Project**: ekklesia-prod-10-2025
 **Region**: europe-west2 (London)
@@ -10,9 +10,11 @@
 
 ## Overview
 
-Ekklesia uses [Google Cloud Run](https://cloud.google.com/run) to deploy and manage microservices. The platform consists of **8 independent services** that work together to provide election management, voting, and membership functionality.
+Ekklesia uses [Google Cloud Run](https://cloud.google.com/run) to deploy and manage microservices. The platform consists of **13 independent services** that work together to provide election management, voting, and membership functionality.
 
 **Architecture Philosophy**: [Microservices](https://microservices.io/) approach with small, single-purpose functions that scale independently.
+
+**Security**: All services use [Google Secret Manager](https://cloud.google.com/secret-manager) for sensitive credentials (OAuth secrets, API tokens). Secrets are injected as environment variables at runtime by Cloud Run.
 
 ---
 
@@ -140,38 +142,45 @@ Ekklesia uses [Google Cloud Run](https://cloud.google.com/run) to deploy and man
 ### Authentication & Authorization Services
 
 #### 3. handlekenniauth
-**Type**: Cloud Function (Node.js)
-**Purpose**: Kenni.is OAuth authentication integration
-**Deployment**: Firebase Cloud Functions
-**URL**: https://handlekenniauth-521240388393.europe-west2.run.app
+**Type**: Cloud Function (Python 3.13)
+**Purpose**: Kenni.is OAuth authentication integration with PKCE
+**Deployment**: Firebase Cloud Functions Gen2
+**URL**: https://handlekenniauth-ymzrguoifa-nw.a.run.app
 **Authentication**: Public access (OAuth callback endpoint)
-**Latest Deploy**: 2025-10-30
+**Latest Deploy**: 2025-11-10
 
 **Key Features**:
-- Kenni.is OAuth 2.0 flow handling
-- Government eID authentication
-- User profile creation/update
-- Session token issuance
+- Kenni.is OAuth 2.0 flow with PKCE
+- Government eID authentication (Icelandic National Registry)
+- User profile creation/update from Þjóðskrá
+- Firebase custom token issuance
+- Rate limiting (10 attempts per 10 min per IP)
+- Input validation (DoS protection)
+- Structured logging with correlation IDs
 
 **Technology Stack**:
-- Node.js (Firebase Functions)
-- Firebase Admin SDK
+- Python 3.13 (Firebase Functions Gen2)
+- Firebase Admin SDK (Python)
 - Firebase Authentication
-- Kenni.is API integration
+- Kenni.is OAuth 2.0 API
+- JWT token verification with JWKS caching
+- **Secret Manager**: `KENNI_IS_CLIENT_SECRET` (OAuth client secret)
 
-**Code Location**: `services/members/functions/handlekenniauth/`
+**Code Location**: `services/members/functions/auth/kenni_flow.py`
 
 **Usage**: **Most frequently used service** (136 references in codebase)
 
-**OAuth Flow**:
-1. User initiates login
-2. Redirect to Kenni.is
-3. User authenticates with Icelandic eID
-4. Kenni.is redirects back to this service
-5. Service validates OAuth code
-6. Creates/updates Firebase user
-7. Issues session token
-8. Redirects to application
+**OAuth Flow (PKCE)**:
+1. Frontend generates PKCE code verifier + challenge
+2. Frontend initiates OAuth with Kenni.is (includes challenge)
+3. User authenticates with Icelandic eID (kennitala)
+4. Kenni.is redirects back with authorization code
+5. Frontend sends code + verifier to this service
+6. Service exchanges code for ID token (validates verifier)
+7. Service verifies ID token signature (JWKS)
+8. Service creates/updates Firebase user
+9. Service issues Firebase custom token
+10. Frontend signs in with custom token
 
 ---
 
@@ -212,77 +221,179 @@ Ekklesia uses [Google Cloud Run](https://cloud.google.com/run) to deploy and man
 ### Data Synchronization Services
 
 #### 5. syncmembers
-**Type**: Cloud Function (Node.js)
-**Purpose**: Scheduled hourly membership synchronization
-**Deployment**: Firebase Cloud Functions
-**URL**: https://syncmembers-521240388393.europe-west2.run.app
-**Authentication**: Require authentication (Cloud Scheduler + service account)
-**Latest Deploy**: 2025-10-30
+**Type**: Cloud Function (Python 3.13)
+**Purpose**: Manual membership synchronization (admin-triggered)
+**Deployment**: Firebase Cloud Functions Gen2
+**URL**: https://syncmembers-ymzrguoifa-nw.a.run.app
+**Authentication**: Require authentication (admin/superuser role required)
+**Latest Deploy**: 2025-11-10
 
 **Key Features**:
-- Hourly sync from Django backend
-- Differential updates (only changed members)
+- Manual sync from Django backend (triggered by admin)
+- Full member data sync (profile, contact, addresses, roles)
 - Firestore members collection update
-- Audit logging of sync operations
+- Sync statistics and audit logging
+- Normalizes kennitala, phone, and email formats
 
 **Technology Stack**:
-- Node.js (Firebase Functions)
-- Firebase Admin SDK
-- Django API integration
-- Cloud Scheduler trigger
+- Python 3.13 (Firebase Functions Gen2)
+- Firebase Admin SDK (Python)
+- Django API integration (`/felagar/api/full/`)
+- **Secret Manager**: `DJANGO_API_TOKEN` (Django API authentication)
 
-**Code Location**: `services/members/functions/syncmembers/`
+**Code Location**: `services/members/functions/sync_members.py`
 
 **Usage**: 19 references in codebase
 
-**Sync Schedule**: Every hour (Cloud Scheduler: `0 * * * *`)
-
 **Sync Process**:
-1. Cloud Scheduler triggers function
-2. Fetch all members from Django API (`/felagar/api/full/`)
-3. Compare with current Firestore members
-4. Identify additions, updates, deletions
-5. Apply changes to Firestore
-6. Log sync results to audit table
+1. Admin triggers sync from dashboard
+2. Service validates admin/superuser role
+3. Fetch all members from Django API (paginated)
+4. Transform Django member format → Firestore format
+5. Normalize kennitala (remove hyphen), phone (7 digits), email (lowercase)
+6. Upsert members to Firestore (keyed by kennitala)
+7. Create sync log with statistics (added, updated, errors)
+8. Return sync results to admin
 
 ---
 
 #### 6. updatememberprofile
-**Type**: Cloud Function (Python)
+**Type**: Cloud Function (Python 3.13)
 **Purpose**: Update member profile information
-**Deployment**: Firebase Cloud Functions
-**URL**: https://updatememberprofile-521240388393.europe-west2.run.app
-**Authentication**: Require authentication (Firebase Auth)
-**Latest Deploy**: 2025-10-30
+**Deployment**: Firebase Cloud Functions Gen2
+**URL**: https://updatememberprofile-ymzrguoifa-nw.a.run.app
+**Authentication**: Require authentication (Firebase Auth - members can only update their own profile)
+**Latest Deploy**: 2025-11-10
 
 **Key Features**:
-- Update member profile (email, phone, address)
-- Push changes to Django backend
-- Update Firestore cache
-- Validate profile data
+- Update member profile (name, email, phone)
+- Push changes to Django backend (ComradeFullViewSet PATCH)
+- Update Firestore cache with canonical Django data
+- Self-service profile updates (users update their own data)
+- Phone normalization (7 local digits, removes country code)
 
 **Technology Stack**:
-- Python 3.11
+- Python 3.13 (Firebase Functions Gen2)
 - Firebase Admin SDK (Python)
-- Django API integration
+- Django API integration (`/felagar/api/members/:id/`)
+- **Secret Manager**: `DJANGO_API_TOKEN` (Django API authentication)
 
-**Code Location**: `services/members/functions/updatememberprofile/`
+**Code Location**: `services/members/functions/membership/functions.py` (updatememberprofile_handler)
 
 **Usage**: 3 references in codebase
 
 **Update Flow**:
-1. Frontend sends profile update request
+1. Frontend sends profile update request with kennitala + updates
 2. Service validates Firebase token
-3. Service validates profile data (email format, phone format)
-4. Push update to Django API
-5. Update Firestore cache
-6. Return success confirmation
+3. Service verifies user is updating their own profile (kennitala match)
+4. Lookup Django member ID from Firestore (faster than Django search)
+5. Build Django PATCH payload (name, contact_info.email, contact_info.phone)
+6. Push update to Django API
+7. Update Firestore with normalized data
+8. Return success with updated member data
+
+---
+
+#### 7. bidirectional-sync
+**Type**: Cloud Function (Python 3.13)
+**Purpose**: Bi-directional sync Django ↔ Firestore
+**Deployment**: gcloud functions (Gen2)
+**URL**: https://bidirectional-sync-ymzrguoifa-nw.a.run.app
+**Authentication**: Allow unauthenticated (triggered by Cloud Scheduler)
+**Latest Deploy**: 2025-11-10
+
+**Key Features**:
+- Scheduled sync (Cloud Scheduler: daily at 3:30 AM UTC)
+- Bi-directional sync: Firestore → Django AND Django → Firestore
+- Detects changes since last sync (timestamp-based)
+- Syncs only modified members (optimized for performance)
+- Tracks sync queue for pending Firestore→Django updates
+
+**Technology Stack**:
+- Python 3.13 (Cloud Functions Gen2)
+- Firebase Admin SDK (Python)
+- Django API integration
+- **Secret Manager**: `DJANGO_API_TOKEN` (Django API authentication)
+
+**Code Location**: `services/members/functions/bidirectional_sync.py`
+
+**Sync Process**:
+1. Get last sync timestamp from Firestore metadata
+2. **Firestore → Django**: Check sync_queue for pending updates
+3. Push pending updates to Django API
+4. Mark queue items as synced
+5. **Django → Firestore**: Fetch modified members since last sync
+6. Update Firestore with Django changes
+7. Update last sync timestamp
+
+---
+
+#### 8. updatememberforeignaddress
+**Type**: Cloud Function (Python 3.13)
+**Purpose**: Update member foreign address (non-Icelandic addresses)
+**Deployment**: Firebase Cloud Functions Gen2
+**URL**: https://updatememberforeignaddress-ymzrguoifa-nw.a.run.app
+**Authentication**: Require authentication (Firebase Auth)
+**Latest Deploy**: 2025-11-10
+
+**Key Features**:
+- Update foreign address for members living abroad
+- CRUD operations: POST (create), PATCH (update)
+- Country code → Django country ID mapping
+- Push changes to Django backend foreign address API
+- Support for current/historical addresses
+
+**Technology Stack**:
+- Python 3.13 (Firebase Functions Gen2)
+- Firebase Admin SDK (Python)
+- Django API integration (`/felagar/api/members/:kennitala/foreign-addresses/`)
+- **Secret Manager**: `DJANGO_API_TOKEN` (Django API authentication)
+
+**Code Location**: `services/members/functions/update_member_foreign_address.py`
+
+**Update Flow**:
+1. Frontend sends foreign address update (kennitala + address data)
+2. Service validates Firebase token
+3. Convert country code (e.g., "US") → Django country ID (e.g., 211)
+4. Check if foreign address already exists (GET)
+5. If exists: PATCH update, If not: POST create
+6. Return success with method used (POST/PATCH)
+
+---
+
+#### 9. get-django-token
+**Type**: Cloud Function (Python 3.13)
+**Purpose**: Provide Django API token to authorized admins
+**Deployment**: gcloud functions (Gen2)
+**URL**: https://get-django-token-ymzrguoifa-nw.a.run.app
+**Authentication**: Require authentication (admin/superuser role required)
+**Latest Deploy**: 2025-11-10
+
+**Key Features**:
+- Securely provide Django API token to admin users
+- Role-based access control (admin or superuser only)
+- Firebase token verification
+- Audit logging of token access
+
+**Technology Stack**:
+- Python 3.13 (Cloud Functions Gen2)
+- Firebase Admin SDK (Python)
+- **Secret Manager**: `DJANGO_API_TOKEN` (Django API token)
+
+**Code Location**: `services/members/functions/get_django_token.py`
+
+**Access Flow**:
+1. Admin sends request with Firebase ID token
+2. Service verifies Firebase token
+3. Service checks user roles (must have admin or superuser)
+4. If authorized: return Django API token
+5. Log token access (user UID, email, timestamp)
 
 ---
 
 ### Audit & Monitoring Services
 
-#### 7. auditmemberchanges
+#### 10. auditmemberchanges
 **Type**: Cloud Function (Python)
 **Purpose**: Audit logging for member data changes
 **Deployment**: Firebase Cloud Functions
@@ -327,42 +438,49 @@ Ekklesia uses [Google Cloud Run](https://cloud.google.com/run) to deploy and man
 
 ---
 
-#### 8. healthz
-**Type**: Cloud Function (Node.js)
-**Purpose**: Health check endpoint for monitoring
-**Deployment**: Firebase Cloud Functions
-**URL**: https://healthz-521240388393.europe-west2.run.app
-**Authentication**: Public access
-**Latest Deploy**: 2025-10-29
+#### 11. healthz
+**Type**: Cloud Function (Python 3.13)
+**Purpose**: Health check and configuration sanity endpoint
+**Deployment**: Firebase Cloud Functions Gen2
+**URL**: https://healthz-ymzrguoifa-nw.a.run.app
+**Authentication**: Public access (GET only)
+**Latest Deploy**: 2025-11-10
 
 **Key Features**:
-- System health status
-- Service availability checks
-- Database connectivity test
-- Response time measurement
+- Configuration sanity checks (environment variables present)
+- JWKS cache statistics (Kenni.is token verification)
+- CORS support for monitoring tools
+- Correlation ID tracking
 
 **Technology Stack**:
-- Node.js (Firebase Functions)
-- Firebase Admin SDK
+- Python 3.13 (Firebase Functions Gen2)
+- Firebase Admin SDK (Python)
 
-**Code Location**: `services/members/functions/healthz/`
+**Code Location**: `services/members/functions/auth/kenni_flow.py` (healthz_handler)
 
 **Usage**: 7 references in codebase
 
 **Health Check Response**:
 ```json
 {
-  "status": "healthy",
-  "timestamp": "2025-10-31T12:00:00Z",
-  "services": {
-    "firestore": "ok",
-    "auth": "ok",
-    "postgres": "ok"
+  "ok": true,
+  "env": {
+    "KENNI_IS_ISSUER_URL": true,
+    "KENNI_IS_CLIENT_ID": true,
+    "KENNI_IS_CLIENT_SECRET": true,
+    "KENNI_IS_REDIRECT_URI": true
   },
-  "version": "1.0.0",
-  "uptime": 3600
+  "jwks": {
+    "hits": 42,
+    "misses": 3,
+    "size": 1
+  },
+  "issuerConfigured": true,
+  "correlationId": "uuid-here"
 }
 ```
+
+**Note**: Returns boolean values for environment variables (presence check only, not actual values)
 
 ---
 
@@ -372,14 +490,15 @@ Ekklesia uses [Google Cloud Run](https://cloud.google.com/run) to deploy and man
 
 | Service | Date | Deployer | Changes |
 |---------|------|----------|---------|
+| handlekenniauth | 2025-11-10 | gudrodur@sosialistaflokkurinn.is | Secret Manager integration (KENNI_IS_CLIENT_SECRET) |
+| healthz | 2025-11-10 | gudrodur@sosialistaflokkurinn.is | Updated to Python 3.13, config sanity checks |
+| syncmembers | 2025-11-10 | gudrodur@sosialistaflokkurinn.is | Secret Manager integration (DJANGO_API_TOKEN) |
+| updatememberprofile | 2025-11-10 | gudrodur@sosialistaflokkurinn.is | Secret Manager integration, env var usage |
+| bidirectional-sync | 2025-11-10 | gudrodur@sosialistaflokkurinn.is | Secret Manager integration, remove direct API calls |
+| updatememberforeignaddress | 2025-11-10 | gudrodur@sosialistaflokkurinn.is | Secret Manager integration |
+| get-django-token | 2025-11-10 | gudrodur@sosialistaflokkurinn.is | Secret Manager integration, admin token access |
 | elections-service | 2025-10-31 | gudrodur@sosialistaflokkurinn.is | Dependencies update (express 4.21.2, dotenv 16.6.1) |
 | events-service | 2025-10-31 | gudrodur@sosialistaflokkurinn.is | Dependencies update (express 4.21.2, firebase-admin 13.5.0) |
-| handlekenniauth | 2025-10-30 | Cloud Run functions | Bug fixes |
-| syncmembers | 2025-10-30 | Cloud Run functions | Sync logic improvements |
-| updatememberprofile | 2025-10-30 | Cloud Run functions | Profile validation |
-| verifymembership | 2025-10-29 | Cloud Run functions | Cache optimization |
-| auditmemberchanges | 2025-10-29 | Cloud Run functions | Audit logging enhancements |
-| healthz | 2025-10-29 | Cloud Run functions | Health check improvements |
 
 ---
 
@@ -441,10 +560,13 @@ Ekklesia uses [Google Cloud Run](https://cloud.google.com/run) to deploy and man
 | events-service | 0 | 100 | 80 | 512Mi | 1 |
 | handlekenniauth | 0 | 10 | 80 | 256Mi | 1 |
 | verifymembership | 0 | 10 | 80 | 256Mi | 1 |
-| syncmembers | 0 | 1 | 1 | 256Mi | 1 |
+| syncmembers | 0 | 1 | 1 | 512Mi | 1 |
 | updatememberprofile | 0 | 5 | 10 | 256Mi | 1 |
+| bidirectional-sync | 0 | 1 | 1 | 512Mi | 1 |
+| updatememberforeignaddress | 0 | 5 | 10 | 256Mi | 1 |
+| get-django-token | 0 | 100 | 1 | 256Mi | 1 |
 | auditmemberchanges | 0 | 5 | 10 | 256Mi | 1 |
-| healthz | 0 | 1 | 80 | 128Mi | 0.5 |
+| healthz | 0 | 1 | 80 | 256Mi | 1 |
 
 **Scaling Strategy**:
 - **Min instances = 0**: Cost optimization (scale to zero when idle)
@@ -506,12 +628,15 @@ Meeting cost:           ~$3.80
 |---------|--------|---------|
 | elections-service | Token-based | One-time voting tokens from events-service |
 | events-service | JWT + App Check | Firebase JWT + App Check token |
-| handlekenniauth | OAuth callback | Kenni.is OAuth 2.0 state validation |
+| handlekenniauth | OAuth callback | Kenni.is OAuth 2.0 PKCE flow |
 | verifymembership | Firebase Auth | Required Firebase ID token |
-| syncmembers | Service account | Cloud Scheduler service account |
-| updatememberprofile | Firebase Auth | Required Firebase ID token |
+| syncmembers | Firebase Auth | Admin/superuser role required |
+| updatememberprofile | Firebase Auth | User updates own profile only |
+| bidirectional-sync | Public (scheduled) | Cloud Scheduler trigger only |
+| updatememberforeignaddress | Firebase Auth | User updates own address |
+| get-django-token | Firebase Auth | Admin/superuser role required |
 | auditmemberchanges | Internal only | Called by other services |
-| healthz | Public | No authentication required |
+| healthz | Public (GET) | No authentication required |
 
 ### Security Features
 
@@ -542,9 +667,42 @@ Meeting cost:           ~$3.80
 
 **All Services**:
 - ✅ HTTPS only
-- ✅ Secrets in Secret Manager (not environment variables)
+- ✅ Secrets in Secret Manager (environment variable injection)
 - ✅ Service-to-service authentication
 - ✅ Network egress restrictions
+
+### Secret Manager Integration
+
+**Philosophy**: All sensitive credentials are stored in Google Secret Manager and injected as environment variables at Cloud Run startup. Functions never call Secret Manager API directly.
+
+**Secrets in Use**:
+
+| Secret Name | Used By | Purpose |
+|-------------|---------|---------|
+| `kenni-client-secret` | handlekenniauth | Kenni.is OAuth client secret |
+| `django-api-token` | syncmembers, updatememberprofile, bidirectional-sync, updatememberforeignaddress, get-django-token | Django API authentication |
+
+**Configuration Method**:
+```bash
+# Cloud Run secret injection (recommended approach)
+gcloud run services update SERVICE_NAME \
+  --set-secrets="DJANGO_API_TOKEN=django-api-token:latest"
+```
+
+**Benefits**:
+- ✅ **No secrets in code** - Functions read from `os.environ.get()`
+- ✅ **Automatic rotation** - Update secret version, redeploy function
+- ✅ **Audit trail** - All secret access logged in Cloud Audit Logs
+- ✅ **IAM-controlled** - Service accounts need `secretmanager.secretAccessor` role
+- ✅ **Caching** - Cloud Run caches secrets (no API calls per request)
+- ✅ **Simplified code** - No Secret Manager client initialization required
+
+**Security Best Practices**:
+1. ✅ Use `latest` version tag for automatic updates
+2. ✅ Never log secret values (only log presence: `bool(secret)`)
+3. ✅ Validate secrets exist at startup (fail fast if missing)
+4. ✅ Use separate secrets per environment (prod/staging/dev)
+5. ✅ Rotate secrets every 90 days
 
 ---
 
@@ -832,12 +990,16 @@ gcloud logging read "resource.labels.service_name=elections-service AND severity
 
 | Date | Change | Author |
 |------|--------|--------|
+| 2025-11-10 | Unified Secret Manager integration across all services | Claude Code |
+| 2025-11-10 | Updated handlekenniauth to Python 3.13 with PKCE flow | Claude Code |
+| 2025-11-10 | Added bidirectional-sync, updatememberforeignaddress, get-django-token services | Claude Code |
+| 2025-11-10 | Updated all member services to use environment variable injection for secrets | Claude Code |
+| 2025-11-10 | Expanded service inventory from 8 to 13 services | Claude Code |
 | 2025-10-31 | Initial documentation | Claude + Gemini analysis |
-| 2025-10-31 | Deleted unused get-django-token service | Gemini |
 | 2025-10-31 | Updated elections-service & events-service dependencies | gudrodur |
 
 ---
 
 **Document Status**: ✅ Complete and Verified
-**Last Review**: 2025-10-31
-**Next Review**: 2025-11-30 (monthly infrastructure review)
+**Last Review**: 2025-11-10
+**Next Review**: 2025-12-10 (monthly infrastructure review)
