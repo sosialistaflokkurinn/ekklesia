@@ -16,9 +16,9 @@ import { debug } from '../utils/debug.js';
 import { authenticatedFetch } from '../auth.js';
 
 // DEVELOPMENT FLAG: Toggle between mock and real API
-// NOTE: Real API missing GET /api/elections and GET /api/elections/:id (Epic #24)
-// Will switch to real API when backend endpoints are implemented
-const USE_MOCK_API = true;
+// NOTE: Real API endpoints implemented in Issue #248
+// Backend is live at https://elections-service-ymzrguoifa-nw.a.run.app
+const USE_MOCK_API = false;
 
 // Production Elections Service URL
 const ELECTIONS_API_BASE = 'https://elections-service-ymzrguoifa-nw.a.run.app';
@@ -116,8 +116,9 @@ export async function submitVote(electionId, answerId) {
 
   try {
     const url = `${ELECTIONS_API_BASE}/api/elections/${electionId}/vote`;
+    // Backend expects answer_ids as array (supports multi-choice elections)
     const payload = {
-      answer_id: answerId
+      answer_ids: Array.isArray(answerId) ? answerId : [answerId]
     };
 
     const response = await authenticatedFetch(url, {
