@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const { version } = require('../package.json');
 
 const electionsRouter = require('./routes/elections');
 const adminRouter = require('./routes/admin'); // Admin CRUD routes (Issue #192)
@@ -45,7 +46,7 @@ app.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
     service: 'elections-service',
-    version: '1.0.0',
+    version,
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development'
   });

@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const { version } = require('../package.json');
 const electionRoutes = require('./routes/election');
 const adminRouter = require('./routes/admin');
 const { verifyAppCheckOptional } = require('./middleware/appCheck');
@@ -48,7 +49,7 @@ app.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
     service: 'events-service',
-    version: '1.0.0',
+    version,
     timestamp: new Date().toISOString()
   });
 });
