@@ -59,6 +59,48 @@
 
 ---
 
+### 3.5 🔒 PII Prevention System (Issue #240)
+
+**Staðsetning**: `docs/security/PII_GUIDELINES.md`
+
+**Vörn í þremur lögum:**
+
+#### 1. Pre-commit Hook
+- Skannar alla `.github/` og `docs/` skrár fyrir PII
+- Blokkar commit ef kennitölur, netföng, eða símanúmer fundist
+- Undanskilur leyfileg fake dæmi
+
+**Leyfðar fake dæmi:**
+- ✅ Kennitölur: "010190-0000", "111111-1111"
+- ✅ Netföng: "email@example.com"
+- ✅ Símanúmer: "555-1234", "000-0000"
+- ✅ Nöfn: "Jón Jónsson", "Anna Jónsdóttir"
+
+#### 2. GitHub Actions
+- `.github/workflows/pii-check.yml` skannar issues, PRs, comments
+- Sendir sjálfvirk viðvörun ef PII finnst
+- Blokkar EKKI (til að forðast false positives)
+
+#### 3. Handbók
+- `docs/security/PII_GUIDELINES.md` útskýrir reglur
+- Hvað er PII og hvers vegna það skiptir máli
+- Dæmi um góða og slæma venju
+- Hvað á að gera ef PII finnst
+
+**Mikilvægt fyrir GitHub Issues/PRs:**
+- ❌ **ALDREI** nota raunverulegar kennitölur
+- ❌ **ALDREI** nota raunveruleg netföng (nema @example.com)
+- ❌ **ALDREI** nota raunverulegt símanúmer
+- ❌ **ALDREI** nota raunveruleg nöfn félagsmanna
+- ✅ **ALLTAF** nota fake dæmi frá PII_GUIDELINES.md
+
+**Tengt:**
+- Issue #240: PII Prevention System
+- Issue #136: PII Exposure Incident (hreinsað)
+- Issue #48: Database Password Exposure
+
+---
+
 ### 4. 🗄️ Gagnagrunnur aðgangur
 
 **Innskráningargögn eru í Firestore, EKKI PostgreSQL**
@@ -118,5 +160,5 @@ firebase projects:list
 
 ---
 
-**Síðast uppfært**: 2025-11-09
-**Ástæða**: Bætt við vísun í LOCAL_ONLY_FILES.md fyrir heildaryfirlit yfir gitignored skrár
+**Síðast uppfært**: 2025-11-10
+**Ástæða**: Bætt við PII Prevention System (Issue #240) - þriggja laga vörn gegn PII í GitHub issues/PRs
