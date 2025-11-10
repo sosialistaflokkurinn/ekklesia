@@ -20,20 +20,57 @@ options.set_global_options(region="europe-west2")
 # AUTHENTICATION FUNCTIONS
 # ==============================================================================
 
-# Import authentication functions
-from auth.kenni_flow import healthz, handleKenniAuth
+# Import authentication handlers (not decorated)
+from auth.kenni_flow import healthz_handler, handleKenniAuth_handler
+from firebase_functions import https_fn
+
+# Define decorated functions in main.py (required by Firebase Functions SDK)
+@https_fn.on_request()
+def healthz(req: https_fn.Request) -> https_fn.Response:
+    """Health check endpoint - delegates to handler"""
+    return healthz_handler(req)
+
+@https_fn.on_request()
+def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
+    """OAuth authentication endpoint - delegates to handler"""
+    return handleKenniAuth_handler(req)
 
 # ==============================================================================
 # MEMBERSHIP FUNCTIONS
 # ==============================================================================
 
-# Import membership management functions
+# Import membership handlers (not decorated)
 from membership.functions import (
-    verifyMembership,
-    syncmembers,
-    updatememberprofile,
-    cleanupauditlogs
+    verifyMembership_handler,
+    syncmembers_handler,
+    updatememberprofile_handler,
+    cleanupauditlogs_handler
 )
+
+# Define decorated functions in main.py (required by Firebase Functions SDK)
+@https_fn.on_call()
+def verifyMembership(req: https_fn.CallableRequest) -> dict:
+    """Verify membership - delegates to handler"""
+    return verifyMembership_handler(req)
+
+@https_fn.on_call(timeout_sec=540, memory=512)
+def syncmembers(req: https_fn.CallableRequest):
+    """Sync members from Django - delegates to handler"""
+    return syncmembers_handler(req)
+
+@https_fn.on_call(timeout_sec=30, memory=256)
+def updatememberprofile(req: https_fn.CallableRequest):
+    """Update member profile - delegates to handler"""
+    return updatememberprofile_handler(req)
+
+@https_fn.on_call(
+    region="europe-west2",
+    memory=options.MemoryOption.MB_256,
+    timeout_sec=300
+)
+def cleanupauditlogs(req: https_fn.CallableRequest) -> dict:
+    """Cleanup audit logs - delegates to handler"""
+    return cleanupauditlogs_handler(req)
 
 # ==============================================================================
 # AUDIT AND SYNC FUNCTIONS (Epic #116, Epic #159)

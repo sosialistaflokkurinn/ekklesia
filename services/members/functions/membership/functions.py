@@ -15,8 +15,7 @@ from sync_members import sync_all_members, create_sync_log, update_django_member
 from cleanup_audit_logs import cleanup_old_audit_logs
 
 
-@https_fn.on_call()
-def verifyMembership(req: https_fn.CallableRequest) -> dict:
+def verifyMembership_handler(req: https_fn.CallableRequest) -> dict:
     """
     Verify user membership status
 
@@ -102,8 +101,7 @@ def verifyMembership(req: https_fn.CallableRequest) -> dict:
         )
 
 
-@https_fn.on_call(timeout_sec=540, memory=512)
-def syncmembers(req: https_fn.CallableRequest) -> Dict[str, Any]:
+def syncmembers_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     """
     Epic #43: Manual trigger to sync all members from Django to Firestore.
 
@@ -158,8 +156,7 @@ def syncmembers(req: https_fn.CallableRequest) -> Dict[str, Any]:
         )
 
 
-@https_fn.on_call(timeout_sec=30, memory=256)
-def updatememberprofile(req: https_fn.CallableRequest) -> Dict[str, Any]:
+def updatememberprofile_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     """
     Update member profile from Kenni.is data to Django backend.
 
@@ -334,12 +331,7 @@ def updatememberprofile(req: https_fn.CallableRequest) -> Dict[str, Any]:
         )
 
 
-@https_fn.on_call(
-    region="europe-west2",
-    memory=options.MemoryOption.MB_256,
-    timeout_sec=300
-)
-def cleanupauditlogs(req: https_fn.CallableRequest) -> dict:
+def cleanupauditlogs_handler(req: https_fn.CallableRequest) -> dict:
     """
     Cleanup old audit logs, keeping only the most recent N entries.
 

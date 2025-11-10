@@ -68,8 +68,7 @@ def validate_auth_input(kenni_auth_code: str, pkce_code_verifier: str) -> bool:
     return True
 
 
-@https_fn.on_request()
-def healthz(req: https_fn.Request) -> https_fn.Response:
+def healthz_handler(req: https_fn.Request) -> https_fn.Response:
     """
     Basic health and config sanity endpoint.
 
@@ -119,8 +118,7 @@ def healthz(req: https_fn.Request) -> https_fn.Response:
     )
 
 
-@https_fn.on_request()
-def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
+def handleKenniAuth_handler(req: https_fn.Request) -> https_fn.Response:
     """
     Handle Kenni.is OAuth code exchange with PKCE
 
