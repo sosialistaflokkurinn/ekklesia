@@ -253,10 +253,11 @@ async function displayResultsSection(election) {
 
       // Determine bar color class based on answer
       let barClass = 'election-results__bar';
-      const answerLower = result.answer_text.toLowerCase();
-      if (answerLower.includes('já') || answerLower.includes('yes')) {
+      const answerText = result.text || result.answer_text || '';  // Support both field names
+      const answerLower = answerText.toLowerCase();
+      if (answerLower.includes('já') || answerLower.includes('yes') || answerLower.includes('samþykki')) {
         barClass += ' election-results__bar--yes';
-      } else if (answerLower.includes('nei') || answerLower.includes('no')) {
+      } else if (answerLower.includes('nei') || answerLower.includes('no') || answerLower.includes('hafna')) {
         barClass += ' election-results__bar--no';
       } else {
         barClass += ' election-results__bar--neutral';
@@ -265,7 +266,7 @@ async function displayResultsSection(election) {
       resultItem.innerHTML = `
         <div class="election-results__answer">
           ${isWinner ? '<span class="election-results__winner-badge">✓</span>' : ''}
-          <span class="election-results__answer-text">${escapeHTML(result.answer_text)}</span>
+          <span class="election-results__answer-text">${escapeHTML(answerText)}</span>
         </div>
         <div class="election-results__stats">
           <div class="election-results__percentage">${result.percentage.toFixed(1)}%</div>
