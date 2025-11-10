@@ -10,7 +10,6 @@ This function syncs changes in both directions:
 import requests
 from datetime import datetime, timezone, timedelta
 from google.cloud import firestore
-from google.cloud.secretmanager import SecretManagerServiceClient
 from utils_logging import log_json
 from sync_members import (
     get_django_api_token,

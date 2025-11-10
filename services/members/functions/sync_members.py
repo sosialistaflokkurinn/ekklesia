@@ -10,7 +10,6 @@ import requests
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
 from google.cloud import firestore
-from google.cloud.secretmanager import SecretManagerServiceClient
 from utils_logging import log_json
 
 # Django API Base URL
@@ -72,21 +71,23 @@ def normalize_phone(phone: str) -> str:
 
 def get_django_api_token() -> str:
     """
-    Fetch Django API token from Google Secret Manager.
+    Get Django API token from environment variable.
+
+    The token is injected via Secret Manager at runtime by Cloud Run.
 
     Returns:
         Django API token string
+
+    Raises:
+        ValueError: If DJANGO_API_TOKEN is not set
     """
-    project_id = os.getenv('GCP_PROJECT', 'ekklesia-prod-10-2025')
-    secret_name = f"projects/{project_id}/secrets/django-api-token/versions/latest"
+    token = os.environ.get('DJANGO_API_TOKEN')
 
-    client = SecretManagerServiceClient()
-    response = client.access_secret_version(request={"name": secret_name})
-    token = response.payload.data.decode('UTF-8').strip()
+    if not token:
+        raise ValueError("DJANGO_API_TOKEN environment variable not set")
 
-    log_json('INFO', 'Django API token retrieved',
+    log_json('INFO', 'Django API token retrieved from environment',
              event='django_api_token_retrieved',
-             project_id=project_id,
              timestamp=datetime.now(timezone.utc).isoformat())
 
     return token
