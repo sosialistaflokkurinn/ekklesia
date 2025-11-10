@@ -11,7 +11,8 @@ echo "🤖 Checking for AI-generated authorship markers..."
 
 # Check for AI-generated markers in commit message
 # Block any AI authorship claims (main author or co-author)
-if echo "$COMMIT_MSG" | grep -E "(🤖|Generated with.*Claude|Co-Authored-By:.*Claude|Co-Authored-By:.*AI|Author:.*Claude)" > /dev/null; then
+# Matches patterns that appear at start of line or after newline
+if echo "$COMMIT_MSG" | grep -E "(^🤖|[[:space:]]🤖|^Generated with.*Claude|^Co-Authored-By:.*Claude|^Co-Authored-By:.*AI|^Author:.*Claude)" > /dev/null; then
     echo ""
     echo "❌ BLOCKED: Commit message contains AI authorship markers"
     echo ""
