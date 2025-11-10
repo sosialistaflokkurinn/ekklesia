@@ -8,4 +8,4 @@ python-dotenv==1.2.1
 
 # Testing dependencies
 pytest==8.3.3
-pytest-cov==6.0.0
+pytest-cov==7.0.0
