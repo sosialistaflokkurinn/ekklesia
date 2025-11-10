@@ -5,8 +5,475 @@ const authenticateS2S = require('../middleware/s2sAuth');
 const { verifyAppCheckOptional } = require('../middleware/appCheck');
 const { logAudit } = require('../services/auditService');
 const logger = require('../utils/logger');
+const {
+  verifyMemberToken,
+  hasVoted,
+  filterElectionsByEligibility,
+  validateVotingWindow,
+  validateAnswers,
+  isEligible,
+} = require('../middleware/memberAuth');
 
 const router = express.Router();
+
+// =====================================================
+// MEMBER-FACING ENDPOINTS
+// =====================================================
+// These endpoints are for authenticated members to:
+// - List elections they can vote in
+// - View election details
+// - Submit votes
+// - View results
+//
+// Based on: Issue #248 - Member-Facing Elections API
+// Auth: Firebase ID tokens (verifyMemberToken middleware)
+
+// =====================================================
+// GET /api/elections - List Elections for Member
+// =====================================================
+router.get('/elections', verifyMemberToken, async (req, res) => {
+  const startTime = Date.now();
+  const {
+    status,
+    limit = 50,
+    offset = 0,
+  } = req.query;
+
+  try {
+    // Build WHERE clause for filtering
+    const conditions = [];
+    const params = [];
+    let paramIndex = 1;
+
+    // Only show published, not hidden elections
+    conditions.push(`status != 'draft'`);
+    conditions.push(`hidden = FALSE`);
+
+    // Filter by status if provided
+    if (status && ['published', 'closed', 'paused', 'archived'].includes(status)) {
+      conditions.push(`status = $${paramIndex}`);
+      params.push(status);
+      paramIndex++;
+    }
+
+    const whereClause = `WHERE ${conditions.join(' AND ')}`;
+
+    // Validate and sanitize pagination
+    const limitNum = Math.min(Math.max(parseInt(limit, 10) || 50, 1), 100);
+    const offsetNum = Math.max(parseInt(offset, 10) || 0, 0);
+
+    // Query elections
+    const query = `
+      SELECT
+        e.id,
+        e.title,
+        e.description,
+        e.question,
+        e.answers,
+        e.status,
+        e.voting_type,
+        e.max_selections,
+        e.eligibility,
+        e.scheduled_start,
+        e.scheduled_end,
+        e.created_at,
+        e.published_at,
+        e.closed_at,
+        (
+          SELECT check_member_voted(e.id, $${paramIndex})
+        ) as has_voted
+      FROM elections.elections e
+      ${whereClause}
+      ORDER BY e.created_at DESC
+      LIMIT $${paramIndex + 1} OFFSET $${paramIndex + 2}
+    `;
+
+    params.push(req.user.uid, limitNum, offsetNum);
+
+    const result = await pool.query(query, params);
+
+    // Filter by eligibility
+    const filteredElections = filterElectionsByEligibility(result.rows, req);
+
+    // Count total (for pagination)
+    const countQuery = `
+      SELECT COUNT(*) as total
+      FROM elections.elections e
+      ${whereClause}
+    `;
+    const countResult = await pool.query(
+      countQuery,
+      params.slice(0, params.length - 3) // Exclude uid, limit, offset
+    );
+
+    const total = parseInt(countResult.rows[0].total, 10);
+    const duration = Date.now() - startTime;
+
+    logger.info('[Member API] List elections', {
+      uid: req.user.uid,
+      count: filteredElections.length,
+      total,
+      duration_ms: duration,
+    });
+
+    res.json({
+      elections: filteredElections,
+      pagination: {
+        total,
+        limit: limitNum,
+        offset: offsetNum,
+        has_more: offsetNum + limitNum < total,
+      },
+    });
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    logger.error('[Member API] List elections error:', error);
+
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to list elections',
+    });
+  }
+});
+
+// =====================================================
+// GET /api/elections/:id - Get Election Details
+// =====================================================
+router.get('/elections/:id', verifyMemberToken, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Query election
+    const result = await pool.query(
+      `SELECT
+        e.id,
+        e.title,
+        e.description,
+        e.question,
+        e.answers,
+        e.status,
+        e.voting_type,
+        e.max_selections,
+        e.eligibility,
+        e.scheduled_start,
+        e.scheduled_end,
+        e.created_at,
+        e.published_at,
+        e.closed_at,
+        e.hidden,
+        (
+          SELECT check_member_voted(e.id, $2)
+        ) as has_voted
+      FROM elections.elections e
+      WHERE e.id = $1`,
+      [id, req.user.uid]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Election not found',
+      });
+    }
+
+    const election = result.rows[0];
+
+    // Check if draft or hidden
+    if (election.status === 'draft' || election.hidden) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Election not found',
+      });
+    }
+
+    // Check eligibility
+    if (!isEligible(election, req)) {
+      return res.status(403).json({
+        error: 'Forbidden',
+        message: 'You are not eligible to view this election',
+      });
+    }
+
+    logger.info('[Member API] Get election details', {
+      uid: req.user.uid,
+      election_id: id,
+    });
+
+    res.json({ election });
+  } catch (error) {
+    logger.error('[Member API] Get election error:', error);
+
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to get election',
+    });
+  }
+});
+
+// =====================================================
+// POST /api/elections/:id/vote - Submit Vote
+// =====================================================
+router.post('/elections/:id/vote', verifyMemberToken, async (req, res) => {
+  const startTime = Date.now();
+  const { id } = req.params;
+  const { answer_ids } = req.body;
+
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    // Lock election row for reading
+    const electionResult = await client.query(
+      `SELECT
+        e.id,
+        e.title,
+        e.question,
+        e.answers,
+        e.status,
+        e.voting_type,
+        e.max_selections,
+        e.eligibility,
+        e.scheduled_start,
+        e.scheduled_end,
+        e.hidden
+      FROM elections.elections e
+      WHERE e.id = $1
+      FOR UPDATE`,
+      [id]
+    );
+
+    if (electionResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Election not found',
+      });
+    }
+
+    const election = electionResult.rows[0];
+
+    // Check if draft or hidden
+    if (election.status === 'draft' || election.hidden) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Election not found',
+      });
+    }
+
+    // Check eligibility
+    if (!isEligible(election, req)) {
+      await client.query('ROLLBACK');
+      return res.status(403).json({
+        error: 'Forbidden',
+        message: 'You are not eligible to vote in this election',
+      });
+    }
+
+    // Check voting window
+    const windowCheck = validateVotingWindow(election);
+    if (!windowCheck.valid) {
+      await client.query('ROLLBACK');
+      return res.status(403).json({
+        error: 'Forbidden',
+        message: windowCheck.error,
+      });
+    }
+
+    // Validate answers
+    const answerCheck = validateAnswers(answer_ids, election);
+    if (!answerCheck.valid) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: answerCheck.error,
+      });
+    }
+
+    // Check if already voted
+    const voteCheckResult = await client.query(
+      'SELECT COUNT(*) as count FROM ballots WHERE election_id = $1 AND member_uid = $2',
+      [id, req.user.uid]
+    );
+
+    if (parseInt(voteCheckResult.rows[0].count, 10) > 0) {
+      await client.query('ROLLBACK');
+      return res.status(409).json({
+        error: 'Conflict',
+        message: 'You have already voted in this election',
+      });
+    }
+
+    // Insert ballots (one per selected answer for multi-choice)
+    const ballotIds = [];
+    for (const answerId of answer_ids) {
+      const ballotResult = await client.query(
+        `INSERT INTO ballots (election_id, member_uid, answer_id, submitted_at)
+         VALUES ($1, $2, $3, date_trunc('minute', NOW()))
+         RETURNING id`,
+        [id, req.user.uid, answerId]
+      );
+
+      ballotIds.push(ballotResult.rows[0].id);
+    }
+
+    await client.query('COMMIT');
+
+    const duration = Date.now() - startTime;
+
+    logger.info('[Member API] Vote submitted', {
+      uid: req.user.uid,
+      election_id: id,
+      answer_count: answer_ids.length,
+      duration_ms: duration,
+    });
+
+    logAudit('submit_vote', true, {
+      uid: req.user.uid,
+      election_id: id,
+      answer_count: answer_ids.length,
+      duration_ms: duration,
+    });
+
+    res.status(201).json({
+      success: true,
+      ballot_ids: ballotIds,
+      message: 'Vote recorded successfully',
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    const duration = Date.now() - startTime;
+
+    logger.error('[Member API] Vote submission error:', error);
+    logAudit('submit_vote', false, {
+      uid: req.user.uid,
+      election_id: id,
+      error: error.message,
+      duration_ms: duration,
+    });
+
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to record vote',
+    });
+  } finally {
+    client.release();
+  }
+});
+
+// =====================================================
+// GET /api/elections/:id/results - Get Election Results
+// =====================================================
+router.get('/elections/:id/results', verifyMemberToken, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Get election info
+    const electionResult = await pool.query(
+      `SELECT
+        e.id,
+        e.title,
+        e.question,
+        e.answers,
+        e.status,
+        e.closed_at,
+        e.hidden,
+        e.eligibility
+      FROM elections.elections e
+      WHERE e.id = $1`,
+      [id]
+    );
+
+    if (electionResult.rows.length === 0) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Election not found',
+      });
+    }
+
+    const election = electionResult.rows[0];
+
+    // Check if draft or hidden
+    if (election.status === 'draft' || election.hidden) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Election not found',
+      });
+    }
+
+    // Check eligibility
+    if (!isEligible(election, req)) {
+      return res.status(403).json({
+        error: 'Forbidden',
+        message: 'You are not eligible to view this election',
+      });
+    }
+
+    // Only show results for closed/archived elections
+    if (election.status !== 'closed' && election.status !== 'archived') {
+      return res.status(403).json({
+        error: 'Forbidden',
+        message: 'Results are only available for closed elections',
+      });
+    }
+
+    // Get results using helper function
+    const resultsData = await pool.query(
+      'SELECT * FROM get_election_results($1)',
+      [id]
+    );
+
+    // Calculate total votes
+    const totalVotes = resultsData.rows.reduce((sum, row) => sum + parseInt(row.votes, 10), 0);
+
+    // Parse answers JSON
+    const answers = election.answers;
+
+    // Build results array with answer text
+    const results = resultsData.rows.map(row => {
+      const answer = answers.find(a => a.id === row.answer_id);
+      return {
+        answer_id: row.answer_id,
+        text: answer ? answer.text : row.answer_id,
+        votes: parseInt(row.votes, 10),
+        percentage: parseFloat(row.percentage),
+      };
+    });
+
+    // Find winner (most votes)
+    const winner = results.length > 0
+      ? results.reduce((max, current) => (current.votes > max.votes ? current : max))
+      : null;
+
+    logger.info('[Member API] Get results', {
+      uid: req.user.uid,
+      election_id: id,
+      total_votes: totalVotes,
+    });
+
+    res.json({
+      election_id: id,
+      title: election.title,
+      question: election.question,
+      status: election.status,
+      total_votes: totalVotes,
+      results,
+      winner: winner && winner.votes > 0 ? winner : null,
+    });
+  } catch (error) {
+    logger.error('[Member API] Get results error:', error);
+
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to get results',
+    });
+  }
+});
+
+// =====================================================
+// S2S ENDPOINTS (Legacy single-election system)
+// =====================================================
 
 // =====================================================
 // S2S Endpoint: Register Voting Token

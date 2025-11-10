@@ -945,19 +945,44 @@ router.get('/elections/:id/results', requireElectionManager, async (req, res) =>
       });
     }
 
-    // TODO: Implement ballot counting from ballots table
-    // For now, return placeholder structure
-    // This will need to be implemented when ballot schema is finalized
+    // Get results using helper function from migration 004
+    const resultsData = await pool.query(
+      'SELECT * FROM get_election_results($1)',
+      [id]
+    );
+
+    // Calculate total votes
+    const totalVotes = resultsData.rows.reduce((sum, row) => sum + parseInt(row.votes, 10), 0);
+
+    // Parse answers JSON
+    const answers = JSON.parse(election.answers);
+
+    // Build results array with answer text
+    const resultsArray = resultsData.rows.map(row => {
+      const answer = answers.find(a => a.id === row.answer_id);
+      return {
+        answer_id: row.answer_id,
+        answer_text: answer ? answer.text : row.answer_id,
+        votes: parseInt(row.votes, 10),
+        percentage: parseFloat(row.percentage),
+      };
+    });
+
+    // Find winner (most votes)
+    const winner = resultsArray.length > 0
+      ? resultsArray.reduce((max, current) => (current.votes > max.votes ? current : max))
+      : null;
 
     const results = {
       election_id: id,
       title: election.title,
       question: election.question,
-      answers: JSON.parse(election.answers),
+      answers: answers,
       status: election.status,
       closed_at: election.closed_at,
-      results: {}, // TODO: Count ballots per answer
-      total_votes: 0, // TODO: Count total ballots
+      total_votes: totalVotes,
+      results: resultsArray,
+      winner: winner && winner.votes > 0 ? winner : null,
     };
 
     const duration = Date.now() - startTime;
@@ -966,6 +991,7 @@ router.get('/elections/:id/results', requireElectionManager, async (req, res) =>
       uid: req.user.uid,
       role: req.user.role,
       election_id: id,
+      total_votes: totalVotes,
       duration_ms: duration,
     });
 
