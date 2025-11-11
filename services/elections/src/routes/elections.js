@@ -306,11 +306,12 @@ router.post('/elections/:id/vote', verifyMemberToken, async (req, res) => {
     }
 
     // Insert ballots (one per selected answer for multi-choice)
+    // Note: token_hash is set to 'member-based' for Firebase-authenticated votes
     const ballotIds = [];
     for (const answerId of answer_ids) {
       const ballotResult = await client.query(
-        `INSERT INTO elections.ballots (election_id, member_uid, answer_id, submitted_at)
-         VALUES ($1, $2, $3, date_trunc('minute', NOW()))
+        `INSERT INTO elections.ballots (election_id, member_uid, answer_id, token_hash, submitted_at)
+         VALUES ($1, $2, $3, 'member-based', date_trunc('minute', NOW()))
          RETURNING id`,
         [id, req.user.uid, answerId]
       );
@@ -349,17 +350,36 @@ router.post('/elections/:id/vote', verifyMemberToken, async (req, res) => {
     await client.query('ROLLBACK');
     const duration = Date.now() - startTime;
 
-    logger.error('[Member API] Vote submission error:', error);
+    // Console logging for Cloud Run
+    console.error('[VOTE ERROR]', {
+      message: error.message,
+      stack: error.stack,
+      election_id: id,
+      uid: req.user?.uid,
+      answer_ids,
+    });
+
+    // Enhanced error logging for debugging
+    logger.error('[Member API] Vote submission error:', {
+      error: error.message,
+      stack: error.stack,
+      election_id: id,
+      uid: req.user?.uid,
+      answer_ids,
+    });
+
     logAudit('submit_vote', false, {
-      uid: req.user.uid,
+      uid: req.user?.uid,
       election_id: id,
       error: error.message,
+      stack: error.stack.split('\n')[0], // First line of stack trace
       duration_ms: duration,
     });
 
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to record vote',
+      debug: process.env.NODE_ENV === 'development' ? error.message : undefined,
     });
   } finally {
     client.release();
