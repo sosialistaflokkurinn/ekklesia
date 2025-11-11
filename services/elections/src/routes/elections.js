@@ -325,7 +325,10 @@ router.post('/elections/:id/vote', verifyMemberToken, async (req, res) => {
     logger.info('[Member API] Vote submitted', {
       uid: req.user.uid,
       election_id: id,
+      election_title: election.title,
       answer_count: answer_ids.length,
+      ballot_ids: ballotIds,
+      voting_type: election.voting_type,
       duration_ms: duration,
     });
 
@@ -333,6 +336,7 @@ router.post('/elections/:id/vote', verifyMemberToken, async (req, res) => {
       uid: req.user.uid,
       election_id: id,
       answer_count: answer_ids.length,
+      ballot_ids: ballotIds,
       duration_ms: duration,
     });
 
