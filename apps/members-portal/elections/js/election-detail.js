@@ -381,19 +381,36 @@ function showConfirmationModal(answerIds) {
 }
 
 /**
- * Submit vote (placeholder for Day 3)
+ * Submit vote to backend API
  * @param {Array<string>} answerIds - Selected answer ID(s)
  */
 async function submitVote(answerIds) {
-  debug.log('Vote submission (Day 3): Election ' + currentElection.id + ', Answers ' + answerIds.join(', '));
+  debug.log('Submitting vote: Election ' + currentElection.id + ', Answers ' + answerIds.join(', '));
 
-  // TODO: Implement actual vote submission on Day 3
-  // For now, just show success message
-  alert(R.string.vote_submitted_success + '\n\n(Actual submission will be implemented on Day 3)');
+  try {
+    // Import API function
+    const { submitVote: submitVoteAPI } = await import('../../js/api/elections-api.js');
 
-  // Simulate "has_voted" state
-  currentElection.has_voted = true;
-  displayElection(currentElection);
+    // Submit vote to backend
+    const response = await submitVoteAPI(currentElection.id, answerIds);
+
+    // Show success message
+    alert(R.string.vote_submitted_success);
+
+    // Update local state
+    currentElection.has_voted = true;
+    displayElection(currentElection);
+
+  } catch (error) {
+    debug.error('Vote submission failed:', error);
+
+    // Check if it's a duplicate vote error
+    if (error.message && error.message.includes('already voted')) {
+      alert(R.string.error_already_voted || 'Þú hefur þegar kosið í þessari kosningu.');
+    } else {
+      alert(R.string.error_submit_vote || 'Villa kom upp við að skila inn atkvæði. Vinsamlegast reyndu aftur.');
+    }
+  }
 }
 
 /**
