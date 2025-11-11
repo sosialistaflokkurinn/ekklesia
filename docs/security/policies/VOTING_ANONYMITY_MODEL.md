@@ -241,19 +241,22 @@ WHERE b.member_uid = 'NE5e8GpzzBcjxuTHWGuJtTfevPD2';
   - GCP project OWNER role (currently: gudro@socialist.is)
   - Cloud SQL database roles with `GRANT SELECT ON elections.ballots`
 
-2. **Service Logs Contain member_uid**:
+2. **Service Logs Contain member_uid**: ~~RESOLVED~~
 ```javascript
 // services/elections/src/routes/elections.js:334
+// BEFORE (Issue #248):
 logger.info('[Member API] Vote submitted', {
   uid: req.user.uid,  // ⚠️ Firebase UID logged
-  election_id: id,
-  ballot_ids: ballotIds,
+});
+
+// AFTER (Issue #253 - 2025-11-11):
+logger.info('[Member API] Vote submitted', {
+  uid_hash: hashUidForLogging(req.user.uid),  // ✅ One-way hash
 });
 ```
-- ⚠️ **Implication**: Cloud Logging contains `(uid, election_id, timestamp)` tuples
-- ⚠️ **Who has access**:
-  - GCP project OWNER
-  - Users with `roles/logging.viewer`
+- ✅ **Fixed**: Cloud Logging now contains one-way hashed UIDs
+- ✅ **Benefit**: Cannot reverse hash to get original UID
+- ✅ **Preserved**: Still allows log correlation (same user = same hash)
 
 3. **No Encryption at Rest for member_uid**:
 - ⚠️ Database backups contain plaintext `member_uid`
@@ -345,14 +348,15 @@ From the issue description:
 ### 2. Implement Query Auditing
 
 **Action**: Enable Cloud Audit Logs for database queries
-```sql
--- Track all SELECT queries on ballots table
-ALTER DATABASE ekklesia SET log_statement = 'all';
+```bash
+# Enable pgAudit for SELECT queries
+gcloud sql instances patch ekklesia-db \
+  --database-flags=cloudsql.enable_pgaudit=on,pgaudit.log=read
 ```
 
 **Benefit**: Detect unauthorized access to voting records
 
-**Status**: ⏳ **Future Enhancement**
+**Status**: ✅ **Completed** (2025-11-11 - Issue #252)
 
 ### 3. Consider Removing member_uid After Election Closes
 
@@ -452,8 +456,78 @@ const decryptedAnswer = decrypt(ballot.answer_id, election_key);
 ### Next Steps
 
 1. **Short-term**: ✅ Document current trust model in security docs (completed)
-2. **Medium-term**: ⏳ Implement query auditing and access restrictions
+2. **Medium-term**: ✅ Implement query auditing and UID hashing (Phase 1 completed - see below)
 3. **Long-term**: ⏳ Evaluate need for post-election anonymization or reversion to token-based system
+
+---
+
+## Phase 1 Implementation Testing (2025-11-11)
+
+### Issue #252: Cloud SQL Query Auditing
+
+**Implementation**:
+```bash
+gcloud sql instances patch ekklesia-db \
+  --database-flags=cloudsql.enable_pgaudit=on,pgaudit.log=read
+```
+
+**Verification**:
+```bash
+# Test query executed
+SELECT election_id, answer_id, submitted_at FROM elections.ballots LIMIT 1;
+
+# Audit log captured (timestamp: 2025-11-11T16:38:18.544Z)
+{
+  "statement": "SELECT election_id, answer_id, submitted_at FROM elections.ballots LIMIT 1;",
+  "user": "postgres",
+  "command": "SELECT",
+  "timestamp": "2025-11-11T16:38:18.544Z"
+}
+```
+
+**Result**: ✅ All SELECT queries on `elections.ballots` are now logged to Cloud Audit Logs with user identity and timestamp.
+
+### Issue #253: Hash Member UIDs in Service Logs
+
+**Implementation**:
+- Created `services/elections/src/utils/hashUid.js` with `hashUidForLogging()` function
+- Updated 23 logger statements across `elections.js` (5) and `admin.js` (18)
+- Deployed LOG_SALT environment variable to elections-service
+- Deployed revision: `elections-service-00013-hsg`
+
+**Hash Function Verification**:
+```javascript
+// Test results:
+Test UID: NE5e8GpzzBcjxuTHWGuJtTfevPD2
+Hash: 9d95a69b7b30c3ee
+Hash length: 16
+Hash format: ✓ Valid (16 hex chars)
+Deterministic: ✓ Yes (same UID → same hash)
+Different UID gives different hash: ✓ Yes
+Null handling: ✓ Returns 'unknown'
+```
+
+**Code Integration Verification**:
+```bash
+# elections.js: 5 occurrences using uid_hash
+# admin.js: 18 occurrences using uid_hash
+# No remaining plaintext uid logging: ✓ Confirmed
+```
+
+**Result**: ✅ Cloud Logging now contains one-way hashed UIDs. Logs cannot be reversed to identify members, but still allow correlation for debugging.
+
+### Phase 1 Impact
+
+**Before**:
+- Database queries not audited (insider threat risk)
+- Service logs contain plaintext Firebase UIDs (PII exposure)
+
+**After**:
+- ✅ Database query auditing enabled (detects unauthorized access)
+- ✅ Service logs use irreversible UID hashes (PII removed)
+- ✅ Log correlation preserved (same user = same hash for debugging)
+
+**Anonymity Improvement**: Medium → Medium+ (administrative controls strengthened)
 
 ---
 
