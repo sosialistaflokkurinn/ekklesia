@@ -293,7 +293,7 @@ router.post('/elections/:id/vote', verifyMemberToken, async (req, res) => {
 
     // Check if already voted
     const voteCheckResult = await client.query(
-      'SELECT COUNT(*) as count FROM ballots WHERE election_id = $1 AND member_uid = $2',
+      'SELECT COUNT(*) as count FROM elections.ballots WHERE election_id = $1 AND member_uid = $2',
       [id, req.user.uid]
     );
 
@@ -309,7 +309,7 @@ router.post('/elections/:id/vote', verifyMemberToken, async (req, res) => {
     const ballotIds = [];
     for (const answerId of answer_ids) {
       const ballotResult = await client.query(
-        `INSERT INTO ballots (election_id, member_uid, answer_id, submitted_at)
+        `INSERT INTO elections.ballots (election_id, member_uid, answer_id, submitted_at)
          VALUES ($1, $2, $3, date_trunc('minute', NOW()))
          RETURNING id`,
         [id, req.user.uid, answerId]
