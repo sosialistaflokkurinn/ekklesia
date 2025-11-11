@@ -81,7 +81,7 @@ router.get('/elections', verifyMemberToken, async (req, res) => {
         e.published_at,
         e.closed_at,
         (
-          SELECT check_member_voted(e.id, $${paramIndex})
+          SELECT elections.check_member_voted_v2(e.id, $${paramIndex})
         ) as has_voted
       FROM elections.elections e
       ${whereClause}
@@ -163,7 +163,7 @@ router.get('/elections/:id', verifyMemberToken, async (req, res) => {
         e.closed_at,
         e.hidden,
         (
-          SELECT check_member_voted(e.id, $2)
+          SELECT elections.check_member_voted_v2(e.id, $2)
         ) as has_voted
       FROM elections.elections e
       WHERE e.id = $1`,
@@ -292,13 +292,13 @@ router.post('/elections/:id/vote', verifyMemberToken, async (req, res) => {
       });
     }
 
-    // Check if already voted
+    // Check if already voted (using SECURITY DEFINER function)
     const voteCheckResult = await client.query(
-      'SELECT COUNT(*) as count FROM elections.ballots WHERE election_id = $1 AND member_uid = $2',
+      'SELECT elections.check_member_voted_v2($1, $2) as has_voted',
       [id, req.user.uid]
     );
 
-    if (parseInt(voteCheckResult.rows[0].count, 10) > 0) {
+    if (voteCheckResult.rows[0].has_voted) {
       await client.query('ROLLBACK');
       return res.status(409).json({
         error: 'Conflict',
