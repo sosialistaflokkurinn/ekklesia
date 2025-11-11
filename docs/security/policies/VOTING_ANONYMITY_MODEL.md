@@ -529,6 +529,67 @@ Null handling: ✓ Returns 'unknown'
 
 **Anonymity Improvement**: Medium → Medium+ (administrative controls strengthened)
 
+### Deployment Issue and Resolution
+
+**Issue Encountered**: Initial Phase 1 deployment (revision 00013-hsg) caused service outage due to missing configuration.
+
+**Root Cause**:
+1. Cloud SQL connection (`--add-cloudsql-instances`) not preserved during deployment
+2. Database environment variables (`DATABASE_HOST`, `DATABASE_NAME`, `DATABASE_USER`) not set
+3. CORS origins environment variable (`CORS_ORIGINS`) not configured for production
+
+**Symptoms**:
+- Service failing to start: `ECONNREFUSED 127.0.0.1:5433`
+- CORS errors in Members Portal: `No 'Access-Control-Allow-Origin' header`
+- Members unable to view or vote in elections
+
+**Resolution** (revisions 00014-dlx through 00017-zfl):
+
+1. **Fixed Database Connection**:
+   ```bash
+   # Added Cloud SQL instance
+   --add-cloudsql-instances=ekklesia-prod-10-2025:europe-west2:ekklesia-db
+
+   # Set environment variables
+   DATABASE_HOST=/cloudsql/ekklesia-prod-10-2025:europe-west2:ekklesia-db
+   DATABASE_NAME=postgres
+   DATABASE_USER=postgres
+   ```
+
+2. **Updated database.js** (commit 2305e46):
+   - Auto-detect Unix socket path (starts with `/cloudsql/`)
+   - Skip port specification for Unix sockets (uses default 5432)
+   - Preserve port 5433 for local TCP connections
+
+3. **Configured CORS**:
+   ```bash
+   CORS_ORIGINS=https://ekklesia-prod-10-2025.web.app^https://ekklesia-prod-10-2025.firebaseapp.com
+   ```
+   Note: Used `^` separator due to gcloud escaping requirements with `,`
+
+**Final Working Revision**: `elections-service-00017-zfl`
+
+**Verification**:
+```bash
+# Database connection successful
+[DB] Successfully connected to database
+[DB] Schema: elections
+[DB] Pool: min=2, max=5
+
+# CORS working
+access-control-allow-origin: https://ekklesia-prod-10-2025.web.app
+access-control-allow-credentials: true
+access-control-allow-methods: GET,HEAD,PUT,PATCH,POST,DELETE
+```
+
+**Service Status**: ✅ **OPERATIONAL** (Members Portal functioning normally)
+
+**Lessons Learned**:
+- Always specify `--add-cloudsql-instances` in Cloud Run deployments
+- Set all required environment variables explicitly (don't rely on defaults)
+- Test deployment before marking implementation complete
+- Document deployment configuration requirements
+
 ---
 
 ## Related Documentation
