@@ -100,6 +100,7 @@ Feature-specific documentation and epic implementation guides.
 
 **Quick Links**:
 - [Election Voting](docs/features/election-voting/) - Voting system docs
+  - [Database Schema](docs/features/election-voting/DATABASE_SCHEMA.md) - Complete elections schema reference
   - [Epic #24: Admin Lifecycle](docs/features/election-voting/EPIC_24_ADMIN_LIFECYCLE.md)
   - [Epic #43: Member Management](docs/features/election-voting/EPIC_43_MEMBER_MANAGEMENT_SYSTEM.md)
   - [Epic #87: Election Discovery](docs/features/election-voting/EPIC_87_ELECTION_DISCOVERY.md)
