@@ -139,6 +139,7 @@ Security policies, incident responses, and compliance.
 - [Security Policies](docs/security/policies/) - Policy documentation
   - [Credential Migration Plan](docs/security/policies/CREDENTIAL_MIGRATION_PLAN.md)
   - [History Purge Plan](docs/security/policies/HISTORY_PURGE_PLAN.md)
+  - [Voting Anonymity Model](docs/security/policies/VOTING_ANONYMITY_MODEL.md) - Voting system security analysis
 - [Incident Responses](docs/security/responses/) - Security incidents
   - [Issues #31-40 Security Review](docs/security/responses/ISSUES_31-40_SECURITY_REVIEW_RESPONSE.md)
   - [Issues #41-50 Critical Review](docs/security/responses/ISSUES_41-50_CRITICAL_REVIEW.md)

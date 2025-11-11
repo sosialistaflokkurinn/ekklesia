@@ -26,6 +26,7 @@ This category map provides navigation to all feature documentation including ele
 **Technical Reference:**
 - [Database Schema](../docs/features/election-voting/DATABASE_SCHEMA.md) - Complete elections schema reference
 - [Admin API Reference](../docs/features/election-voting/ADMIN_API_REFERENCE.md) - API endpoints documentation
+- [Voting Anonymity Model](../docs/security/policies/VOTING_ANONYMITY_MODEL.md) - Security analysis and trust model
 
 **Epic Implementation:**
 - [Epic #24: Admin Lifecycle](../docs/features/election-voting/EPIC_24_ADMIN_LIFECYCLE.md)

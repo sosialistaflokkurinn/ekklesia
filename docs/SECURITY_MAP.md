@@ -25,6 +25,7 @@ This category map provides navigation to all security documentation including po
 ### Policies
 - [Credential Migration Plan](../docs/security/policies/CREDENTIAL_MIGRATION_PLAN.md)
 - [History Purge Plan](../docs/security/policies/HISTORY_PURGE_PLAN.md)
+- [Voting Anonymity Model](../docs/security/policies/VOTING_ANONYMITY_MODEL.md) - Token-based vs member-UID voting systems comparison
 
 ### Current Security
 - [Critical Actions Log](../docs/security/current/CRITICAL_ACTIONS_LOG.md)
