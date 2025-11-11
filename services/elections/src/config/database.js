@@ -2,9 +2,14 @@ const { Pool } = require('pg');
 
 // Database connection pool configuration
 // Optimized for 300 votes/sec spike (see USAGE_CONTEXT.md)
+const dbHost = process.env.DATABASE_HOST || '127.0.0.1';
+const isUnixSocket = dbHost.startsWith('/cloudsql/');
+
 const pool = new Pool({
-  host: process.env.DATABASE_HOST || '127.0.0.1',
-  port: parseInt(process.env.DATABASE_PORT) || 5433,
+  host: dbHost,
+  // For Unix socket connections (Cloud Run), don't specify port (uses default 5432)
+  // For TCP connections (local dev), use port 5433
+  port: isUnixSocket ? undefined : (parseInt(process.env.DATABASE_PORT) || 5433),
   database: process.env.DATABASE_NAME || 'postgres',
   user: process.env.DATABASE_USER || 'postgres',
   password: process.env.DATABASE_PASSWORD,
