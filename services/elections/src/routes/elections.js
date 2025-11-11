@@ -307,13 +307,18 @@ router.post('/elections/:id/vote', verifyMemberToken, async (req, res) => {
 
     // Insert ballots (one per selected answer for multi-choice)
     // Note: token_hash is set to 'member-based' for Firebase-authenticated votes
+    // Note: answer field must be populated with answer text from election.answers
     const ballotIds = [];
     for (const answerId of answer_ids) {
+      // Find answer text from election.answers array
+      const answerObj = election.answers.find(a => a.id === answerId);
+      const answerText = answerObj ? answerObj.text : answerId; // Fallback to ID if not found
+
       const ballotResult = await client.query(
-        `INSERT INTO elections.ballots (election_id, member_uid, answer_id, token_hash, submitted_at)
-         VALUES ($1, $2, $3, 'member-based', date_trunc('minute', NOW()))
+        `INSERT INTO elections.ballots (election_id, member_uid, answer_id, answer, token_hash, submitted_at)
+         VALUES ($1, $2, $3, $4, 'member-based', date_trunc('minute', NOW()))
          RETURNING id`,
-        [id, req.user.uid, answerId]
+        [id, req.user.uid, answerId, answerText]
       );
 
       ballotIds.push(ballotResult.rows[0].id);
