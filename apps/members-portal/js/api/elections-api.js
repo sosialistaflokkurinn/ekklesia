@@ -87,7 +87,8 @@ export async function getElectionById(electionId) {
       throw new Error(`API error: ${response.status}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    return data.election;  // Extract election object from response wrapper
 
   } catch (error) {
     debug.error(`Error fetching election ${electionId}:`, error);

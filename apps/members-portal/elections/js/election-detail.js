@@ -118,6 +118,12 @@ async function loadElection(electionId) {
  * Display election information
  */
 function displayElection(election) {
+  // Map backend status to frontend status
+  // Backend uses 'published', frontend expects 'active'
+  if (election.status === 'published') {
+    election.status = 'active';
+  }
+
   // Update header
   document.getElementById('election-title').textContent = election.title;
 

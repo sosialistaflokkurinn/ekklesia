@@ -121,6 +121,14 @@ async function loadElections() {
     // Fetch elections
     allElections = await getElections();
 
+    // Map backend status to frontend status
+    // Backend uses 'published', frontend expects 'active'
+    allElections.forEach(election => {
+      if (election.status === 'published') {
+        election.status = 'active';
+      }
+    });
+
     // Calculate counts by status
     electionCounts = {
       all: allElections.length,
