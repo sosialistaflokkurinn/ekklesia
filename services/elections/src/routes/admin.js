@@ -15,6 +15,7 @@ const {
   requireSuperadmin,
 } = require('../middleware/rbacAuth');
 const { logAudit } = require('../services/auditService');
+const { hashUidForLogging } = require('../utils/hashUid');
 
 const router = express.Router();
 
@@ -123,7 +124,7 @@ router.get('/elections', requireElectionManager, async (req, res) => {
     const duration = Date.now() - startTime;
 
     logAudit('list_elections', true, {
-      uid: req.user.uid,
+      uid_hash: hashUidForLogging(req.user.uid),
       role: req.user.role,
       filters: { status, includeHidden, search },
       count: result.rows.length,
@@ -144,7 +145,7 @@ router.get('/elections', requireElectionManager, async (req, res) => {
     const duration = Date.now() - startTime;
     console.error('[Admin] List elections error:', error);
     logAudit('list_elections', false, {
-      uid: req.user.uid,
+      uid_hash: hashUidForLogging(req.user.uid),
       error: error.message,
       duration_ms: duration,
     });
@@ -276,7 +277,7 @@ router.post('/elections', requireElectionManager, async (req, res) => {
     const duration = Date.now() - startTime;
 
     logAudit('create_election', true, {
-      uid: req.user.uid,
+      uid_hash: hashUidForLogging(req.user.uid),
       role: req.user.role,
       election_id: election.id,
       title: election.title,
@@ -292,7 +293,7 @@ router.post('/elections', requireElectionManager, async (req, res) => {
     const duration = Date.now() - startTime;
     console.error('[Admin] Create election error:', error);
     logAudit('create_election', false, {
-      uid: req.user.uid,
+      uid_hash: hashUidForLogging(req.user.uid),
       error: error.message,
       duration_ms: duration,
     });
@@ -506,7 +507,7 @@ router.patch('/elections/:id', requireElectionManager, async (req, res) => {
     const duration = Date.now() - startTime;
 
     logAudit('update_election', true, {
-      uid: req.user.uid,
+      uid_hash: hashUidForLogging(req.user.uid),
       role: req.user.role,
       election_id: id,
       updated_fields: Object.keys(req.body),
@@ -521,7 +522,7 @@ router.patch('/elections/:id', requireElectionManager, async (req, res) => {
     const duration = Date.now() - startTime;
     console.error('[Admin] Update election error:', error);
     logAudit('update_election', false, {
-      uid: req.user.uid,
+      uid_hash: hashUidForLogging(req.user.uid),
       election_id: id,
       error: error.message,
       duration_ms: duration,
@@ -588,7 +589,7 @@ router.post('/elections/:id/open', requireElectionManager, async (req, res) => {
     const duration = Date.now() - startTime;
 
     logAudit('open_election', true, {
-      uid: req.user.uid,
+      uid_hash: hashUidForLogging(req.user.uid),
       role: req.user.role,
       election_id: id,
       title: election.title,
@@ -604,7 +605,7 @@ router.post('/elections/:id/open', requireElectionManager, async (req, res) => {
     const duration = Date.now() - startTime;
     console.error('[Admin] Open election error:', error);
     logAudit('open_election', false, {
-      uid: req.user.uid,
+      uid_hash: hashUidForLogging(req.user.uid),
       election_id: id,
       error: error.message,
       duration_ms: duration,
@@ -664,7 +665,7 @@ router.post('/elections/:id/close', requireElectionManager, async (req, res) => 
     const duration = Date.now() - startTime;
 
     logAudit('close_election', true, {
-      uid: req.user.uid,
+      uid_hash: hashUidForLogging(req.user.uid),
       role: req.user.role,
       election_id: id,
       title: election.title,
@@ -680,7 +681,7 @@ router.post('/elections/:id/close', requireElectionManager, async (req, res) => 
     const duration = Date.now() - startTime;
     console.error('[Admin] Close election error:', error);
     logAudit('close_election', false, {
-      uid: req.user.uid,
+      uid_hash: hashUidForLogging(req.user.uid),
       election_id: id,
       error: error.message,
       duration_ms: duration,
@@ -738,7 +739,7 @@ router.post('/elections/:id/hide', requireElectionManager, async (req, res) => {
     const duration = Date.now() - startTime;
 
     logAudit('hide_election', true, {
-      uid: req.user.uid,
+      uid_hash: hashUidForLogging(req.user.uid),
       role: req.user.role,
       election_id: id,
       title: election.title,
@@ -754,7 +755,7 @@ router.post('/elections/:id/hide', requireElectionManager, async (req, res) => {
     const duration = Date.now() - startTime;
     console.error('[Admin] Hide election error:', error);
     logAudit('hide_election', false, {
-      uid: req.user.uid,
+      uid_hash: hashUidForLogging(req.user.uid),
       election_id: id,
       error: error.message,
       duration_ms: duration,
@@ -812,7 +813,7 @@ router.post('/elections/:id/unhide', requireElectionManager, async (req, res) =>
     const duration = Date.now() - startTime;
 
     logAudit('unhide_election', true, {
-      uid: req.user.uid,
+      uid_hash: hashUidForLogging(req.user.uid),
       role: req.user.role,
       election_id: id,
       title: election.title,
@@ -828,7 +829,7 @@ router.post('/elections/:id/unhide', requireElectionManager, async (req, res) =>
     const duration = Date.now() - startTime;
     console.error('[Admin] Unhide election error:', error);
     logAudit('unhide_election', false, {
-      uid: req.user.uid,
+      uid_hash: hashUidForLogging(req.user.uid),
       election_id: id,
       error: error.message,
       duration_ms: duration,
@@ -881,7 +882,7 @@ router.delete('/elections/:id', requireSuperadmin, async (req, res) => {
     const duration = Date.now() - startTime;
 
     logAudit('delete_election', true, {
-      uid: req.user.uid,
+      uid_hash: hashUidForLogging(req.user.uid),
       role: req.user.role,
       election_id: id,
       title,
@@ -899,7 +900,7 @@ router.delete('/elections/:id', requireSuperadmin, async (req, res) => {
     const duration = Date.now() - startTime;
     console.error('[Admin] Delete election error:', error);
     logAudit('delete_election', false, {
-      uid: req.user.uid,
+      uid_hash: hashUidForLogging(req.user.uid),
       election_id: id,
       error: error.message,
       duration_ms: duration,
@@ -988,7 +989,7 @@ router.get('/elections/:id/results', requireElectionManager, async (req, res) =>
     const duration = Date.now() - startTime;
 
     logAudit('get_results', true, {
-      uid: req.user.uid,
+      uid_hash: hashUidForLogging(req.user.uid),
       role: req.user.role,
       election_id: id,
       total_votes: totalVotes,
@@ -1000,7 +1001,7 @@ router.get('/elections/:id/results', requireElectionManager, async (req, res) =>
     const duration = Date.now() - startTime;
     console.error('[Admin] Get results error:', error);
     logAudit('get_results', false, {
-      uid: req.user.uid,
+      uid_hash: hashUidForLogging(req.user.uid),
       election_id: id,
       error: error.message,
       duration_ms: duration,

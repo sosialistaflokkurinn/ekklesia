@@ -5,6 +5,7 @@ const authenticateS2S = require('../middleware/s2sAuth');
 const { verifyAppCheckOptional } = require('../middleware/appCheck');
 const { logAudit } = require('../services/auditService');
 const logger = require('../utils/logger');
+const { hashUidForLogging } = require('../utils/hashUid');
 const {
   verifyMemberToken,
   hasVoted,
@@ -110,7 +111,7 @@ router.get('/elections', verifyMemberToken, async (req, res) => {
     const duration = Date.now() - startTime;
 
     logger.info('[Member API] List elections', {
-      uid: req.user.uid,
+      uid_hash: hashUidForLogging(req.user.uid),
       count: filteredElections.length,
       total,
       duration_ms: duration,
@@ -195,7 +196,7 @@ router.get('/elections/:id', verifyMemberToken, async (req, res) => {
     }
 
     logger.info('[Member API] Get election details', {
-      uid: req.user.uid,
+      uid_hash: hashUidForLogging(req.user.uid),
       election_id: id,
     });
 
@@ -331,7 +332,7 @@ router.post('/elections/:id/vote', verifyMemberToken, async (req, res) => {
     const duration = Date.now() - startTime;
 
     logger.info('[Member API] Vote submitted', {
-      uid: req.user.uid,
+      uid_hash: hashUidForLogging(req.user.uid),
       election_id: id,
       election_title: election.title,
       answer_count: answer_ids.length,
@@ -341,7 +342,7 @@ router.post('/elections/:id/vote', verifyMemberToken, async (req, res) => {
     });
 
     logAudit('submit_vote', true, {
-      uid: req.user.uid,
+      uid_hash: hashUidForLogging(req.user.uid),
       election_id: id,
       answer_count: answer_ids.length,
       ballot_ids: ballotIds,
@@ -478,7 +479,7 @@ router.get('/elections/:id/results', verifyMemberToken, async (req, res) => {
       : null;
 
     logger.info('[Member API] Get results', {
-      uid: req.user.uid,
+      uid_hash: hashUidForLogging(req.user.uid),
       election_id: id,
       total_votes: totalVotes,
     });
