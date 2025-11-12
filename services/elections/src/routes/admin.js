@@ -1014,4 +1014,88 @@ router.get('/elections/:id/results', requireElectionManager, async (req, res) =>
   }
 });
 
+// =====================================================
+// POST /api/admin/elections/:id/anonymize
+// Anonymize ballots for closed election (irreversible)
+// =====================================================
+// DANGER: This is irreversible - replaces member_uid with hashes
+// Security: Only superadmin can trigger anonymization
+
+router.post('/elections/:id/anonymize', requireSuperadmin, async (req, res) => {
+  const startTime = Date.now();
+  const { id } = req.params;
+  const secretSalt = process.env.ANONYMIZATION_SALT;
+
+  // Check ANONYMIZATION_SALT is configured
+  if (!secretSalt) {
+    console.error('[Admin] ANONYMIZATION_SALT not configured');
+    return res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'ANONYMIZATION_SALT not configured - cannot proceed with anonymization',
+      code: 'MISSING_SALT'
+    });
+  }
+
+  try {
+    // Call anonymization function
+    const result = await pool.query(
+      'SELECT * FROM elections.anonymize_closed_election($1, $2)',
+      [id, secretSalt]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(500).json({
+        error: 'Internal Server Error',
+        message: 'Anonymization function returned no results',
+      });
+    }
+
+    const { anonymized_count, election_status } = result.rows[0];
+    const duration = Date.now() - startTime;
+
+    logAudit('anonymize_election', true, {
+      uid_hash: hashUidForLogging(req.user.uid),
+      role: req.user.role,
+      election_id: id,
+      anonymized_count,
+      election_status,
+      duration_ms: duration,
+    });
+
+    console.log('[Admin] Election anonymized', {
+      uid_hash: hashUidForLogging(req.user.uid),
+      election_id: id,
+      anonymized_count,
+      election_status,
+      duration_ms: duration,
+    });
+
+    res.json({
+      success: true,
+      election_id: id,
+      anonymized_count,
+      election_status,
+      message: `Anonymized ${anonymized_count} ballots (irreversible)`,
+      warning: 'This operation cannot be undone. Voting history is now permanently anonymized.',
+    });
+
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    console.error('[Admin] Anonymization failed:', error);
+    logAudit('anonymize_election', false, {
+      uid_hash: hashUidForLogging(req.user.uid),
+      election_id: id,
+      error: error.message,
+      duration_ms: duration,
+    });
+
+    // Return detailed error message to help diagnose issues
+    res.status(400).json({
+      error: 'Bad Request',
+      message: error.message,
+      code: error.code || 'ANONYMIZATION_FAILED',
+    });
+  }
+});
+
 module.exports = router;
