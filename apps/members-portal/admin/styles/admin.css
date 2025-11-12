@@ -157,6 +157,11 @@
 body.admin {
   /* Keep same white background as member portal */
   background: #ffffff;
+  /* Override global.css flexbox centering (used for login page) */
+  display: block;
+  align-items: unset;
+  justify-content: unset;
+  padding: 0;
 }
 
 /* Fix text contrast on red admin background */
