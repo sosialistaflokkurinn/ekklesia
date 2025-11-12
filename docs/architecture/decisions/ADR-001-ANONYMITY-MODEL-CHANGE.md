@@ -5,6 +5,7 @@
 **Deciders**: Development Team
 **Context**: Multi-election voting system redesign
 **Related Issues**: #248 (Member Elections API), #251 (Security Enhancements)
+**Related Docs**: [GDPR Voting Anonymity Analysis](../../security/policies/GDPR_VOTING_ANONYMITY_ANALYSIS.md) - Comprehensive GDPR compliance comparison
 
 ---
 
