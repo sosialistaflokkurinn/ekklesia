@@ -147,7 +147,7 @@ body.authenticated {
 
 /* Welcome message */
 .card--welcome {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary) 100%);
   color: white;
 }
 

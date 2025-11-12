@@ -155,8 +155,8 @@
 /* ========================================== */
 
 body.admin {
-  /* Keep same gradient background as member portal */
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  /* Keep same white background as member portal */
+  background: #ffffff;
 }
 
 /* Fix text contrast on red admin background */
