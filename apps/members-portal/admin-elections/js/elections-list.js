@@ -104,10 +104,9 @@ async function initialize() {
  * Initialize all UI texts with i18n strings
  */
 function initializeUITexts() {
-  // Page title and heading
+  // Page title
   document.getElementById('page-title').textContent = R.string.admin_elections_title || 'Kosningar - Admin';
-  document.getElementById('page-heading').textContent = R.string.admin_elections_heading || 'Kosningar';
-  
+
   // Filter buttons
   document.getElementById('filter-all').textContent = R.string.filter_all || 'Allar';
   document.getElementById('filter-draft').textContent = R.string.filter_draft || 'Drög';
