@@ -9,8 +9,7 @@ import { R } from '../i18n/strings-loader.js';
 
 const auth = getFirebaseAuth();
 
-// Load i18n strings
-await R.load('is');
+// Note: i18n strings are already loaded in create.html before this script runs
 
 // ============================================
 // STATE
