@@ -7,6 +7,7 @@
   
   <!-- Global Styles -->
   <link rel="stylesheet" href="../styles/global.css">
+  <link rel="stylesheet" href="../styles/components/nav.css">
   <link rel="stylesheet" href="../admin/styles/admin.css">
   <link rel="stylesheet" href="./styles/admin-elections.css">
   <link rel="stylesheet" href="./styles/election-wizard.css">
@@ -20,22 +21,33 @@
 </head>
 <body class="authenticated admin">
   
-  <!-- Navigation -->
-  <nav class="admin-nav">
-    <div class="admin-nav__container">
-      <div class="admin-nav__logo">
-        <a href="/admin/" id="admin-brand">Loading...</a>
-      </div>
-      <div class="admin-nav__links">
-        <a href="/admin/" id="nav-overview">Loading...</a>
-        <a href="/admin-elections/" class="active" id="nav-elections">Loading...</a>
-        <a href="/admin/members.html" id="nav-members">Loading...</a>
-        <a href="/admin/events.html" id="nav-events">Loading...</a>
-      </div>
-      <div class="admin-nav__user">
-        <span id="user-role-indicator" class="role-indicator"></span>
-        <span id="user-email"></span>
-        <button id="logout-btn" class="btn btn-sm">Loading...</button>
+  <!-- Navigation (Hamburger Menu) -->
+  <nav class="nav">
+    <div class="nav__container">
+      <a href="/admin-elections/" class="nav__brand" id="nav-brand">Loading...</a>
+
+      <!-- Hamburger Button (mobile only) -->
+      <button class="nav__hamburger" id="nav-hamburger" aria-expanded="false">
+        <span class="nav__hamburger-line"></span>
+        <span class="nav__hamburger-line"></span>
+        <span class="nav__hamburger-line"></span>
+      </button>
+
+      <!-- Overlay for mobile menu -->
+      <div class="nav__overlay" id="nav-overlay"></div>
+
+      <!-- Navigation Drawer -->
+      <div class="nav__drawer" id="nav-drawer" aria-hidden="true">
+        <!-- Close button (mobile only) -->
+        <button class="nav__close" id="nav-close">
+          <span class="nav__close-icon">✕</span>
+        </button>
+
+        <div class="nav__links">
+          <a href="/admin-elections/" class="nav__link nav__link--active" id="nav-elections-list">Loading...</a>
+          <a href="/members-area/dashboard.html" class="nav__link" id="nav-back-to-member">Loading...</a>
+          <a href="#" class="nav__link nav__link--logout" id="nav-logout">Loading...</a>
+        </div>
       </div>
     </div>
   </nav>
@@ -394,12 +406,10 @@
     
     // Set page title and static text
     document.getElementById('page-title').textContent = R.string.create_election_page_title;
-    document.getElementById('admin-brand').textContent = R.string.admin_brand;
-    document.getElementById('nav-overview').textContent = R.string.admin_nav_overview;
-    document.getElementById('nav-elections').textContent = R.string.admin_nav_elections;
-    document.getElementById('nav-members').textContent = R.string.admin_nav_members;
-    document.getElementById('nav-events').textContent = R.string.admin_nav_events;
-    document.getElementById('logout-btn').textContent = R.string.admin_nav_logout;
+    document.getElementById('nav-brand').textContent = R.string.admin_brand;
+    document.getElementById('nav-elections-list').textContent = R.string.admin_nav_elections;
+    document.getElementById('nav-back-to-member').textContent = R.string.admin_nav_back_to_member;
+    document.getElementById('nav-logout').textContent = R.string.admin_nav_logout;
     document.getElementById('back-link').textContent = R.string.back_to_list;
     document.getElementById('page-heading').textContent = R.string.create_election_heading;
     
@@ -487,21 +497,49 @@
   <!-- Scripts -->
   <script type="module">
     import { getFirebaseAuth } from '../firebase/app.js';
-    
+
     const auth = getFirebaseAuth();
-    
+
+    // Navigation: Hamburger menu toggle
+    const hamburger = document.getElementById('nav-hamburger');
+    const drawer = document.getElementById('nav-drawer');
+    const overlay = document.getElementById('nav-overlay');
+    const closeBtn = document.getElementById('nav-close');
+
+    function openDrawer() {
+      drawer.classList.add('is-open');
+      drawer.setAttribute('aria-hidden', 'false');
+      overlay.classList.add('is-visible');
+      hamburger.classList.add('is-active');
+      hamburger.setAttribute('aria-expanded', 'true');
+      document.body.classList.add('nav-open');
+    }
+
+    function closeDrawer() {
+      drawer.classList.remove('is-open');
+      drawer.setAttribute('aria-hidden', 'true');
+      overlay.classList.remove('is-visible');
+      hamburger.classList.remove('is-active');
+      hamburger.setAttribute('aria-expanded', 'false');
+      document.body.classList.remove('nav-open');
+    }
+
+    hamburger?.addEventListener('click', () => {
+      if (drawer.classList.contains('is-open')) {
+        closeDrawer();
+      } else {
+        openDrawer();
+      }
+    });
+
+    closeBtn?.addEventListener('click', closeDrawer);
+    overlay?.addEventListener('click', closeDrawer);
+
     // Handle logout
-    document.getElementById('logout-btn')?.addEventListener('click', async () => {
+    document.getElementById('nav-logout')?.addEventListener('click', async (e) => {
+      e.preventDefault();
       await auth.signOut();
       window.location.href = '/';
-    });
-    
-    // Show user email
-    auth.onAuthStateChanged(user => {
-      const emailEl = document.getElementById('user-email');
-      if (emailEl && user) {
-        emailEl.textContent = user.email;
-      }
     });
   </script>
   
