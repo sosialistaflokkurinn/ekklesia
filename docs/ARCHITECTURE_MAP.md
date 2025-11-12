@@ -1,7 +1,7 @@
 # Architecture Category Map
 
-**Last Updated**: 2025-11-07  
-**Status**: ✅ Level 2 Category Map  
+**Last Updated**: 2025-11-12
+**Status**: ✅ Level 2 Category Map
 **Purpose**: System design, component architecture, and technical decisions
 
 ---
@@ -24,6 +24,9 @@ This category map provides navigation to all architecture documentation includin
 ### System Design
 - [Architecture Recommendations](../docs/architecture/ARCHITECTURE_RECOMMENDATIONS.md)
 - [CSS Design System](../docs/architecture/CSS_DESIGN_SYSTEM.md)
+
+### Architecture Decision Records (ADRs)
+- [ADR-001: Anonymity Model Change](../docs/architecture/decisions/ADR-001-ANONYMITY-MODEL-CHANGE.md) - Transition from Cryptographic to Administrative Anonymity (Epic #251)
 
 ### Capacity & Operations
 - [Usage Context](../docs/development/guides/workflows/USAGE_CONTEXT.md) - Load patterns and capacity planning
