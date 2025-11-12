@@ -497,43 +497,12 @@
   <!-- Scripts -->
   <script type="module">
     import { getFirebaseAuth } from '../firebase/app.js';
+    import { initNavigation } from '../js/nav.js';
 
     const auth = getFirebaseAuth();
 
-    // Navigation: Hamburger menu toggle
-    const hamburger = document.getElementById('nav-hamburger');
-    const drawer = document.getElementById('nav-drawer');
-    const overlay = document.getElementById('nav-overlay');
-    const closeBtn = document.getElementById('nav-close');
-
-    function openDrawer() {
-      drawer.classList.add('is-open');
-      drawer.setAttribute('aria-hidden', 'false');
-      overlay.classList.add('is-visible');
-      hamburger.classList.add('is-active');
-      hamburger.setAttribute('aria-expanded', 'true');
-      document.body.classList.add('nav-open');
-    }
-
-    function closeDrawer() {
-      drawer.classList.remove('is-open');
-      drawer.setAttribute('aria-hidden', 'true');
-      overlay.classList.remove('is-visible');
-      hamburger.classList.remove('is-active');
-      hamburger.setAttribute('aria-expanded', 'false');
-      document.body.classList.remove('nav-open');
-    }
-
-    hamburger?.addEventListener('click', () => {
-      if (drawer.classList.contains('is-open')) {
-        closeDrawer();
-      } else {
-        openDrawer();
-      }
-    });
-
-    closeBtn?.addEventListener('click', closeDrawer);
-    overlay?.addEventListener('click', closeDrawer);
+    // Initialize navigation with hamburger menu
+    initNavigation();
 
     // Handle logout
     document.getElementById('nav-logout')?.addEventListener('click', async (e) => {
