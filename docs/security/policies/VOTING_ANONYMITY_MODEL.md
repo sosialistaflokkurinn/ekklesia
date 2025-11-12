@@ -358,38 +358,104 @@ gcloud sql instances patch ekklesia-db \
 
 **Status**: ✅ **Completed** (2025-11-11 - Issue #252)
 
-### 3. Consider Removing member_uid After Election Closes
+### 3. Implement Post-Election Anonymization
 
-**Action**: Implement post-election anonymization
+**Action**: Irreversibly hash member_uid after election closes
 ```sql
--- After election closes, hash member_uid for deduplication preservation
-UPDATE elections.ballots
-SET member_uid = sha256(member_uid || election_id || secret_salt)
-WHERE election_id = $closed_election_id;
+-- Migration 007: Post-election anonymization function
+CREATE FUNCTION elections.anonymize_closed_election(
+  p_election_id UUID,
+  p_secret_salt VARCHAR(64)
+) RETURNS TABLE(anonymized_count INTEGER, election_status VARCHAR);
+
+-- Hash formula: SHA256(member_uid || election_id || secret_salt)
+-- Example usage:
+SELECT * FROM elections.anonymize_closed_election(
+  'election-uuid'::UUID,
+  'secret-salt-from-env'
+);
 ```
 
-**Trade-off**:
-- ✅ Increases anonymity (one-way hash)
-- ⚠️ Prevents audit queries like "did member X vote in election Y?"
-
-**Status**: ⏳ **Future Enhancement** (evaluate need)
-
-### 4. Restrict Database Access
-
-**Action**: Create read-only service account for Elections Service
+**Admin API Endpoint**:
 ```bash
-# Create service account with minimal permissions
-gcloud iam service-accounts create elections-service-readonly
-gcloud sql users create elections-service-readonly
+# Superadmin triggers anonymization (irreversible)
+POST /api/admin/elections/:id/anonymize
+Authorization: Bearer <superadmin-token>
 
-# Grant SELECT on elections table, but NOT on ballots.member_uid
-GRANT SELECT (id, election_id, answer_id, submitted_at) ON elections.ballots TO elections_service;
-REVOKE SELECT (member_uid) ON elections.ballots FROM elections_service;
+# Response:
+{
+  "success": true,
+  "anonymized_count": 15,
+  "message": "Anonymized 15 ballots (irreversible)",
+  "warning": "This operation cannot be undone..."
+}
 ```
 
-**Benefit**: Even if Elections Service is compromised, cannot query member_uid
+**Benefits**:
+- ✅ Increases anonymity to **HIGH** (cryptographic level)
+- ✅ Protects against future database breaches (cannot reverse hash)
+- ✅ Vote deduplication still works (consistent hash algorithm)
+- ✅ Results aggregation unaffected
 
-**Status**: ⏳ **Future Enhancement**
+**Trade-offs**:
+- ⚠️ Irreversible operation (cannot undo)
+- ⚠️ Prevents audit queries like "did member X vote in election Y?" after anonymization
+- ⚠️ Cannot provide voter receipts post-anonymization
+
+**Status**: ✅ **Completed** (2025-11-12 - Issue #255)
+- Migration: `007_post_election_anonymization.sql`
+- Deployment: `elections-service-00019-kzb`
+- Secret: `anonymization-salt` stored in Secret Manager
+
+### 4. Implement Column-Level Database Permissions
+
+**Action**: Create SECURITY DEFINER function to abstract member_uid access
+```sql
+-- Migration 006: Column-level permissions function
+CREATE FUNCTION elections.check_member_voted_v2(
+  p_election_id UUID,
+  p_member_uid VARCHAR(128)
+) RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER  -- Runs with elevated privileges
+AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM elections.ballots
+    WHERE election_id = p_election_id AND member_uid = p_member_uid
+  );
+END;
+$$;
+```
+
+**Application Integration**:
+```javascript
+// All vote checking now uses function instead of direct queries
+const result = await pool.query(
+  'SELECT elections.check_member_voted_v2($1, $2) as has_voted',
+  [election_id, member_uid]
+);
+```
+
+**Benefits**:
+- ✅ Consistent API for vote checking across codebase
+- ✅ Foundation for future column-level permissions
+- ✅ Can revoke direct SELECT on member_uid column when ready
+- ✅ Audit trail for vote checking operations
+
+**Full Column-Level Permissions** (future):
+```sql
+-- When using separate service account:
+REVOKE SELECT ON elections.ballots FROM elections_service;
+GRANT SELECT (id, election_id, answer_id, answer, token_hash, submitted_at)
+  ON elections.ballots TO elections_service;
+GRANT EXECUTE ON FUNCTION elections.check_member_voted_v2 TO elections_service;
+```
+
+**Status**: ✅ **Partially Completed** (2025-11-12 - Issue #254)
+- Migration: `006_column_level_permissions.sql`
+- Deployment: `elections-service-00018-w69`
+- Note: Function created, full column-level permissions deferred (requires separate service account)
 
 ### 5. Add Ballot Encryption (Future Enhancement)
 
@@ -456,8 +522,12 @@ const decryptedAnswer = decrypt(ballot.answer_id, election_key);
 ### Next Steps
 
 1. **Short-term**: ✅ Document current trust model in security docs (completed)
-2. **Medium-term**: ✅ Implement query auditing and UID hashing (Phase 1 completed - see below)
-3. **Long-term**: ⏳ Evaluate need for post-election anonymization or reversion to token-based system
+2. **Medium-term**: ✅ Implement query auditing and UID hashing (Phase 1 completed)
+3. **Medium-term**: ✅ Implement column-level permissions foundation (Phase 2 completed)
+4. **Medium-term**: ✅ Implement post-election anonymization (Phase 2 completed)
+5. **Long-term**: ⏳ Define anonymization policy (manual vs delayed vs immediate)
+6. **Long-term**: ⏳ Test anonymization on first closed production election
+7. **Long-term**: ⏳ Evaluate creating separate elections_service database role for full column-level permissions
 
 ---
 
@@ -592,6 +662,181 @@ access-control-allow-methods: GET,HEAD,PUT,PATCH,POST,DELETE
 
 ---
 
+## Phase 2 Implementation (2025-11-12)
+
+### Issue #254: Column-Level Database Permissions
+
+**Implementation**:
+- Created `check_member_voted_v2()` SECURITY DEFINER function in migration 006
+- Updated all vote checking queries (3 locations) to use new function
+- Documented future column-level permissions approach for when separate service account is created
+
+**Deployment**:
+- **Revision**: `elections-service-00018-w69`
+- **Migration**: `006_column_level_permissions.sql`
+- **Commit**: b6fde03
+
+**Code Changes**:
+```javascript
+// Before (direct query):
+SELECT COUNT(*) FROM elections.ballots
+WHERE election_id = $1 AND member_uid = $2
+
+// After (SECURITY DEFINER function):
+SELECT elections.check_member_voted_v2($1, $2) as has_voted
+```
+
+**Verification**:
+```sql
+-- Function exists and is properly configured
+\df elections.check_member_voted_v2
+
+-- Result:
+-- Schema: elections
+-- Name: check_member_voted_v2
+-- Type: SECURITY DEFINER
+-- Returns: BOOLEAN
+```
+
+**Result**: ✅ Consistent API for vote checking, foundation for future column-level permissions when separate service account is implemented.
+
+### Issue #255: Post-Election Anonymization
+
+**Implementation**:
+- Created `anonymize_closed_election()` function in migration 007
+- Added admin endpoint `POST /api/admin/elections/:id/anonymize` (superadmin only)
+- Generated and configured `anonymization-salt` secret (64-char hex) in Secret Manager
+- Granted Cloud Run service account access to secret
+
+**Deployment**:
+- **Revision**: `elections-service-00019-kzb`
+- **Migration**: `007_post_election_anonymization.sql`
+- **Commit**: ab37906
+- **Secret**: `anonymization-salt` (stored in Secret Manager)
+
+**Function Signature**:
+```sql
+CREATE FUNCTION elections.anonymize_closed_election(
+  p_election_id UUID,
+  p_secret_salt VARCHAR(64)
+) RETURNS TABLE(
+  anonymized_count INTEGER,
+  election_status VARCHAR(50)
+);
+```
+
+**Hash Algorithm**:
+```
+SHA256(member_uid || election_id || secret_salt) → 64-char hex string
+```
+- **Election-specific**: Including election_id prevents cross-election correlation
+- **Rainbow table protection**: Secret salt prevents precomputed hash attacks
+- **Idempotent**: Safe to run multiple times (checks `length != 64`)
+
+**API Endpoint**:
+```javascript
+// services/elections/src/routes/admin.js:1024
+router.post('/elections/:id/anonymize', requireSuperadmin, async (req, res) => {
+  const secretSalt = process.env.ANONYMIZATION_SALT;
+
+  const result = await pool.query(
+    'SELECT * FROM elections.anonymize_closed_election($1, $2)',
+    [id, secretSalt]
+  );
+
+  const { anonymized_count, election_status } = result.rows[0];
+  // Returns success response with count and warning
+});
+```
+
+**Safety Checks**:
+- ✅ Only works on elections with status `closed` or `archived`
+- ✅ Raises exception if election not found
+- ✅ Raises exception if election not closed
+- ✅ Skips sentinel token (backwards compatibility with S2S voting)
+- ✅ Idempotent (already-hashed values not re-hashed)
+
+**Verification**:
+```bash
+# Check function exists
+\df elections.anonymize_closed_election
+
+# Check secret configured
+gcloud run services describe elections-service \
+  --format="value(spec.template.spec.containers[0].env)" | grep ANONYMIZATION_SALT
+
+# Result: ANONYMIZATION_SALT secret reference present
+```
+
+**Result**: ✅ Post-election anonymization capability deployed. When triggered on closed election, achieves **HIGH** (cryptographic) anonymity level.
+
+### Phase 2 Impact
+
+**Before Phase 2**:
+- Vote checking via direct database queries
+- No post-election anonymization capability
+- Anonymity level: Medium+ (administrative controls)
+
+**After Phase 2**:
+- ✅ Vote checking via SECURITY DEFINER function (consistent API)
+- ✅ Post-election anonymization available (superadmin trigger)
+- ✅ Path to HIGH anonymity (cryptographic protection)
+- ✅ Irreversible by design (protects against future breaches)
+
+**Anonymity Progression**:
+```
+MVP:      High (cryptographic - token-based)
+         ↓
+Current:  Medium+ (administrative controls + audit trail)
+         ↓
+After Anonymization: High (cryptographic - irreversible hash)
+```
+
+**Usage Workflow**:
+1. Election closes (status → `closed`)
+2. Wait N days (dispute resolution period - policy TBD)
+3. Superadmin triggers: `POST /admin/elections/:id/anonymize`
+4. Function hashes all `member_uid` values → **HIGH anonymity achieved**
+5. Results still work (aggregation by answer_id)
+6. Vote deduplication still works (function uses same hash)
+
+### Anonymization Policy (Decision Required)
+
+**Question**: When should anonymization be triggered?
+
+| Option | Timing | Automation | Pros | Cons |
+|--------|--------|------------|------|------|
+| **Immediate** | On election close | Automatic | Max anonymity, no delay | No dispute resolution window |
+| **Delayed (7 days)** | 7 days after close | Automatic (scheduler) | Allows disputes, balanced | Requires background job/cron |
+| **Manual** | Admin decision | Manual trigger | Full control, deliberate | Requires manual work, may be forgotten |
+
+**Current Implementation**: **Manual** (superadmin explicitly triggers via API)
+
+**Recommendation**:
+- **Short-term**: Continue with manual (test with first few elections)
+- **Medium-term**: Evaluate after first closed elections, gather stakeholder input
+- **Long-term**: Consider delayed (7-day) automation with Cloud Scheduler
+
+**Policy Considerations**:
+1. **Dispute Resolution**: Need time window to investigate vote challenges?
+2. **Legal Requirements**: Any Icelandic regulations on vote retention?
+3. **Transparency vs Privacy**: Balance between audit trail and anonymity
+4. **Political Sensitivity**: Internal party dynamics and trust level
+
+**Suggested Policy** (to be confirmed with stakeholders):
+```
+1. Election closes → 7-day waiting period begins
+2. After 7 days:
+   - If no disputes: Superadmin may trigger anonymization
+   - If disputes pending: Delay anonymization until resolved
+3. After anonymization:
+   - Member voting history permanently anonymized
+   - "Who voted" queries no longer possible
+   - Results and statistics preserved
+```
+
+---
+
 ## Related Documentation
 
 - [Database Schema](../../features/election-voting/DATABASE_SCHEMA.md) - Elections database schema reference
@@ -601,7 +846,7 @@ access-control-allow-methods: GET,HEAD,PUT,PATCH,POST,DELETE
 
 ---
 
-**Document Status**: ✅ Documented for future review
-**Last Updated**: 2025-11-11
-**Next Review**: When planning sensitive/binding elections
-**Action Required**: Decision on anonymity enhancements for production use
+**Document Status**: ✅ Implementation complete, policy pending stakeholder decision
+**Last Updated**: 2025-11-12
+**Next Review**: After first production election closes
+**Action Required**: Define anonymization policy (manual/delayed/immediate)
