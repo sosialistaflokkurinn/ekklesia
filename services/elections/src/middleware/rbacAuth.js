@@ -11,6 +11,7 @@
  */
 
 const admin = require('../firebase'); // Use initialized Firebase Admin SDK
+const logger = require('../utils/logger');
 
 /**
  * Verify Firebase ID token and extract user claims
@@ -74,7 +75,7 @@ async function verifyFirebaseToken(req, res, next) {
 
     next();
   } catch (error) {
-    console.error('RBAC: Token verification failed', {
+    logger.error('RBAC: Token verification failed', {
       error: error.message,
       path: req.path,
       method: req.method,
@@ -100,7 +101,7 @@ async function verifyFirebaseToken(req, res, next) {
  */
 function requireElectionManager(req, res, next) {
   if (!req.user) {
-    console.error('RBAC: requireElectionManager called without req.user');
+    logger.error('RBAC: requireElectionManager called without req.user');
     return res.status(500).json({
       error: 'Internal Server Error',
       message: 'RBAC middleware misconfigured',
@@ -149,7 +150,7 @@ function requireElectionManager(req, res, next) {
  */
 function requireSuperadmin(req, res, next) {
   if (!req.user) {
-    console.error('RBAC: requireSuperadmin called without req.user');
+    logger.error('RBAC: requireSuperadmin called without req.user');
     return res.status(500).json({
       error: 'Internal Server Error',
       message: 'RBAC middleware misconfigured',

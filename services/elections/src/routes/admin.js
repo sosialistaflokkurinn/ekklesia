@@ -17,6 +17,7 @@ const {
 const { logAudit } = require('../services/auditService');
 const { hashUidForLogging } = require('../utils/hashUid');
 const { adminLimiter } = require('../middleware/rateLimiter');
+const logger = require('../utils/logger');
 
 const router = express.Router();
 
@@ -145,7 +146,7 @@ router.get('/elections', requireElectionManager, async (req, res) => {
     });
   } catch (error) {
     const duration = Date.now() - startTime;
-    console.error('[Admin] List elections error:', error);
+    logger.error('[Admin] List elections error:', { error: error.message, stack: error.stack });
     logAudit('list_elections', false, {
       uid_hash: hashUidForLogging(req.user.uid),
       error: error.message,
@@ -293,7 +294,7 @@ router.post('/elections', requireElectionManager, async (req, res) => {
     });
   } catch (error) {
     const duration = Date.now() - startTime;
-    console.error('[Admin] Create election error:', error);
+    logger.error('[Admin] Create election error:', { error: error.message, stack: error.stack });
     logAudit('create_election', false, {
       uid_hash: hashUidForLogging(req.user.uid),
       error: error.message,
@@ -332,7 +333,7 @@ router.get('/elections/:id', requireElectionManager, async (req, res) => {
       election: result.rows[0],
     });
   } catch (error) {
-    console.error('[Admin] Get election error:', error);
+    logger.error('[Admin] Get election error:', { error: error.message, stack: error.stack });
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to get election',
@@ -522,7 +523,7 @@ router.patch('/elections/:id', requireElectionManager, async (req, res) => {
     });
   } catch (error) {
     const duration = Date.now() - startTime;
-    console.error('[Admin] Update election error:', error);
+    logger.error('[Admin] Update election error:', { error: error.message, stack: error.stack });
     logAudit('update_election', false, {
       uid_hash: hashUidForLogging(req.user.uid),
       election_id: id,
@@ -605,7 +606,7 @@ router.post('/elections/:id/open', requireElectionManager, async (req, res) => {
     });
   } catch (error) {
     const duration = Date.now() - startTime;
-    console.error('[Admin] Open election error:', error);
+    logger.error('[Admin] Open election error:', { error: error.message, stack: error.stack });
     logAudit('open_election', false, {
       uid_hash: hashUidForLogging(req.user.uid),
       election_id: id,
@@ -681,7 +682,7 @@ router.post('/elections/:id/close', requireElectionManager, async (req, res) => 
     });
   } catch (error) {
     const duration = Date.now() - startTime;
-    console.error('[Admin] Close election error:', error);
+    logger.error('[Admin] Close election error:', { error: error.message, stack: error.stack });
     logAudit('close_election', false, {
       uid_hash: hashUidForLogging(req.user.uid),
       election_id: id,
@@ -755,7 +756,7 @@ router.post('/elections/:id/hide', requireElectionManager, async (req, res) => {
     });
   } catch (error) {
     const duration = Date.now() - startTime;
-    console.error('[Admin] Hide election error:', error);
+    logger.error('[Admin] Hide election error:', { error: error.message, stack: error.stack });
     logAudit('hide_election', false, {
       uid_hash: hashUidForLogging(req.user.uid),
       election_id: id,
@@ -829,7 +830,7 @@ router.post('/elections/:id/unhide', requireElectionManager, async (req, res) =>
     });
   } catch (error) {
     const duration = Date.now() - startTime;
-    console.error('[Admin] Unhide election error:', error);
+    logger.error('[Admin] Unhide election error:', { error: error.message, stack: error.stack });
     logAudit('unhide_election', false, {
       uid_hash: hashUidForLogging(req.user.uid),
       election_id: id,
@@ -900,7 +901,7 @@ router.delete('/elections/:id', requireSuperadmin, async (req, res) => {
     });
   } catch (error) {
     const duration = Date.now() - startTime;
-    console.error('[Admin] Delete election error:', error);
+    logger.error('[Admin] Delete election error:', { error: error.message, stack: error.stack });
     logAudit('delete_election', false, {
       uid_hash: hashUidForLogging(req.user.uid),
       election_id: id,
@@ -1001,7 +1002,7 @@ router.get('/elections/:id/results', requireElectionManager, async (req, res) =>
     res.json(results);
   } catch (error) {
     const duration = Date.now() - startTime;
-    console.error('[Admin] Get results error:', error);
+    logger.error('[Admin] Get results error:', { error: error.message, stack: error.stack });
     logAudit('get_results', false, {
       uid_hash: hashUidForLogging(req.user.uid),
       election_id: id,
@@ -1030,7 +1031,7 @@ router.post('/elections/:id/anonymize', requireSuperadmin, async (req, res) => {
 
   // Check ANONYMIZATION_SALT is configured
   if (!secretSalt) {
-    console.error('[Admin] ANONYMIZATION_SALT not configured');
+    logger.error('[Admin] ANONYMIZATION_SALT not configured');
     return res.status(500).json({
       error: 'Internal Server Error',
       message: 'ANONYMIZATION_SALT not configured - cannot proceed with anonymization',
@@ -1083,7 +1084,7 @@ router.post('/elections/:id/anonymize', requireSuperadmin, async (req, res) => {
 
   } catch (error) {
     const duration = Date.now() - startTime;
-    console.error('[Admin] Anonymization failed:', error);
+    logger.error('[Admin] Anonymization failed:', { error: error.message, stack: error.stack });
     logAudit('anonymize_election', false, {
       uid_hash: hashUidForLogging(req.user.uid),
       election_id: id,

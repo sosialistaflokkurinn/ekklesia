@@ -1,4 +1,5 @@
 const { Pool } = require('pg');
+const logger = require('../utils/logger');
 
 // Database connection pool configuration
 // Optimized for 300 votes/sec spike (see USAGE_CONTEXT.md)
@@ -30,7 +31,7 @@ const pool = new Pool({
 
 // Pool error handler (graceful degradation)
 pool.on('error', (err, client) => {
-  console.error('Unexpected error on idle client:', {
+  logger.error('Unexpected error on idle client', {
     error: err.message,
     code: err.code,
     timestamp: new Date().toISOString()
@@ -40,7 +41,7 @@ pool.on('error', (err, client) => {
   // Only exit for unrecoverable errors (database completely down)
   if (err.code === 'ECONNREFUSED' || err.code === '57P03') {
     // Database is unreachable - exit and let Cloud Run restart with backoff
-    console.error('[FATAL] Database unreachable, exiting...');
+    logger.error('[FATAL] Database unreachable, exiting...');
     setTimeout(() => process.exit(1), 1000); // Give time to flush logs
   }
 
@@ -83,7 +84,9 @@ process.on('SIGINT', async () => {
 // Test connection on startup
 pool.query('SELECT NOW() as current_time', (err, res) => {
   if (err) {
-    console.error('[DB] Failed to connect to database:', err.message);
+    logger.error('[DB] Failed to connect to database', {
+      error: err.message,
+    });
     process.exit(1);
   }
   console.log('[DB] Successfully connected to database');

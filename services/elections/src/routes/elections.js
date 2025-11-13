@@ -359,15 +359,6 @@ router.post('/elections/:id/vote', voteLimiter, verifyMemberToken, async (req, r
     await client.query('ROLLBACK');
     const duration = Date.now() - startTime;
 
-    // Console logging for Cloud Run
-    console.error('[VOTE ERROR]', {
-      message: error.message,
-      stack: error.stack,
-      election_id: id,
-      uid: req.user?.uid,
-      answer_ids,
-    });
-
     // Enhanced error logging for debugging
     logger.error('[Member API] Vote submission error:', {
       error: error.message,

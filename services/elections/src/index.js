@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { version } = require('../package.json');
+const logger = require('./utils/logger');
 
 const electionsRouter = require('./routes/elections');
 const adminRouter = require('./routes/admin'); // Admin CRUD routes (Issue #192)
@@ -99,7 +100,7 @@ app.use((err, req, res, next) => {
     });
   }
 
-  console.error('[Error]', err);
+  logger.error('[Error] Global error handler:', { error: err.message, stack: err.stack, type: err.type });
   res.status(500).json({
     error: 'Internal Server Error',
     message: process.env.NODE_ENV === 'production'

@@ -14,6 +14,7 @@
 
 const admin = require('../firebase'); // Use initialized Firebase Admin SDK
 const pool = require('../config/database');
+const logger = require('../utils/logger');
 
 /**
  * Verify Firebase ID token and extract user info
@@ -58,7 +59,9 @@ async function verifyMemberToken(req, res, next) {
 
     next();
   } catch (error) {
-    console.error('[MemberAuth] Token verification failed:', error.message);
+    logger.error('[MemberAuth] Token verification failed', {
+      error: error.message,
+    });
 
     return res.status(401).json({
       error: 'Unauthorized',
@@ -111,7 +114,11 @@ async function hasVoted(electionId, memberUid) {
 
     return result.rows[0]?.has_voted || false;
   } catch (error) {
-    console.error('[MemberAuth] Error checking vote status:', error);
+    logger.error('[MemberAuth] Error checking vote status', {
+      error: error.message,
+      electionId,
+      memberUid,
+    });
     return false; // Fail safe: assume not voted
   }
 }

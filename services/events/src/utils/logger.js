@@ -153,16 +153,18 @@ function createLogger() {
     );
   }
 
+  // Create sanitization format (replaces deprecated rewriters)
+  const sanitizationFormat = winston.format((info) => {
+    return sanitizePII(info);
+  })();
+
   const logger = winston.createLogger({
     level: process.env.LOG_LEVEL || 'info',
-    format: baseFormat,
+    format: winston.format.combine(
+      sanitizationFormat,
+      baseFormat
+    ),
     transports,
-    // Sanitize all log data
-    rewriters: [
-      (info) => {
-        return sanitizePII(info);
-      }
-    ],
   });
 
   return logger;

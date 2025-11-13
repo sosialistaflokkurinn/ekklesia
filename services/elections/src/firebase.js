@@ -1,15 +1,16 @@
 /**
  * Firebase Admin SDK Initialization
- * 
+ *
  * Initializes Firebase Admin SDK for server-side operations
  * Used by: rbacAuth.js, appCheck.js
- * 
+ *
  * Service Account:
  * - Production: Uses Application Default Credentials (ADC)
  * - Local: Set GOOGLE_APPLICATION_CREDENTIALS env var
  */
 
 const admin = require('firebase-admin');
+const logger = require('./utils/logger');
 
 // Initialize Firebase Admin SDK once
 if (!admin.apps.length) {
@@ -25,7 +26,9 @@ if (!admin.apps.length) {
       credential: process.env.GOOGLE_APPLICATION_CREDENTIALS ? 'Service Account Key' : 'ADC (Auto)',
     });
   } catch (error) {
-    console.error('❌ Failed to initialize Firebase Admin SDK:', error.message);
+    logger.error('Failed to initialize Firebase Admin SDK', {
+      error: error.message,
+    });
     throw error;
   }
 }
