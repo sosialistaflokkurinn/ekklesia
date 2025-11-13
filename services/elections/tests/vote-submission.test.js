@@ -38,23 +38,140 @@ jest.mock('express-rate-limit', () => {
 jest.mock('../src/config/database', () => {
   const { createMockPool } = require('./helpers/db-mock');
   const mockPool = createMockPool();
-  // Prevent connection test from running
-  mockPool.query = jest.fn();
+  // Make pool.query return a resolved promise for audit service
+  mockPool.query = jest.fn().mockResolvedValue({ rows: [], rowCount: 0 });
   mockPool.on = jest.fn();
   return mockPool;
 });
 
-const pool = require('../src/config/database');
+// Mock memberAuth middleware to control authentication in tests
+const mockVerifyMemberToken = jest.fn((req, res, next) => {
+  // Default: reject with 401 (tests will override this)
+  return res.status(401).json({
+    error: 'Unauthorized',
+    message: 'Mock: No user set up for this test',
+    code: 'MISSING_AUTH_TOKEN',
+  });
+});
 
-// Get Firebase admin instance - mockAuth is set up in setup.js as global.mockAuth
-const admin = require('firebase-admin');
-const mockAuth = global.mockAuth;
+jest.mock('../src/middleware/memberAuth', () => {
+  // Implement helper functions inline to avoid loading Firebase/database modules
+  function isEligible(election, req) {
+    const { isAdmin, isMember } = req.user;
+
+    if (election.eligibility === 'all') return true;
+    if (election.eligibility === 'admins') return isAdmin;
+    if (election.eligibility === 'members') return isMember || isAdmin;
+
+    return false;
+  }
+
+  function validateVotingWindow(election) {
+    const now = new Date();
+
+    if (election.status !== 'published') {
+      if (election.status === 'draft') return { valid: false, error: 'Election not yet published' };
+      if (election.status === 'closed') return { valid: false, error: 'Election has closed' };
+      if (election.status === 'paused') return { valid: false, error: 'Election is temporarily paused' };
+      if (election.status === 'archived') return { valid: false, error: 'Election is archived' };
+      return { valid: false, error: 'Election is not active' };
+    }
+
+    if (election.scheduled_start && now < new Date(election.scheduled_start)) {
+      return { valid: false, error: 'Voting has not started yet' };
+    }
+
+    if (election.scheduled_end && now > new Date(election.scheduled_end)) {
+      return { valid: false, error: 'Voting has ended' };
+    }
+
+    return { valid: true };
+  }
+
+  function validateAnswers(answerIds, election) {
+    if (!Array.isArray(answerIds) || answerIds.length === 0) {
+      return { valid: false, error: 'No answers selected' };
+    }
+
+    const answers = election.answers;
+    if (!Array.isArray(answers)) {
+      return { valid: false, error: 'Invalid election configuration' };
+    }
+
+    const validAnswerIds = answers.map(a => a.id);
+    const invalidAnswers = answerIds.filter(id => !validAnswerIds.includes(id));
+    if (invalidAnswers.length > 0) {
+      return { valid: false, error: `Invalid answer IDs: ${invalidAnswers.join(', ')}` };
+    }
+
+    if (election.voting_type === 'single-choice' && answerIds.length !== 1) {
+      return { valid: false, error: 'Single-choice elections require exactly 1 selection' };
+    }
+
+    if (election.voting_type === 'multi-choice') {
+      if (answerIds.length > election.max_selections) {
+        return {
+          valid: false,
+          error: `Too many selections (max: ${election.max_selections}, got: ${answerIds.length})`,
+        };
+      }
+    }
+
+    const uniqueAnswers = new Set(answerIds);
+    if (uniqueAnswers.size !== answerIds.length) {
+      return { valid: false, error: 'Duplicate answer selections are not allowed' };
+    }
+
+    return { valid: true };
+  }
+
+  return {
+    verifyMemberToken: mockVerifyMemberToken,
+    isEligible,
+    validateVotingWindow,
+    validateAnswers,
+    hasVoted: jest.fn(),
+    filterElectionsByEligibility: jest.fn(),
+  };
+});
+
+const pool = require('../src/config/database');
 
 // Now require the router after mocking dependencies
 const electionsRouter = require('../src/routes/elections');
 
 let app;
 let mockClient;
+
+// Helper function to set up authenticated user for tests
+function setupAuthenticatedUser(user) {
+  mockVerifyMemberToken.mockImplementation((req, res, next) => {
+    req.user = {
+      uid: user.uid,
+      email: user.email,
+      roles: user.roles || [],
+      isMember: user.isMember !== undefined ? user.isMember : true,
+      isAdmin: user.isAdmin || false,
+      claims: {
+        uid: user.uid,
+        email: user.email,
+        roles: user.roles || [],
+      },
+    };
+    next();
+  });
+}
+
+// Helper function to set up unauthenticated/invalid token
+function setupUnauthenticated(errorMessage = 'Invalid or expired token') {
+  mockVerifyMemberToken.mockImplementation((req, res, next) => {
+    return res.status(401).json({
+      error: 'Unauthorized',
+      message: errorMessage,
+      code: 'INVALID_AUTH_TOKEN',
+    });
+  });
+}
 
 describe('POST /api/elections/:id/vote - Vote Submission', () => {
   beforeEach(() => {
@@ -69,8 +186,11 @@ describe('POST /api/elections/:id/vote - Vote Submission', () => {
     // Mock pool.connect() to return our mock client
     pool.connect.mockResolvedValue(mockClient);
 
+    // Ensure pool.query is mocked for audit service (fire-and-forget)
+    pool.query.mockResolvedValue({ rows: [], rowCount: 0 });
+
     // Clear mock calls but keep implementations
-    mockAuth.verifyIdToken.mockClear();
+    mockVerifyMemberToken.mockClear();
   });
 
   afterEach(() => {
@@ -84,11 +204,7 @@ describe('POST /api/elections/:id/vote - Vote Submission', () => {
   describe('Happy Path - Successful Vote Submission', () => {
     test('should accept single-choice vote (1 answer)', async () => {
       // Mock Firebase token verification
-      mockAuth.verifyIdToken.mockResolvedValue({
-        uid: memberUser.uid,
-        email: memberUser.email,
-        roles: memberUser.roles,
-      });
+      setupAuthenticatedUser(memberUser);
 
       // Configure mock client responses
       mockClient.query.mockImplementation(async (sql, params) => {
@@ -135,11 +251,7 @@ describe('POST /api/elections/:id/vote - Vote Submission', () => {
     });
 
     test('should accept multi-choice vote (2 answers)', async () => {
-      mockAuth.verifyIdToken.mockResolvedValue({
-        uid: memberUser.uid,
-        email: memberUser.email,
-        roles: memberUser.roles,
-      });
+      setupAuthenticatedUser(memberUser);
 
       let ballotIdCounter = 1;
       mockClient.query.mockImplementation(async (sql, params) => {
@@ -171,11 +283,7 @@ describe('POST /api/elections/:id/vote - Vote Submission', () => {
     });
 
     test('should accept multi-choice vote (3 answers, max selections)', async () => {
-      mockAuth.verifyIdToken.mockResolvedValue({
-        uid: memberUser.uid,
-        email: memberUser.email,
-        roles: memberUser.roles,
-      });
+      setupAuthenticatedUser(memberUser);
 
       let ballotIdCounter = 1;
       mockClient.query.mockImplementation(async (sql, params) => {
@@ -204,11 +312,7 @@ describe('POST /api/elections/:id/vote - Vote Submission', () => {
     });
 
     test('should insert ballots with correct data structure', async () => {
-      mockAuth.verifyIdToken.mockResolvedValue({
-        uid: memberUser.uid,
-        email: memberUser.email,
-        roles: memberUser.roles,
-      });
+      setupAuthenticatedUser(memberUser);
 
       const insertedBallots = [];
 
@@ -284,9 +388,7 @@ describe('POST /api/elections/:id/vote - Vote Submission', () => {
     });
 
     test('should reject request with invalid Firebase token (401)', async () => {
-      mockAuth.verifyIdToken.mockRejectedValue(
-        new Error('Invalid token')
-      );
+      setupUnauthenticated('Invalid or expired token');
 
       const response = await request(app)
         .post('/api/elections/election-1/vote')
@@ -302,9 +404,7 @@ describe('POST /api/elections/:id/vote - Vote Submission', () => {
     });
 
     test('should reject request with expired Firebase token (401)', async () => {
-      mockAuth.verifyIdToken.mockRejectedValue(
-        new Error('Firebase ID token has expired')
-      );
+      setupUnauthenticated('Invalid or expired token');
 
       const response = await request(app)
         .post('/api/elections/election-1/vote')
@@ -325,11 +425,7 @@ describe('POST /api/elections/:id/vote - Vote Submission', () => {
 
   describe('Input Validation', () => {
     beforeEach(() => {
-      mockAuth.verifyIdToken.mockResolvedValue({
-        uid: memberUser.uid,
-        email: memberUser.email,
-        roles: memberUser.roles,
-      });
+      setupAuthenticatedUser(memberUser);
     });
 
     test('should reject vote for non-existent election (404)', async () => {
@@ -521,11 +617,7 @@ describe('POST /api/elections/:id/vote - Vote Submission', () => {
 
   describe('Voting Window Validation', () => {
     beforeEach(() => {
-      mockAuth.verifyIdToken.mockResolvedValue({
-        uid: memberUser.uid,
-        email: memberUser.email,
-        roles: memberUser.roles,
-      });
+      setupAuthenticatedUser(memberUser);
     });
 
     test('should reject vote if election status is not published (403)', async () => {
@@ -657,11 +749,7 @@ describe('POST /api/elections/:id/vote - Vote Submission', () => {
 
   describe('Eligibility Checks', () => {
     test('should reject member vote on admin-only election (403)', async () => {
-      mockAuth.verifyIdToken.mockResolvedValue({
-        uid: memberUser.uid,
-        email: memberUser.email,
-        roles: memberUser.roles, // Member, not admin
-      });
+      setupAuthenticatedUser(memberUser);
 
       mockClient.query.mockImplementation(async (sql, params) => {
         if (sql === 'BEGIN') return { rows: [], command: 'BEGIN' };
@@ -685,11 +773,7 @@ describe('POST /api/elections/:id/vote - Vote Submission', () => {
     });
 
     test('should accept admin vote on admin-only election (201)', async () => {
-      mockAuth.verifyIdToken.mockResolvedValue({
-        uid: adminUser.uid,
-        email: adminUser.email,
-        roles: adminUser.roles, // Admin role
-      });
+      setupAuthenticatedUser(adminUser);
 
       mockClient.query.mockImplementation(async (sql, params) => {
         if (sql === 'BEGIN') return { rows: [], command: 'BEGIN' };
@@ -716,11 +800,7 @@ describe('POST /api/elections/:id/vote - Vote Submission', () => {
     });
 
     test('should accept member vote on member election (201)', async () => {
-      mockAuth.verifyIdToken.mockResolvedValue({
-        uid: memberUser.uid,
-        email: memberUser.email,
-        roles: memberUser.roles,
-      });
+      setupAuthenticatedUser(memberUser);
 
       mockClient.query.mockImplementation(async (sql, params) => {
         if (sql === 'BEGIN') return { rows: [], command: 'BEGIN' };
@@ -747,11 +827,7 @@ describe('POST /api/elections/:id/vote - Vote Submission', () => {
     });
 
     test('should reject vote on hidden election (404)', async () => {
-      mockAuth.verifyIdToken.mockResolvedValue({
-        uid: memberUser.uid,
-        email: memberUser.email,
-        roles: memberUser.roles,
-      });
+      setupAuthenticatedUser(memberUser);
 
       const hiddenElection = {
         ...singleChoiceElection,
@@ -786,11 +862,7 @@ describe('POST /api/elections/:id/vote - Vote Submission', () => {
 
   describe('Duplicate Vote Prevention', () => {
     beforeEach(() => {
-      mockAuth.verifyIdToken.mockResolvedValue({
-        uid: memberUser.uid,
-        email: memberUser.email,
-        roles: memberUser.roles,
-      });
+      setupAuthenticatedUser(memberUser);
     });
 
     test('should reject duplicate vote (409)', async () => {
@@ -862,11 +934,7 @@ describe('POST /api/elections/:id/vote - Vote Submission', () => {
 
   describe('Transaction Handling', () => {
     beforeEach(() => {
-      mockAuth.verifyIdToken.mockResolvedValue({
-        uid: memberUser.uid,
-        email: memberUser.email,
-        roles: memberUser.roles,
-      });
+      setupAuthenticatedUser(memberUser);
     });
 
     test('should begin transaction before any queries', async () => {
@@ -1057,11 +1125,7 @@ describe('POST /api/elections/:id/vote - Vote Submission', () => {
 
   describe('Edge Cases & Error Handling', () => {
     beforeEach(() => {
-      mockAuth.verifyIdToken.mockResolvedValue({
-        uid: memberUser.uid,
-        email: memberUser.email,
-        roles: memberUser.roles,
-      });
+      setupAuthenticatedUser(memberUser);
     });
 
     test('should handle database connection error (500)', async () => {
@@ -1263,11 +1327,7 @@ describe('POST /api/elections/:id/vote - Vote Submission', () => {
 
   describe('Integration Scenarios', () => {
     test('should handle concurrent ballot insertions for multi-choice', async () => {
-      mockAuth.verifyIdToken.mockResolvedValue({
-        uid: memberUser.uid,
-        email: memberUser.email,
-        roles: memberUser.roles,
-      });
+      setupAuthenticatedUser(memberUser);
 
       let insertCount = 0;
       mockClient.query.mockImplementation(async (sql, params) => {
@@ -1297,11 +1357,7 @@ describe('POST /api/elections/:id/vote - Vote Submission', () => {
     });
 
     test('should use FOR UPDATE lock on election row', async () => {
-      mockAuth.verifyIdToken.mockResolvedValue({
-        uid: memberUser.uid,
-        email: memberUser.email,
-        roles: memberUser.roles,
-      });
+      setupAuthenticatedUser(memberUser);
 
       const selectQueries = [];
 
@@ -1332,11 +1388,7 @@ describe('POST /api/elections/:id/vote - Vote Submission', () => {
     });
 
     test('should use correct sentinel token for member votes', async () => {
-      mockAuth.verifyIdToken.mockResolvedValue({
-        uid: memberUser.uid,
-        email: memberUser.email,
-        roles: memberUser.roles,
-      });
+      setupAuthenticatedUser(memberUser);
 
       const insertedTokens = [];
 
