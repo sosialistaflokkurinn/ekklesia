@@ -16,10 +16,12 @@ const {
 } = require('../middleware/rbacAuth');
 const { logAudit } = require('../services/auditService');
 const { hashUidForLogging } = require('../utils/hashUid');
+const { adminLimiter } = require('../middleware/rateLimiter');
 
 const router = express.Router();
 
-// Apply Firebase token verification to all admin routes
+// Apply rate limiting and Firebase token verification to all admin routes
+router.use(adminLimiter);
 router.use(verifyFirebaseToken);
 
 // =====================================================

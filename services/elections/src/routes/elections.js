@@ -14,6 +14,7 @@ const {
   validateAnswers,
   isEligible,
 } = require('../middleware/memberAuth');
+const { readLimiter, voteLimiter, writeLimiter } = require('../middleware/rateLimiter');
 
 const router = express.Router();
 
@@ -32,7 +33,7 @@ const router = express.Router();
 // =====================================================
 // GET /api/elections - List Elections for Member
 // =====================================================
-router.get('/elections', verifyMemberToken, async (req, res) => {
+router.get('/elections', readLimiter, verifyMemberToken, async (req, res) => {
   const startTime = Date.now();
   const {
     status,
@@ -140,7 +141,7 @@ router.get('/elections', verifyMemberToken, async (req, res) => {
 // =====================================================
 // GET /api/elections/:id - Get Election Details
 // =====================================================
-router.get('/elections/:id', verifyMemberToken, async (req, res) => {
+router.get('/elections/:id', readLimiter, verifyMemberToken, async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -214,7 +215,7 @@ router.get('/elections/:id', verifyMemberToken, async (req, res) => {
 // =====================================================
 // POST /api/elections/:id/vote - Submit Vote
 // =====================================================
-router.post('/elections/:id/vote', verifyMemberToken, async (req, res) => {
+router.post('/elections/:id/vote', voteLimiter, verifyMemberToken, async (req, res) => {
   const startTime = Date.now();
   const { id } = req.params;
   const { answer_ids } = req.body;
@@ -397,7 +398,7 @@ router.post('/elections/:id/vote', verifyMemberToken, async (req, res) => {
 // =====================================================
 // GET /api/elections/:id/results - Get Election Results
 // =====================================================
-router.get('/elections/:id/results', verifyMemberToken, async (req, res) => {
+router.get('/elections/:id/results', readLimiter, verifyMemberToken, async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -515,7 +516,7 @@ router.get('/elections/:id/results', verifyMemberToken, async (req, res) => {
 // Body: { token_hash: string }
 // Headers: X-API-Key: <shared-secret>
 
-router.post('/s2s/register-token', authenticateS2S, async (req, res) => {
+router.post('/s2s/register-token', writeLimiter, authenticateS2S, async (req, res) => {
   const startTime = Date.now();
   const correlation_id = crypto.randomUUID(); // Random ID for request tracing (no PII)
   const { token_hash } = req.body;
@@ -589,7 +590,7 @@ router.post('/s2s/register-token', authenticateS2S, async (req, res) => {
 // GET /api/s2s/results
 // Headers: X-API-Key: <shared-secret>
 
-router.get('/s2s/results', authenticateS2S, async (req, res) => {
+router.get('/s2s/results', readLimiter, authenticateS2S, async (req, res) => {
   const startTime = Date.now();
 
   try {
@@ -652,7 +653,7 @@ router.get('/s2s/results', authenticateS2S, async (req, res) => {
 // Security: Firebase App Check verification (monitor-only mode)
 // After 1-2 days of monitoring, switch to verifyAppCheck for enforcement
 
-router.post('/vote', verifyAppCheckOptional, async (req, res) => {
+router.post('/vote', voteLimiter, verifyAppCheckOptional, async (req, res) => {
   const startTime = Date.now();
   const correlation_id = crypto.randomUUID(); // Random ID for request tracing (no PII)
 
@@ -786,7 +787,7 @@ router.post('/vote', verifyAppCheckOptional, async (req, res) => {
 //
 // Security: Firebase App Check verification (monitor-only mode)
 
-router.get('/token-status', verifyAppCheckOptional, async (req, res) => {
+router.get('/token-status', readLimiter, verifyAppCheckOptional, async (req, res) => {
   // Extract token from Authorization header
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
