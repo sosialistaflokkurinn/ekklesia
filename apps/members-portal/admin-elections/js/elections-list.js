@@ -6,6 +6,7 @@
 import { getFirebaseAuth } from '../../firebase/app.js';
 import { getElectionRole, canPerformAction, requireAdmin, PERMISSIONS, hasPermission } from '../../js/rbac.js';
 import { R } from '../i18n/strings-loader.js';
+import { initElectionsListStrings } from './elections-list-i18n.js';
 import { initNavigation } from '../../js/nav.js';
 import { createStatusBadge } from '../../js/components/badge.js';
 import { showModal } from '../../js/components/modal.js';
@@ -40,9 +41,9 @@ let userPermissions = {
 
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    // Load i18n strings FIRST and wait for it to complete
-    await R.load('is');
-    debug.log('[Elections List] i18n strings loaded');
+    // Load and initialize i18n strings FIRST
+    await initElectionsListStrings();
+    debug.log('[Elections List] i18n strings initialized');
     
     // Wait for auth to be ready
     auth.onAuthStateChanged(async (user) => {
@@ -90,72 +91,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function initialize() {
-  initializeUITexts();
+  // Static UI texts are already initialized by initElectionsListStrings()
   initializeNavigation();
   setupFilters();
   setupSearch();
   setupCreateButton();
-  
+
   // Load elections
   await loadElections();
-}
-
-/**
- * Initialize all UI texts with i18n strings
- */
-function initializeUITexts() {
-  // Page title
-  document.getElementById('page-title').textContent = R.string.admin_elections_title || 'Kosningar - Admin';
-
-  // Filter buttons
-  document.getElementById('filter-all').textContent = R.string.filter_all || 'Allar';
-  document.getElementById('filter-draft').textContent = R.string.filter_draft || 'Drög';
-  document.getElementById('filter-published').textContent = R.string.filter_published || 'Opnar';
-  document.getElementById('filter-closed').textContent = R.string.filter_closed || 'Lokaðar';
-  document.getElementById('filter-hidden').textContent = R.string.filter_hidden || 'Faldar';
-  
-  // Search
-  const searchInput = document.getElementById('search-input');
-  if (searchInput) {
-    searchInput.placeholder = R.string.search_placeholder || 'Leita...';
-  }
-  
-  // Create button
-  const createBtn = document.getElementById('create-election-btn');
-  if (createBtn) {
-    createBtn.textContent = R.string.btn_create_election || '+ Búa til kosningu';
-  }
-  
-  // Table headers
-  document.getElementById('table-header-title').textContent = R.string.table_header_title || 'Heiti';
-  document.getElementById('table-header-status').textContent = R.string.table_header_status || 'Staða';
-  document.getElementById('table-header-dates').textContent = R.string.table_header_dates || 'Dagsetningar';
-  document.getElementById('table-header-votes').textContent = R.string.table_header_votes || 'Atkvæði';
-  document.getElementById('table-header-actions').textContent = R.string.table_header_actions || 'Aðgerðir';
-  
-  // Loading text
-  document.getElementById('loading-text').textContent = R.string.loading_elections || 'Hleð kosningum...';
-  
-  debug.log('[Elections List] UI texts initialized');
 }
 
 /**
  * Initialize navigation with hamburger menu
  */
 function initializeNavigation() {
-  // Defensive check: Ensure strings are loaded
-  if (!R.string || !R.string.admin_elections_brand) {
-    console.error('[Elections List] i18n strings not loaded yet!');
-    return;
-  }
-  
-  // Set navigation texts (Elections-specific nav)
-  document.getElementById('nav-brand').textContent = R.string.admin_elections_brand;
-  document.getElementById('nav-elections-list').textContent = R.string.nav_elections_list;
-  document.getElementById('nav-back-to-member').textContent = R.string.admin_nav_back_to_member;
-  document.getElementById('nav-logout').textContent = R.string.admin_nav_logout;
-  
-  debug.log('[Elections List] Navigation initialized');
+  // Navigation texts are already initialized by initElectionsListStrings()
+
+  debug.log('[Elections List] Navigation setup');
   
   // Initialize hamburger menu behavior
   initNavigation();
