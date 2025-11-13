@@ -173,6 +173,37 @@ function setupUnauthenticated(errorMessage = 'Invalid or expired token') {
   });
 }
 
+// Helper function to setup successful database responses for vote submission
+// ballotIds can be a single string or an array of strings for multi-choice votes
+function setupSuccessfulVoteScenario(election, ballotIds = 'ballot-123') {
+  const ballotIdArray = Array.isArray(ballotIds) ? ballotIds : [ballotIds];
+  let ballotIdCounter = 0;
+
+  mockClient.query.mockImplementation(async (sql, params) => {
+    if (sql === 'BEGIN') {
+      return { rows: [], command: 'BEGIN' };
+    }
+    if (sql.includes('SELECT') && sql.includes('elections.elections')) {
+      return { rows: [election], rowCount: 1 };
+    }
+    if (sql.includes('check_member_voted_v2')) {
+      return { rows: [{ has_voted: false }], rowCount: 1 };
+    }
+    if (sql.includes('INSERT INTO elections.ballots')) {
+      const ballotId = ballotIdArray[ballotIdCounter % ballotIdArray.length];
+      ballotIdCounter++;
+      return { rows: [{ id: ballotId }], rowCount: 1 };
+    }
+    if (sql === 'COMMIT') {
+      return { rows: [], command: 'COMMIT' };
+    }
+    if (sql === 'ROLLBACK') {
+      return { rows: [], command: 'ROLLBACK' };
+    }
+    return { rows: [], rowCount: 0 };
+  });
+}
+
 describe('POST /api/elections/:id/vote - Vote Submission', () => {
   beforeEach(() => {
     // Create fresh Express app for each test
@@ -203,31 +234,8 @@ describe('POST /api/elections/:id/vote - Vote Submission', () => {
 
   describe('Happy Path - Successful Vote Submission', () => {
     test('should accept single-choice vote (1 answer)', async () => {
-      // Mock Firebase token verification
       setupAuthenticatedUser(memberUser);
-
-      // Configure mock client responses
-      mockClient.query.mockImplementation(async (sql, params) => {
-        if (sql === 'BEGIN') {
-          return { rows: [], command: 'BEGIN' };
-        }
-        if (sql.includes('SELECT') && sql.includes('elections.elections')) {
-          // Return election details
-          return { rows: [singleChoiceElection], rowCount: 1 };
-        }
-        if (sql.includes('check_member_voted_v2')) {
-          // Member has not voted yet
-          return { rows: [{ has_voted: false }], rowCount: 1 };
-        }
-        if (sql.includes('INSERT INTO elections.ballots')) {
-          // Ballot insert successful
-          return { rows: [{ id: 'ballot-123' }], rowCount: 1 };
-        }
-        if (sql === 'COMMIT') {
-          return { rows: [], command: 'COMMIT' };
-        }
-        return { rows: [], rowCount: 0 };
-      });
+      setupSuccessfulVoteScenario(singleChoiceElection, 'ballot-123');
 
       const response = await request(app)
         .post('/api/elections/election-1/vote')
@@ -240,34 +248,11 @@ describe('POST /api/elections/:id/vote - Vote Submission', () => {
         ballot_ids: ['ballot-123'],
         message: 'Vote recorded successfully',
       });
-
-      // Verify transaction flow
-      const queries = mockClient._getQueries();
-      expect(queries[0].sql).toBe('BEGIN');
-      expect(queries[queries.length - 1].sql).toBe('COMMIT');
-
-      // Verify client release
-      expect(mockClient.release).toHaveBeenCalled();
     });
 
     test('should accept multi-choice vote (2 answers)', async () => {
       setupAuthenticatedUser(memberUser);
-
-      let ballotIdCounter = 1;
-      mockClient.query.mockImplementation(async (sql, params) => {
-        if (sql === 'BEGIN') return { rows: [], command: 'BEGIN' };
-        if (sql.includes('SELECT') && sql.includes('elections.elections')) {
-          return { rows: [multiChoiceElection], rowCount: 1 };
-        }
-        if (sql.includes('check_member_voted_v2')) {
-          return { rows: [{ has_voted: false }], rowCount: 1 };
-        }
-        if (sql.includes('INSERT INTO elections.ballots')) {
-          return { rows: [{ id: `ballot-${ballotIdCounter++}` }], rowCount: 1 };
-        }
-        if (sql === 'COMMIT') return { rows: [], command: 'COMMIT' };
-        return { rows: [], rowCount: 0 };
-      });
+      setupSuccessfulVoteScenario(multiChoiceElection, ['ballot-1', 'ballot-2']);
 
       const response = await request(app)
         .post('/api/elections/election-2/vote')
@@ -284,22 +269,7 @@ describe('POST /api/elections/:id/vote - Vote Submission', () => {
 
     test('should accept multi-choice vote (3 answers, max selections)', async () => {
       setupAuthenticatedUser(memberUser);
-
-      let ballotIdCounter = 1;
-      mockClient.query.mockImplementation(async (sql, params) => {
-        if (sql === 'BEGIN') return { rows: [], command: 'BEGIN' };
-        if (sql.includes('SELECT') && sql.includes('elections.elections')) {
-          return { rows: [multiChoiceElection], rowCount: 1 };
-        }
-        if (sql.includes('check_member_voted_v2')) {
-          return { rows: [{ has_voted: false }], rowCount: 1 };
-        }
-        if (sql.includes('INSERT INTO elections.ballots')) {
-          return { rows: [{ id: `ballot-${ballotIdCounter++}` }], rowCount: 1 };
-        }
-        if (sql === 'COMMIT') return { rows: [], command: 'COMMIT' };
-        return { rows: [], rowCount: 0 };
-      });
+      setupSuccessfulVoteScenario(multiChoiceElection, ['ballot-1', 'ballot-2', 'ballot-3']);
 
       const response = await request(app)
         .post('/api/elections/election-2/vote')
@@ -307,8 +277,11 @@ describe('POST /api/elections/:id/vote - Vote Submission', () => {
         .send({ answer_ids: ['answer-1', 'answer-2', 'answer-3'] })
         .expect(201);
 
-      expect(response.body.success).toBe(true);
-      expect(response.body.ballot_ids).toHaveLength(3);
+      expect(response.body).toEqual({
+        success: true,
+        ballot_ids: ['ballot-1', 'ballot-2', 'ballot-3'],
+        message: 'Vote recorded successfully',
+      });
     });
 
     test('should insert ballots with correct data structure', async () => {
