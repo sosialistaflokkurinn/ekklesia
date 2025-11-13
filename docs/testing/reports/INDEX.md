@@ -13,6 +13,7 @@
 | [END_TO_END_VOTING_FLOW_TEST.md](./END_TO_END_VOTING_FLOW_TEST.md) | Complete voting flow validation | ✅ Current |
 | [ADMIN_RESET_CHECKLIST.md](./ADMIN_RESET_CHECKLIST.md) | Admin reset testing procedures | ✅ Current |
 | [ADMIN_RESET_TEST_REPORT.md](./ADMIN_RESET_TEST_REPORT.md) | Test results and findings | ✅ Oct 21 |
+| [VOTE_SUBMISSION_TESTS_SESSION_2025-11-13.md](./VOTE_SUBMISSION_TESTS_SESSION_2025-11-13.md) | Vote submission test implementation session | ✅ Nov 13 |
 
 ---
 

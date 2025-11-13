@@ -27,6 +27,10 @@ This category map provides navigation to all testing documentation including tes
 
 ### Testing Guides
 - [Quality & Testing Guide](./standards/QUALITY_TESTING_GUIDE.md) - Testing philosophy and practices
+- [Jest Mocking Best Practices](./testing/guides/JEST_MOCKING_BEST_PRACTICES.md) - Jest mock lifecycle and patterns
+
+### Investigations
+- [Jest Mock Implementation Bug](./testing/investigations/JEST_MOCK_IMPLEMENTATION_BUG.md) - Deep dive into mockClear() vs mockReset()
 
 ### Test Reports
 - [Test Reports Directory](./testing/reports/)
