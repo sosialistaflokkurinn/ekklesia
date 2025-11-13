@@ -148,13 +148,13 @@ export function createPolicyResultsDisplay(options = {}) {
     heading.textContent = `${amendment.voting_order}. ${amendment.section_heading}`;
 
     // Status badge
-    const statusBadge = createBadge({
-      text: amendment.accepted ? strings.acceptedLabel : strings.rejectedLabel,
-      variant: amendment.accepted ? 'success' : 'error'
-    });
-    statusBadge.element.className += ' policy-results__status-badge';
+    const statusBadge = createBadge(
+      amendment.accepted ? strings.acceptedLabel : strings.rejectedLabel,
+      { variant: amendment.accepted ? 'success' : 'error' }
+    );
+    statusBadge.className += ' policy-results__status-badge';
 
-    heading.appendChild(statusBadge.element);
+    heading.appendChild(statusBadge);
     card.appendChild(heading);
 
     // Vote counts
@@ -187,13 +187,13 @@ export function createPolicyResultsDisplay(options = {}) {
     card.className = 'policy-results__card policy-results__card--final';
 
     // Status badge
-    const statusBadge = createBadge({
-      text: finalResults.approved ? strings.approvedLabel : strings.notApprovedLabel,
-      variant: finalResults.approved ? 'success' : 'error'
-    });
-    statusBadge.element.className += ' policy-results__status-badge';
+    const statusBadge = createBadge(
+      finalResults.approved ? strings.approvedLabel : strings.notApprovedLabel,
+      { variant: finalResults.approved ? 'success' : 'error' }
+    );
+    statusBadge.className += ' policy-results__status-badge';
 
-    card.appendChild(statusBadge.element);
+    card.appendChild(statusBadge);
 
     // Vote counts
     const votesDiv = document.createElement('div');

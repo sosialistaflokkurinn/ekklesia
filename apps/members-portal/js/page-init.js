@@ -82,12 +82,18 @@ export function updateNavigation() {
 export function setupLogout() {
   document.getElementById('nav-logout').addEventListener('click', async (e) => {
     e.preventDefault();
-    await signOut();
-    // Redirect to home page after logout.
-    // NOTE: This is a deliberate change from the previous behavior, which redirected to '/session/login.html'.
-    // Rationale: After logout, users are sent to the home page ('/') which now provides a clear login option.
-    // This improves user experience and ensures users can easily log in again if desired.
-    window.location.href = '/';
+    try {
+      // Redirect to home page after logout.
+      // NOTE: This is a deliberate change from the previous behavior, which redirected to '/session/login.html'.
+      // Rationale: After logout, users are sent to the home page ('/') which now provides a clear login option.
+      // This improves user experience and ensures users can easily log in again if desired.
+      await signOut();
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Still redirect even if signOut fails to avoid stuck UI
+      window.location.href = '/';
+    }
   });
 }
 
