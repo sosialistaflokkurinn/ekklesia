@@ -11,13 +11,15 @@
 /**
  * Create a badge element
  *
+ * Matches createButton API pattern for consistency.
+ *
  * @param {string} text - Badge text
  * @param {Object} options - Configuration options
  * @param {string} options.variant - Badge variant ('success', 'error', 'warning', 'info', 'primary')
  * @param {string} options.size - Badge size ('xs', 'sm', 'md', 'lg')
  * @param {boolean} options.clickable - Make badge clickable
  * @param {Function} options.onClick - Click handler
- * @returns {HTMLElement} Badge element
+ * @returns {Object} Badge API {element, setText, setVariant}
  */
 export function createBadge(text, options = {}) {
   const {
@@ -47,14 +49,37 @@ export function createBadge(text, options = {}) {
     };
   }
 
-  return badge;
+  // Badge instance with public API (matches createButton pattern)
+  return {
+    /**
+     * The badge DOM element
+     * @type {HTMLSpanElement}
+     */
+    element: badge,
+
+    /**
+     * Update badge text
+     * @param {string} newText - New text to display
+     */
+    setText(newText) {
+      badge.textContent = newText;
+    },
+
+    /**
+     * Update badge variant
+     * @param {string} newVariant - New variant ('success', 'error', 'warning', 'info', 'primary')
+     */
+    setVariant(newVariant) {
+      badge.className = badge.className.replace(/badge--\w+/, `badge--${newVariant}`);
+    }
+  };
 }
 
 /**
  * Create a status badge (semantic helper)
  *
  * @param {string} status - Status text ('active', 'closed', 'upcoming', etc.)
- * @returns {HTMLElement} Status badge
+ * @returns {Object} Badge API {element, setText, setVariant}
  */
 export function createStatusBadge(status) {
   const variantMap = {

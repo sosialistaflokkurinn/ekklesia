@@ -104,10 +104,10 @@ export function createAmendmentVoteCard(options = {}) {
     `✓ ${strings.alreadyVoted}`,
     { variant: 'success' }
   );
-  votedBadge.className += ' amendment-vote-card__voted-badge';
-  votedBadge.style.display = hasVoted ? 'inline-flex' : 'none';
+  votedBadge.element.className += ' amendment-vote-card__voted-badge';
+  votedBadge.element.style.display = hasVoted ? 'inline-flex' : 'none';
 
-  header.appendChild(votedBadge);
+  header.appendChild(votedBadge.element);
 
   // Card body
   const body = document.createElement('div');
@@ -244,9 +244,9 @@ export function createAmendmentVoteCard(options = {}) {
   // Mark as voted - update UI
   function markAsVoted() {
     hasVoted = true;
-    
+
     // Show voted badge
-    votedBadge.style.display = 'inline-flex';
+    votedBadge.element.style.display = 'inline-flex';
     
     // Disable buttons
     yesBtn.disable();

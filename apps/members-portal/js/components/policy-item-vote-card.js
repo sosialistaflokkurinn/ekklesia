@@ -85,10 +85,10 @@ export function createPolicyItemVoteCard(options = {}) {
     `✓ ${strings.alreadyVoted}`,
     { variant: 'success' }
   );
-  votedBadge.classList.add('policy-item-vote-card__voted-badge');
-  votedBadge.style.display = hasVoted ? 'inline-block' : 'none';
-  
-  header.appendChild(votedBadge);
+  votedBadge.element.classList.add('policy-item-vote-card__voted-badge');
+  votedBadge.element.style.display = hasVoted ? 'inline-block' : 'none';
+
+  header.appendChild(votedBadge.element);
 
   // Item text
   const textContainer = document.createElement('div');

@@ -152,9 +152,9 @@ export function createPolicyResultsDisplay(options = {}) {
       amendment.accepted ? strings.acceptedLabel : strings.rejectedLabel,
       { variant: amendment.accepted ? 'success' : 'error' }
     );
-    statusBadge.className += ' policy-results__status-badge';
+    statusBadge.element.className += ' policy-results__status-badge';
 
-    heading.appendChild(statusBadge);
+    heading.appendChild(statusBadge.element);
     card.appendChild(heading);
 
     // Vote counts
@@ -191,9 +191,9 @@ export function createPolicyResultsDisplay(options = {}) {
       finalResults.approved ? strings.approvedLabel : strings.notApprovedLabel,
       { variant: finalResults.approved ? 'success' : 'error' }
     );
-    statusBadge.className += ' policy-results__status-badge';
+    statusBadge.element.className += ' policy-results__status-badge';
 
-    card.appendChild(statusBadge);
+    card.appendChild(statusBadge.element);
 
     // Vote counts
     const votesDiv = document.createElement('div');

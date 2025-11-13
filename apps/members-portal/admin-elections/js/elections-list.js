@@ -304,7 +304,7 @@ function renderElections() {
     // Status cell with badge component
     const statusCell = document.createElement('td');
     const badge = createStatusBadge(election.status);
-    statusCell.appendChild(badge);
+    statusCell.appendChild(badge.element);
     row.appendChild(statusCell);
     
     // Dates cell
