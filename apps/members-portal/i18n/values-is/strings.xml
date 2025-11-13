@@ -358,4 +358,10 @@
   <string name="tab_policy_sessions">Stefnumótun</string>
   <string name="tab_candidate_elections">Framboð</string>
 
+  <!-- Modal Component -->
+  <string name="modal_close_aria">Loka glugga</string>
+  <string name="modal_confirm_btn">Staðfesta</string>
+  <string name="modal_cancel_btn">Hætta við</string>
+  <string name="modal_ok_btn">Í lagi</string>
+
 </resources>
