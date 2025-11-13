@@ -162,6 +162,35 @@ else
 fi
 echo ""
 
+# Pattern 9: console.log/error in Cloud Run services (should use Winston logger)
+echo -e "${BLUE}9️⃣  Checking for console.log/error in services...${NC}"
+SERVICES_PATH="services/"
+if [ -d "$SERVICES_PATH" ]; then
+  CONSOLE_USAGE=$(grep -rn "console\.\(log\|error\|warn\)" "$SERVICES_PATH" 2>/dev/null | \
+    grep -v node_modules | \
+    grep -v "logger.js" | \
+    grep -v "// console\." | \
+    grep -v check-code-patterns.sh | \
+    head -10 || true)
+
+  if [ -n "$CONSOLE_USAGE" ]; then
+    echo "$CONSOLE_USAGE"
+    echo -e "   ${YELLOW}⚠️  Found console.log/error/warn in services${NC}"
+    echo -e "   ${YELLOW}💡 Use Winston logger for structured logging${NC}"
+    echo -e "   ${YELLOW}   Example:${NC}"
+    echo -e "   ${YELLOW}   const logger = require('./utils/logger');${NC}"
+    echo -e "   ${YELLOW}   logger.error('Error message', { metadata });${NC}"
+    echo -e "   ${YELLOW}   ${NC}"
+    echo -e "   ${YELLOW}   Benefits: Structured logs, PII sanitization, Cloud Logging${NC}"
+    WARNINGS=$((WARNINGS + 1))
+  else
+    echo -e "   ${GREEN}✅ No console.log/error found in services${NC}"
+  fi
+else
+  echo -e "   ${BLUE}ℹ️  No services/ directory, skipping check${NC}"
+fi
+echo ""
+
 # Summary
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 if [ $FOUND_ISSUES -eq 0 ] && [ $WARNINGS -eq 0 ]; then
