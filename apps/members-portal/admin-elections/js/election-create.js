@@ -466,8 +466,23 @@ function updateReview() {
     : R.string.duration_one_selection;
   document.getElementById('review-max-selections').textContent = maxSelectionsText;
 
-  const answersHtml = formData.answers.map(answer => `<li>${answer}</li>`).join('');
-  document.getElementById('review-answers').innerHTML = answersHtml || `<li><em>${R.string.review_no_answers}</em></li>`;
+  // Securely build answer list using DOM API to prevent XSS
+  const reviewAnswersList = document.getElementById('review-answers');
+  reviewAnswersList.innerHTML = ''; // Clear existing content
+
+  if (formData.answers && formData.answers.length > 0) {
+    formData.answers.forEach(answer => {
+      const li = document.createElement('li');
+      li.textContent = answer; // textContent escapes HTML automatically
+      reviewAnswersList.appendChild(li);
+    });
+  } else {
+    const li = document.createElement('li');
+    const em = document.createElement('em');
+    em.textContent = R.string.review_no_answers;
+    li.appendChild(em);
+    reviewAnswersList.appendChild(li);
+  }
 
   // Schedule
   const startTimeText = formData.start_timing === 'immediate' 

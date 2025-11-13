@@ -171,11 +171,11 @@ def handleKenniAuth_handler(req: https_fn.Request) -> https_fn.Response:
         validate_auth_input(kenni_auth_code, pkce_code_verifier)
 
     except ValueError as e:
-        # Input validation failed
+        # Input validation failed - Log details server-side, return generic message
         log_json("info", "Auth input validation failed", error=str(e), correlationId=correlation_id)
         origin = get_allowed_origin(req.headers.get('Origin'))
         return https_fn.Response(
-            json.dumps({"error": "INVALID_INPUT", "message": str(e), "correlationId": correlation_id}),
+            json.dumps({"error": "INVALID_INPUT", "message": "Invalid request parameters", "correlationId": correlation_id}),
             status=400,
             mimetype="application/json",
             headers={**cors_headers_for_origin(origin), 'X-Correlation-ID': correlation_id},
@@ -408,11 +408,12 @@ def handleKenniAuth_handler(req: https_fn.Request) -> https_fn.Response:
         origin = get_allowed_origin(req.headers.get('Origin'))
         headers = {**cors_headers_for_origin(origin), 'X-Correlation-ID': correlation_id, 'Cache-Control': 'no-store, no-cache, must-revalidate, private, max-age=0'}
         if msg.startswith("Missing environment variables:"):
+            # Security: Log full error server-side but return generic message to client
             log_json("error", "Configuration error in handleKenniAuth", error=msg, correlationId=correlation_id)
             return https_fn.Response(
                 json.dumps({
                     "error": "CONFIG_MISSING",
-                    "message": msg,
+                    "message": "Service configuration error. Please contact support.",
                     "correlationId": correlation_id
                 }),
                 status=500,
