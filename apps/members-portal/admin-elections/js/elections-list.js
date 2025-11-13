@@ -9,7 +9,7 @@ import { R } from '../i18n/strings-loader.js';
 import { initElectionsListStrings } from './elections-list-i18n.js';
 import { initNavigation } from '../../js/nav.js';
 import { createStatusBadge } from '../../js/components/badge.js';
-import { showModal } from '../../js/components/modal.js';
+import { showModal, showAlert } from '../../js/components/modal.js';
 import { formatDateIcelandic } from '../../js/utils/format.js';
 import { debug } from '../../js/utils/debug.js';
 
@@ -62,7 +62,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         debug.log('[Elections List] Election role:', electionRole);
         
         if (!electionRole) {
-          alert(R.string.error_not_authorized || 'Þú hefur ekki heimild til að skoða kosningar.');
+          await showAlert(
+            'Ekki heimild',
+            R.string.error_not_authorized || 'Þú hefur ekki heimild til að skoða kosningar.'
+          );
           window.location.href = '/members-area/';
           return;
         }
@@ -678,7 +681,10 @@ async function deleteElection(electionId) {
   const confirmation = prompt(R.format(R.string.confirm_delete_message, election.title, election.title));
   
   if (confirmation !== election.title) {
-    alert(R.string.confirm_delete_title_mismatch);
+    await showAlert(
+      'Villa',
+      R.string.confirm_delete_title_mismatch
+    );
     return;
   }
   
@@ -749,9 +755,8 @@ function showLoading(isLoading) {
 /**
  * Show error message
  */
-function showError(message) {
-  // TODO: Use toast notification instead of alert
-  alert('Villa: ' + message);
+async function showError(message) {
+  await showAlert('Villa', message);
 }
 
 /**
