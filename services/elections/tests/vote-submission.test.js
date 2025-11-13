@@ -34,6 +34,22 @@ jest.mock('express-rate-limit', () => {
   return jest.fn(() => (req, res, next) => next());
 });
 
+// Mock Firebase to prevent real Firebase initialization
+jest.mock('../src/firebase', () => ({
+  auth: jest.fn(() => ({
+    verifyIdToken: jest.fn(),
+  })),
+  appCheck: jest.fn(() => ({
+    verifyToken: jest.fn(),
+  })),
+}));
+
+// Mock appCheck middleware to avoid loading Firebase
+jest.mock('../src/middleware/appCheck', () => ({
+  verifyAppCheck: jest.fn((req, res, next) => next()),
+  verifyAppCheckOptional: jest.fn((req, res, next) => next()),
+}));
+
 // Mock the database module BEFORE requiring anything that uses it
 jest.mock('../src/config/database', () => {
   const { createMockPool } = require('./helpers/db-mock');
@@ -48,10 +64,14 @@ jest.mock('../src/config/database', () => {
 // Default implementation checks header and rejects
 const mockVerifyMemberToken = jest.fn();
 mockVerifyMemberToken.mockImplementation((req, res, next) => {
+  console.log('[MOCK AUTH] Called! Headers:', Object.keys(req.headers || {}));
+
   // Check Authorization header (same as real middleware)
   const authHeader = req.header('Authorization');
+  console.log('[MOCK AUTH] Authorization header:', authHeader);
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    console.log('[MOCK AUTH] Returning 401 - no auth header');
     return res.status(401).json({
       error: 'Unauthorized',
       message: 'Missing or invalid Authorization header',
@@ -60,6 +80,7 @@ mockVerifyMemberToken.mockImplementation((req, res, next) => {
   }
 
   // If header exists but no user set up, reject
+  console.log('[MOCK AUTH] Returning 401 - no user setup');
   return res.status(401).json({
     error: 'Unauthorized',
     message: 'Mock: No user set up for this test',
@@ -150,9 +171,9 @@ jest.mock('../src/middleware/memberAuth', () => {
 
 const pool = require('../src/config/database');
 
-// DON'T import router at top level - it caches the real middleware
-// Instead, we'll require it fresh in beforeEach after setting up mocks
-let electionsRouter;
+// Import router AFTER all mocks are set up
+// This ensures it loads with mocked dependencies
+const electionsRouter = require('../src/routes/elections');
 
 let app;
 let mockClient;
@@ -220,11 +241,8 @@ function setupSuccessfulVoteScenario(election, ballotIds = 'ballot-123') {
 
 describe('POST /api/elections/:id/vote - Vote Submission', () => {
   beforeEach(() => {
-    // Clear module cache and reload router with fresh mocks
-    delete require.cache[require.resolve('../src/routes/elections')];
-    electionsRouter = require('../src/routes/elections');
-
-    // Create fresh Express app for each test
+    // Don't reload routes - just create fresh Express app
+    // Reloading causes issues with module mocking
     app = express();
     app.use(express.json());
     app.use('/api', electionsRouter);
@@ -238,8 +256,27 @@ describe('POST /api/elections/:id/vote - Vote Submission', () => {
     // Ensure pool.query is mocked for audit service (fire-and-forget)
     pool.query.mockResolvedValue({ rows: [], rowCount: 0 });
 
-    // Clear mock calls but keep implementations
+    // Reset mock to default implementation (reject all requests)
+    // CRITICAL: mockClear() only clears call history, NOT the implementation!
+    // Must re-set default implementation to prevent tests from using previous implementations
     mockVerifyMemberToken.mockClear();
+    mockVerifyMemberToken.mockImplementation((req, res, next) => {
+      const authHeader = req.header('Authorization');
+
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({
+          error: 'Unauthorized',
+          message: 'Missing or invalid Authorization header',
+          code: 'MISSING_AUTH_TOKEN',
+        });
+      }
+
+      return res.status(401).json({
+        error: 'Unauthorized',
+        message: 'Mock: No user set up for this test',
+        code: 'MISSING_AUTH_TOKEN',
+      });
+    });
   });
 
   afterEach(() => {
@@ -352,9 +389,7 @@ describe('POST /api/elections/:id/vote - Vote Submission', () => {
   // =====================================================
 
   describe('Authentication & Authorization', () => {
-    // TODO: Fix timeout issue - mock not being called correctly
-    // See: /tmp/timeout-debugging-notes.md
-    test.skip('should reject request without Authorization header (401)', async () => {
+    test('should reject request without Authorization header (401)', async () => {
       const response = await request(app)
         .post('/api/elections/election-1/vote')
         .send({ answer_ids: ['answer-yes'] })
@@ -367,8 +402,7 @@ describe('POST /api/elections/:id/vote - Vote Submission', () => {
       });
     });
 
-    // TODO: Fix timeout issue - same as above
-    test.skip('should reject request with invalid Authorization format (401)', async () => {
+    test('should reject request with invalid Authorization format (401)', async () => {
       const response = await request(app)
         .post('/api/elections/election-1/vote')
         .set('Authorization', 'InvalidFormat token123')
@@ -443,9 +477,9 @@ describe('POST /api/elections/:id/vote - Vote Submission', () => {
         message: 'Election not found',
       });
 
-      // Verify rollback was called
-      const queries = mockClient._getQueries();
-      expect(queries.some(q => q.sql === 'ROLLBACK')).toBe(true);
+      // Verify transaction was used (BEGIN and ROLLBACK called)
+      expect(mockClient.query).toHaveBeenCalledWith('BEGIN');
+      expect(mockClient.query).toHaveBeenCalledWith('ROLLBACK');
     });
 
     test('should reject empty answer_ids array (400)', async () => {
