@@ -69,8 +69,8 @@ export function normalizePhoneForComparison(phone) {
  * @returns {string} Formatted as DDMMYY-XXXX
  *
  * Handles formats:
- * - 9999999999 -> 999999-9999
- * - 999999-9999 -> 999999-9999 (already formatted)
+ * - 0103009999 -> 010300-9999 (example: DDMMYYXXXX -> DDMMYY-XXXX)
+ * - 010300-9999 -> 010300-9999 (already formatted; DDMMYY-XXXX)
  */
 export function formatKennitala(kennitala) {
   if (!kennitala) return '';
@@ -95,8 +95,8 @@ export function formatKennitala(kennitala) {
  * Shows birthdate (first 6 digits) but masks personal identifier (last 4 digits)
  *
  * Examples:
- * - 999999-9999 -> 010300-****
- * - 9999999999 -> 010300-****
+ * - 120174-3399 -> 120174-****
+ * - 1201743399 -> 120174-****
  */
 export function maskKennitala(kennitala) {
   if (!kennitala) return '-';
@@ -146,8 +146,8 @@ export function validatePhone(phone) {
  * @returns {boolean} True if valid format (does NOT verify checksum)
  *
  * Accepts:
- * - 999999-9999 (with hyphen)
- * - 9999999999 (without hyphen)
+ * - 120174-3399 (with hyphen, DDMMYY-XXXX)
+ * - 1201743399 (without hyphen, DDMMYYXXXX)
  *
  * Note: This only validates format (10 digits), not the mathematical checksum.
  * Kenni.is OAuth has already validated the kennitala, so we trust it.

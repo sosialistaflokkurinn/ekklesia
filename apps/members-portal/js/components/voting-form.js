@@ -58,9 +58,9 @@ export function createVotingForm(options = {}) {
   const {
     question,
     answers = [],
-    allowMultiple = false,      // NEW: Support checkboxes
-    maxSelections = null,       // NEW: Max selections (for checkboxes)
-    minSelections = 1,          // NEW: Min selections (for checkboxes)
+    allowMultiple = false,
+    maxSelections = null,
+    minSelections = 1,
     onSubmit,
     questionLabel = 'Spurning',
     votingTitle = 'Veldu þitt svar',
