@@ -100,6 +100,14 @@ app.use((err, req, res, next) => {
     });
   }
 
+  // Handle JSON parse errors (SyntaxError from express.json())
+  if (err instanceof SyntaxError && err.status === 400) {
+    return res.status(400).json({
+      error: 'Bad Request',
+      message: 'Invalid JSON in request body'
+    });
+  }
+
   logger.error('[Error] Global error handler:', { error: err.message, stack: err.stack, type: err.type });
   res.status(500).json({
     error: 'Internal Server Error',

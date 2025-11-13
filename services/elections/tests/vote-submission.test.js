@@ -247,6 +247,17 @@ describe('POST /api/elections/:id/vote - Vote Submission', () => {
     app.use(express.json());
     app.use('/api', electionsRouter);
 
+    // Add error handler for JSON parse errors (matches index.js)
+    app.use((err, req, res, next) => {
+      if (err instanceof SyntaxError && err.status === 400) {
+        return res.status(400).json({
+          error: 'Bad Request',
+          message: 'Invalid JSON in request body'
+        });
+      }
+      next(err);
+    });
+
     // Create mock database client
     mockClient = createMockClient();
 

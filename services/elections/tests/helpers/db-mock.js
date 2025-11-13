@@ -54,7 +54,14 @@ function createMockClient(options = {}) {
     release: jest.fn(),
 
     // Test helpers
-    _getQueries: () => queries,
+    _getQueries: () => {
+      // Use Jest's built-in call tracking instead of custom array
+      // This works even when mockImplementation() is called
+      return mockClient.query.mock.calls.map(call => ({
+        sql: call[0],
+        params: call[1]
+      }));
+    },
     _getTransactionState: () => transactionState,
     _reset: () => {
       queries.length = 0;

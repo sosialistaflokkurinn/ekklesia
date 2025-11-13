@@ -220,9 +220,9 @@ router.post('/elections/:id/vote', voteLimiter, verifyMemberToken, async (req, r
   const { id } = req.params;
   const { answer_ids } = req.body;
 
-  const client = await pool.connect();
-
+  let client;
   try {
+    client = await pool.connect();
     await client.query('BEGIN');
 
     // Lock election row for reading
@@ -356,7 +356,9 @@ router.post('/elections/:id/vote', voteLimiter, verifyMemberToken, async (req, r
       message: 'Vote recorded successfully',
     });
   } catch (error) {
-    await client.query('ROLLBACK');
+    if (client) {
+      await client.query('ROLLBACK');
+    }
     const duration = Date.now() - startTime;
 
     // Enhanced error logging for debugging
@@ -382,7 +384,9 @@ router.post('/elections/:id/vote', voteLimiter, verifyMemberToken, async (req, r
       debug: process.env.NODE_ENV === 'development' ? error.message : undefined,
     });
   } finally {
-    client.release();
+    if (client) {
+      client.release();
+    }
   }
 });
 
