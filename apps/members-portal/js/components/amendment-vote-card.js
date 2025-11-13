@@ -249,8 +249,8 @@ export function createAmendmentVoteCard(options = {}) {
     votedBadge.style.display = 'inline-flex';
     
     // Disable buttons
-    yesBtn.setDisabled(true);
-    noBtn.setDisabled(true);
+    yesBtn.disable();
+    noBtn.disable();
     
     // Reset button text
     yesBtn.setLoading(false, strings.yesButton);

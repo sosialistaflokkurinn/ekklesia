@@ -18,9 +18,10 @@ import { submitAmendment } from '../api/elections-api.js';
  * @param {Array} options.sections - Array of policy sections {id, title, text}
  * @param {string} options.sessionId - Policy session ID
  * @param {Object} options.R - i18n strings resource object
+ * @param {Function} [options.onSubmitSuccess] - Optional callback on successful submission
  * @returns {Object} - Form API {element, reset, destroy}
  */
-export function createAmendmentForm({ sections, sessionId, R }) {
+export function createAmendmentForm({ sections, sessionId, R, onSubmitSuccess }) {
   // Validate inputs
   if (!Array.isArray(sections) || sections.length === 0) {
     throw new Error('Sections array is required and must not be empty');
