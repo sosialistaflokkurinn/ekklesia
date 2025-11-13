@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const authenticate = require('../middleware/auth');
+const { readLimiter, tokenLimiter } = require('../middleware/rateLimiter');
 const { getCurrentElection, getElectionStatus } = require('../services/electionService');
 const { issueVotingToken, getTokenStatus } = require('../services/tokenService');
 const { fetchResults: fetchElectionResults } = require('../services/electionsClient');
@@ -10,7 +11,7 @@ const logger = require('../utils/logger');
  * GET /api/election
  * Get current election details
  */
-router.get('/election', authenticate, async (req, res) => {
+router.get('/election', readLimiter, authenticate, async (req, res) => {
   try {
     const election = await getCurrentElection();
 
@@ -49,7 +50,7 @@ router.get('/election', authenticate, async (req, res) => {
  * Request a one-time voting token
  * MVP: Store in DB only (no S2S to Elections service)
  */
-router.post('/request-token', authenticate, async (req, res) => {
+router.post('/request-token', tokenLimiter, authenticate, async (req, res) => {
   try {
     const { kennitala } = req.user;
 
@@ -115,7 +116,7 @@ router.post('/request-token', authenticate, async (req, res) => {
  * GET /api/my-status
  * Check member's participation status
  */
-router.get('/my-status', authenticate, async (req, res) => {
+router.get('/my-status', readLimiter, authenticate, async (req, res) => {
   try {
     const { kennitala } = req.user;
 
@@ -140,7 +141,7 @@ router.get('/my-status', authenticate, async (req, res) => {
  * Retrieve previously issued token (if exists and not expired)
  * MVP: Cannot retrieve plain token (only hash stored for security)
  */
-router.get('/my-token', authenticate, async (req, res) => {
+router.get('/my-token', readLimiter, authenticate, async (req, res) => {
   try {
     res.status(400).json({
       error: 'Bad Request',
@@ -165,7 +166,7 @@ router.get('/my-token', authenticate, async (req, res) => {
  * Get election results from Elections service
  * Phase 5: Fetch results via S2S from Elections service
  */
-router.get('/results', authenticate, async (req, res) => {
+router.get('/results', readLimiter, authenticate, async (req, res) => {
   try {
     const election = await getCurrentElection();
 

@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const { pool, query } = require('../config/database');
 const authenticate = require('../middleware/auth');
 const { requireRole, requireAnyRoles, attachCorrelationId } = require('../middleware/roles');
+const { adminLimiter } = require('../middleware/rateLimiter');
 const logger = require('../utils/logger');
 
 /**
@@ -45,10 +46,13 @@ router.use((req, res, next) => {
   next();
 });
 
-// 3. Require authentication for all admin endpoints
+// 3. Apply rate limiting to all admin routes (60 req/min)
+router.use(adminLimiter);
+
+// 4. Require authentication for all admin endpoints
 router.use(authenticate);
 
-// 4. Require at least one admin role (fail-secure default)
+// 5. Require at least one admin role (fail-secure default)
 router.use(requireAnyRoles(['superuser', 'admin']));
 
 /**
