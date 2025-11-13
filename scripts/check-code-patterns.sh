@@ -125,6 +125,43 @@ else
 fi
 echo ""
 
+# Pattern 8: Component factory API consistency
+echo -e "${BLUE}8️⃣  Checking component factory return values...${NC}"
+# Check for component factories that might return raw elements instead of {element, ...methods}
+# Focuses on components/ directory to avoid false positives from utilities
+COMPONENT_PATH="${SEARCH_PATH}components/"
+if [ -d "$COMPONENT_PATH" ]; then
+  SUSPICIOUS_RETURNS=$(grep -rn "export function create.*(" "$COMPONENT_PATH" 2>/dev/null | \
+    while IFS= read -r line; do
+      file=$(echo "$line" | cut -d: -f1)
+      # Check if the file has a return statement that's just 'return element;' or 'return container;'
+      # This is a heuristic - might need manual review
+      if grep -q "return element;" "$file" 2>/dev/null || \
+         grep -q "return container;" "$file" 2>/dev/null; then
+        echo "$line"
+      fi
+    done || true)
+
+  if [ -n "$SUSPICIOUS_RETURNS" ]; then
+    echo "$SUSPICIOUS_RETURNS"
+    echo -e "   ${YELLOW}⚠️  Component factories might return raw elements${NC}"
+    echo -e "   ${YELLOW}💡 Consider returning: { element, ...methods }${NC}"
+    echo -e "   ${YELLOW}   Example:${NC}"
+    echo -e "   ${YELLOW}   return {${NC}"
+    echo -e "   ${YELLOW}     element: container,${NC}"
+    echo -e "   ${YELLOW}     destroy: () => container.remove(),${NC}"
+    echo -e "   ${YELLOW}     ...${NC}"
+    echo -e "   ${YELLOW}   };${NC}"
+    echo -e "   ${YELLOW}   Note: Utility modules (like status.js) are valid exceptions${NC}"
+    WARNINGS=$((WARNINGS + 1))
+  else
+    echo -e "   ${GREEN}✅ Component factory APIs look consistent${NC}"
+  fi
+else
+  echo -e "   ${YELLOW}⚠️  Components directory not found, skipping check${NC}"
+fi
+echo ""
+
 # Summary
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 if [ $FOUND_ISSUES -eq 0 ] && [ $WARNINGS -eq 0 ]; then

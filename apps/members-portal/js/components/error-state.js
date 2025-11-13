@@ -15,7 +15,7 @@
  * @param {Object} options - Configuration options
  * @param {string} options.retryText - Retry button text
  * @param {Function} options.onRetry - Retry click handler
- * @returns {HTMLElement} Error state container
+ * @returns {Object} Component API with {element, setMessage, setRetryHandler, destroy}
  */
 export function createErrorState(message, options = {}) {
   const {
@@ -32,15 +32,34 @@ export function createErrorState(message, options = {}) {
 
   container.appendChild(messageEl);
 
+  let retryBtn = null;
   if (onRetry) {
-    const retryBtn = document.createElement('button');
+    retryBtn = document.createElement('button');
     retryBtn.className = 'btn btn--primary';
     retryBtn.textContent = retryText;
     retryBtn.onclick = onRetry;
     container.appendChild(retryBtn);
   }
 
-  return container;
+  // Return component API
+  return {
+    element: container,
+    setMessage: (newMessage) => {
+      messageEl.textContent = newMessage;
+    },
+    setRetryHandler: (handler, text = 'Retry') => {
+      if (!retryBtn) {
+        retryBtn = document.createElement('button');
+        retryBtn.className = 'btn btn--primary';
+        container.appendChild(retryBtn);
+      }
+      retryBtn.textContent = text;
+      retryBtn.onclick = handler;
+    },
+    destroy: () => {
+      container.remove();
+    }
+  };
 }
 
 /**
@@ -52,5 +71,6 @@ export function createErrorState(message, options = {}) {
  */
 export function showErrorIn(container, message, onRetry = null) {
   container.innerHTML = '';
-  container.appendChild(createErrorState(message, { onRetry }));
+  const errorState = createErrorState(message, { onRetry });
+  container.appendChild(errorState.element);
 }

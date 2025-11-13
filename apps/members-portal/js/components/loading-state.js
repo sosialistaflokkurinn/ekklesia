@@ -13,7 +13,7 @@
  *
  * @param {string} message - Loading message text
  * @param {string} size - Spinner size ('sm', 'md', 'lg')
- * @returns {HTMLElement} Loading state container
+ * @returns {Object} Component API with {element, setMessage, destroy}
  */
 export function createLoadingState(message = 'Loading...', size = 'md') {
   const container = document.createElement('div');
@@ -29,7 +29,16 @@ export function createLoadingState(message = 'Loading...', size = 'md') {
   container.appendChild(spinner);
   container.appendChild(text);
 
-  return container;
+  // Return component API
+  return {
+    element: container,
+    setMessage: (newMessage) => {
+      text.textContent = newMessage;
+    },
+    destroy: () => {
+      container.remove();
+    }
+  };
 }
 
 /**
@@ -40,7 +49,8 @@ export function createLoadingState(message = 'Loading...', size = 'md') {
  */
 export function showLoadingIn(container, message = 'Loading...') {
   container.innerHTML = '';
-  container.appendChild(createLoadingState(message));
+  const loadingState = createLoadingState(message);
+  container.appendChild(loadingState.element);
 }
 
 /**

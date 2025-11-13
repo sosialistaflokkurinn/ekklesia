@@ -15,7 +15,7 @@
  * @param {string|HTMLElement} options.content - Card content (HTML string or element)
  * @param {string} options.variant - Card variant ('default', 'welcome', 'admin-welcome')
  * @param {Array} options.actions - Action buttons [{text, onClick, primary}]
- * @returns {HTMLElement} Card element
+ * @returns {Object} Component API with {element, setTitle, setContent, destroy}
  */
 export function createCard(options = {}) {
   const {
@@ -28,8 +28,9 @@ export function createCard(options = {}) {
   const card = document.createElement('div');
   card.className = `card${variant !== 'default' ? ' card--' + variant : ''}`;
 
+  let titleEl = null;
   if (title) {
-    const titleEl = document.createElement('h2');
+    titleEl = document.createElement('h2');
     titleEl.className = 'card__title';
     titleEl.textContent = title;
     card.appendChild(titleEl);
@@ -61,5 +62,27 @@ export function createCard(options = {}) {
     card.appendChild(actionsEl);
   }
 
-  return card;
+  // Return component API
+  return {
+    element: card,
+    setTitle: (newTitle) => {
+      if (!titleEl) {
+        titleEl = document.createElement('h2');
+        titleEl.className = 'card__title';
+        card.insertBefore(titleEl, card.firstChild);
+      }
+      titleEl.textContent = newTitle;
+    },
+    setContent: (newContent) => {
+      contentEl.innerHTML = '';
+      if (typeof newContent === 'string') {
+        contentEl.innerHTML = newContent;
+      } else if (newContent instanceof HTMLElement) {
+        contentEl.appendChild(newContent);
+      }
+    },
+    destroy: () => {
+      card.remove();
+    }
+  };
 }
