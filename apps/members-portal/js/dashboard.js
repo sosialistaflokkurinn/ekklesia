@@ -530,7 +530,7 @@ async function init() {
       await requireMember();
     } catch (error) {
       debug.error('Member role required:', error);
-      alert('Þú verður að vera félagsmaður til að sjá þessa síðu.');
+      alert(R.string.error_must_be_member);
       window.location.href = '/';
       return;
     }

@@ -388,7 +388,7 @@ function addAnswerOption() {
 function updateAnswerPlaceholders() {
   const answerInputs = document.querySelectorAll('.answer-item input[type="text"]');
   answerInputs.forEach((input, index) => {
-    input.placeholder = `Svarmöguleiki ${index + 1}`;
+    input.placeholder = R.format(R.string.placeholder_answer, index + 1);
   });
 }
 
@@ -578,7 +578,7 @@ async function handleSubmit(status) {
   try {
     const user = auth.currentUser;
     if (!user) {
-      throw new Error('Ekki innskráður');
+      throw new Error(R.string.error_not_authenticated);
     }
 
     const token = await user.getIdToken();

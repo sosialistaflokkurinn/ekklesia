@@ -115,7 +115,7 @@ async function loadEvents(filter = 'upcoming') {
       {
         title: 'Málþing um sveitarstjórnarmál',
         date: '1. nóvember 2025, kl. 10:00-14:30',
-        description: 'Opinn fundur um sveitastjórnarmál þar sem allir fá tækifæri til að segja sína skoðun og heyra skoðun annara.\n\nDagskrá:\n• Fullrúar frá svæðisfélögum sósíalista segir frá sinni sýn á sveitastjórnarmálum\n• Hlé\n• Almennar umræður um sveitastjórnarmál þar sem félagsmenn fá að segja sína skoðun\n• Kaffi og léttar veitingar í boði',
+        description: 'Opinn fundur um sveitastjórnarmál þar sem allir fá tækifæri til að segja sína skoðun og heyra skoðun annarra.\n\nDagskrá:\n• Fulltrúar frá svæðisfélögum sósíalista segja frá sinni sýn á sveitastjórnarmálum\n• Hlé\n• Almennar umræður um sveitastjórnarmál þar sem félagsmenn fá að segja sína skoðun\n• Kaffi og léttar veitingar í boði',
         location: 'Hverfisgata 105, 101 Reykjavík',
         status: 'upcoming'
       },

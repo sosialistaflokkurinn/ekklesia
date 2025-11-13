@@ -70,7 +70,7 @@
   <string name="profile_save_button">Vista breytingar</string>
   <string name="profile_saving_button">Vistar...</string>
   <string name="profile_save_success">Upplýsingar hafa verið vistaðar!</string>
-  <string name="profile_foreign_address_blocked">Grunnupplýsingar voru vistaðar, en ekki var hægt að vista erlent heimilisfang að svo stöddu. Vinsamlegast reyndu aftur síðar.</string>
+  <string name="profile_foreign_address_blocked">Grunnupplýsingar voru vistaðar, en ekki var hægt að vista erlent heimilisfang að sinni. Vinsamlegast reyndu aftur síðar.</string>
   <string name="profile_no_changes">Engar breytingar til að vista</string>
   <string name="validation_name_required">Nafn má ekki vera tómt</string>
   <string name="validation_name_too_long">Nafn má ekki vera lengra en 100 stafir</string>
@@ -137,7 +137,7 @@
   <string name="test_7_title">7. Endurstilla kosningu (fyrir þróunaraðila)</string>
   <string name="test_7_warning">⚠️ Aðeins fyrir prófanir. Þessi aðgerð hreinsar öll atkvæði og atkvæðalykla. Notist með varúð.</string>
   <string name="test_7_scope_label">Umfang:</string>
-  <string name="test_7_scope_mine">Aðeins mitt atkvæði (eyðir mínum atkvæðalykli)</string>
+  <string name="test_7_scope_mine">Aðeins mitt atkvæði (eyðir atkvæðalyklinum mínum)</string>
   <string name="test_7_scope_all">Allt (hreinsar öll atkvæði og lykla)</string>
   <string name="test_7_confirm_label">Staðfesting:</string>
   <string name="test_7_confirm_placeholder">Skrifaðu "RESET ALL" til að staðfesta</string>
@@ -260,6 +260,12 @@
   <!-- API error messages -->
   <string name="error_django_update">Villa við uppfærslu í eldra kerfi (Django): %s</string>
   <string name="error_django_address_update">Villa við uppfærslu erlends heimilisfangs í eldra kerfi (Django): %s</string>
+  <string name="error_must_be_member">Þú verður að vera félagsmaður til að sjá þessa síðu.</string>
+  <string name="error_unauthorized_page_admins_only">Þú hefur ekki heimild til að skoða þessa síðu. Aðeins stjórnendur hafa aðgang.</string>
+  <string name="error_unauthorized_page_superusers_only">Þú hefur ekki heimild til að skoða þessa síðu. Aðeins kerfisstjórar hafa aðgang.</string>
+  <string name="error_no_access">Enginn aðgangur</string>
+  <string name="error_unauthorized_action">Þú hefur ekki heimild til að framkvæma þessa aðgerð (%s).</string>
+  <string name="error_verifying_superuser_role">Gat ekki staðfest stjórnandaréttindi. Vinsamlegast reyndu aftur eftir smá stund.</string>
   
   <!-- SearchableSelect component -->
   <string name="search_country">Leita eftir landi...</string>

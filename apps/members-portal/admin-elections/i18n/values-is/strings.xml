@@ -88,7 +88,7 @@
 - Öll greidd atkvæði
 - Önnur tengd gögn
 
-ATH: Einungis er hægt að eyða kosningum sem hefur verið lokað.
+ATH: Aðeins er hægt að eyða lokuðum kosningum.
 
 Til að staðfesta, sláðu inn heiti kosningarinnar hér fyrir neðan:
 "%s"</string>
@@ -115,6 +115,10 @@ Til að staðfesta, sláðu inn heiti kosningarinnar hér fyrir neðan:
   <string name="error_close_failed">❌ Villa við að loka kosningu: %s</string>
   <string name="error_delete_failed">❌ Villa við að eyða kosningu: %s</string>
   <string name="error_load_elections">❌ Villa við að sækja kosningar: %s</string>
+  <string name="error_load_election_generic">Gat ekki hlaðið kosningu. Vinsamlegast reyndu aftur.</string>
+  <string name="error_no_election_id_in_path">Enginn kosningakennari í slóð. Vinsamlegast veldu kosningu.</string>
+  <string name="error_page_load_generic">Villa kom upp við að hlaða síðu.</string>
+  <string name="error_delete_active_election">Ekki hægt að eyða virkri kosningu. Lokaðu kosningunni fyrst.</string>
   <string name="error_not_authenticated">Ekki innskráður</string>
   <string name="error_no_permission">Þú hefur ekki heimild til þessarar aðgerðar.</string>
   

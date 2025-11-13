@@ -707,7 +707,7 @@ async function deleteElection(electionId) {
       
       // Provide more helpful error message for common cases
       if (errorMessage.includes('active election')) {
-        throw new Error('Ekki hægt að eyða virkri kosningu. Lokaðu kosningunni fyrst.');
+        throw new Error(R.string.error_delete_active_election);
       }
       
       throw new Error(errorMessage);

@@ -115,7 +115,7 @@ async function loadElection(electionId) {
 
   } catch (error) {
     debug.error('Failed to load election:', error);
-    showError('Gat ekki hlaðið kosningu. Vinsamlegast reyndu aftur.');
+    showError(R.string.error_load_election_generic);
   }
 }
 
@@ -140,7 +140,7 @@ async function init() {
     const electionId = getElectionIdFromURL();
 
     if (!electionId) {
-      showError('Enginn kosningakennari í slóð. Vinsamlegast veldu kosningu.');
+      showError(R.string.error_no_election_id_in_path);
       return;
     }
 
@@ -154,7 +154,7 @@ async function init() {
 
   } catch (error) {
     debug.error('Failed to initialize election control page:', error);
-    showError('Villa kom upp við að hlaða síðu.');
+    showError(R.string.error_page_load_generic);
   }
 }
 

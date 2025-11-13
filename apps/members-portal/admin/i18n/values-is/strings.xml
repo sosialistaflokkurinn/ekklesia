@@ -124,7 +124,7 @@
   <string name="member_edit_field_number">Númer</string>
   <string name="member_edit_field_postal_code">Póstnúmer</string>
   <string name="member_edit_field_city">Staður</string>
-  <string name="member_edit_readonly_note">* Kennitala og ID er ekki hægt að breyta</string>
+  <string name="member_edit_readonly_note">* Kennitala og ID er óbreytanleg</string>
   <string name="validation_required">Þetta svæði er nauðsynlegt</string>
   <string name="validation_invalid_email">Ógilt netfang</string>
   <string name="validation_invalid_phone">Símanúmer verður að vera 7 tölustafir</string>
@@ -137,7 +137,7 @@
   <string name="btn_cancel">Hætta við</string>
   <string name="sync_trigger_confirm_title">Keyra samstillingu?</string>
   <string name="sync_trigger_confirm_message">Þetta mun sækja öll gögn frá Django og uppfæra Firestore.</string>
-  <string name="sync_trigger_confirm_btn">Keyra sync</string>
+  <string name="sync_trigger_confirm_btn">Keyra samstillingu</string>
   
   <!-- Members list filter options -->
   <string name="filter_status_all">Allir</string>

@@ -402,7 +402,7 @@ export async function requireAdmin(redirectUrl = '/members-area/') {
   const isAdmin = await hasAnyRole([ROLES.ADMIN, ROLES.SUPERUSER]);
   if (!isAdmin) {
     console.error('[RBAC] User does not have admin or superuser role');
-    alert('Þú hefur ekki heimild til að skoða þessa síðu. Aðeins stjórnendur hafa aðgang.');
+    alert(R.string.error_unauthorized_page_admins_only);
     window.location.href = redirectUrl;
     throw new Error('Admin role required');
   }
@@ -425,12 +425,20 @@ export async function requireSuperuser(redirectUrl = '/members-area/') {
     throw new Error('Not authenticated');
   }
   
-  const isSuperuser = await hasRole(ROLES.SUPERUSER);
-  if (!isSuperuser) {
-    console.error('[RBAC] User does not have superuser role');
-    alert('Þú hefur ekki heimild til að skoða þessa síðu. Aðeins kerfisstjórar hafa aðgang.');
+  try {
+    const isSuperuser = await hasRole(ROLES.SUPERUSER);
+    if (!isSuperuser) {
+      console.error('[RBAC] User does not have superuser role');
+      alert(R.string.error_unauthorized_page_superusers_only);
+      window.location.href = redirectUrl;
+      throw new Error('Superuser role required');
+    }
+  } catch (error) {
+    console.error('[RBAC] Error during requireSuperuser check:', error);
+    // It's possible the token is refreshing. Give a more specific error.
+    alert(R.string.error_verifying_superuser_role);
     window.location.href = redirectUrl;
-    throw new Error('Superuser role required');
+    throw new Error('Could not verify superuser role.');
   }
   
   debug.log('[RBAC] ✓ Superuser access granted');
@@ -446,7 +454,7 @@ export async function requireSuperuser(redirectUrl = '/members-area/') {
 export async function requirePermission(permission, errorMessage = null) {
   const hasAccess = await hasPermission(permission);
   if (!hasAccess) {
-    const message = errorMessage || `Þú hefur ekki heimild til að framkvæma þessa aðgerð (${permission}).`;
+    const message = errorMessage || R.format(R.string.error_unauthorized_action, permission);
     console.error('[RBAC]', message);
     throw new Error(message);
   }
@@ -503,7 +511,7 @@ export async function displayRoleIndicator(elementId = 'user-role-indicator') {
     element.textContent = `Hlutverk: ${role} (${roles.join(', ')})`;
     element.className = `role-indicator role-${role}`;
   } else {
-    element.textContent = 'Enginn aðgangur';
+    element.textContent = R.string.error_no_access;
     element.className = 'role-indicator role-none';
   }
 }
