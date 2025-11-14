@@ -179,8 +179,6 @@ NOTES.md
 - ⚠️ Updating `.gitignore.example` without updating `.gitignore`
 - ⚠️ Personal files that should be in `.gitignore.local`
 
-**Exception**: `.claude/settings.local.json` is allowed (tracked intentionally for workspace settings)
-
 ### Validation Script
 
 **Location**: `scripts/admin/validate-gitignore-setup.sh`
