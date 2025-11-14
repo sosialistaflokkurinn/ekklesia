@@ -438,7 +438,7 @@ Expected output:
 
 **Commit:** `0efbf01` - refactor(admin-elections): Create separate i18n system  
 **Date:** 2025-11-07  
-**Status:** ✅ Deployed to production  
+**Status:** ✅ Deployed (Beta)  
 **URL:** https://ekklesia-prod-10-2025.web.app/admin-elections/
 
 ---
