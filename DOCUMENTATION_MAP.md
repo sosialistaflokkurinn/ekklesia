@@ -41,15 +41,17 @@ This is the **Level 1 navigation hub** for all Ekklesia documentation. It provid
 
 | Component | Technology | Status |
 |-----------|-----------|--------|
-| **Identity Provider** | [Firebase/Identity Platform](https://cloud.google.com/identity-platform) | ✅ Production |
-| **National eID** | [Kenni.is](https://idp.kenni.is/) OAuth PKCE | ✅ Production |
-| **Members Service** | [Firebase Hosting](https://firebase.google.com/docs/hosting) + [Python Cloud Functions](https://cloud.google.com/functions/docs) | ✅ Production |
-| **Events Service** | [Node.js](https://nodejs.org/) + [Express](https://expressjs.com/) on [Cloud Run](https://cloud.google.com/run) | ✅ Production |
-| **Elections Service** | [Node.js](https://nodejs.org/) + [Express](https://expressjs.com/) on [Cloud Run](https://cloud.google.com/run) | ✅ Production |
-| **Database** | [Cloud SQL PostgreSQL 15](https://cloud.google.com/sql/docs/postgres) | ✅ Production |
-| **Region** | [europe-west2 (London)](https://cloud.google.com/compute/docs/regions-zones) | ✅ Production |
+| **Identity Provider** | [Firebase/Identity Platform](https://cloud.google.com/identity-platform) | ⚙️ Deployed |
+| **National eID** | [Kenni.is](https://idp.kenni.is/) OAuth PKCE | ⚙️ Deployed |
+| **Members Service** | [Firebase Hosting](https://firebase.google.com/docs/hosting) + [Python Cloud Functions](https://cloud.google.com/functions/docs) | ⚙️ Deployed |
+| **Events Service** | [Node.js](https://nodejs.org/) + [Express](https://expressjs.com/) on [Cloud Run](https://cloud.google.com/run) | ⚙️ Deployed |
+| **Elections Service** | [Node.js](https://nodejs.org/) + [Express](https://expressjs.com/) on [Cloud Run](https://cloud.google.com/run) | ⚙️ Deployed |
+| **Database** | [Cloud SQL PostgreSQL 15](https://cloud.google.com/sql/docs/postgres) | ⚙️ Deployed |
+| **Region** | [europe-west2 (London)](https://cloud.google.com/compute/docs/regions-zones) | ⚙️ Deployed |
 
-**Cost**: ~$7-13/month  
+**System Status**: 🟡 **Beta** - Active development, not yet in production use
+**Infrastructure**: Production-grade GCP resources (ekklesia-prod-10-2025 project)
+**Cost**: ~$7-13/month
 **Deployment**: Fully automated via [Cloud Run](https://cloud.google.com/run/docs/deploying)
 
 ---
@@ -125,7 +127,7 @@ Production operations, deployment, and monitoring.
 
 **Quick Links**:
 - [Operational Procedures](docs/operations/OPERATIONAL_PROCEDURES.md) - Meeting day operations
-- [Production Status](docs/status/CURRENT_DEVELOPMENT_STATUS.md) - Current status
+- [Development Status](docs/status/CURRENT_DEVELOPMENT_STATUS.md) - Current status (Beta)
 - [Deployment Guides](docs/setup/) - Service deployment
   - [Members Deployment Guide](docs/setup/MEMBERS_DEPLOYMENT_GUIDE.md)
 - [GitHub Workflows](docs/operations/GITHUB_WORKFLOWS_STATUS.md) - CI/CD status (563 lines)
@@ -189,14 +191,18 @@ Cloud infrastructure, services, and deployment pipelines.
 
 ## 📍 Current Status
 
-### ✅ Production Services (November 14, 2025)
+### ⚙️ Deployed Services - Beta (November 14, 2025)
+
+**Status**: 🟡 Beta - Active development with production-grade infrastructure
 
 | Service | Status | URL/Details |
 |---------|--------|-------------|
-| **[Members Portal](https://ekklesia-prod-10-2025.web.app)** | ✅ Production | Firebase Hosting + Python Cloud Functions |
-| **[Events Service](services/events/)** | ✅ Production | Cloud Run (europe-west2) |
-| **[Elections Service](services/elections/)** | ✅ Production | Cloud Run (europe-west2) |
-| **[Cloud SQL Database](https://console.cloud.google.com/sql)** | ✅ Production | PostgreSQL 15 (2 schemas: public, elections) |
+| **[Members Portal](https://ekklesia-prod-10-2025.web.app)** | 🟡 Beta | Firebase Hosting + Python Cloud Functions |
+| **[Events Service](services/events/)** | 🟡 Beta | Cloud Run (europe-west2) |
+| **[Elections Service](services/elections/)** | 🟡 Beta | Cloud Run (europe-west2) |
+| **[Cloud SQL Database](https://console.cloud.google.com/sql)** | 🟡 Beta | PostgreSQL 15 (2 schemas: public, elections) |
+
+**Note**: Services use production-grade infrastructure (GCP production project) but system is under active development and not yet in production use. Real Icelandic eID (Kenni.is) authentication is enabled for testing purposes.
 
 ### 🔨 Current Work (November 2025)
 
