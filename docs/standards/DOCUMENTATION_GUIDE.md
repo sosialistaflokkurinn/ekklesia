@@ -260,6 +260,94 @@ function getUserFromLocalStorage(userId) {
 
 ## README Files
 
+### Root vs Directory READMEs
+
+**Important distinction**: Root README serves a different purpose than directory READMEs.
+
+| Type | Purpose | Length | Content |
+|------|---------|--------|---------|
+| **Root README** | Gateway to documentation | ~80-120 lines | Overview + links |
+| **Directory README** | Detailed component docs | ~150-300 lines | Complete guide |
+
+### Root README (Repository Gateway)
+
+**Purpose**: First impression and navigation hub for the entire repository.
+
+**Philosophy**: Root README is a **gateway**, not a **manual**.
+
+**Should contain**:
+- ✅ Project name and 1-2 sentence description
+- ✅ Status badges (tests, security, deployment)
+- ✅ Quick links to main documentation (DOCUMENTATION_MAP.md)
+- ✅ Quick Start commands (clone + basic orientation)
+- ✅ Security vulnerability reporting contact
+- ✅ Prerequisites (tools needed)
+- ✅ High-level status (production services operational)
+- ✅ Support/contact information
+- ✅ Last updated date
+
+**Should NOT contain** (link instead):
+- ❌ Detailed architecture explanations
+- ❌ Complete feature lists
+- ❌ Technical implementation details
+- ❌ Security ratings and detailed features
+- ❌ Cost breakdowns
+- ❌ Current work/epic details
+
+**Why**:
+- Easier to scan
+- Easier to maintain (single source of truth)
+- Avoids duplication
+- Faster for new contributors to get oriented
+
+**Root README Template**:
+```markdown
+# Project Name
+
+[1-2 sentence description]
+
+[Status badges]
+
+## 📚 Documentation
+
+**Start Here**: [DOCUMENTATION_MAP.md](DOCUMENTATION_MAP.md)
+
+Quick Links:
+- [Getting Started](docs/README.md)
+- [Architecture](docs/architecture/)
+- [Scripts](scripts/README.md)
+
+## 🚀 Quick Start
+
+[3-5 clone/setup commands]
+
+## 🔒 Security
+
+Report vulnerabilities: [email] (see [SECURITY.md](SECURITY.md))
+
+## 📊 Status
+
+Production: ✅ Operational ([details](DOCUMENTATION_MAP.md))
+
+## 🧑‍💻 Development
+
+Prerequisites: [list tools]
+
+[Setup commands including pre-commit hooks]
+
+## 📞 Support
+
+[Contact info]
+
+**Last Updated**: [date]
+```
+
+**Target length**: 80-120 lines
+
+---
+
+### Directory READMEs (Component/Service Details)
+
 ### When to Create a README
 
 Create a README.md in a directory when:
@@ -273,7 +361,7 @@ Create a README.md in a directory when:
 - `apps/members-portal/README.md` - Members portal structure
 - `docs/standards/README.md` - Index of all standards (this file's location)
 
-### README Template
+### Directory README Template
 
 ```markdown
 # [Component/Service Name]
