@@ -1,6 +1,6 @@
 # Ekklesia Current Development Status
 
-**Last Updated:** 2025-11-10
+**Last Updated:** 2025-11-14
 **Status:** 🟡 Development Phase - Active Feature Development
 **Current Phase:** 5 - Feature Development & Deployment
 **Target Completion:** November 2025
@@ -42,7 +42,48 @@ Ekklesia infrastructure is **stable and ready for development**. Phase 4 complet
 
 ---
 
-## Recent Development Activity (Nov 1-10, 2025)
+## Recent Development Activity (Nov 10-14, 2025)
+
+**Major Achievements:**
+
+- ✅ **Events Service Rate Limiting Deployed (Nov 13)** - Production security enhancement
+  - **Commit**: 94b0e69 - security(events): Add comprehensive rate limiting to Events API
+  - **Deployment**: events-service-00024-4ll (europe-west2)
+  - **Impact**: Resolved 10 CodeQL "Missing rate limiting" security alerts
+  - **Rate Limits**:
+    - Read operations: 100 req/min (GET /election, /my-status, /my-token, /results)
+    - Token requests: 10 req/min strict (POST /request-token)
+    - Admin operations: 60 req/min (all /admin/* endpoints)
+  - **Middleware**: express-rate-limit@^7.5.1 with X-Forwarded-For support
+  - **URL**: https://events-service-521240388393.europe-west2.run.app
+
+- ✅ **Elections API - 47/47 Tests Passing (Nov 13-14)** - Complete test coverage achieved
+  - **Commits**:
+    - 05b1c4f - fix(tests): Fix critical Jest mock implementation reset bug (28/47 tests)
+    - f886158 - test(elections): Fix edge case tests (47/47 tests)
+  - **Progress**: 28/47 (60%) → 45/47 (96%) → 47/47 (100%)
+  - **Execution Time**: 0.85s (was 2+ min timeout)
+  - **Bugs Fixed**:
+    1. Database connection error handling (elections.js:223)
+    2. ROLLBACK on undefined client (elections.js:359)
+    3. Jest mock query tracking bug (db-mock.js:58) - Fixed 17 tests
+    4. JSON parse error handler (index.js:104)
+  - **Test Coverage**: All categories passing (Happy Path, Auth, Validation, Windows, Eligibility, Transactions, Edge Cases, Integration)
+  - **Documentation**: Added JEST_MOCK_IMPLEMENTATION_BUG.md investigation and JEST_MOCKING_BEST_PRACTICES.md
+  - **Issue Closed**: #268 - Add automated tests for vote submission endpoint
+
+- ✅ **Documentation Hierarchy Completion (Nov 14)** - Infrastructure category enhancement
+  - **Commit**: 11cce3c - docs(infrastructure): Add documentation maintenance scripts to INFRASTRUCTURE_MAP.md
+  - **Changes**: Added documentation maintenance section to Level 2 infrastructure map
+  - **Scripts Documented**:
+    - validate-all.sh - Master validation script
+    - check-docs-freshness.sh - Documentation freshness monitoring
+    - validate-links.py - Markdown link validation
+    - validate_documentation_map.py - DOCUMENTATION_MAP.md validation
+  - **Impact**: Complete Level 1 → Level 2 → Level 3 navigation for all infrastructure tools
+  - **Philosophy**: Follows 3-level hierarchical documentation system
+
+## Previous Development Activity (Nov 1-10, 2025)
 
 **Major Features & Infrastructure:**
 
