@@ -266,7 +266,7 @@ def handleKenniAuth_handler(req: https_fn.Request) -> https_fn.Response:
 
         normalized_kennitala = normalize_kennitala(national_id)
 
-        # Normalize phone number to XXX-XXXX format
+        # Normalize phone number to 7 digits (remove hyphen for database storage)
         normalized_phone_num = normalize_phone(phone_number) if phone_number else None
 
         log_json("info", "Verified Kenni.is token", userName=full_name, kennitala=f"{normalized_kennitala[:7]}****", correlationId=correlation_id)
