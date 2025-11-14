@@ -2,7 +2,7 @@
 
 **Document Type**: Infrastructure Documentation
 **Last Updated**: 2025-11-10
-**Status**: ✅ Active - Production Services
+**Status**: ✅ Active - Deployed Services (Beta)
 **Project**: ekklesia-prod-10-2025
 **Region**: europe-west2 (London)
 

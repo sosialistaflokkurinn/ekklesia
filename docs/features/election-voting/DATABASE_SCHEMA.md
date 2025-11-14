@@ -526,5 +526,5 @@ gcloud sql export sql ekklesia-db \
 
 **Last Updated**: 2025-11-11
 **Schema Version**: 4 (004_ballots_multi_election.sql)
-**Production Status**: ✅ Active
+**Status**: ✅ Active (Beta)
 **Next Review**: 2026-02-11 (Quarterly)

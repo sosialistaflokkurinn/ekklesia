@@ -1,4 +1,4 @@
-# 🚀 Ekklesia Production Status
+# 🚀 Ekklesia Deployment Status (Beta)
 
 **Last Updated**: 2025-10-15 21:30 UTC
 **Project**: ekklesia-prod-10-2025 (521240388393)
@@ -24,8 +24,8 @@
 | Service | URL | Status | Details | Last Deploy |
 |---------|-----|--------|---------|-------------|
 | **Hosting** | https://ekklesia-prod-10-2025.web.app | ✅ Active | Members portal (dashboard, profile) | Oct 8, 2025 12:18 UTC |
-| **Authentication** | Firebase Auth | ✅ Active | Custom token auth with kennitala claims | Production |
-| **Firestore** | Cloud Firestore (europe-west2) | ✅ Active | User profiles, membership status | Production |
+| **Authentication** | Firebase Auth | ✅ Active | Custom token auth with kennitala claims | Beta |
+| **Firestore** | Cloud Firestore (europe-west2) | ✅ Active | User profiles, membership status | Beta |
 | **Storage** | Firebase Storage | ✅ Active | kennitalas.txt (2,273 members, 24.47 KiB) | Oct 8, 2025 |
 
 ### Cloud SQL Services
