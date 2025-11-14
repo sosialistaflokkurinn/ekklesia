@@ -49,20 +49,24 @@ def validate_kennitala(kennitala: str) -> bool:
 
 def normalize_phone(phone: str) -> str:
     """
-    Normalize Icelandic phone number to XXX-XXXX format.
+    Normalize Icelandic phone number to 7 digits without hyphen (for database storage).
+
+    Design pattern (same as kennitala):
+    - UI Display: "690-3635" (formatted for readability)
+    - Database: "6903635" (normalized for storage)
 
     Handles various input formats:
-    - +3545551234 -> 555-1234
-    - 003545551234 -> 555-1234
-    - 5551234 -> 555-1234
-    - 555 1234 -> 555-1234
-    - 5551-234 -> 555-1234
+    - +3545551234 -> 5551234
+    - 003545551234 -> 5551234
+    - 555-1234 -> 5551234
+    - 555 1234 -> 5551234
+    - 5551-234 -> 5551234
 
     Args:
         phone: Phone number string in various formats
 
     Returns:
-        Normalized phone number in XXX-XXXX format,
+        Normalized 7-digit phone number (no hyphen),
         or None if input is None/empty,
         or original string if format is invalid
     """
@@ -83,5 +87,39 @@ def normalize_phone(phone: str) -> str:
         log_json("warn", "Invalid phone number format", original=phone, digits=digits, length=len(digits))
         return phone  # Return original if invalid
 
-    # Format as XXX-XXXX (3 digits - hyphen - 4 digits)
+    # Return normalized 7 digits (no hyphen for database storage)
+    return digits
+
+
+def format_phone(phone: str) -> str:
+    """
+    Format Icelandic phone number for UI display (XXX-XXXX).
+
+    This is the inverse of normalize_phone() - use for display only.
+
+    Args:
+        phone: 7-digit phone number (e.g., "6903635")
+
+    Returns:
+        Formatted phone number with hyphen (e.g., "690-3635"),
+        or original string if format is invalid
+
+    Example:
+        # Database storage (normalized):
+        normalized = normalize_phone("690-3635")  # "6903635"
+
+        # UI display (formatted):
+        displayed = format_phone(normalized)  # "690-3635"
+    """
+    if not phone:
+        return phone
+
+    # Remove any existing hyphens/whitespace
+    digits = ''.join(c for c in phone if c.isdigit())
+
+    # Validate: should be exactly 7 digits
+    if len(digits) != 7:
+        return phone  # Return original if invalid
+
+    # Format as XXX-XXXX
     return f"{digits[:3]}-{digits[3:]}"

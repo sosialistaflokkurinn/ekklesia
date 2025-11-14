@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
 from google.cloud import firestore
 from utils_logging import log_json
+from shared.validators import normalize_kennitala as normalize_kennitala_shared, normalize_phone as normalize_phone_shared
 
 # Django API Base URL
 DJANGO_API_BASE_URL = "https://starf.sosialistaflokkurinn.is/felagar"
@@ -20,53 +21,23 @@ def normalize_kennitala(kennitala: str) -> str:
     """
     Normalize kennitala to 10 digits without hyphen (for use as Firestore document ID).
 
-    Example: "010101-2980" -> "0101012980"
+    Wrapper for shared.validators.normalize_kennitala() for backwards compatibility.
     """
-    if not kennitala:
-        return None
-
-    # Remove any whitespace and hyphens
-    kennitala = kennitala.strip().replace('-', '')
-
-    # Validate it's 10 digits
-    if len(kennitala) == 10 and kennitala.isdigit():
-        return kennitala
-
-    return kennitala
+    return normalize_kennitala_shared(kennitala)
 
 
 def normalize_phone(phone: str) -> str:
-    """Normalize Icelandic phone number to XXX-XXXX format
-
-    Handles various input formats:
-    - +3545551234 -> 555-1234
-    - 003545551234 -> 555-1234
-    - 5551234 -> 555-1234
-    - 555 1234 -> 555-1234
-    - 5551-234 -> 555-1234
-
-    Returns None if phone is None or empty.
-    Returns original string if format is invalid (not 7 digits after normalization).
     """
-    if not phone:
-        return None
+    Normalize Icelandic phone number to 7 digits without hyphen (for database storage).
 
-    # Remove all whitespace, dashes, parentheses, and other separators
-    phone = phone.strip()
-    digits = ''.join(c for c in phone if c.isdigit())
+    Wrapper for shared.validators.normalize_phone() for backwards compatibility.
 
-    # Remove Iceland country code prefix if present
-    # +354 or 00354 -> 10 digits total
-    if digits.startswith('354') and len(digits) == 10:
-        digits = digits[3:]  # Remove '354' prefix
-
-    # Validate: should be exactly 7 digits for Icelandic phone
-    if len(digits) != 7:
-        log_json("warn", "Invalid phone number format", original=phone, digits=digits, length=len(digits))
-        return phone  # Return original if invalid
-
-    # Format as XXX-XXXX (3 digits - hyphen - 4 digits)
-    return f"{digits[:3]}-{digits[3:]}"
+    BREAKING CHANGE (Nov 14, 2025):
+    - Old behavior: Returned "690-3635" (formatted with hyphen)
+    - New behavior: Returns "6903635" (normalized without hyphen)
+    - Reason: Database normalization pattern (same as kennitala)
+    """
+    return normalize_phone_shared(phone)
 
 
 def get_django_api_token() -> str:
