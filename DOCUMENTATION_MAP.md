@@ -1,7 +1,7 @@
 # 🗺️ Ekklesia Platform - Documentation Map
 
-**Version**: 9.0.0  
-**Last Updated**: 2025-11-07  
+**Version**: 9.0.0
+**Last Updated**: 2025-11-14
 **Status**: ✅ Level 1 Navigation Hub - Hierarchical Documentation System  
 
 ---
@@ -88,7 +88,7 @@ System design, component architecture, and technical decisions.
 
 **Quick Links**:
 - [Database Schema](docs/integration/DJANGO_DATABASE_SCHEMA.md) - Complete DB schema
-- [Cloud Run Services](docs/infrastructure/CLOUD_RUN_SERVICES.md) - Service architecture (800+ lines)
+- [Cloud Run Services](docs/infrastructure/CLOUD_RUN_SERVICES.md) - Service architecture (1000+ lines)
 - [Django Backend System](docs/systems/DJANGO_BACKEND_SYSTEM.md) - Backend documentation (1,199 lines)
 - [CSS Design System](docs/architecture/CSS_DESIGN_SYSTEM.md) - Component architecture
 - [Usage Context](docs/development/guides/workflows/USAGE_CONTEXT.md) - Capacity planning
@@ -179,7 +179,7 @@ External system integrations and API documentation.
 Cloud infrastructure, services, and deployment pipelines.
 
 **Quick Links**:
-- [Cloud Run Services](docs/infrastructure/CLOUD_RUN_SERVICES.md) - Service config (800+ lines)
+- [Cloud Run Services](docs/infrastructure/CLOUD_RUN_SERVICES.md) - Service config (1000+ lines)
 - [GitHub Workflows](docs/operations/GITHUB_WORKFLOWS_STATUS.md) - CI/CD workflows (563 lines)
 - [Database Scripts](scripts/database/README.md) - Cloud SQL tools
 - [Deployment Scripts](scripts/deployment/README.md) - Deployment automation
@@ -189,7 +189,7 @@ Cloud infrastructure, services, and deployment pipelines.
 
 ## 📍 Current Status
 
-### ✅ Production Services (November 7, 2025)
+### ✅ Production Services (November 14, 2025)
 
 | Service | Status | URL/Details |
 |---------|--------|-------------|
@@ -201,7 +201,7 @@ Cloud infrastructure, services, and deployment pipelines.
 ### 🔨 Current Work (November 2025)
 
 - **[Epic #186](https://github.com/sosialistaflokkurinn/ekklesia/issues/186)**: Member Voting Experience improvements
-- **[Epic #159](https://github.com/sosialistaflokkurinn/ekklesia/issues/159)**: Profile Editing & Admin UI enhancements
+- **[Epic #251](https://github.com/sosialistaflokkurinn/ekklesia/issues/251)**: Voting System Security & Anonymity Enhancements
 - **Documentation**: Hierarchical documentation system implementation
 
 **Recent Milestones**: See [Status Documents](docs/status/) for detailed history
@@ -326,8 +326,8 @@ The following directories are excluded from documentation hierarchy:
 
 ---
 
-**Document Version**: 9.0.0  
-**Major Change**: Hierarchical documentation system - simplified to Level 1 navigation hub  
-**Last Reviewed**: 2025-11-07  
-**Next Review**: 2026-02-07 (Quarterly)  
+**Document Version**: 9.0.0
+**Major Change**: Hierarchical documentation system - simplified to Level 1 navigation hub
+**Last Reviewed**: 2025-11-14
+**Next Review**: 2026-02-14 (Quarterly)
 **Philosophy**: [Documentation Philosophy](docs/DOCUMENTATION_PHILOSOPHY.md)
