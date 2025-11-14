@@ -1,21 +1,21 @@
 # Operations Category Map
 
-**Last Updated**: 2025-11-07  
+**Last Updated**: 2025-11-14  
 **Status**: ✅ Level 2 Category Map  
-**Purpose**: Production operations, deployment, and monitoring
+**Purpose**: Operations, deployment, and monitoring
 
 ---
 
 ## Overview
 
-This category map provides navigation to all operations documentation including operational procedures, deployment guides, production status, and monitoring.
+This category map provides navigation to all operations documentation including operational procedures, deployment guides, development status, and monitoring.
 
 ---
 
 ## Quick Links
 
 - [Operational Procedures](../docs/operations/OPERATIONAL_PROCEDURES.md) - Meeting day operations manual
-- [Production Status](../docs/status/CURRENT_DEVELOPMENT_STATUS.md) - Current development status
+- [Development Status](../docs/status/CURRENT_DEVELOPMENT_STATUS.md) - Current development status
 - [Deployment Guides](../docs/setup/) - Service deployment guides
 
 ---
@@ -27,7 +27,7 @@ This category map provides navigation to all operations documentation including 
 - [GitHub Workflows Status](../docs/operations/GITHUB_WORKFLOWS_STATUS.md)
 - [Documentation Changelog](../docs/operations/DOCUMENTATION_CHANGELOG.md)
 
-### Production Status
+### Development Status
 - [Current Development Status](../docs/status/CURRENT_DEVELOPMENT_STATUS.md)
 - [Status Documents Guide](../docs/status/README.md)
 
