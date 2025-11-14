@@ -19,7 +19,7 @@ This repository is **public**. Never commit:
 
 ## Reporting a Vulnerability
 
-- **Email**: security@sosialistaflokkurinn.is
+- **Email**: xj@xj.is
 - **Response Time**: 48 hours
 - **Coordinated Disclosure**: 90 days from report unless extended by mutual agreement
 - **Urgent Incidents**: Include "[SECURITY]" in subject with reproduction details and impacted components
@@ -303,7 +303,7 @@ If you discover **PII or secrets** in the repository:
 
 ## Contact
 
-- **Security Issues**: security@sosialistaflokkurinn.is
+- **Security Issues**: xj@xj.is
 - **Urgent Incidents**: Include "[SECURITY]" in subject
 - **Platform Maintainers**: File issue with `security` label
 
