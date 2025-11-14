@@ -114,16 +114,16 @@
 }
 
 /* Responsive */
-@media (max-width: 768px) {
+@media (max-width: 1220px) {
   .admin-nav__container {
     padding: 0 1rem;
     gap: 1rem;
   }
-  
+
   .admin-nav__links {
     display: none; /* Hide on mobile, show hamburger instead */
   }
-  
+
   .admin-nav__user #user-email {
     display: none;
   }

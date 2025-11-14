@@ -141,10 +141,10 @@
 }
 
 /* ========================================== */
-/* MOBILE RESPONSIVE (≤768px) */
+/* MOBILE RESPONSIVE (≤1220px) */
 /* ========================================== */
 
-@media (max-width: 768px) {
+@media (max-width: 1220px) {
 
   /* Show hamburger button */
   .nav__hamburger {
@@ -298,7 +298,7 @@
   outline-offset: 2px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1220px) {
   .nav__hamburger:focus-visible {
     outline-color: var(--color-white);
   }
