@@ -27,16 +27,18 @@ All documentation tracked in git must be in English:
 
 ### ⚠️ Exceptions (Non-English Allowed)
 
-**User-facing text** (target language appropriate):
+**User-facing text only** (target language appropriate):
 - ✅ i18n files (`values-is/strings.xml`, `locales/is.json`) - Icelandic/Danish/etc.
 - ✅ UI strings and labels
 - ✅ Error messages shown to end users
 
-**Personal notes** (Icelandic OK, but not in git):
-- ✅ `.claude/` directory - Personal AI assistant notes (in `.gitignore`)
-- ✅ `.gitignore.local` - Personal ignore rules
-- ✅ `*.draft.md` - Personal working documents (in `.gitignore`)
-- ✅ `*.notes.md` - Personal notes (in `.gitignore`)
+**Personal notes** (English preferred):
+- 📝 `.claude/` directory - Personal AI assistant notes (in `.gitignore`)
+- 📝 `.gitignore.local` - Personal ignore rules
+- 📝 `*.draft.md` - Personal working documents (in `.gitignore`)
+- 📝 `*.notes.md` - Personal notes (in `.gitignore`)
+
+**Why English for personal notes?**: Reduces confusion, maintains consistency, easier to share with team if needed, better AI assistant compatibility.
 
 ### ❌ Common Mistakes to Avoid
 
@@ -54,8 +56,8 @@ All documentation tracked in git must be in English:
 
 **Mistake 3**: Personal working documents in project docs
 ```
-❌ Bad: ARCHIVE_GIT_TRACKING_ANALYSIS.md in project root (Icelandic)
-✅ Good: .claude/git-tracking-notes.md (personal notes, Icelandic OK)
+❌ Bad: ARCHIVE_GIT_TRACKING_ANALYSIS.md in project root (any language)
+✅ Good: .claude/git-tracking-notes.md (personal notes, English preferred)
 ```
 
 ### 🗣️ Communication vs Documentation
@@ -66,11 +68,13 @@ All documentation tracked in git must be in English:
 |---------|----------|----------|----------|
 | **Project Documentation** | 🇬🇧 English | `/docs/`, `/services/`, code | README.md, JSDoc, guides |
 | **Git History** | 🇬🇧 English | Git commits, PRs, issues | Commit messages, PR descriptions |
-| **Personal Notes** | 🇮🇸 Icelandic OK | `.claude/`, local only | Working notes, drafts |
+| **Personal Notes** | 🇬🇧 English preferred | `.claude/`, local only | Working notes, drafts |
 | **Team Chat** | 🇮🇸 Icelandic OK | Slack, Discord, verbal | Daily communication |
 | **Code Review Comments** | 🇬🇧 English | GitHub PR reviews | Technical feedback |
 
-**Rationale**: Documentation is permanent and public. Chat is ephemeral and internal.
+**Rationale**:
+- **Documentation** (project + personal): Permanent record, maintains consistency, reduces confusion
+- **Chat**: Ephemeral and internal, native language OK for team communication
 
 ### 🔍 Why English-Only Documentation?
 
