@@ -1,0 +1,158 @@
+# Ekklesia Platform - Git Ignore Template
+# This file contains project-wide ignore rules.
+# New developers should copy this to .gitignore:
+# cp .gitignore.example .gitignore
+
+##################################################################
+# --- PROJECT-WIDE IGNORE RULES ---
+# (This file SHOULD be committed to Git)
+##################################################################
+
+# --- Local & Personal Files ---
+# HYBRID STRATEGY: .gitignore is tracked, .gitignore.local is NOT
+# Personal ignore patterns go in .gitignore.local (git reads both automatically)
+# See: docs/development/guides/GITIGNORE_LOCAL_STRATEGY.md
+.gitignore.local
+!.gitignore.local.example
+
+# Ignore local environment variables.
+.env
+.env.*
+!*.env.example
+
+# --- Security & Secrets ---
+# Service account keys and other credentials
+*.key.json
+*client_secret*
+*serviceAccount*.json
+firebase-adminsdk-*.json
+
+# --- Python ---
+# Bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+venv/
+env/
+.venv/
+.virtualenv/
+
+# --- Node.js ---
+# Dependencies and logs
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.eslintcache
+
+# --- IDEs & Editors ---
+# .vscode/ - Now tracked in git (shared workspace settings)
+# .vscode/settings.json contains:
+#   - files.exclude for hiding symlinks
+#   - other shared project settings
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+
+# --- OS Specific ---
+.DS_Store
+Thumbs.db
+
+# --- Firebase ---
+.firebase/
+*.log
+
+# --- Development Tools ---
+# Note: /apps/members-portal/dev-tools/ is tracked in Git
+# These are legitimate debugging tools for development
+# (force-refresh.html, token-debug.html, etc.)
+
+# --- Google Cloud ---
+# Ignore the Cloud SQL Proxy binary itself
+cloud-sql-proxy*
+
+# --- Build & Temp Artifacts ---
+dist/
+build/
+*.backup
+*.backup.xml
+*.bak
+*.old
+
+# --- Temporary Working Directory ---
+# Use /tmp/ for all temporary files during development
+# (See .claude/settings.local.json - Project Structure Rule)
+tmp/
+*.tmp
+
+# --- Project Specific (Local Only) ---
+
+# Local-only archives and audit results
+# Note: Specific documentation within these folders can be un-ignored
+# with targeted rules if needed, e.g., !archive/docs-plans/
+archive/
+audits/
+
+# ⚠️ USER LOGIN TRACKING SCRIPTS - DO NOT COMMIT TO REMOTE ⚠️
+# These scripts access and display real user login data with PII
+# (names, kennitölur, phone numbers, emails)
+# They should ONLY exist locally for authorized administrators
+services/members/scripts/check-user-logins.js
+services/members/scripts/check-logins-today.js
+
+# Symlink created by setup scripts
+services/members/public
+
+# Admin portal build output only (source code should be tracked)
+public/admin/
+
+# Admin portal PII protection (screenshots, test data)
+apps/members-portal/admin/**/*.png
+apps/members-portal/admin/**/*.jpg
+apps/members-portal/admin/**/*.jpeg
+apps/members-portal/admin/**/*test-data*
+apps/members-portal/admin/**/*sample-data*
+
+# Temporary directory for Playwright screenshots
+.playwright-mcp/
+
+# Sensitive temporary documentation (contains PII/kennitalur)
+*KENNITALA*.md
+*DUPLICATE_SSN*.md
+*DJANGO_KENNITALA*.md
+*kennitala*.md
+*pii_redaction*.md
+
+# Scripts that contain potentially real PII in documentation/examples
+# Scripts containing potentially sensitive examples/documentation
+scripts/admin/replace-fake-data.sh
+
+# Policy meeting documentation with personal information
+docs/policy/IMMIGRATION_POLICY_MEETING_2025-11-08.md
+
+# Log files that may contain PII
+scripts/logs/*.jsonl
+**/logs/*.jsonl
+*.audit.json
+*-audit-*.jsonl
+
+# IDE / Tooling folders (personal, local only)
+.claude/
+.gemini/
+
+# Party mark/logo work directory (personal)
+correct-mark-of-the-party/
+
+# Local data files
+data/Stadfangaskra.csv
+AUDIT_CODE_DOCUMENTATION_2025-10-20.json
+AUDIT_CODE_DOCUMENTATION_DETAILED_2025-10-20.json
+data/

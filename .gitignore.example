@@ -48,10 +48,7 @@ yarn-error.log*
 .eslintcache
 
 # --- IDEs & Editors ---
-# .vscode/ - Now tracked in git (shared workspace settings)
-# .vscode/settings.json contains:
-#   - files.exclude for hiding symlinks
-#   - other shared project settings
+.vscode/
 .idea/
 *.swp
 *.swo
@@ -67,11 +64,6 @@ Thumbs.db
 .firebase/
 *.log
 
-# --- Development Tools ---
-# Note: /apps/members-portal/dev-tools/ is tracked in Git
-# These are legitimate debugging tools for development
-# (force-refresh.html, token-debug.html, etc.)
-
 # --- Google Cloud ---
 # Ignore the Cloud SQL Proxy binary itself
 cloud-sql-proxy*
@@ -80,15 +72,8 @@ cloud-sql-proxy*
 dist/
 build/
 *.backup
-*.backup.xml
 *.bak
 *.old
-
-# --- Temporary Working Directory ---
-# Use /tmp/ for all temporary files during development
-# (See .claude/settings.local.json - Project Structure Rule)
-tmp/
-*.tmp
 
 # --- Project Specific (Local Only) ---
 
@@ -98,25 +83,12 @@ tmp/
 archive/
 audits/
 
-# ⚠️ USER LOGIN TRACKING SCRIPTS - DO NOT COMMIT TO REMOTE ⚠️
-# These scripts access and display real user login data with PII
-# (names, kennitölur, phone numbers, emails)
-# They should ONLY exist locally for authorized administrators
-services/members/scripts/check-user-logins.js
-services/members/scripts/check-logins-today.js
-
 # Symlink created by setup scripts
 services/members/public
 
-# Admin portal build output only (source code should be tracked)
+# Admin portal directories (content is built or managed elsewhere)
 public/admin/
-
-# Admin portal PII protection (screenshots, test data)
-apps/members-portal/admin/**/*.png
-apps/members-portal/admin/**/*.jpg
-apps/members-portal/admin/**/*.jpeg
-apps/members-portal/admin/**/*test-data*
-apps/members-portal/admin/**/*sample-data*
+apps/members-portal/admin/
 
 # Temporary directory for Playwright screenshots
 .playwright-mcp/
@@ -128,29 +100,14 @@ apps/members-portal/admin/**/*sample-data*
 *kennitala*.md
 *pii_redaction*.md
 
-# Scripts that contain potentially real PII in documentation/examples
-# Scripts containing potentially sensitive examples/documentation
-scripts/admin/replace-fake-data.sh
-
-# Policy meeting documentation with personal information
-docs/policy/IMMIGRATION_POLICY_MEETING_2025-11-08.md
-
 # Log files that may contain PII
 scripts/logs/*.jsonl
 **/logs/*.jsonl
 *.audit.json
 *-audit-*.jsonl
 
-##################################################################
-# --- PERSONAL DEVELOPMENT FILES ---
-# Add these to YOUR .gitignore (copy this file first)
-# Examples below - customize for your workflow
-##################################################################
+# Temporary files from Gemini
+.gemini/tmp/
 
-# Examples of personal patterns (uncomment and add your own):
-# .claude/                              # Claude AI settings
-# .gemini/                              # Gemini AI settings
-# correct-mark-of-the-party/            # Personal work directories
-# data/                                 # Local data files
-# my-scripts/                           # Personal scripts
-# *.personal.md                         # Personal notes
+# Local debugging files
+apps/members-portal/js/utils/debug.js
