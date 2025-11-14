@@ -22,6 +22,9 @@ from communication.models import Email
 from membership.models_sync import MemberSyncQueue
 from datetime import datetime
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @api_view(['GET'])
@@ -63,8 +66,11 @@ def get_pending_changes(request):
             if since is None:
                 raise ValueError('Invalid datetime format')
         except (ValueError, TypeError) as e:
+            # Log actual error server-side for debugging
+            logger.warning(f'Invalid since parameter: {str(e)}')
+
             return Response({
-                'error': f'Invalid since parameter: {str(e)}. Use ISO 8601 format.'
+                'error': 'Invalid since parameter format. Use ISO 8601 format (e.g., 2025-11-14T12:00:00Z).'
             }, status=400)
     
     # Get pending changes
@@ -200,10 +206,13 @@ def apply_firestore_changes(request):
                 })
         
         except Exception as e:
+            # Log actual error server-side for debugging
+            logger.error(f'Member sync failed for kennitala: {str(e)}')
+
             results.append({
                 'ssn': kennitala,
                 'status': 'error',
-                'message': str(e)
+                'message': 'Failed to process member data'
             })
     
     return Response({

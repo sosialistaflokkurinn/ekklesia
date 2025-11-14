@@ -31,9 +31,14 @@ app.use(express.json({
 }));
 
 // Request logging (development only)
+// Note: Using structured logger instead of console.log to prevent log injection
 if (process.env.NODE_ENV !== 'production') {
   app.use((req, res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+    logger.debug('Incoming request', {
+      operation: 'http_request',
+      method: req.method,
+      path: req.path
+    });
     next();
   });
 }
