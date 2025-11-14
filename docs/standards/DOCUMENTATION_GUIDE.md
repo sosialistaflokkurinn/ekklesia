@@ -8,27 +8,117 @@
 
 ## 📝 Documentation Language Policy
 
-**CRITICAL RULE: All documentation MUST be written in English.**
+**CRITICAL RULE: All project documentation MUST be written in English.**
 
-This includes:
-- ✅ All `.md` files in `/docs/`
+### ✅ Must Be in English
+
+All documentation tracked in git must be in English:
+- ✅ All `.md` files in `/docs/`, `/services/`, `/apps/`, and project root
+- ✅ All `README.md` files at all levels
 - ✅ Code comments (JSDoc, Python docstrings, inline comments)
 - ✅ Git commit messages
 - ✅ GitHub issues, PRs, and comments
 - ✅ API documentation
-- ✅ README files at all levels
 - ✅ Architecture Decision Records (ADRs)
 - ✅ Test descriptions and assertions
+- ✅ Configuration file comments
+- ✅ Script help text and error messages
+- ✅ Checklists and guides
 
-**Exception**: User-facing text in i18n files (`strings.xml`) should be in the target language (Icelandic/English/etc.)
+### ⚠️ Exceptions (Non-English Allowed)
 
-**Rationale**:
-- Enables international collaboration
-- Follows industry best practices
-- Makes code accessible to AI assistants and tools
-- Ensures consistency across the codebase
+**User-facing text** (target language appropriate):
+- ✅ i18n files (`values-is/strings.xml`, `locales/is.json`) - Icelandic/Danish/etc.
+- ✅ UI strings and labels
+- ✅ Error messages shown to end users
 
-**Enforcement**: Code reviews should reject PRs with non-English documentation.
+**Personal notes** (Icelandic OK, but not in git):
+- ✅ `.claude/` directory - Personal AI assistant notes (in `.gitignore`)
+- ✅ `.gitignore.local` - Personal ignore rules
+- ✅ `*.draft.md` - Personal working documents (in `.gitignore`)
+- ✅ `*.notes.md` - Personal notes (in `.gitignore`)
+
+### ❌ Common Mistakes to Avoid
+
+**Mistake 1**: Writing documentation in Icelandic because "it's faster"
+```
+❌ Bad: Creating docs/checklists/CHECKLIST.md in Icelandic
+✅ Good: Writing docs/checklists/CHECKLIST.md in English from the start
+```
+
+**Mistake 2**: Keeping dual versions (English + Icelandic)
+```
+❌ Bad: docs/DEBUG_MODE.md (English) + docs/DEBUG_MODE.is.md (Icelandic)
+✅ Good: Only docs/DEBUG_MODE.md (English)
+```
+
+**Mistake 3**: Personal working documents in project docs
+```
+❌ Bad: ARCHIVE_GIT_TRACKING_ANALYSIS.md in project root (Icelandic)
+✅ Good: .claude/git-tracking-notes.md (personal notes, Icelandic OK)
+```
+
+### 🗣️ Communication vs Documentation
+
+**Important distinction**: How you communicate with teammates vs how you document code.
+
+| Context | Language | Location | Examples |
+|---------|----------|----------|----------|
+| **Project Documentation** | 🇬🇧 English | `/docs/`, `/services/`, code | README.md, JSDoc, guides |
+| **Git History** | 🇬🇧 English | Git commits, PRs, issues | Commit messages, PR descriptions |
+| **Personal Notes** | 🇮🇸 Icelandic OK | `.claude/`, local only | Working notes, drafts |
+| **Team Chat** | 🇮🇸 Icelandic OK | Slack, Discord, verbal | Daily communication |
+| **Code Review Comments** | 🇬🇧 English | GitHub PR reviews | Technical feedback |
+
+**Rationale**: Documentation is permanent and public. Chat is ephemeral and internal.
+
+### 🔍 Why English-Only Documentation?
+
+1. **International Collaboration**: Future developers may not speak Icelandic
+2. **Industry Best Practice**: English is the lingua franca of software development
+3. **AI Assistant Compatibility**: Tools like GitHub Copilot, Claude Code work best with English
+4. **Open Source Ready**: If we open-source in future, docs are already accessible
+5. **Consistency**: One language means clear expectations, no confusion
+6. **Search & Discovery**: English documentation is more discoverable online
+
+### 🛡️ Enforcement
+
+**Code Review**:
+- ❌ Block PRs with non-English documentation
+- ⚠️ Request translation before merge
+
+**Pre-commit Hooks** (if implemented):
+- Check for common Icelandic characters in `/docs/` markdown files
+- Allow exceptions for i18n files
+
+**Documentation Audits** (periodic):
+- Run: `find docs/ -name "*.md" -exec grep -l "[þðæöáíúýé]" {} \;`
+- Review flagged files for language policy compliance
+
+### 📋 Translation Checklist
+
+If you accidentally created documentation in Icelandic:
+
+1. **Translate to English**: Rewrite the document in English
+2. **Update Links**: Search for links to the old filename
+3. **Delete Icelandic Version**: Don't keep dual versions
+4. **Optional**: Save Icelandic version in `.claude/` for personal reference
+5. **Commit**: Commit the English version only
+
+**Example**:
+```bash
+# You have docs/guide.md in Icelandic
+# 1. Translate and save
+vim docs/guide.md  # Rewrite in English
+
+# 2. Optional: Save personal Icelandic copy
+mkdir -p .claude/
+cp docs/guide.md .claude/guide-is-original.md
+
+# 3. Commit English version
+git add docs/guide.md
+git commit -m "docs: Translate guide.md to English per language policy"
+```
 
 ---
 
@@ -715,6 +805,6 @@ Before merging code, verify:
 
 ---
 
-**Last Updated**: 2025-11-04
+**Last Updated**: 2025-11-14
 **Maintained By**: All developers
 **Status**: ✅ Active - Required for all documentation

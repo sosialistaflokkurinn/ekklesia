@@ -1,261 +1,260 @@
-# Tjékklisti: Skoða Innskráningar Notenda
+# Checklist: Check User Logins
 
-Þessi tjékklisti útskýrir hvernig á að skoða hverjir hafa skráð sig inn í Ekklesia kerfið.
-
----
-
-## ⚠️ Mikilvægt: Gagnaskipan
-
-**Innskráningargögn eru í Firestore, EKKI PostgreSQL**
-
-- **Firestore**: `/users/` collection með `lastLogin` timestamp
-- **PostgreSQL**: Inniheldur aðeins kosningagögn (voting_tokens, audit_log)
+This checklist explains how to view who has logged into the Ekklesia system.
 
 ---
 
-## 📋 Skref fyrir skref
+## ⚠️ Important: Data Structure
 
-### 1. ✅ Gakktu úr skugga um að þú sért með aðgang
+**Login data is in Firestore, NOT PostgreSQL**
+
+- **Firestore**: `/users/` collection with `lastLogin` timestamp
+- **PostgreSQL**: Contains only voting data (voting_tokens, audit_log)
+
+---
+
+## 📋 Step-by-Step Instructions
+
+### 1. ✅ Verify Authentication
 
 ```bash
-# Innskráning í Google Cloud
+# Login to Google Cloud
 gcloud auth login
 
-# Innskráning í Firebase
+# Login to Firebase
 firebase login --reauth
 
-# Setja upp Application Default Credentials (fyrir Cloud SQL Proxy)
+# Set up Application Default Credentials (for Cloud SQL Proxy)
 gcloud auth application-default login
 ```
 
-**Staðfesting**: Þú átt að sjá `Credentials saved to file:` skilaboð
+**Verification**: You should see `Credentials saved to file:` message
 
 ---
 
-### 2. ✅ Farðu í réttu möppuna
+### 2. ✅ Navigate to Scripts Directory
 
 ```bash
 cd /home/gudro/Development/projects/ekklesia/services/members/scripts
 ```
 
-Eða frá rótar möppu verkefnis:
+Or from project root:
 ```bash
 cd services/members/scripts
 ```
 
 ---
 
-### 3. ✅ Keyrðu innskráningarskýrslu
+### 3. ✅ Run Login Report
 
-**Sjá innskráningar í dag**:
+**View today's logins**:
 ```bash
 node check-user-logins.js
 ```
 
-**Aðrir valmöguleikar**:
+**Other options**:
 ```bash
-# Síðustu 7 daga
+# Last 7 days
 node check-user-logins.js --days 7
 
-# Síðustu 20 innskráningar
+# Latest 20 logins
 node check-user-logins.js --latest 20
 
-# Tiltekinn dagur
+# Specific date
 node check-user-logins.js --date 2025-11-01
 
-# Sjá hjálp
+# Show help
 node check-user-logins.js --help
 ```
 
 ---
 
-### 4. ✅ Túlka niðurstöður
+### 4. ✅ Interpret Results
 
-Scriptið sýnir fyrir hvern notanda:
-- **Nafn**: Fullt nafn notanda
-- **Kennitala**: Íslensk kennitala
-- **Innskráning**: Nákvæmur tími innskráningar
-- **Email**: Netfang (ef til staðar)
-- **Sími**: Símanúmer (ef til staðar)
-- **Félagsmaður**: Já/Nei - hvort viðkomandi er skráður félagsmaður
-- **Hlutverk**: Admin hlutverk (ef einhver)
+The script displays for each user:
+- **Name**: Full name
+- **Kennitala**: Icelandic national ID
+- **Login**: Exact login timestamp
+- **Email**: Email address (if available)
+- **Phone**: Phone number (if available)
+- **Member**: Yes/No - whether user is a registered member
+- **Role**: Admin role (if any)
 
-**Dæmi um úttak**:
+**Example output**:
 ```
 1. Jón Jónsson (0101901234)
-   Innskráning: 8.11.2025, 12:19:21
+   Login: 2025-11-08, 12:19:21
    Email: jon.jonsson@example.com
-   Sími: 555-1234
-   Félagsmaður: Já
+   Phone: 555-1234
+   Member: Yes
 ```
 
 ---
 
-## 🔧 Ef eitthvað virkar ekki
+## 🔧 Troubleshooting
 
-### Villa: "Cannot find module 'firebase-admin'"
+### Error: "Cannot find module 'firebase-admin'"
 
-**Lausn**: Þú ert í rangri möppu. Farðu í `services/members/scripts`:
+**Solution**: You're in the wrong directory. Navigate to `services/members/scripts`:
 ```bash
 cd /home/gudro/Development/projects/ekklesia/services/members/scripts
 ```
 
 ---
 
-### Villa: "auth: cannot fetch token"
+### Error: "auth: cannot fetch token"
 
-**Lausn**: Þú þarft að setja upp Application Default Credentials:
+**Solution**: You need to set up Application Default Credentials:
 ```bash
 gcloud auth application-default login
 ```
 
 ---
 
-### Villa: "Failed to get instance metadata"
+### Error: "Failed to get instance metadata"
 
-**Ástæða**: Þetta er aðeins vandamál ef þú ert að reyna tengjast PostgreSQL (sem þú þarft EKKI fyrir innskráningargögn).
+**Reason**: This is only an issue if you're trying to connect to PostgreSQL (which you DON'T need for login data).
 
-**Lausn fyrir PostgreSQL** (ef þörf er á):
-1. Gakktu úr skugga um að þú sért með réttan aðgang
-2. Keyrðu: `gcloud auth application-default login`
-3. Ræstu Cloud SQL Proxy:
+**Solution for PostgreSQL** (if needed):
+1. Verify you have proper access
+2. Run: `gcloud auth application-default login`
+3. Start Cloud SQL Proxy:
    ```bash
    cd /home/gudro/Development/projects/ekklesia
    source scripts/deployment/set-env.sh
    cloud-sql-proxy $DB_CONNECTION_NAME --port 5433 &
    ```
-4. Tengstu með:
+4. Connect with:
    ```bash
    ./scripts/database/psql-cloud.sh
    ```
 
 ---
 
-### Villa: "Permission denied" eða "Index not found"
+### Error: "Permission denied" or "Index not found"
 
-**Lausn**: Ef Firestore index vantar, keyrðu:
+**Solution**: If Firestore index is missing, run:
 ```bash
 firebase deploy --only firestore:indexes
 ```
 
 ---
 
-## 📊 PostgreSQL Gagnagrunnur (Kosningagögn)
+## 📊 PostgreSQL Database (Voting Data)
 
-Ef þú þarft að skoða kosningagögn (ekki innskráningar):
+If you need to view voting data (not logins):
 
-### Byrja Cloud SQL Proxy
+### Start Cloud SQL Proxy
 
 ```bash
-# Frá rótarmöppu verkefnis
+# From project root
 source scripts/deployment/set-env.sh
 cloud-sql-proxy $DB_CONNECTION_NAME --port 5433 &
 ```
 
-### Tengjast PostgreSQL
+### Connect to PostgreSQL
 
 ```bash
 ./scripts/database/psql-cloud.sh
 ```
 
-### Gagnlegar fyrirspurnir
+### Useful Queries
 
 ```sql
--- Skoða nýlegustu admin aðgerðir
+-- View recent admin actions
 SELECT id, action_type, performed_by, election_title, timestamp
 FROM elections.admin_audit_log
 ORDER BY timestamp DESC
 LIMIT 20;
 
--- Skoða kosningamiða
+-- View voting tokens
 SELECT COUNT(*) as total_tokens,
        COUNT(*) FILTER (WHERE used = true) as used_tokens,
        MIN(registered_at) as first_token,
        MAX(registered_at) as last_token
 FROM elections.voting_tokens;
 
--- Skoða miða frá ákveðnum degi
+-- View tokens from specific date
 SELECT * FROM elections.voting_tokens
 WHERE registered_at >= '2025-11-01'
 ORDER BY registered_at DESC;
 ```
 
-### Loka tengingu
+### Close Connection
 
 ```bash
-# Finna og drepa proxy process
+# Find and kill proxy process
 pkill cloud-sql-proxy
 ```
 
 ---
 
-## 📁 Skráarstaðsetningar
+## 📁 File Locations
 
-| Skrá | Staðsetning | Tilgangur |
-|------|-------------|-----------|
-| **Innskráningarscript** | `services/members/scripts/check-user-logins.js` | Aðalscriptið til að skoða innskráningar |
-| **Innskráningar í dag** | `services/members/scripts/check-logins-today.js` | Einfaldara script bara fyrir í dag |
-| **README** | `services/members/scripts/README.md` | Skjölun allra scripts |
-| **Proxy script** | `scripts/database/start-proxy.sh` | Ræsir Cloud SQL Proxy |
-| **PostgreSQL script** | `scripts/database/psql-cloud.sh` | Tengist PostgreSQL |
-| **Umhverfisbreytur** | `scripts/deployment/set-env.sh` | GCP stillingar |
-
----
-
-## 🔐 Öryggisatriði
-
-- ⚠️ **Innskráningarscript eiga EKKI heima í Git remote**
-  - Þau eru í `.gitignore`
-  - Þau innihalda viðkvæm gögn um notendur
-
-- ⚠️ **Geyma ALDREI aðgangsorð í Git**
-  - Öll lykilorð eru í GCP Secret Manager
-  - Sækja með: `gcloud secrets versions access latest --secret=postgres-password`
-
-- ⚠️ **Nota alltaf Cloud SQL Proxy fyrir PostgreSQL**
-  - Aldrei tengjast beint (nema í neyðartilvikum)
-  - Proxy býr til örugga dulkóðaða tengingu
+| File | Location | Purpose |
+|------|----------|---------|
+| **Login script** | `services/members/scripts/check-user-logins.js` | Main script to check logins |
+| **Today's logins** | `services/members/scripts/check-logins-today.js` | Simpler script for today only |
+| **README** | `services/members/scripts/README.md` | Documentation for all scripts |
+| **Proxy script** | `scripts/database/start-proxy.sh` | Starts Cloud SQL Proxy |
+| **PostgreSQL script** | `scripts/database/psql-cloud.sh` | Connects to PostgreSQL |
+| **Environment vars** | `scripts/deployment/set-env.sh` | GCP configuration |
 
 ---
 
-## ✅ Tjékklisti
+## 🔐 Security Considerations
 
-Afhakaðu þegar þú hefur lokið hverju skrefi:
+- ⚠️ **Login scripts must NOT be in Git remote**
+  - They are in `.gitignore`
+  - They contain sensitive user data
 
-- [ ] Innskráð/ur í `gcloud auth login`
-- [ ] Innskráð/ur í `firebase login`
-- [ ] Sett upp `gcloud auth application-default login`
-- [ ] Farið í `services/members/scripts` möppuna
-- [ ] Keyrt `node check-user-logins.js` með viðeigandi valmöguleikum
-- [ ] Fengið niðurstöður og túlkað þær
-- [ ] (Valfrjálst) Lokað Cloud SQL Proxy ef það var notað
+- ⚠️ **NEVER store passwords in Git**
+  - All passwords are in GCP Secret Manager
+  - Retrieve with: `gcloud secrets versions access latest --secret=postgres-password`
+
+- ⚠️ **Always use Cloud SQL Proxy for PostgreSQL**
+  - Never connect directly (except in emergencies)
+  - Proxy creates secure encrypted connection
 
 ---
 
-## 🔄 Hraðleiðir fyrir framtíðina
+## ✅ Checklist
 
-**Allt í einu skipun fyrir innskráningar í dag**:
+Check off when you've completed each step:
+
+- [ ] Logged in with `gcloud auth login`
+- [ ] Logged in with `firebase login`
+- [ ] Set up `gcloud auth application-default login`
+- [ ] Navigated to `services/members/scripts` directory
+- [ ] Ran `node check-user-logins.js` with appropriate options
+- [ ] Received and interpreted results
+- [ ] (Optional) Closed Cloud SQL Proxy if used
+
+---
+
+## 🔄 Quick Commands for Future Reference
+
+**All-in-one command for today's logins**:
 ```bash
 cd /home/gudro/Development/projects/ekklesia/services/members/scripts && node check-user-logins.js
 ```
 
-**Síðustu 10 innskráningar**:
+**Latest 10 logins**:
 ```bash
 cd /home/gudro/Development/projects/ekklesia/services/members/scripts && node check-user-logins.js --latest 10
 ```
 
 ---
 
-## 📞 Hjálp
+## 📞 Getting Help
 
-Ef þú lendir í vandræðum:
+If you encounter issues:
 
-1. Athugaðu að þú sért í réttri möppu: `pwd` ætti að sýna `...ekklesia/services/members/scripts`
-2. Athugaðu að þú sért innskráð/ur: `gcloud auth list` og `firebase projects:list`
-3. Lestu villumeldingu vandlega - hún segir oft til um lausnina
-4. Sjá `services/members/scripts/README.md` fyrir nánari upplýsingar
+1. Verify you're in the correct directory: `pwd` should show `...ekklesia/services/members/scripts`
+2. Verify you're authenticated: `gcloud auth list` and `firebase projects:list`
+3. Read error messages carefully - they often indicate the solution
+4. See `services/members/scripts/README.md` for more details
 
 ---
 
-**Síðast uppfært**: 2025-11-08
-**Höfundur**: Claude Code
+**Last Updated**: 2025-11-14

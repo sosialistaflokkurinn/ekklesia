@@ -1,32 +1,32 @@
-# Session Hooks Uppsetning fyrir Claude Code
+# Session Hooks Setup for Claude Code
 
-Þetta skjal útskýrir hvernig á að setja upp session hooks í Claude Code til að minna á mikilvæg atriði í upphafi hverrar session.
-
----
-
-## 🎯 Tilgangur
-
-Session hooks keyra sjálfkrafa skipanir eða sýna áminningu þegar ný Claude Code session byrjar. Þetta er gagnlegt til að:
-- Minna á öryggisreglur
-- Vísa í tjékklista fyrir algengar aðgerðir
-- Tryggja að nauðsynlegar stillingar séu til staðar
+This document explains how to set up session hooks in Claude Code to remind you of important considerations at the start of each session.
 
 ---
 
-## ⚙️ Uppsetning
+## 🎯 Purpose
 
-### 1. Búa til settings skrá
+Session hooks automatically run commands or display reminders when a new Claude Code session starts. This is useful for:
+- Reminding about security rules
+- Referencing checklists for common operations
+- Ensuring necessary configurations are in place
 
-Claude Code notar `.claude/settings.local.json` fyrir local stillingar (ekki tracked í Git).
+---
+
+## ⚙️ Setup
+
+### 1. Create settings file
+
+Claude Code uses `.claude/settings.local.json` for local settings (not tracked in Git).
 
 ```bash
-# Frá rótarmöppu verkefnis
+# From project root directory
 mkdir -p .claude
 ```
 
-### 2. Búa til eða uppfæra settings.local.json
+### 2. Create or update settings.local.json
 
-Búðu til skrána `.claude/settings.local.json` með eftirfarandi innihaldi:
+Create the file `.claude/settings.local.json` with the following content:
 
 ```json
 {
@@ -36,101 +36,101 @@ Búðu til skrána `.claude/settings.local.json` með eftirfarandi innihaldi:
 }
 ```
 
-Eða ef þú vilt einfaldari útgáfu sem birtir bara helstu áminningu:
+Or if you want a simpler version that displays just a brief reminder:
 
 ```json
 {
   "hooks": {
-    "SessionStart": "echo '🔔 Áminning: Sjá docs/SESSION_START_REMINDER.md fyrir mikilvægar upplýsingar um PII, innskráningarskýrslur og öryggisreglur.'"
+    "SessionStart": "echo '🔔 Reminder: See docs/SESSION_START_REMINDER.md for important information about PII, login reports, and security rules.'"
   }
 }
 ```
 
-### 3. Staðfesta uppsetningu
+### 3. Verify setup
 
-Endurræstu Claude Code eða byrjaðu nýja session. Þú ættir að sjá áminninguna sjálfkrafa.
+Restart Claude Code or begin a new session. You should see the reminder automatically.
 
 ---
 
-## 📝 Annað hooks dæmi
+## 📝 Other hooks examples
 
-### Sýna stutta áminingu um tjékklista
+### Display a brief reminder about checklists
 
 ```json
 {
   "hooks": {
-    "SessionStart": "echo '\n🔔 Session Start Áminning:\n  • Innskráningarskýrslur: docs/checklists/CHECK_USER_LOGINS.md\n  • ALDREI commit-a PII scripts (check-user-logins.js)\n  • Sjá docs/SESSION_START_REMINDER.md fyrir meira\n'"
+    "SessionStart": "echo '\n🔔 Session Start Reminder:\n  • Login reports: docs/checklists/CHECK_USER_LOGINS.md\n  • NEVER commit PII scripts (check-user-logins.js)\n  • See docs/SESSION_START_REMINDER.md for more\n'"
   }
 }
 ```
 
-### Keyra script sem athugar auðkenningu
+### Run script that checks authentication
 
 ```json
 {
   "hooks": {
-    "SessionStart": "bash -c 'echo \"Athuga GCP auðkenningu:\" && gcloud auth list && echo \"\" && echo \"Sjá SESSION_START_REMINDER.md fyrir frekari upplýsingar\"'"
+    "SessionStart": "bash -c 'echo \"Checking GCP authentication:\" && gcloud auth list && echo \"\" && echo \"See SESSION_START_REMINDER.md for more information\"'"
   }
 }
 ```
 
-### Keyra margar skipanir
+### Run multiple commands
 
 ```json
 {
   "hooks": {
-    "SessionStart": "bash -c 'cat docs/SESSION_START_REMINDER.md && echo \"\" && echo \"✅ Tilbúinn til að byrja!\"'"
+    "SessionStart": "bash -c 'cat docs/SESSION_START_REMINDER.md && echo \"\" && echo \"✅ Ready to begin!\"'"
   }
 }
 ```
 
 ---
 
-## 🔒 Öryggisatriði
+## 🔒 Security Considerations
 
-**Ábendingar:**
-- `.claude/settings.local.json` er þegar í `.gitignore`
-- Settu ALDREI aðgangsorð eða tokens í hooks
-- Hooks ættu aðeins að vísa í skjöl eða keyra öruggar skipanir
-
----
-
-## 📁 Skráarstaðsetningar
-
-| Skrá | Staðsetning | Tilgangur |
-|------|-------------|-----------|
-| **Claude settings** | `.claude/settings.local.json` | Session hooks og local stillingar |
-| **Session áminning** | `docs/SESSION_START_REMINDER.md` | Aðal áminningarskjal |
-| **Tjékklisti mappa** | `docs/checklists/` | Allir tjékklistar |
-| **Gitignore** | `.gitignore` | Verndar viðkvæm gögn |
+**Important:**
+- `.claude/settings.local.json` is already in `.gitignore`
+- NEVER put passwords or tokens in hooks
+- Hooks should only reference documents or run safe commands
 
 ---
 
-## ✅ Tjékklisti
+## 📁 File Locations
 
-- [ ] Búið til `.claude/` möppu
-- [ ] Búið til `.claude/settings.local.json`
-- [ ] Bætt við `SessionStart` hook
-- [ ] Prófað með nýrri session
-- [ ] Staðfest að áminning birtist
-
----
-
-## 🔄 Viðhald
-
-Þegar nýjar áminnningar bætast við:
-1. Uppfærðu `docs/SESSION_START_REMINDER.md`
-2. Session hooks þurfa ekki uppfærslu (vísa í skjalið)
-3. Ef þú vilt breyta hook útfærslu, uppfærðu `.claude/settings.local.json`
+| File | Location | Purpose |
+|------|----------|---------|
+| **Claude settings** | `.claude/settings.local.json` | Session hooks and local settings |
+| **Session reminder** | `docs/SESSION_START_REMINDER.md` | Main reminder document |
+| **Checklist directory** | `docs/checklists/` | All checklists |
+| **Gitignore** | `.gitignore` | Protects sensitive data |
 
 ---
 
-## 📚 Frekari upplýsingar
+## ✅ Checklist
+
+- [ ] Created `.claude/` directory
+- [ ] Created `.claude/settings.local.json`
+- [ ] Added `SessionStart` hook
+- [ ] Tested with new session
+- [ ] Verified reminder appears
+
+---
+
+## 🔄 Maintenance
+
+When new reminders are added:
+1. Update `docs/SESSION_START_REMINDER.md`
+2. Session hooks don't need updating (they reference the document)
+3. If you want to change hook implementation, update `.claude/settings.local.json`
+
+---
+
+## 📚 Further Information
 
 - [Claude Code Documentation](https://docs.claude.com/claude-code)
 - Session Start Reminder: `docs/SESSION_START_REMINDER.md`
-- Tjékklistar: `docs/checklists/README.md`
+- Checklists: `docs/checklists/README.md`
 
 ---
 
-**Síðast uppfært**: 2025-11-08
+**Last Updated**: 2025-11-14
