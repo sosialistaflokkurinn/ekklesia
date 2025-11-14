@@ -1,14 +1,14 @@
 # Infrastructure Category Map
 
-**Last Updated**: 2025-11-07  
-**Status**: ✅ Level 2 Category Map  
-**Purpose**: Cloud infrastructure, services, and deployment pipelines
+**Last Updated**: 2025-11-14
+**Status**: ✅ Level 2 Category Map
+**Purpose**: Cloud infrastructure, services, deployment pipelines, and documentation maintenance
 
 ---
 
 ## Overview
 
-This category map provides navigation to all infrastructure documentation including Cloud Run services, GitHub workflows, database management, and deployment automation.
+This category map provides navigation to all infrastructure documentation including Cloud Run services, GitHub workflows, database management, deployment automation, and documentation maintenance tools.
 
 ---
 
@@ -17,6 +17,7 @@ This category map provides navigation to all infrastructure documentation includ
 - [Cloud Run Services](../docs/infrastructure/CLOUD_RUN_SERVICES.md) - Service configuration reference
 - [GitHub Workflows](../docs/operations/GITHUB_WORKFLOWS_STATUS.md) - CI/CD workflows
 - [Database Scripts](../scripts/database/) - Cloud SQL management
+- [Documentation Maintenance](../scripts/admin/documentation-maintenance/) - Validation and audit tools
 
 ---
 
@@ -40,6 +41,14 @@ This category map provides navigation to all infrastructure documentation includ
 - [Deployment Scripts README](../scripts/deployment/README.md) - Deployment automation tools
 - [Firebase CLI](https://firebase.google.com/docs/cli) - Deployment tooling
 - [gcloud CLI](https://cloud.google.com/sdk/gcloud) - Cloud deployment
+
+### Documentation Maintenance
+- [Admin Scripts README](../scripts/admin/README.md) - Administrative tools overview
+- [Documentation Maintenance Scripts](../scripts/admin/documentation-maintenance/README.md) - Validation and audit tools
+  - `validate-all.sh` - Master validation script (runs all checks)
+  - `check-docs-freshness.sh` - Monitors documentation freshness
+  - `validate-links.py` - Validates markdown links
+  - `validate_documentation_map.py` - Validates DOCUMENTATION_MAP.md structure
 
 ---
 
