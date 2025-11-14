@@ -47,6 +47,40 @@ def validate_kennitala(kennitala: str) -> bool:
     return bool(re.match(pattern, kennitala))
 
 
+def format_kennitala(kennitala: str) -> str:
+    """
+    Format Icelandic kennitala for UI display (DDMMYY-XXXX).
+
+    This is the inverse of normalize_kennitala() - use for display only.
+
+    Args:
+        kennitala: 10-digit kennitala (e.g., "0103882369")
+
+    Returns:
+        Formatted kennitala with hyphen (e.g., "010388-2369"),
+        or original string if format is invalid
+
+    Example:
+        # Database storage (normalized):
+        normalized = normalize_kennitala("010388-2369")  # "0103882369"
+
+        # UI display (formatted):
+        displayed = format_kennitala(normalized)  # "010388-2369"
+    """
+    if not kennitala:
+        return kennitala
+
+    # Remove any existing hyphens/whitespace
+    digits = ''.join(c for c in kennitala if c.isdigit())
+
+    # Validate: should be exactly 10 digits
+    if len(digits) != 10:
+        return kennitala  # Return original if invalid
+
+    # Format as DDMMYY-XXXX
+    return f"{digits[:6]}-{digits[6:]}"
+
+
 def normalize_phone(phone: str) -> str:
     """
     Normalize Icelandic phone number to 7 digits without hyphen (for database storage).
