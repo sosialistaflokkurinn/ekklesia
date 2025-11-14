@@ -58,7 +58,6 @@ chmod +x .git/hooks/pre-commit
 - ✅ **Secrets scanning**: Database passwords, API keys, GCP credentials, tokens, connection strings
 - ✅ **PII detection**: Kennitala, email addresses, phone numbers in code/docs
 - ✅ **Political identity**: Blocks party affiliation references per neutrality policy
-- ✅ **AI authorship markers**: Prevents AI co-author attribution in commit messages
 - ✅ **.gitignore safeguards**: Ensures critical files remain ignored
 
 **Bypass** (use carefully): `git commit --no-verify`
