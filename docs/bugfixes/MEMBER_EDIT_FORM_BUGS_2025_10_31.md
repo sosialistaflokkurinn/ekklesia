@@ -67,8 +67,8 @@ if (gender !== '') formData.gender = parseInt(gender, 10);  // Convert to intege
 ### Symptoms
 - User enters phone number in format "XXX-XXXX" (with dash)
 - Form submits successfully
-- Phone saved to Django with dash: "780-8188"
-- Django expects normalized format: "7808188" (7 digits, no dash)
+- Phone saved to Django with dash: "000-0000"
+- Django expects normalized format: "0000000" (7 digits, no dash)
 
 ### Root Cause
 
@@ -87,7 +87,7 @@ if (email || phone) {
 
 **Problem**: Phone number sent to Django API without normalization. Django database stores phone numbers in 7-digit format (no dashes, no spaces), but frontend was sending formatted version.
 
-**Impact**: Inconsistent phone number format in database. Some members had "7808188", others had "780-8188".
+**Impact**: Inconsistent phone number format in database. Some members had "0000000", others had "000-0000".
 
 ### Solution
 
@@ -108,8 +108,8 @@ if (email || phone) {
 
 | Input Format | Before Fix | After Fix |
 |--------------|-----------|-----------|
-| "7808188" (no dash) | ✅ Saved as "7808188" | ✅ Saved as "7808188" |
-| "780-8188" (with dash) | ❌ Saved as "780-8188" | ✅ Saved as "7808188" |
+| "0000000" (no dash) | ✅ Saved as "0000000" | ✅ Saved as "0000000" |
+| "000-0000" (with dash) | ❌ Saved as "000-0000" | ✅ Saved as "0000000" |
 | "780 8188" (with space) | ❌ Saved as "780 8188" | ⚠️ Not handled (future work) |
 
 **Note**: Space normalization not implemented in this fix. Only dashes are removed.
@@ -119,9 +119,9 @@ if (email || phone) {
 ## Bug #3: Phone Input Pattern Too Restrictive
 
 ### Symptoms
-- User tries to enter phone number with dash: "780-8188"
+- User tries to enter phone number with dash: "000-0000"
 - HTML5 validation rejects input
-- User forced to manually remove dash: "7808188"
+- User forced to manually remove dash: "0000000"
 - Poor UX - users expect to enter phone in formatted style
 
 ### Root Cause
@@ -141,7 +141,7 @@ if (email || phone) {
 >
 ```
 
-**Problem**: HTML pattern attribute only accepts 7 digits without any separator. But UX shows formatted phone numbers with dash (e.g., "780-8188" in display mode).
+**Problem**: HTML pattern attribute only accepts 7 digits without any separator. But UX shows formatted phone numbers with dash (e.g., "000-0000" in display mode).
 
 **Impact**: Inconsistent UX - users see formatted phone numbers but cannot enter them in that format.
 
@@ -154,22 +154,22 @@ if (email || phone) {
   id="input-phone"
   name="phone"
   class="member-edit__input"
-  placeholder="780-8188 eða 7808188"
+  placeholder="000-0000 eða 0000000"
   pattern="[0-9]{7}|[0-9]{3}-[0-9]{4}"
 >
 ```
 
 **Explanation**:
 - Updated pattern to accept **both formats**: `[0-9]{7}|[0-9]{3}-[0-9]{4}`
-- Updated placeholder to show both examples: "780-8188 eða 7808188"
+- Updated placeholder to show both examples: "000-0000 eða 0000000"
 - Backend normalization (Bug #2 fix) ensures consistent database format
 
 ### Test Case
 
 | Input Format | HTML5 Validation | Saved to Django |
 |--------------|------------------|-----------------|
-| "7808188" | ✅ Accepted | ✅ "7808188" |
-| "780-8188" | ✅ Accepted | ✅ "7808188" (normalized) |
+| "0000000" | ✅ Accepted | ✅ "0000000" |
+| "000-0000" | ✅ Accepted | ✅ "0000000" (normalized) |
 | "78081" (too short) | ❌ Rejected | N/A |
 | "780-818" (wrong format) | ❌ Rejected | N/A |
 
@@ -234,7 +234,7 @@ WHERE c.id = <member_id>;
 
 -- Result:
 -- gender: 0 (saved correctly)
--- phone: "7808188" (normalized - correct format)
+-- phone: "0000000" (normalized - correct format)
 ```
 
 ---
@@ -256,7 +256,7 @@ WHERE c.id = <member_id>;
 **Lines Modified**: 157-158
 
 **Changes**:
-- Line 157: `placeholder="7758493"` → `placeholder="780-8188 eða 7808188"`
+- Line 157: `placeholder="7758493"` → `placeholder="000-0000 eða 0000000"`
 - Line 158: `pattern="[0-9]{7}"` → `pattern="[0-9]{7}|[0-9]{3}-[0-9]{4}"`
 
 **Commit**: 3a30493c
@@ -269,8 +269,8 @@ WHERE c.id = <member_id>;
 
 - [x] Gender value 0 saves correctly to Django
 - [x] Gender value 1 saves correctly to Django
-- [x] Phone without dash "7808188" saves correctly
-- [x] Phone with dash "780-8188" normalizes to "7808188"
+- [x] Phone without dash "0000000" saves correctly
+- [x] Phone with dash "000-0000" normalizes to "0000000"
 - [x] HTML pattern accepts both phone formats
 - [x] HTML pattern rejects invalid formats (too short, wrong separator)
 - [x] Form validation still works for other fields
@@ -300,9 +300,9 @@ phone.replace(/[-\s()]/g, '')  // Remove dashes, spaces, parentheses
 ```
 
 **Examples**:
-- Input: "780 8188" → Should normalize to: "7808188"
-- Input: "(780) 8188" → Should normalize to: "7808188"
-- Input: "780-81-88" → Should normalize to: "7808188"
+- Input: "780 8188" → Should normalize to: "0000000"
+- Input: "(780) 8188" → Should normalize to: "0000000"
+- Input: "780-81-88" → Should normalize to: "0000000"
 
 ### Gender Dropdown Options
 

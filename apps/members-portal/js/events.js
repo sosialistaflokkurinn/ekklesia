@@ -11,6 +11,11 @@ import { R } from '../i18n/strings-loader.js';
 import { debug } from './utils/debug.js';
 import { initAuthenticatedPage } from './page-init.js';
 import { setTextContent, setInnerHTML } from '../ui/dom.js';
+import { createButton } from './components/button.js';
+
+// Button instances
+let tabUpcomingButton = null;
+let tabPastButton = null;
 
 /**
  * Set page title and header text
@@ -20,15 +25,13 @@ function updateEventsStrings() {
   setTextContent('events-title', R.string.events_title || 'Viðburðir', 'events page');
   setTextContent('events-subtitle', R.string.events_subtitle || 'Fundir og viðburðir flokksins', 'events page');
 
-  // Tab labels
-  setTextContent('tab-upcoming-label', R.string.events_tab_upcoming || 'Framundan', 'events page');
-  setTextContent('tab-past-label', R.string.events_tab_past || 'Liðnir viðburðir', 'events page');
-
   // Loading message
   setTextContent('loading-message', R.string.events_loading || 'Sæki viðburði...', 'events page');
 
   // Empty message
   setTextContent('empty-message', R.string.events_empty || 'Engir viðburðir fundust', 'events page');
+
+  // Note: Tab labels are now set during button creation in setupFilters()
 }
 
 /**
@@ -112,7 +115,7 @@ async function loadEvents(filter = 'upcoming') {
       {
         title: 'Málþing um sveitarstjórnarmál',
         date: '1. nóvember 2025, kl. 10:00-14:30',
-        description: 'Opinn fundur um sveitastjórnarmál þar sem allir fá tækifæri til að segja sína skoðun og heyra skoðun annara.\n\nDagskrá:\n• Fullrúar frá svæðisfélögum sósíalista segir frá sinni sýn á sveitastjórnarmálum\n• Hlé\n• Almennar umræður um sveitastjórnarmál þar sem félagsmenn fá að segja sína skoðun\n• Kaffi og léttar veitingar í boði',
+        description: 'Opinn fundur um sveitastjórnarmál þar sem allir fá tækifæri til að segja sína skoðun og heyra skoðun annarra.\n\nDagskrá:\n• Fulltrúar frá svæðisfélögum sósíalista segja frá sinni sýn á sveitastjórnarmálum\n• Hlé\n• Almennar umræður um sveitastjórnarmál þar sem félagsmenn fá að segja sína skoðun\n• Kaffi og léttar veitingar í boði',
         location: 'Hverfisgata 105, 101 Reykjavík',
         status: 'upcoming'
       },
@@ -154,23 +157,51 @@ async function loadEvents(filter = 'upcoming') {
  * Setup tab filter event listeners
  */
 function setupFilters() {
-  const tabs = document.querySelectorAll('.button-group .btn');
+  // Helper function to toggle tab states
+  const toggleTab = (activeButton, inactiveButton) => {
+    // Set active tab to primary
+    activeButton.element.classList.remove('btn--secondary');
+    activeButton.element.classList.add('btn--primary');
 
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      // Update active tab (toggle between primary and secondary)
-      tabs.forEach(t => {
-        t.classList.remove('btn--primary');
-        t.classList.add('btn--secondary');
-      });
-      tab.classList.remove('btn--secondary');
-      tab.classList.add('btn--primary');
+    // Set inactive tab to secondary
+    inactiveButton.element.classList.remove('btn--primary');
+    inactiveButton.element.classList.add('btn--secondary');
+  };
 
-      // Load events for selected filter
-      const filter = tab.getAttribute('data-filter');
-      loadEvents(filter);
-    });
+  // Create "Upcoming" tab button (default active)
+  tabUpcomingButton = createButton({
+    text: R.string.events_tab_upcoming || 'Framundan',
+    variant: 'primary',
+    onClick: () => {
+      toggleTab(tabUpcomingButton, tabPastButton);
+      loadEvents('upcoming');
+    }
   });
+
+  // Create "Past" tab button
+  tabPastButton = createButton({
+    text: R.string.events_tab_past || 'Liðnir viðburðir',
+    variant: 'secondary',
+    onClick: () => {
+      toggleTab(tabPastButton, tabUpcomingButton);
+      loadEvents('past');
+    }
+  });
+
+  // Add data-filter attributes for potential future use
+  tabUpcomingButton.element.setAttribute('data-filter', 'upcoming');
+  tabPastButton.element.setAttribute('data-filter', 'past');
+
+  // Find button group container and replace hardcoded buttons
+  const buttonGroup = document.querySelector('.button-group');
+  if (buttonGroup) {
+    // Clear existing buttons
+    buttonGroup.innerHTML = '';
+
+    // Append new button instances
+    buttonGroup.appendChild(tabUpcomingButton.element);
+    buttonGroup.appendChild(tabPastButton.element);
+  }
 }
 
 /**

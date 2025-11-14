@@ -17,11 +17,14 @@
   "author": "Sósíalistaflokkur Íslands (Socialist Party of Iceland)",
   "license": "UNLICENSED",
   "dependencies": {
+    "@google-cloud/logging-winston": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^4.18.2",
+    "express-rate-limit": "^7.5.1",
     "firebase-admin": "^13.6.0",
-    "pg": "^8.11.3"
+    "pg": "^8.11.3",
+    "winston": "^3.18.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"

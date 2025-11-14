@@ -1,0 +1,198 @@
+/**
+ * Amendment Vote Card Component Styles
+ *
+ * BEM methodology for amendment voting card.
+ */
+
+/* Base component */
+.amendment-vote-card {
+  background-color: var(--color-background-white, #ffffff);
+  border: 2px solid var(--color-border, #e0e0e0);
+  border-radius: var(--border-radius-lg, 12px);
+  padding: var(--spacing-lg, 1.5rem);
+  margin-bottom: var(--spacing-lg, 1.5rem);
+  transition: border-color 0.2s ease, opacity 0.2s ease;
+}
+
+.amendment-vote-card:hover {
+  border-color: var(--color-border-hover, #b0b0b0);
+}
+
+.amendment-vote-card--voted {
+  opacity: 0.75;
+  border-color: var(--color-success, #28a745);
+}
+
+/* Header */
+.amendment-vote-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md, 1rem);
+  padding-bottom: var(--spacing-md, 1rem);
+  border-bottom: 2px solid var(--color-border-light, #f0f0f0);
+}
+
+.amendment-vote-card__title {
+  font-size: var(--font-size-lg, 1.25rem);
+  font-weight: var(--font-weight-bold, 700);
+  color: var(--color-text-primary, #1a1a1a);
+  margin: 0;
+}
+
+.amendment-vote-card__voted-badge {
+  flex-shrink: 0;
+  margin-left: var(--spacing-md, 1rem);
+}
+
+/* Body */
+.amendment-vote-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md, 1rem);
+}
+
+/* Text sections (original/proposed) */
+.amendment-vote-card__text-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 0.5rem);
+}
+
+.amendment-vote-card__text-label {
+  font-size: var(--font-size-sm, 0.875rem);
+  font-weight: var(--font-weight-semibold, 600);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.amendment-vote-card__text-label--original {
+  color: var(--color-text-secondary, #666666);
+}
+
+.amendment-vote-card__text-label--proposed {
+  color: var(--color-primary, #e5004f);
+}
+
+.amendment-vote-card__text {
+  padding: var(--spacing-md, 1rem);
+  font-size: var(--font-size-md, 1rem);
+  line-height: 1.6;
+  border-radius: var(--border-radius-md, 8px);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.amendment-vote-card__text--original {
+  background-color: var(--color-background-light, #f5f5f5);
+  color: var(--color-text-secondary, #666666);
+  border-left: 4px solid var(--color-border, #e0e0e0);
+}
+
+.amendment-vote-card__text--proposed {
+  background-color: rgba(229, 0, 79, 0.05);
+  color: var(--color-text-primary, #1a1a1a);
+  border-left: 4px solid var(--color-primary, #e5004f);
+  font-weight: var(--font-weight-medium, 500);
+}
+
+/* Rationale section */
+.amendment-vote-card__rationale {
+  margin-top: var(--spacing-sm, 0.5rem);
+  padding: var(--spacing-md, 1rem);
+  background-color: rgba(23, 162, 184, 0.05);
+  border-left: 4px solid var(--color-info, #17a2b8);
+  border-radius: var(--border-radius-md, 8px);
+}
+
+.amendment-vote-card__rationale-label {
+  font-size: var(--font-size-sm, 0.875rem);
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-info, #17a2b8);
+  margin-bottom: var(--spacing-xs, 0.25rem);
+}
+
+.amendment-vote-card__rationale-text {
+  font-size: var(--font-size-md, 1rem);
+  line-height: 1.6;
+  color: var(--color-text-primary, #1a1a1a);
+  font-style: italic;
+}
+
+/* Footer - voting buttons */
+.amendment-vote-card__footer {
+  display: flex;
+  gap: var(--spacing-md, 1rem);
+  justify-content: flex-end;
+  margin-top: var(--spacing-lg, 1.5rem);
+  padding-top: var(--spacing-lg, 1.5rem);
+  border-top: 2px solid var(--color-border-light, #f0f0f0);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .amendment-vote-card {
+    padding: var(--spacing-md, 1rem);
+    margin-bottom: var(--spacing-md, 1rem);
+  }
+
+  .amendment-vote-card__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm, 0.5rem);
+  }
+
+  .amendment-vote-card__voted-badge {
+    margin-left: 0;
+  }
+
+  .amendment-vote-card__title {
+    font-size: var(--font-size-md, 1rem);
+  }
+
+  .amendment-vote-card__text {
+    font-size: var(--font-size-sm, 0.875rem);
+    padding: var(--spacing-sm, 0.5rem);
+  }
+
+  .amendment-vote-card__footer {
+    flex-direction: column;
+    gap: var(--spacing-sm, 0.5rem);
+  }
+
+  .amendment-vote-card__footer .button {
+    width: 100%;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .amendment-vote-card {
+    transition: none;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .amendment-vote-card {
+    border-width: 3px;
+  }
+
+  .amendment-vote-card__text--original,
+  .amendment-vote-card__text--proposed,
+  .amendment-vote-card__rationale {
+    border-left-width: 6px;
+  }
+}
+
+/* Print styles */
+@media print {
+  .amendment-vote-card__footer {
+    display: none;
+  }
+
+  .amendment-vote-card {
+    border-color: #000000;
+    page-break-inside: avoid;
+  }
+}

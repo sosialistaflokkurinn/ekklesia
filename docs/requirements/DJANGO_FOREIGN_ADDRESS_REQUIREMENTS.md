@@ -52,7 +52,7 @@ python manage.py migrate
 ```
 
 **Validation**: Accept international phone format (E.164):
-- Examples: `+354 775-8492`, `+45 12345678`, `+1 (555) 123-4567`
+- Examples: `+354 999-9999`, `+45 12345678`, `+1 (555) 123-4567`
 - Regex: `^\+[0-9]{1,3}\s?[0-9\s()-]{6,20}$`
 
 ---
@@ -213,11 +213,11 @@ curl -H "Authorization: Token YOUR_TOKEN" \
 {
   "id": 813,
   "name": "Jón Jónsson",
-  "ssn": "010190-1234",
+  "ssn": "111111-1111",
   "birthday": "1990-01-01",
   "contact_info": {
     "pk": 813,
-    "phone": "7758492",
+    "phone": "9999999",
     "foreign_phone": "+45 12345678",  // ← NEW
     "email": "jon@example.is",
     "facebook": null

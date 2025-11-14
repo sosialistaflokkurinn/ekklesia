@@ -1,0 +1,92 @@
+/**
+ * Policy Item Vote Card Component Styles
+ *
+ * Displays a single policy item with voting buttons.
+ */
+
+.policy-item-vote-card {
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s ease;
+}
+
+.policy-item-vote-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* Header */
+.policy-item-vote-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 2px solid var(--color-primary);
+}
+
+.policy-item-vote-card__title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.policy-item-vote-card__voted-badge {
+  flex-shrink: 0;
+  margin-left: var(--spacing-sm);
+}
+
+/* Item text */
+.policy-item-vote-card__text {
+  margin-bottom: var(--spacing-lg);
+}
+
+.policy-item-vote-card__text-content {
+  font-size: var(--font-size-base);
+  line-height: 1.6;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+/* Voting buttons */
+.policy-item-vote-card__voting {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.policy-item-vote-card__vote-btn {
+  min-width: 100px;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .policy-item-vote-card {
+    padding: var(--spacing-md);
+  }
+
+  .policy-item-vote-card__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+
+  .policy-item-vote-card__voted-badge {
+    margin-left: 0;
+  }
+
+  .policy-item-vote-card__voting {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  .policy-item-vote-card__vote-btn {
+    width: 100%;
+    min-width: unset;
+  }
+}

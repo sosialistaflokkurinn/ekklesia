@@ -69,8 +69,8 @@ export function normalizePhoneForComparison(phone) {
  * @returns {string} Formatted as DDMMYY-XXXX
  *
  * Handles formats:
- * - 0103003390 -> 010300-3390
- * - 010300-3390 -> 010300-3390 (already formatted)
+ * - 0103009999 -> 010300-9999 (example: DDMMYYXXXX -> DDMMYY-XXXX)
+ * - 010300-9999 -> 010300-9999 (already formatted; DDMMYY-XXXX)
  */
 export function formatKennitala(kennitala) {
   if (!kennitala) return '';
@@ -95,8 +95,8 @@ export function formatKennitala(kennitala) {
  * Shows birthdate (first 6 digits) but masks personal identifier (last 4 digits)
  *
  * Examples:
- * - 010300-3390 -> 010300-****
- * - 0103003390 -> 010300-****
+ * - 120174-3399 -> 120174-****
+ * - 1201743399 -> 120174-****
  */
 export function maskKennitala(kennitala) {
   if (!kennitala) return '-';
@@ -146,8 +146,8 @@ export function validatePhone(phone) {
  * @returns {boolean} True if valid format (does NOT verify checksum)
  *
  * Accepts:
- * - 010300-3390 (with hyphen)
- * - 0103003390 (without hyphen)
+ * - 120174-3399 (with hyphen, DDMMYY-XXXX)
+ * - 1201743399 (without hyphen, DDMMYYXXXX)
  *
  * Note: This only validates format (10 digits), not the mathematical checksum.
  * Kenni.is OAuth has already validated the kennitala, so we trust it.
@@ -169,7 +169,7 @@ export function validateKennitala(kennitala) {
  *
  * Accepts E.164 format: +[country code][number]
  * Examples:
- * - +354 775-8492 (Iceland)
+ * - +354 999-9999 (Iceland)
  * - +45 12345678 (Denmark)
  * - +1 (555) 123-4567 (USA)
  * - +44 20 7946 0958 (UK)
@@ -202,7 +202,7 @@ export function validateInternationalPhone(phone) {
  * - If no formatting, adds space after country code
  *
  * Examples:
- * - +3547758492 -> +354 775-8492 (Iceland)
+ * - +354-999-9999 -> +354 999-9999 (Iceland)
  * - +4512345678 -> +45 12345678 (Denmark)
  */
 export function formatInternationalPhone(phone) {
@@ -391,4 +391,81 @@ export function formatMembershipDuration(joinDate) {
   }
 
   return durationText;
+}
+
+/**
+ * Icelandic month names (nominative case)
+ */
+const ICELANDIC_MONTHS = [
+  'janúar', 'febrúar', 'mars', 'apríl', 'maí', 'júní',
+  'júlí', 'ágúst', 'september', 'október', 'nóvember', 'desember'
+];
+
+/**
+ * Format date and time in Icelandic format
+ * @param {string|Date} dateInput - Date string or Date object
+ * @returns {string} Formatted as "6. nóvember 2025 kl. 13:30"
+ *
+ * This is the standard Icelandic format for displaying dates with times.
+ * - Day number with period (6.)
+ * - Icelandic month name in lowercase (nóvember)
+ * - Year (2025)
+ * - "kl." (abbreviation for klukkustund = hour)
+ * - 24-hour time (13:30)
+ *
+ * Examples:
+ * - "2025-11-06T13:30:00" -> "6. nóvember 2025 kl. 13:30"
+ * - "2025-01-15T09:05:00" -> "15. janúar 2025 kl. 09:05"
+ * - new Date(2025, 11, 31, 23, 59) -> "31. desember 2025 kl. 23:59"
+ */
+export function formatDateIcelandic(dateInput) {
+  if (!dateInput) return '';
+
+  const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
+
+  // Validate date
+  if (isNaN(date.getTime())) {
+    return '';
+  }
+
+  // Get date components
+  const day = date.getDate();
+  const monthIndex = date.getMonth();
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+
+  // Format: "6. nóvember 2025 kl. 13:30"
+  return `${day}. ${ICELANDIC_MONTHS[monthIndex]} ${year} kl. ${hours}:${minutes}`;
+}
+
+/**
+ * Format date only (without time) in Icelandic format
+ * @param {string|Date} dateInput - Date string or Date object
+ * @returns {string} Formatted as "6. nóvember 2025"
+ *
+ * Same as formatDateIcelandic but without the time component.
+ * Useful for displaying just the date part.
+ *
+ * Examples:
+ * - "2025-11-06" -> "6. nóvember 2025"
+ * - "2025-01-15" -> "15. janúar 2025"
+ */
+export function formatDateOnlyIcelandic(dateInput) {
+  if (!dateInput) return '';
+
+  const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
+
+  // Validate date
+  if (isNaN(date.getTime())) {
+    return '';
+  }
+
+  // Get date components
+  const day = date.getDate();
+  const monthIndex = date.getMonth();
+  const year = date.getFullYear();
+
+  // Format: "6. nóvember 2025"
+  return `${day}. ${ICELANDIC_MONTHS[monthIndex]} ${year}`;
 }

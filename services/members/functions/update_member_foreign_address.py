@@ -14,15 +14,6 @@ import os
 import requests
 from firebase_functions import https_fn
 from firebase_admin import auth
-from google.cloud import secretmanager
-
-
-def get_secret(secret_id: str, project_id: str = "ekklesia-prod-10-2025") -> str:
-    """Get secret from Secret Manager"""
-    client = secretmanager.SecretManagerServiceClient()
-    name = f"projects/{project_id}/secrets/{secret_id}/versions/latest"
-    response = client.access_secret_version(request={"name": name})
-    return response.payload.data.decode('UTF-8').strip()
 
 
 @https_fn.on_call(region="europe-west2")
@@ -97,13 +88,12 @@ def updatememberforeignaddress(req: https_fn.CallableRequest) -> dict:
 
         foreign_address['country'] = django_country_id
     
-    # Get Django API token from Secret Manager
-    try:
-        django_token = get_secret('django-api-token')
-    except Exception as e:
+    # Get Django API token from environment variable (injected via Secret Manager)
+    django_token = os.environ.get('DJANGO_API_TOKEN')
+    if not django_token:
         raise https_fn.HttpsError(
             code=https_fn.FunctionsErrorCode.INTERNAL,
-            message=f"Failed to get Django API token: {str(e)}"
+            message="DJANGO_API_TOKEN environment variable not set"
         )
     
     # Django API base URL

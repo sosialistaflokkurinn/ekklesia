@@ -74,8 +74,8 @@ SECRET_PATTERNS=(
   'mysql://.*:[^@]*@'
 
   # Icelandic kennitala (SSN) - CRITICAL PII
-  # Format: DDMMYY-NNNN (e.g., 010190-2939)
-  # Exclude our fake example kennitala: 010190-2939
+  # Format: DDMMYY-NNNN (e.g., 000000-0000)
+  # Exclude our fake example kennitala: 000000-0000
   '(0[1-9]|[12][0-9]|3[01])(0[1-9]|1[0-2])[0-9]{2}-(?!2939)[0-9]{4}'
 
   # Firebase UID patterns (long alphanumeric strings)
@@ -147,7 +147,84 @@ fi
 
 echo "✅ No secrets detected in staged files"
 
-# --- 3. Check commit message for political identity ---
+# --- 3. Check for PII in documentation and templates (Issue #240) ---
+echo "🔒 Scanning for PII (including documentation)..."
+
+# PII patterns (excluding fake examples)
+KENNITALA_PATTERN='(0[1-9]|[12][0-9]|3[01])(0[1-9]|1[0-2])[0-9]{2}-?(?!0000|1111|2939)[0-9]{4}'
+EMAIL_PATTERN='[A-Za-z0-9._%+-]+@(?!example\.com)[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}'
+PHONE_PATTERN='[0-9]{3}[\s-]?[0-9]{4}(?!555-1234|000-0000)'
+
+# Files that MUST be scanned for PII (even if they're .md)
+TEMPLATE_FILES=(
+  ".github/ISSUE_TEMPLATE"
+  ".github/pull_request_template.md"
+  "docs/"
+)
+
+PII_FOUND=false
+
+# Scan templates and docs specifically for PII
+for file in $STAGED_FILES; do
+  # Check if file is a template or doc
+  IS_TEMPLATE=false
+  for template_path in "${TEMPLATE_FILES[@]}"; do
+    if [[ "$file" == *"$template_path"* ]]; then
+      IS_TEMPLATE=true
+      break
+    fi
+  done
+
+  if [ "$IS_TEMPLATE" = false ]; then
+    continue
+  fi
+
+  # Check if file exists
+  if [ ! -f "$file" ]; then
+    continue
+  fi
+
+  # Scan for PII patterns
+  if grep -EHn "$KENNITALA_PATTERN" "$file" 2>/dev/null; then
+    PII_FOUND=true
+    echo "⚠️ POTENTIAL PII DETECTED in: $file"
+    echo "   Pattern: Kennitala (Icelandic SSN)"
+  fi
+
+  if grep -EHn "$EMAIL_PATTERN" "$file" 2>/dev/null; then
+    PII_FOUND=true
+    echo "⚠️ POTENTIAL PII DETECTED in: $file"
+    echo "   Pattern: Email address (not @example.com)"
+  fi
+
+  if grep -EHn "$PHONE_PATTERN" "$file" 2>/dev/null | grep -v "555-1234\|000-0000"; then
+    PII_FOUND=true
+    echo "⚠️ POTENTIAL PII DETECTED in: $file"
+    echo "   Pattern: Phone number (Icelandic format)"
+  fi
+done
+
+if [ "$PII_FOUND" = true ]; then
+  echo ""
+  echo "❌ Commit blocked: Potential PII detected in documentation/templates!"
+  echo ""
+  echo "GitHub issues, PRs, and docs must use FAKE examples only:"
+  echo "  ✅ Names: 'Jón Jónsson', 'Anna Jónsdóttir'"
+  echo "  ✅ Kennitalas: '010190-0000', '111111-1111'"
+  echo "  ✅ Emails: 'email@example.com', 'user@example.com'"
+  echo "  ✅ Phones: '555-1234', '000-0000'"
+  echo "  ✅ Addresses: 'Dæmisgata 1, 000 Dæmisbær'"
+  echo ""
+  echo "If you're SURE these are fake examples:"
+  echo "  git commit --no-verify"
+  echo ""
+  echo "Related: Issue #240 (PII prevention), Issue #136 (PII exposure incident)"
+  exit 1
+fi
+
+echo "✅ No PII detected in templates/docs"
+
+# --- 4. Check commit message for political identity ---
 echo "🏴 Checking commit message for political identity..."
 
 # This check runs in commit-msg hook, but we can prepare for it

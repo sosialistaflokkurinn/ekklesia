@@ -182,7 +182,7 @@ curl -X POST $FUNCTION_URL
 ### 2. Test Firestore → Django
 
 1. Edit a member in Ekklesia admin:
-   - https://ekklesia-prod-10-2025.web.app/admin/member-profile.html?id=010300-3390
+   - https://ekklesia-prod-10-2025.web.app/admin/member-profile.html?id=999999-9999
 
 2. Check Firestore sync queue:
    - https://console.firebase.google.com/project/ekklesia-prod-10-2025/firestore/data/~2Fsync_queue

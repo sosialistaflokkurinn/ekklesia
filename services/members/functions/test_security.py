@@ -1,4 +1,11 @@
+"""Unit tests for security utility functions.
+
+Tests rate limiting, input validation, and authentication security measures.
+Run with: pytest test_security.py -v
+"""
+
 from datetime import datetime, timezone
+import pytest
 
 # Import from package path
 try:
@@ -42,32 +49,24 @@ def test_validate_auth_input_valid() -> None:
 
 def test_validate_auth_input_too_long() -> None:
     """Test that excessively long auth codes and verifiers are rejected."""
-    try:
+    # Test auth code too long
+    with pytest.raises(ValueError, match="Auth code too long"):
         validate_auth_input("a" * 501, "ok")
-        raise AssertionError("Expected ValueError for long auth code")
-    except ValueError as e:
-        assert "Auth code too long" in str(e)
 
-    try:
+    # Test PKCE verifier too long
+    with pytest.raises(ValueError, match="PKCE verifier too long"):
         validate_auth_input("ok", "a" * 201)
-        raise AssertionError("Expected ValueError for long verifier")
-    except ValueError as e:
-        assert "PKCE verifier too long" in str(e)
 
 
 def test_validate_auth_input_missing() -> None:
     """Test that empty or missing auth codes and verifiers are rejected."""
-    try:
+    # Test missing auth code
+    with pytest.raises(ValueError, match="Auth code required"):
         validate_auth_input("", "ok")
-        raise AssertionError("Expected ValueError for missing auth code")
-    except ValueError as e:
-        assert "Auth code required" in str(e)
 
-    try:
+    # Test missing PKCE verifier
+    with pytest.raises(ValueError, match="PKCE verifier required"):
         validate_auth_input("ok", "")
-        raise AssertionError("Expected ValueError for missing verifier")
-    except ValueError as e:
-        assert "PKCE verifier required" in str(e)
 
 
 if __name__ == "__main__":

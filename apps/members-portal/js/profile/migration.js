@@ -98,126 +98,111 @@ export function migrateOldAddressFields(currentUserData) {
   debug.log('   Full currentUserData:', currentUserData);
   debug.log('   Profile data:', currentUserData?.profile);
 
-  // If addresses already exists, no migration needed
+  // If addresses already exists, ensure all fields are present (patch missing fields)
   if (currentUserData?.profile?.addresses && currentUserData.profile.addresses.length > 0) {
-    debug.log('   ✅ Using existing addresses array:', currentUserData.profile.addresses);
-    return [...currentUserData.profile.addresses];
-  }
+    debug.log('   ✅ Found existing addresses array, checking for missing fields...');
 
-  debug.log('   📦 No addresses array found, checking old fields...');
+    // ONE-TIME migration: Check if old address structure has number/letter we can migrate
+    const oldAddress = currentUserData?.address;
+    debug.log('   📋 Checking old address structure for number/letter:', oldAddress);
 
-  if (currentUserData?.profile) {
-    debug.log('   Available profile keys:', Object.keys(currentUserData.profile));
-  }
+    let needsPatch = false;
+    const patchedAddresses = currentUserData.profile.addresses.map((addr, index) => {
+      // Check if number or letter field is missing
+      let numberValue = addr.number !== undefined ? String(addr.number) : '';
+      let letterValue = addr.letter !== undefined ? String(addr.letter) : '';
 
-  // Check for old fields in multiple possible locations
-  const livingStatus = currentUserData?.profile?.living_status || currentUserData?.living_status;
+      // ONE-TIME migration: If number/letter missing in new structure but exists in old, migrate it
+      if (addr.country === 'IS' && oldAddress && typeof oldAddress === 'object') {
+        // Check if old address has number (can be number type or string)
+        const hasOldNumber = oldAddress.number != null && String(oldAddress.number).trim() !== '';
+        if ((addr.number === undefined || addr.number === '') && hasOldNumber) {
+          numberValue = String(oldAddress.number);
+          needsPatch = true;
+          debug.log(`   🔄 ONE-TIME migration: number from old address: ${numberValue}`);
+        }
+        // Check if old address has letter
+        const hasOldLetter = oldAddress.letter != null && String(oldAddress.letter).trim() !== '';
+        if ((addr.letter === undefined || addr.letter === '') && hasOldLetter) {
+          letterValue = String(oldAddress.letter);
+          needsPatch = true;
+          debug.log(`   🔄 ONE-TIME migration: letter from old address: ${letterValue}`);
+        }
+      }
 
-  // Iceland address might be in different formats
-  const icelandAddress = currentUserData?.profile?.address || currentUserData?.address;
-  const addressIceland = currentUserData?.profile?.address_iceland;
+      if (addr.number === undefined || addr.letter === undefined) {
+        needsPatch = true;
+      }
 
-  const postalCode = currentUserData?.profile?.postal_code || currentUserData?.postal_code;
-  const city = currentUserData?.profile?.city || currentUserData?.city;
-  const country = currentUserData?.profile?.country || currentUserData?.country;
-
-  // Foreign address is an object
-  const foreignAddressObj = currentUserData?.profile?.foreign_address || currentUserData?.foreign_address;
-
-  debug.log(`   Living status: ${livingStatus}`);
-  debug.log(`   Iceland address (string): ${typeof icelandAddress === 'string' ? icelandAddress : '[object]'}, ${postalCode} ${city}`);
-  debug.log(`   Iceland address (object):`, addressIceland);
-  debug.log(`   Foreign address (object):`, foreignAddressObj);
-
-  const addresses = [];
-
-  /**
-   * Helper: Build Iceland address object from data
-   * @param {Object|string} addressData - Address data (object or string)
-   * @param {string} [postalCode] - Postal code (for flat format)
-   * @param {string} [city] - City (for flat format)
-   * @returns {Object} Iceland address object
-   */
-  const buildIcelandAddress = (addressData, postalCode = '', city = '') => {
-    // Object format
-    if (addressData && typeof addressData === 'object') {
-      return {
-        country: 'IS',
-        street: addressData.street || addressData.address || '',
-        postal_code: addressData.postal_code || '',
-        city: addressData.city || addressData.municipality || '',
-        is_default: true
+      // Ensure all required fields exist
+      const patched = {
+        country: addr.country || 'IS',
+        street: addr.street || '',
+        number: numberValue,
+        letter: letterValue,
+        postal_code: addr.postal_code || '',
+        city: addr.city || '',
+        is_default: addr.is_default !== undefined ? addr.is_default : false
       };
-    }
-    // String/flat format
-    return {
-      country: 'IS',
-      street: (typeof addressData === 'string' ? addressData.trim() : '') || '',
-      postal_code: (typeof postalCode === 'string' ? postalCode.trim() : '') || '',
-      city: (typeof city === 'string' ? city.trim() : '') || '',
-      is_default: true
-    };
-  };
 
-  // Check for Iceland address (might be in address_iceland object, address object, or flat fields)
-  let hasIcelandAddress = false;
-  
-  // First check: address_iceland object
-  if (addressIceland && typeof addressIceland === 'object') {
-    const icelandAddr = buildIcelandAddress(addressIceland);
-    if (icelandAddr.street || icelandAddr.postal_code) {
-      addresses.push(icelandAddr);
-      hasIcelandAddress = true;
-      debug.log('   ✅ Migrated Iceland address (address_iceland object):', icelandAddr);
-    }
-  }
-  // Second check: address object (from memberData.address)
-  else if (icelandAddress && typeof icelandAddress === 'object') {
-    const icelandAddr = buildIcelandAddress(icelandAddress);
-    if (icelandAddr.street || icelandAddr.postal_code) {
-      addresses.push(icelandAddr);
-      hasIcelandAddress = true;
-      debug.log('   ✅ Migrated Iceland address (address object):', icelandAddr);
-    }
-  }
-  // Third check: flat fields or string format
-  else if ((typeof icelandAddress === 'string' && icelandAddress) || postalCode || city) {
-    const icelandAddr = buildIcelandAddress(icelandAddress, postalCode, city);
-    if (icelandAddr.street || icelandAddr.postal_code) {
-      addresses.push(icelandAddr);
-      hasIcelandAddress = true;
-      debug.log('   ✅ Migrated Iceland address (flat):', icelandAddr);
-    }
-  }
-
-  // Check for foreign address (object format)
-  if (foreignAddressObj && typeof foreignAddressObj === 'object') {
-    const foreignAddr = {
-      country: foreignAddressObj.country || country || '',
-      street: foreignAddressObj.address || foreignAddressObj.street || '',
-      postal_code: foreignAddressObj.postal_code || '',
-      city: foreignAddressObj.municipality || foreignAddressObj.city || '',
-      is_default: !hasIcelandAddress  // Default if no Iceland address
-    };
-    if (foreignAddr.street || foreignAddr.country) {
-      addresses.push(foreignAddr);
-      debug.log('   ✅ Migrated foreign address:', foreignAddr);
-    }
-  }
-
-  // If no addresses migrated, add one empty Iceland address for user to fill
-  if (addresses.length === 0) {
-    debug.log('   ℹ️ No old address data found, adding empty Iceland address');
-    addresses.push({
-      country: 'IS',
-      street: '',
-      postal_code: '',
-      city: '',
-      is_default: true
+      if (needsPatch) {
+        debug.log(`   🔧 Patched address:`, patched);
+      }
+      return patched;
     });
-  } else {
-    debug.log(`   ✅ Migration complete: ${addresses.length} address(es) migrated`);
+
+    // Mark that patching was needed so we can auto-save
+    patchedAddresses._needsSave = needsPatch;
+    return patchedAddresses;
   }
 
-  return addresses;
+  // No addresses array found - try to migrate from old address structure
+  const oldAddress = currentUserData?.address;
+  debug.log('   📦 No addresses array found, checking old address structure:', oldAddress);
+
+  // If old address exists, migrate it to new format
+  if (oldAddress && typeof oldAddress === 'object') {
+    debug.log('   🔄 Migrating from old address structure...');
+    const migratedAddress = {
+      country: 'IS',
+      street: oldAddress.street || '',
+      number: oldAddress.number != null ? String(oldAddress.number) : '',
+      letter: oldAddress.letter || '',
+      postal_code: oldAddress.postal_code || '',
+      city: oldAddress.city || '',
+      is_default: true
+    };
+    debug.log('   ✅ Migrated address:', migratedAddress);
+
+    // Mark for auto-save
+    const addresses = [migratedAddress];
+    addresses._needsSave = true;
+    return addresses;
+  }
+
+  // No old address either - create empty template
+  debug.log('   ℹ️ No old address found, creating empty Iceland address');
+  return [{
+    country: 'IS',
+    street: '',
+    number: '',
+    letter: '',
+    postal_code: '',
+    city: '',
+    is_default: true
+  }];
+}
+
+/**
+ * Check if old address field should be deleted
+ *
+ * @param {Object} currentUserData - User data
+ * @returns {boolean} True if old address field exists and should be deleted
+ */
+export function shouldDeleteOldAddressField(currentUserData) {
+  // If old address exists at root level and we have migrated to profile.addresses
+  const hasOldAddress = currentUserData?.address && typeof currentUserData.address === 'object';
+  const hasNewAddresses = currentUserData?.profile?.addresses && currentUserData.profile.addresses.length > 0;
+
+  return hasOldAddress && hasNewAddresses;
 }

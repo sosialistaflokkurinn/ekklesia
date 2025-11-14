@@ -251,7 +251,7 @@ const debug = DebugLogger.create('my-new-module');
 - ✅ Phone numbers formatted for comparison
 
 **NEVER log:**
-- ❌ Full kennitalas (010300-3390) → Use masked version (010300-****)
+- ❌ Full kennitalas (999999-9999) → Use masked version (010300-****)
 - ❌ Passwords or tokens
 - ❌ Email addresses in error messages
 - ❌ Personal health information

@@ -1,45 +1,41 @@
 # 🏛️ Architecture & Design Documentation
 
-**Last Updated**: October 21, 2025  
-**Purpose**: Architecture design, system blueprints, and technical recommendations
+**Last Updated**: November 9, 2025
+**Purpose**: Active design work and architecture decisions
 
 ---
 
-## 📖 Documents
+## ⚠️ Notice: Design Documentation Reorganization
 
-### System Architecture
-| Document | Purpose | Status |
-|----------|---------|--------|
-| [SYSTEM_ARCHITECTURE_OVERVIEW.md](./SYSTEM_ARCHITECTURE_OVERVIEW.md) | Complete 3-service architecture overview | ✅ Current |
-| [ARCHITECTURE_DESIGN_PHASE6.md](./ARCHITECTURE_DESIGN_PHASE6.md) | Phase 6 design and roadmap | ✅ Current |
-| [ARCHITECTURE_RECOMMENDATIONS.md](./ARCHITECTURE_RECOMMENDATIONS.md) | Technical recommendations and improvements | ✅ Current |
+**Effective**: November 9, 2025
 
-### Service-Specific Design
-| Document | Purpose | Status |
-|----------|---------|--------|
-| Architecture Refactor (TBD) | Members service architecture refactoring | ✅ Oct 15 |
+Most design documents have been archived as they represent historical proposals and recommendations from October 2025. Current architecture is documented in:
 
-### Frontend & UI
-| Document | Purpose | Status |
-|----------|---------|--------|
-| [CSS_DESIGN_SYSTEM.md](./CSS_DESIGN_SYSTEM.md) | CSS architecture and design system | ✅ Current |
+- `/docs/architecture/` - Current system architecture
+- `/docs/development/` - Current development guides
+
+**Historical design documents** are available in:
+- `/archive/old-design-docs/` - Phase 6 proposals, architecture recommendations, design system research
+
+---
+
+## 📖 Active Design Work
+
+Currently, there is no active design work in this directory. New design proposals should be created here and moved to `/docs/architecture/` when finalized, or to `/archive/old-design-docs/` if superseded.
 
 ---
 
 ## 🎯 Quick Reference
 
 ### For New Developers
-1. Start with [SYSTEM_ARCHITECTURE_OVERVIEW.md](./SYSTEM_ARCHITECTURE_OVERVIEW.md)
-2. Review [ARCHITECTURE_RECOMMENDATIONS.md](./ARCHITECTURE_RECOMMENDATIONS.md)
-3. Study [CSS_DESIGN_SYSTEM.md](./CSS_DESIGN_SYSTEM.md) for frontend work
+1. Start with `/docs/architecture/NAVIGATION_AND_AREAS_MAP.md` - Current architecture
+2. Review `/docs/development/` - Development guides
+3. Study `/docs/architecture/CSS_SHARING_AUDIT_2025-11-05.md` - CSS organization
 
-### For Architects
-- [ARCHITECTURE_DESIGN_PHASE6.md](./ARCHITECTURE_DESIGN_PHASE6.md) - Strategy and roadmap
-- [ARCHITECTURE_RECOMMENDATIONS.md](./ARCHITECTURE_RECOMMENDATIONS.md) - Technical decisions
-
-### For Frontend Developers
-- [CSS_DESIGN_SYSTEM.md](./CSS_DESIGN_SYSTEM.md) - Design system and patterns
-- Architecture Refactor (TBD) - Frontend structure
+### For Historical Context
+- `/archive/old-design-docs/SYSTEM_ARCHITECTURE_OVERVIEW.md` - Historical overview (Oct 2025)
+- `/archive/old-design-docs/ARCHITECTURE_DESIGN_PHASE6.md` - Phase 6 proposal (Oct 2025)
+- `/archive/old-design-docs/ARCHITECTURE_RECOMMENDATIONS.md` - Historical recommendations
 
 ---
 

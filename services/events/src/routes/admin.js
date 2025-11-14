@@ -3,6 +3,8 @@ const crypto = require('crypto');
 const { pool, query } = require('../config/database');
 const authenticate = require('../middleware/auth');
 const { requireRole, requireAnyRoles, attachCorrelationId } = require('../middleware/roles');
+const { adminLimiter } = require('../middleware/rateLimiter');
+const logger = require('../utils/logger');
 
 /**
  * In-memory rate limiter for admin operations.
@@ -44,10 +46,13 @@ router.use((req, res, next) => {
   next();
 });
 
-// 3. Require authentication for all admin endpoints
+// 3. Apply rate limiting to all admin routes (60 req/min)
+router.use(adminLimiter);
+
+// 4. Require authentication for all admin endpoints
 router.use(authenticate);
 
-// 4. Require at least one admin role (fail-secure default)
+// 5. Require at least one admin role (fail-secure default)
 router.use(requireAnyRoles(['superuser', 'admin']));
 
 /**
@@ -72,7 +77,13 @@ async function writeAuditLog(client, { actionType, performedBy, electionId, elec
       ]
     );
   } catch (err) {
-    console.error('[Admin] Audit logging error:', err);
+    logger.error('Audit logging error', {
+      operation: 'write_audit_log',
+      error: err.message,
+      stack: err.stack,
+      action_type: actionType,
+      correlation_id: correlationId
+    });
     // Don't throw - logging errors shouldn't fail the operation
   }
 }
@@ -124,12 +135,20 @@ router.post('/reset-election', requireRole('superuser'), async (req, res) => {
     if (scope === 'all') {
       let minIntervalSec = Number.parseInt(process.env.ADMIN_RESET_MIN_INTERVAL_SEC ?? '300', 10);
       if (!Number.isFinite(minIntervalSec) || minIntervalSec < 0) {
-        console.error('Invalid ADMIN_RESET_MIN_INTERVAL_SEC; falling back to default 300s');
+        logger.error('Invalid ADMIN_RESET_MIN_INTERVAL_SEC configuration', {
+          operation: 'reset_election',
+          configured_value: process.env.ADMIN_RESET_MIN_INTERVAL_SEC,
+          fallback_value: 300
+        });
         minIntervalSec = 300;
       }
       // Cap to 1 day to avoid accidental extreme throttling due to typos
       if (minIntervalSec > 86400) {
-        console.warn(`ADMIN_RESET_MIN_INTERVAL_SEC too high (${minIntervalSec}); capping to 86400s`);
+        logger.warn('ADMIN_RESET_MIN_INTERVAL_SEC too high, capping to maximum', {
+          operation: 'reset_election',
+          configured_value: minIntervalSec,
+          capped_value: 86400
+        });
         minIntervalSec = 86400;
       }
       const now = Date.now();
@@ -137,13 +156,13 @@ router.post('/reset-election', requireRole('superuser'), async (req, res) => {
       const elapsed = Math.floor((now - last) / 1000);
       if (elapsed < minIntervalSec) {
         const retryAfter = minIntervalSec - elapsed;
-        console.warn(JSON.stringify({
-          level: 'warn',
-          message: 'Admin reset rate-limited',
+        logger.warn('Admin reset rate-limited', {
+          operation: 'reset_election',
           performed_by: uid,
           retry_after_sec: retryAfter,
-          timestamp: new Date().toISOString()
-        }));
+          elapsed_sec: elapsed,
+          min_interval_sec: minIntervalSec
+        });
         return res.status(429).json({
           error: 'Too Many Requests',
           message: `Please wait ${retryAfter}s before attempting another full reset`,
@@ -170,26 +189,25 @@ router.post('/reset-election', requireRole('superuser'), async (req, res) => {
         // Delete only this user's token in Events service
         const delMine = await client.query('DELETE FROM public.voting_tokens WHERE kennitala = $1', [kennitala]);
         result.actions.push({ action: 'delete_events_token_for_user', kennitala });
-        console.log(JSON.stringify({
-          level: 'info',
-          message: 'Admin reset - user scope',
-          action: 'mine',
+        logger.info('Admin reset - user scope', {
+          operation: 'reset_election',
+          scope: 'mine',
           performed_by: uid,
-          kennitala_masked: kennitala ? `${kennitala.substring(0,7)}****` : null,
-          timestamp: new Date().toISOString()
-        }));
+          correlation_id: req.correlationId
+        });
       } else if (scope === 'all') {
         // Production guardrail: block destructive reset unless explicitly allowed
         const isProd = (process.env.NODE_ENV || '').toLowerCase() === 'production';
         const prodAllowed = (process.env.PRODUCTION_RESET_ALLOWED || '').toLowerCase() === 'true';
         if (isProd && !prodAllowed) {
           await client.query('ROLLBACK');
-          console.warn(JSON.stringify({
-            level: 'warn',
-            message: 'Blocked full reset in production (guardrail)',
+          logger.warn('Blocked full reset in production (guardrail)', {
+            operation: 'reset_election',
+            scope: 'all',
             performed_by: uid,
-            timestamp: new Date().toISOString()
-          }));
+            correlation_id: req.correlationId,
+            environment: 'production'
+          });
           return res.status(403).json({
             error: 'Forbidden',
             message: 'Full reset is blocked in production. Set PRODUCTION_RESET_ALLOWED=true to enable (with strict controls).'
@@ -212,15 +230,13 @@ router.post('/reset-election', requireRole('superuser'), async (req, res) => {
         await client.query('DELETE FROM public.voting_tokens');
         result.actions.push({ action: 'delete_all_events_tokens', table: 'public.voting_tokens' });
 
-        const alertPayload = {
-          level: 'warn',
-          message: 'Admin reset - FULL RESET executed',
+        logger.warn('Admin reset - FULL RESET executed', {
+          operation: 'reset_election',
+          scope: 'all',
           performed_by: uid,
           before_counts: result.before,
-          after_counts: {},
-          timestamp: new Date().toISOString()
-        };
-        console.warn(JSON.stringify(alertPayload));
+          correlation_id: req.correlationId
+        });
       } else {
         await client.query('ROLLBACK');
         return res.status(400).json({
@@ -240,13 +256,13 @@ router.post('/reset-election', requireRole('superuser'), async (req, res) => {
       };
 
       // Emit completion log with final counts
-      console.warn(JSON.stringify({
-        level: 'info',
-        message: 'Admin reset completed',
+      logger.info('Admin reset completed', {
+        operation: 'reset_election',
+        scope,
         performed_by: uid,
         final_counts: result.after,
-        timestamp: new Date().toISOString()
-      }));
+        correlation_id: req.correlationId
+      });
 
       await client.query('COMMIT');
 
@@ -265,7 +281,14 @@ router.post('/reset-election', requireRole('superuser'), async (req, res) => {
       });
     } catch (err) {
       await client.query('ROLLBACK');
-      console.error('[Admin Reset] Transaction error:', err);
+      logger.error('Admin reset transaction failed', {
+        operation: 'reset_election',
+        error: err.message,
+        stack: err.stack,
+        scope,
+        performed_by: uid,
+        correlation_id: req.correlationId
+      });
       return res.status(500).json({
         error: 'Internal Server Error',
         message: 'Failed to perform reset'
@@ -274,7 +297,12 @@ router.post('/reset-election', requireRole('superuser'), async (req, res) => {
       client.release();
     }
   } catch (error) {
-    console.error('[Admin Reset] Error:', error);
+    logger.error('Admin reset failed', {
+      operation: 'reset_election',
+      error: error.message,
+      stack: error.stack,
+      correlation_id: req.correlationId
+    });
     return res.status(500).json({
       error: 'Internal Server Error',
       message: 'Unexpected error'
@@ -309,15 +337,13 @@ router.get('/elections', requireAnyRoles(['superuser', 'admin']), async (req, re
 
     const result = await query(sql, params);
 
-    console.log(JSON.stringify({
-      level: 'info',
-      message: 'List elections',
+    logger.info('List elections', {
+      operation: 'list_elections',
       correlation_id: req.correlationId,
       performed_by: req.user?.uid,
       count: result.rows.length,
-      status_filter: status || 'all',
-      timestamp: new Date().toISOString()
-    }));
+      status_filter: status || 'all'
+    });
 
     return res.json({
       elections: result.rows,
@@ -326,7 +352,12 @@ router.get('/elections', requireAnyRoles(['superuser', 'admin']), async (req, re
       count: result.rows.length
     });
   } catch (error) {
-    console.error('[Admin] List elections error:', error);
+    logger.error('List elections failed', {
+      operation: 'list_elections',
+      error: error.message,
+      stack: error.stack,
+      correlation_id: req.correlationId
+    });
     return res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to list elections',
@@ -358,18 +389,22 @@ router.get('/elections/:id', requireAnyRoles(['superuser', 'admin']), async (req
       });
     }
 
-    console.log(JSON.stringify({
-      level: 'info',
-      message: 'Preview election',
+    logger.info('Preview election', {
+      operation: 'preview_election',
       correlation_id: req.correlationId,
       performed_by: req.user?.uid,
-      election_id: id,
-      timestamp: new Date().toISOString()
-    }));
+      election_id: id
+    });
 
     return res.json(result.rows[0]);
   } catch (error) {
-    console.error('[Admin] Preview election error:', error);
+    logger.error('Preview election failed', {
+      operation: 'preview_election',
+      error: error.message,
+      stack: error.stack,
+      election_id: req.params.id,
+      correlation_id: req.correlationId
+    });
     return res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to fetch election',
@@ -422,20 +457,24 @@ router.post('/elections', requireAnyRoles(['superuser', 'admin']), async (req, r
 
     await client.query('COMMIT');
 
-    console.log(JSON.stringify({
-      level: 'info',
-      message: 'Election created',
+    logger.info('Election created', {
+      operation: 'create_election',
       correlation_id: req.correlationId,
       performed_by: uid,
       election_id: result.rows[0].id,
-      title,
-      timestamp: new Date().toISOString()
-    }));
+      title
+    });
 
     return res.status(201).json(result.rows[0]);
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error('[Admin] Create election error:', error);
+    logger.error('Create election failed', {
+      operation: 'create_election',
+      error: error.message,
+      stack: error.stack,
+      correlation_id: req.correlationId,
+      performed_by: req.user?.uid
+    });
     return res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to create election',
@@ -526,19 +565,23 @@ router.patch('/elections/:id/draft', requireAnyRoles(['superuser', 'admin']), as
       params
     );
 
-    console.log(JSON.stringify({
-      level: 'info',
-      message: 'Draft election updated',
+    logger.info('Draft election updated', {
+      operation: 'edit_draft_election',
       correlation_id: req.correlationId,
       performed_by: uid,
       election_id: id,
-      updated_fields: Object.keys(req.body),
-      timestamp: new Date().toISOString()
-    }));
+      updated_fields: Object.keys(req.body)
+    });
 
     return res.json(result.rows[0]);
   } catch (error) {
-    console.error('[Admin] Edit draft election error:', error);
+    logger.error('Edit draft election failed', {
+      operation: 'edit_draft_election',
+      error: error.message,
+      stack: error.stack,
+      election_id: req.params.id,
+      correlation_id: req.correlationId
+    });
     return res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to update election',
@@ -595,19 +638,23 @@ router.patch('/elections/:id/metadata', requireAnyRoles(['superuser', 'admin']),
       });
     }
 
-    console.log(JSON.stringify({
-      level: 'info',
-      message: 'Election metadata updated',
+    logger.info('Election metadata updated', {
+      operation: 'update_election_metadata',
       correlation_id: req.correlationId,
       performed_by: uid,
       election_id: id,
-      updated_fields: Object.keys(req.body),
-      timestamp: new Date().toISOString()
-    }));
+      updated_fields: Object.keys(req.body)
+    });
 
     return res.json(result.rows[0]);
   } catch (error) {
-    console.error('[Admin] Update metadata error:', error);
+    logger.error('Update metadata failed', {
+      operation: 'update_election_metadata',
+      error: error.message,
+      stack: error.stack,
+      election_id: req.params.id,
+      correlation_id: req.correlationId
+    });
     return res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to update election metadata',
@@ -660,20 +707,24 @@ router.post('/elections/:id/publish', requireAnyRoles(['superuser', 'admin']), a
 
     await client.query('COMMIT');
 
-    console.warn(JSON.stringify({
-      level: 'warn',
-      message: 'Election published',
+    logger.warn('Election published', {
+      operation: 'publish_election',
       correlation_id: req.correlationId,
       performed_by: uid,
       election_id: id,
-      title: result.rows[0].title,
-      timestamp: new Date().toISOString()
-    }));
+      title: result.rows[0].title
+    });
 
     return res.json(result.rows[0]);
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error('[Admin] Publish election error:', error);
+    logger.error('Publish election failed', {
+      operation: 'publish_election',
+      error: error.message,
+      stack: error.stack,
+      election_id: req.params.id,
+      correlation_id: req.correlationId
+    });
     return res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to publish election',
@@ -711,19 +762,23 @@ router.post('/elections/:id/close', requireAnyRoles(['superuser', 'admin']), asy
       });
     }
 
-    console.warn(JSON.stringify({
-      level: 'warn',
-      message: 'Election closed',
+    logger.warn('Election closed', {
+      operation: 'close_election',
       correlation_id: req.correlationId,
       performed_by: uid,
       election_id: id,
-      title: result.rows[0].title,
-      timestamp: new Date().toISOString()
-    }));
+      title: result.rows[0].title
+    });
 
     return res.json(result.rows[0]);
   } catch (error) {
-    console.error('[Admin] Close election error:', error);
+    logger.error('Close election failed', {
+      operation: 'close_election',
+      error: error.message,
+      stack: error.stack,
+      election_id: req.params.id,
+      correlation_id: req.correlationId
+    });
     return res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to close election',
@@ -759,19 +814,23 @@ router.post('/elections/:id/pause', requireAnyRoles(['superuser', 'admin']), asy
       });
     }
 
-    console.warn(JSON.stringify({
-      level: 'warn',
-      message: 'Election paused',
+    logger.warn('Election paused', {
+      operation: 'pause_election',
       correlation_id: req.correlationId,
       performed_by: uid,
       election_id: id,
-      title: result.rows[0].title,
-      timestamp: new Date().toISOString()
-    }));
+      title: result.rows[0].title
+    });
 
     return res.json(result.rows[0]);
   } catch (error) {
-    console.error('[Admin] Pause election error:', error);
+    logger.error('Pause election failed', {
+      operation: 'pause_election',
+      error: error.message,
+      stack: error.stack,
+      election_id: req.params.id,
+      correlation_id: req.correlationId
+    });
     return res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to pause election',
@@ -807,19 +866,23 @@ router.post('/elections/:id/resume', requireAnyRoles(['superuser', 'admin']), as
       });
     }
 
-    console.warn(JSON.stringify({
-      level: 'warn',
-      message: 'Election resumed',
+    logger.warn('Election resumed', {
+      operation: 'resume_election',
       correlation_id: req.correlationId,
       performed_by: uid,
       election_id: id,
-      title: result.rows[0].title,
-      timestamp: new Date().toISOString()
-    }));
+      title: result.rows[0].title
+    });
 
     return res.json(result.rows[0]);
   } catch (error) {
-    console.error('[Admin] Resume election error:', error);
+    logger.error('Resume election failed', {
+      operation: 'resume_election',
+      error: error.message,
+      stack: error.stack,
+      election_id: req.params.id,
+      correlation_id: req.correlationId
+    });
     return res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to resume election',
@@ -855,19 +918,23 @@ router.post('/elections/:id/archive', requireAnyRoles(['superuser', 'admin']), a
       });
     }
 
-    console.log(JSON.stringify({
-      level: 'info',
-      message: 'Election archived',
+    logger.info('Election archived', {
+      operation: 'archive_election',
       correlation_id: req.correlationId,
       performed_by: uid,
       election_id: id,
-      title: result.rows[0].title,
-      timestamp: new Date().toISOString()
-    }));
+      title: result.rows[0].title
+    });
 
     return res.json(result.rows[0]);
   } catch (error) {
-    console.error('[Admin] Archive election error:', error);
+    logger.error('Archive election failed', {
+      operation: 'archive_election',
+      error: error.message,
+      stack: error.stack,
+      election_id: req.params.id,
+      correlation_id: req.correlationId
+    });
     return res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to archive election',
@@ -903,22 +970,26 @@ router.delete('/elections/:id', requireRole('superuser'), async (req, res) => {
       });
     }
 
-    console.warn(JSON.stringify({
-      level: 'warn',
-      message: 'Draft election deleted',
+    logger.warn('Draft election deleted', {
+      operation: 'delete_election',
       correlation_id: req.correlationId,
       performed_by: uid,
       election_id: id,
-      title: result.rows[0].title,
-      timestamp: new Date().toISOString()
-    }));
+      title: result.rows[0].title
+    });
 
     return res.json({
       message: 'Election draft deleted successfully',
       election: result.rows[0]
     });
   } catch (error) {
-    console.error('[Admin] Delete election error:', error);
+    logger.error('Delete election failed', {
+      operation: 'delete_election',
+      error: error.message,
+      stack: error.stack,
+      election_id: req.params.id,
+      correlation_id: req.correlationId
+    });
     return res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to delete election',
@@ -1033,16 +1104,14 @@ router.post('/elections/:id/open', requireAnyRoles(['superuser', 'admin']), asyn
 
     await client.query('COMMIT');
 
-    console.warn(JSON.stringify({
-      level: 'warn',
-      message: 'Election opened for voting',
+    logger.warn('Election opened for voting', {
+      operation: 'open_election',
       correlation_id: req.correlationId,
       performed_by: uid,
       election_id: id,
       election_title: election.title,
-      tokens_generated: tokenCount,
-      timestamp: new Date().toISOString()
-    }));
+      tokens_generated: tokenCount
+    });
 
     return res.json({
       message: 'Election opened for voting',
@@ -1052,7 +1121,13 @@ router.post('/elections/:id/open', requireAnyRoles(['superuser', 'admin']), asyn
     });
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error('[Admin] Open election error:', error);
+    logger.error('Open election failed', {
+      operation: 'open_election',
+      error: error.message,
+      stack: error.stack,
+      election_id: req.params.id,
+      correlation_id: req.correlationId
+    });
     return res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to open election for voting',
@@ -1112,15 +1187,13 @@ router.get('/elections/:id/status', requireAnyRoles(['superuser', 'admin']), asy
 
     const election = result.rows[0];
 
-    console.log(JSON.stringify({
-      level: 'info',
-      message: 'Election status queried',
+    logger.info('Election status queried', {
+      operation: 'get_election_status',
       correlation_id: req.correlationId,
       performed_by: req.user?.uid,
       election_id: id,
-      status: election.status,
-      timestamp: new Date().toISOString()
-    }));
+      status: election.status
+    });
 
     return res.json({
       election: {
@@ -1147,7 +1220,13 @@ router.get('/elections/:id/status', requireAnyRoles(['superuser', 'admin']), asy
       }
     });
   } catch (error) {
-    console.error('[Admin] Election status error:', error);
+    logger.error('Get election status failed', {
+      operation: 'get_election_status',
+      error: error.message,
+      stack: error.stack,
+      election_id: req.params.id,
+      correlation_id: req.correlationId
+    });
     return res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to fetch election status',
@@ -1225,15 +1304,13 @@ router.get('/elections/:id/results', requireAnyRoles(['superuser', 'admin']), as
     const eligibleVoters = parseInt(tokenResult.rows[0].total) || 0;
     const participationRate = eligibleVoters > 0 ? ((totalVotes / eligibleVoters) * 100).toFixed(2) : 0;
 
-    console.log(JSON.stringify({
-      level: 'info',
-      message: 'Election results queried',
+    logger.info('Election results queried', {
+      operation: 'get_election_results',
       correlation_id: req.correlationId,
       performed_by: req.user?.uid,
       election_id: id,
-      total_votes: totalVotes,
-      timestamp: new Date().toISOString()
-    }));
+      total_votes: totalVotes
+    });
 
     return res.json({
       election: {
@@ -1254,7 +1331,13 @@ router.get('/elections/:id/results', requireAnyRoles(['superuser', 'admin']), as
       }
     });
   } catch (error) {
-    console.error('[Admin] Election results error:', error);
+    logger.error('Get election results failed', {
+      operation: 'get_election_results',
+      error: error.message,
+      stack: error.stack,
+      election_id: req.params.id,
+      correlation_id: req.correlationId
+    });
     return res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to fetch election results',
@@ -1313,15 +1396,13 @@ router.get('/elections/:id/tokens', requireAnyRoles(['superuser', 'admin']), asy
 
     const stats = tokenStats.rows[0];
 
-    console.log(JSON.stringify({
-      level: 'info',
-      message: 'Token distribution queried',
+    logger.info('Token distribution queried', {
+      operation: 'get_token_distribution',
       correlation_id: req.correlationId,
       performed_by: req.user?.uid,
       election_id: id,
-      total_tokens: parseInt(stats.total) || 0,
-      timestamp: new Date().toISOString()
-    }));
+      total_tokens: parseInt(stats.total) || 0
+    });
 
     return res.json({
       election: {
@@ -1343,7 +1424,13 @@ router.get('/elections/:id/tokens', requireAnyRoles(['superuser', 'admin']), asy
       }
     });
   } catch (error) {
-    console.error('[Admin] Token distribution error:', error);
+    logger.error('Get token distribution failed', {
+      operation: 'get_token_distribution',
+      error: error.message,
+      stack: error.stack,
+      election_id: req.params.id,
+      correlation_id: req.correlationId
+    });
     return res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to fetch token distribution',

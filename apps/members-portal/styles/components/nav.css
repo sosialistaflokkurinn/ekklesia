@@ -107,6 +107,11 @@
   align-items: center;
 }
 
+/* Hide mobile tabs on desktop */
+.nav__tabs {
+  display: none;
+}
+
 .nav__link {
   color: white;
   text-decoration: none;
@@ -136,10 +141,10 @@
 }
 
 /* ========================================== */
-/* MOBILE RESPONSIVE (≤768px) */
+/* MOBILE RESPONSIVE (≤1220px) */
 /* ========================================== */
 
-@media (max-width: 768px) {
+@media (max-width: 1220px) {
 
   /* Show hamburger button */
   .nav__hamburger {
@@ -192,6 +197,40 @@
 
   .nav__close:hover {
     color: var(--color-primary);
+  }
+
+  /* Sub-navigation tabs in drawer (mobile) */
+  .nav__tabs {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
+    margin-top: var(--spacing-lg);
+    padding: 0 var(--spacing-md);
+    border-bottom: 2px solid var(--color-border-light);
+  }
+
+  .nav__tab {
+    padding: var(--spacing-md) var(--spacing-lg);
+    color: var(--color-gray-700);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 15px;
+    border-left: 3px solid transparent;
+    transition: all 0.2s;
+    display: block;
+  }
+
+  .nav__tab:hover {
+    background: var(--color-gray-50);
+    color: var(--color-gray-900);
+  }
+
+  .nav__tab--active {
+    color: var(--color-primary);
+    border-left-color: var(--color-primary);
+    background: var(--color-primary-lighter);
+    font-weight: 600;
   }
 
   /* Navigation links - vertical stack */
@@ -259,7 +298,7 @@
   outline-offset: 2px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1220px) {
   .nav__hamburger:focus-visible {
     outline-color: var(--color-white);
   }

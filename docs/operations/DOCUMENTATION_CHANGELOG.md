@@ -78,8 +78,6 @@ All evolving documentation files should follow semantic versioning: `MAJOR.MINOR
 
 | Document | Version | Last Updated | Status |
 |----------|---------|--------------|--------|
-| [SYSTEM_ARCHITECTURE_OVERVIEW.md](../design/SYSTEM_ARCHITECTURE_OVERVIEW.md) | v1.0 | 2025-10-13 | 🔄 Needs Review |
-| [ARCHITECTURE_DESIGN_PHASE6.md](../architecture/ARCHITECTURE_DESIGN_PHASE6.md) | v1.0 | 2025-10-13 | 🔄 Needs Review |
 | [ARCHITECTURE_RECOMMENDATIONS.md](../architecture/ARCHITECTURE_RECOMMENDATIONS.md) | v1.0 | 2025-10-13 | 🔄 Needs Review |
 
 ---
@@ -225,7 +223,7 @@ Add changelog at the end of each versioned document:
 
 The following documents should have version numbers added in next maintenance cycle:
 
-1. Architecture docs (SYSTEM_ARCHITECTURE_OVERVIEW.md, etc.)
+1. Architecture docs (ARCHITECTURE_RECOMMENDATIONS.md, etc.)
 2. Security docs (SECURITY.md and related)
 3. Status documents (CURRENT_PRODUCTION_STATUS.md, etc.)
 4. Design documents (when created)

@@ -1,100 +1,15 @@
 <!DOCTYPE html>
 <html lang="is">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title id="page-title">Loading...</title>
-  
-  <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <link rel="stylesheet" href="/styles/global.css?v=20251027">
-  <link rel="stylesheet" href="/styles/components/nav.css?v=20251027">
-  <link rel="stylesheet" href="/styles/components/page.css?v=20251027">
-  <link rel="stylesheet" href="/styles/elections.css?v=20251027">
+    <meta charset="UTF-8">
+    <meta http-equiv="refresh" content="0; url=/elections/">
+    <title>Áframsending...</title>
 </head>
-<body class="authenticated">
-  <nav class="nav">
-    <div class="nav__container">
-      <a href="/members-area/dashboard.html" class="nav__brand" id="nav-brand">Loading...</a>
-
-      <!-- Hamburger Button (mobile only) -->
-      <button class="nav__hamburger" id="nav-hamburger" aria-expanded="false">
-        <span class="nav__hamburger-line"></span>
-        <span class="nav__hamburger-line"></span>
-        <span class="nav__hamburger-line"></span>
-      </button>
-
-      <!-- Overlay for mobile menu -->
-      <div class="nav__overlay" id="nav-overlay"></div>
-
-      <!-- Navigation Drawer -->
-      <div class="nav__drawer" id="nav-drawer" aria-hidden="true">
-        <!-- Close button (mobile only) -->
-        <button class="nav__close" id="nav-close">
-          <span class="nav__close-icon">✕</span>
-        </button>
-
-        <div class="nav__links">
-          <a href="/members-area/dashboard.html" class="nav__link" id="nav-dashboard">Loading...</a>
-          <a href="/members-area/profile.html" class="nav__link" id="nav-profile">Loading...</a>
-          <a href="/members-area/events.html" class="nav__link" id="nav-events">Loading...</a>
-          <a href="/members-area/elections.html" class="nav__link nav__link--active" id="nav-voting">Loading...</a>
-          <a href="#" class="nav__link nav__link--logout" id="nav-logout">Loading...</a>
-        </div>
-      </div>
-    </div>
-  </nav>
-
-  <div class="page__container">
-    <section class="elections">
-      <div class="elections__header">
-        <h1 id="elections-title">Loading...</h1>
-        <p id="elections-subtitle">Loading...</p>
-      </div>
-
-      <!-- Filter Tabs -->
-      <div class="elections__filters">
-        <button class="elections__filter-btn elections__filter-btn--active" data-filter="all" id="filter-all">
-          <span id="filter-all-text">Loading...</span>
-          <span class="elections__filter-count" id="count-all">0</span>
-        </button>
-        <button class="elections__filter-btn" data-filter="active" id="filter-active">
-          <span id="filter-active-text">Loading...</span>
-          <span class="elections__filter-count" id="count-active">0</span>
-        </button>
-        <button class="elections__filter-btn" data-filter="upcoming" id="filter-upcoming">
-          <span id="filter-upcoming-text">Loading...</span>
-          <span class="elections__filter-count" id="count-upcoming">0</span>
-        </button>
-        <button class="elections__filter-btn" data-filter="closed" id="filter-closed">
-          <span id="filter-closed-text">Loading...</span>
-          <span class="elections__filter-count" id="count-closed">0</span>
-        </button>
-      </div>
-
-      <!-- Loading State -->
-      <div id="elections-loading" class="elections__loading u-hidden">
-        <div class="spinner"></div>
-        <p id="loading-message">Loading...</p>
-      </div>
-
-      <!-- Error State -->
-      <div id="elections-error" class="elections__error u-hidden">
-        <p id="error-message">Loading...</p>
-        <button id="retry-button" class="btn">Loading...</button>
-      </div>
-
-      <!-- Empty State -->
-      <div id="elections-empty" class="elections__empty u-hidden">
-        <p id="empty-message">Loading...</p>
-      </div>
-
-      <!-- Elections Container -->
-      <div id="elections-list" class="elections__list"></div>
-    </section>
-  </div>
-
-  <script type="module" src="/js/elections.js?v=20251027"></script>
+<body>
+    <p>Áframsending á <a href="/elections/">kosningar</a>...</p>
+    <script>
+        // Fallback redirect if meta refresh doesn't work
+        window.location.replace('/elections/');
+    </script>
 </body>
 </html>

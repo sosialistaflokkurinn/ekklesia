@@ -1,0 +1,46 @@
+name: Code Quality Checks
+
+on:
+  pull_request:
+    paths:
+      - 'apps/members-portal/**/*.js'
+      - 'apps/members-portal/**/*.html'
+      - 'services/**/*.js'
+      - 'services/**/*.py'
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/members-portal/**/*.js'
+      - 'apps/members-portal/**/*.html'
+      - 'services/**/*.js'
+      - 'services/**/*.py'
+
+jobs:
+  code-patterns:
+    name: Check Code Patterns
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run code pattern checks
+        run: |
+          chmod +x scripts/check-code-patterns.sh
+          ./scripts/check-code-patterns.sh apps/members-portal/js/
+        continue-on-error: true
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "### Code Pattern Check Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Checked patterns based on GitHub Copilot findings:" >> $GITHUB_STEP_SUMMARY
+          echo "- API consistency (createBadge, button methods)" >> $GITHUB_STEP_SUMMARY
+          echo "- Development markers (TODO, FIXME)" >> $GITHUB_STEP_SUMMARY
+          echo "- Documentation examples" >> $GITHUB_STEP_SUMMARY
+          echo "- Async error handling" >> $GITHUB_STEP_SUMMARY
+          echo "- XSS risks (innerHTML usage)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "See [Code Pattern Checks](../../docs/development/guides/CODE_PATTERN_CHECKS.md) for details." >> $GITHUB_STEP_SUMMARY

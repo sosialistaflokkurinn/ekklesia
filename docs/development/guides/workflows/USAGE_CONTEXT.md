@@ -1,11 +1,24 @@
 # Ekklesia Usage Context & Load Characteristics
 
 **Document Type**: System Requirements - Usage Patterns
-**Last Updated**: 2025-10-27
+**Last Updated**: 2025-11-07
 **Status**: ✅ Active - Critical Design Context
 **Purpose**: Define real-world usage patterns and load characteristics for capacity planning
 
 **Note**: These specifications are pre-production estimates based on analysis of organizational meeting patterns. Will be updated after first production meetings with actual load data.
+
+> **📝 DOCUMENTATION LANGUAGE POLICY**  
+> All documentation MUST be written in **English**, including:
+> - All `.md` files in `/docs/`
+> - Code comments in Python, JavaScript, HTML, CSS
+> - Git commit messages
+> - GitHub issue descriptions and comments
+> - API documentation
+> - README files
+> 
+> **Exception**: User-facing text in i18n files (strings.xml) should be in Icelandic (is) or target language.
+> 
+> **Rationale**: English ensures accessibility for international contributors and follows industry best practices.
 
 ---
 
@@ -501,12 +514,51 @@ SELECT used FROM voting_tokens WHERE token_hash = $1 FOR UPDATE NOWAIT;
 
 ---
 
+## Background Operations (Non-Meeting Load)
+
+### Admin API Operations (Nov 2025)
+
+**Services**: Admin Elections API (10 endpoints)
+
+**Usage Pattern**:
+- Election creation/updates: 1-5 operations per week
+- Load characteristics: Single admin user, low frequency
+- No scaling concerns (handled by base Cloud Run capacity)
+
+**Endpoints** (see [CLOUD_RUN_SERVICES.md](../../../infrastructure/CLOUD_RUN_SERVICES.md)):
+- CRUD operations (create, read, update, delete elections)
+- Lifecycle management (open, close, publish results)
+- Soft delete (hide/unhide elections)
+
+### Member Sync Operations (Nov 2025)
+
+**Services**: Bidirectional sync between Django backend and Firestore
+
+**Usage Pattern**:
+- **Django → Firestore**: Hourly sync (Cloud Scheduler)
+- **Firestore → Django**: Daily sync at 3:30 AM (Cloud Scheduler)
+- **Real-time tracking**: Change detection on member updates
+
+**Load Characteristics**:
+- Batch operations: 100-500 member updates per sync
+- Off-peak execution: No impact on meeting-day performance
+- Database impact: Minimal (separate from voting tables)
+
+**Infrastructure**:
+- Cloud Functions: `bidirectional_sync`, `sync_members`, `track_member_changes`
+- Firestore: `members` collection, `sync_queue` collection
+- Composite index: `sync_queue` on source+sync_status+target+created_at
+
+---
+
 ## Related Documentation
 
-- [SYSTEM_ARCHITECTURE_OVERVIEW.md](../../../design/SYSTEM_ARCHITECTURE_OVERVIEW.md) - Overall architecture
+- [Cloud Run Services](../../../infrastructure/CLOUD_RUN_SERVICES.md) - Service architecture and deployment (updated Nov 2025 with Admin API)
+- [CURRENT_DEVELOPMENT_STATUS.md](../../../status/CURRENT_DEVELOPMENT_STATUS.md) - Production status (updated Nov 2025)
+- [OPERATIONAL_PROCEDURES.md](../../../operations/OPERATIONAL_PROCEDURES.md) - Meeting day operations
 - Events Service design (see services/events/) - Events service design
 - Elections Service design (see services/elections/) - Elections service design
-- [CURRENT_DEVELOPMENT_STATUS.md](../../../status/CURRENT_DEVELOPMENT_STATUS.md) - Production status
+- Member Sync design (see services/members/functions/) - Bidirectional Django ↔ Firestore sync
 
 ---
 
@@ -527,6 +579,7 @@ SELECT used FROM voting_tokens WHERE token_hash = $1 FOR UPDATE NOWAIT;
 
 ---
 
-**Last Updated**: 2025-10-09
+**Last Updated**: 2025-11-09
 **Status**: ✅ Active - Must be considered in all design decisions
 **Next Review**: After first large meeting (validate assumptions)
+**Recent Implementation Updates (Nov 2025)**: Admin API deployed, Member sync infrastructure operational

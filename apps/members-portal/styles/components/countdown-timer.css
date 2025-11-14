@@ -1,0 +1,87 @@
+/**
+ * Countdown Timer Component Styles
+ *
+ * Displays countdown in stopwatch and human-readable formats.
+ * Used in both member and admin views.
+ */
+
+/* Timer container */
+.countdown-timer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  background-color: var(--color-gray-50);
+  border-radius: var(--radius-md);
+  border: 2px solid var(--color-primary);
+}
+
+/* Stopwatch format (0:15:32) */
+.countdown-timer__stopwatch {
+  font-size: 2rem;
+  font-weight: 700;
+  font-family: 'Courier New', monospace;
+  color: var(--color-primary);
+  letter-spacing: 0.05em;
+}
+
+/* Human-readable format (15 mínútur eftir) */
+.countdown-timer__human {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--color-gray-700);
+  text-align: center;
+}
+
+/* Warning state (< 5 minutes) */
+.countdown-timer--warning {
+  border-color: var(--color-warning-border);
+  background-color: var(--color-warning-bg);
+}
+
+.countdown-timer--warning .countdown-timer__stopwatch {
+  color: var(--color-warning-dark);
+}
+
+/* Critical state (< 1 minute) */
+.countdown-timer--critical {
+  border-color: var(--color-error-border);
+  background-color: var(--color-error-bg);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.countdown-timer--critical .countdown-timer__stopwatch {
+  color: var(--color-error-text);
+}
+
+/* Expired state */
+.countdown-timer--expired {
+  border-color: var(--color-gray-400);
+  background-color: var(--color-gray-100);
+}
+
+.countdown-timer--expired .countdown-timer__stopwatch {
+  color: var(--color-gray-600);
+}
+
+/* Pulse animation for critical state */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .countdown-timer__stopwatch {
+    font-size: 1.5rem;
+  }
+
+  .countdown-timer__human {
+    font-size: 0.875rem;
+  }
+}

@@ -209,7 +209,7 @@ console.log(JSON.stringify({
 
 ### Middleware Support
 
-**Correlation ID Middleware** ([services/events/src/middleware/roles.js:157-163](../../../../services/events/src/middleware/roles.js#L157-L163)):
+**Correlation ID Middleware** ([services/events/src/middleware/roles.js](../../../../services/events/src/middleware/roles.js)):
 ```javascript
 function attachCorrelationId(req, res, next) {
   if (!req.correlationId) {
@@ -220,7 +220,7 @@ function attachCorrelationId(req, res, next) {
 }
 ```
 
-**RBAC Denial Logging** ([services/events/src/middleware/roles.js:65-93](../../../../services/events/src/middleware/roles.js#L65-L93)):
+**RBAC Denial Logging** ([services/events/src/middleware/roles.js](../../../../services/events/src/middleware/roles.js)):
 ```javascript
 function createForbiddenResponse(req, requiredRoles, mode = 'any') {
   const correlationId = req.correlationId || generateCorrelationId();

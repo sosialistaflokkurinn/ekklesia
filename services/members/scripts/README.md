@@ -4,6 +4,56 @@ Helper scripts for managing the Members service (Firebase Authentication, custom
 
 ---
 
+## check-user-logins.js
+
+Skoða innskráningar notenda frá Firestore.
+
+### Usage
+
+```bash
+# Innskráningar í dag
+node check-user-logins.js
+
+# Síðustu 7 daga
+node check-user-logins.js --days 7
+
+# Tiltekinn dagur
+node check-user-logins.js --date 2025-11-01
+
+# Síðustu 20 innskráningar
+node check-user-logins.js --latest 20
+```
+
+### Dæmi
+
+**Skoða innskráningar í dag**:
+```bash
+node check-user-logins.js
+```
+
+**Skoða síðustu 10 innskráningar**:
+```bash
+node check-user-logins.js --latest 10
+```
+
+**Skoða innskráningar frá síðustu 30 dögum**:
+```bash
+node check-user-logins.js --days 30
+```
+
+### Output
+
+Scriptinn sýnir:
+- Nafn notanda
+- Kennitölu
+- Tíma innskráningar
+- Netfang
+- Símanúmer
+- Félagaskrárstöðu (já/nei)
+- Hlutverk (ef einhver)
+
+---
+
 ## set-user-roles.js
 
 Assign or remove roles for users via Firebase custom claims.
@@ -154,7 +204,7 @@ Emergency role assignment using Identity Toolkit REST API. Use this when `set-us
 
 **Set developer role with all claims** (recommended):
 ```bash
-./emergency-set-role.sh abc123XYZ789ExampleUserUID456 developer 010190-2939 jon.jonsson@example.com +3545551234
+./emergency-set-role.sh abc123XYZ789ExampleUserUID456 developer 000000-0000 jon.jonsson@example.com +3545551234
 ```
 
 ### ⚠️ Warning
@@ -205,7 +255,7 @@ User Information:
 Custom Claims (customAttributes):
 {
   "roles": ["developer"],
-  "kennitala": "010190-2939",
+  "kennitala": "000000-0000",
   "isMember": true,
   "email": "jon.jonsson@example.com",
   "phoneNumber": "+3545551234"

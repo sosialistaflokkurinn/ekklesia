@@ -23,24 +23,24 @@
 
 ## Philosophy
 
-Python code in Ekklesia follows **modern Python 3.11+** conventions with emphasis on:
+Python code in Ekklesia follows **modern [Python 3.11+](https://docs.python.org/3.11/)** conventions with emphasis on:
 
-1. **Type Safety** - Type hints for all public functions
-2. **Clarity** - Self-documenting code with comprehensive docstrings
+1. **Type Safety** - [Type hints](https://docs.python.org/3/library/typing.html) for all public functions
+2. **Clarity** - Self-documenting code with comprehensive [docstrings](https://peps.python.org/pep-0257/)
 3. **Reliability** - Defensive programming with proper error handling
-4. **Performance** - Async patterns for Firebase operations
+4. **Performance** - [Async patterns](https://docs.python.org/3/library/asyncio.html) for Firebase operations
 5. **Security** - Input validation and rate limiting
-6. **Observability** - Structured logging for production debugging
+6. **Observability** - Structured [logging](https://docs.python.org/3/library/logging.html) for production debugging
 
 ### Where Python is Used
 
-- **Cloud Functions** (`services/members/functions/`) - Production backend
+- **Cloud Functions** ([`services/members/functions/`](../../services/members/functions/)) - Production backend
   - OAuth authentication (`handlekenniauth`)
   - Membership sync (`syncmembers`)
   - Audit logging (`auditmemberchanges`)
   - Member management (`updatememberforeignaddress`)
 
-- **Admin Scripts** (`scripts/admin/`) - Development tools
+- **Admin Scripts** ([`scripts/admin/`](../../scripts/admin/)) - Development tools
   - Documentation audit (`audit-documentation.py`)
   - i18n validation (`validate-i18n-usage.py`)
   - Link validation (`validate-links.py`)
@@ -97,7 +97,7 @@ def get_member_ids() -> List[str]:
     """Returns list of member kennitala strings."""
     pass
 
-# Multiple possible types
+# Multiple possible types (Union)
 def format_phone(phone: Union[str, int]) -> str:
     """Format phone number from string or int."""
     pass
@@ -112,6 +112,8 @@ def log_event(event: str, **kwargs: Any) -> None:
     """Log structured event to Cloud Logging."""
     pass
 ```
+
+**References**: [typing module](https://docs.python.org/3/library/typing.html), [PEP 484](https://peps.python.org/pep-0484/)
 
 ### Firebase-Specific Types
 
@@ -149,6 +151,8 @@ def increment_counter(transaction: firestore.Transaction, ref: firestore.Documen
     transaction.update(ref, {'count': new_count})
     return new_count
 ```
+
+**References**: [Firebase Functions](https://firebase.google.com/docs/functions), [Firestore Python Client](https://cloud.google.com/python/docs/reference/firestore/latest)
 
 ---
 

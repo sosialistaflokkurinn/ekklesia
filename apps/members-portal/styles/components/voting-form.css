@@ -1,0 +1,191 @@
+/**
+ * Voting Form Component Styles
+ *
+ * Reusable voting form for elections.
+ * BEM methodology.
+ */
+
+/* Container */
+.voting-form {
+  width: 100%;
+  margin-top: var(--spacing-xl);
+}
+
+.voting-form--multiple {
+  /* Additional styling for multi-choice mode if needed */
+}
+
+/* Question Section */
+.voting-form__question {
+  margin-bottom: 0;
+}
+
+.voting-form__question-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-gray-600);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--spacing-sm);
+}
+
+.voting-form__question-text {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-gray-900);
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Voting Section */
+.voting-form__voting {
+  background-color: var(--color-gray-50);
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.voting-form__voting-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-gray-800);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* Selection Helper (for multi-select) */
+.voting-form__selection-helper {
+  font-size: 0.875rem;
+  color: var(--color-gray-600);
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--color-gray-100);
+  border-radius: var(--radius-sm);
+  text-align: center;
+}
+
+.voting-form__selection-helper--max {
+  color: var(--color-warning);
+  background-color: var(--color-warning-pale);
+  font-weight: 500;
+}
+
+.voting-form__form {
+  width: 100%;
+}
+
+/* Answer Options */
+.voting-form__answer-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-xl);
+}
+
+.voting-form__answer-option {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  background-color: var(--color-white);
+  border: 2px solid var(--color-border-medium);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.voting-form__answer-option:hover {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-pale);  /* Very light pink */
+}
+
+.voting-form__answer-option:has(input:checked) {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-pale);
+  box-shadow: 0 0 0 3px var(--color-primary-alpha-10);
+}
+
+.voting-form__answer-radio,
+.voting-form__answer-checkbox {
+  width: 1.25rem;
+  height: 1.25rem;
+  cursor: pointer;
+  accent-color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.voting-form__answer-label {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-gray-900);
+  cursor: pointer;
+  flex: 1;
+  line-height: 1.5;
+}
+
+/* Vote Button */
+.voting-form__vote-btn {
+  width: 100%;
+  padding: 1rem 2rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.voting-form__vote-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.voting-form__vote-btn--loading {
+  position: relative;
+  pointer-events: none;
+}
+
+.voting-form__vote-btn--loading::after {
+  content: '';
+  position: absolute;
+  width: 1rem;
+  height: 1rem;
+  margin-left: var(--spacing-sm);
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .voting-form__voting {
+    padding: var(--spacing-sm);
+  }
+
+  .voting-form__question-title {
+    font-size: 0.75rem;
+  }
+
+  .voting-form__question-text {
+    font-size: 1.375rem;
+  }
+
+  .voting-form__voting-title {
+    font-size: 1rem;
+  }
+
+  .voting-form__answer-option {
+    padding: var(--spacing-sm);
+  }
+
+  .voting-form__answer-label {
+    font-size: 1.125rem;
+  }
+
+  .voting-form__vote-btn {
+    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
+  }
+}

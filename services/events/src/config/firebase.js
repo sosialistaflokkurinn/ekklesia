@@ -1,4 +1,5 @@
 const admin = require('firebase-admin');
+const logger = require('../utils/logger');
 
 /**
  * Firebase Admin SDK Configuration
@@ -12,6 +13,9 @@ admin.initializeApp({
   projectId: process.env.FIREBASE_PROJECT_ID || 'ekklesia-prod-10-2025'
 });
 
-console.log('✓ Firebase Admin SDK initialized');
+logger.info('Firebase Admin SDK initialized', {
+  operation: 'firebase_init',
+  projectId: process.env.FIREBASE_PROJECT_ID
+});
 
 module.exports = admin;

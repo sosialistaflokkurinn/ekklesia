@@ -114,11 +114,9 @@ For full list and details, see Audits & Reviews (see scripts/admin/).
 - [Project Overview](../DOCUMENTATION_MAP.md)
 - [Current Development Status](./status/CURRENT_DEVELOPMENT_STATUS.md)
 - [Environment Clarification](./ENVIRONMENT_CLARIFICATION.md)
-- [Phase Planning](./architecture/ARCHITECTURE_DESIGN_PHASE6.md)
 
 ### 👨‍💻 Developer
 - [Setup Guide](./setup/MEMBERS_DEPLOYMENT_GUIDE.md)
-- [Architecture](./design/SYSTEM_ARCHITECTURE_OVERVIEW.md)
 - [API Documentation](./architecture/ARCHITECTURE_RECOMMENDATIONS.md)
 
 ### 🔐 DevOps/SRE
@@ -159,9 +157,8 @@ docs/
 
 1. **New to the project?** Start with [Project Overview](../DOCUMENTATION_MAP.md)
 2. **Setting up locally?** See [Setup Guide](./setup/MEMBERS_DEPLOYMENT_GUIDE.md)
-3. **Understanding the system?** Read [Architecture](./design/SYSTEM_ARCHITECTURE_OVERVIEW.md)
-4. **Need to maintain it?** Check [Operations](./operations/OPERATIONAL_PROCEDURES.md)
-5. **Want to test?** See [Testing Docs](./testing/)
+3. **Need to maintain it?** Check [Operations](./operations/OPERATIONAL_PROCEDURES.md)
+4. **Want to test?** See [Testing Docs](./testing/)
 
 ---
 

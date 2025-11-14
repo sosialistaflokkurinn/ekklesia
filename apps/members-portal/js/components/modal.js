@@ -1,10 +1,10 @@
 // @ts-nocheck
 /**
  * Modal Dialog Component
- * 
+ *
  * Unified modal/dialog system for confirmations, forms, and alerts.
  * Provides consistent modal behavior across member portal and admin portal.
- * 
+ *
  * Features:
  * - Confirmation dialogs
  * - Alert dialogs
@@ -12,11 +12,13 @@
  * - Keyboard support (ESC to close)
  * - Click outside to close
  * - Accessibility (ARIA, focus trap)
- * 
+ * - i18n support for button labels and ARIA attributes
+ *
  * @module components/modal
  */
 
 import { debug } from '../utils/debug.js';
+import { R } from '../../i18n/strings-loader.js';
 
 /**
  * Active modal instance (only one modal at a time)
@@ -85,7 +87,7 @@ export function showModal(options = {}) {
 
   const closeButton = document.createElement('button');
   closeButton.className = 'modal__close';
-  closeButton.setAttribute('aria-label', 'Close');
+  closeButton.setAttribute('aria-label', R.string?.modal_close_aria || 'Close');
   closeButton.innerHTML = '×';
   closeButton.onclick = () => instance.close();
   header.appendChild(closeButton);
@@ -209,8 +211,8 @@ export function showModal(options = {}) {
  */
 export function showConfirm(title, message, options = {}) {
   const {
-    confirmText = 'Confirm',
-    cancelText = 'Cancel',
+    confirmText = R.string?.modal_confirm_btn || 'Staðfesta',
+    cancelText = R.string?.modal_cancel_btn || 'Hætta við',
     confirmStyle = 'primary'
   } = options;
 
@@ -256,7 +258,7 @@ export function showConfirm(title, message, options = {}) {
  * console.log('User acknowledged');
  */
 export function showAlert(title, message, options = {}) {
-  const { okText = 'OK' } = options;
+  const { okText = R.string?.modal_ok_btn || 'Í lagi' } = options;
 
   return new Promise((resolve) => {
     const modal = showModal({

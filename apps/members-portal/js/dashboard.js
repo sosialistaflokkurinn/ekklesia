@@ -17,29 +17,36 @@ import { R } from '../i18n/strings-loader.js';
 import { debug } from './utils/debug.js';
 import { initAuthenticatedPage } from './page-init.js';
 import { requireAuth, getUserData, signOut, AuthenticationError } from '../session/auth.js';
+import { requireMember } from './rbac.js';
 import { httpsCallable, getFirebaseAuth, getFirebaseFirestore } from '../firebase/app.js';
 import { setTextContent, setInnerHTML, addEventListener, setDisabled, validateElements } from '../ui/dom.js';
 import { formatPhone, normalizePhoneForComparison } from './utils/format.js';
 import { updateMemberProfile } from './api/members-client.js';
+import { createButton } from './components/button.js';
+import { showModal } from './components/modal.js';
+import { showToast } from './components/toast.js';
 
 /**
  * Required DOM elements for dashboard page
  */
 const DASHBOARD_ELEMENTS = [
   'welcome-title',
-  'quick-links-title',
   'quick-link-profile-label',
   'quick-link-profile-desc',
   'quick-link-events-label',
   'quick-link-events-desc',
   'quick-link-voting-label',
   'quick-link-voting-desc',
+  'quick-link-policy-label',
+  'quick-link-policy-desc',
   'membership-title',
   'membership-status',
-  'verify-membership-btn',
   'verify-button-container',
   'role-badges'
 ];
+
+// Global button instance
+let verifyMembershipButton = null;
 
 /**
  * Validate dashboard DOM structure
@@ -60,18 +67,18 @@ function updateDashboardStrings() {
   document.title = R.string.page_title_dashboard;
 
   // Update quick links
-  setTextContent('quick-links-title', R.string.quick_links_title, 'dashboard');
   setTextContent('quick-link-profile-label', R.string.quick_links_profile_label, 'dashboard');
   setTextContent('quick-link-profile-desc', R.string.quick_links_profile_desc, 'dashboard');
   setTextContent('quick-link-events-label', R.string.quick_links_events_label, 'dashboard');
   setTextContent('quick-link-events-desc', R.string.quick_links_events_desc, 'dashboard');
   setTextContent('quick-link-voting-label', R.string.quick_links_voting_label, 'dashboard');
   setTextContent('quick-link-voting-desc', R.string.quick_links_voting_desc, 'dashboard');
+  setTextContent('quick-link-policy-label', R.string.quick_links_policy_label, 'dashboard');
+  setTextContent('quick-link-policy-desc', R.string.quick_links_policy_desc, 'dashboard');
 
   // Update membership card
   setTextContent('membership-title', R.string.membership_title, 'dashboard');
   setTextContent('membership-status', R.string.membership_loading, 'dashboard');
-  setTextContent('verify-membership-btn', R.string.btn_verify_membership, 'dashboard');
   setInnerHTML('role-badges', '', 'dashboard');
 }
 
@@ -131,9 +138,12 @@ function updateMembershipUI(isMember) {
   const verifyButtonContainer = document.getElementById('verify-button-container');
   verifyButtonContainer.style.display = 'block';
 
-  const buttonLabel = isMember ? R.string.btn_verify_membership_again : R.string.btn_verify_membership;
-  setTextContent('verify-membership-btn', buttonLabel, 'dashboard');
-  setDisabled('verify-membership-btn', false, 'dashboard');
+  // Update button text using button API
+  if (verifyMembershipButton) {
+    const buttonLabel = isMember ? R.string.btn_verify_membership_again : R.string.btn_verify_membership;
+    verifyMembershipButton.setText(buttonLabel);
+    verifyMembershipButton.enable();
+  }
 }
 
 function renderRoleBadges(roles) {
@@ -146,9 +156,14 @@ function renderRoleBadges(roles) {
     const key = `role_badge_${role}`;
     const label = R.string[key] || role;
 
-    // Make admin/superuser badges clickable links to admin portal
-    if (role === 'admin' || role === 'superuser') {
-      return `<a href="/admin/admin.html" class="role-badge role-badge--clickable" title="Opna stjórnborð">${label}</a>`;
+    // Admin → Member management dashboard
+    if (role === 'admin') {
+      return `<a href="/admin/" class="role-badge role-badge--clickable" title="${R.string.role_badge_title_open_member_admin}">${label}</a>`;
+    }
+
+    // Superuser → Elections management dashboard
+    if (role === 'superuser') {
+      return `<a href="/admin-elections/" class="role-badge role-badge--clickable" title="${R.string.role_badge_title_open_elections_admin}">${label}</a>`;
     }
 
     return `<span class="role-badge">${label}</span>`;
@@ -189,8 +204,10 @@ async function verifyMembership(user) {
   const region = R.string.config_firebase_region;
   const verifyMembershipFn = httpsCallable('verifyMembership', region);
 
-  setDisabled('verify-membership-btn', true, 'dashboard');
-  setTextContent('verify-membership-btn', R.string.membership_verifying, 'dashboard');
+  // Use button API for loading state
+  if (verifyMembershipButton) {
+    verifyMembershipButton.setLoading(true, R.string.membership_verifying);
+  }
 
   try {
     const result = await verifyMembershipFn();
@@ -207,8 +224,11 @@ async function verifyMembership(user) {
       const refreshed = await user.getIdTokenResult(true);
       updateRoleBadges(refreshed.claims.roles);
 
-      setDisabled('verify-membership-btn', false, 'dashboard');
-  setTextContent('verify-membership-btn', R.string.btn_verify_membership_again, 'dashboard');
+      // Update button to "Verify Again" state
+      if (verifyMembershipButton) {
+        verifyMembershipButton.setLoading(false);
+        verifyMembershipButton.setText(R.string.btn_verify_membership_again);
+      }
 
       return true;
     } else {
@@ -219,8 +239,11 @@ async function verifyMembership(user) {
       `;
       setInnerHTML('membership-status', html, 'dashboard');
 
-      setDisabled('verify-membership-btn', false, 'dashboard');
-  setTextContent('verify-membership-btn', R.string.btn_verify_membership, 'dashboard');
+      // Update button back to normal state
+      if (verifyMembershipButton) {
+        verifyMembershipButton.setLoading(false);
+        verifyMembershipButton.setText(R.string.btn_verify_membership);
+      }
 
       // Refresh token to ensure any downgraded claims propagate
       const refreshed = await user.getIdTokenResult(true);
@@ -238,8 +261,11 @@ async function verifyMembership(user) {
     `;
     setInnerHTML('membership-status', html, 'dashboard');
 
-    setDisabled('verify-membership-btn', false, 'dashboard');
-      setTextContent('verify-membership-btn', R.string.btn_verify_membership, 'dashboard');
+    // Update button back to normal state
+    if (verifyMembershipButton) {
+      verifyMembershipButton.setLoading(false);
+      verifyMembershipButton.setText(R.string.btn_verify_membership);
+    }
 
     // Ensure claims stay in sync even after error
     try {
@@ -259,9 +285,20 @@ async function verifyMembership(user) {
  * @param {Object} user - Firebase user object
  */
 function setupMembershipVerification(user) {
-  addEventListener('verify-membership-btn', 'click', async () => {
-    await verifyMembership(user);
-  }, 'dashboard');
+  // Create button instance
+  verifyMembershipButton = createButton({
+    text: R.string.btn_verify_membership,
+    variant: 'outline',
+    onClick: async () => {
+      await verifyMembership(user);
+    }
+  });
+
+  // Append to container
+  const container = document.getElementById('verify-button-container');
+  if (container) {
+    container.appendChild(verifyMembershipButton.element);
+  }
 }
 
 /**
@@ -350,80 +387,91 @@ async function checkProfileDiscrepancies(userData) {
  * @param {Array} discrepancies - Array of field discrepancies
  * @param {Object} userData - Current user data from Kenni.is
  * @param {Object} memberData - Current member data from Firestore
- * @returns {Promise<void>}
+ * @returns {Promise<boolean>} Whether user confirmed update
  */
 async function showProfileUpdateModal(discrepancies, userData, memberData) {
-  // Set modal text using i18n
-  setTextContent('profile-update-modal-title', R.string.profile_update_title);
-  setTextContent('profile-update-modal-desc', R.string.profile_update_description);
-  setTextContent('btn-cancel-profile-update', R.string.profile_update_cancel);
-  setTextContent('btn-confirm-profile-update', R.string.profile_update_confirm);
-
   // Build discrepancies list HTML
-  const discrepanciesList = document.getElementById('profile-discrepancies-list');
-  discrepanciesList.innerHTML = discrepancies.map(d => `
-    <div class="profile-discrepancy">
-      <div class="profile-discrepancy__label">${d.label}:</div>
-      <div class="profile-discrepancy__values">
-        <div class="profile-discrepancy__old">
-          <strong>${R.string.profile_discrepancy_old_label}</strong> ${d.members}
+  const discrepanciesHtml = `
+    <p>${R.string.profile_update_description}</p>
+    <div class="profile-discrepancies">
+      ${discrepancies.map(d => `
+        <div class="profile-discrepancy">
+          <div class="profile-discrepancy__label">${d.label}:</div>
+          <div class="profile-discrepancy__values">
+            <div class="profile-discrepancy__old">
+              <strong>${R.string.profile_discrepancy_old_label}</strong> ${d.members}
+            </div>
+            <div class="profile-discrepancy__new">
+              <strong>${R.string.profile_discrepancy_new_label}</strong> ${d.kenni}
+            </div>
+          </div>
         </div>
-        <div class="profile-discrepancy__new">
-          <strong>${R.string.profile_discrepancy_new_label}</strong> ${d.kenni}
-        </div>
-      </div>
+      `).join('')}
     </div>
-  `).join('');
-
-  // Show modal
-  const modal = document.getElementById('profile-update-modal');
-  modal.style.display = 'block';
+  `;
 
   // Return promise that resolves when user makes choice
   return new Promise((resolve) => {
-    const btnConfirm = document.getElementById('btn-confirm-profile-update');
-    const btnCancel = document.getElementById('btn-cancel-profile-update');
+    let isUpdating = false;
 
-    const handleConfirm = async () => {
-      btnConfirm.disabled = true;
-      btnConfirm.textContent = R.string.profile_updating;
+    // Show modal with buttons
+    const modal = showModal({
+      title: R.string.profile_update_title,
+      content: discrepanciesHtml,
+      size: 'md',
+      closeOnOverlay: false, // Don't close on overlay click during update
+      buttons: [
+        {
+          text: R.string.profile_update_cancel,
+          onClick: () => {
+            if (!isUpdating) {
+              modal.close();
+              resolve(false);
+            }
+          }
+        },
+        {
+          text: R.string.profile_update_confirm,
+          primary: true,
+          onClick: async (event) => {
+            const button = event.target;
 
-      try {
-        // Update both Firestore and Django
-        await updateProfileData(userData, discrepancies);
+            // Prevent double-click
+            if (isUpdating) return;
 
-        // Close modal
-        modal.style.display = 'none';
+            isUpdating = true;
+            button.disabled = true;
+            button.textContent = R.string.profile_updating;
 
-        // Show success message
-        alert(R.string.profile_updated_success);
+            try {
+              // Update both Firestore and Django
+              await updateProfileData(userData, discrepancies, memberData);
 
-        resolve(true);
-      } catch (error) {
-        debug.error('Failed to update profile:', error);
-        // Stack trace already logged by debug.error() if debug mode is enabled
-        alert(R.string.profile_update_error.replace('%s', error.message || error));
-        btnConfirm.disabled = false;
-        btnConfirm.textContent = R.string.profile_update_confirm;
-        resolve(false);
-      }
+              // Close modal
+              modal.close();
 
-      // Cleanup
-      btnConfirm.removeEventListener('click', handleConfirm);
-      btnCancel.removeEventListener('click', handleCancel);
-    };
+              // Show success toast
+              showToast(R.string.profile_updated_success, 'success');
 
-    const handleCancel = () => {
-      modal.style.display = 'none';
-      resolve(false);
+              resolve(true);
+            } catch (error) {
+              debug.error('Failed to update profile:', error);
 
-      // Cleanup
-      btnConfirm.removeEventListener('click', handleConfirm);
-      btnCancel.removeEventListener('click', handleCancel);
-    };
+              // Show error toast
+              const errorMessage = R.string.profile_update_error.replace('%s', error.message || error);
+              showToast(errorMessage, 'error', { duration: 5000 });
 
-    btnConfirm.addEventListener('click', handleConfirm);
-    btnCancel.addEventListener('click', handleCancel);
+              // Re-enable button
+              button.disabled = false;
+              button.textContent = R.string.profile_update_confirm;
+              isUpdating = false;
+
+              resolve(false);
+            }
+          }
+        }
+      ]
+    });
   });
 }
 
@@ -476,6 +524,16 @@ async function init() {
 
     // Get authenticated user
     const currentUser = await requireAuth();
+
+    // Check member role (required for member area access)
+    try {
+      await requireMember();
+    } catch (error) {
+      debug.error('Member role required:', error);
+      alert(R.string.error_must_be_member);
+      window.location.href = '/';
+      return;
+    }
 
     // Get user data from custom claims
     const userData = await getUserData(currentUser);

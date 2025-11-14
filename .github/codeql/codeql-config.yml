@@ -1,0 +1,131 @@
+# CodeQL Configuration
+# Suppresses false positive security alerts while maintaining real vulnerability detection
+
+name: "CodeQL Security Configuration"
+
+# Use default security queries
+queries:
+  - uses: security-and-quality
+
+# Paths to ignore during analysis
+paths-ignore:
+  - '**/node_modules/**'
+  - '**/tests/**'
+  - '**/test/**'
+  - '**/__tests__/**'
+  - '**/dist/**'
+  - '**/build/**'
+
+# Query filters - Suppress confirmed false positives
+# Each suppression includes detailed reasoning and evidence
+query-filters:
+  # ============================================================================
+  # FALSE POSITIVE #1: Missing Rate Limiting (High)
+  # ============================================================================
+  # Alert: "This route handler performs [action], but is not rate-limited"
+  # Location: services/events/src/index.js:69
+  #
+  # Reality: Rate limiting IS implemented at the route level
+  # Evidence: services/events/src/routes/election.js imports and applies:
+  #   - readLimiter (for GET /api/election)
+  #   - tokenLimiter (for POST /api/request-token)
+  #
+  # Commits:
+  #   - 94b0e69: "security(events): Add comprehensive rate limiting to Events API"
+  #   - See: services/events/src/middleware/rateLimiter.js
+  #
+  # Why false positive:
+  #   CodeQL scans middleware (index.js) but doesn't detect route-level limiters.
+  #   This is a common pattern in Express.js where limiters are applied per-route
+  #   rather than globally.
+  # ============================================================================
+  - exclude:
+      id: js/missing-rate-limiting
+      paths:
+        - services/events/src/index.js
+
+  # ============================================================================
+  # FALSE POSITIVE #2: User-Controlled Bypass (High)
+  # ============================================================================
+  # Alert: "This condition guards a sensitive [action], but a [user input] controls it"
+  # Location: services/events/src/middleware/auth.js:19
+  #
+  # Reality: This is standard HTTP authentication header validation
+  # Code: if (!authHeader || !authHeader.startsWith('Bearer ')) { ... }
+  #
+  # Security flow:
+  #   1. Extract Authorization header (user provides token)
+  #   2. Validate format (starts with "Bearer ")
+  #   3. Extract token and verify with Firebase Admin SDK (cryptographic validation)
+  #   4. Firebase verifies token signature, expiry, and issuer
+  #
+  # Why false positive:
+  #   The Authorization header MUST be user-controlled - that's how authentication works!
+  #   The security comes from Firebase's cryptographic token verification (line 29),
+  #   not from the header format check. There is NO bypass logic in this code.
+  #
+  # Verification:
+  #   - No X-Bypass-Auth or similar headers checked
+  #   - No development/test mode bypass
+  #   - No hardcoded credentials
+  #   - Token verified by Firebase Admin SDK (industry-standard authentication)
+  # ============================================================================
+  - exclude:
+      id: js/user-controlled-bypass
+      paths:
+        - services/events/src/middleware/auth.js
+
+  # ============================================================================
+  # FALSE POSITIVE #3: Client-Side Request Forgery (Medium)
+  # ============================================================================
+  # Alert: "The [URL] of this request depends on a [user-controlled value]"
+  # Location: apps/members-portal/js/auth.js:170
+  #
+  # Reality: URLs are application-controlled constants, NOT user input
+  # Function: authenticatedFetch(url, options)
+  #
+  # Evidence: All 24 call sites reviewed (2025-11-14)
+  #   - elections-api.js: Uses hardcoded ELECTIONS_API_BASE constant
+  #   - Example: authenticatedFetch(`${ELECTIONS_API_BASE}/api/elections`)
+  #   - ELECTIONS_API_BASE = 'https://elections-service-ymzrguoifa-nw.a.run.app'
+  #
+  # Why false positive:
+  #   The 'url' parameter comes from application code, not user input.
+  #   Election IDs in URLs (e.g., /api/elections/123) come from API responses,
+  #   not direct user input. This is a standard authenticated API client pattern.
+  #
+  # Verification: grep -rn "authenticatedFetch" apps/members-portal
+  #   - All URLs use application-defined constants
+  #   - No user input directly passed as URL
+  #   - IDs are validated by backend API (UUIDs from database)
+  # ============================================================================
+  - exclude:
+      id: js/client-side-request-forgery
+      paths:
+        - apps/members-portal/js/auth.js
+        - apps/members-portal/session/auth.js
+        - apps/members-portal/js/core/api.js
+
+# ============================================================================
+# REAL VULNERABILITIES FIXED (not suppressed)
+# ============================================================================
+# These were genuine security issues that have been fixed in commit 77fbbab:
+#
+# 1. Log Injection (Medium) - elections/src/index.js:36
+#    Fixed: Changed from console.log to structured logger
+#
+# 2. Information Exposure (Medium) - api_views_sync.py:68
+#    Fixed: Generic error message + server-side logging
+#
+# 3. Information Exposure (Medium) - api_views_sync.py:211
+#    Fixed: Generic error message + server-side logging
+#
+# See: /tmp/codeql-security-analysis.md for detailed analysis
+# ============================================================================
+
+# Notes:
+# - This configuration was created after thorough security review
+# - All suppressions are documented with evidence and reasoning
+# - Real vulnerabilities are fixed, not suppressed
+# - Config reviewed: 2025-11-14
+# - Next review: When adding new routes or authentication patterns

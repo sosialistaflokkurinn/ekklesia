@@ -20,7 +20,7 @@ class AdminStringsLoader {
     if (this.loaded) return this.strings;
 
     try {
-      const response = await fetch('/admin/i18n/values-is/strings.xml');
+      const response = await fetch('/admin/i18n/values-is/admin-portal-strings.xml');
       if (!response.ok) {
         throw new Error(`Failed to load admin strings: ${response.statusText}`);
       }

@@ -1,0 +1,373 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+  <string name="app_name">Sósíalistaflokkurinn</string>
+  <string name="page_title">Innskráning - Sósíalistaflokkurinn</string>
+  <string name="page_title_dashboard">Mín síða - Sósíalistaflokkurinn</string>
+  <string name="page_title_profile">Prófíllinn minn - Sósíalistaflokkurinn</string>
+  <string name="page_title_events">Viðburðir - Sósíalistaflokkurinn</string>
+  <string name="page_title_test_events">Prófunarkosning 2025 - Sósíalistaflokkurinn</string>
+  <string name="login_title">Innskráning</string>
+  <string name="login_subtitle">Félagavefur Sósíalistaflokksins</string>
+  <string name="btn_login">Innskráning með Kenni.is</string>
+  <string name="btn_login_description">Auðkenning með rafrænum skilríkjum</string>
+  <string name="status_not_authenticated">Ekki innskráð(ur)</string>
+  <string name="status_authenticating">Auðkennir...</string>
+  <string name="status_verifying_membership">Kannar félagsaðild...</string>
+  <string name="error_missing_pkce">Vantar PKCE-sannprófara</string>
+  <string name="error_authentication">Auðkenningarvilla: %s</string>
+  <string name="error_csrf_title">Villa</string>
+  <string name="error_csrf_message">Öryggisvilla: CSRF-vörn virk. Vinsamlegast reyndu aftur.</string>
+  <string name="nav_brand">Sósíalistaflokkurinn</string>
+  <string name="nav_dashboard">Mín síða</string>
+  <string name="nav_profile">Prófíll</string>
+  <string name="nav_events">Viðburðir</string>
+  <string name="nav_voting">Kosningar</string>
+  <string name="nav_logout">Útskrá</string>
+  <string name="nav_hamburger_open">Opna valmynd</string>
+  <string name="nav_hamburger_close">Loka valmynd</string>
+  <string name="dashboard_welcome_male">Sæll, félagi %s!</string>
+  <string name="dashboard_welcome_female">Sæl, félagi %s!</string>
+  <string name="dashboard_welcome_neutral">Sæll/Sæl, félagi %s!</string>
+  <string name="dashboard_default_name">félagi</string>
+  <string name="quick_links_title">Flýtileiðir</string>
+  <string name="quick_links_profile_label">Prófíllinn minn</string>
+  <string name="quick_links_profile_desc">Skoða og breyta upplýsingunum þínum</string>
+  <string name="quick_links_events_label">Viðburðir</string>
+  <string name="quick_links_events_desc">Skoða viðburði og fundi</string>
+  <string name="quick_links_voting_label">Kosningar</string>
+  <string name="quick_links_voting_desc">Skoða kosningar og kjósa</string>
+  <string name="quick_links_policy_label">Stefnumótun</string>
+  <string name="quick_links_policy_desc">Taka þátt í stefnumótun flokksins</string>
+  <string name="membership_title">Félagastaða</string>
+  <string name="membership_loading">Hleð inn...</string>
+  <string name="membership_active">✓ Virk félagsaðild</string>
+  <string name="membership_inactive">✗ Óvirk félagsaðild</string>
+  <string name="membership_not_verified">Óstaðfest</string>
+  <string name="membership_verifying">Kannar félagsaðild...</string>
+  <string name="membership_verification_failed">Staðfesting tókst ekki</string>
+  <string name="btn_verify_membership">Staðfesta félagsaðild</string>
+  <string name="btn_verify_membership_again">Staðfesta aðild aftur</string>
+  <string name="dashboard_roles_label">Hlutverk</string>
+  <string name="role_badge_admin">Stjórnandi</string>
+  <string name="role_badge_superuser">Kerfisstjóri</string>
+  <string name="role_badge_election_manager">Kosningastjóri</string>
+  <string name="role_badge_member">Félagi</string>
+  <string name="role_badge_title_open_member_admin">Opna umsjá félagaskrár</string>
+  <string name="role_badge_title_open_elections_admin">Opna umsjá kosninga</string>
+  <string name="profile_title">Prófíllinn minn</string>
+  <string name="section_personal_info">Persónuupplýsingar</string>
+  <string name="label_name">Nafn</string>
+  <string name="label_kennitala">Kennitala</string>
+  <string name="label_email">Netfang</string>
+  <string name="label_phone">Sími</string>
+  <string name="label_phone_numbers">Símanúmer</string>
+  <string name="label_uid">Notandaauðkenni</string>
+  <string name="label_status">Staða</string>
+  <string name="label_django_id">Django ID</string>
+  <string name="label_date_joined">Skráð í flokkinn</string>
+  <string name="label_member_since">Félagi í</string>
+  <string name="placeholder_not_available">Ekki tiltækt</string>
+  <string name="profile_save_button">Vista breytingar</string>
+  <string name="profile_saving_button">Vistar...</string>
+  <string name="profile_save_success">Upplýsingar hafa verið vistaðar!</string>
+  <string name="profile_foreign_address_blocked">Grunnupplýsingar voru vistaðar, en ekki var hægt að vista erlent heimilisfang að sinni. Vinsamlegast reyndu aftur síðar.</string>
+  <string name="profile_no_changes">Engar breytingar til að vista</string>
+  <string name="validation_name_required">Nafn má ekki vera tómt</string>
+  <string name="validation_name_too_long">Nafn má ekki vera lengra en 100 stafir</string>
+  <string name="validation_email_invalid">Ógilt netfang</string>
+  <string name="profile_no_phone_numbers">Engin símanúmer skráð</string>
+  <string name="profile_phone_default_set">Aðalsímanúmer</string>
+  <string name="profile_phone_set_default">Setja sem aðalsímanúmer</string>
+  <string name="profile_phone_delete">Eyða símanúmeri</string>
+  <string name="profile_phone_cannot_delete_last">Ekki er hægt að eyða eina símanúmerinu sem skráð er.</string>
+  <string name="profile_phone_saved">Símanúmer uppfært</string>
+  <string name="profile_phone_save_error">Villa við vistun símanúmers</string>
+  <string name="btn_add_phone_text">+ Bæta við símanúmeri</string>
+  <string name="label_addresses">Heimilisföng</string>
+  <string name="label_street">Götuheiti</string>
+  <string name="label_house_number">Húsnúmer</string>
+  <string name="label_house_letter">Húsbókstafur</string>
+  <string name="label_postal_code">Póstnúmer</string>
+  <string name="label_city">Bær/Sveitarfélag</string>
+  <string name="profile_no_addresses">Engin heimilisföng skráð</string>
+  <string name="profile_address_default_set">Aðalheimilisfang</string>
+  <string name="profile_address_set_default">Setja sem aðalheimilisfang</string>
+  <string name="profile_address_delete">Eyða heimilisfangi</string>
+  <string name="profile_address_cannot_delete_last">Ekki er hægt að eyða eina heimilisfanginu sem skráð er.</string>
+  <string name="profile_address_saved">Heimilisfang uppfært</string>
+  <string name="profile_address_save_error">Villa við vistun heimilisfangs</string>
+  <string name="btn_add_address_text">+ Bæta við heimilisfangi</string>
+  <string name="events_title">Viðburðir</string>
+  <string name="events_subtitle">Fundir og viðburðir flokksins</string>
+  <string name="events_tab_upcoming">Framundan</string>
+  <string name="events_tab_past">Liðnir viðburðir</string>
+  <string name="events_loading">Sæki viðburði...</string>
+  <string name="events_empty">Engir viðburðir fundust</string>
+  <string name="events_error">Villa kom upp</string>
+  <string name="test_events_title">🚀 Prófunarkosning 2025</string>
+  <string name="test_auth_title">Auðkenning</string>
+  <string name="test_auth_authenticated">✓ Auðkennd/ur</string>
+  <string name="test_auth_uid">Auðkenni:</string>
+  <string name="test_auth_kennitala">Kennitala:</string>
+  <string name="test_auth_membership">Félagsaðild:</string>
+  <string name="test_auth_yes">✓ Já</string>
+  <string name="test_auth_no">✗ Nei</string>
+  <string name="test_auth_not_available">Ekki tiltækt</string>
+  <string name="test_api_title">API prófanir</string>
+  <string name="test_api_production_env">Framleiðsluumhverfi:</string>
+  <string name="test_1_title">1. Heilbrigðisathugun (óauðkennt)</string>
+  <string name="test_1_button">GET /health</string>
+  <string name="test_2_title">2. Sækja upplýsingar um kosningu</string>
+  <string name="test_2_button">GET /api/election</string>
+  <string name="test_3_title">3. Óska eftir atkvæðalykli</string>
+  <string name="test_3_button">POST /api/request-token</string>
+  <string name="test_4_title">4. Athuga þátttökustöðu</string>
+  <string name="test_4_button">GET /api/my-status</string>
+  <string name="test_5_title">5. Kjósa (Kosningaþjónusta)</string>
+  <string name="test_5_button">POST /api/vote (Kosningaþjónusta)</string>
+  <string name="test_5_token_label">Atkvæðalykill:</string>
+  <string name="test_5_token_placeholder">Límdu atkvæðalykilinn hér</string>
+  <string name="test_5_answer_label">Svar:</string>
+  <string name="test_5_answer_yes">Já</string>
+  <string name="test_5_answer_no">Nei</string>
+  <string name="test_5_answer_abstain">Sitja hjá</string>
+  <string name="test_5_error_no_token">Vinsamlegast sláðu inn atkvæðalykil</string>
+  <string name="test_6_title">6. Niðurstöður</string>
+  <string name="test_6_button">GET /api/results</string>
+  <string name="test_7_title">7. Endurstilla kosningu (fyrir þróunaraðila)</string>
+  <string name="test_7_warning">⚠️ Aðeins fyrir prófanir. Þessi aðgerð hreinsar öll atkvæði og atkvæðalykla. Notist með varúð.</string>
+  <string name="test_7_scope_label">Umfang:</string>
+  <string name="test_7_scope_mine">Aðeins mitt atkvæði (eyðir atkvæðalyklinum mínum)</string>
+  <string name="test_7_scope_all">Allt (hreinsar öll atkvæði og lykla)</string>
+  <string name="test_7_confirm_label">Staðfesting:</string>
+  <string name="test_7_confirm_placeholder">Skrifaðu "RESET ALL" til að staðfesta</string>
+  <string name="test_7_button">Endurstilla</string>
+  <string name="test_7_error_confirm">Þú verður að skrifa nákvæmlega "RESET ALL" til að staðfesta heildarendurstillingu.</string>
+  <string name="loading">Hleð inn...</string>
+  <string name="profile_update_title">Uppfæra mínar upplýsingar?</string>
+  <string name="profile_update_description">Mismunur fannst á milli gagna í félagatali og Þjóðskrá. Viltu uppfæra upplýsingarnar þínar?</string>
+  <string name="profile_update_cancel">Nei takk, halda óbreyttu</string>
+  <string name="profile_update_confirm">Já, uppfæra upplýsingar</string>
+  <string name="profile_updating">Uppfæri...</string>
+  <string name="profile_updated_success">Upplýsingar þínar hafa verið uppfærðar!</string>
+  <string name="profile_update_error">Ekki tókst að uppfæra upplýsingar:\n%s\n\nVinsamlegast reyndu aftur.</string>
+  <string name="profile_empty_value">(tómt)</string>
+  <string name="profile_phone_label">Símanúmer</string>
+  <string name="profile_discrepancy_old_label">Félagaskrá:</string>
+  <string name="profile_discrepancy_new_label">Þjóðskrá:</string>
+  <string name="log_membership_verified">Félagsaðild staðfest við innskráningu</string>
+  <string name="log_membership_verify_failed">Staðfesting félagsaðildar mistókst við innskráningu:</string>
+  <string name="log_authentication_error">Auðkenningarvilla:</string>
+  <string name="log_csrf_failed">CSRF-athugun mistókst: ósamræmi í stöðu</string>
+  <string name="config_kenni_issuer">https://idp.kenni.is/sosi-kosningakerfi.is</string>
+  <string name="config_kenni_client_id">@sosi-kosningakerfi.is/rafr-nt-kosningakerfi-s-s</string>
+  <string name="config_kenni_redirect_uri">https://ekklesia-prod-10-2025.web.app</string>
+  <string name="config_oauth_scopes">openid profile national_id email phone_number offline_access</string>
+  <string name="config_api_handle_auth">https://handlekenniauth-ymzrguoifa-nw.a.run.app</string>
+  <string name="config_api_events">https://events-service-ymzrguoifa-nw.a.run.app</string>
+  <string name="config_api_elections">https://elections-service-ymzrguoifa-nw.a.run.app</string>
+  <string name="path_dashboard">/members-area/dashboard.html</string>
+  <string name="config_firebase_region">europe-west2</string>
+
+  <!--
+    NOTE: Election-specific strings have been migrated to /elections/i18n/values-is/strings.xml
+
+    The elections area now has its own comprehensive i18n with 117+ strings covering:
+    - Elections list and filtering
+    - Election detail and voting UI
+    - Results display
+    - Error handling
+    - Navigation
+
+    Strings below are kept for backwards compatibility with code that hasn't been migrated yet.
+    For new election features, use the dedicated elections i18n.
+  -->
+  <string name="page_title_elections">Kosningar - Sósíalistaflokkurinn</string>
+  <string name="page_title_election_detail">Kosning - Sósíalistaflokkurinn</string>
+  <string name="elections_title">Kosningar</string>
+  <string name="elections_subtitle">Taktu þátt í rafrænum kosningum flokksins</string>
+  <string name="filter_all">Allar</string>
+  <string name="filter_active">Virkar</string>
+  <string name="filter_upcoming">Væntanlegar</string>
+  <string name="filter_closed">Lokaðar</string>
+  <string name="status_active">Virk</string>
+  <string name="status_upcoming">Framundan</string>
+  <string name="status_closed">Lokuð</string>
+  <string name="election_card_voted">✓ Þú hefur kosið</string>
+  <string name="election_card_cta">Skoða kosningu →</string>
+  <string name="loading_elections">Hleð inn kosningum...</string>
+  <string name="loading_election_detail">Hleð inn upplýsingum um kosningu...</string>
+  <string name="error_load_elections">Ekki tókst að sækja kosningar.</string>
+  <string name="error_load_election_detail">Ekki tókst að sækja upplýsingar um kosningu</string>
+  <string name="error_no_election_selected">Engin kosning er valin</string>
+  <string name="error_submit_vote">Villa við að skrá atkvæði</string>
+  <string name="error_load_results">Villa við að hlaða niðurstöðum</string>
+  <string name="error_not_authorized">Þú hefur ekki aðgang. Aðeins notendur með 'election-manager' eða 'superadmin' hlutverk hafa aðgang.</string>
+  <string name="error_message">Villa</string>
+  <string name="empty_no_elections">Engar kosningar fundust</string>
+  <string name="btn_retry">Reyna aftur</string>
+  <string name="btn_back_to_elections">Aftur í kosningayfirlit</string>
+  <string name="btn_vote">Kjósa</string>
+  <string name="btn_cancel">Hætta við</string>
+  <string name="btn_confirm">Staðfesta</string>
+  <string name="election_detail_title">Kosning</string>
+  <string name="election_detail_back_link">← Til baka</string>
+  <string name="voting_section_title">Kjóstu hér</string>
+  <string name="msg_already_voted">✓ Þú hefur þegar kosið í þessari kosningu.</string>
+  <string name="msg_upcoming_election">Þessi kosning hefur ekki enn opnað fyrir atkvæðagreiðslu.</string>
+  <string name="results_title">Niðurstöður</string>
+  <string name="results_votes">%s atkvæði</string>
+  <string name="modal_confirm_title">Staðfesta atkvæði</string>
+  <string name="modal_confirm_message">Viltu staðfesta atkvæði þitt?</string>
+  <string name="modal_success_title">✓ Atkvæði skráð</string>
+  <string name="modal_success_message">Atkvæði þitt hefur verið skráð.</string>
+
+  <!-- Election Detail Page -->
+  <string name="back_to_elections">Til baka í kosningayfirlit</string>
+  <string name="loading_election">Hleð inn kosningu...</string>
+  <string name="error_load_election">Ekki tókst að sækja kosninguna</string>
+  <string name="error_missing_election_id">Kosningarnúmer vantar</string>
+  <string name="election_question_label">Spurning</string>
+  <string name="voting_select_answer">Veldu þitt svar</string>
+  <string name="results_total_votes">Heildaratkvæði:</string>
+  <string name="election_starts">Kosning hefst:</string>
+  <string name="election_ends">Kosning lýkur:</string>
+  <string name="election_already_voted">✓ Þú hefur kosið</string>
+  <string name="election_already_voted_message">Þú hefur þegar kosið í þessari kosningu.</string>
+  <string name="election_upcoming_message">Þessi kosning hefur ekki enn opnað. Kosning hefst á tilgreindum tíma.</string>
+  <string name="confirm_vote_title">Staðfesta atkvæði</string>
+  <string name="confirm_vote_message">Ertu viss um að þú viljir skila inn þessu atkvæði? Ekki er hægt að breyta því eftir að það hefur verið staðfest.</string>
+  <string name="your_answer">Þitt svar</string>
+  <string name="vote_submitted_success">✓ Atkvæði þitt hefur verið skráð!</string>
+
+  <string name="label_street">Gata</string>
+  <string name="label_postal_code">Póstnúmer</string>
+  <string name="label_city">Staður</string>
+  <string name="validation_country_required">Vinsamlegast veldu land</string>
+  <string name="validation_address_required">Heimilisfang má ekki vera tómt</string>
+  <string name="validation_postal_code_invalid">Ógilt póstnúmer</string>
+  <string name="validation_foreign_phone_invalid">Vinsamlegast byrjaðu á + og landskóða. Dæmi: +45 12345555 eða +1 206-555-0100</string>
+  <string name="profile_autosave_success">Vistað sjálfkrafa</string>
+  <string name="profile_autosave_error">Villa við vistun</string>
+  
+  <!-- Profile error messages -->
+  <string name="profile_django_save_error">Villa við vistun í eldra kerfi (Django). Breytingar voru ekki vistaðar. Reyndu aftur.</string>
+  <string name="profile_phone_delete">Eyða símanúmeri</string>
+  <string name="profile_address_delete">Eyða heimilisfangi</string>
+  <string name="profile_phone_save_error">Villa við vistun símanúmers</string>
+  <string name="profile_address_save_error">Villa við vistun heimilisfangs</string>
+  
+  <!-- API error messages -->
+  <string name="error_django_update">Villa við uppfærslu í eldra kerfi (Django): %s</string>
+  <string name="error_django_address_update">Villa við uppfærslu erlends heimilisfangs í eldra kerfi (Django): %s</string>
+  <string name="error_must_be_member">Þú verður að vera félagsmaður til að sjá þessa síðu.</string>
+  <string name="error_unauthorized_page_admins_only">Þú hefur ekki heimild til að skoða þessa síðu. Aðeins stjórnendur hafa aðgang.</string>
+  <string name="error_unauthorized_page_superusers_only">Þú hefur ekki heimild til að skoða þessa síðu. Aðeins kerfisstjórar hafa aðgang.</string>
+  <string name="error_no_access">Enginn aðgangur</string>
+  <string name="error_unauthorized_action">Þú hefur ekki heimild til að framkvæma þessa aðgerð (%s).</string>
+  <string name="error_verifying_superuser_role">Gat ekki staðfest stjórnandaréttindi. Vinsamlegast reyndu aftur eftir smá stund.</string>
+  
+  <!-- SearchableSelect component -->
+  <string name="search_country">Leita eftir landi...</string>
+  <string name="no_results">Engar niðurstöður</string>
+
+  <!-- Toast messages -->
+  <string name="saved">Vistað</string>
+
+  <!-- Admin navigation -->
+  <string name="back_to_members">Til baka til félaga</string>
+
+  <!-- Admin Member Profile Page -->
+  <string name="member_profile_title">Félagsupplýsingar</string>
+  <string name="member_profile_page_title">Félagsupplýsingar - Ekklesia</string>
+  <string name="member_loading_text">Hleð upplýsingum...</string>
+  <string name="member_not_found_message">Félagi fannst ekki</string>
+  <string name="section_personal_info">Grunnupplýsingar</string>
+  <string name="label_name">Nafn</string>
+  <string name="label_kennitala">Kennitala</string>
+  <string name="label_email">Netfang</string>
+  <string name="label_birthday">Fæðingardagur</string>
+  <string name="label_gender">Kyn</string>
+  <string name="option_gender_none">Veldu...</string>
+  <string name="option_gender_m">Karl</string>
+  <string name="option_gender_f">Kona</string>
+  <string name="phone_numbers_title">Símanúmer</string>
+  <string name="btn_add_phone">+ Bæta við símanúmeri</string>
+  <string name="addresses_title">Heimilisföng</string>
+  <string name="btn_add_address">+ Bæta við heimilisfangi</string>
+  <string name="section_membership">Félagsaðild</string>
+  <string name="label_status">Staða</string>
+  <string name="label_joined">Skráður</string>
+  <string name="label_django_id">Django ID</string>
+  <string name="label_synced_at">Síðast samstillt</string>
+  <string name="placeholder_email">nafn@example.is</string>
+
+  <!-- Policy Session Strings -->
+  <string name="amendment_submit">Senda inn breytingatillögu</string>
+  <string name="amendment_submitting">Sendir inn...</string>
+  <string name="amendment_section_label">Veldu kafla til að breyta:</string>
+  <string name="amendment_section_placeholder">Veldu kafla...</string>
+  <string name="amendment_original_text">Núverandi texti:</string>
+  <string name="amendment_proposed_text">Tillaga að breytingu:</string>
+  <string name="amendment_proposed_placeholder">Sláðu inn tillögu að breytingu...</string>
+  <string name="amendment_rationale_label">Rökstuðningur (valfrjálst):</string>
+  <string name="amendment_rationale_placeholder">Útskýrðu hvers vegna þessi breyting bætir stefnuna...</string>
+  <string name="amendment_success">Breytingatillaga send inn!</string>
+  <string name="amendment_confirm_title">Senda inn breytingatillögu?</string>
+  <string name="amendment_confirm_message">Ertu viss um að þú viljir senda inn þessa breytingatillögu? Þú getur ekki breytt henni eftir sendingu.</string>
+  <string name="amendment_error_required">Vinsamlegast veldu kafla og settu fram tillögu</string>
+  <string name="amendment_error_submission">Ekki tókst að senda inn tillögu</string>
+  <string name="amendment_number">Tillaga</string>
+  <string name="vote_yes">Já</string>
+  <string name="vote_no">Nei</string>
+  <string name="vote_abstain">Sitja hjá</string>
+  <string name="vote_confirm_title">Staðfesta atkvæði</string>
+  <string name="vote_confirm_yes">Kjósa JÁ til að samþykkja þessa tillögu?</string>
+  <string name="vote_confirm_no">Kjósa NEI til að hafna þessari tillögu?</string>
+  <string name="vote_success">Atkvæði skráð!</string>
+  <string name="vote_error">Ekki tókst að skrá atkvæði</string>
+  <string name="vote_voting">Skrái atkvæði...</string>
+  <string name="vote_already_voted">Þegar kosið</string>
+  <string name="results_title">Niðurstöður</string>
+  <string name="results_amendments_heading">Niðurstöður breytingatillagna</string>
+  <string name="results_final_policy_heading">Atkvæði um endanlega stefnu</string>
+  <string name="results_participants">Fjöldi þátttakenda:</string>
+  <string name="results_accepted">Samþykkt</string>
+  <string name="results_rejected">Hafnað</string>
+  <string name="results_approved">Samþykkt</string>
+  <string name="results_not_approved">Ekki samþykkt</string>
+  <string name="results_loading">Hleð niðurstöðum...</string>
+  <string name="results_error">Ekki tókst að sækja niðurstöður</string>
+
+  <!-- Policy Session Page Strings -->
+  <string name="phase_discussion_title">Umræðufasi</string>
+  <string name="phase_discussion_message">Skoðaðu drög að stefnu. Hægt verður að leggja fram breytingatillögur í hlé.</string>
+  <string name="phase_break_title">Hlé - Senda inn breytingatillögur</string>
+  <string name="phase_voting_title">Atkvæðagreiðsla</string>
+  <string name="policy_items_voting_heading">Kjósa um stefnuliði</string>
+  <string name="amendments_voting_heading">Kjósa um breytingatillögur</string>
+  <string name="final_vote_heading">Atkvæði um endanlega stefnu</string>
+  <string name="final_vote_description">Kjóstu um að samþykkja eða hafna endanlegri stefnu með samþykktum breytingum.</string>
+  <string name="no_amendments">Engar tillögur sendar inn.</string>
+  <string name="final_vote_yes">Já - Samþykkja stefnu</string>
+  <string name="final_vote_no">Nei - Hafna stefnu</string>
+  <string name="final_vote_abstain">Sitja hjá</string>
+  
+  <!-- Policy Session Phase Filters -->
+  <string name="filter_discussion">Stefnudrög</string>
+  <string name="filter_break">Breytingatillögur</string>
+  <string name="filter_voting">Atkvæðagreiðsla</string>
+  <string name="filter_closed">Niðurstöður</string>
+
+  <!-- Page Tabs Navigation -->
+  <string name="tab_all_elections">Allar kosningar</string>
+  <string name="tab_policy_sessions">Stefnumótun</string>
+  <string name="tab_candidate_elections">Framboð</string>
+
+  <!-- Modal Component -->
+  <string name="modal_close_aria">Loka glugga</string>
+  <string name="modal_confirm_btn">Staðfesta</string>
+  <string name="modal_cancel_btn">Hætta við</string>
+  <string name="modal_ok_btn">Í lagi</string>
+
+</resources>

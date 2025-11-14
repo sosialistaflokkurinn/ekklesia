@@ -10,7 +10,7 @@
 ## Timeline
 
 ### 1. Initial State (Before Redeployment)
-- User `abc123XYZ789ExampleUserUID456` (jon.jonsson@example.com, kennitala: 010190-2939)
+- User `abc123XYZ789ExampleUserUID456` (jon.jonsson@example.com, kennitala: 000000-0000)
 - **Assumed state**: User may or may not have had developer role set previously
 - System: Firebase Auth with custom claims in production
 
@@ -31,7 +31,7 @@ Decoded token showed:
 ```json
 {
   "name": "Jón Jónsson",
-  "kennitala": "010190-2939",
+  "kennitala": "000000-0000",
   "isMember": true,
   "email": "jon.jonsson@example.com",
   "phoneNumber": "+3545551234",
@@ -77,7 +77,7 @@ curl -X POST "https://identitytoolkit.googleapis.com/v1/projects/ekklesia-prod-1
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -H "x-goog-user-project: ekklesia-prod-10-2025" \
-  -d '{"localId":"abc123XYZ789ExampleUserUID456","customAttributes":"{\"roles\":[\"developer\"],\"kennitala\":\"010190-2939\",\"isMember\":true,\"email\":\"jon.jonsson@example.com\",\"phoneNumber\":\"+3545551234\"}"}'
+  -d '{"localId":"abc123XYZ789ExampleUserUID456","customAttributes":"{\"roles\":[\"developer\"],\"kennitala\":\"000000-0000\",\"isMember\":true,\"email\":\"jon.jonsson@example.com\",\"phoneNumber\":\"+3545551234\"}"}'
 ```
 
 **Key details:**
@@ -110,7 +110,7 @@ curl -s -X POST "https://identitytoolkit.googleapis.com/v1/projects/ekklesia-pro
 ```json
 {
   "roles": ["developer"],
-  "kennitala": "010190-2939",
+  "kennitala": "000000-0000",
   "isMember": true,
   "email": "jon.jonsson@example.com",
   "phoneNumber": "+3545551234"
@@ -228,7 +228,7 @@ A transient error during login (immediately after redeployment) caused `auth.get
 ```javascript
 admin.auth().setCustomUserClaims(uid, {
   roles: ["developer"],
-  kennitala: "010190-2939"
+  kennitala: "000000-0000"
 });
 ```
 

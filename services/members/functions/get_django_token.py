@@ -10,16 +10,12 @@ import os
 import logging
 from typing import Tuple, Any
 from flask import jsonify, Request
-from google.cloud import secretmanager
 import firebase_admin
 from firebase_admin import auth
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-# Initialize Secret Manager client
-secret_client = secretmanager.SecretManagerServiceClient()
 
 def get_django_token(request: Request) -> Tuple[Any, int, dict]:
     """
@@ -82,12 +78,14 @@ def get_django_token(request: Request) -> Tuple[Any, int, dict]:
                 'message': 'You do not have permission to access this resource. Admin or superuser role required.'
             }), 403, headers)
 
-        # Get Django token from Secret Manager
-        project_id = 'ekklesia-prod-10-2025'
-        secret_name = f'projects/{project_id}/secrets/django-api-token/versions/latest'
-
-        response = secret_client.access_secret_version(request={'name': secret_name})
-        django_token = response.payload.data.decode('utf-8').strip()
+        # Get Django token from environment variable (injected via Secret Manager)
+        django_token = os.environ.get('DJANGO_API_TOKEN')
+        if not django_token:
+            logger.error('getDjangoToken: DJANGO_API_TOKEN environment variable not set')
+            return (jsonify({
+                'error': 'Internal Server Error',
+                'message': 'Server configuration error. Please contact administrator.'
+            }), 500, headers)
 
         # Return token
         logger.info(f"getDjangoToken: Token provided to user {decoded_token['uid']} ({decoded_token.get('email', 'unknown')})")
