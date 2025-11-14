@@ -32,7 +32,7 @@ class AdminElectionsStringsLoader {
     }
 
     this.currentLocale = locale;
-    const xmlPath = `/admin-elections/i18n/values-${locale}/strings.xml`;
+    const xmlPath = `/admin-elections/i18n/values-${locale}/admin-elections-strings.xml`;
 
     try {
       const response = await fetch(xmlPath);

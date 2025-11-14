@@ -7,7 +7,7 @@
  * @module admin-elections/js/elections-list-i18n
  */
 
-import { initPageStrings } from '../../js/utils/i18n-init.js';
+import { R } from '../i18n/strings-loader.js';
 
 /**
  * Initialize all static i18n strings for the elections list page
@@ -19,7 +19,11 @@ import { initPageStrings } from '../../js/utils/i18n-init.js';
  * @returns {Promise<void>} Resolves when all static strings are initialized
  */
 export async function initElectionsListStrings() {
-  await initPageStrings('is', {
+  // Load admin-elections specific strings
+  await R.load('is');
+
+  // Mapping of element IDs to string keys
+  const mappings = {
     textContent: {
       // Page title
       'page-title': 'admin_elections_title',
@@ -54,9 +58,39 @@ export async function initElectionsListStrings() {
       // Search input
       'search-input': 'search_placeholder'
     }
-  }, {
-    // Set fallback values if strings are missing
-    logErrors: true,
-    throwOnMissing: false
-  });
+  };
+
+  // Set textContent for all mapped elements
+  for (const [elementId, stringKey] of Object.entries(mappings.textContent)) {
+    const element = document.getElementById(elementId);
+    if (!element) {
+      console.warn(`[Elections List i18n] Element not found: #${elementId}`);
+      continue;
+    }
+
+    const stringValue = R.string[stringKey];
+    if (!stringValue) {
+      console.warn(`[Elections List i18n] String key not found: ${stringKey}`);
+      continue;
+    }
+
+    element.textContent = stringValue;
+  }
+
+  // Set placeholder for all mapped elements
+  for (const [elementId, stringKey] of Object.entries(mappings.placeholder)) {
+    const element = document.getElementById(elementId);
+    if (!element) {
+      console.warn(`[Elections List i18n] Element not found: #${elementId}`);
+      continue;
+    }
+
+    const stringValue = R.string[stringKey];
+    if (!stringValue) {
+      console.warn(`[Elections List i18n] String key not found: ${stringKey}`);
+      continue;
+    }
+
+    element.placeholder = stringValue;
+  }
 }

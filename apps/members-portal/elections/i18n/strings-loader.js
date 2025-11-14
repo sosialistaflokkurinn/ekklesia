@@ -17,7 +17,7 @@ class StringsResource {
    */
   async load(locale) {
     try {
-      const response = await fetch(`./i18n/values-${locale}/strings.xml`);
+      const response = await fetch(`./i18n/values-${locale}/member-elections-strings.xml`);
       
       if (!response.ok) {
         throw new Error(`Failed to load strings: ${response.statusText}`);
