@@ -14,7 +14,6 @@ DOCS=(
     "docs/status/CURRENT_DEVELOPMENT_STATUS.md"
     "docs/development/guides/workflows/USAGE_CONTEXT.md"
     "docs/operations/OPERATIONAL_PROCEDURES.md"
-    "docs/SESSION_START_REMINDER.md"
 )
 
 echo "📝 Checking documentation freshness..."

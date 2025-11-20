@@ -17,10 +17,16 @@ import { authenticatedFetch } from '../auth.js';
 
 // DEVELOPMENT FLAG: Toggle between mock and real API
 // NOTE: Real API endpoints implemented in Issue #248
-// Backend is live at https://elections-service-ymzrguoifa-nw.a.run.app
+// Backend is live at https://elections-service-521240388393.europe-west2.run.app
 const USE_MOCK_API = false;
 
 // Production Elections Service URL
+/**
+ * Elections API Base URL
+ * 
+ * Backend is live at https://elections-service-ymzrguoifa-nw.a.run.app
+ * Deployed: Cloud Run (Europe West 2)
+ */
 const ELECTIONS_API_BASE = 'https://elections-service-ymzrguoifa-nw.a.run.app';
 
 /**
@@ -92,6 +98,31 @@ export async function getElectionById(electionId) {
 
   } catch (error) {
     debug.error(`Error fetching election ${electionId}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Get single election details (Admin API)
+ * Used for viewing draft/hidden elections in admin interface
+ *
+ * @param {string} electionId - Election ID
+ * @returns {Promise<Object>} Election object with full details
+ */
+export async function getAdminElectionById(electionId) {
+  try {
+    const url = `${ELECTIONS_API_BASE}/api/admin/elections/${electionId}`;
+    const response = await authenticatedFetch(url);
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.election || data;  // Handle both response formats
+
+  } catch (error) {
+    debug.error(`Error fetching admin election ${electionId}:`, error);
     throw error;
   }
 }

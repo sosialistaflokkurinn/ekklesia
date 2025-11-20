@@ -314,12 +314,12 @@ function getUserFromLocalStorage(userId) {
 
 ## 📚 Documentation
 
-**Start Here**: [DOCUMENTATION_MAP.md](DOCUMENTATION_MAP.md)
+**Start Here**: [DOCUMENTATION_MAP.md](../../DOCUMENTATION_MAP.md)
 
 Quick Links:
-- [Getting Started](docs/README.md)
-- [Architecture](docs/architecture/)
-- [Scripts](scripts/README.md)
+- [Getting Started](../README.md)
+- [Architecture](../architecture/)
+- [Scripts](../../scripts/README.md)
 
 ## 🚀 Quick Start
 
@@ -327,11 +327,11 @@ Quick Links:
 
 ## 🔒 Security
 
-Report vulnerabilities: [email] (see [SECURITY.md](SECURITY.md))
+Report vulnerabilities: [email] (see [SECURITY.md](../../SECURITY.md))
 
 ## 📊 Status
 
-Production: ✅ Operational ([details](DOCUMENTATION_MAP.md))
+Production: ✅ Operational ([details](../../DOCUMENTATION_MAP.md))
 
 ## 🧑‍💻 Development
 

@@ -7,7 +7,22 @@
  * Security: Prevents brute force attacks, vote flooding, and resource exhaustion
  */
 
-const rateLimit = require('express-rate-limit');
+const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
+
+/**
+ * IP Key Generator for rate limiting
+ * 
+ * express-rate-limit v7+ requires using the built-in ipKeyGenerator helper
+ * to properly handle IPv6 addresses and pass validation checks.
+ * 
+ * The ipKeyGenerator function:
+ * - Reads req.ip (set by Express trust proxy from X-Forwarded-For)
+ * - Normalizes IPv6 addresses to prevent bypass
+ * - Passes library validation (no ValidationError)
+ * 
+ * Cloud Run always sets X-Forwarded-For header with real client IP.
+ * Express 'trust proxy: true' setting makes it available via req.ip.
+ */
 
 /**
  * Rate limiter for read operations (GET requests)
@@ -18,18 +33,14 @@ const rateLimit = require('express-rate-limit');
 const readLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 100, // 100 requests per window
+  keyGenerator: ipKeyGenerator, // Use library's IPv6-safe helper
   message: {
     error: 'RATE_LIMIT_EXCEEDED',
     message: 'Too many requests, please try again later.',
     retryAfter: '1 minute'
   },
   standardHeaders: true, // Return rate limit info in `RateLimit-*` headers
-  legacyHeaders: false, // Disable `X-RateLimit-*` headers
-  // Use IP address for rate limiting
-  keyGenerator: (req) => {
-    // Use X-Forwarded-For if behind proxy (Cloud Run), otherwise use req.ip
-    return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip;
-  }
+  legacyHeaders: false // Disable `X-RateLimit-*` headers
 });
 
 /**
@@ -41,16 +52,14 @@ const readLimiter = rateLimit({
 const writeLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 30, // 30 requests per window
+  keyGenerator: ipKeyGenerator, // Use library's IPv6-safe helper
   message: {
     error: 'RATE_LIMIT_EXCEEDED',
     message: 'Too many write requests, please try again later.',
     retryAfter: '1 minute'
   },
   standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: (req) => {
-    return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip;
-  }
+  legacyHeaders: false
 });
 
 /**
@@ -62,6 +71,7 @@ const writeLimiter = rateLimit({
 const voteLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 10, // 10 requests per window (strict for security)
+  keyGenerator: ipKeyGenerator, // Use library's IPv6-safe helper
   message: {
     error: 'RATE_LIMIT_EXCEEDED',
     message: 'Too many vote attempts, please try again later.',
@@ -69,9 +79,6 @@ const voteLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => {
-    return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip;
-  },
   // Skip rate limiting for successful votes (to avoid penalizing legitimate voters)
   skip: (req, res) => {
     // Only apply rate limit to failed attempts
@@ -88,17 +95,15 @@ const voteLimiter = rateLimit({
  */
 const adminLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 60, // 60 requests per window
+  max: 60, // 60 requests per window (moderate for admin operations)
+  keyGenerator: ipKeyGenerator, // Use library's IPv6-safe helper
   message: {
     error: 'RATE_LIMIT_EXCEEDED',
     message: 'Too many admin requests, please try again later.',
     retryAfter: '1 minute'
   },
   standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: (req) => {
-    return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip;
-  }
+  legacyHeaders: false
 });
 
 module.exports = {

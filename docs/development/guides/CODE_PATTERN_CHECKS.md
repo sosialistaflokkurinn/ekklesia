@@ -155,6 +155,6 @@ All patterns are based on real issues found in code reviews:
 
 ## Related
 
-- [GitHub Copilot Integration](./GITHUB_COPILOT.md)
-- [Security Scanning](../../operations/SECURITY_SCANNING.md)
-- [Pre-commit Hooks](./PRE_COMMIT_HOOKS.md)
+- [AI Assistant Setup](./AI_ASSISTANT_SETUP.md) - GitHub Copilot setup
+- [GitHub Workflows](../../operations/GITHUB_WORKFLOWS_STATUS.md) - CI/CD and security scanning
+- [Git Hooks](../../../git-hooks/README.md) - Pre-commit hooks

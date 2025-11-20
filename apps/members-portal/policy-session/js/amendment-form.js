@@ -10,6 +10,7 @@
 import { createButton } from '../../js/components/button.js';
 import { showToast } from '../../js/components/toast.js';
 import { showAlert } from '../../js/components/modal.js';
+import { R } from '../i18n/strings-loader.js';
 import PolicySessionAPI from './api/policy-session-api-mock.js';
 
 /**

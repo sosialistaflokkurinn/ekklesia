@@ -55,7 +55,7 @@
   <string name="label_created">Búin til:</string>
   <string name="label_opened">Opnuð:</string>
   <string name="label_closed">Lokuð:</string>
-  <string name="label_votes">atkvæði</string>
+  <string name="label_votes">Atkvæði:</string>
   <string name="label_hidden_indicator">🔒 Falið</string>
   
   <!-- Action buttons -->
@@ -66,6 +66,9 @@
   <string name="btn_delete">🗑️ Eyða</string>
   <string name="btn_open">🚀 Opna</string>
   <string name="btn_close">🛑 Loka</string>
+  <string name="btn_cancel">Hætta við</string>
+  <string name="btn_save">Vista</string>
+  <string name="btn_confirm">Staðfesta</string>
   
   <!-- Confirmations -->
   <string name="confirm_hide_title">Fela kosningu?</string>
@@ -95,12 +98,10 @@ Til að staðfesta, sláðu inn heiti kosningarinnar hér fyrir neðan:
   <string name="confirm_delete_placeholder">Sláðu inn heiti kosningar...</string>
   <string name="confirm_delete_title_mismatch">Heitið stemmir ekki. Vinsamlegast reyndu aftur.</string>
   
-  <!-- Duration options -->
-  <string name="duration_15min">15 mínútur</string>
-  <string name="duration_30min">30 mínútur</string>
-  <string name="duration_1hour">1 klukkustund</string>
-  <string name="duration_90min">1,5 klukkustund</string>
-  <string name="duration_2hours">2 klukkustundir</string>
+  <!-- Duration options (realistic for in-person voting - 1-3 minutes) -->
+  <string name="duration_1min">1 mín</string>
+  <string name="duration_2min">2 mín</string>
+  <string name="duration_3min">3 mín</string>
   <string name="duration_custom">Sérsníða (mínútur)</string>
   
   <!-- Success/Error messages -->
@@ -175,20 +176,14 @@ Til að staðfesta, sláðu inn heiti kosningarinnar hér fyrir neðan:
   <string name="step_3_title">Tímasetning</string>
   <string name="step_3_description">Veldu hvenær kosningin skal vera virk.</string>
   <string name="label_start_timing">Hvenær á kosning að byrja?</string>
-  <string name="start_immediate">Strax eftir stofnun</string>
-  <string name="start_immediate_desc">Kosningin verður virk um leið og hún er búin til</string>
-  <string name="start_scheduled">Ákveðinn tími</string>
-  <string name="start_scheduled_desc">Kosningin byrjar á ákveðnum tíma í framtíðinni</string>
+  <string name="start_immediate">Handvirkt (opna sjálf/ur)</string>
+  <string name="start_immediate_desc">Þú opnar kosninguna handvirkt þegar þú vilt</string>
+  <string name="start_scheduled">Sjálfvirkt (tímasett)</string>
+  <string name="start_scheduled_desc">Kosningin opnast sjálfkrafa á ákveðnum tíma</string>
   <string name="label_scheduled_start">Upphafstími</string>
   <string name="label_duration">Lengd kosningar</string>
-  <string name="duration_15min">15 mín</string>
-  <string name="duration_30min">30 mín</string>
-  <string name="duration_1hr">1 klst</string>
-  <string name="duration_1_5hr">1.5 klst</string>
-  <string name="duration_2hr">2 klst</string>
-  <string name="duration_custom">Annað</string>
   <string name="label_custom_duration">Sérsniðin lengd (mínútur)</string>
-  <string name="help_custom_duration">5 mínútur til 7 dagar (10,080 mínútur)</string>
+  <string name="help_custom_duration">1 mínúta til 7 dagar (10,080 mínútur)</string>
   <string name="placeholder_custom_duration">t.d. 240</string>
   <string name="label_use_manual_end">Nota ákveðinn lokatíma frekar en tímalengd.</string>
   <string name="label_scheduled_end">Lokatími</string>
@@ -210,8 +205,23 @@ Til að staðfesta, sláðu inn heiti kosningarinnar hér fyrir neðan:
   <string name="review_start_time">Byrjar:</string>
   <string name="review_duration">Lengd:</string>
   <string name="review_end_time">Endar:</string>
-  <string name="review_start_immediate">Strax eftir stofnun</string>
+  <string name="review_start_immediate">Handvirkt</string>
   <string name="review_duration_custom">Ákveðinn lokatími</string>
+  
+  <!-- Status labels -->
+  <string name="status_open">opin</string>
+  <string name="status_closed">lokuð</string>
+  <string name="status_open_dative">opinni</string>
+  <string name="status_closed_dative">lokaðri</string>
+  
+  <!-- Edit restriction messages -->
+  <string name="edit_restriction_title">⚠️ Takmörkuð breyting</string>
+  <string name="edit_restriction_message">Kosning er %s. Aðeins er hægt að breyta titli og lýsingu. Ekki er hægt að breyta spurningu eða svarmöguleikum.</string>
+  <string name="edit_confirm_title">⚠️ Breyta %s kosningu</string>
+  <string name="edit_confirm_message_p1">Þú ert að fara að breyta kosningu sem er <strong>%s</strong>.</string>
+  <string name="edit_confirm_message_p2">Aðeins titill og lýsing verða uppfærð.</string>
+  <string name="edit_confirm_message_p3">Spurning og svarmöguleikar verða óbreyttir.</string>
+  <string name="edit_confirm_message_p4"><strong>Viltu halda áfram?</strong></string>
   
   <!-- Navigation buttons -->
   <string name="btn_prev">← Til baka</string>
@@ -231,7 +241,9 @@ Til að staðfesta, sláðu inn heiti kosningarinnar hér fyrir neðan:
   <string name="validation_start_future">Upphafstími verður að vera í framtíðinni</string>
   <string name="validation_scheduled_end_required">Vinsamlegast veldu lokatíma</string>
   <string name="validation_end_after_start">Lokatími verður að vera eftir upphafstíma</string>
-  <string name="validation_duration_min">Lengd kosningar verður að vera að minnsta kosti 5 mínútur</string>
+    <string name="validation_end_time_past">Lokatími má ekki vera liðinn</string>
+  <string name="validation_duration_min">Lengd kosningar verður að vera að minnsta kosti 1 mínúta</string>
+  <string name="validation_answers_min">Þú verður að hafa að minnsta kosti %d svarmöguleika</string>
   <string name="validation_max_answers_alert">Þú getur ekki bætt við fleiri en 10 svarmöguleikum</string>
   <string name="validation_min_answers_alert">Þú þarft að hafa að minnsta kosti 2 svarmöguleika</string>
   <string name="validation_not_authorized">Þú hefur ekki heimild til að búa til kosningar.</string>
@@ -255,5 +267,15 @@ Til að staðfesta, sláðu inn heiti kosningarinnar hér fyrir neðan:
   <string name="duration_hour_minutes">%d klst. og %d mín.</string>
   <string name="duration_one_selection">Einn valkostur</string>
   <string name="duration_max_selections">Að hámarki %d valkostir</string>
+  
+  <!-- Voting window -->
+  <string name="label_closes_in">Lokar eftir</string>
+  <string name="label_closed_already">Lokið</string>
+  
+  <!-- ========================================== -->
+  <!-- MODAL DIALOGS -->
+  <!-- ========================================== -->
+  <string name="modal_ok_btn">Í lagi</string>
+  <string name="modal_close_aria">Loka</string>
 
 </resources>

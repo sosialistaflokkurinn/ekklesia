@@ -161,6 +161,39 @@ body {
   opacity: 0.5;
 }
 
+/* Screen reader only - visually hidden but accessible to screen readers */
+.u-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Skip link - hidden until focused (keyboard navigation) */
+.u-skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--color-primary);
+  color: var(--color-white);
+  padding: 8px 16px;
+  text-decoration: none;
+  z-index: 100;
+  border-radius: 0 0 4px 0;
+  font-weight: 500;
+}
+
+.u-skip-link:focus {
+  top: 0;
+  outline: 2px solid var(--color-white);
+  outline-offset: -4px;
+}
+
 /* Hidden by default */
 .u-hidden {
   display: none;

@@ -11,6 +11,7 @@ import { createButton } from '../../js/components/button.js';
 import { createBadge } from '../../js/components/badge.js';
 import { showToast } from '../../js/components/toast.js';
 import { showConfirm } from '../../js/components/modal.js';
+import { R } from '../i18n/strings-loader.js';
 import PolicySessionAPI from './api/policy-session-api-mock.js';
 
 /**

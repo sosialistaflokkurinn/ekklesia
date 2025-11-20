@@ -1,8 +1,19 @@
 # Navigation & Areas Architecture Map
 
-Þessi skjal sýnir hvernig notenda upplifun (navigation flow) og svæðaskipulag (area structure) virkar í Ekklesia kerfinu.
+This document shows how the user experience (navigation flow) and area structure works in the Ekklesia system.
 
-**Síðast uppfært**: 2025-11-08 (commits 502eebc, db16764, 6266f77)
+**Last Updated**: 2025-11-08 (commits 502eebc, db16764, 6266f77)
+
+---
+
+## 🗺️ Navigation Flow - User Journey
+
+````markdown
+# Navigation & Areas Architecture Map
+
+This document shows how the user experience (navigation flow) and area structure works in the Ekklesia system.
+
+**Last Updated**: 2025-11-08 (commits 502eebc, db16764, 6266f77)
 
 ---
 
@@ -45,35 +56,39 @@
 
 ---
 
-## 🏢 Svæðaskipulag (Area Structure)
-
-### 1️⃣ **Members Area** - Almennir félagsmenn
-```
-/members-area/
-├── dashboard.html          ← 🏠 AÐAL HUB (Home base)
-├── profile.html            ← Persónulegar upplýsingar
-├── events.html             ← Viðburðir og fundir
-└── elections.html          ← Liste yfir kosningar (gateway)
-```
-
-**Tilgangur**: Aðalsvæði fyrir almenna félagsmenn
-**Navigation**: Öll navigation fer til baka í `dashboard.html`
+## 🏢 Area Structure
 
 ---
 
-### 2️⃣ **Elections Area** - Kosningar (Member-facing)
+## 🏢 Area Structure
+
+### 1️⃣ **Members Area** - General Members
 ```
 /members-area/
-└── elections.html          ← Lista yfir kosningar með tabs:
+├── dashboard.html          ← 🏠 MAIN HUB (Home base)
+├── profile.html            ← Personal information
+├── events.html             ← Events and meetings
+└── elections.html          ← List of elections (gateway)
+```
+
+**Purpose**: Main area for general members
+**Navigation**: All navigation returns to `dashboard.html`
+
+---
+
+### 2️⃣ **Elections Area** - Elections (Member-facing)
+```
+/members-area/
+└── elections.html          ← List of elections with tabs:
     │
-    ├─ Tab: Allar kosningar      (Allt saman)
+    ├─ Tab: Allar kosningar      (All elections)
     ├─ Tab: Stefnumótun         (Policy Sessions)
     └─ Tab: Framboð             (Candidate Elections)
 ```
 
 **Navigation Flow:**
 ```
-Dashboard → elections.html → Velja kosningu → Kosningarsíða
+Dashboard → elections.html → Select election → Election page
                                               │
                                               ▼
                       ┌─────────────────────────────────┐
@@ -84,12 +99,12 @@ Dashboard → elections.html → Velja kosningu → Kosningarsíða
 
 ---
 
-### 3️⃣ **Policy Session Area** - Stefnumótunarfundir
+### 3️⃣ **Policy Session Area** - Policy Formation Meetingsetings
 ```
 /policy-session/
-├── index.html                              ← Aðalsíða (session view)
+├── index.html                              ← Main page (session view)
 ├── i18n/
-│   ├── values-is/strings.xml              ← Íslenskir strengir
+│   ├── values-is/strings.xml              ← Icelandic strings
 │   └── strings-loader.js                  ← i18n loader
 ├── js/
 │   ├── policy-session.js                  ← Main logic
@@ -107,11 +122,11 @@ Dashboard → elections.html → Velja kosningu → Kosningarsíða
     └── policy-results-display.css
 ```
 
-**Lykileinkenni:**
-- ✅ **Self-contained** (sjálfstætt svæði)
-- ✅ **Dedicated API mock** (ekki deilt með öðrum)
-- ✅ **Own i18n strings** (sérstakir þýðingarstrengar)
-- ✅ **Component-based** (endurnýtanlegir components)
+**Key Features:**
+- ✅ **Self-contained** (independent area)
+- ✅ **Dedicated API mock** (not shared with others)
+- ✅ **Own i18n strings** (dedicated translation strings)
+- ✅ **Component-based** (reusable components)
 
 **Navigation:**
 ```
@@ -142,20 +157,20 @@ Hamburger menu shows:
 
 ---
 
-### 4️⃣ **Admin Area** - Félagaskrá (Member Management)
+### 4️⃣ **Admin Area** - Member Registry (Member Management)
 ```
 /admin/
-└── members.html                ← Stjórna félagaskrá (CRUD)
+└── members.html                ← Manage member registry (CRUD)
 ```
 
-**Aðgangur:**
-- Badge á dashboard: "👑 Stjórnandi"
-- Krefst `admin` roles
-- Óháð election management
+**Access:**
+- Badge on dashboard: "👑 Stjórnandi"
+- Requires `admin` roles
+- Independent of election management
 
 ---
 
-### 5️⃣ **Admin Elections Area** - Kosningastjórnun
+### 5️⃣ **Admin Elections Area** - Election Managementent
 ```
 /admin-elections/
 ├── index.html                              ← Elections list
@@ -172,31 +187,31 @@ Hamburger menu shows:
     └── values-is/strings.xml               ← Dedicated i18n
 ```
 
-**Lykileinkenni:**
-- ✅ **Separate from member elections** (aðskilið frá notenda kosingum)
+**Key Features:**
+- ✅ **Separate from member elections** (separated from user elections)
 - ✅ **Admin-specific mock** (`elections-admin-mock.js`)
 - ✅ **CRUD operations** (Create, Read, Update, Delete)
 - ✅ **Own i18n namespace**
 
-**Aðgangur:**
-- Badge á dashboard: "⚙️ Kerfisstjóri"
-- Krefst `superuser` role
+**Access:**
+- Badge on dashboard: "⚙️ Kerfisstjóri"
+- Requires `superuser` role
 - Dedicated admin interface
 
 ---
 
-## 🔄 API Skipulag (API Structure)
+## 🔄 API Structure
 
 ### Before Refactor (Old):
 ```
 apps/members-portal/js/api/
-└── elections-mock.js           ← Eitt mock fyrir allt (confused)
+└── elections-mock.js           ← One mock for everything (confused)
 ```
 
-**Vandamál:**
-- Blanda á milli admin og member mock
-- Erfitt að viðhalda
-- Óljóst ownership
+**Problems:**
+- Mixed admin and member mock
+- Difficult to maintain
+- Unclear ownership
 
 ---
 
@@ -204,19 +219,19 @@ apps/members-portal/js/api/
 ```
 apps/members-portal/
 ├── admin-elections/js/api/
-│   └── elections-admin-mock.js     ← Admin kosningar (superuser)
+│   └── elections-admin-mock.js     ← Admin elections (superuser)
 │
 └── policy-session/js/api/
     └── policy-session-api-mock.js  ← Policy sessions (members)
 ```
 
-**Kostir:**
-- ✅ **Clear separation** - Hver svæði á sitt API
-- ✅ **Self-contained** - Öll virkni í einu svæði
+**Benefits:**
+- ✅ **Clear separation** - Each area has its own API
+- ✅ **Self-contained** - All functionality in one area
 - ✅ **Better naming** - Descriptive file names
-- ✅ **Easier maintenance** - Breytingar hafa ekki áhrif á önnur svæði
+- ✅ **Easier maintenance** - Changes don't affect other areas
 
-**Import dæmi:**
+**Import examples:**
 ```javascript
 // Admin elections area
 import { ElectionsAPI } from '../api/elections-admin-mock.js';
@@ -245,12 +260,12 @@ import { PolicySessionAPI } from '../api/policy-session-api-mock.js';
               Back to Dashboard
 ```
 
-**Regla**: Öll "back" navigation fer til baka á **Dashboard**, ekki á previous page
+**Rule**: All "back" navigation returns to **Dashboard**, not to previous page
 
-**Ástæða**:
-- Dashboard er **central hub** (miðstöð)
-- Notandi á alltaf að vita hvar hann er
-- Forðast navigation djúpt inn í nested pages
+**Reason**:
+- Dashboard is **central hub**
+- User always knows where they are
+- Avoids navigation deep into nested pages
 
 ---
 
@@ -298,10 +313,10 @@ Dashboard Role Badges:
 └────────────────────────────────────┘
 ```
 
-**Regla**:
-- Aðeins badges fyrir roles sem notandi hefur
-- Hver badge linkur á sitt dedicated admin area
-- Tooltip útskýrir hvað hver badge gerir
+**Rule**:
+- Only badges for roles the user has
+- Each badge links to its dedicated admin area
+- Tooltip explains what each badge does
 
 ---
 
@@ -329,14 +344,43 @@ Drawer (when open):
 │  • Allar kosningar               │
 │  • Stefnumótun ✓                 │
 │  • Framboð                       │
-│  ─────────────────────────────── │
+│  ──────────────────────────────── │
 │  Links:                          │
 │  • 🏠 Mín síða                   │
 │  • 👤 Prófíll                    │
 │  • 📅 Viðburðir                  │
 │  • 🗳️ Kosningar                  │
-│  • 🚪 Útskrá                     │
+│  • 🚺 Útskrá                     │
 └──────────────────────────────────┘
+```
+
+---
+
+## 🏭 Architectural Benefits
+
+### 1. Clear Separation of Concerns
+```
+Admin Elections      Policy Sessions      Member Elections
+     Area                 Area                 Area
+      │                    │                     │
+      ├─ Own mock API      ├─ Own mock API      ├─ Shares admin mock
+      ├─ Own i18n          ├─ Own i18n          │   (for now)
+      ├─ Own styles        ├─ Own styles        │
+      └─ Own components    └─ Own components    └─ Basic view
+```
+
+### 2. Self-Contained Areas
+Each area has:
+- ✅ Own directory structure
+- ✅ Own API mock
+- ✅ Own i18n strings
+- ✅ Own styles
+- ✅ Own components
+
+**Benefit**: Changes to one area don't affect others
+
+### 3. Scalability
+Easy to add new areas:
 ```
 
 ---
@@ -365,7 +409,7 @@ Hver svæði hefur:
 **Kostur**: Breytingar á einu svæði hafa ekki áhrif á önnur
 
 ### 3. Scalability
-Auðvelt að bæta við nýjum svæðum:
+Easy to add new areas:
 ```
 Future areas:
 ├── /working-groups/          ← Working groups area
@@ -373,7 +417,7 @@ Future areas:
 └── /member-communications/   ← Internal messaging
 ```
 
-Hver area fylgir sama pattern:
+Each area follows the same pattern:
 - Dedicated directory
 - Own mock API
 - Own i18n
@@ -384,12 +428,23 @@ Hver area fylgir sama pattern:
 
 ## 🎯 Navigation Rules Summary
 
-1. **Hub & Spoke**: Dashboard er central hub, öll navigation til baka þangað
-2. **Role-based access**: Badges á dashboard fyrir admin areas
-3. **Area isolation**: Hvert svæði er sjálfstætt (self-contained)
-4. **Responsive**: Different patterns fyrir desktop vs mobile
-5. **Tab categories**: Tabs fyrir að flokka content innan areas
-6. **Clear back links**: Alltaf "Til baka á Mína síðu" → dashboard
+1. **Hub & Spoke**: Dashboard is central hub, all navigation returns there
+2. **Role-based access**: Badges on dashboard for admin areas
+3. **Area isolation**: Each area is independent (self-contained)
+4. **Responsive**: Different patterns for desktop vs mobile
+5. **Tab categories**: Tabs for categorizing content within areas
+6. **Clear back links**: Always "Til baka á Mína síðu" → dashboard
+
+---
+
+## 🎯 Navigation Rules Summary
+
+1. **Hub & Spoke**: Dashboard is central hub, all navigation returns there
+2. **Role-based access**: Badges on dashboard for admin areas
+3. **Area isolation**: Each area is independent (self-contained)
+4. **Responsive**: Different patterns for desktop vs mobile
+5. **Tab categories**: Tabs for categorizing content within areas
+6. **Clear back links**: Always "Til baka á Mína síðu" → dashboard
 
 ---
 

@@ -11,6 +11,7 @@ import { createButton } from './button.js';
 import { createBadge } from './badge.js';
 import { showToast } from './toast.js';
 import { showConfirm } from './modal.js';
+import { R } from '/i18n/strings-loader.js';
 
 /**
  * Create policy item vote card

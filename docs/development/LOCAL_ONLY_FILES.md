@@ -93,6 +93,34 @@ node services/members/scripts/check-logins-today.js
 
 ---
 
+## Git Hooks Documentation
+
+### Git Hooks README
+
+**File**: `git-hooks/README.md`
+
+**Purpose**: Comprehensive documentation for pre-commit and commit-msg hooks, including:
+- Name detection patterns and examples
+- PII pattern examples (kennitölur, emails, phone numbers)
+- Testing instructions with real-looking fake data
+- Troubleshooting guides
+
+**Why Local Only**:
+- Contains example PII patterns that could trigger false positives in security scans
+- Includes fake kennitölur that look real (e.g., 010190-1234)
+- Contains testing examples with real-looking names
+- Documentation itself would be blocked by the pre-commit hook it documents
+- Better kept as local reference for developers
+
+**Created**: 2025-11-16
+**Size**: ~11KB
+
+**Note**: The hook scripts themselves (`git-hooks/pre-commit`, `git-hooks/commit-msg`) ARE tracked in git and should be committed. Only the documentation is kept local.
+
+**Access**: Developers who need to understand or modify the git hooks.
+
+---
+
 ## Public Directories
 
 ### Members Public Directory
@@ -149,7 +177,7 @@ git status --ignored --porcelain | grep "^!! .*\.md$"
 
 ## Current Inventory
 
-### As of 2025-11-09
+### As of 2025-11-16
 
 **Policy Documents**: 1 file
 - `docs/policy/IMMIGRATION_POLICY_MEETING_2025-11-08.md` (23KB, created 2025-11-07)
@@ -157,6 +185,9 @@ git status --ignored --porcelain | grep "^!! .*\.md$"
 **Member Scripts**: 2 files (if they exist locally)
 - `services/members/scripts/check-user-logins.js`
 - `services/members/scripts/check-logins-today.js`
+
+**Git Hooks Documentation**: 1 file
+- `git-hooks/README.md` (11KB, created 2025-11-16)
 
 **Wildcard Patterns**: 5 patterns
 - `*KENNITALA*.md` (matches 0 files currently)
@@ -266,11 +297,9 @@ done
 
 ## Related Documentation
 
-- [GITIGNORE_STRATEGY.md](guides/GITIGNORE_STRATEGY.md) - Overall gitignore approach
-- [SESSION_START_REMINDER.md](../SESSION_START_REMINDER.md) - Session start checklist (includes gitignore reminders)
-- [PII_HANDLING.md](../security/policies/PII_HANDLING.md) - PII protection policies
-- [CHECK_USER_LOGINS.md](../checklists/CHECK_USER_LOGINS.md) - Using login tracking scripts
-- [OPERATIONAL_PROCEDURES.md](../operations/OPERATIONAL_PROCEDURES.md) - System operations
+- [SESSION_START_REMINDER.md](../../.claude/SESSION_START_REMINDER.md) - Session hooks
+- [GITIGNORE_STRATEGY.md](./guides/GITIGNORE_STRATEGY.md) - Gitignore patterns
+- [PII_GUIDELINES.md](../security/PII_GUIDELINES.md) - PII handling guide
 
 ---
 
@@ -278,13 +307,14 @@ done
 
 | Date | Change | Author |
 |------|--------|--------|
+| 2025-11-16 | Added git-hooks/README.md (contains PII pattern examples) | Development Team |
 | 2025-11-09 | Initial document created | Development Team |
 | 2025-11-09 | Added IMMIGRATION_POLICY_MEETING_2025-11-08.md | Development Team |
 | 2025-11-09 | Added member login scripts | Development Team |
 
 ---
 
-**Last Updated**: 2025-11-09
+**Last Updated**: 2025-11-16
 **Maintained By**: Development Team
 **Review Frequency**: Monthly (or when adding new patterns)
 

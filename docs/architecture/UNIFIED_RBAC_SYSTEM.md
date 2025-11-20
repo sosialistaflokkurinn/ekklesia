@@ -1,3 +1,4 @@
+````markdown
 # Unified RBAC System
 
 **Status:** ✅ Implemented  
@@ -6,21 +7,21 @@
 
 ## Overview
 
-Sameinað Role-Based Access Control (RBAC) kerfi fyrir allt Ekklesia félagasvæðið. Einn miðlægur staður fyrir öll hlutverk og heimildir.
+Unified Role-Based Access Control (RBAC) system for the entire Ekklesia member portal. One central location for all roles and permissions.
 
 ## Role Hierarchy
 
 ```
 ┌─────────────┐
-│  superuser  │ ← Kerfisstjóri (All permissions + dangerous operations)
+│  superuser  │ ← System Administrator (All permissions + dangerous operations)
 └──────┬──────┘
        │
 ┌──────▼──────┐
-│    admin    │ ← Stjórnandi (Member management + Elections management)
+│    admin    │ ← Administrator (Member management + Elections management)
 └──────┬──────┘
        │
 ┌──────▼──────┐
-│   member    │ ← Félagsmaður (Basic member access)
+│   member    │ ← Member (Basic member access)
 └─────────────┘
 ```
 
@@ -32,7 +33,7 @@ Sameinað Role-Based Access Control (RBAC) kerfi fyrir allt Ekklesia félagasvæ
 ## Role Mapping
 
 ### Elections Service Mapping
-Backend elections API notar önnur role nöfn:
+Backend elections API uses different role names:
 
 ```javascript
 // Frontend roles → Backend election roles
@@ -52,13 +53,92 @@ const electionRole = await getElectionRole();
 
 ### Member Area Permissions
 ```javascript
-PERMISSIONS.VIEW_DASHBOARD      // Skoða dashboard
-PERMISSIONS.VIEW_PROFILE        // Skoða prófíl
-PERMISSIONS.EDIT_PROFILE        // Breyta prófíl
-PERMISSIONS.VIEW_EVENTS         // Skoða viðburði
-PERMISSIONS.REGISTER_EVENT      // Skrá sig á viðburð
-PERMISSIONS.VIEW_ELECTIONS      // Skoða kosningar
-PERMISSIONS.VOTE                // Kjósa
+PERMISSIONS.VIEW_DASHBOARD      // View dashboard
+PERMISSIONS.VIEW_PROFILE        // View profile
+PERMISSIONS.EDIT_PROFILE        // Edit profile
+PERMISSIONS.VIEW_EVENTS         // View events
+PERMISSIONS.REGISTER_EVENT      // Register for event
+PERMISSIONS.VIEW_ELECTIONS      // View elections
+PERMISSIONS.VOTE                // Vote
+```
+
+### Admin Area Permissions
+```javascript
+PERMISSIONS.VIEW_ADMIN_PORTAL   // View admin portal
+PERMISSIONS.VIEW_MEMBERS_LIST   // View member list
+PERMISSIONS.VIEW_MEMBER_DETAILS // View member details
+PERMISSIONS.EDIT_MEMBER         // Edit member
+PERMISSIONS.SYNC_MEMBERS        // Run sync
+PERMISSIONS.VIEW_SYNC_HISTORY   // View sync history
+PERMISSIONS.VIEW_SYNC_QUEUE     // View sync queue
+```
+
+### Elections Admin Permissions
+```javascript
+PERMISSIONS.VIEW_ELECTIONS_ADMIN     // View election management
+PERMISSIONS.CREATE_ELECTION          // Create election
+PERMISSIONS.EDIT_ELECTION            // Edit election
+PERMISSIONS.OPEN_ELECTION            // Open election
+PERMISSIONS.CLOSE_ELECTION           // Close election
+PERMISSIONS.HIDE_ELECTION            // Hide election
+PERMISSIONS.UNHIDE_ELECTION          // Unhide election
+PERMISSIONS.VIEW_ELECTION_RESULTS    // View results
+PERMISSIONS.EXPORT_ELECTION_RESULTS  // Export results
+PERMISSIONS.DELETE_ELECTION          // Delete election (superuser ONLY)
+```
+
+### System Permissions (Superuser Only)
+```javascript
+PERMISSIONS.DELETE_MEMBER           // Delete member
+PERMISSIONS.MANAGE_ROLES            // Manage roles
+PERMISSIONS.VIEW_SYSTEM_LOGS        // View system logs
+PERMISSIONS.DANGEROUS_OPERATIONS    // Dangerous operation
+```
+
+## Permissions
+
+### Member Area Permissions
+```javascript
+PERMISSIONS.VIEW_DASHBOARD      // View dashboard
+PERMISSIONS.VIEW_PROFILE        // View profile
+PERMISSIONS.EDIT_PROFILE        // Edit profile
+PERMISSIONS.VIEW_EVENTS         // View events
+PERMISSIONS.REGISTER_EVENT      // Register for event
+PERMISSIONS.VIEW_ELECTIONS      // View elections
+PERMISSIONS.VOTE                // Vote
+```
+
+### Admin Area Permissions
+```javascript
+PERMISSIONS.VIEW_ADMIN_PORTAL   // View admin portal
+PERMISSIONS.VIEW_MEMBERS_LIST   // View member list
+PERMISSIONS.VIEW_MEMBER_DETAILS // View member details
+PERMISSIONS.EDIT_MEMBER         // Edit member
+PERMISSIONS.SYNC_MEMBERS        // Run sync
+PERMISSIONS.VIEW_SYNC_HISTORY   // View sync history
+PERMISSIONS.VIEW_SYNC_QUEUE     // View sync queue
+```
+
+### Elections Admin Permissions
+```javascript
+PERMISSIONS.VIEW_ELECTIONS_ADMIN     // View election management
+PERMISSIONS.CREATE_ELECTION          // Create election
+PERMISSIONS.EDIT_ELECTION            // Edit election
+PERMISSIONS.OPEN_ELECTION            // Open election
+PERMISSIONS.CLOSE_ELECTION           // Close election
+PERMISSIONS.HIDE_ELECTION            // Hide election
+PERMISSIONS.UNHIDE_ELECTION          // Unhide election
+PERMISSIONS.VIEW_ELECTION_RESULTS    // View results
+PERMISSIONS.EXPORT_ELECTION_RESULTS  // Export results
+PERMISSIONS.DELETE_ELECTION          // Delete election (superuser ONLY)
+```
+
+### System Permissions (Superuser Only)
+```javascript
+PERMISSIONS.DELETE_MEMBER           // Delete member
+PERMISSIONS.MANAGE_ROLES            // Manage roles
+PERMISSIONS.VIEW_SYSTEM_LOGS        // View system logs
+PERMISSIONS.DANGEROUS_OPERATIONS    // Dangerous operation
 ```
 
 ### Admin Area Permissions
@@ -435,6 +515,27 @@ apps/members-portal/
 └── members-area/
     └── dashboard.html                   ← Uses requireMember()
 ```
+
+## Related Documentation
+
+- [GitHub Issue #201](https://github.com/sosialistaflokkurinn/ekklesia/issues/201) - Elections Admin Implementation
+- [Epic #192](https://github.com/sosialistaflokkurinn/ekklesia/issues/192) - Admin Elections Dashboard
+- `SECURITY.md` - Security practices
+- `docs/architecture/CSS_DESIGN_SYSTEM.md` - Role badge styles
+
+## Implementation Details
+
+**Commit:** `eb29019` - feat(rbac): Unified RBAC system across all portal areas  
+**Date:** 2025-11-07  
+**Files Changed:** 6 files, +607 insertions, -190 deletions  
+**Deployment:** Firebase Hosting (104 files)
+
+---
+
+**Author:** Ekklesia Development Team  
+**Last Updated:** 2025-11-07
+
+````
 
 ## Related Documentation
 

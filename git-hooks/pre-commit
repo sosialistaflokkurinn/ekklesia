@@ -104,6 +104,27 @@ PII_PATTERNS=(
   'uid.*=.*[a-zA-Z0-9]{25,}'
 )
 
+# Suspicious patterns that may contain real names (WARNING only, not blocking)
+# These require manual review but won't block commit
+SUSPICIOUS_NAME_PATTERNS=(
+  # Icelandic surnames ending in -son, -sson, -dóttir, -dottir
+  # This catches most Icelandic names: Jónsson, Gunnarsson, Sigurðardóttir, etc.
+  '\b[A-ZÁÐÉÍÓÚÝÞÆÖ][a-záðéíóúýþæö]+(s{1,2}on|d[óo]ttir)\b'
+  
+  # Reporter: Real Name pattern (catches both Icelandic and foreign surnames)
+  # Example: Jón Ferdínand, Guðröður Atli Jónsson
+  '\*\*Reporter:\*\*.*[A-ZÁÐÉÍÓÚÝÞÆÖ][a-záðéíóúýþæö]+\s+[A-ZÁÐÉÍÓÚÝÞÆÖ][a-záðéíóúýþæö]+'
+  
+  # User: Real Name pattern
+  '\*\*User:\*\*.*[A-ZÁÐÉÍÓÚÝÞÆÖ][a-záðéíóúýþæö]+\s+[A-ZÁÐÉÍÓÚÝÞÆÖ][a-záðéíóúýþæö]+'
+  
+  # Who: Real Name pattern
+  '- \*\*Who:\*\*.*[A-ZÁÐÉÍÓÚÝÞÆÖ][a-záðéíóúýþæö]+\s+[A-ZÁÐÉÍÓÚÝÞÆÖ][a-záðéíóúýþæö]+'
+  
+  # Reviewer: Real Name pattern (at end of docs)
+  '\*\*Reviewer:\*\*.*[A-ZÁÐÉÍÓÚÝÞÆÖ][a-záðéíóúýþæö]+\s+[A-ZÁÐÉÍÓÚÝÞÆÖ][a-záðéíóúýþæö]+'
+)
+
 # Known fake/example values to ALLOW (will be filtered out)
 # Use obviously fake values that cannot be real data
 FAKE_VALUES=(
@@ -129,7 +150,10 @@ FAKE_VALUES=(
   "sample@example.com"
   "user@example.com"
   "your.email@example.com"
+  "your@email.com"  # Generic placeholder in error messages
   "user.name@domain.co.uk"
+  "copilot@github.com"  # GitHub Copilot co-authorship (blocked in commit-msg)
+  "noreply@anthropic.com"  # Claude co-authorship (blocked in commit-msg)
   "gudrodur@sosialistaflokkurinn.is"
   "gudrodur@example.com"
   "real.person@gmail.com"
@@ -162,10 +186,12 @@ SECRET_EXCLUDE_PATTERNS=(
   'test.*\.js$'    # Test files
   '\.json$'        # JSON config (usually env var references)
   '\.ya?ml$'       # YAML config (usually env var references)
+  'pre-commit$'    # Git hooks (contain regex patterns, not actual secrets)
   'package-lock'   # Dependency lock files
   'requirements'   # Python requirements
-  'git-hooks/'     # Pre-commit hook itself (contains secret patterns)
+  'git-hooks/'     # Pre-commit hook itself (contains secret patterns for detection)
   '\.git/hooks/'   # Git hooks directory
+  'pre-commit$'    # Pre-commit hook file
 )
 
 # Files to exclude from PII scanning (much more restricted)
@@ -178,6 +204,7 @@ PII_EXCLUDE_PATTERNS=(
 
 SECRETS_FOUND=false
 PII_FOUND=false
+SUSPICIOUS_NAMES_FOUND=false
 
 # First pass: Check for secrets (excluding documentation)
 for file in $STAGED_FILES; do
@@ -203,11 +230,14 @@ for file in $STAGED_FILES; do
   for pattern in "${SECRET_PATTERNS[@]}"; do
     # Use -m 1 to stop after first match (faster)
     # Use timeout to prevent hanging
-    if timeout 1 grep -EHn -m 1 "$pattern" "$file" 2>/dev/null; then
+    # Capture matches to check if any found before printing
+    MATCHES=$(timeout 1 grep -EHn -m 1 "$pattern" "$file" 2>/dev/null || true)
+    if [ -n "$MATCHES" ]; then
       SECRETS_FOUND=true
       echo ""
       echo "⚠️ Potential secret detected in: $file"
       echo "   Pattern: $pattern"
+      echo "$MATCHES"
     fi
   done
 done
@@ -259,6 +289,35 @@ for file in $STAGED_FILES; do
   done
 done
 
+# Third pass: Check for suspicious name patterns in .md files (WARNING only)
+echo "👤 Checking for potential real names in documentation..."
+
+for file in $STAGED_FILES; do
+  # Only check .md files
+  if ! echo "$file" | grep -qE '\.md$'; then
+    continue
+  fi
+
+  # Check if file exists
+  if [ ! -f "$file" ]; then
+    continue
+  fi
+
+  # Scan for suspicious name patterns
+  for pattern in "${SUSPICIOUS_NAME_PATTERNS[@]}"; do
+    MATCHES=$(timeout 1 grep -EHn -m 5 "$pattern" "$file" 2>/dev/null || true)
+    if [ -n "$MATCHES" ]; then
+      # Check if it contains [REDACTED] - if so, it's already redacted
+      if ! echo "$MATCHES" | grep -qF "[REDACTED]"; then
+        SUSPICIOUS_NAMES_FOUND=true
+        echo ""
+        echo "⚠️ POTENTIAL REAL NAME in: $file"
+        echo "$MATCHES"
+      fi
+    fi
+  done
+done
+
 if [ "$SECRETS_FOUND" = true ] || [ "$PII_FOUND" = true ]; then
   echo ""
   echo "❌ Commit blocked: Potential secrets or PII detected!"
@@ -289,6 +348,30 @@ if [ "$SECRETS_FOUND" = true ] || [ "$PII_FOUND" = true ]; then
   echo ""
   echo "Related: Issue #48 (database password exposure incident)"
   exit 1
+fi
+
+# Show warning for suspicious names (but don't block)
+if [ "$SUSPICIOUS_NAMES_FOUND" = true ]; then
+  echo ""
+  echo "⚠️⚠️⚠️ WARNING: POTENTIAL REAL NAMES DETECTED ⚠️⚠️⚠️"
+  echo ""
+  echo "Documentation files may contain real user names."
+  echo "Please review and redact if these are real people:"
+  echo ""
+  echo "  - Use [REDACTED] for real names"
+  echo "  - Use 'Jón Jónsson' or similar for examples"
+  echo "  - Use [REDACTED - superuser] for role descriptions"
+  echo ""
+  echo "If you're confident these are test/example names, you can proceed."
+  echo "Otherwise, please redact and re-commit."
+  echo ""
+  read -p "Continue with commit? (y/N): " -n 1 -r
+  echo
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo "❌ Commit cancelled. Please redact real names and try again."
+    exit 1
+  fi
+  echo "✅ Proceeding with commit (reviewer confirmed)"
 fi
 
 echo "✅ No secrets or PII detected in staged files"

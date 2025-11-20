@@ -10,6 +10,7 @@
 import { createButton } from './button.js';
 import { showToast } from './toast.js';
 import { showAlert } from './modal.js';
+import { R } from '/i18n/strings-loader.js';
 import { submitAmendment } from '../api/elections-api.js';
 
 /**

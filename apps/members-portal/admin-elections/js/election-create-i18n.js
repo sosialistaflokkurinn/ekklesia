@@ -74,11 +74,9 @@ export async function initElectionCreateStrings() {
   document.getElementById('start-scheduled-desc').textContent = R.string.start_scheduled_desc;
   document.getElementById('label-scheduled-start').textContent = R.string.label_scheduled_start;
   document.getElementById('label-duration').textContent = R.string.label_duration;
-  document.getElementById('duration-15min').textContent = R.string.duration_15min;
-  document.getElementById('duration-30min').textContent = R.string.duration_30min;
-  document.getElementById('duration-1hr').textContent = R.string.duration_1hr;
-  document.getElementById('duration-1-5hr').textContent = R.string.duration_1_5hr;
-  document.getElementById('duration-2hr').textContent = R.string.duration_2hr;
+  document.getElementById('duration-1min').textContent = R.string.duration_1min;
+  document.getElementById('duration-2min').textContent = R.string.duration_2min;
+  document.getElementById('duration-3min').textContent = R.string.duration_3min;
   document.getElementById('duration-custom').textContent = R.string.duration_custom;
   document.getElementById('label-custom-duration').textContent = R.string.label_custom_duration;
   document.getElementById('custom-duration').placeholder = R.string.placeholder_custom_duration;

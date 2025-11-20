@@ -16,7 +16,7 @@
 
 import { R } from '../i18n/strings-loader.js';
 import { requireAuth, signOut, getUserData } from '../session/auth.js';
-import { initNavigation } from './nav.js';
+// Note: initNavigation import removed - now handled by nav-header component
 
 /**
  * Initialize i18n and load strings for Icelandic locale
@@ -115,14 +115,8 @@ export async function initAuthenticatedPage() {
   // Load i18n strings
   await initI18n();
 
-  // Update navigation
-  updateNavigation();
-
-  // Setup logout handler
-  setupLogout();
-
-  // Initialize mobile hamburger menu
-  initNavigation();
+  // Note: Navigation text, logout handler, and hamburger menu now managed by nav-header component
+  // (component loads i18n and creates nav with correct strings automatically)
 
   // Auth guard - redirect if not authenticated
   const user = await requireAuth();

@@ -11,7 +11,7 @@
 import { initAuthenticatedPage } from '../../js/page-init.js';
 import { debug } from '../../js/utils/debug.js';
 import { R } from '../i18n/strings-loader.js';
-import { getElectionById } from '../../js/api/elections-api.js';
+import { getAdminElectionById } from '../../js/api/elections-api.js';
 import { electionState } from '../../js/utils/election-state.js';
 import { createScheduleControl } from '../../js/components/schedule-control.js';
 import { createScheduleDisplay } from '../../js/components/schedule-display.js';
@@ -105,8 +105,8 @@ async function loadElection(electionId) {
   try {
     showLoading();
 
-    // Fetch election
-    const election = await getElectionById(electionId);
+    // Fetch election using Admin API (to access draft/hidden elections)
+    const election = await getAdminElectionById(electionId);
 
     // Display control interface
     displayElectionControl(election);

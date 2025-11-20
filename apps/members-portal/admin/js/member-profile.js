@@ -13,6 +13,9 @@ import { showStatus } from '../../js/components/status.js';
 import { debug } from '../../js/utils/debug.js';
 import { debounce } from '../../js/utils/debounce.js';
 import { initSearchableSelects } from '../../js/components/searchable-select.js';
+import { requireAdmin } from '../../js/rbac.js';
+// Note: initNavigation import removed - now handled by nav-header component
+import { firebaseApp } from '../../firebase/app.js';
 import { PhoneManager } from '../../js/profile/phone-manager.js';
 import { AddressManager } from '../../js/profile/address-manager.js';
 import { migrateOldPhoneFields, migrateOldAddressFields } from '../../js/profile/migration.js';
@@ -131,6 +134,8 @@ function setI18nStrings() {
  */
 async function init() {
   debug.log('🚀 Member Profile Init');
+
+  // Note: Navigation now initialized by nav-header component
 
   // Load i18n strings first
   await R.load('is');
@@ -308,9 +313,10 @@ async function renderProfile() {
   addressManager.render();
 
   // Auto-save if migration patched addresses (added missing fields)
+  // Use silent mode to avoid showing "Address updated" toast when user didn't change anything
   if (migratedAddresses._needsSave) {
-    debug.log('🔄 Migration patched addresses, auto-saving to Firestore...');
-    await addressManager.save();
+    debug.log('🔄 Migration patched addresses, auto-saving to Firestore (silent mode)...');
+    await addressManager.save({ silent: true });
   }
 
   // Setup field listeners for auto-save

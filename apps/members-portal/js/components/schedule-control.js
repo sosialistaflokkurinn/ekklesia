@@ -5,7 +5,7 @@
  * - Status display with countdown
  * - "Start Now" instant launch
  * - Scheduled start with date/time picker
- * - Duration presets (15, 30, 60 minutes, custom)
+ * - Duration presets (1, 2, 3 minutes, custom) - aligned with real meeting patterns
  * - "Close Now" immediate closure
  *
  * Syncs with electionState and updates member views in real-time.
@@ -27,18 +27,16 @@ import { createCountdownTimer } from './countdown-timer.js';
 import { electionState } from '../utils/election-state.js';
 import { debug } from '../utils/debug.js';
 import { escapeHTML } from '../utils/format.js';
+import { 
+  DURATION_PRESETS, 
+  DEFAULT_DURATION_MINUTES 
+} from '../utils/election-constants.js';
 
 /**
- * Duration presets in minutes
+ * Duration presets imported from shared constants
+ * Per commit 50cf8d9: Aligned with real meeting patterns (1-3 minutes)
+ * See: utils/election-constants.js for full documentation
  */
-const DURATION_PRESETS = [
-  { value: 15, label: '15 mínútur' },
-  { value: 30, label: '30 mínútur' },
-  { value: 60, label: '1 klukkustund' },
-  { value: 90, label: '1,5 klukkustund' },
-  { value: 120, label: '2 klukkustundir' },
-  { value: 'custom', label: 'Sérsníða' }
-];
 
 /**
  * Create schedule control element
@@ -134,7 +132,7 @@ export function createScheduleControl(options = {}) {
     const durationButtons = document.createElement('div');
     durationButtons.className = 'schedule-control__duration-buttons';
 
-    let selectedDuration = 60; // Default 1 hour
+    let selectedDuration = DEFAULT_DURATION_MINUTES; // Default from shared constants (2 minutes)
 
     DURATION_PRESETS.forEach(preset => {
       const button = document.createElement('button');
@@ -159,7 +157,7 @@ export function createScheduleControl(options = {}) {
         if (preset.value === 'custom') {
           // Show custom input
           customInput.classList.remove('u-hidden');
-          selectedDuration = parseInt(customInput.value) || 60;
+          selectedDuration = parseInt(customInput.value) || DEFAULT_DURATION_MINUTES;
         } else {
           customInput.classList.add('u-hidden');
           selectedDuration = preset.value;
@@ -174,12 +172,12 @@ export function createScheduleControl(options = {}) {
     customInput.type = 'number';
     customInput.min = '1';
     customInput.max = '480';
-    customInput.value = '60';
+    customInput.value = String(DEFAULT_DURATION_MINUTES);
     customInput.className = 'schedule-control__custom-input u-hidden';
     customInput.placeholder = 'Mínútur';
 
     customInput.addEventListener('input', () => {
-      selectedDuration = parseInt(customInput.value) || 60;
+      selectedDuration = parseInt(customInput.value) || DEFAULT_DURATION_MINUTES;
     });
 
     durationGroup.appendChild(durationLabel);
@@ -229,11 +227,21 @@ export function createScheduleControl(options = {}) {
 
     const heading = document.createElement('h3');
     heading.className = 'schedule-control__heading';
-    heading.innerHTML = '🕐 Áætla kosningu';
-
+    // Collapsible header (click to expand/collapse)
+    const headerButton = document.createElement('button');
+    headerButton.type = 'button';
+    headerButton.className = 'schedule-control__heading schedule-control__heading--collapsible';
+    headerButton.innerHTML = '<span class="schedule-control__toggle-icon">▶</span> Áætla kosningu (valfrjálst)';
+    headerButton.setAttribute('aria-expanded', 'false');
+    
     const description = document.createElement('p');
-    description.className = 'schedule-control__description';
-    description.textContent = 'Velja hvenær kosning byrjar og tímalengd';
+    description.className = 'schedule-control__description schedule-control__description--hint';
+    description.innerHTML = '<small>Sjaldgæft - flestir byrja kosningar strax með "Byrja núna"</small>';
+
+    // Collapsible content (hidden by default)
+    const collapsibleContent = document.createElement('div');
+    collapsibleContent.className = 'schedule-control__collapsible u-hidden';
+    collapsibleContent.setAttribute('aria-hidden', 'true');
 
     // Date/time inputs
     const scheduleInputs = document.createElement('div');
@@ -260,7 +268,7 @@ export function createScheduleControl(options = {}) {
     durationInput.type = 'number';
     durationInput.min = '1';
     durationInput.max = '480';
-    durationInput.value = '60';
+    durationInput.value = String(DEFAULT_DURATION_MINUTES);
     durationInput.className = 'schedule-control__input';
 
     scheduleInputs.appendChild(dateLabel);
@@ -276,7 +284,7 @@ export function createScheduleControl(options = {}) {
 
     scheduleButton.addEventListener('click', async () => {
       const startDate = new Date(dateInput.value);
-      const duration = parseInt(durationInput.value) || 60;
+      const duration = parseInt(durationInput.value) || DEFAULT_DURATION_MINUTES;
 
       if (!dateInput.value || isNaN(startDate.getTime())) {
         alert('Vinsamlegast veldu gildan dagsetningu og tíma');
@@ -303,10 +311,33 @@ export function createScheduleControl(options = {}) {
       }
     });
 
-    section.appendChild(heading);
+    // Add toggle functionality to header
+    headerButton.addEventListener('click', () => {
+      const isExpanded = headerButton.getAttribute('aria-expanded') === 'true';
+      
+      if (isExpanded) {
+        // Collapse
+        collapsibleContent.classList.add('u-hidden');
+        collapsibleContent.setAttribute('aria-hidden', 'true');
+        headerButton.setAttribute('aria-expanded', 'false');
+        headerButton.querySelector('.schedule-control__toggle-icon').textContent = '▶';
+      } else {
+        // Expand
+        collapsibleContent.classList.remove('u-hidden');
+        collapsibleContent.setAttribute('aria-hidden', 'false');
+        headerButton.setAttribute('aria-expanded', 'true');
+        headerButton.querySelector('.schedule-control__toggle-icon').textContent = '▼';
+      }
+    });
+
+    // Assemble collapsible content
+    collapsibleContent.appendChild(scheduleInputs);
+    collapsibleContent.appendChild(scheduleButton);
+
+    // Assemble section
+    section.appendChild(headerButton);
     section.appendChild(description);
-    section.appendChild(scheduleInputs);
-    section.appendChild(scheduleButton);
+    section.appendChild(collapsibleContent);
 
     return {
       element: section,

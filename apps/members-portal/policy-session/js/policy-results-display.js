@@ -10,7 +10,8 @@
  */
 
 import { createBadge } from '../../js/components/badge.js';
-import { showErrorIn } from '../../js/components/error-state.js';
+import { showErrorIn } from '../../js/utils/error-handler.js';
+import { R } from '../i18n/strings-loader.js';
 import PolicySessionAPI from './api/policy-session-api-mock.js';
 
 /**

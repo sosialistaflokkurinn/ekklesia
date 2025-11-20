@@ -311,8 +311,7 @@ async function init() {
     // 3. Check admin access (developer role required)
     checkAdminAccess(userData);
 
-    // 4. Initialize navigation (hamburger menu)
-    initNavigation();
+    // 4. Note: Navigation now initialized by nav-header component
 
     // 5. Set page text
     setPageText(strings);

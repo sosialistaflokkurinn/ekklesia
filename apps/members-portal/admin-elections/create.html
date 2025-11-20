@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title id="page-title">Stofna kosningu - Admin</title>
   
+  <!-- DEBUG LOGGER - Auto-activates on LM-G710 (Jón's device) for election creation debugging -->
+  <script src="js/debug-logger.js"></script>
+  
   <!-- Global Styles -->
   <link rel="stylesheet" href="../styles/global.css">
   <link rel="stylesheet" href="../styles/components/nav.css">
@@ -20,40 +23,14 @@
   <script type="module" src="../firebase/app.js"></script>
 </head>
 <body class="authenticated admin">
+
+  <!-- Skip Link for Accessibility -->
+  <a href="#main-content" class="u-skip-link">Fara beint í efni</a>
   
-  <!-- Navigation (Hamburger Menu) -->
-  <nav class="nav">
-    <div class="nav__container">
-      <a href="/admin-elections/" class="nav__brand" id="nav-brand">Loading...</a>
-
-      <!-- Hamburger Button (mobile only) -->
-      <button class="nav__hamburger" id="nav-hamburger" aria-expanded="false">
-        <span class="nav__hamburger-line"></span>
-        <span class="nav__hamburger-line"></span>
-        <span class="nav__hamburger-line"></span>
-      </button>
-
-      <!-- Overlay for mobile menu -->
-      <div class="nav__overlay" id="nav-overlay"></div>
-
-      <!-- Navigation Drawer -->
-      <div class="nav__drawer" id="nav-drawer" aria-hidden="true">
-        <!-- Close button (mobile only) -->
-        <button class="nav__close" id="nav-close">
-          <span class="nav__close-icon">✕</span>
-        </button>
-
-        <div class="nav__links">
-          <a href="/admin-elections/" class="nav__link" id="nav-elections-list">Loading...</a>
-          <a href="/members-area/dashboard.html" class="nav__link" id="nav-back-to-member">Loading...</a>
-          <a href="#" class="nav__link nav__link--logout" id="nav-logout">Loading...</a>
-        </div>
-      </div>
-    </div>
-  </nav>
+  <!-- Navigation component inserted here -->
   
   <!-- Main Content -->
-  <main class="admin-main">
+  <main class="admin-main" id="main-content">
     <div class="wizard-container">
       
       <!-- Header -->
@@ -244,18 +221,16 @@
           <div class="form-group">
             <label class="required" id="label-duration">Loading...</label>
             <div class="duration-options">
-              <button type="button" class="duration-btn" data-minutes="15" id="duration-15min">Loading...</button>
-              <button type="button" class="duration-btn" data-minutes="30" id="duration-30min">Loading...</button>
-              <button type="button" class="duration-btn active" data-minutes="60" id="duration-1hr">Loading...</button>
-              <button type="button" class="duration-btn" data-minutes="90" id="duration-1-5hr">Loading...</button>
-              <button type="button" class="duration-btn" data-minutes="120" id="duration-2hr">Loading...</button>
+              <button type="button" class="duration-btn" data-minutes="1" id="duration-1min">Loading...</button>
+              <button type="button" class="duration-btn active" data-minutes="2" id="duration-2min">Loading...</button>
+              <button type="button" class="duration-btn" data-minutes="3" id="duration-3min">Loading...</button>
               <button type="button" class="duration-btn" data-minutes="custom" id="duration-custom">Loading...</button>
             </div>
             <input 
               type="hidden" 
               id="duration-minutes" 
               name="duration_minutes" 
-              value="60"
+              value="2"
             >
           </div>
           
@@ -266,7 +241,7 @@
               type="number" 
               id="custom-duration" 
               class="form-control" 
-              min="5" 
+              min="1" 
               max="10080" 
               placeholder="Loading..."
             >
@@ -426,5 +401,14 @@
   <!-- Main App -->
   <script type="module" src="./js/election-create.js"></script>
   
+
+  <!-- Initialize Navigation Component -->
+  <script type="module">
+    import { initNavHeader, NAV_CONFIGS } from '../../ui/components/nav-header.js';
+    
+    // Initialize navigation with appropriate config
+    await initNavHeader(NAV_CONFIGS.adminElectionsCreate);
+  </script>
+
 </body>
 </html>

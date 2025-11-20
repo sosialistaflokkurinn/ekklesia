@@ -7,7 +7,8 @@ import { getFirebaseAuth } from '../../firebase/app.js';
 import { getElectionRole, canPerformAction, requireAdmin, PERMISSIONS, hasPermission } from '../../js/rbac.js';
 import { R } from '../i18n/strings-loader.js';
 import { initElectionsListStrings } from './elections-list-i18n.js';
-import { initNavigation } from '../../js/nav.js';
+// Note: initNavigation import removed - now handled by nav-header component
+import { formatDate, getTimeRemaining } from './date-utils.js';
 import { createStatusBadge } from '../../js/components/badge.js';
 import { showModal, showAlert } from '../../js/components/modal.js';
 import { formatDateIcelandic } from '../../js/utils/format.js';
@@ -16,6 +17,13 @@ import { debug } from '../../js/utils/debug.js';
 const auth = getFirebaseAuth();
 
 // API Configuration
+// =====================================================
+// Configuration
+// =====================================================
+
+/**
+ * API Configuration
+ */
 const ADMIN_API_URL = 'https://elections-service-ymzrguoifa-nw.a.run.app/api/admin/elections';
 
 // ============================================
@@ -112,8 +120,8 @@ function initializeNavigation() {
 
   debug.log('[Elections List] Navigation setup');
   
-  // Initialize hamburger menu behavior
-  initNavigation();
+  // Note: Hamburger menu now initialized by nav-header component
+  // (component calls initNavigation() internally)
   
   // Logout handler
   const logoutLink = document.getElementById('nav-logout');
@@ -162,6 +170,9 @@ async function loadElections() {
     elections = data.elections || [];
     
     debug.log('[Elections List] Loaded elections:', elections.length);
+    if (elections.length > 0) {
+      debug.log('[Elections List] First election data:', elections[0]);
+    }
     
     // Apply current filters
     filterElections();
@@ -183,14 +194,19 @@ function setupFilters() {
   
   filterButtons.forEach(btn => {
     btn.addEventListener('click', () => {
-      // Update active state
-      filterButtons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+      // Remove active class and update aria-pressed on all buttons
+      filterButtons.forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-pressed', 'false');
+      });
       
-      // Update filter
+      // Add active class and update aria-pressed on clicked button
+      btn.classList.add('active');
+      btn.setAttribute('aria-pressed', 'true');
+      
+      // Get filter value
       currentFilter = btn.dataset.filter;
       filterElections();
-      renderElections();
     });
   });
 }
@@ -252,6 +268,117 @@ function filterElections() {
 }
 
 /**
+ * Create a mobile card for an election
+ * @param {Object} election - Election object
+ * @returns {HTMLElement} - Card element
+ */
+function createMobileCard(election) {
+  const card = document.createElement('div');
+  card.className = 'election-card';
+  card.dataset.id = election.id;
+  
+  // Card Header (Title + Status)
+  const header = document.createElement('div');
+  header.className = 'election-card__header';
+  
+  const title = document.createElement('h3');
+  title.className = 'election-card__title';
+  title.textContent = election.title;
+  
+  const badge = createStatusBadge(election.status);
+  
+  header.appendChild(title);
+  header.appendChild(badge.element);  // Fix: use badge.element, not badge
+  card.appendChild(header);
+  
+  // Card Info (Details)
+  const info = document.createElement('div');
+  info.className = 'election-card__info';
+  
+  // Format duration helper
+  const formatDuration = (minutes) => {
+    if (!minutes) return '';
+    if (minutes < 60) return `${minutes} mín`;
+    const hours = Math.floor(minutes / 60);
+    const remainingMins = minutes % 60;
+    if (remainingMins === 0) return `${hours} klst.`;
+    return `${hours} klst. ${remainingMins} mín`;
+  };
+  
+  // Created date
+  const createdRow = document.createElement('div');
+  createdRow.className = 'election-card__info-row';
+  createdRow.innerHTML = `
+    <span class="election-card__label">${R.string.label_created || 'Created'}</span>
+    <span class="election-card__value">${formatDate(election.created_at)}</span>
+  `;
+  info.appendChild(createdRow);
+  
+  // Duration
+  if (election.duration_minutes) {
+    const durationRow = document.createElement('div');
+    durationRow.className = 'election-card__info-row';
+    durationRow.innerHTML = `
+      <span class="election-card__label" style="font-weight: 600;">📏 ${R.string.label_duration || 'Lengd'}</span>
+      <span class="election-card__value" style="font-weight: 600;">${formatDuration(election.duration_minutes)}</span>
+    `;
+    info.appendChild(durationRow);
+  }
+  
+  // Voting window (for published elections)
+  if (election.status === 'published' && election.voting_ends_at) {
+    const closesRow = document.createElement('div');
+    closesRow.className = 'election-card__info-row';
+    closesRow.innerHTML = `
+      <span class="election-card__label" style="color: var(--color-primary); font-weight: 600;">⏰ ${R.string.label_closes_in}</span>
+      <span class="election-card__value" style="color: var(--color-primary); font-weight: 600;">${getTimeRemaining(election.voting_ends_at)}</span>
+    `;
+    info.appendChild(closesRow);
+  }
+  
+  // Opened date
+  if (election.opened_at) {
+    const openedRow = document.createElement('div');
+    openedRow.className = 'election-card__info-row';
+    openedRow.innerHTML = `
+      <span class="election-card__label">${R.string.label_opened || 'Opened'}</span>
+      <span class="election-card__value">${formatDate(election.opened_at)}</span>
+    `;
+    info.appendChild(openedRow);
+  }
+  
+  // Closed date
+  if (election.closed_at) {
+    const closedRow = document.createElement('div');
+    closedRow.className = 'election-card__info-row';
+    closedRow.innerHTML = `
+      <span class="election-card__label">${R.string.label_closed || 'Closed'}</span>
+      <span class="election-card__value">${formatDate(election.closed_at)}</span>
+    `;
+    info.appendChild(closedRow);
+  }
+  
+  // Votes count
+  const votesRow = document.createElement('div');
+  votesRow.className = 'election-card__info-row';
+  votesRow.innerHTML = `
+    <span class="election-card__label">${R.string.label_votes || 'Votes'}</span>
+    <span class="election-card__value">${election.vote_count || 0}</span>
+  `;
+  info.appendChild(votesRow);
+  
+  card.appendChild(info);
+  
+  // Card Actions (Buttons)
+  const actions = document.createElement('div');
+  actions.className = 'election-card__actions election-actions';
+  actions.innerHTML = getActionButtons(election);
+  card.appendChild(actions);
+  
+  return card;
+}
+
+/**
  * Render elections table
  */
 function renderElections() {
@@ -271,6 +398,11 @@ function renderElections() {
   // Show empty state if no elections
   if (filteredElections.length === 0) {
     tbody.innerHTML = '';
+    
+    // Clear mobile list
+    const mobileList = document.getElementById('elections-mobile-list');
+    if (mobileList) mobileList.innerHTML = '';
+    
     if (emptyState) emptyState.style.display = 'block';
     return;
   }
@@ -290,7 +422,7 @@ function renderElections() {
     const titleCell = document.createElement('td');
     titleCell.className = 'election-title';
     const titleLink = document.createElement('a');
-    titleLink.href = `/admin-elections/detail.html?id=${election.id}`;
+    titleLink.href = `/admin-elections/election-control.html?id=${election.id}`;
     titleLink.textContent = election.title;
     titleCell.appendChild(titleLink);
     if (election.hidden) {
@@ -310,8 +442,21 @@ function renderElections() {
     // Dates cell
     const datesCell = document.createElement('td');
     datesCell.className = 'election-dates';
+    
+    // Format duration minutes into readable text
+    const formatDuration = (minutes) => {
+      if (!minutes) return '';
+      if (minutes < 60) return `${minutes} mín`;
+      const hours = Math.floor(minutes / 60);
+      const remainingMins = minutes % 60;
+      if (remainingMins === 0) return `${hours} klst.`;
+      return `${hours} klst. ${remainingMins} mín`;
+    };
+    
     datesCell.innerHTML = `
       <div class="date-created">${R.string.label_created} ${formatDate(election.created_at)}</div>
+      ${election.duration_minutes ? `<div class="date-duration" style="font-weight: 600;">📏 ${R.string.label_duration || 'Lengd'}: ${formatDuration(election.duration_minutes)}</div>` : ''}
+      ${election.status === 'published' && election.voting_ends_at ? `<div class="date-closes" style="color: var(--color-primary); font-weight: 600;">⏰ ${R.string.label_closes_in} ${getTimeRemaining(election.voting_ends_at)}</div>` : ''}
       ${election.opened_at ? `<div class="date-opened">${R.string.label_opened} ${formatDate(election.opened_at)}</div>` : ''}
       ${election.closed_at ? `<div class="date-closed">${R.string.label_closed} ${formatDate(election.closed_at)}</div>` : ''}
     `;
@@ -332,7 +477,18 @@ function renderElections() {
     tbody.appendChild(row);
   });
   
-  // Attach event listeners to action buttons
+  // Render mobile cards
+  const mobileList = document.getElementById('elections-mobile-list');
+  if (mobileList) {
+    mobileList.innerHTML = '';
+    
+    filteredElections.forEach(election => {
+      const card = createMobileCard(election);
+      mobileList.appendChild(card);
+    });
+  }
+  
+  // Attach event listeners to action buttons (both table and mobile cards)
   attachActionListeners();
 }
 
@@ -349,8 +505,8 @@ function getActionButtons(election) {
     </button>
   `);
   
-  // Edit button (only for drafts)
-  if (election.status === 'draft' && !election.hidden) {
+  // Edit button (always shown, but will be limited for published/closed)
+  if (!election.hidden) {
     buttons.push(`
       <button class="btn btn-sm btn-edit" data-action="edit" data-id="${election.id}">
         ${R.string.btn_edit}
@@ -424,11 +580,11 @@ async function handleAction(event) {
   
   switch (action) {
     case 'view':
-      window.location.href = `/admin-elections/detail.html?id=${electionId}`;
+      window.location.href = `/admin-elections/election-control.html?id=${electionId}`;
       break;
       
     case 'edit':
-      window.location.href = `/admin-elections/edit.html?id=${electionId}`;
+      window.location.href = `/admin-elections/create.html?id=${electionId}`;
       break;
       
     case 'open':
@@ -465,11 +621,9 @@ async function openElection(electionId) {
     <div style="margin-bottom: 1rem;">
       <p style="margin-bottom: 0.5rem; font-weight: 600;">${R.string.confirm_open_duration}</p>
       <select id="duration-select" class="form-control" style="width: 100%; padding: 0.5rem; font-size: 1rem; border: 1px solid var(--color-gray-300); border-radius: 4px;">
-        <option value="15">${R.string.duration_15min}</option>
-        <option value="30" selected>${R.string.duration_30min}</option>
-        <option value="60">${R.string.duration_1hour}</option>
-        <option value="90">${R.string.duration_90min}</option>
-        <option value="120">${R.string.duration_2hours}</option>
+        <option value="1">${R.string.duration_1min}</option>
+        <option value="2" selected>${R.string.duration_2min}</option>
+        <option value="3">${R.string.duration_3min}</option>
       </select>
     </div>
     <p style="color: var(--color-gray-600); font-size: 0.875rem; margin-top: 1rem;">${R.string.confirm_open_note}</p>
@@ -725,21 +879,7 @@ async function deleteElection(electionId) {
   }
 }
 
-/**
- * Format date for display
- */
-function formatDate(dateString) {
-  if (!dateString) return '-';
-  
-  const date = new Date(dateString);
-  return date.toLocaleDateString('is-IS', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-}
+// Date formatting is now handled by date-utils.js module
 
 /**
  * Show loading state

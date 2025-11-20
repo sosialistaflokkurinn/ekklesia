@@ -8,6 +8,47 @@ This directory contains automation scripts for managing the Ekklesia platform in
 
 ---
 
+### 🏥 check-code-health.py ⭐ NEW!
+
+**Purpose**: Comprehensive code health checker - finds common issues like missing imports, console.log usage, memory leaks, etc.
+
+**Quick Start**:
+```bash
+python3 scripts/check-code-health.py          # Basic check
+python3 scripts/check-code-health.py --verbose # Detailed output
+```
+
+**What It Checks**:
+- ❌ Missing imports (initNavigation, debug, showToast, R.string)
+- ⚠️  console.log usage (should use debug.log)
+- ⚠️  Missing initNavigation() on pages with navigation
+- ℹ️  Hardcoded URLs (should use constants)
+- ℹ️  Async functions without try-catch
+- ℹ️  addEventListener without removeEventListener (memory leaks)
+- ℹ️  TODO/FIXME comments
+
+**Example Output**:
+```
+🔍 Ekklesia Code Health Check
+==================================================
+
+📦 Checking for missing imports...
+  ❌ apps/members-portal/js/rbac.js:405
+      Uses R.string without importing it
+
+Found 14 errors, 24 warnings, 31 info
+```
+
+**Use Cases**:
+- Before committing code
+- Code review preparation
+- Finding patterns across codebase
+- Onboarding new developers (shows best practices)
+
+**See Also**: [scripts/README-CODE-HEALTH.md](./README-CODE-HEALTH.md) for detailed guide
+
+---
+
 ### 🔐 get-secret.sh
 
 **Purpose**: Retrieve secrets from Google Cloud Secret Manager.

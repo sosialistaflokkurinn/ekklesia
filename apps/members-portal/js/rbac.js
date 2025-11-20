@@ -17,6 +17,7 @@
 
 import { getFirebaseAuth } from '../firebase/app.js';
 import { debug } from './utils/debug.js';
+import { R } from '../i18n/strings-loader.js';
 
 const auth = getFirebaseAuth();
 

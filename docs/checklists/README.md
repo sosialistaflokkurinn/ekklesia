@@ -1,76 +1,76 @@
-# 📋 Tjékklistar fyrir Ekklesia
+# 📋 Ekklesia Checklists
 
-Þessi mappa inniheldur tjékklista fyrir algengar stjórnunaraðgerðir í Ekklesia kerfinu.
-
----
-
-## 📑 Tiltækir tjékklistar
-
-| Tjékklisti | Skrá | Lýsing |
-|------------|------|--------|
-| **Innskráningar notenda** | [`CHECK_USER_LOGINS.md`](./CHECK_USER_LOGINS.md) | Hvernig á að skoða hverjir hafa skráð sig inn í kerfið |
+This directory contains checklists for common administrative operations in the Ekklesia system.
 
 ---
 
-## 🎯 Tilgangur
+## 📑 Available Checklists
 
-Tjékklistar eru hannaðir til að:
-- Gera algengar aðgerðir endurtekanlegar og áreiðanlegar
-- Hjálpa nýjum stjórnendum að læra kerfið
-- Tryggja að öryggisreglum sé fylgt
-- Skjalfesta bestu starfsvenjur
+| Checklist | File | Description |
+|-----------|------|-------------|
+| **User Logins** | [`CHECK_USER_LOGINS.md`](./CHECK_USER_LOGINS.md) | How to view who has logged into the system |
 
 ---
 
-## 🔐 Öryggisatriði
+## 🎯 Purpose
 
-Margir tjékklistar fjalla um viðkvæm gögn. **Alltaf:**
-- Fylgdu öryggisreglum í hverri skrá
-- Commit-aðu ALDREI viðkvæmum gögnum til Git
-- Notaðu aðeins í prófunarumhverfi ef við á
-- Gakktu úr skugga um að þú hafir heimild til að nálgast gögnin
-
----
-
-## 🆕 Búa til nýjan tjékklista
-
-Þegar þú býrð til nýjan tjékklista:
-
-1. **Nafngi skrána**: Notaðu `VERKNAFN_ACTION.md` (t.d. `CHECK_USER_LOGINS.md`)
-2. **Skipulag**:
-   - Byrjaðu með skýra lýsingu á tilgangi
-   - Listaðu forsendur (authentication, aðgangur, etc.)
-   - Gefðu skref-fyrir-skref leiðbeiningar með bash dæmum
-   - Bættu við troubleshooting hluta
-   - Skráðu allar skráarstaðsetningar
-3. **Öryggis**: Ef tjékklisti fjallar um PII eða viðkvæm gögn:
-   - Merktu það skýrt efst í skjalinu
-   - Bættu við í `.gitignore` ef við á
-   - Nefndu í `SESSION_START_REMINDER.md`
-4. **Uppfærðu þessa README**: Bættu við nýjum tjékklista í töfluna hér að ofan
+Checklists are designed to:
+- Make common operations repeatable and reliable
+- Help new administrators learn the system
+- Ensure security rules are followed
+- Document best practices
 
 ---
 
-## 📚 Tengd skjöl
+## 🔐 Security Considerations
 
-- **Session áminning**: [`../SESSION_START_REMINDER.md`](../SESSION_START_REMINDER.md) - Lestu í upphafi nýrrar session
-- **Scripts möppur**:
+Many checklists deal with sensitive data. **Always:**
+- Follow security rules in each file
+- NEVER commit sensitive data to Git
+- Use only in test environment when applicable
+- Ensure you have permission to access the data
+
+---
+
+## 🆕 Creating a New Checklist
+
+When creating a new checklist:
+
+1. **Name the file**: Use `CHECK_ACTION_NAME.md` (e.g., `CHECK_USER_LOGINS.md`)
+2. **Structure**:
+   - Start with clear description of purpose
+   - List prerequisites (authentication, access, etc.)
+   - Provide step-by-step instructions with bash examples
+   - Add troubleshooting section
+   - Document all file locations
+3. **Security**: If checklist deals with PII or sensitive data:
+   - Mark it clearly at the top of the document
+   - Add to `.gitignore` if applicable
+   - Reference in `SESSION_START_REMINDER.md`
+4. **Update this README**: Add new checklist to table above
+
+---
+
+## 📚 Related Documentation
+
+- **Session reminder**: [`../../.claude/SESSION_START_REMINDER.md`](../../.claude/SESSION_START_REMINDER.md) - Read at start of new session
+- **Script directories**:
   - Members scripts: `services/members/scripts/`
   - Database scripts: `scripts/database/`
   - Deployment: `scripts/deployment/`
 
 ---
 
-## 🔄 Viðhald
+## 🔄 Maintenance
 
-**Uppfærsla á tjékklistum:**
-- Þegar nýjar aðferðir bætast við
-- Þegar eldri aðferðir breytast eða úreldast
-- Eftir að villa er fundin í ferli
-- Þegar öryggisreglur breytast
+**Update checklists when:**
+- New procedures are added
+- Old procedures change or become obsolete
+- A bug is found in a process
+- Security rules change
 
-**Ábyrðir**: Allir þróunaraðilar og stjórnendur geta uppfært tjékklista
+**Responsible**: All developers and administrators can update checklists
 
 ---
 
-**Síðast uppfært**: 2025-11-08
+**Last Updated**: 2025-11-19

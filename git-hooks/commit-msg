@@ -12,18 +12,20 @@ echo "🤖 Checking for AI-generated authorship markers..."
 # Check for AI-generated markers in commit message
 # Block any AI authorship claims (main author or co-author)
 # Matches patterns that appear at start of line or after newline
-if echo "$COMMIT_MSG" | grep -E "(^🤖|[[:space:]]🤖|^Generated with.*Claude|^Co-Authored-By:.*Claude|^Co-Authored-By:.*AI|^Author:.*Claude)" > /dev/null; then
+# Case-insensitive match for Co-Authored-By / Co-authored-by
+if echo "$COMMIT_MSG" | grep -iE "(^🤖|[[:space:]]🤖|^Generated with.*(Claude|AI|Copilot)|^Co-Authored-By:.*(Claude|AI|Copilot|GitHub Copilot)|^Author:.*(Claude|AI|Copilot))" > /dev/null; then
     echo ""
     echo "❌ BLOCKED: Commit message contains AI authorship markers"
     echo ""
     echo "   Found AI marker in commit message:"
-    echo "$(echo "$COMMIT_MSG" | grep -E "(🤖|Generated with.*Claude|Co-Authored-By:.*Claude|Co-Authored-By:.*AI|Author:.*Claude)")"
+    echo "$(echo "$COMMIT_MSG" | grep -iE "(🤖|Generated with.*(Claude|AI|Copilot)|Co-Authored-By:.*(Claude|AI|Copilot|GitHub Copilot)|Author:.*(Claude|AI|Copilot))")"
     echo ""
     echo "   ⚠️  AUTHORSHIP POLICY:"
     echo "   - Commits must ONLY list human authors"
-    echo "   - AI tools (Claude Code, etc.) are assistants, NOT authors"
+    echo "   - AI tools (Claude Code, GitHub Copilot, etc.) are assistants, NOT authors"
     echo "   - Do NOT include '🤖 Generated with [Claude Code]'"
     echo "   - Do NOT include 'Co-Authored-By: Claude <...>'"
+    echo "   - Do NOT include 'Co-authored-by: GitHub Copilot <copilot@github.com>'"
     echo ""
     echo "   ✅ Correct authorship:"
     echo "      Author: [Your Name] <your@email.com>"

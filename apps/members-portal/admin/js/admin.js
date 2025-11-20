@@ -228,8 +228,7 @@ async function init() {
     // 3. Check admin access using unified RBAC (requires admin or superuser)
     await requireAdmin();
 
-    // 4. Initialize navigation (hamburger menu)
-    initNavigation();
+    // 4. Note: Navigation now initialized by nav-header component
 
     // 5. Set page text (with personalized greeting)
     setPageText(strings, userData);

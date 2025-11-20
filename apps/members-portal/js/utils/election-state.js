@@ -11,6 +11,7 @@
  */
 
 import { debug } from './debug.js';
+import { DEFAULT_DURATION_MINUTES } from './election-constants.js';
 
 class ElectionState extends EventTarget {
   constructor() {
@@ -22,7 +23,7 @@ class ElectionState extends EventTarget {
       status: 'upcoming', // 'upcoming' | 'active' | 'closed'
       voting_starts_at: null,
       voting_ends_at: null,
-      duration_minutes: 60,
+      duration_minutes: DEFAULT_DURATION_MINUTES, // Default: 2 minutes (from shared constants)
       title: '',
       question: '',
       has_voted: false

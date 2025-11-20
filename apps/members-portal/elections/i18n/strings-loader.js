@@ -4,6 +4,8 @@
  * Loads localized strings from policy-session/i18n directory
  */
 
+import { debug } from '../../js/utils/debug.js';
+
 class StringsResource {
   constructor() {
     this.string = {};
@@ -46,7 +48,7 @@ class StringsResource {
       });
 
       this.locale = locale;
-      console.log(`✓ Loaded ${Object.keys(this.string).length} strings for locale: ${locale}`);
+      debug.log(`✓ Loaded ${Object.keys(this.string).length} strings for locale: ${locale}`);
 
     } catch (error) {
       console.error('Error loading strings:', error);

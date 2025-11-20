@@ -92,6 +92,30 @@
   color: var(--color-gray-800);
 }
 
+.schedule-control__heading--collapsible {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: var(--spacing-sm) 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  transition: color 0.2s ease;
+}
+
+.schedule-control__heading--collapsible:hover {
+  color: var(--color-primary);
+}
+
+.schedule-control__toggle-icon {
+  display: inline-block;
+  font-size: 0.875rem;
+  transition: transform 0.2s ease;
+  color: var(--color-gray-600);
+}
+
 .schedule-control__heading--danger {
   color: var(--color-error-text);
 }
@@ -101,6 +125,26 @@
   color: var(--color-gray-600);
   margin-bottom: var(--spacing-lg);
   line-height: 1.5;
+}
+
+.schedule-control__description--hint {
+  color: var(--color-gray-500);
+  font-style: italic;
+  margin-bottom: var(--spacing-md);
+}
+
+/* Collapsible content */
+.schedule-control__collapsible {
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+  max-height: 1000px;
+  opacity: 1;
+}
+
+.schedule-control__collapsible.u-hidden {
+  max-height: 0;
+  opacity: 0;
+  margin: 0;
 }
 
 /* Duration selection */

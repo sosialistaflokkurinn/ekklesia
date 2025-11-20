@@ -23,64 +23,40 @@
   <script type="module" src="../firebase/app.js"></script>
 </head>
 <body class="authenticated admin">
+
+  <!-- Skip Link for Accessibility -->
+  <a href="#main-content" class="u-skip-link">Fara beint í efni</a>
   
-  <!-- Navigation (Hamburger Menu) -->
-  <nav class="nav">
-    <div class="nav__container">
-      <a href="/admin-elections/" class="nav__brand" id="nav-brand">Loading...</a>
-
-      <!-- Hamburger Button (mobile only) -->
-      <button class="nav__hamburger" id="nav-hamburger" aria-expanded="false">
-        <span class="nav__hamburger-line"></span>
-        <span class="nav__hamburger-line"></span>
-        <span class="nav__hamburger-line"></span>
-      </button>
-
-      <!-- Overlay for mobile menu -->
-      <div class="nav__overlay" id="nav-overlay"></div>
-
-      <!-- Navigation Drawer -->
-      <div class="nav__drawer" id="nav-drawer" aria-hidden="true">
-        <!-- Close button (mobile only) -->
-        <button class="nav__close" id="nav-close">
-          <span class="nav__close-icon">✕</span>
-        </button>
-
-        <div class="nav__links">
-          <a href="/admin-elections/" class="nav__link nav__link--active" id="nav-elections-list">Loading...</a>
-          <a href="/members-area/dashboard.html" class="nav__link" id="nav-back-to-member">Loading...</a>
-          <a href="#" class="nav__link nav__link--logout" id="nav-logout">Loading...</a>
-        </div>
-      </div>
-    </div>
-  </nav>
+  <!-- Navigation component inserted here -->
   
   <!-- Main Content -->
-  <main class="admin-main">
+  <main class="admin-main" id="main-content">
     <div class="admin-container">
 
       <!-- Filters and Search -->
       <!-- Elections Controls -->
       <div class="elections-controls">
-        <div class="filters">
-          <button class="filter-btn active" data-filter="all" id="filter-all">Loading...</button>
-          <button class="filter-btn" data-filter="draft" id="filter-draft">Loading...</button>
-          <button class="filter-btn" data-filter="published" id="filter-published">Loading...</button>
-          <button class="filter-btn" data-filter="closed" id="filter-closed">Loading...</button>
-          <button class="filter-btn" data-filter="hidden" id="filter-hidden">Loading...</button>
+        <div class="filters" role="group" aria-label="Síur fyrir kosningar">
+          <button class="filter-btn active" data-filter="all" id="filter-all" aria-pressed="true" aria-label="Sýna allar kosningar">Loading...</button>
+          <button class="filter-btn" data-filter="draft" id="filter-draft" aria-pressed="false" aria-label="Sýna drög">Loading...</button>
+          <button class="filter-btn" data-filter="published" id="filter-published" aria-pressed="false" aria-label="Sýna opnar kosningar">Loading...</button>
+          <button class="filter-btn" data-filter="closed" id="filter-closed" aria-pressed="false" aria-label="Sýna lokaðar kosningar">Loading...</button>
+          <button class="filter-btn" data-filter="hidden" id="filter-hidden" aria-pressed="false" aria-label="Sýna faldar kosningar">Loading...</button>
         </div>
         
         <div class="elections-controls-right">
           <div class="search-box">
+            <label for="search-input" class="u-sr-only">Leita að kosningum</label>
             <input 
               type="text" 
               id="search-input" 
               placeholder="Loading..." 
               class="search-input"
+              aria-label="Leita að kosningum eftir titli eða lýsingu"
             >
           </div>
           
-          <button id="create-election-btn" class="btn btn--primary">
+          <button id="create-election-btn" class="btn btn--primary" aria-label="Stofna nýja kosningu">
             Loading...
           </button>
         </div>
@@ -91,13 +67,13 @@
         <span id="results-count">Loading...</span>
       </div>
       
-      <!-- Loading Spinner -->
-      <div id="loading-spinner" class="loading-spinner" style="display: none;">
+      <!-- Loading State -->
+      <div id="loading-spinner" class="loading-spinner u-hidden">
         <div class="spinner"></div>
         <p id="loading-text">Loading...</p>
       </div>
       
-      <!-- Elections Table -->
+      <!-- Elections Table (Desktop) -->
       <div class="elections-table-container">
         <table id="elections-table" class="elections-table">
           <thead>
@@ -115,6 +91,11 @@
         </table>
       </div>
       
+      <!-- Elections Mobile List (Mobile Only) -->
+      <div id="elections-mobile-list" class="elections-mobile-list">
+        <!-- Cards will be inserted by JavaScript -->
+      </div>
+      
       <!-- Empty State -->
       <div id="empty-state" class="empty-state" style="display: none;">
         <div class="empty-state__icon">🗳️</div>
@@ -128,8 +109,19 @@
     </div>
   </main>
   
+  <!-- Note: Navigation and logout are initialized in elections-list.js -->
+  
   <!-- Main App -->
   <script type="module" src="./js/elections-list.js"></script>
   
+
+  <!-- Initialize Navigation Component -->
+  <script type="module">
+    import { initNavHeader, NAV_CONFIGS } from '../../ui/components/nav-header.js';
+    
+    // Initialize navigation with appropriate config
+    await initNavHeader(NAV_CONFIGS.adminElections);
+  </script>
+
 </body>
 </html>

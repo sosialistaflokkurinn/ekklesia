@@ -6,10 +6,22 @@
 import { getFirebaseAuth } from '../../firebase/app.js';
 import { getElectionRole, requireAdmin, hasPermission, PERMISSIONS } from '../../js/rbac.js';
 import { R } from '../i18n/strings-loader.js';
+import { debug } from '../../js/utils/debug.js';
+import { getAdminElectionById } from '../../js/api/elections-api.js';
+import { formatDateTime, formatDateOnly, formatTimeInput } from './date-utils.js';
+import { showModal } from '../../js/components/modal.js';
+
+// Refactored modules (Phase 2)
+import { validateBasicInfo, validateAnswerOptions, validateSchedule, validateStep } from './validation/election-validation.js';
+import { collectFormData, buildCreatePayload, buildUpdatePayload, populateFormFromElection, getAnswers } from './forms/election-form-data.js';
+import { createElection, updateElection, fetchElection, openElection } from './api/elections-admin-api.js';
 
 const auth = getFirebaseAuth();
 
 // Note: i18n strings are already loaded in create.html before this script runs
+
+// Constants
+const DOM_INIT_DELAY_MS = 100; // Time for wizard to initialize DOM elements
 
 // ============================================
 // STATE
@@ -17,6 +29,10 @@ const auth = getFirebaseAuth();
 
 let currentStep = 1;
 const totalSteps = 4;
+let isEditMode = false;
+let editingElectionId = null;
+let editingElectionStatus = 'draft'; // Track status of election being edited
+let isLoadingElectionData = false; // Flag to prevent updateFormData during load
 
 // Form data
 const formData = {
@@ -31,6 +47,19 @@ const formData = {
   duration_minutes: 60,
   scheduled_end: null
 };
+
+// ============================================
+// URL PARAMETERS
+// ============================================
+
+/**
+ * Get election ID from URL query parameter (for edit mode)
+ * @returns {string|null} Election UUID or null if not present
+ */
+function getElectionIdFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('id');
+}
 
 // ============================================
 // INITIALIZATION
@@ -58,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Get election role
       const electionRole = await getElectionRole();
-      console.log('[Create Election] User has election role:', electionRole);
+      debug.log('[Create Election] User has election role:', electionRole);
 
       // Show user role
       const roleIndicator = document.getElementById('user-role-indicator');
@@ -68,7 +97,16 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       // Initialize wizard
-      initWizard();
+      const electionId = getElectionIdFromURL();
+      initWizard(electionId); // Pass electionId to skip initial answers in edit mode
+      
+      // Check if we're in edit mode (wait for DOM to be ready)
+      if (electionId) {
+        // Give wizard time to initialize DOM elements
+        setTimeout(async () => {
+          await loadElectionForEdit(electionId);
+        }, DOM_INIT_DELAY_MS);
+      }
     } catch (error) {
       console.error('[Create Election] Authorization error:', error);
       // requireAdmin already handles redirect
@@ -80,10 +118,16 @@ document.addEventListener('DOMContentLoaded', () => {
 // WIZARD INITIALIZATION
 // ============================================
 
-function initWizard() {
-  // Initialize answer options (start with 2)
-  addAnswerOption();
-  addAnswerOption();
+function initWizard(electionId) {
+  // Initialize answer options (start with 2) - ONLY in create mode
+  // In edit mode, answers will be populated by loadElectionForEdit()
+  if (!electionId) {
+    debug.log('[Create Election] Initializing with 2 empty answers (create mode)');
+    addAnswerOption();
+    addAnswerOption();
+  } else {
+    debug.log('[Create Election] Skipping initial answers (edit mode - will load from API)');
+  }
 
   // Step navigation
   document.getElementById('next-btn').addEventListener('click', handleNext);
@@ -120,6 +164,223 @@ function initWizard() {
 
   // Update progress on form changes
   document.getElementById('election-wizard-form').addEventListener('input', updateFormData);
+}
+
+/**
+ * Load election data for editing
+ */
+// ============================================
+// EDIT MODE
+// ============================================
+
+/**
+ * Load election data for editing in the wizard
+ * 
+ * Fetches election from Admin API, validates it's a draft, and populates
+ * all form fields with existing data. Also updates UI for edit mode.
+ * 
+ * @param {string} electionId - UUID of the election to edit
+ * @returns {Promise<void>}
+ * @throws {Error} If election not found or not in draft status
+ * 
+ * @example
+ * await loadElectionForEdit('c027a4a7-c32c-49fe-9ec4-f03a1170a1d2');
+ */
+async function loadElectionForEdit(electionId) {
+  try {
+    // Set flag to prevent updateFormData from overwriting during load
+    isLoadingElectionData = true;
+    debug.log('[Create Election] Loading election for edit:', electionId);
+    debug.log('[Create Election] isLoadingElectionData flag set to TRUE');
+    
+    // Fetch election data
+    const election = await getAdminElectionById(electionId);
+    debug.log('[Create Election] Raw election data:', election);
+    
+    // Store election status for field restrictions
+    const electionStatus = election.status || 'draft';
+    const isDraft = electionStatus === 'draft';
+    
+    // Set edit mode
+    isEditMode = true;
+    editingElectionId = electionId;
+    editingElectionStatus = electionStatus; // Store status globally
+    
+    // Update page title
+    const pageTitle = document.querySelector('h1');
+    if (pageTitle) {
+      pageTitle.textContent = R.string.page_title_edit_election || 'Breyta kosningu';
+    }
+    
+    // Populate form data
+    formData.title = election.title || '';
+    formData.question = election.question || '';
+    formData.description = election.description || '';
+    formData.voting_type = election.voting_type || 'single-choice';
+    formData.max_selections = election.max_selections || null;
+    
+    // Handle answers - API may return different formats
+    debug.log('[Create Election] Raw answers from API:', election.answers);
+    if (election.answers && Array.isArray(election.answers)) {
+      formData.answers = election.answers.map(ans => {
+        debug.log('[Create Election] Processing answer:', ans);
+        // Handle object formats: {text: "..."}, {answer_text: "..."}, or string directly
+        if (typeof ans === 'string') {
+          return ans;
+        } else if (ans && typeof ans === 'object') {
+          return ans.text || ans.answer_text || ans.answer || JSON.stringify(ans);
+        }
+        return String(ans);
+      });
+      debug.log('[Create Election] Mapped answers:', formData.answers);
+    } else {
+      formData.answers = [];
+    }
+    
+    formData.duration_minutes = election.duration_minutes || 60;
+    
+    debug.log('[Create Election] Processed formData:', formData);
+    
+    // Populate form fields
+    document.getElementById('election-title').value = formData.title;
+    document.getElementById('election-question').value = formData.question;
+    document.getElementById('election-description').value = formData.description;
+    
+    // Set voting type
+    const votingTypeRadio = document.querySelector(`input[name="voting_type"][value="${formData.voting_type}"]`);
+    if (votingTypeRadio) {
+      votingTypeRadio.checked = true;
+      handleVotingTypeChange({ target: votingTypeRadio });
+    }
+    
+    // Set max selections if multi-choice
+    if (formData.voting_type === 'multi-choice' && formData.max_selections) {
+      document.getElementById('max-selections').value = formData.max_selections;
+    }
+    
+    // Populate answers
+    const answersContainer = document.getElementById('answers-container');
+    
+    if (!answersContainer) {
+      console.error('[Create Election] answers-container not found in DOM!');
+      throw new Error('Answer options container not found. Page may not be fully loaded.');
+    }
+    
+    debug.log('[Create Election] Clearing answers container (had', answersContainer.children.length, 'children)');
+    answersContainer.innerHTML = ''; // Clear any existing answers
+    
+    if (formData.answers.length > 0) {
+      debug.log('[Create Election] Adding', formData.answers.length, 'answers from loaded election');
+      formData.answers.forEach((answerText, index) => {
+        debug.log(`[Create Election] Adding answer ${index + 1}:`, answerText);
+        addAnswerOption();
+        const inputs = document.querySelectorAll('#answers-container .answer-item input');
+        const lastInput = inputs[inputs.length - 1];
+        if (lastInput) {
+          lastInput.value = answerText;
+          debug.log(`[Create Election] Set input value to:`, lastInput.value);
+        } else {
+          console.error('[Create Election] Could not find input for answer:', answerText);
+        }
+      });
+    } else {
+      debug.log('[Create Election] No answers in election data, adding 2 empty');
+      // Add 2 empty answers if none exist
+      addAnswerOption();
+      addAnswerOption();
+    }
+    
+    // Set duration
+    document.getElementById('duration-minutes').value = formData.duration_minutes;
+    
+    // Disable core fields if election is not draft
+    if (!isDraft) {
+      debug.log('[Create Election] Election is', electionStatus, '- disabling core fields');
+      
+      // Disable question field
+      const questionField = document.getElementById('election-question');
+      if (questionField) {
+        questionField.disabled = true;
+        questionField.title = 'Ekki er hægt að breyta spurningu fyrir opnaða/lokaða kosningu';
+      }
+      
+      // Disable voting type radio buttons
+      document.querySelectorAll('input[name="voting_type"]').forEach(radio => {
+        radio.disabled = true;
+      });
+      
+      // Disable max selections
+      const maxSelectionsField = document.getElementById('max-selections');
+      if (maxSelectionsField) {
+        maxSelectionsField.disabled = true;
+      }
+      
+      // Disable all answer inputs and remove buttons
+      document.querySelectorAll('#answers-container .answer-item input').forEach(input => {
+        input.disabled = true;
+        input.title = 'Ekki er hægt að breyta svarmöguleikum fyrir opnaða/lokaða kosningu';
+      });
+      document.querySelectorAll('#answers-container .answer-item .remove-answer').forEach(btn => {
+        btn.style.display = 'none';
+      });
+      
+      // Hide "Bæta við svarmöguleika" button
+      const addAnswerBtn = document.getElementById('add-answer-btn');
+      if (addAnswerBtn) {
+        addAnswerBtn.style.display = 'none';
+      }
+      
+      // Add warning message
+      const step3Container = document.querySelector('.wizard-step[data-step="3"]');
+      if (step3Container && !step3Container.querySelector('.edit-restriction-warning')) {
+        const warning = document.createElement('div');
+        warning.className = 'alert alert-warning edit-restriction-warning';
+        warning.style.marginBottom = '1rem';
+        const statusText = electionStatus === 'published' ? R.string.status_open : R.string.status_closed;
+        warning.innerHTML = `
+          <strong>${R.string.edit_restriction_title}</strong><br>
+          ${R.string.edit_restriction_message.replace('%s', statusText)}
+        `;
+        step3Container.insertBefore(warning, step3Container.firstChild);
+      }
+    }
+    
+    // Update button text for edit mode
+    // NOTE: Declare variables BEFORE using them (avoid ReferenceError)
+    const createDraftBtn = document.getElementById('create-draft-btn');
+    const createOpenBtn = document.getElementById('create-open-btn');
+    
+    if (createDraftBtn) {
+      createDraftBtn.textContent = R.string.btn_save_changes || 'Vista breytingar';
+    }
+    
+    // In edit mode, hide "Vista og opna" button entirely
+    // Users should use the separate "Opna" button from elections list
+    if (createOpenBtn) {
+      createOpenBtn.style.display = 'none';
+      debug.log('[Create Election] Hiding "Vista og opna" button (edit mode)');
+    }
+    
+    debug.log('[Create Election] Election loaded for editing successfully');
+    debug.log('[Create Election] Final form state - Title:', document.getElementById('election-title').value);
+    debug.log('[Create Election] Final form state - Question:', document.getElementById('election-question').value);
+    debug.log('[Create Election] Final form state - Answers:', Array.from(document.querySelectorAll('#answers-container .answer-item input')).map(i => i.value));
+    debug.log('[Create Election] Final form state - Current wizard step:', currentStep);
+    
+    // Clear loading flag - allow updateFormData to work normally now
+    isLoadingElectionData = false;
+    debug.log('[Create Election] isLoadingElectionData flag set to FALSE (load complete)');
+    
+  } catch (error) {
+    // Clear loading flag on error too
+    isLoadingElectionData = false;
+    debug.log('[Create Election] isLoadingElectionData flag set to FALSE (error occurred)');
+    
+    console.error('[Create Election] Error loading election:', error);
+    console.error('[Create Election] Error details:', error.message, error.stack);
+    alert((R.string.error_load_election || 'Villa kom upp við að hlaða kosningu.') + '\n\n' + (error.message || ''));
+    window.location.href = '/admin-elections/';
+  }
 }
 
 // ============================================
@@ -177,7 +438,13 @@ function showStep(step) {
   prevBtn.style.display = step > 1 ? 'block' : 'none';
   nextBtn.style.display = step < totalSteps ? 'block' : 'none';
   createDraftBtn.style.display = step === totalSteps ? 'block' : 'none';
-  createOpenBtn.style.display = step === totalSteps ? 'block' : 'none';
+  
+  // "Vista og opna" button: Show in create mode, hide in edit mode
+  if (step === totalSteps && !isEditMode) {
+    createOpenBtn.style.display = 'block';
+  } else {
+    createOpenBtn.style.display = 'none';
+  }
 
   // Update review if on last step
   if (step === totalSteps) {
@@ -189,159 +456,38 @@ function showStep(step) {
 // VALIDATION
 // ============================================
 
+/**
+/**
+ * Validate the current wizard step
+ * @returns {boolean} True if validation passes
+ */
 function validateCurrentStep() {
-  switch (currentStep) {
-    case 1:
-      return validateBasicInfo();
-    case 2:
-      return validateAnswerOptions();
-    case 3:
-      return validateSchedule();
-    case 4:
-      return true; // Review step, no validation
-    default:
-      return false;
+  if (currentStep === 4) {
+    return true; // Review step, no validation
   }
-}
-
-function validateBasicInfo() {
-  const title = document.getElementById('election-title').value.trim();
-  const question = document.getElementById('election-question').value.trim();
-
-  if (!title) {
-    alert(R.string.validation_title_required);
-    return false;
-  }
-
-  if (!question) {
-    alert(R.string.validation_question_required);
-    return false;
-  }
-
-  return true;
-}
-
-function validateAnswerOptions() {
-  const answers = getAnswers();
-
-  if (answers.length < 2) {
-    alert(R.string.validation_min_answers);
-    return false;
-  }
-
-  if (answers.length > 10) {
-    alert(R.string.validation_max_answers);
-    return false;
-  }
-
-  // Check for empty answers
-  const emptyAnswers = answers.filter(a => !a.trim());
-  if (emptyAnswers.length > 0) {
-    alert(R.string.validation_empty_answer);
-    return false;
-  }
-
-  // Check for duplicate answers
-  const uniqueAnswers = new Set(answers.map(a => a.toLowerCase()));
-  if (uniqueAnswers.size !== answers.length) {
-    alert(R.string.validation_duplicate_answers);
-    return false;
-  }
-
-  // Validate max selections for multi-choice
-  const votingType = document.querySelector('input[name="voting_type"]:checked').value;
-  if (votingType === 'multi-choice') {
-    const maxSelections = parseInt(document.getElementById('max-selections').value);
-    if (!maxSelections || maxSelections < 1 || maxSelections > answers.length) {
-      alert(R.format(R.string.validation_max_selections_invalid, answers.length));
-      return false;
-    }
-  }
-
-  return true;
-}
-
-function validateSchedule() {
-  const startTiming = document.querySelector('input[name="start_timing"]:checked').value;
-
-  if (startTiming === 'scheduled') {
-    const scheduledStart = document.getElementById('scheduled-start').value;
-    if (!scheduledStart) {
-      alert(R.string.validation_scheduled_start_required);
-      return false;
-    }
-
-    // Check if start time is in the future
-    const startDate = new Date(scheduledStart);
-    if (startDate <= new Date()) {
-      alert(R.string.validation_start_future);
-      return false;
-    }
-  }
-
-  // Validate duration or end time
-  const useManualEndTime = document.getElementById('use-manual-end-time').checked;
-
-  if (useManualEndTime) {
-    const scheduledEnd = document.getElementById('scheduled-end').value;
-    if (!scheduledEnd) {
-      alert(R.string.validation_scheduled_end_required);
-      return false;
-    }
-
-    // Check if end time is after start time
-    const startDate = startTiming === 'scheduled' 
-      ? new Date(document.getElementById('scheduled-start').value)
-      : new Date();
-    const endDate = new Date(scheduledEnd);
-
-    if (endDate <= startDate) {
-      alert(R.string.validation_end_after_start);
-      return false;
-    }
-  } else {
-    const durationMinutes = parseInt(document.getElementById('duration-minutes').value);
-    if (!durationMinutes || durationMinutes < 5) {
-      alert(R.string.validation_duration_min);
-      return false;
-    }
-  }
-
-  return true;
+  
+  // Use imported validation module
+  return validateStep(currentStep);
 }
 
 // ============================================
 // FORM DATA MANAGEMENT
 // ============================================
 
+/**
+ * Update formData from current form state
+ * Uses imported collectFormData() from forms module
+ */
 function updateFormData() {
-  formData.title = document.getElementById('election-title').value.trim();
-  formData.question = document.getElementById('election-question').value.trim();
-  formData.description = document.getElementById('election-description').value.trim();
-  formData.voting_type = document.querySelector('input[name="voting_type"]:checked').value;
-  formData.max_selections = formData.voting_type === 'multi-choice' 
-    ? parseInt(document.getElementById('max-selections').value) 
-    : null;
-  formData.answers = getAnswers();
-  formData.start_timing = document.querySelector('input[name="start_timing"]:checked').value;
-  formData.scheduled_start = formData.start_timing === 'scheduled' 
-    ? document.getElementById('scheduled-start').value 
-    : null;
-
-  const useManualEndTime = document.getElementById('use-manual-end-time').checked;
-  if (useManualEndTime) {
-    formData.duration_minutes = null;
-    formData.scheduled_end = document.getElementById('scheduled-end').value;
-  } else {
-    formData.duration_minutes = parseInt(document.getElementById('duration-minutes').value);
-    formData.scheduled_end = null;
+  const collectedData = collectFormData(isLoadingElectionData);
+  
+  if (collectedData) {
+    // Update global formData object with collected data
+    Object.assign(formData, collectedData);
   }
 }
 
-function getAnswers() {
-  const answerInputs = document.querySelectorAll('.answer-item input[type="text"]');
-  return Array.from(answerInputs).map(input => input.value.trim()).filter(val => val);
-}
+// Note: getAnswers() is now imported from forms/election-form-data.js
 
 // ============================================
 // ANSWER OPTIONS
@@ -359,19 +505,19 @@ function addAnswerOption() {
   const answerItem = document.createElement('div');
   answerItem.className = 'answer-item';
   answerItem.innerHTML = `
-    <span class="drag-handle">⋮⋮</span>
+    <span class="answer-item__drag-handle">⋮⋮</span>
     <input 
       type="text" 
-      class="form-control" 
+      class="answer-item__input form-control" 
       placeholder="${R.format(R.string.placeholder_answer, answerCount + 1)}"
       maxlength="200"
       required
     >
-    <button type="button" class="remove-answer-btn">${R.string.btn_remove_answer}</button>
+    <button type="button" class="answer-item__remove-btn">${R.string.btn_remove_answer}</button>
   `;
 
   // Remove button handler
-  answerItem.querySelector('.remove-answer-btn').addEventListener('click', () => {
+  answerItem.querySelector('.answer-item__remove-btn').addEventListener('click', () => {
     const answerCount = container.querySelectorAll('.answer-item').length;
     if (answerCount <= 2) {
       alert(R.string.validation_min_answers_alert);
@@ -508,17 +654,7 @@ function updateReview() {
   document.getElementById('review-end-time').textContent = endTimeText;
 }
 
-function formatDateTime(isoString) {
-  if (!isoString) return '-';
-  const date = new Date(isoString);
-  return date.toLocaleString('is-IS', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-}
+// Date formatting is now handled by date-utils.js module
 
 function formatDuration(minutes) {
   if (!minutes) return '-';
@@ -539,73 +675,132 @@ function formatDuration(minutes) {
 // SUBMISSION
 // ============================================
 
+/**
+ * Retry helper for fetch requests
+ * Retries network errors once before failing
+ */
+async function fetchWithRetry(url, options, retries = 1) {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const response = await fetch(url, options);
+      return response;
+    } catch (error) {
+      // Only retry on network errors, not on abort
+      if (error.name === 'AbortError' || attempt === retries) {
+        throw error;
+      }
+      
+      console.warn(`[Election Create] Fetch attempt ${attempt + 1} failed, retrying...`, error.message);
+      // Wait 1 second before retry
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  }
+}
+
+/**
+ * Handle form submission (create or update election)
+ * Uses imported API client from api/elections-admin-api.js
+ * @param {string} status - Election status ('draft' or 'open')
+ * @returns {Promise<void>}
+ */
 async function handleSubmit(status) {
+  // Update form data from UI inputs (skips if loading)
   updateFormData();
 
-  // Final validation
-  if (!validateCurrentStep()) {
-    return;
+  // For closed/published elections, skip validation (we're only updating metadata)
+  // For draft elections or new elections, run full validation
+  const shouldValidate = !isEditMode || editingElectionStatus === 'draft';
+  
+  if (shouldValidate) {
+    // Final validation
+    if (!validateCurrentStep()) {
+      return;
+    }
+  } else {
+    debug.log('[Election Create] Skipping validation for', editingElectionStatus, 'election (metadata-only edit)');
   }
 
-  // Build request payload
-  const payload = {
-    title: formData.title,
-    question: formData.question,
-    description: formData.description || null,
-    voting_type: formData.voting_type,
-    max_selections: formData.max_selections,
-    answers: formData.answers.map((text, index) => ({
-      answer_text: text,
-      display_order: index
-    })),
-    status: status // 'draft' or 'open'
-  };
-
-  // Add timing
-  if (formData.start_timing === 'scheduled') {
-    payload.scheduled_start = formData.scheduled_start;
+  // Show warning if editing published/closed election
+  if (isEditMode && editingElectionStatus !== 'draft') {
+    const statusText = editingElectionStatus === 'published' ? R.string.status_open_dative : R.string.status_closed_dative;
+    const confirmed = await showModal({
+      title: R.string.edit_confirm_title.replace('%s', statusText),
+      message: `
+        <p>${R.string.edit_confirm_message_p1.replace('%s', statusText)}</p>
+        <p>${R.string.edit_confirm_message_p2}</p>
+        <p>${R.string.edit_confirm_message_p3}</p>
+        <p>${R.string.edit_confirm_message_p4}</p>
+      `,
+      confirmText: 'Já, vista breytingar',
+      cancelText: 'Hætta við'
+    });
+    
+    if (!confirmed) {
+      debug.log('[Election Create] User cancelled edit of', editingElectionStatus, 'election');
+      return;
+    }
   }
 
-  if (formData.scheduled_end) {
-    payload.scheduled_end = formData.scheduled_end;
-  } else if (formData.duration_minutes) {
-    payload.duration_minutes = formData.duration_minutes;
+  // Build request payload using imported buildCreatePayload or buildUpdatePayload
+  let payload;
+  
+  if (isEditMode) {
+    // Update existing election
+    payload = buildUpdatePayload(formData, editingElectionStatus);
+    debug.log('[Election Create] Update payload:', payload);
+  } else {
+    // Create new election
+    payload = buildCreatePayload(formData, 'draft'); // Always create as draft first
+    debug.log('[Election Create] Create payload:', payload);
   }
 
   // Show loading
   document.getElementById('loading-overlay').style.display = 'flex';
 
   try {
-    const user = auth.currentUser;
-    if (!user) {
-      throw new Error(R.string.error_not_authenticated);
+    let result;
+    let finalElectionId;
+    
+    if (isEditMode) {
+      // Update existing election
+      result = await updateElection(editingElectionId, payload);
+      finalElectionId = editingElectionId;
+    } else {
+      // Create new election
+      result = await createElection(payload);
+      finalElectionId = result.election?.id;
     }
 
-    const token = await user.getIdToken();
-
-    const response = await fetch('https://elections-service-ymzrguoifa-nw.a.run.app/api/admin/elections', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || R.string.error_create_election);
+    // If status is 'open', make separate API call to open the election
+    if (status === 'open' && finalElectionId) {
+      debug.log(`[Election Create] Opening election via /elections/${finalElectionId}/open`);
+      
+      try {
+        await openElection(finalElectionId);
+        debug.log('[Election Create] Election opened successfully');
+        
+      } catch (openError) {
+        console.error('[Election Create] Error opening election:', openError);
+        
+        // Show warning but don't fail entire operation
+        alert(`Kosning var búin til en ekki opnuð: ${openError.message}\n\nÞú getur opnað hana handvirkt úr kosningalistanum.`);
+        window.location.href = '/admin-elections/';
+        return;
+      }
     }
-
-    const result = await response.json();
 
     // Success!
-    alert(status === 'draft' ? R.string.success_draft_created : R.string.success_election_created);
+    const successMessage = isEditMode
+      ? (R.string.success_election_updated || 'Kosningu breytt!')
+      : (status === 'draft' ? R.string.success_draft_created : R.string.success_election_created);
+    
+    alert(successMessage);
     window.location.href = '/admin-elections/';
 
   } catch (error) {
-    console.error('Error creating election:', error);
-    alert(R.format(R.string.error_create_election_detail, error.message));
+    // Error already logged and shown in modal by API client
+    console.error('[Election Create] Operation failed:', error.message);
+    
   } finally {
     document.getElementById('loading-overlay').style.display = 'none';
   }

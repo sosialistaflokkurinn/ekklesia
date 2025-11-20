@@ -242,7 +242,7 @@ textarea.form-control {
   align-items: flex-start;
 }
 
-.answer-item .drag-handle {
+.answer-item__drag-handle {
   width: 30px;
   height: 40px;
   display: flex;
@@ -253,15 +253,15 @@ textarea.form-control {
   user-select: none;
 }
 
-.answer-item .drag-handle:active {
+.answer-item__drag-handle:active {
   cursor: grabbing;
 }
 
-.answer-item input[type="text"] {
+.answer-item__input {
   flex: 1;
 }
 
-.answer-item .remove-answer-btn {
+.answer-item__remove-btn {
   padding: 0.5rem 1rem;
   background: #f44336;
   color: white;
@@ -272,7 +272,7 @@ textarea.form-control {
   white-space: nowrap;
 }
 
-.answer-item .remove-answer-btn:hover {
+.answer-item__remove-btn:hover {
   background: #d32f2f;
 }
 
@@ -495,3 +495,28 @@ textarea.form-control {
     min-width: 80px;
   }
 }
+
+/* ============================================
+   ALERT COMPONENTS
+   ============================================ */
+
+.alert {
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.alert-warning {
+  background-color: #fff3cd;
+  border-color: #ffc107;
+  color: #856404;
+}
+
+.alert strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+

@@ -77,7 +77,7 @@ This project has **key documentation files** that are loaded at every Claude Cod
 
 ### 4. SESSION_START_REMINDER.md
 
-**Location**: `docs/SESSION_START_REMINDER.md`
+**Location**: `.claude/SESSION_START_REMINDER.md`
 **Purpose**: Security rules, PII protection, and session checklists
 **Update Frequency**: When security rules or gitignore patterns change
 
@@ -145,7 +145,7 @@ Consider updating (if needed):
 
   ✓ CURRENT_DEVELOPMENT_STATUS.md - Infrastructure/deployments
   ✓ OPERATIONAL_PROCEDURES.md     - New procedures/workflows
-  ✓ SESSION_START_REMINDER.md     - Security rules/gitignore
+  ✓ .claude/SESSION_START_REMINDER.md - Security rules/gitignore
   ✓ USAGE_CONTEXT.md              - System usage patterns
 
 Check freshness: ./scripts/admin/documentation-maintenance/check-docs-freshness.sh
@@ -177,7 +177,7 @@ The following key documentation files have not been updated recently (threshold:
 - [ ] docs/status/CURRENT_DEVELOPMENT_STATUS.md
 - [ ] docs/development/guides/workflows/USAGE_CONTEXT.md
 - [ ] docs/operations/OPERATIONAL_PROCEDURES.md
-- [ ] docs/SESSION_START_REMINDER.md
+- [ ] .claude/SESSION_START_REMINDER.md
 
 ### Action Required:
 1. Review each file and update with recent changes
@@ -330,7 +330,7 @@ git commit -m "fix: Make doc freshness script executable"
 
 ## Related Documentation
 
-- [SESSION_START_REMINDER.md](../../SESSION_START_REMINDER.md) - Security checklist
+- [SESSION_START_REMINDER.md](../../../.claude/SESSION_START_REMINDER.md) - Security checklist
 - [USAGE_CONTEXT.md](workflows/USAGE_CONTEXT.md) - System usage patterns
 - [OPERATIONAL_PROCEDURES.md](../../operations/OPERATIONAL_PROCEDURES.md) - Operations
 - [CURRENT_DEVELOPMENT_STATUS.md](../../status/CURRENT_DEVELOPMENT_STATUS.md) - System state

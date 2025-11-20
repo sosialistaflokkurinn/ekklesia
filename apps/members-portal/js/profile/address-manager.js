@@ -415,9 +415,17 @@ export class AddressManager {
 
   /**
    * Save addresses to Firestore
+   * 
+   * @param {Object} options - Save options
+   * @param {boolean} options.silent - If true, suppress toast notification (used for migration auto-save)
    */
-  async save() {
+  async save(options = {}) {
+    const { silent = false } = options;
+    
     debug.log('💾 Saving addresses to Firestore:', this.addresses);
+    if (silent) {
+      debug.log('   🔕 Silent mode: No toast notification will be shown');
+    }
 
     const statusIcon = document.getElementById('status-addresses');
 
@@ -453,8 +461,13 @@ export class AddressManager {
         }, 2000);
       }
 
-      showToast(R.string.profile_address_saved, 'success');
-      debug.log('🎉 Toast notification shown');
+      // Only show toast if not silent mode
+      if (!silent) {
+        showToast(R.string.profile_address_saved, 'success');
+        debug.log('🎉 Toast notification shown');
+      } else {
+        debug.log('🔕 Toast notification suppressed (silent mode)');
+      }
 
       // Update simple display to show changes in collapsed view
       this.updateSimpleDisplay();
@@ -471,6 +484,7 @@ export class AddressManager {
         }, 3000);
       }
 
+      // Always show error toast (even in silent mode)
       showToast(R.string.profile_address_save_error, 'error');
       debug.log('⚠️ Error toast notification shown');
     }

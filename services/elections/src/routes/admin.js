@@ -21,6 +21,19 @@ const logger = require('../utils/logger');
 
 const router = express.Router();
 
+// Debug endpoint - check auth without rate limiting
+router.get('/debug/auth-check', async (req, res) => {
+  const authHeader = req.header('Authorization');
+  
+  res.json({
+    hasAuthHeader: !!authHeader,
+    headerValue: authHeader ? `${authHeader.substring(0, 20)}...` : null,
+    headerStartsWithBearer: authHeader ? authHeader.startsWith('Bearer ') : false,
+    tokenLength: authHeader ? authHeader.split('Bearer ')[1]?.length : 0,
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Apply rate limiting and Firebase token verification to all admin routes
 router.use(adminLimiter);
 router.use(verifyFirebaseToken);
@@ -146,6 +159,16 @@ router.get('/elections', requireElectionManager, async (req, res) => {
     });
   } catch (error) {
     const duration = Date.now() - startTime;
+    
+    // Log to console for Cloud Logging
+    console.error('[Admin] List elections error:', {
+      error: error.message,
+      stack: error.stack,
+      uid: req.user?.uid,
+      role: req.user?.role,
+      query: req.query
+    });
+    
     logger.error('[Admin] List elections error:', { error: error.message, stack: error.stack });
     logAudit('list_elections', false, {
       uid_hash: hashUidForLogging(req.user.uid),
@@ -156,6 +179,10 @@ router.get('/elections', requireElectionManager, async (req, res) => {
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to list elections',
+      debug: {
+        errorMessage: error.message,
+        errorType: error.constructor.name
+      }
     });
   }
 });
@@ -373,7 +400,7 @@ router.patch('/elections/:id', requireElectionManager, async (req, res) => {
   } = req.body;
 
   try {
-    // Check election exists and is draft
+    // Check election exists and get status
     const checkResult = await pool.query(
       'SELECT status FROM elections.elections WHERE id = $1',
       [id]
@@ -386,11 +413,21 @@ router.patch('/elections/:id', requireElectionManager, async (req, res) => {
       });
     }
 
-    if (checkResult.rows[0].status !== 'draft') {
-      return res.status(400).json({
-        error: 'Bad Request',
-        message: 'Only draft elections can be edited',
-      });
+    const currentStatus = checkResult.rows[0].status;
+    const isDraft = currentStatus === 'draft';
+
+    // Validate field changes based on status
+    // For published/closed elections, only metadata (title, description) can be changed
+    if (!isDraft) {
+      const restrictedFields = ['question', 'answers', 'voting_type', 'max_selections', 'eligibility'];
+      const attemptedRestricted = restrictedFields.filter(field => req.body[field] !== undefined);
+      
+      if (attemptedRestricted.length > 0) {
+        return res.status(400).json({
+          error: 'Bad Request',
+          message: `Cannot modify ${attemptedRestricted.join(', ')} for ${currentStatus} elections. Only title and description can be updated.`,
+        });
+      }
     }
 
     // Build dynamic UPDATE query
@@ -399,7 +436,7 @@ router.patch('/elections/:id', requireElectionManager, async (req, res) => {
     let paramIndex = 1;
 
     if (title !== undefined) {
-      if (!title.trim()) {
+      if (title === null || !title.trim()) {
         return res.status(400).json({
           error: 'Bad Request',
           message: 'Title cannot be empty',
@@ -412,7 +449,7 @@ router.patch('/elections/:id', requireElectionManager, async (req, res) => {
 
     if (description !== undefined) {
       updates.push(`description = $${paramIndex}`);
-      params.push(description.trim());
+      params.push(description === null ? null : description.trim());
       paramIndex++;
     }
 

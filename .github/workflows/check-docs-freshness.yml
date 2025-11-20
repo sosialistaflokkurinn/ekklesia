@@ -61,7 +61,6 @@ jobs:
             - [ ] \`docs/status/CURRENT_DEVELOPMENT_STATUS.md\`
             - [ ] \`docs/development/guides/workflows/USAGE_CONTEXT.md\`
             - [ ] \`docs/operations/OPERATIONAL_PROCEDURES.md\`
-            - [ ] \`docs/SESSION_START_REMINDER.md\`
 
             ### Why This Matters:
             These files are loaded at every Claude Code session start and must reflect the current state of the system.
@@ -104,7 +103,6 @@ jobs:
             If this PR includes significant changes, please also update:
             - \`docs/status/CURRENT_DEVELOPMENT_STATUS.md\` (if infrastructure changed)
             - \`docs/operations/OPERATIONAL_PROCEDURES.md\` (if procedures changed)
-            - \`docs/SESSION_START_REMINDER.md\` (if security rules changed)
 
             Run \`./scripts/admin/documentation-maintenance/check-docs-freshness.sh\` to check.
             `;

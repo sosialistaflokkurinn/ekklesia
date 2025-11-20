@@ -11,6 +11,7 @@
 
 import { createBadge } from './badge.js';
 import { showErrorIn } from './error-state.js';
+import { R } from '/i18n/strings-loader.js';
 import { getPolicyResults } from '../api/elections-api.js';
 
 /**

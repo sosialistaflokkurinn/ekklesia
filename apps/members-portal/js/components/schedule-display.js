@@ -25,6 +25,7 @@ import { formatDateIcelandic } from '../utils/format.js';
 import { createCountdownTimer } from './countdown-timer.js';
 import { electionState } from '../utils/election-state.js';
 import { debug } from '../utils/debug.js';
+import { R } from '/i18n/strings-loader.js';
 
 /**
  * Status emoji mapping

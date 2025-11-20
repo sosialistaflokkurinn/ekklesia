@@ -10,6 +10,10 @@ const adminRouter = require('./routes/admin'); // Admin CRUD routes (Issue #192)
 const app = express();
 const PORT = process.env.PORT || 8081;
 
+// Trust proxy - Required for Cloud Run to correctly populate req.ip from X-Forwarded-For
+// This allows rate limiting to work correctly with the real client IP
+app.set('trust proxy', true);
+
 // =====================================================
 // Middleware
 // =====================================================

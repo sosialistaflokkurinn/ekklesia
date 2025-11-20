@@ -25,6 +25,38 @@
   <string name="nav_logout">Útskrá</string>
   <string name="nav_hamburger_open">Opna valmynd</string>
   <string name="nav_hamburger_close">Loka valmynd</string>
+  
+  <!-- Navigation Brand Text (Page-specific) -->
+  <string name="nav_my_profile">Mínar upplýsingar</string>
+  <string name="nav_elections">Kosningar</string>
+  <string name="nav_elections_list">Kosningalisti</string>
+  
+  <!-- Election Types (for nav tabs) -->
+  <string name="election_type_general">Almennar kosningar</string>
+  <string name="election_type_board">Stjórnarkosningar</string>
+  <string name="election_type_policy">Stefnumótun</string>
+  
+  <!-- Admin Navigation -->
+  <string name="nav_admin">Stjórnkerfi</string>
+  <string name="nav_admin_members">Félagaskrá</string>
+  <string name="nav_admin_member_profile">Upplýsingar félaga</string>
+  <string name="nav_admin_sync">Samstilling félagaskrár</string>
+  <string name="nav_admin_sync_history">Samstillingarsaga</string>
+  <string name="nav_admin_sync_queue">Samstillingarbiðröð</string>
+  
+  <!-- Admin Elections Navigation -->
+  <string name="nav_admin_elections">Kosningastjórnun</string>
+  <string name="nav_admin_elections_create">Ný kosning</string>
+  <string name="nav_admin_elections_control">Stjórnborð kosninga</string>
+  
+  <!-- Policy Session Navigation -->
+  <string name="nav_policy_session">Stefnumótun</string>
+  
+  <!-- Common Navigation Links -->
+  <string name="nav_back_to_member">Mín síða</string>
+  <string name="nav_open_menu">Opna valmynd</string>
+  <string name="nav_close_menu">Loka valmynd</string>
+  <string name="nav_close">Loka</string>
   <string name="dashboard_welcome_male">Sæll, félagi %s!</string>
   <string name="dashboard_welcome_female">Sæl, félagi %s!</string>
   <string name="dashboard_welcome_neutral">Sæll/Sæl, félagi %s!</string>

@@ -144,15 +144,9 @@ scripts/logs/*.jsonl
 *.audit.json
 *-audit-*.jsonl
 
-# IDE / Tooling folders (personal, local only)
-.claude/
-.gemini/
+# === END OF SHARED PROJECT RULES ===
+# Personal development patterns go in .gitignore.local
+# See: docs/development/guides/GITIGNORE_LOCAL_STRATEGY.md
 
-# Party mark/logo work directory (personal)
-correct-mark-of-the-party/
-
-# Local data files
-data/Stadfangaskra.csv
-AUDIT_CODE_DOCUMENTATION_2025-10-20.json
-AUDIT_CODE_DOCUMENTATION_DETAILED_2025-10-20.json
-data/
+# Git hooks documentation (contains PII pattern examples)
+git-hooks/README.md

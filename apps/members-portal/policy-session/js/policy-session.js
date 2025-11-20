@@ -7,6 +7,7 @@
 
 import { initAuthenticatedPage } from '../../js/page-init.js';
 import { R } from '../i18n/strings-loader.js';
+import { debug } from '../../js/utils/debug.js';
 import PolicySessionAPI from './api/policy-session-api-mock.js';
 import { createAmendmentForm } from './amendment-form.js';
 import { createAmendmentVoteCard } from './amendment-vote-card.js';
@@ -191,7 +192,7 @@ function renderBreakPhase() {
     sections: currentSession.policy_draft.sections,
     R: R,
     onSubmitSuccess: (response) => {
-      console.log('Amendment submitted:', response);
+      debug.log('Amendment submitted:', response);
       // Optionally reload session to show new amendment
       loadPolicySession();
     }
@@ -227,7 +228,7 @@ function renderVotingPhase() {
           return await PolicySessionAPI.voteOnPolicyItem(sessionId, itemId, vote);
         },
         onVoteSuccess: (data) => {
-          console.log('Policy item vote recorded:', data);
+          debug.log('Policy item vote recorded:', data);
         }
       });
 
@@ -244,7 +245,7 @@ function renderVotingPhase() {
         amendment: amendment,
         R: R,
         onVoteSuccess: (data) => {
-          console.log('Amendment vote recorded:', data);
+          debug.log('Amendment vote recorded:', data);
         }
       });
 

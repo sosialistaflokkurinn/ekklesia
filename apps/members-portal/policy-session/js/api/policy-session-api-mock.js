@@ -9,6 +9,8 @@
  */
 
 // Error message constants (would be error codes in real API)
+import { R } from '../../i18n/strings-loader.js';
+
 const ERROR_MESSAGES = {
   NOT_FOUND: 'Stefnufundur fannst ekki',
   BREAK_ONLY: 'Breytingatillögur er aðeins hægt að leggja fram í hlé',
