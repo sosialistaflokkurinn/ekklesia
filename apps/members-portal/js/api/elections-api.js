@@ -313,9 +313,6 @@ export async function voteOnPolicyItem(sessionId, itemId, vote) {
 }
 
 /**
- * Vote on final policy in policy session
-
-/**
  * Vote on final policy (Yes/No/Abstain)
  *
  * @param {string} sessionId - Policy session identifier
