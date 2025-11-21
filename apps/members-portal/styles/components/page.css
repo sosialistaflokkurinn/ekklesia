@@ -125,7 +125,7 @@ body.authenticated {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-.info-grid__item:hover {
+.info-grid__item.u-clickable:hover {
   background: white;
   box-shadow: 0 8px 24px rgba(243, 180, 27, 0.6);
   transform: translateY(-3px);
