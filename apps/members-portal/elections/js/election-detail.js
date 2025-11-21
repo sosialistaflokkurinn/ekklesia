@@ -324,7 +324,7 @@ function showConfirmationModal(answerIds) {
 
   // Get selected answer objects
   const selectedAnswers = answerIds.map(id =>
-    currentElection.answers.find(a => a.id === id)
+    currentElection.answers.find(a => (a.id || a.answer_id) === id)
   ).filter(Boolean);
 
   if (selectedAnswers.length === 0) {
@@ -334,14 +334,15 @@ function showConfirmationModal(answerIds) {
   // Create selected answer display (single or multiple)
   let selectedAnswerHtml;
   if (selectedAnswers.length === 1) {
+    const answerText = selectedAnswers[0].text || selectedAnswers[0].answer_text || '';
     selectedAnswerHtml = `
       <p class="modal__selected-answer">
-        <strong>${R.string.your_answer}:</strong> ${escapeHTML(selectedAnswers[0].text)}
+        <strong>${R.string.your_answer}:</strong> ${escapeHTML(answerText)}
       </p>
     `;
   } else {
     const answersList = selectedAnswers.map(a =>
-      `<li>${escapeHTML(a.text)}</li>`
+      `<li>${escapeHTML(a.text || a.answer_text || '')}</li>`
     ).join('');
     selectedAnswerHtml = `
       <div class="modal__selected-answers">

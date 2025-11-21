@@ -165,14 +165,17 @@ export function createVotingForm(options = {}) {
 
   // Create answer options
   answers.forEach((answer) => {
+    // Support both id and answer_id
+    const answerId = answer.id || answer.answer_id;
+    
     const optionDiv = document.createElement('div');
     optionDiv.className = 'voting-form__answer-option';
 
     const input = document.createElement('input');
     input.type = inputType;
-    input.id = `${formId}-answer-${answer.id}`;
-    input.name = allowMultiple ? `${formId}-answer-${answer.id}` : `${formId}-answer`;
-    input.value = answer.id;
+    input.id = `${formId}-answer-${answerId}`;
+    input.name = allowMultiple ? `${formId}-answer-${answerId}` : `${formId}-answer`;
+    input.value = answerId;
     input.className = inputClassName;
 
     // Handle selection
@@ -186,13 +189,13 @@ export function createVotingForm(options = {}) {
             debug.log('Max selections reached:', maxSelections);
             return;
           }
-          selectedAnswerIds.push(answer.id);
+          selectedAnswerIds.push(answerId);
         } else {
-          selectedAnswerIds = selectedAnswerIds.filter(id => id !== answer.id);
+          selectedAnswerIds = selectedAnswerIds.filter(id => id !== answerId);
         }
       } else {
         // Radio: replace selection
-        selectedAnswerIds = [answer.id];
+        selectedAnswerIds = [answerId];
       }
 
       updateButtonState();
