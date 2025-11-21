@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+  <string name="btn_back_to_elections">Aftur í kosningayfirlit</string>
+  <string name="election_detail_back_link">← Til baka</string>
+  <string name="election_detail_title">Kosning</string>
+  <string name="error_load_election_detail">Ekki tókst að sækja upplýsingar um kosningu</string>
+  <string name="error_load_results">Villa við að hlaða niðurstöðum</string>
+  <string name="error_no_election_selected">Engin kosning er valin</string>
+  <string name="loading_election_detail">Hleð inn upplýsingum um kosningu...</string>
+  <string name="modal_confirm_message">Viltu staðfesta atkvæði þitt?</string>
+  <string name="modal_confirm_title">Staðfesta atkvæði</string>
+  <string name="modal_success_message">Atkvæði þitt hefur verið skráð.</string>
+  <string name="modal_success_title">✓ Atkvæði skráð</string>
+  <string name="msg_already_voted">✓ Þú hefur þegar kosið í þessari kosningu.</string>
+  <string name="msg_upcoming_election">Þessi kosning hefur ekki enn opnað fyrir atkvæðagreiðslu.</string>
+  <string name="page_title_election_detail">Kosning - Sósíalistaflokkurinn</string>
+  <string name="profile_django_save_error">Villa við vistun í eldra kerfi (Django). Breytingar voru ekki vistaðar. Reyndu aftur.</string>
+  <string name="quick_links_title">Flýtileiðir</string>
+  <string name="results_votes">%s atkvæði</string>
+  <string name="role_badge_admin">Stjórnandi</string>
+  <string name="role_badge_election_manager">Kosningastjóri</string>
+  <string name="role_badge_member">Félagi</string>
+  <string name="role_badge_superuser">Kerfisstjóri</string>
+  <string name="role_election_manager">Kosningastjóri</string>
+  <string name="role_superadmin">Ofurkerfisstjóri</string>
+  <string name="tab_all_elections">Allar kosningar</string>
+  <string name="tab_candidate_elections">Framboð</string>
+  <string name="tab_policy_sessions">Stefnumótun</string>
+  <string name="voting_section_title">Kjóstu hér</string>
+</resources>
