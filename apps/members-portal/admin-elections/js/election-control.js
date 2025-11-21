@@ -130,12 +130,6 @@ async function init() {
     // Initialize authenticated page
     await initAuthenticatedPage();
 
-    // Update navigation
-    document.getElementById('nav-admin-dashboard').textContent = R.string.nav_admin_dashboard || 'Yfirlit';
-    document.getElementById('nav-admin-members').textContent = R.string.nav_admin_members || 'Félagsmenn';
-    document.getElementById('nav-back-to-member').textContent = R.string.nav_back_to_member || 'Til baka í félagasvæði';
-    document.getElementById('nav-logout').textContent = R.string.nav_logout;
-
     // Get election ID from URL
     const electionId = getElectionIdFromURL();
 
