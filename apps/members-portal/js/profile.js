@@ -1277,6 +1277,8 @@ async function init() {
       const memberDoc = await getDoc(memberDocRef);
       if (memberDoc.exists()) {
         memberData = memberDoc.data();
+        debug.log('📦 memberData from Firestore:', memberData);
+        debug.log('📦 memberData.address:', memberData?.address);
       }
     } catch (error) {
       console.warn('Failed to load member data from Firestore:', error);
@@ -1287,6 +1289,7 @@ async function init() {
     // memberData.profile is source of truth, fallback to userData
     currentUserData = {
       ...userData,
+      address: memberData?.address,  // OLD address structure (for ONE-TIME migration)
       profile: memberData?.profile || {
         name: userData.displayName || '',
         email: userData.email || '',
@@ -1317,6 +1320,12 @@ async function init() {
     addressManager.initialize(migratedAddresses);
     addressManager.setupListeners();
     addressManager.render();
+
+    // Auto-save if migration patched addresses (added missing fields)
+    if (migratedAddresses._needsSave) {
+      debug.log('🔄 Migration patched addresses, auto-saving to Firestore...');
+      await addressManager.save();
+    }
 
     // Update profile-specific UI
     updateProfileStrings();

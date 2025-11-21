@@ -568,6 +568,14 @@ export class SearchableSelect {
   }
 
   /**
+   * Get the wrapper element (for consistency with component factory pattern)
+   * @returns {HTMLElement} The wrapper element
+   */
+  get element() {
+    return this.wrapper;
+  }
+
+  /**
    * Get current value
    */
   getValue() {

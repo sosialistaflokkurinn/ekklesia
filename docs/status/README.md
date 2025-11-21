@@ -2,11 +2,14 @@
 
 Current system status and historical incidents organized by date.
 
+**See also**: [OPERATIONS_MAP.md](../OPERATIONS_MAP.md) for operational procedures and deployment guides
+
 ## Quick Access
 
 - **[Current Development Status](CURRENT_DEVELOPMENT_STATUS.md)** - Latest system status
 - **[Ongoing Work](ongoing/)** - Active checklists and in-progress items
 - **[Historical Incidents](historical/)** - Dated incidents and status changes
+- **[DOCUMENTATION_MAP.md](../../DOCUMENTATION_MAP.md)** - Overall project status
 
 ## Overview
 

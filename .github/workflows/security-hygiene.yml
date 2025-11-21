@@ -26,7 +26,38 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Run security hygiene checks
+      - name: Verify GitHub CLI is available
+        run: |
+          if ! command -v gh >/dev/null 2>&1; then
+            echo "❌ GitHub CLI not found"
+            exit 1
+          fi
+          echo "✅ GitHub CLI version: $(gh --version | head -n1)"
+
+      - name: Run security hygiene checks (with retry)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bash .github/scripts/security-hygiene.sh
+        run: |
+          # Retry logic for transient failures
+          MAX_ATTEMPTS=3
+          RETRY_DELAY=10
+
+          for attempt in $(seq 1 $MAX_ATTEMPTS); do
+            echo "🔄 Attempt $attempt of $MAX_ATTEMPTS..."
+
+            if bash .github/scripts/security-hygiene.sh; then
+              echo "✅ Security hygiene checks completed successfully"
+              exit 0
+            fi
+
+            EXIT_CODE=$?
+            echo "❌ Attempt $attempt failed with exit code $EXIT_CODE"
+
+            if [ $attempt -lt $MAX_ATTEMPTS ]; then
+              echo "⏳ Retrying in ${RETRY_DELAY}s..."
+              sleep $RETRY_DELAY
+            fi
+          done
+
+          echo "❌ All $MAX_ATTEMPTS attempts failed"
+          exit 1

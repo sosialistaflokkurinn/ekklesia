@@ -1,0 +1,279 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+  <!-- ========================================== -->
+  <!-- ADMIN ELECTIONS - NAVIGATION -->
+  <!-- ========================================== -->
+  <string name="admin_elections_brand">Election Management</string>
+  <string name="nav_elections_list">Elections</string>
+  <string name="admin_nav_back_to_member">My Page</string>
+  <string name="admin_nav_logout">Logout</string>
+  
+  <!-- ========================================== -->
+  <!-- ADMIN ELECTIONS - ROLES -->
+  <!-- ========================================== -->
+  <string name="role_superadmin">👑 Superadmin</string>
+  <string name="role_election_manager">📊 Election Manager</string>
+  
+  <!-- ========================================== -->
+  <!-- ADMIN ELECTIONS - LIST PAGE -->
+  <!-- ========================================== -->
+  <string name="admin_elections_page_title">Electronic Election Management - Socialist Party</string>
+  <string name="admin_elections_title">Elections</string>
+  
+  <!-- Filters -->
+  <string name="filter_all">All</string>
+  <string name="filter_draft">Drafts</string>
+  <string name="filter_published">Active</string>
+  <string name="filter_closed">Closed</string>
+  <string name="filter_hidden">Hidden</string>
+  
+  <!-- Search and buttons -->
+  <string name="search_placeholder">Search by title...</string>
+  <string name="btn_create_election">➕ New Election</string>
+  
+  <!-- Results info -->
+  <string name="results_showing">Showing %d elections</string>
+  <string name="results_showing_singular">Showing %d election</string>
+  <string name="results_no_elections">No elections found</string>
+  
+  <!-- Table headers -->
+  <string name="table_header_title">Title</string>
+  <string name="table_header_question">Question</string>
+  <string name="table_header_status">Status</string>
+  <string name="table_header_votes">Votes</string>
+  <string name="table_header_dates">Timestamps</string>
+  <string name="table_header_actions">Actions</string>
+  
+  <!-- Status badges -->
+  <string name="status_draft">Draft</string>
+  <string name="status_open">Open</string>
+  <string name="status_published">Active</string>
+  <string name="status_closed">Closed</string>
+  <string name="status_hidden">Hidden</string>
+  
+  <!-- Table data labels -->
+  <string name="label_created">Created:</string>
+  <string name="label_opened">Opened:</string>
+  <string name="label_closed">Closed:</string>
+  <string name="label_votes">Votes:</string>
+  <string name="label_hidden_indicator">🔒 Hidden</string>
+  
+  <!-- Action buttons -->
+  <string name="btn_view">👁️ View</string>
+  <string name="btn_edit">✏️ Edit</string>
+  <string name="btn_hide">🙈 Hide</string>
+  <string name="btn_unhide">👁️ Show</string>
+  <string name="btn_delete">🗑️ Delete</string>
+  <string name="btn_open">🚀 Open</string>
+  <string name="btn_close">🛑 Close</string>
+  <string name="btn_cancel">Cancel</string>
+  <string name="btn_save">Save</string>
+  <string name="btn_confirm">Confirm</string>
+  
+  <!-- Confirmations -->
+  <string name="confirm_hide_title">Hide election?</string>
+  <string name="confirm_hide_message">Are you sure you want to hide the election "%s"? It will not be visible to members.</string>
+  <string name="confirm_unhide_title">Show election?</string>
+  <string name="confirm_unhide_message">Are you sure you want to show the election "%s" again?</string>
+  <string name="confirm_open_title">Open election?</string>
+  <string name="confirm_open_duration">Select election duration:</string>
+  <string name="confirm_open_note">The election will become active immediately and members can start voting.</string>
+  <string name="confirm_close_title">Close election?</string>
+  <string name="confirm_close_message">Are you sure you want to close the election "%s"?\n\nOnce closed, members can no longer vote.\n\nYou can then view the results.</string>
+  <string name="confirm_delete_title">Delete election?</string>
+  <string name="confirm_delete_message">⚠️ WARNING: This action is irreversible.
+
+You are about to permanently delete the election "%s".
+
+ALL DATA WILL BE LOST:
+- The election itself
+- All answer options
+- All cast votes
+- Other related data
+
+NOTE: Only closed elections can be deleted.
+
+To confirm, type the election title below:
+"%s"</string>
+  <string name="confirm_delete_placeholder">Type election title...</string>
+  <string name="confirm_delete_title_mismatch">Title does not match. Please try again.</string>
+  
+  <!-- Duration options (realistic for in-person voting - 1-3 minutes) -->
+  <string name="duration_1min">1 min</string>
+  <string name="duration_2min">2 min</string>
+  <string name="duration_3min">3 min</string>
+  <string name="duration_custom">Custom (minutes)</string>
+  
+  <!-- Success/Error messages -->
+  <string name="success_hidden">✅ Election hidden</string>
+  <string name="success_unhidden">✅ Election shown again</string>
+  <string name="success_opened">✅ Election opened</string>
+  <string name="success_closed">✅ Election closed</string>
+  <string name="success_deleted">✅ Election deleted</string>
+  <string name="error_hide_failed">❌ Error hiding election: %s</string>
+  <string name="error_unhide_failed">❌ Error showing election: %s</string>
+  <string name="error_open_failed">❌ Error opening election: %s</string>
+  <string name="error_close_failed">❌ Error closing election: %s</string>
+  <string name="error_delete_failed">❌ Error deleting election: %s</string>
+  <string name="error_load_elections">❌ Error loading elections: %s</string>
+  <string name="error_load_election_generic">Could not load election. Please try again.</string>
+  <string name="error_no_election_id_in_path">No election ID in path. Please select an election.</string>
+  <string name="error_page_load_generic">An error occurred while loading the page.</string>
+  <string name="error_delete_active_election">Cannot delete an active election. Close the election first.</string>
+  <string name="error_not_authenticated">Not authenticated</string>
+  <string name="error_no_permission">You do not have permission for this action.</string>
+  
+  <!-- Loading -->
+  <string name="loading_elections">Loading elections...</string>
+  
+  <!-- Empty state -->
+  <string name="empty_state_title">No elections yet</string>
+  <string name="empty_state_description">Start by creating your first election!</string>
+  
+  <!-- ========================================== -->
+  <!-- ADMIN ELECTIONS - CREATE PAGE -->
+  <!-- ========================================== -->
+  <string name="create_election_page_title">Create Election - Socialist Party</string>
+  <string name="create_election_heading">Create New Election</string>
+  <string name="back_to_list">← Back</string>
+  
+  <!-- Progress steps -->
+  <string name="wizard_step_1">Basic Info</string>
+  <string name="wizard_step_2">Answer Options</string>
+  <string name="wizard_step_3">Schedule</string>
+  <string name="wizard_step_4">Review</string>
+  
+  <!-- Step 1: Basic Info -->
+  <string name="step_1_title">Basic Information</string>
+  <string name="step_1_description">Enter the title and question for the election</string>
+  <string name="label_election_title">Election Title</string>
+  <string name="label_election_question">Question</string>
+  <string name="label_election_description">Description (optional)</string>
+  <string name="placeholder_election_title">Example: Presidential Election 2025</string>
+  <string name="placeholder_election_question">Example: Who should be the party leader?</string>
+  <string name="placeholder_election_description">Additional information about the election...</string>
+  <string name="help_election_title">Short and descriptive title shown to members.</string>
+  <string name="help_election_question">The question presented in the election.</string>
+  <string name="help_election_description">More detailed description if needed</string>
+  
+  <!-- Step 2: Answer Options -->
+  <string name="step_2_title">Answer Options</string>
+  <string name="step_2_description">Add answer options and select voting type</string>
+  <string name="label_voting_type">Voting Type</string>
+  <string name="voting_type_single">Single choice</string>
+  <string name="voting_type_single_desc">Members can select one option (radio button).</string>
+  <string name="voting_type_multi">Multiple choice</string>
+  <string name="voting_type_multi_desc">Members can select multiple options (checkbox).</string>
+  <string name="label_max_selections">Maximum Selections</string>
+  <string name="help_max_selections">Maximum number of options that can be selected (1-10).</string>
+  <string name="label_answer_options">Answer Options</string>
+  <string name="btn_add_answer">➕ Add Answer Option</string>
+  <string name="help_answer_options">Minimum 2 answer options, maximum 10.</string>
+  <string name="placeholder_answer">Answer option %d</string>
+  <string name="btn_remove_answer">Remove</string>
+  
+  <!-- Step 3: Schedule -->
+  <string name="step_3_title">Schedule</string>
+  <string name="step_3_description">Choose when the election should be active.</string>
+  <string name="label_start_timing">When should the election start?</string>
+  <string name="start_immediate">Manual (open when ready)</string>
+  <string name="start_immediate_desc">You manually open the election when you want</string>
+  <string name="start_scheduled">Automatic (scheduled)</string>
+  <string name="start_scheduled_desc">The election opens automatically at a specific time</string>
+  <string name="label_scheduled_start">Start Time</string>
+  <string name="label_duration">Election Duration</string>
+  <string name="label_custom_duration">Custom duration (minutes)</string>
+  <string name="help_custom_duration">1 minute to 7 days (10,080 minutes)</string>
+  <string name="placeholder_custom_duration">e.g. 240</string>
+  <string name="label_use_manual_end">Use specific end time instead of duration.</string>
+  <string name="label_scheduled_end">End Time</string>
+  
+  <!-- Step 4: Review -->
+  <string name="step_4_title">Review</string>
+  <string name="step_4_description">Review the information before creating the election.</string>
+  <string name="review_section_basic">Basic Information</string>
+  <string name="review_section_answers">Answer Options</string>
+  <string name="review_section_schedule">Schedule</string>
+  <string name="review_title">Title:</string>
+  <string name="review_question">Question:</string>
+  <string name="review_description">Description:</string>
+  <string name="review_no_description">No description provided.</string>
+  <string name="review_voting_type">Type:</string>
+  <string name="review_max_selections">Max selections:</string>
+  <string name="review_answers">Answer options:</string>
+  <string name="review_no_answers">No answer options provided.</string>
+  <string name="review_start_time">Starts:</string>
+  <string name="review_duration">Duration:</string>
+  <string name="review_end_time">Ends:</string>
+  <string name="review_start_immediate">Manual</string>
+  <string name="review_duration_custom">Specific end time</string>
+  
+  <!-- Status labels -->
+  <string name="status_open">open</string>
+  <string name="status_closed">closed</string>
+  <string name="status_open_dative">open</string>
+  <string name="status_closed_dative">closed</string>
+  
+  <!-- Edit restriction messages -->
+  <string name="edit_restriction_title">⚠️ Limited Editing</string>
+  <string name="edit_restriction_message">Election is %s. Only title and description can be changed. Question and answer options cannot be modified.</string>
+  <string name="edit_confirm_title">⚠️ Edit %s Election</string>
+  <string name="edit_confirm_message_p1">You are about to edit an election that is <strong>%s</strong>.</string>
+  <string name="edit_confirm_message_p2">Only title and description will be updated.</string>
+  <string name="edit_confirm_message_p3">Question and answer options will remain unchanged.</string>
+  <string name="edit_confirm_message_p4"><strong>Do you want to continue?</strong></string>
+  
+  <!-- Navigation buttons -->
+  <string name="btn_prev">← Back</string>
+  <string name="btn_next">Next →</string>
+  <string name="btn_save_draft">💾 Save Draft</string>
+  <string name="btn_create_open">🚀 Create and Open</string>
+  
+  <!-- Validation messages -->
+  <string name="validation_title_required">Please enter a title for the election.</string>
+  <string name="validation_question_required">Please enter a question for the election.</string>
+  <string name="validation_min_answers">At least 2 answer options are required.</string>
+  <string name="validation_max_answers">You cannot have more than 10 answer options</string>
+  <string name="validation_empty_answer">All answer options must have a title.</string>
+  <string name="validation_duplicate_answers">Answer options cannot have the same title.</string>
+  <string name="validation_max_selections_invalid">Maximum selections must be between 1 and %d.</string>
+  <string name="validation_scheduled_start_required">Please select a start time</string>
+  <string name="validation_start_future">Start time must be in the future</string>
+  <string name="validation_scheduled_end_required">Please select an end time</string>
+  <string name="validation_end_after_start">End time must be after start time</string>
+    <string name="validation_end_time_past">End time must not be in the past</string>
+  <string name="validation_duration_min">Election duration must be at least 1 minute</string>
+  <string name="validation_answers_min">You must have at least %d answer options</string>
+  <string name="validation_max_answers_alert">You cannot add more than 10 answer options</string>
+  <string name="validation_min_answers_alert">You must have at least 2 answer options</string>
+  <string name="validation_not_authorized">You do not have permission to create elections.</string>
+  
+  <!-- Success messages -->
+  <string name="success_draft_created">✅ Election has been saved as draft.</string>
+  <string name="success_election_created">🚀 Election has been created and opened!</string>
+  
+  <!-- Error messages -->
+  <string name="error_create_election">Failed to create election.</string>
+  <string name="error_create_election_detail">❌ Error: %s</string>
+  <string name="error_message">Error</string>
+  
+  <!-- Loading -->
+  <string name="loading_create_election">Creating election...</string>
+  
+  <!-- Duration formatting -->
+  <string name="duration_minutes">%d minutes</string>
+  <string name="duration_hour">%d hour</string>
+  <string name="duration_hours">%d hours</string>
+  <string name="duration_hour_minutes">%d hr and %d min</string>
+  <string name="duration_one_selection">One option</string>
+  <string name="duration_max_selections">Up to %d options</string>
+  
+  <!-- Voting window -->
+  <string name="label_closes_in">Closes in</string>
+  <string name="label_closed_already">Closed</string>
+
+  <!-- MODAL DIALOGS -->
+  <string name="modal_ok_btn">OK</string>
+  <string name="modal_close_aria">Close</string>
+
+</resources>

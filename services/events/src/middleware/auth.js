@@ -1,4 +1,5 @@
 const admin = require('../config/firebase');
+const logger = require('../utils/logger');
 
 /**
  * Authentication Middleware
@@ -63,7 +64,12 @@ async function authenticate(req, res, next) {
 
     next();
   } catch (error) {
-    console.error('Authentication error:', error);
+    logger.error('Authentication failed', {
+      operation: 'authenticate',
+      error: error.message,
+      code: error.code,
+      stack: error.stack
+    });
 
     // Handle specific Firebase errors
     if (error.code === 'auth/id-token-expired') {

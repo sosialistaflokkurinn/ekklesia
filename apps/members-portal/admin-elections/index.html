@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Loading...</title>
+  
+  <!-- Global Styles -->
+  <link rel="stylesheet" href="../styles/global.css">
+  <link rel="stylesheet" href="../styles/components/nav.css">
+  <link rel="stylesheet" href="../styles/components/page.css">
+  <link rel="stylesheet" href="../styles/components/toast.css">
+  <link rel="stylesheet" href="../styles/components/modal.css">
+  <link rel="stylesheet" href="../styles/components/badge.css">
+  <link rel="stylesheet" href="../admin/styles/admin.css">
+  <link rel="stylesheet" href="./styles/admin-elections.css">
+  
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  
+  <!-- Firebase Init -->
+  <script type="module" src="../firebase/app.js"></script>
+</head>
+<body class="authenticated admin">
+
+  <!-- Skip Link for Accessibility -->
+  <a href="#main-content" class="u-skip-link">Fara beint í efni</a>
+  
+  <!-- Navigation component inserted here -->
+  
+  <!-- Main Content -->
+  <main class="admin-main" id="main-content">
+    <div class="admin-container">
+
+      <!-- Filters and Search -->
+      <!-- Elections Controls -->
+      <div class="elections-controls">
+        <div class="filters" role="group" aria-label="Síur fyrir kosningar">
+          <button class="filter-btn active" data-filter="all" id="filter-all" aria-pressed="true" aria-label="Sýna allar kosningar">Loading...</button>
+          <button class="filter-btn" data-filter="draft" id="filter-draft" aria-pressed="false" aria-label="Sýna drög">Loading...</button>
+          <button class="filter-btn" data-filter="published" id="filter-published" aria-pressed="false" aria-label="Sýna opnar kosningar">Loading...</button>
+          <button class="filter-btn" data-filter="closed" id="filter-closed" aria-pressed="false" aria-label="Sýna lokaðar kosningar">Loading...</button>
+          <button class="filter-btn" data-filter="hidden" id="filter-hidden" aria-pressed="false" aria-label="Sýna faldar kosningar">Loading...</button>
+        </div>
+        
+        <div class="elections-controls-right">
+          <div class="search-box">
+            <label for="search-input" class="u-sr-only">Leita að kosningum</label>
+            <input 
+              type="text" 
+              id="search-input" 
+              placeholder="Loading..." 
+              class="search-input"
+              aria-label="Leita að kosningum eftir titli eða lýsingu"
+            >
+          </div>
+          
+          <button id="create-election-btn" class="btn btn--primary" aria-label="Stofna nýja kosningu">
+            Loading...
+          </button>
+        </div>
+      </div>
+      
+      <!-- Results Count -->
+      <div class="results-info">
+        <span id="results-count">Loading...</span>
+      </div>
+      
+      <!-- Loading State -->
+      <div id="loading-spinner" class="loading-spinner u-hidden">
+        <div class="spinner"></div>
+        <p id="loading-text">Loading...</p>
+      </div>
+      
+      <!-- Elections Table (Desktop) -->
+      <div class="elections-table-container">
+        <table id="elections-table" class="elections-table">
+          <thead>
+            <tr>
+              <th id="table-header-title">Loading...</th>
+              <th id="table-header-status">Loading...</th>
+              <th id="table-header-dates">Loading...</th>
+              <th id="table-header-votes">Loading...</th>
+              <th id="table-header-actions">Loading...</th>
+            </tr>
+          </thead>
+          <tbody id="elections-tbody">
+            <!-- Rows will be inserted by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Elections Mobile List (Mobile Only) -->
+      <div id="elections-mobile-list" class="elections-mobile-list">
+        <!-- Cards will be inserted by JavaScript -->
+      </div>
+      
+      <!-- Empty State -->
+      <div id="empty-state" class="empty-state" style="display: none;">
+        <div class="empty-state__icon">🗳️</div>
+        <h2 id="empty-state-title">Loading...</h2>
+        <p id="empty-state-description">Loading...</p>
+        <button class="btn btn--primary" id="empty-state-btn">
+          Loading...
+        </button>
+      </div>
+      
+    </div>
+  </main>
+  
+  <!-- Note: Navigation and logout are initialized in elections-list.js -->
+  
+  <!-- Main App -->
+  <script type="module" src="./js/elections-list.js"></script>
+  
+
+  <!-- Initialize Navigation Component -->
+  <script type="module">
+    import { initNavHeader, NAV_CONFIGS } from '../../ui/components/nav-header.js';
+    
+    // Initialize navigation with appropriate config
+    await initNavHeader(NAV_CONFIGS.adminElections);
+  </script>
+
+</body>
+</html>

@@ -445,7 +445,7 @@ Console output:
 
 - **Research:** `/docs/features/SEARCHABLE_SELECT_RESEARCH_2025-11-05.md`
 - **CSS Design System:** `/docs/architecture/CSS_DESIGN_SYSTEM.md`
-- **Component Standards:** `/docs/CODE_STANDARDS.md`
+- **Component Standards:** `/docs/CODE_STANDARDS_MAP.md`
 - **I18N System:** `/docs/systems/INTERNATIONALIZATION.md`
 
 ---

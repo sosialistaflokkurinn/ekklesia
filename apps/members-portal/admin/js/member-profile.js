@@ -13,6 +13,9 @@ import { showStatus } from '../../js/components/status.js';
 import { debug } from '../../js/utils/debug.js';
 import { debounce } from '../../js/utils/debounce.js';
 import { initSearchableSelects } from '../../js/components/searchable-select.js';
+import { requireAdmin } from '../../js/rbac.js';
+// Note: initNavigation import removed - now handled by nav-header component
+import { firebaseApp } from '../../firebase/app.js';
 import { PhoneManager } from '../../js/profile/phone-manager.js';
 import { AddressManager } from '../../js/profile/address-manager.js';
 import { migrateOldPhoneFields, migrateOldAddressFields } from '../../js/profile/migration.js';
@@ -132,6 +135,8 @@ function setI18nStrings() {
 async function init() {
   debug.log('🚀 Member Profile Init');
 
+  // Note: Navigation now initialized by nav-header component
+
   // Load i18n strings first
   await R.load('is');
 
@@ -149,7 +154,7 @@ async function init() {
     return;
   }
 
-  // Handle both formats: with dash (010300-3390) or without (0103003390)
+  // Handle both formats: with dash (999999-9999) or without (9999999999)
   if (currentKennitala && !currentKennitala.includes('-') && currentKennitala.length === 10) {
     // Add dash if missing
     currentKennitala = `${currentKennitala.slice(0, 6)}-${currentKennitala.slice(6)}`;
@@ -221,7 +226,7 @@ async function loadMemberData() {
     debug.log('📦 Member data loaded:', memberData);
 
     // Render profile
-    renderProfile();
+    await renderProfile();
     showProfile();
 
   } catch (error) {
@@ -235,10 +240,10 @@ async function loadMemberData() {
 /**
  * Render profile data to the page
  * Reads from nested memberData structure (profile.*, membership.*, metadata.*)
- * 
- * @returns {void}
+ *
+ * @returns {Promise<void>}
  */
-function renderProfile() {
+async function renderProfile() {
   // Get profile data (data is in memberData.profile.*)
   const profile = memberData.profile || {};
   
@@ -306,6 +311,13 @@ function renderProfile() {
   addressManager.initialize(migratedAddresses);
   addressManager.setupListeners();
   addressManager.render();
+
+  // Auto-save if migration patched addresses (added missing fields)
+  // Use silent mode to avoid showing "Address updated" toast when user didn't change anything
+  if (migratedAddresses._needsSave) {
+    debug.log('🔄 Migration patched addresses, auto-saving to Firestore (silent mode)...');
+    await addressManager.save({ silent: true });
+  }
 
   // Setup field listeners for auto-save
   setupFieldListeners();

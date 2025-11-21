@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Kosningastjórnun - Admin</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+  <!-- Reuse member portal styles -->
+  <link rel="stylesheet" href="/styles/global.css?v=20251106-24">
+  <link rel="stylesheet" href="/styles/components/button.css?v=20251106-24">
+  <link rel="stylesheet" href="/styles/components/nav.css?v=20251106-24">
+  <link rel="stylesheet" href="/styles/components/page.css?v=20251106-24">
+  <link rel="stylesheet" href="/styles/components/countdown-timer.css?v=20251106-24">
+  <link rel="stylesheet" href="/styles/components/schedule-control.css?v=20251106-24">
+
+  <!-- Admin-specific styles -->
+  <link rel="stylesheet" href="/admin/styles/admin.css?v=20251027b">
+</head>
+<body class="authenticated admin">
+
+  <!-- Skip Link for Accessibility -->
+  <a href="#main-content" class="u-skip-link">Fara beint í efni</a>
+
+  <!-- Navigation component inserted here -->
+
+  <!-- Page Content -->
+  <div class="page__container" id="main-content">
+    <!-- Loading State -->
+    <div id="loading-state" class="card">
+      <p>Hleður kosningu...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="error-state" class="card u-hidden">
+      <h2 style="color: var(--color-error-text);">Villa kom upp</h2>
+      <p id="error-message">Gat ekki hlaðið kosningu</p>
+      <button id="retry-button" class="btn">Reyna aftur</button>
+    </div>
+
+    <!-- Election Control Content -->
+    <div id="election-control-content" class="u-hidden">
+      <!-- Election Header -->
+      <div class="card">
+        <h1 class="card__title" id="election-title">Loading...</h1>
+        <p class="u-text-muted" id="election-question">Loading...</p>
+      </div>
+
+      <!-- Schedule Control Component Container -->
+      <div class="card">
+        <h2 class="card__title">Kosningartíðastjórnun</h2>
+        <div id="schedule-control-container">
+          <!-- Schedule control component will be inserted here by JavaScript -->
+        </div>
+      </div>
+
+      <!-- Member View Preview -->
+      <div class="card">
+        <h2 class="card__title">Forskoðun (þannig sjá félagsmenn þetta)</h2>
+        <p class="u-text-muted" style="margin-bottom: var(--spacing-md);">
+          Breytingar uppfærast sjálfkrafa í rauntíma fyrir alla félagsmenn
+        </p>
+        <div id="member-preview-container">
+          <!-- Member view schedule display will be inserted here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/admin-elections/js/election-control.js?v=20251106-24"></script>
+
+  <!-- Initialize Navigation Component -->
+  <script type="module">
+    import { initNavHeader, NAV_CONFIGS } from '../../ui/components/nav-header.js';
+    
+    // Initialize navigation with appropriate config
+    await initNavHeader(NAV_CONFIGS.adminElectionsControl);
+  </script>
+
+</body>
+</html>

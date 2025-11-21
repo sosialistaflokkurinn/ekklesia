@@ -1,0 +1,157 @@
+/**
+ * Button Component Styles
+ *
+ * Reusable button styles for the entire application.
+ * Extracted from global.css (lines 200-291) - Nov 6, 2025
+ *
+ * Usage:
+ * <button class="btn">Primary</button>
+ * <button class="btn btn--secondary">Secondary</button>
+ * <button class="btn btn--danger">Danger</button>
+ * <button class="btn btn--outline">Outline</button>
+ * <button class="btn btn--sm">Small</button>
+ * <button class="btn btn--full-width">Full Width</button>
+ */
+
+/* ========================================== */
+/* BASE BUTTON STYLES */
+/* ========================================== */
+
+.btn {
+  display: inline-block;
+  padding: 12px var(--spacing-lg);
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+}
+
+.btn:hover {
+  background: var(--color-primary-dark);
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.btn:disabled {
+  background: var(--color-gray-300);
+  color: var(--color-gray-600);  /* Dark gray text on light gray bg - GOOD contrast */
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 2px;
+}
+
+/* ========================================== */
+/* BUTTON VARIANTS */
+/* ========================================== */
+
+.btn--primary {
+  /* Alias for base .btn style (primary is the default) */
+  background: var(--color-primary);
+}
+
+.btn--primary:hover {
+  background: var(--color-primary-dark);
+}
+
+.btn--secondary {
+  background: var(--color-primary-light);  /* Lighter red - matches design system */
+  color: white;
+}
+
+.btn--secondary:hover {
+  background: var(--color-primary);  /* Standard red on hover */
+}
+
+.btn--danger {
+  background: var(--color-primary);
+  filter: brightness(0.75);
+}
+
+.btn--danger:hover {
+  background: var(--color-primary);
+  filter: brightness(0.6);
+}
+
+.btn--outline {
+  position: relative;
+  background: var(--color-primary-pale);  /* Very light pink - visible on white */
+  color: var(--color-primary-deep);  /* Darker red for better contrast */
+  border: 2px solid var(--color-primary);  /* Red border */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);  /* Subtle shadow for depth */
+}
+
+.btn--outline:hover:not(:disabled) {
+  background: white;  /* Lighter on hover for "lift" effect */
+  border-color: var(--color-primary-dark);
+  color: var(--color-primary-dark);
+  box-shadow: var(--shadow-primary);
+  transform: translateY(-1px);
+}
+
+.btn--outline:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 2px;
+}
+
+.btn--outline:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: var(--shadow-primary-pressed);
+}
+
+/* Gold Back Button - Special navigation button with gold gradient and red glow */
+.btn--back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, var(--color-accent-gold) 0%, #ffcc00 100%);
+  color: var(--color-black);
+  font-weight: 600;
+  font-size: 16px;
+  text-decoration: none;
+  border-radius: 8px;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(243, 180, 27, 0.3);
+  transition: all 0.3s ease;
+}
+
+.btn--back:hover {
+  background: linear-gradient(135deg, #ffcc00 0%, var(--color-accent-gold) 100%);
+  box-shadow: 0 0 20px rgba(211, 47, 47, 0.6),
+              0 0 40px rgba(211, 47, 47, 0.4),
+              0 4px 12px rgba(243, 180, 27, 0.4);
+  transform: translateY(-2px);
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+.btn--back:active {
+  transform: translateY(0);
+  box-shadow: 0 0 15px rgba(211, 47, 47, 0.5),
+              0 2px 6px rgba(243, 180, 27, 0.3);
+}
+
+/* ========================================== */
+/* SIZE MODIFIERS */
+/* ========================================== */
+
+.btn--sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+.btn--full-width {
+  width: 100%;
+  justify-content: center;
+  margin-bottom: var(--spacing-md);
+}

@@ -18,7 +18,7 @@
  * @returns {boolean} True if debug mode enabled
  */
 function isDebugEnabled() {
-  // Check localStorage
+  // Check localStorage explicitly set to true
   if (typeof localStorage !== 'undefined' && localStorage.getItem('DEBUG') === 'true') {
     return true;
   }
@@ -28,10 +28,10 @@ function isDebugEnabled() {
     return true;
   }
 
-  // Auto-enable on localhost
-  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-    return true;
-  }
+  // Auto-enable on localhost (optional - comment out to disable)
+  // if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+  //   return true;
+  // }
 
   return false;
 }
@@ -94,7 +94,7 @@ export const debug = {
   enable: function() {
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem('DEBUG', 'true');
-      console.log('Debug mode enabled');
+      console.log('✅ Debug mode enabled. Refresh page to see debug messages.');
     }
   },
 
@@ -104,7 +104,12 @@ export const debug = {
   disable: function() {
     if (typeof localStorage !== 'undefined') {
       localStorage.removeItem('DEBUG');
-      console.log('Debug mode disabled');
+      console.log('🛑 Debug mode disabled. Refresh page to hide debug messages.');
     }
   }
 };
+
+// Make debug available globally in browser console for manual control
+if (typeof window !== 'undefined') {
+  window.debug = debug;
+}

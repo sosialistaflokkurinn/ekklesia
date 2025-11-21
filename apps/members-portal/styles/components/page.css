@@ -6,7 +6,7 @@
 
 /* Page layout for authenticated pages */
 body.authenticated {
-  background: var(--color-gray-50);
+  background: var(--color-white);
   min-height: 100vh;
   display: block;
   padding: 0;
@@ -16,6 +16,62 @@ body.authenticated {
   max-width: 1200px;
   margin: 0 auto;
   padding: var(--spacing-xl) var(--spacing-lg);
+}
+
+/* Page Tabs (Sub-navigation) */
+.page__tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid var(--color-border-light);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.page__tab {
+  padding: 0.75rem 1.5rem;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--color-gray-600);
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s;
+  white-space: nowrap;
+  position: relative;
+  bottom: -2px;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.page__tab:hover {
+  color: var(--color-gray-800);
+  background: var(--color-gray-50);
+}
+
+.page__tab--active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  font-weight: 600;
+}
+
+.page__tab--active:hover {
+  background: transparent;
+}
+
+/* Mobile responsiveness for tabs */
+@media (max-width: 640px) {
+  .page__tabs {
+    margin-left: calc(-1 * var(--spacing-lg));
+    margin-right: calc(-1 * var(--spacing-lg));
+    padding-left: var(--spacing-lg);
+    padding-right: var(--spacing-lg);
+  }
+  
+  .page__tab {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
 }
 
 .page__header {
@@ -62,8 +118,17 @@ body.authenticated {
 
 .info-grid__item {
   padding: var(--spacing-md);
-  background: var(--color-gray-50);
+  background: white;
   border-radius: var(--radius-sm);
+  border-left: 4px solid var(--color-accent-gold);
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.info-grid__item:hover {
+  background: white;
+  box-shadow: 0 4px 12px rgba(243, 180, 27, 0.15);
+  transform: translateY(-2px);
 }
 
 .info-grid__label {
@@ -82,7 +147,7 @@ body.authenticated {
 
 /* Welcome message */
 .card--welcome {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary) 100%);
   color: white;
 }
 
@@ -92,6 +157,18 @@ body.authenticated {
 
 .card--welcome .card__content {
   color: rgba(255, 255, 255, 0.9);
+}
+
+/* Links card - elevated with shadow */
+.card--links {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+  transform: translateY(0);
+  transition: all 0.3s ease;
+}
+
+.card--links:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
 }
 
 .role-badges {

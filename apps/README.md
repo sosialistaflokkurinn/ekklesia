@@ -37,14 +37,14 @@ members-portal/
 ```
 
 **Deployment**:
-- Firebase Hosting via `services/members/public` symlink
+- [Firebase Hosting](https://firebase.google.com/docs/hosting) via `services/members/public` symlink
 - Symlink: `services/members/public → ../../apps/members-portal`
 - **All files deployed from this single location**
 
 **Developer Note**:
 - ✅ **Edit files here**: `apps/members-portal/`
 - ❌ **Never edit**: `services/members/public/` (it's just a symlink)
-- 🔍 **VS Code**: Symlink hidden via `.vscode/settings.json` to reduce confusion
+- 🔍 **VS Code**: Symlink hidden via [`.vscode/settings.json`](../.vscode/settings.json) to reduce confusion
 
 **URLs**:
 - Landing page: `/index.html` (login)
@@ -52,12 +52,12 @@ members-portal/
 - Admin pages: `/admin/admin.html`, `/admin/sync-members.html`, etc.
 
 **Technology**:
-- Vanilla JavaScript (ES6 modules)
-- Firebase SDK (Authentication, Firestore)
-- BEM CSS methodology
-- R.string i18n pattern (Icelandic)
+- Vanilla JavaScript ([ES6 modules](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules))
+- [Firebase SDK](https://firebase.google.com/docs/web/setup) (Authentication, Firestore)
+- [BEM CSS methodology](http://getbem.com/) ([CSS Guide](../docs/standards/CSS_BEM_GUIDE.md))
+- [R.string i18n pattern](../docs/standards/I18N_GUIDE.md) (Icelandic)
 
-**Backend**: Cloud Functions in `services/members/functions/`
+**Backend**: [Cloud Functions](https://firebase.google.com/docs/functions) in [`services/members/functions/`](../services/members/functions/)
 
 ---
 
@@ -73,7 +73,7 @@ All admin portal files belong in `apps/members-portal/admin/` subdirectory.
 - Firebase symlink only points to `members-portal/`
 - Editing files in wrong location wastes time (no deployment effect)
 
-**Prevention**: `.gitignore` blocks `apps/admin-portal/` directory creation
+**Prevention**: [`.gitignore`](../.gitignore) blocks `apps/admin-portal/` directory creation
 
 ---
 
@@ -87,7 +87,7 @@ All admin portal files belong in `apps/members-portal/admin/` subdirectory.
    firebase deploy --only hosting
    ```
 
-**Cache Busting**: Update version query parameters in HTML `<script>` tags when deploying JavaScript changes:
+**Cache Busting**: Update version query parameters in HTML `<script>` tags when deploying JavaScript changes ([Firebase Hosting docs](https://firebase.google.com/docs/hosting/manage-cache)):
 ```html
 <script src="/admin/js/sync-members.js?v=1234567890"></script>
 ```

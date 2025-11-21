@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <title>Force Token Refresh</title>
+  <style>
+    body {
+      font-family: system-ui;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+    button {
+      background: #1976d2;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+    button:hover {
+      background: #1565c0;
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    pre {
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+    .success { color: #2e7d32; }
+    .error { color: #c62828; }
+  </style>
+</head>
+<body>
+  <h1>🔄 Force Token Refresh</h1>
+  <p>Þessi síða þvingar Firebase til að refresh-a ID token með nýjustu custom claims.</p>
+  
+  <button id="refreshBtn">🔄 Refresh Token Now</button>
+  <button id="checkBtn" style="background: #388e3c;">✓ Check New Token</button>
+  
+  <h2>Status:</h2>
+  <pre id="output">Click "Refresh Token Now" button...</pre>
+
+  <script type="module">
+    import { getFirebaseAuth } from '/firebase/app.js';
+    const auth = getFirebaseAuth();
+    const output = document.getElementById('output');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const checkBtn = document.getElementById('checkBtn');
+
+    refreshBtn.addEventListener('click', async () => {
+      try {
+        refreshBtn.disabled = true;
+        output.textContent = '⏳ Refreshing token...';
+
+        const user = auth.currentUser;
+        if (!user) {
+          output.innerHTML = '<span class="error">❌ Not logged in!</span>';
+          refreshBtn.disabled = false;
+          return;
+        }
+
+        // Force refresh token (bypasses cache)
+        const newToken = await user.getIdToken(true);
+        
+        // Get the new token result with claims
+        const tokenResult = await user.getIdTokenResult(false);
+        
+        output.innerHTML = `<span class="success">✅ Token refreshed successfully!</span>
+
+<strong>New Roles:</strong> ${JSON.stringify(tokenResult.claims.roles, null, 2)}
+
+<strong>Auth Time:</strong> ${new Date(tokenResult.claims.auth_time * 1000).toISOString()}
+<strong>Issued At:</strong> ${new Date(tokenResult.claims.iat * 1000).toISOString()}
+<strong>Expires:</strong> ${new Date(tokenResult.claims.exp * 1000).toISOString()}
+
+<span class="success">👉 Click "Check New Token" to verify</span>`;
+
+        refreshBtn.disabled = false;
+
+      } catch (error) {
+        output.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+        refreshBtn.disabled = false;
+      }
+    });
+
+    checkBtn.addEventListener('click', async () => {
+      try {
+        const user = auth.currentUser;
+        if (!user) {
+          output.innerHTML = '<span class="error">❌ Not logged in!</span>';
+          return;
+        }
+
+        // Get current token (should be cached new one)
+        const tokenResult = await user.getIdTokenResult(false);
+        
+        output.innerHTML = `<strong>Current Token Claims:</strong>
+
+${JSON.stringify({
+  uid: user.uid,
+  roles: tokenResult.claims.roles,
+  kennitala: tokenResult.claims.kennitala,
+  email: tokenResult.claims.email,
+  isMember: tokenResult.claims.isMember,
+  auth_time: new Date(tokenResult.claims.auth_time * 1000).toISOString(),
+  iat: new Date(tokenResult.claims.iat * 1000).toISOString(),
+  exp: new Date(tokenResult.claims.exp * 1000).toISOString()
+}, null, 2)}`;
+
+      } catch (error) {
+        output.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -373,6 +373,6 @@ All UI text is localized using XML resource files:
 
 ---
 
-**Status**: ✅ Complete and deployed to production
+**Status**: ✅ Complete and deployed (Beta)
 **Date Completed**: 2025-10-28
 **Next Task**: Address editing implementation (Issue #150) - future sprint

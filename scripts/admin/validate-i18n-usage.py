@@ -23,6 +23,7 @@ import re
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from collections import defaultdict
+from typing import Any, List
 
 # Colors for output
 class Colors:
@@ -46,6 +47,11 @@ def find_i18n_xml_files(base_path: Path) -> Any:
     admin_i18n = base_path / 'apps' / 'members-portal' / 'admin' / 'i18n' / 'values-is' / 'strings.xml'
     if admin_i18n.exists():
         xml_files.append(('admin', admin_i18n))
+
+    # Admin Elections i18n (NEW)
+    admin_elections_i18n = base_path / 'apps' / 'members-portal' / 'admin-elections' / 'i18n' / 'values-is' / 'strings.xml'
+    if admin_elections_i18n.exists():
+        xml_files.append(('admin-elections', admin_elections_i18n))
 
     return xml_files
 
@@ -79,6 +85,11 @@ def find_dynamic_string_families(base_path: Path, context: str) -> Any:
         search_paths = [
             base_path / 'apps' / 'members-portal' / 'admin' / 'js',
             base_path / 'apps' / 'members-portal' / 'admin'
+        ]
+    elif context == 'admin-elections':
+        search_paths = [
+            base_path / 'apps' / 'members-portal' / 'admin-elections' / 'js',
+            base_path / 'apps' / 'members-portal' / 'admin-elections'
         ]
     else:  # members
         search_paths = [
@@ -143,6 +154,18 @@ def search_string_usage(base_path: Path, string_name: str, context: str, dynamic
             rf'strings\.({string_name})\b',                       # strings.key (admin pattern)
             rf'\$\{{R\.string\.({string_name})\}}',              # ${R.string.key}
             rf'\$\{{strings\.({string_name})\}}',                # ${strings.key}
+            rf'data-i18n=[\'"]({string_name})[\'"]',             # data-i18n="key"
+        ]
+    elif context == 'admin-elections':
+        search_paths = [
+            base_path / 'apps' / 'members-portal' / 'admin-elections' / 'js',
+            base_path / 'apps' / 'members-portal' / 'admin-elections'
+        ]
+        patterns = [
+            rf'R\.string\.({string_name})\b',                    # R.string.key
+            rf'R\.format\(["\']?R\.string\.({string_name})',     # R.format(R.string.key, ...)
+            rf'R\.get\([\'"]({string_name})[\'"]\)',             # R.get('key')
+            rf'\$\{{R\.string\.({string_name})\}}',              # ${R.string.key}
             rf'data-i18n=[\'"]({string_name})[\'"]',             # data-i18n="key"
         ]
     else:  # members

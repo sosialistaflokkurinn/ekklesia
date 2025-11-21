@@ -11,14 +11,22 @@
  * - GET /api/elections/:id/results - Get election results
  */
 
-import { MockElectionsAPI } from './elections-mock.js';
+import { MockElectionsAPI } from '../../elections/js/api/elections-mock.js';
 import { debug } from '../utils/debug.js';
 import { authenticatedFetch } from '../auth.js';
 
 // DEVELOPMENT FLAG: Toggle between mock and real API
-const USE_MOCK_API = true;
+// NOTE: Real API endpoints implemented in Issue #248
+// Backend is live at https://elections-service-521240388393.europe-west2.run.app
+const USE_MOCK_API = false;
 
 // Production Elections Service URL
+/**
+ * Elections API Base URL
+ * 
+ * Backend is live at https://elections-service-ymzrguoifa-nw.a.run.app
+ * Deployed: Cloud Run (Europe West 2)
+ */
 const ELECTIONS_API_BASE = 'https://elections-service-ymzrguoifa-nw.a.run.app';
 
 /**
@@ -85,10 +93,36 @@ export async function getElectionById(electionId) {
       throw new Error(`API error: ${response.status}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    return data.election;  // Extract election object from response wrapper
 
   } catch (error) {
     debug.error(`Error fetching election ${electionId}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Get single election details (Admin API)
+ * Used for viewing draft/hidden elections in admin interface
+ *
+ * @param {string} electionId - Election ID
+ * @returns {Promise<Object>} Election object with full details
+ */
+export async function getAdminElectionById(electionId) {
+  try {
+    const url = `${ELECTIONS_API_BASE}/api/admin/elections/${electionId}`;
+    const response = await authenticatedFetch(url);
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.election || data;  // Handle both response formats
+
+  } catch (error) {
+    debug.error(`Error fetching admin election ${electionId}:`, error);
     throw error;
   }
 }
@@ -114,8 +148,9 @@ export async function submitVote(electionId, answerId) {
 
   try {
     const url = `${ELECTIONS_API_BASE}/api/elections/${electionId}/vote`;
+    // Backend expects answer_ids as array (supports multi-choice elections)
     const payload = {
-      answer_id: answerId
+      answer_ids: Array.isArray(answerId) ? answerId : [answerId]
     };
 
     const response = await authenticatedFetch(url, {
@@ -179,6 +214,190 @@ export async function getResults(electionId) {
 
   } catch (error) {
     debug.error(`Error fetching results for election ${electionId}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Get policy session by ID
+ *
+ * @param {string} sessionId - Policy session identifier
+ * @returns {Promise<Object>} Policy session object with policy_draft, amendments, final_vote
+ */
+export async function getPolicySession(sessionId) {
+  if (USE_MOCK_API) {
+    return MockElectionsAPI.getPolicySession(sessionId);
+  }
+
+  try {
+    const url = `${ELECTIONS_API_BASE}/api/policy-sessions/${sessionId}`;
+    const response = await authenticatedFetch(url);
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    return await response.json();
+
+  } catch (error) {
+    debug.error(`Error fetching policy session ${sessionId}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Submit amendment during break period
+ *
+ * @param {string} sessionId - Policy session identifier
+ * @param {Object} amendmentData - { section_id, proposed_text, rationale }
+ * @returns {Promise<Object>} { success, message, amendment_id }
+ */
+export async function submitAmendment(sessionId, amendmentData) {
+  if (USE_MOCK_API) {
+    return MockElectionsAPI.submitAmendment(sessionId, amendmentData);
+  }
+
+  try {
+    const url = `${ELECTIONS_API_BASE}/api/policy-sessions/${sessionId}/amendments`;
+    const response = await authenticatedFetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(amendmentData)
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    return await response.json();
+
+  } catch (error) {
+    debug.error(`Error submitting amendment to session ${sessionId}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Vote on amendment in policy session
+ *
+ * @param {string} sessionId - Policy session identifier
+ * @param {string} amendmentId - Amendment identifier
+ * @param {string} vote - 'yes' or 'no'
+ * @returns {Promise<Object>} { success, message, vote_id }
+ */
+export async function voteOnAmendment(sessionId, amendmentId, vote) {
+  if (USE_MOCK_API) {
+    return MockElectionsAPI.voteOnAmendment(sessionId, amendmentId, vote);
+  }
+
+  try {
+    const url = `${ELECTIONS_API_BASE}/api/policy-sessions/${sessionId}/amendments/${amendmentId}/vote`;
+    const response = await authenticatedFetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vote })
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    return await response.json();
+
+  } catch (error) {
+    debug.error(`Error voting on amendment:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Vote on policy item (original section) in policy session
+ *
+ * @param {string} sessionId - Policy session identifier
+ * @param {string} itemId - Policy item/section identifier
+ * @param {string} vote - 'yes' or 'no'
+ * @returns {Promise<Object>} { success, message, vote_id }
+ */
+export async function voteOnPolicyItem(sessionId, itemId, vote) {
+  if (USE_MOCK_API) {
+    return MockElectionsAPI.voteOnPolicyItem(sessionId, itemId, vote);
+  }
+
+  try {
+    const url = `${ELECTIONS_API_BASE}/api/policy-sessions/${sessionId}/items/${itemId}/vote`;
+    const response = await authenticatedFetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vote })
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    return await response.json();
+
+  } catch (error) {
+    debug.error(`Error voting on policy item:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Vote on final policy (Yes/No/Abstain)
+ *
+ * @param {string} sessionId - Policy session identifier
+ * @param {string} vote - 'yes', 'no', or 'abstain'
+ * @returns {Promise<Object>} { success, message, vote_id }
+ */
+export async function voteOnFinalPolicy(sessionId, vote) {
+  if (USE_MOCK_API) {
+    return MockElectionsAPI.voteOnFinalPolicy(sessionId, vote);
+  }
+
+  try {
+    const url = `${ELECTIONS_API_BASE}/api/policy-sessions/${sessionId}/vote`;
+    const response = await authenticatedFetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vote })
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    return await response.json();
+
+  } catch (error) {
+    debug.error(`Error voting on final policy for session ${sessionId}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Get policy session results
+ *
+ * @param {string} sessionId - Policy session identifier
+ * @returns {Promise<Object>} Aggregated results with amendment_results and final_policy_results
+ */
+export async function getPolicyResults(sessionId) {
+  if (USE_MOCK_API) {
+    return MockElectionsAPI.getPolicyResults(sessionId);
+  }
+
+  try {
+    const url = `${ELECTIONS_API_BASE}/api/policy-sessions/${sessionId}/results`;
+    const response = await authenticatedFetch(url);
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    return await response.json();
+
+  } catch (error) {
+    debug.error(`Error fetching results for policy session ${sessionId}:`, error);
     throw error;
   }
 }

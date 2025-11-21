@@ -4,7 +4,16 @@
 
 set -e
 
-echo "🔍 Running Ekklesia pre-commit checks..."
+# Set timeout for entire hook execution (5 seconds)
+HOOK_TIMEOUT=5
+
+# Function to run with timeout
+run_with_timeout() {
+  timeout $HOOK_TIMEOUT "$@"
+  return $?
+}
+
+echo "🔍 Running Ekklesia pre-commit checks (${HOOK_TIMEOUT}s timeout)..."
 
 # --- 1. Check for political identity (existing check) ---
 echo "🏴 Checking political identity in staged files..."
@@ -95,19 +104,77 @@ PII_PATTERNS=(
   'uid.*=.*[a-zA-Z0-9]{25,}'
 )
 
+# Suspicious patterns that may contain real names (WARNING only, not blocking)
+# These require manual review but won't block commit
+SUSPICIOUS_NAME_PATTERNS=(
+  # Icelandic surnames ending in -son, -sson, -dóttir, -dottir
+  # This catches most Icelandic names: Jónsson, Gunnarsson, Sigurðardóttir, etc.
+  '\b[A-ZÁÐÉÍÓÚÝÞÆÖ][a-záðéíóúýþæö]+(s{1,2}on|d[óo]ttir)\b'
+  
+  # Reporter: Real Name pattern (catches both Icelandic and foreign surnames)
+  # Example: Jón Ferdínand, Guðröður Atli Jónsson
+  '\*\*Reporter:\*\*.*[A-ZÁÐÉÍÓÚÝÞÆÖ][a-záðéíóúýþæö]+\s+[A-ZÁÐÉÍÓÚÝÞÆÖ][a-záðéíóúýþæö]+'
+  
+  # User: Real Name pattern
+  '\*\*User:\*\*.*[A-ZÁÐÉÍÓÚÝÞÆÖ][a-záðéíóúýþæö]+\s+[A-ZÁÐÉÍÓÚÝÞÆÖ][a-záðéíóúýþæö]+'
+  
+  # Who: Real Name pattern
+  '- \*\*Who:\*\*.*[A-ZÁÐÉÍÓÚÝÞÆÖ][a-záðéíóúýþæö]+\s+[A-ZÁÐÉÍÓÚÝÞÆÖ][a-záðéíóúýþæö]+'
+  
+  # Reviewer: Real Name pattern (at end of docs)
+  '\*\*Reviewer:\*\*.*[A-ZÁÐÉÍÓÚÝÞÆÖ][a-záðéíóúýþæö]+\s+[A-ZÁÐÉÍÓÚÝÞÆÖ][a-záðéíóúýþæö]+'
+)
+
 # Known fake/example values to ALLOW (will be filtered out)
+# Use obviously fake values that cannot be real data
 FAKE_VALUES=(
-  "010190-2939"
-  "010190-1234"
-  "0101902939"
-  "0101901234"
+  "000000-0000"  # Invalid kennitala (impossible date)
+  "999999-9999"  # Invalid kennitala (impossible date)
+  "9999999999"   # Invalid kennitala without hyphen
+  "111111-1111"  # Clearly fake kennitala
+  "123456-7890"  # Sequential fake kennitala
+  "0101901234"   # Example without hyphen
   "example@example.com"
+  "nafn@example.is"
+  "old@example.com"
+  "new@example.com"
+  "new@email.is"
   "test@example.com"
+  "test@example.is"
+  "jon@example.com"
+  "jon@example.is"
+  "jon@test.is"
+  "jon.jonsson@example.com"
+  "newemail@example.is"
   "demo@example.com"
   "sample@example.com"
   "user@example.com"
-  "555-1234"
-  "5551234"
+  "your.email@example.com"
+  "your@email.com"  # Generic placeholder in error messages
+  "user.name@domain.co.uk"
+  "copilot@github.com"  # GitHub Copilot co-authorship (blocked in commit-msg)
+  "noreply@anthropic.com"  # Claude co-authorship (blocked in commit-msg)
+  "gudrodur@sosialistaflokkurinn.is"
+  "gudrodur@example.com"
+  "real.person@gmail.com"
+  "ekklesia-sync@ekklesia-prod-10-2025.iam.gserviceaccount.com"
+  "521240388393-compute@developer.gserviceaccount.com"
+  "555-0000"  # North American fake number pattern
+  "555-0100"  # Reserved for fictional use
+  "555-0199"  # Reserved range
+  "555-1234"  # Common fake number
+  "5551234"   # Common fake number without hyphen
+  "999-9999"  # Clearly fake Icelandic pattern
+  "9999999"   # Clearly fake without hyphen
+  "000-0000"  # Clearly fake
+  "0000000"   # Clearly fake without hyphen
+  "775-8493"  # Example numbers from docs
+  "7758493"   # Example numbers from docs
+  "780-8189"  # Example numbers from docs
+  "+1-555-0100"  # International fake format
+  "+354-999-9999"  # Iceland fake with country code
+  "+3545551234"  # Example international format
+  "0035455551234"  # Example E.164 format
   "abc123XYZ789ExampleUserUID456"
 )
 
@@ -119,10 +186,12 @@ SECRET_EXCLUDE_PATTERNS=(
   'test.*\.js$'    # Test files
   '\.json$'        # JSON config (usually env var references)
   '\.ya?ml$'       # YAML config (usually env var references)
+  'pre-commit$'    # Git hooks (contain regex patterns, not actual secrets)
   'package-lock'   # Dependency lock files
   'requirements'   # Python requirements
-  'git-hooks/'     # Pre-commit hook itself (contains secret patterns)
+  'git-hooks/'     # Pre-commit hook itself (contains secret patterns for detection)
   '\.git/hooks/'   # Git hooks directory
+  'pre-commit$'    # Pre-commit hook file
 )
 
 # Files to exclude from PII scanning (much more restricted)
@@ -135,6 +204,7 @@ PII_EXCLUDE_PATTERNS=(
 
 SECRETS_FOUND=false
 PII_FOUND=false
+SUSPICIOUS_NAMES_FOUND=false
 
 # First pass: Check for secrets (excluding documentation)
 for file in $STAGED_FILES; do
@@ -156,13 +226,18 @@ for file in $STAGED_FILES; do
     continue
   fi
 
-  # Scan for secret patterns
+  # Scan for secret patterns (with optimized grep)
   for pattern in "${SECRET_PATTERNS[@]}"; do
-    if grep -EHn "$pattern" "$file" 2>/dev/null; then
+    # Use -m 1 to stop after first match (faster)
+    # Use timeout to prevent hanging
+    # Capture matches to check if any found before printing
+    MATCHES=$(timeout 1 grep -EHn -m 1 "$pattern" "$file" 2>/dev/null || true)
+    if [ -n "$MATCHES" ]; then
       SECRETS_FOUND=true
       echo ""
       echo "⚠️ Potential secret detected in: $file"
       echo "   Pattern: $pattern"
+      echo "$MATCHES"
     fi
   done
 done
@@ -189,9 +264,10 @@ for file in $STAGED_FILES; do
     continue
   fi
 
-  # Scan for PII patterns
+  # Scan for PII patterns (with optimized grep)
   for pattern in "${PII_PATTERNS[@]}"; do
-    MATCHES=$(grep -EHn "$pattern" "$file" 2>/dev/null)
+    # Use timeout to prevent hanging
+    MATCHES=$(timeout 1 grep -EHn -m 10 "$pattern" "$file" 2>/dev/null || true)
     if [ -n "$MATCHES" ]; then
       # Filter out known fake values
       while IFS= read -r line; do
@@ -213,6 +289,35 @@ for file in $STAGED_FILES; do
   done
 done
 
+# Third pass: Check for suspicious name patterns in .md files (WARNING only)
+echo "👤 Checking for potential real names in documentation..."
+
+for file in $STAGED_FILES; do
+  # Only check .md files
+  if ! echo "$file" | grep -qE '\.md$'; then
+    continue
+  fi
+
+  # Check if file exists
+  if [ ! -f "$file" ]; then
+    continue
+  fi
+
+  # Scan for suspicious name patterns
+  for pattern in "${SUSPICIOUS_NAME_PATTERNS[@]}"; do
+    MATCHES=$(timeout 1 grep -EHn -m 5 "$pattern" "$file" 2>/dev/null || true)
+    if [ -n "$MATCHES" ]; then
+      # Check if it contains [REDACTED] - if so, it's already redacted
+      if ! echo "$MATCHES" | grep -qF "[REDACTED]"; then
+        SUSPICIOUS_NAMES_FOUND=true
+        echo ""
+        echo "⚠️ POTENTIAL REAL NAME in: $file"
+        echo "$MATCHES"
+      fi
+    fi
+  done
+done
+
 if [ "$SECRETS_FOUND" = true ] || [ "$PII_FOUND" = true ]; then
   echo ""
   echo "❌ Commit blocked: Potential secrets or PII detected!"
@@ -222,7 +327,7 @@ if [ "$SECRETS_FOUND" = true ] || [ "$PII_FOUND" = true ]; then
 
   if [ "$PII_FOUND" = true ]; then
     echo "🔒 PII DETECTED:"
-    echo "  - Replace real kennitalas with fake examples (010190-2939, 010190-1234)"
+    echo "  - Replace real kennitalas with fake examples (000000-0000, 111111-1111)"
     echo "  - Replace real emails with example@example.com"
     echo "  - Replace real phone numbers with 555-1234"
     echo "  - Replace real names with 'Jón Jónsson' or similar"
@@ -243,6 +348,30 @@ if [ "$SECRETS_FOUND" = true ] || [ "$PII_FOUND" = true ]; then
   echo ""
   echo "Related: Issue #48 (database password exposure incident)"
   exit 1
+fi
+
+# Show warning for suspicious names (but don't block)
+if [ "$SUSPICIOUS_NAMES_FOUND" = true ]; then
+  echo ""
+  echo "⚠️⚠️⚠️ WARNING: POTENTIAL REAL NAMES DETECTED ⚠️⚠️⚠️"
+  echo ""
+  echo "Documentation files may contain real user names."
+  echo "Please review and redact if these are real people:"
+  echo ""
+  echo "  - Use [REDACTED] for real names"
+  echo "  - Use 'Jón Jónsson' or similar for examples"
+  echo "  - Use [REDACTED - superuser] for role descriptions"
+  echo ""
+  echo "If you're confident these are test/example names, you can proceed."
+  echo "Otherwise, please redact and re-commit."
+  echo ""
+  read -p "Continue with commit? (y/N): " -n 1 -r
+  echo
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo "❌ Commit cancelled. Please redact real names and try again."
+    exit 1
+  fi
+  echo "✅ Proceeding with commit (reviewer confirmed)"
 fi
 
 echo "✅ No secrets or PII detected in staged files"

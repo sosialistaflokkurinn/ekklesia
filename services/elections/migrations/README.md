@@ -193,6 +193,5 @@ With 100 max instances = 200 total connections (requires db-g1-small for large m
 
 ## Related Documentation
 
-- [docs/design/ELECTIONS_SERVICE_MVP.md](../../docs/design/ELECTIONS_SERVICE_MVP.md) - Service design
-- [docs/USAGE_CONTEXT.md](../../docs/USAGE_CONTEXT.md) - Load patterns (300 votes/sec)
-- [docs/OPERATIONAL_PROCEDURES.md](../../docs/OPERATIONAL_PROCEDURES.md) - Meeting day operations
+- [docs/development/guides/workflows/USAGE_CONTEXT.md](../../../docs/development/guides/workflows/USAGE_CONTEXT.md) - Load patterns (300 votes/sec)
+- [docs/operations/OPERATIONAL_PROCEDURES.md](../../../docs/operations/OPERATIONAL_PROCEDURES.md) - Meeting day operations

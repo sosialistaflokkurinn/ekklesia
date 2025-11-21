@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Loading...</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/styles/global.css?v=20251027">
+  <link rel="stylesheet" href="/styles/components/nav.css?v=20251027">
+  <link rel="stylesheet" href="/styles/components/page.css?v=20251027">
+  <link rel="stylesheet" href="/styles/elections.css?v=20251027">
+</head>
+<body class="authenticated">
+  <!-- Navigation component inserted here -->
+
+  <div class="page__container">
+    <section class="elections">
+      <div class="elections__header">
+        <h1 id="elections-title">Loading...</h1>
+        <p id="elections-subtitle">Loading...</p>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div class="elections__filters">
+        <button class="elections__filter-btn elections__filter-btn--active" data-filter="all" id="filter-all">
+          <span id="filter-all-text">Loading...</span>
+          <span class="elections__filter-count" id="count-all">0</span>
+        </button>
+        <button class="elections__filter-btn" data-filter="active" id="filter-active">
+          <span id="filter-active-text">Loading...</span>
+          <span class="elections__filter-count" id="count-active">0</span>
+        </button>
+        <button class="elections__filter-btn" data-filter="upcoming" id="filter-upcoming">
+          <span id="filter-upcoming-text">Loading...</span>
+          <span class="elections__filter-count" id="count-upcoming">0</span>
+        </button>
+        <button class="elections__filter-btn" data-filter="closed" id="filter-closed">
+          <span id="filter-closed-text">Loading...</span>
+          <span class="elections__filter-count" id="count-closed">0</span>
+        </button>
+      </div>
+
+      <!-- Loading State -->
+      <div id="elections-loading" class="elections__loading u-hidden">
+        <div class="spinner"></div>
+        <p id="loading-message">Loading...</p>
+      </div>
+
+      <!-- Error State -->
+      <div id="elections-error" class="elections__error u-hidden">
+        <p id="error-message">Loading...</p>
+        <!-- Retry button created dynamically by elections.js -->
+      </div>
+
+      <!-- Empty State -->
+      <div id="elections-empty" class="elections__empty u-hidden">
+        <p id="empty-message">Loading...</p>
+      </div>
+
+      <!-- Elections Container -->
+      <div id="elections-list" class="elections__list"></div>
+    </section>
+  </div>
+
+  <script type="module" src="./js/elections-list.js?v=20251027"></script>
+
+  <!-- Initialize Navigation Component -->
+  <script type="module">
+    import { initNavHeader, NAV_CONFIGS } from '../ui/components/nav-header.js';
+    
+    // Initialize navigation with appropriate config
+    await initNavHeader(NAV_CONFIGS.elections);
+  </script>
+
+</body>
+</html>

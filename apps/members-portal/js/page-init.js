@@ -16,7 +16,7 @@
 
 import { R } from '../i18n/strings-loader.js';
 import { requireAuth, signOut, getUserData } from '../session/auth.js';
-import { initNavigation } from './nav.js';
+// Note: initNavigation import removed - now handled by nav-header component
 
 /**
  * Initialize i18n and load strings for Icelandic locale
@@ -36,12 +36,19 @@ export async function initI18n() {
  * Also sets ARIA labels for hamburger menu and data attributes for dynamic label toggling.
  */
 export function updateNavigation() {
-  document.getElementById('nav-brand').textContent = R.string.nav_brand;
-  document.getElementById('nav-dashboard').textContent = R.string.nav_dashboard;
-  document.getElementById('nav-profile').textContent = R.string.nav_profile;
-  document.getElementById('nav-events').textContent = R.string.nav_events;
-  document.getElementById('nav-voting').textContent = R.string.nav_voting;
-  document.getElementById('nav-logout').textContent = R.string.nav_logout;
+  const navBrand = document.getElementById('nav-brand');
+  const navDashboard = document.getElementById('nav-dashboard');
+  const navProfile = document.getElementById('nav-profile');
+  const navEvents = document.getElementById('nav-events');
+  const navVoting = document.getElementById('nav-voting');
+  const navLogout = document.getElementById('nav-logout');
+
+  if (navBrand) navBrand.textContent = R.string.nav_brand;
+  if (navDashboard) navDashboard.textContent = R.string.nav_dashboard;
+  if (navProfile) navProfile.textContent = R.string.nav_profile;
+  if (navEvents) navEvents.textContent = R.string.nav_events;
+  if (navVoting) navVoting.textContent = R.string.nav_voting;
+  if (navLogout) navLogout.textContent = R.string.nav_logout;
 
   // Set ARIA labels for hamburger menu button (FIX #5: i18n localization)
   const hamburger = document.getElementById('nav-hamburger');
@@ -70,12 +77,23 @@ export function updateNavigation() {
  * Setup logout button click handler
  *
  * Attaches event listener to logout link that signs out
- * the user and redirects to login page.
+ * the user and redirects to home page (/).
  */
 export function setupLogout() {
   document.getElementById('nav-logout').addEventListener('click', async (e) => {
     e.preventDefault();
-    await signOut();
+    try {
+      // Redirect to home page after logout.
+      // NOTE: This is a deliberate change from the previous behavior, which redirected to '/session/login.html'.
+      // Rationale: After logout, users are sent to the home page ('/') which now provides a clear login option.
+      // This improves user experience and ensures users can easily log in again if desired.
+      await signOut();
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Still redirect even if signOut fails to avoid stuck UI
+      window.location.href = '/';
+    }
   });
 }
 
@@ -97,14 +115,8 @@ export async function initAuthenticatedPage() {
   // Load i18n strings
   await initI18n();
 
-  // Update navigation
-  updateNavigation();
-
-  // Setup logout handler
-  setupLogout();
-
-  // Initialize mobile hamburger menu
-  initNavigation();
+  // Note: Navigation text, logout handler, and hamburger menu now managed by nav-header component
+  // (component loads i18n and creates nav with correct strings automatically)
 
   // Auth guard - redirect if not authenticated
   const user = await requireAuth();

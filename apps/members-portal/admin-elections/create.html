@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Stofna kosningu - Admin</title>
+  
+  <!-- DEBUG LOGGER - Auto-activates on LM-G710 (Jón's device) for election creation debugging -->
+  <script src="js/debug-logger.js"></script>
+  
+  <!-- Global Styles -->
+  <link rel="stylesheet" href="../styles/global.css">
+  <link rel="stylesheet" href="../styles/components/nav.css">
+  <link rel="stylesheet" href="../admin/styles/admin.css">
+  <link rel="stylesheet" href="./styles/admin-elections.css">
+  <link rel="stylesheet" href="./styles/election-wizard.css">
+  
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  
+  <!-- Firebase Init -->
+  <script type="module" src="../firebase/app.js"></script>
+</head>
+<body class="authenticated admin">
+
+  <!-- Skip Link for Accessibility -->
+  <a href="#main-content" class="u-skip-link">Fara beint í efni</a>
+  
+  <!-- Navigation component inserted here -->
+  
+  <!-- Main Content -->
+  <main class="admin-main" id="main-content">
+    <div class="wizard-container">
+      
+      <!-- Header -->
+      <header class="wizard-header">
+        <a href="/admin-elections/" class="back-link" id="back-link">← Loading...</a>
+        <h1 id="page-heading">Loading...</h1>
+      </header>
+      
+      <!-- Progress Steps -->
+      <div class="wizard-progress">
+        <div class="wizard-step active" data-step="1">
+          <div class="step-number">1</div>
+          <div class="step-label" id="wizard-step-1-label">Loading...</div>
+        </div>
+        <div class="wizard-step" data-step="2">
+          <div class="step-number">2</div>
+          <div class="step-label" id="wizard-step-2-label">Loading...</div>
+        </div>
+        <div class="wizard-step" data-step="3">
+          <div class="step-number">3</div>
+          <div class="step-label" id="wizard-step-3-label">Loading...</div>
+        </div>
+        <div class="wizard-step" data-step="4">
+          <div class="step-number">4</div>
+          <div class="step-label" id="wizard-step-4-label">Loading...</div>
+        </div>
+      </div>
+      
+      <!-- Wizard Form -->
+      <form id="election-wizard-form" class="wizard-form">
+        
+        <!-- Step 1: Basic Info -->
+        <div class="wizard-content" data-step="1">
+          <h2 id="step-1-title">Loading...</h2>
+          <p class="step-description" id="step-1-description">Loading...</p>
+          
+          <div class="form-group">
+            <label for="election-title" class="required" id="label-election-title">Loading...</label>
+            <input 
+              type="text" 
+              id="election-title" 
+              name="title" 
+              class="form-control" 
+              placeholder="Loading..."
+              required
+              maxlength="200"
+            >
+            <small class="form-text" id="help-election-title">Loading...</small>
+          </div>
+          
+          <div class="form-group">
+            <label for="election-question" class="required" id="label-election-question">Loading...</label>
+            <input 
+              type="text" 
+              id="election-question" 
+              name="question" 
+              class="form-control" 
+              placeholder="Loading..."
+              required
+              maxlength="500"
+            >
+            <small class="form-text" id="help-election-question">Loading...</small>
+          </div>
+          
+          <div class="form-group">
+            <label for="election-description" id="label-election-description">Loading...</label>
+            <textarea 
+              id="election-description" 
+              name="description" 
+              class="form-control" 
+              rows="4"
+              placeholder="Loading..."
+              maxlength="2000"
+            ></textarea>
+            <small class="form-text" id="help-election-description">Loading...</small>
+          </div>
+        </div>
+        
+        <!-- Step 2: Answer Options -->
+        <div class="wizard-content" data-step="2" style="display: none;">
+          <h2 id="step-2-title">Loading...</h2>
+          <p class="step-description" id="step-2-description">Loading...</p>
+          
+          <!-- Voting Type -->
+          <div class="form-group">
+            <label class="required" id="label-voting-type">Loading...</label>
+            <div class="radio-group">
+              <label class="radio-label">
+                <input 
+                  type="radio" 
+                  name="voting_type" 
+                  value="single-choice" 
+                  checked
+                >
+                <span class="radio-text">
+                  <strong id="voting-type-single">Loading...</strong>
+                  <small id="voting-type-single-desc">Loading...</small>
+                </span>
+              </label>
+              <label class="radio-label">
+                <input 
+                  type="radio" 
+                  name="voting_type" 
+                  value="multi-choice"
+                >
+                <span class="radio-text">
+                  <strong id="voting-type-multi">Loading...</strong>
+                  <small id="voting-type-multi-desc">Loading...</small>
+                </span>
+              </label>
+            </div>
+          </div>
+          
+          <!-- Max Selections (for multi-choice) -->
+          <div id="max-selections-group" class="form-group" style="display: none;">
+            <label for="max-selections" class="required" id="label-max-selections">Loading...</label>
+            <input 
+              type="number" 
+              id="max-selections" 
+              name="max_selections" 
+              class="form-control" 
+              min="1" 
+              max="10" 
+              value="2"
+            >
+            <small class="form-text" id="help-max-selections">Loading...</small>
+          </div>
+          
+          <!-- Answer Options -->
+          <div class="form-group">
+            <label class="required" id="label-answer-options">Loading...</label>
+            <div id="answers-container">
+              <!-- Answer items will be added here -->
+            </div>
+            <button type="button" id="add-answer-btn" class="btn btn--secondary">
+              Loading...
+            </button>
+            <small class="form-text" id="help-answer-options">Loading...</small>
+          </div>
+        </div>
+        
+        <!-- Step 3: Schedule -->
+        <div class="wizard-content" data-step="3" style="display: none;">
+          <h2 id="step-3-title">Loading...</h2>
+          <p class="step-description" id="step-3-description">Loading...</p>
+          
+          <div class="form-group">
+            <label class="required" id="label-start-timing">Loading...</label>
+            <div class="radio-group">
+              <label class="radio-label">
+                <input 
+                  type="radio" 
+                  name="start_timing" 
+                  value="immediate" 
+                  checked
+                >
+                <span class="radio-text">
+                  <strong id="start-immediate">Loading...</strong>
+                  <small id="start-immediate-desc">Loading...</small>
+                </span>
+              </label>
+              <label class="radio-label">
+                <input 
+                  type="radio" 
+                  name="start_timing" 
+                  value="scheduled"
+                >
+                <span class="radio-text">
+                  <strong id="start-scheduled">Loading...</strong>
+                  <small id="start-scheduled-desc">Loading...</small>
+                </span>
+              </label>
+            </div>
+          </div>
+          
+          <!-- Scheduled Start Time -->
+          <div id="scheduled-start-group" class="form-group" style="display: none;">
+            <label for="scheduled-start" id="label-scheduled-start">Loading...</label>
+            <input 
+              type="datetime-local" 
+              id="scheduled-start" 
+              name="scheduled_start" 
+              class="form-control"
+            >
+          </div>
+          
+          <!-- Duration -->
+          <div class="form-group">
+            <label class="required" id="label-duration">Loading...</label>
+            <div class="duration-options">
+              <button type="button" class="duration-btn" data-minutes="1" id="duration-1min">Loading...</button>
+              <button type="button" class="duration-btn active" data-minutes="2" id="duration-2min">Loading...</button>
+              <button type="button" class="duration-btn" data-minutes="3" id="duration-3min">Loading...</button>
+              <button type="button" class="duration-btn" data-minutes="custom" id="duration-custom">Loading...</button>
+            </div>
+            <input 
+              type="hidden" 
+              id="duration-minutes" 
+              name="duration_minutes" 
+              value="2"
+            >
+          </div>
+          
+          <!-- Custom Duration -->
+          <div id="custom-duration-group" class="form-group" style="display: none;">
+            <label for="custom-duration" id="label-custom-duration">Loading...</label>
+            <input 
+              type="number" 
+              id="custom-duration" 
+              class="form-control" 
+              min="1" 
+              max="10080" 
+              placeholder="Loading..."
+            >
+            <small class="form-text" id="help-custom-duration">Loading...</small>
+          </div>
+          
+          <!-- Or Manual End Time -->
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="use-manual-end-time">
+              <span id="label-use-manual-end">Loading...</span>
+            </label>
+          </div>
+          
+          <div id="manual-end-time-group" class="form-group" style="display: none;">
+            <label for="scheduled-end" id="label-scheduled-end">Loading...</label>
+            <input 
+              type="datetime-local" 
+              id="scheduled-end" 
+              name="scheduled_end" 
+              class="form-control"
+            >
+          </div>
+        </div>
+        
+        <!-- Step 4: Review -->
+        <div class="wizard-content" data-step="4" style="display: none;">
+          <h2 id="step-4-title">Loading...</h2>
+          <p class="step-description" id="step-4-description">Loading...</p>
+          
+          <div class="review-section">
+            <h3 id="review-section-basic">Loading...</h3>
+            <dl class="review-list">
+              <dt id="review-label-title">Loading...</dt>
+              <dd id="review-title">-</dd>
+              
+              <dt id="review-label-question">Loading...</dt>
+              <dd id="review-question">-</dd>
+              
+              <dt id="review-label-description">Loading...</dt>
+              <dd id="review-description">-</dd>
+            </dl>
+          </div>
+          
+          <div class="review-section">
+            <h3 id="review-section-answers">Loading...</h3>
+            <dl class="review-list">
+              <dt id="review-label-voting-type">Loading...</dt>
+              <dd id="review-voting-type">-</dd>
+              
+              <dt id="review-label-max-selections">Loading...</dt>
+              <dd id="review-max-selections">-</dd>
+              
+              <dt id="review-label-answers">Loading...</dt>
+              <dd>
+                <ol id="review-answers">
+                  <!-- Will be populated -->
+                </ol>
+              </dd>
+            </dl>
+          </div>
+          
+          <div class="review-section">
+            <h3 id="review-section-schedule">Loading...</h3>
+            <dl class="review-list">
+              <dt id="review-label-start-time">Loading...</dt>
+              <dd id="review-start-time">-</dd>
+              
+              <dt id="review-label-duration">Loading...</dt>
+              <dd id="review-duration">-</dd>
+              
+              <dt id="review-label-end-time">Loading...</dt>
+              <dd id="review-end-time">-</dd>
+            </dl>
+          </div>
+        </div>
+        
+        <!-- Navigation Buttons -->
+        <div class="wizard-navigation">
+          <button 
+            type="button" 
+            id="prev-btn" 
+            class="btn btn--secondary"
+            style="display: none;"
+          >
+            Loading...
+          </button>
+          
+          <div class="wizard-nav-right">
+            <button 
+              type="button" 
+              id="next-btn" 
+              class="btn btn--primary"
+            >
+              Loading...
+            </button>
+            
+            <button 
+              type="button" 
+              id="create-draft-btn" 
+              class="btn btn--secondary"
+              style="display: none;"
+            >
+              Loading...
+            </button>
+            
+            <button 
+              type="submit" 
+              id="create-open-btn" 
+              class="btn btn--primary"
+              style="display: none;"
+            >
+              Loading...
+            </button>
+          </div>
+        </div>
+        
+      </form>
+      
+    </div>
+  </main>
+  
+  <!--  Loading Overlay -->
+  <div id="loading-overlay" class="loading-overlay" style="display: none;">
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+      <p id="loading-text">Loading...</p>
+    </div>
+  </div>
+  
+  <!-- i18n Initialization -->
+  <script type="module">
+    import { initElectionCreateStrings } from './js/election-create-i18n.js';
+
+    // Load and initialize all i18n strings
+    await initElectionCreateStrings();
+  </script>
+  
+  <!-- Scripts -->
+  <script type="module">
+    import { getFirebaseAuth } from '../firebase/app.js';
+    import { initNavigation } from '../js/nav.js';
+
+    const auth = getFirebaseAuth();
+
+    // Initialize navigation with hamburger menu
+    initNavigation();
+
+    // Handle logout
+    document.getElementById('nav-logout')?.addEventListener('click', async (e) => {
+      e.preventDefault();
+      await auth.signOut();
+      window.location.href = '/';
+    });
+  </script>
+  
+  <!-- Main App -->
+  <script type="module" src="./js/election-create.js"></script>
+  
+
+  <!-- Initialize Navigation Component -->
+  <script type="module">
+    import { initNavHeader, NAV_CONFIGS } from '../../ui/components/nav-header.js';
+    
+    // Initialize navigation with appropriate config
+    await initNavHeader(NAV_CONFIGS.adminElectionsCreate);
+  </script>
+
+</body>
+</html>

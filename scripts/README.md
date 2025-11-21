@@ -4,219 +4,48 @@ This directory contains automation scripts for managing the Ekklesia platform in
 
 ## Available Scripts
 
-### 🔧 disable-cloudflare-proxy.sh
-
-**Purpose**: Disable Cloudflare proxy (orange cloud → grey cloud) for Cloud Run compatibility.
-
-**Background**: Cloud Run services only accept their native `*.run.app` hostnames in the Host header. When Cloudflare proxy forwards requests with custom domain hostnames, Cloud Run returns 404. DNS-only mode (grey cloud) resolves this by sending the native hostname.
-
-**Quick Start**:
-```bash
-./scripts/disable-cloudflare-proxy.sh
-```
-
-**What It Does**:
-1. Fetches all 4 DNS record IDs from Cloudflare API
-2. Updates each record: `proxied: true` → `proxied: false`
-3. Waits 60 seconds for DNS propagation
-4. Verifies DNS resolution (should show Cloud Run IPs, not Cloudflare IPs)
-5. Tests HTTP access (should work or show origin protection)
-
-**Expected Output**:
-```
-✓ All records updated to DNS-only mode (grey cloud)
-✓ DNS propagation complete
-✓ auth.si-xj.org: Resolves to 34.x.x.x
-✓ api.si-xj.org: Resolves to 34.x.x.x
-✓ verify.si-xj.org: Resolves to 34.x.x.x
-✓ vote.si-xj.org: Resolves to 34.x.x.x
-✓ HTTP tests: 200 OK or 403 (origin protection)
-```
-
-**Prerequisites**:
-- Cloudflare API token with DNS edit permissions
-- Zone ID for si-xj.org
-- `jq` installed: `sudo dnf install jq`
-
-**Timeline**: 2-3 minutes total
-
-**Security Note**: Origin protection middleware remains active (CF-Ray + IP validation).
-
-**Documentation**: See [docs/security/CLOUDFLARE_HOST_HEADER_INVESTIGATION.md](../docs/security/CLOUDFLARE_HOST_HEADER_INVESTIGATION.md)
+> **Note**: Cloudflare-related scripts have been archived. See [archive/scripts/cloudflare/README.md](../../archive/scripts/cloudflare/README.md) for historical reference. The platform uses [Firebase Hosting](https://firebase.google.com/docs/hosting) instead.
 
 ---
 
-### 🔒 cloudflare-setup.sh
+### 🏥 check-code-health.py ⭐ NEW!
 
-**Purpose**: Automate complete Cloudflare configuration for all Ekklesia services.
-
-**Features**:
-- ✅ DNS record creation (CNAME records for all services)
-- ✅ Rate limiting rule configuration (combined rule for free tier)
-- ✅ Verification and testing tools
-- ✅ Cleanup utilities
-- ✅ Full automation support
+**Purpose**: Comprehensive code health checker - finds common issues like missing imports, console.log usage, memory leaks, etc.
 
 **Quick Start**:
 ```bash
-# Complete setup (recommended for first-time setup)
-./cloudflare-setup.sh full
-
-# Individual operations
-./cloudflare-setup.sh setup-dns          # Create DNS records only
-./cloudflare-setup.sh setup-rate-limit   # Create rate limiting rule only
-./cloudflare-setup.sh verify             # Verify current configuration
-./cloudflare-setup.sh test               # Test protections
-./cloudflare-setup.sh cleanup            # Remove all configurations
-
-# Help
-./cloudflare-setup.sh help
+python3 scripts/check-code-health.py          # Basic check
+python3 scripts/check-code-health.py --verbose # Detailed output
 ```
 
-**Prerequisites**:
-- Cloudflare account with zone already added (si-xj.org)
-- API token with permissions: `Zone.DNS`, `Zone.SSL`, `Zone.WAF`
-- `jq` installed: `sudo dnf install jq`
-- `curl` installed (usually pre-installed)
-
-**Environment Variables**:
-You can override defaults by setting these environment variables:
-
-```bash
-export CF_API_TOKEN="your-cloudflare-api-token"
-export CF_ZONE_ID="your-zone-id"
-export CF_ZONE_NAME="si-xj.org"
-export GCP_PROJECT="ekklesia-prod-10-2025"
-export GCP_REGION="europe-west2"
-```
-
-Or edit the configuration section at the top of the script.
-
-**What It Does**:
-
-1. **DNS Setup** (`setup-dns`):
-   - Creates CNAME records for all 4 services:
-     - `auth.si-xj.org` → handleKenniAuth Cloud Function
-     - `api.si-xj.org` → Events Service (Cloud Run)
-     - `vote.si-xj.org` → Elections Service (Cloud Run)
-     - `verify.si-xj.org` → Membership Verification (Cloud Function)
-   - Enables Cloudflare proxy (orange cloud) for all records
-   - Skips records that already exist
-
-2. **Rate Limiting** (`setup-rate-limit`):
-   - Creates combined rate limiting rule (free tier limitation: 1 rule only)
-   - Protects all 4 services with single rule
-   - Default: 100 requests per 10 seconds (600/minute)
-   - Blocks offending IP for 10 seconds
-   - Configurable via script variables
-
-3. **Verification** (`verify`):
-   - Validates API token
-   - Checks DNS propagation via Cloudflare DNS (1.1.1.1)
-   - Verifies rate limiting rules are active
-   - Tests origin protection (direct URLs should return 403)
-   - Tests Cloudflare routing (custom domains should work)
-
-4. **Testing** (`test`):
-   - Tests origin protection (direct Cloud Run URLs blocked)
-   - Tests Cloudflare routing (CF-Ray header present)
-   - Tests rate limiting (sends rapid requests to trigger block)
-
-5. **Cleanup** (`cleanup`):
-   - Removes all DNS records
-   - Removes rate limiting rules
-   - Requires confirmation (destructive operation)
+**What It Checks**:
+- ❌ Missing imports (initNavigation, debug, showToast, R.string)
+- ⚠️  console.log usage (should use debug.log)
+- ⚠️  Missing initNavigation() on pages with navigation
+- ℹ️  Hardcoded URLs (should use constants)
+- ℹ️  Async functions without try-catch
+- ℹ️  addEventListener without removeEventListener (memory leaks)
+- ℹ️  TODO/FIXME comments
 
 **Example Output**:
-
 ```
-═══════════════════════════════════════════════════════════
-  Ekklesia Cloudflare Setup Script
-═══════════════════════════════════════════════════════════
+🔍 Ekklesia Code Health Check
+==================================================
 
-[INFO] Checking dependencies...
-[SUCCESS] All dependencies installed
-[INFO] Verifying Cloudflare API token...
-[SUCCESS] API token is valid
+📦 Checking for missing imports...
+  ❌ apps/members-portal/js/rbac.js:405
+      Uses R.string without importing it
 
-[INFO] Setting up DNS records for all services...
-[INFO] Creating DNS record: auth.si-xj.org → handlekenniauth-521240388393.europe-west2.run.app
-[SUCCESS] Created DNS record: auth.si-xj.org (ID: abc123...)
-[INFO] Creating DNS record: api.si-xj.org → events-service-521240388393.europe-west2.run.app
-[SUCCESS] Created DNS record: api.si-xj.org (ID: def456...)
-...
-
-[INFO] Setting up rate limiting rule...
-[SUCCESS] Rate limiting rule created (ID: 9e3a46b...)
-[INFO] Rule protects: "auth.si-xj.org" "api.si-xj.org" "vote.si-xj.org" "verify.si-xj.org"
-
-[SUCCESS] Done!
+Found 14 errors, 24 warnings, 31 info
 ```
 
-**Troubleshooting**:
+**Use Cases**:
+- Before committing code
+- Code review preparation
+- Finding patterns across codebase
+- Onboarding new developers (shows best practices)
 
-| Issue | Solution |
-|-------|----------|
-| `jq: command not found` | Install jq: `sudo dnf install jq` |
-| `Invalid Cloudflare API token` | Check `CF_API_TOKEN` is correct and has WAF permissions |
-| `Rate limiting rule failed` | Free tier only allows 1 rule - delete existing rules first |
-| DNS not propagating | Wait 5-10 minutes, then run `./cloudflare-setup.sh verify` |
-| `403 Forbidden` on API | Check API token has correct zone permissions |
-
-**Configuration Details**:
-
-The script uses these defaults (can be overridden):
-
-```bash
-# Cloudflare
-CF_API_TOKEN="gD0MXa-Y6K3n8pDDxbkyJnJuy-YIGl2KTOyD3Rn7"
-CF_ZONE_ID="4cab51095e756bd898cc3debec754828"
-CF_ZONE_NAME="si-xj.org"
-
-# GCP
-GCP_PROJECT="ekklesia-prod-10-2025"
-GCP_PROJECT_NUMBER="521240388393"
-GCP_REGION="europe-west2"
-
-# Rate Limiting
-RATE_LIMIT_PERIOD=10           # seconds (free tier: must be 10)
-RATE_LIMIT_REQUESTS=100        # requests per period
-RATE_LIMIT_TIMEOUT=10          # block duration (free tier: must be 10)
-```
-
-**Free Tier Limitations**:
-
-Cloudflare Free tier has these restrictions (handled automatically by the script):
-- ❌ Only **1 rate limiting rule** (script creates combined rule)
-- ❌ Period must be **10 seconds** (not 60)
-- ❌ Mitigation timeout must be **10 seconds** (not 600)
-- ✅ Still provides excellent protection (100 req/10sec = 600/min)
-
-**Safety Features**:
-- ✅ Checks for existing records before creating (no duplicates)
-- ✅ Validates API token before making changes
-- ✅ Requires confirmation for destructive operations (cleanup)
-- ✅ Color-coded output (errors in red, success in green)
-- ✅ Exits on error (set -e)
-
-**Integration with CI/CD**:
-
-This script can be used in automated deployments:
-
-```bash
-# Non-interactive mode (use environment variables)
-export CF_API_TOKEN="your-token"
-export CF_ZONE_ID="your-zone"
-
-# Run setup
-./cloudflare-setup.sh full
-
-# Exit code: 0 = success, 1 = failure
-```
-
-**Related Documentation**:
-- [docs/security/CLOUDFLARE_SETUP.md](../docs/security/CLOUDFLARE_SETUP.md) - Complete manual setup guide
-- [docs/status/SECURITY_HARDENING_PLAN.md](../docs/status/SECURITY_HARDENING_PLAN.md) - Security hardening overview
+**See Also**: [scripts/README-CODE-HEALTH.md](./README-CODE-HEALTH.md) for detailed guide
 
 ---
 
