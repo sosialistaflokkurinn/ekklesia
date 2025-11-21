@@ -8,7 +8,7 @@
 #   ./emergency-set-role.sh <UID> <ROLE> [KENNITALA] [EMAIL] [PHONE]
 #
 # Example:
-#   ./emergency-set-role.sh abc123XYZ789ExampleUserUID456 developer 010190-2939 jon.jonsson@example.com +3545551234
+#   ./emergency-set-role.sh abc123XYZ789ExampleUserUID456 developer 000000-0000 jon.jonsson@example.com +3545551234
 #
 # Note: This overwrites ALL custom claims. You must provide all existing claims
 # (kennitala, email, phoneNumber, isMember) to avoid losing them.

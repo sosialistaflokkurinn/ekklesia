@@ -1,9 +1,11 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const { version } = require('../package.json');
 const electionRoutes = require('./routes/election');
 const adminRouter = require('./routes/admin');
 const { verifyAppCheckOptional } = require('./middleware/appCheck');
+const logger = require('./utils/logger');
 
 /**
  * Events Service (Atburðir)
@@ -23,7 +25,11 @@ const corsOrigins = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',
 ];
 
 if (process.env.NODE_ENV === 'production' && (corsOrigins.length === 0 || corsOrigins.includes('*'))) {
-  console.warn('WARNING: CORS origins are not properly restricted in production. Review CORS_ORIGINS environment variable.');
+  logger.warn('CORS origins not properly restricted in production', {
+    operation: 'server_startup',
+    security_issue: 'unrestricted_cors',
+    cors_origins: corsOrigins
+  });
 }
 
 app.use(cors({
@@ -39,7 +45,11 @@ app.use(express.json({
 
 // Request logging
 app.use((req, res, next) => {
-  console.log(`${req.method} ${req.path}`);
+  logger.debug('Incoming request', {
+    operation: 'http_request',
+    method: req.method,
+    path: req.path
+  });
   next();
 });
 
@@ -48,7 +58,7 @@ app.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
     service: 'events-service',
-    version: '1.0.0',
+    version,
     timestamp: new Date().toISOString()
   });
 });
@@ -81,7 +91,11 @@ app.use((err, req, res, next) => {
     });
   }
 
-  console.error('Unhandled error:', err);
+  logger.error('Unhandled error', {
+    operation: 'error_handler',
+    error: err.message,
+    stack: err.stack
+  });
   res.status(500).json({
     error: 'Internal Server Error',
     message: 'An unexpected error occurred'
@@ -90,23 +104,17 @@ app.use((err, req, res, next) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log('='.repeat(50));
-  console.log('Events Service (Atburðir) - MVP');
-  console.log('='.repeat(50));
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Health check: http://localhost:${PORT}/health`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`Firebase Project: ${process.env.FIREBASE_PROJECT_ID || 'ekklesia-prod-10-2025'}`);
-  console.log(`Database: ${process.env.DATABASE_HOST || '127.0.0.1'}:${process.env.DATABASE_PORT || '5433'}`);
-  console.log('='.repeat(50));
-  console.log('API Endpoints:');
-  console.log('  GET  /api/election       - Get current election');
-  console.log('  POST /api/request-token  - Request voting token');
-  console.log('  GET  /api/my-status      - Check participation status');
-  console.log('  GET  /api/my-token       - Retrieve token (disabled in MVP)');
-  console.log('  GET  /api/results        - Get results (Phase 2)');
-  console.log('  POST /api/admin/reset-election (admin only)');
-  console.log('='.repeat(50));
+  logger.info('Events Service started', {
+    operation: 'server_startup',
+    service: 'events-service',
+    version,
+    port: PORT,
+    environment: process.env.NODE_ENV || 'development',
+    firebase_project: process.env.FIREBASE_PROJECT_ID || 'ekklesia-prod-10-2025',
+    database_host: process.env.DATABASE_HOST || '127.0.0.1',
+    database_port: process.env.DATABASE_PORT || '5433',
+    health_check: `http://localhost:${PORT}/health`
+  });
 });
 
 module.exports = app;

@@ -1,15 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const authenticate = require('../middleware/auth');
+const { readLimiter, tokenLimiter } = require('../middleware/rateLimiter');
 const { getCurrentElection, getElectionStatus } = require('../services/electionService');
 const { issueVotingToken, getTokenStatus } = require('../services/tokenService');
 const { fetchResults: fetchElectionResults } = require('../services/electionsClient');
+const logger = require('../utils/logger');
 
 /**
  * GET /api/election
  * Get current election details
  */
-router.get('/election', authenticate, async (req, res) => {
+router.get('/election', readLimiter, authenticate, async (req, res) => {
   try {
     const election = await getCurrentElection();
 
@@ -31,7 +33,11 @@ router.get('/election', authenticate, async (req, res) => {
       voting_ends_at: election.voting_ends_at
     });
   } catch (error) {
-    console.error('Error fetching election:', error);
+    logger.error('Failed to fetch election details', {
+      operation: 'get_election',
+      error: error.message,
+      stack: error.stack
+    });
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to fetch election details'
@@ -44,7 +50,7 @@ router.get('/election', authenticate, async (req, res) => {
  * Request a one-time voting token
  * MVP: Store in DB only (no S2S to Elections service)
  */
-router.post('/request-token', authenticate, async (req, res) => {
+router.post('/request-token', tokenLimiter, authenticate, async (req, res) => {
   try {
     const { kennitala } = req.user;
 
@@ -65,7 +71,12 @@ router.post('/request-token', authenticate, async (req, res) => {
       note: 'Save this token securely - you will need it to vote. This token will not be shown again.'
     });
   } catch (error) {
-    console.error('Error issuing voting token:', error);
+    logger.error('Failed to issue voting token', {
+      operation: 'request_token',
+      error: error.message,
+      stack: error.stack,
+      kennitala: req.user.kennitala ? '[REDACTED]' : undefined
+    });
 
     // Handle specific errors
     if (error.message.includes('already')) {
@@ -105,7 +116,7 @@ router.post('/request-token', authenticate, async (req, res) => {
  * GET /api/my-status
  * Check member's participation status
  */
-router.get('/my-status', authenticate, async (req, res) => {
+router.get('/my-status', readLimiter, authenticate, async (req, res) => {
   try {
     const { kennitala } = req.user;
 
@@ -113,7 +124,11 @@ router.get('/my-status', authenticate, async (req, res) => {
 
     res.json(status);
   } catch (error) {
-    console.error('Error fetching token status:', error);
+    logger.error('Failed to fetch participation status', {
+      operation: 'get_my_status',
+      error: error.message,
+      stack: error.stack
+    });
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to fetch participation status'
@@ -126,7 +141,7 @@ router.get('/my-status', authenticate, async (req, res) => {
  * Retrieve previously issued token (if exists and not expired)
  * MVP: Cannot retrieve plain token (only hash stored for security)
  */
-router.get('/my-token', authenticate, async (req, res) => {
+router.get('/my-token', readLimiter, authenticate, async (req, res) => {
   try {
     res.status(400).json({
       error: 'Bad Request',
@@ -134,7 +149,11 @@ router.get('/my-token', authenticate, async (req, res) => {
       hint: 'Use POST /api/request-token to get a new token if yours has expired.'
     });
   } catch (error) {
-    console.error('Error retrieving token:', error);
+    logger.error('Token retrieval attempted', {
+      operation: 'get_my_token',
+      error: error.message,
+      stack: error.stack
+    });
     res.status(500).json({
       error: 'Internal Server Error',
       message: error.message
@@ -147,7 +166,7 @@ router.get('/my-token', authenticate, async (req, res) => {
  * Get election results from Elections service
  * Phase 5: Fetch results via S2S from Elections service
  */
-router.get('/results', authenticate, async (req, res) => {
+router.get('/results', readLimiter, authenticate, async (req, res) => {
   try {
     const election = await getCurrentElection();
 
@@ -171,7 +190,12 @@ router.get('/results', authenticate, async (req, res) => {
         fetched_at: new Date().toISOString()
       });
     } catch (electionsError) {
-      console.error('Elections service error:', electionsError);
+      logger.warn('Elections service unavailable', {
+        operation: 'fetch_results_from_elections',
+        error: electionsError.message,
+        stack: electionsError.stack,
+        election_id: election.id
+      });
 
       // Graceful degradation: return partial data if Elections service is unavailable
       res.json({
@@ -185,7 +209,11 @@ router.get('/results', authenticate, async (req, res) => {
       });
     }
   } catch (error) {
-    console.error('Error fetching results:', error);
+    logger.error('Failed to fetch election results', {
+      operation: 'get_results',
+      error: error.message,
+      stack: error.stack
+    });
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to fetch election results'

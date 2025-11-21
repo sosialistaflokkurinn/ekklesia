@@ -9,8 +9,11 @@
 ##################################################################
 
 # --- Local & Personal Files ---
-# Ignore the local .gitignore file so developers can add personal rules.
-.gitignore
+# HYBRID STRATEGY: .gitignore is tracked, .gitignore.local is NOT
+# Personal ignore patterns go in .gitignore.local (git reads both automatically)
+# See: docs/development/guides/GITIGNORE_LOCAL_STRATEGY.md
+.gitignore.local
+!.gitignore.local.example
 
 # Ignore local environment variables.
 .env
@@ -67,6 +70,11 @@ Thumbs.db
 .firebase/
 *.log
 
+# --- Development Tools ---
+# Note: /apps/members-portal/dev-tools/ is tracked in Git
+# These are legitimate debugging tools for development
+# (force-refresh.html, token-debug.html, etc.)
+
 # --- Google Cloud ---
 # Ignore the Cloud SQL Proxy binary itself
 cloud-sql-proxy*
@@ -79,6 +87,12 @@ build/
 *.bak
 *.old
 
+# --- Temporary Working Directory ---
+# Use /tmp/ for all temporary files during development
+# (See .claude/settings.local.json - Project Structure Rule)
+tmp/
+*.tmp
+
 # --- Project Specific (Local Only) ---
 
 # Local-only archives and audit results
@@ -86,6 +100,13 @@ build/
 # with targeted rules if needed, e.g., !archive/docs-plans/
 archive/
 audits/
+
+# ⚠️ USER LOGIN TRACKING SCRIPTS - DO NOT COMMIT TO REMOTE ⚠️
+# These scripts access and display real user login data with PII
+# (names, kennitölur, phone numbers, emails)
+# They should ONLY exist locally for authorized administrators
+services/members/scripts/check-user-logins.js
+services/members/scripts/check-logins-today.js
 
 # Symlink created by setup scripts
 services/members/public
@@ -110,17 +131,22 @@ apps/members-portal/admin/**/*sample-data*
 *kennitala*.md
 *pii_redaction*.md
 
+# Scripts that contain potentially real PII in documentation/examples
+# Scripts containing potentially sensitive examples/documentation
+scripts/admin/replace-fake-data.sh
+
+# Policy meeting documentation with personal information
+docs/policy/IMMIGRATION_POLICY_MEETING_2025-11-08.md
+
 # Log files that may contain PII
 scripts/logs/*.jsonl
 **/logs/*.jsonl
 *.audit.json
 *-audit-*.jsonl
 
-# IDE / Tooling folders (personal, local only)
-.claude/
-.gemini/
+# === END OF SHARED PROJECT RULES ===
+# Personal development patterns go in .gitignore.local
+# See: docs/development/guides/GITIGNORE_LOCAL_STRATEGY.md
 
-# Local data files
-data/Stadfangaskra.csv
-AUDIT_CODE_DOCUMENTATION_2025-10-20.json
-AUDIT_CODE_DOCUMENTATION_DETAILED_2025-10-20.json
+# Git hooks documentation (contains PII pattern examples)
+git-hooks/README.md

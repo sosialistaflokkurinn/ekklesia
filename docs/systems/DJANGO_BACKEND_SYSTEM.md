@@ -2,7 +2,7 @@
 
 **Document Type**: System Reference
 **Last Updated**: 2025-10-28
-**Status**: ✅ Active - Production System
+**Status**: ✅ Active - Deployed System (Beta)
 **Purpose**: Complete documentation of the Django membership management backend
 
 ---
@@ -12,11 +12,11 @@
 The Django backend system is the **source of truth** for Sósíalistaflokkur Íslands member data. It runs on a separate Linode server and provides a REST API for the Ekklesia system to consume member information for authentication, voting eligibility, and profile management.
 
 **Key Facts:**
-- **Technology**: Django 1.11 (Python 3)
+- **Technology**: [Django 1.11](https://docs.djangoproject.com/en/1.11/) ([Python 3](https://www.python.org/))
 - **Server**: Linode VPS at 172.105.71.207
 - **Domain**: https://starf.sosialistaflokkurinn.is
-- **Database**: PostgreSQL (database name: `socialism`)
-- **Web Server**: Nginx + Gunicorn (Unix socket)
+- **Database**: [PostgreSQL](https://www.postgresql.org/) (database name: `socialism`)
+- **Web Server**: [Nginx](https://nginx.org/) + [Gunicorn](https://gunicorn.org/) (Unix socket)
 - **Current Members**: 2,107 active members (as of 2025-10-28)
 
 ---
@@ -354,7 +354,7 @@ Sample: STOFNANDI_A
 ```json
 {
   "id": 12345,
-  "ssn": "010190-1234",
+  "ssn": "111111-1111",
   "name": "Jón Jónsson",
   "birthday": "1990-01-01",
   "date_joined": "2024-06-15T14:32:00Z",
@@ -707,7 +707,7 @@ LIMIT 10;
 ```sql
 SELECT id, name, ssn, date_joined, reachable
 FROM membership_comrade
-WHERE ssn = '010190-1234';  -- Example fake SSN
+WHERE ssn = '111111-1111';  -- Example fake SSN
 ```
 
 **Members with Contact Info:**

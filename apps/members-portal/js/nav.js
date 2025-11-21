@@ -12,6 +12,8 @@
  * @module nav
  */
 
+import { debug } from './utils/debug.js';
+
 // Module-level variables to store listener references (prevents memory leak)
 let keypressHandler = null;
 let resizeHandler = null;
@@ -77,23 +79,30 @@ export function initNavigation() {
    *                                Don't return focus when closing due to navigation link click.
    */
   function closeDrawer(returnFocus = true) {
+    // FIX: Move focus BEFORE setting aria-hidden to prevent accessibility warning
+    // (Chrome warns if focused element becomes aria-hidden)
+    if (returnFocus) {
+      hamburger.focus();
+    } else {
+      // If not returning focus to hamburger, blur any focused element in drawer
+      const activeElement = document.activeElement;
+      if (drawer.contains(activeElement)) {
+        activeElement.blur();
+      }
+    }
+
     drawer.classList.remove('is-open');
     overlay.classList.remove('is-visible');
     hamburger.classList.remove('is-active');
     hamburger.setAttribute('aria-expanded', 'false');
     document.body.classList.remove('nav-open'); // Restore body scroll
 
-    // FIX #4: Set aria-hidden="true" when drawer closes
+    // FIX #4: Set aria-hidden="true" AFTER focus has been moved
     drawer.setAttribute('aria-hidden', 'true');
 
     // FIX #5: Update ARIA label to "Open menu" when drawer is closed
     const openLabel = hamburger.getAttribute('data-open-label') || 'Opna valmynd';
     hamburger.setAttribute('aria-label', openLabel);
-
-    // FIX #3: Only return focus to hamburger when explicitly requested
-    if (returnFocus) {
-      hamburger.focus();
-    }
   }
 
   /**

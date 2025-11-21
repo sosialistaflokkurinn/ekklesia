@@ -35,7 +35,7 @@ class StringsLoader {
     }
 
     this.currentLocale = locale;
-    const xmlPath = `/i18n/values-${locale}/strings.xml`;
+    const xmlPath = `/i18n/values-${locale}/portal-strings.xml`;
 
     try {
       const response = await fetch(xmlPath);

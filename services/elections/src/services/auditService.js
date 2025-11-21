@@ -1,8 +1,9 @@
 const pool = require('../config/database');
+const logger = require('../utils/logger');
 
 /**
  * Log audit event to database
- * IMPORTANT: Never log PII - only token hash prefix for debugging
+ * IMPORTANT: Never log PII - only correlation_id for debugging
  *
  * @param {string} action - Action type (register_token, record_ballot, fetch_results)
  * @param {boolean} success - Whether action succeeded
@@ -15,7 +16,11 @@ function logAudit(action, success, details = {}) {
     // Sanitize details to ensure no PII
     sanitizedDetails = sanitizeDetails(details);
   } catch (error) {
-    console.error('[Audit] Failed to sanitize audit details:', error.message);
+    logger.error('Audit details sanitization failed', {
+      operation: 'audit_sanitization',
+      error: error.message,
+      stack: error.stack
+    });
     sanitizedDetails = { error: 'sanitization_failed' };
   }
 
@@ -25,26 +30,42 @@ function logAudit(action, success, details = {}) {
     [action, success, sanitizedDetails]
   )
     .then(() => {
+      // Log successful audit in development only (reduce noise in production)
       if (process.env.NODE_ENV !== 'production') {
-        console.log('[Audit]', action, success ? '✓' : '✗', sanitizedDetails);
+        logger.debug('Audit event logged', {
+          operation: 'audit_log',
+          action,
+          success,
+          details: sanitizedDetails
+        });
       }
     })
     .catch((error) => {
       // Don't fail the request if audit logging fails
-      console.error('[Audit] Failed to log audit event:', error.message);
+      logger.error('Audit event logging failed', {
+        operation: 'audit_log',
+        action,
+        error: error.message,
+        stack: error.stack
+      });
     });
 }
 
 /**
  * Sanitize details object to remove any potential PII
- * Only allow: token_hash_prefix, answer, error messages
+ * Only allow: correlation_id (random), answer, error messages, metrics
+ *
+ * IMPORTANT: Do NOT log token_hash or token_hash_prefix
+ * Reason: Even partial token hash could enable deanonymization attacks
+ *         when combined with timing data or database breach.
  */
 function sanitizeDetails(details) {
   const sanitized = {};
 
-  // Allow token hash prefix (first 8 chars for debugging)
-  if (details.token_hash) {
-    sanitized.token_hash_prefix = details.token_hash.substring(0, 8);
+  // Allow correlation_id (random UUID, not derived from token)
+  // Use for request tracing without deanonymization risk
+  if (details.correlation_id) {
+    sanitized.correlation_id = details.correlation_id;
   }
 
   // Allow answer (yes/no/abstain - no PII)
@@ -69,6 +90,8 @@ function sanitizeDetails(details) {
     sanitized.duration_ms = details.duration_ms;
   }
 
+  // Explicitly drop any token-related fields to prevent accidental logging
+  // This ensures absolute voter anonymity even in audit logs
   return sanitized;
 }
 
@@ -84,7 +107,12 @@ async function getRecentAuditLogs(limit = 20) {
     );
     return result.rows;
   } catch (error) {
-    console.error('[Audit] Failed to retrieve audit logs:', error.message);
+    logger.error('Failed to retrieve audit logs', {
+      operation: 'get_audit_logs',
+      error: error.message,
+      stack: error.stack,
+      limit
+    });
     throw error;
   }
 }

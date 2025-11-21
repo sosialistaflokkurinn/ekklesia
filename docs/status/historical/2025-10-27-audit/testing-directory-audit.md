@@ -161,7 +161,6 @@ Edit `/testing/reports/INDEX.md` lines 67-73 to fix broken paths:
 - Main Hub (see ../../README.md) - Documentation overview
 + [Setup](../../../setup/) - Environment setup
 + [Operations](../../../operations/OPERATIONAL_PROCEDURES.md) - Operational procedures
-+ [Architecture](../../../design/SYSTEM_ARCHITECTURE_OVERVIEW.md) - System design
 + [Testing Docs](../../../testing/) - Test specifications
 + [Main Docs](../../../) - Documentation overview
 ```

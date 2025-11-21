@@ -62,14 +62,32 @@ export function showToast(message, type = 'success', options = {}) {
     toast.classList.add('toast--show');
   }, 10);
 
-  // Auto-hide after duration
+  // Auto-hide timeout reference
+  let autoHideTimeout;
   if (duration > 0) {
-    setTimeout(() => {
+    autoHideTimeout = setTimeout(() => {
       hideToast(toast);
     }, duration);
   }
 
-  return toast;
+  // Return component API
+  return {
+    element: toast,
+    hide: () => {
+      if (autoHideTimeout) {
+        clearTimeout(autoHideTimeout);
+      }
+      hideToast(toast);
+    },
+    destroy: () => {
+      if (autoHideTimeout) {
+        clearTimeout(autoHideTimeout);
+      }
+      if (toast.parentElement) {
+        toast.remove();
+      }
+    }
+  };
 }
 
 /**

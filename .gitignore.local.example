@@ -1,0 +1,48 @@
+# Personal .gitignore.local Template
+# Copy this file: cp .gitignore.local.example .gitignore.local
+# Add your personal development patterns here
+
+##################################################################
+# PERSONAL DEVELOPMENT FILES
+# These patterns are unique to YOUR development environment
+# They will be automatically merged with project .gitignore
+##################################################################
+
+# AI Assistant Settings (personal)
+.claude/
+.gemini/
+.cursor/
+
+# Personal Data Files
+data/
+data/Stadfangaskra.csv
+AUDIT_CODE_DOCUMENTATION_*.json
+
+# Personal Work Directories
+correct-mark-of-the-party/
+my-scripts/
+scratch/
+experiments/
+
+# Personal Notes
+*.personal.md
+TODO.md
+NOTES.md
+SCRATCH.md
+
+# Personal Backups
+*.personal.backup
+*.local.backup
+
+# Development Experiments
+test-*.js
+test-*.py
+experiment-*.sh
+
+# Personal IDE Settings Beyond .vscode/
+.idea/workspace.xml
+.idea/tasks.xml
+
+##################################################################
+# Add your custom patterns below
+##################################################################

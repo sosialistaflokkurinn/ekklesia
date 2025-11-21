@@ -9,11 +9,11 @@
 ## Overview
 
 This guide defines quality and testing standards for the Ekklesia project. We prioritize:
-- Automated testing (unit, integration, E2E)
-- Pre-commit quality checks
+- Automated testing ([unit](https://en.wikipedia.org/wiki/Unit_testing), [integration](https://en.wikipedia.org/wiki/Integration_testing), [E2E](https://www.browserstack.com/guide/end-to-end-testing))
+- [Pre-commit quality checks](https://pre-commit.com/)
 - Manual testing checklists
-- Code quality tools (ESLint, Prettier)
-- Load testing for production readiness
+- Code quality tools ([ESLint](https://eslint.org/), [Prettier](https://prettier.io/))
+- [Load testing](https://k6.io/) for production readiness
 
 ### Core Principles
 
@@ -75,7 +75,7 @@ Don't unit test:
 
 ### Unit Test Structure
 
-Use **Arrange-Act-Assert** pattern:
+Use **[Arrange-Act-Assert](https://automationpanda.com/2020/07/07/arrange-act-assert-a-pattern-for-writing-good-tests/)** pattern:
 
 ```javascript
 // validators.test.js
@@ -84,7 +84,7 @@ import { validateKennitala, isValidEmail } from './validators.js';
 describe('validateKennitala', () => {
   test('accepts valid 10-digit kennitala', () => {
     // Arrange
-    const validKennitala = '0103003390';
+    const validKennitala = '9999999999';
 
     // Act
     const result = validateKennitala(validKennitala);
@@ -652,7 +652,7 @@ Before marking a feature as "done":
 
 - **JavaScript Guide**: [/docs/standards/JAVASCRIPT_GUIDE.md](/docs/standards/JAVASCRIPT_GUIDE.md) - Testing patterns
 - **Git Workflow Guide**: [/docs/standards/GIT_WORKFLOW_GUIDE.md](/docs/standards/GIT_WORKFLOW_GUIDE.md) - Pre-commit hooks
-- **Master Code Standards**: [/docs/CODE_STANDARDS.md](/docs/CODE_STANDARDS.md)
+- **Master Code Standards**: [/docs/CODE_STANDARDS_MAP.md](/docs/CODE_STANDARDS_MAP.md)
 
 **External Resources**:
 - **Jest Documentation**: https://jestjs.io/

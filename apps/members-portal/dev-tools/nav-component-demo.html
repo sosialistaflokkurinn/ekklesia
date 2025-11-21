@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Navigation Component Demo</title>
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="../styles/base/reset.css">
+  <link rel="stylesheet" href="../styles/base/typography.css">
+  <link rel="stylesheet" href="../styles/utilities/spacing.css">
+  <link rel="stylesheet" href="../styles/utilities/accessibility.css">
+  <link rel="stylesheet" href="../styles/components/nav.css">
+  <link rel="stylesheet" href="../styles/components/button.css">
+  
+  <style>
+    body {
+      background: var(--color-gray-50);
+      min-height: 100vh;
+    }
+    
+    .demo-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: var(--spacing-xl);
+    }
+    
+    .demo-section {
+      background: white;
+      border-radius: 8px;
+      padding: var(--spacing-lg);
+      margin-bottom: var(--spacing-lg);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .demo-section__title {
+      font-size: var(--font-size-xl);
+      font-weight: 600;
+      color: var(--color-gray-900);
+      margin-bottom: var(--spacing-md);
+    }
+    
+    .demo-section__description {
+      color: var(--color-gray-600);
+      margin-bottom: var(--spacing-md);
+      line-height: 1.6;
+    }
+    
+    .demo-code {
+      background: var(--color-gray-900);
+      color: var(--color-green-400);
+      padding: var(--spacing-md);
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      overflow-x: auto;
+      white-space: pre;
+      margin-bottom: var(--spacing-md);
+    }
+    
+    .demo-buttons {
+      display: flex;
+      gap: var(--spacing-sm);
+      flex-wrap: wrap;
+    }
+    
+    .demo-result {
+      background: var(--color-blue-50);
+      border: 1px solid var(--color-blue-200);
+      border-radius: 4px;
+      padding: var(--spacing-md);
+      margin-top: var(--spacing-md);
+      color: var(--color-gray-800);
+    }
+    
+    .demo-result--success {
+      background: var(--color-green-50);
+      border-color: var(--color-green-200);
+    }
+    
+    .demo-result--error {
+      background: var(--color-red-50);
+      border-color: var(--color-red-200);
+    }
+  </style>
+</head>
+<body>
+  <!-- Skip to main content -->
+  <a href="#main-content" class="u-skip-link">Skip to main content</a>
+
+  <!-- Navigation will be inserted here by component -->
+
+  <main id="main-content" class="demo-container">
+    <h1 style="font-size: 2.5rem; font-weight: 700; color: var(--color-gray-900); margin-bottom: var(--spacing-lg);">
+      Navigation Component Demo
+    </h1>
+
+    <!-- Demo 1: Basic Usage -->
+    <section class="demo-section">
+      <h2 class="demo-section__title">1. Basic Usage (Admin Elections)</h2>
+      <p class="demo-section__description">
+        This page demonstrates the navigation component currently in use. 
+        It shows the Admin Elections configuration with two main links and a logout button.
+      </p>
+      
+      <div class="demo-code">import { initNavHeader, NAV_CONFIGS } from '../ui/components/nav-header.js';
+
+// Initialize with pre-defined config
+await initNavHeader({
+  ...NAV_CONFIGS.adminElections,
+  links: NAV_CONFIGS.adminElections.links.map((link, i) => ({
+    ...link,
+    active: i === 0  // First link active
+  }))
+});</div>
+    </section>
+
+    <!-- Demo 2: Custom Configuration -->
+    <section class="demo-section">
+      <h2 class="demo-section__title">2. Custom Configuration</h2>
+      <p class="demo-section__description">
+        You can create custom navigation with any links you want. Click the buttons below to swap between different configurations.
+      </p>
+      
+      <div class="demo-buttons">
+        <button class="btn btn--primary" id="demo-admin-elections">Admin Elections</button>
+        <button class="btn btn--secondary" id="demo-admin">Admin Dashboard</button>
+        <button class="btn btn--secondary" id="demo-members">Members Area</button>
+        <button class="btn btn--secondary" id="demo-elections">Elections (with tabs)</button>
+        <button class="btn btn--secondary" id="demo-events">Events</button>
+      </div>
+      
+      <div id="demo-result" class="demo-result" style="display: none;"></div>
+    </section>
+
+    <!-- Demo 3: Features -->
+    <section class="demo-section">
+      <h2 class="demo-section__title">3. Component Features</h2>
+      <ul style="list-style: disc; padding-left: var(--spacing-lg); color: var(--color-gray-700); line-height: 1.8;">
+        <li><strong>Responsive:</strong> Horizontal nav on desktop (>1220px), hamburger menu on mobile</li>
+        <li><strong>Accessible:</strong> ARIA attributes, keyboard navigation (Escape, Tab), focus management</li>
+        <li><strong>i18n Ready:</strong> All text uses R.string keys for internationalization</li>
+        <li><strong>Pre-configured:</strong> 5 common layouts in NAV_CONFIGS (adminElections, admin, members, elections, events)</li>
+        <li><strong>Customizable:</strong> Pass any links, tabs, brand text you want</li>
+        <li><strong>Auto-initialization:</strong> Hamburger menu behavior works automatically</li>
+        <li><strong>Optional Sub-tabs:</strong> Support for mobile-only sub-navigation (see Elections example)</li>
+        <li><strong>Logout Handling:</strong> Built-in logout with Firebase signOut, or custom handler</li>
+      </ul>
+    </section>
+
+    <!-- Demo 4: Testing Instructions -->
+    <section class="demo-section">
+      <h2 class="demo-section__title">4. Testing Instructions</h2>
+      <div class="demo-section__description">
+        <p style="margin-bottom: var(--spacing-sm);"><strong>Desktop Testing (>1220px):</strong></p>
+        <ul style="list-style: disc; padding-left: var(--spacing-lg); margin-bottom: var(--spacing-md); line-height: 1.8;">
+          <li>Hamburger button should be hidden</li>
+          <li>All navigation links visible horizontally</li>
+          <li>Active link has underline/highlight</li>
+          <li>Logout link on the right side</li>
+        </ul>
+        
+        <p style="margin-bottom: var(--spacing-sm);"><strong>Mobile Testing (≤1220px):</strong></p>
+        <ul style="list-style: disc; padding-left: var(--spacing-lg); margin-bottom: var(--spacing-md); line-height: 1.8;">
+          <li>Hamburger button (3 lines) visible in top right</li>
+          <li>Click hamburger → drawer slides in from right (280px width)</li>
+          <li>Hamburger animates to X shape</li>
+          <li>Semi-transparent overlay appears behind drawer</li>
+          <li>Navigation links stacked vertically in drawer</li>
+          <li>Close button (✕) in top-right of drawer</li>
+          <li>Click overlay OR close button OR Escape key → drawer slides out</li>
+          <li>If tabs present (Elections config), they appear at top of drawer</li>
+        </ul>
+        
+        <p style="margin-bottom: var(--spacing-sm);"><strong>Accessibility Testing:</strong></p>
+        <ul style="list-style: disc; padding-left: var(--spacing-lg); line-height: 1.8;">
+          <li>Tab navigation should work (focus visible)</li>
+          <li>Hamburger has aria-expanded="false" when closed, "true" when open</li>
+          <li>Drawer has aria-hidden="true" when closed, "false" when open</li>
+          <li>Escape key closes mobile menu</li>
+          <li>Focus trapped in drawer when open (Tab cycles within drawer)</li>
+          <li>Active link has aria-current="page"</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Demo 5: Implementation Guide -->
+    <section class="demo-section">
+      <h2 class="demo-section__title">5. Implementation Guide</h2>
+      <p class="demo-section__description" style="margin-bottom: var(--spacing-md);">
+        <strong>Step 1:</strong> Remove old navigation HTML from your page
+      </p>
+      <div class="demo-code">&lt;!-- DELETE THIS: --&gt;
+&lt;nav class="nav"&gt;
+  &lt;div class="nav__container"&gt;
+    ...entire nav structure...
+  &lt;/div&gt;
+&lt;/nav&gt;</div>
+      
+      <p class="demo-section__description" style="margin-bottom: var(--spacing-md);">
+        <strong>Step 2:</strong> Add component initialization script before closing &lt;/body&gt;
+      </p>
+      <div class="demo-code">&lt;script type="module"&gt;
+import { initNavHeader, NAV_CONFIGS } from '../ui/components/nav-header.js';
+
+// Choose a pre-defined config or create custom
+await initNavHeader({
+  ...NAV_CONFIGS.adminElections,  // or .admin, .members, .elections, .events
+  links: NAV_CONFIGS.adminElections.links.map((link, i) =&gt; ({
+    ...link,
+    active: link.href === window.location.pathname  // Auto-detect active
+  }))
+});
+&lt;/script&gt;</div>
+
+      <p class="demo-section__description" style="margin-bottom: var(--spacing-md);">
+        <strong>Step 3:</strong> Ensure CSS and i18n are loaded (usually already present)
+      </p>
+      <div class="demo-code">&lt;!-- In &lt;head&gt; --&gt;
+&lt;link rel="stylesheet" href="../styles/components/nav.css"&gt;
+
+&lt;!-- Before your component script --&gt;
+&lt;script src="../i18n/strings-loader.js"&gt;&lt;/script&gt;</div>
+
+      <p class="demo-section__description" style="margin-top: var(--spacing-md);">
+        <strong>Done!</strong> Your page now uses the reusable navigation component. 
+        No more copy-paste HTML. All 14 pages can use the same component code.
+      </p>
+    </section>
+  </main>
+
+  <!-- Scripts -->
+  <script src="../i18n/strings-loader.js"></script>
+  <script type="module">
+    import { initNavHeader, NAV_CONFIGS } from '../ui/components/nav-header.js';
+
+    // Initialize default navigation (Admin Elections)
+    await initNavHeader({
+      ...NAV_CONFIGS.adminElections,
+      links: NAV_CONFIGS.adminElections.links.map((link, i) => ({
+        ...link,
+        active: i === 0
+      }))
+    });
+
+    // Demo: Swap navigation on button click
+    const resultDiv = document.getElementById('demo-result');
+    
+    async function swapNav(configName, buttonText) {
+      try {
+        // Remove existing nav
+        const existingNav = document.querySelector('.nav');
+        if (existingNav) {
+          existingNav.remove();
+        }
+
+        // Create new nav with selected config
+        const config = NAV_CONFIGS[configName];
+        await initNavHeader({
+          ...config,
+          links: config.links.map((link, i) => ({
+            ...link,
+            active: i === 0
+          })),
+          // For elections, mark first tab as active
+          ...(config.tabs && {
+            tabs: config.tabs.map((tab, i) => ({
+              ...tab,
+              active: i === 0
+            }))
+          })
+        });
+
+        // Show success message
+        resultDiv.className = 'demo-result demo-result--success';
+        resultDiv.textContent = `✓ Successfully loaded "${buttonText}" configuration. Try the hamburger menu on mobile!`;
+        resultDiv.style.display = 'block';
+
+        // Update button states
+        document.querySelectorAll('.demo-buttons button').forEach(btn => {
+          btn.className = 'btn btn--secondary';
+        });
+        event.target.className = 'btn btn--primary';
+
+      } catch (error) {
+        resultDiv.className = 'demo-result demo-result--error';
+        resultDiv.textContent = `✗ Error: ${error.message}`;
+        resultDiv.style.display = 'block';
+        console.error('[Demo] Nav swap error:', error);
+      }
+    }
+
+    // Attach button handlers
+    document.getElementById('demo-admin-elections').addEventListener('click', (e) => 
+      swapNav('adminElections', 'Admin Elections'));
+    document.getElementById('demo-admin').addEventListener('click', (e) => 
+      swapNav('admin', 'Admin Dashboard'));
+    document.getElementById('demo-members').addEventListener('click', (e) => 
+      swapNav('members', 'Members Area'));
+    document.getElementById('demo-elections').addEventListener('click', (e) => 
+      swapNav('elections', 'Elections (with tabs)'));
+    document.getElementById('demo-events').addEventListener('click', (e) => 
+      swapNav('events', 'Events'));
+  </script>
+</body>
+</html>

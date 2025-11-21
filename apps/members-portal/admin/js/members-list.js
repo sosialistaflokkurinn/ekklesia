@@ -13,6 +13,7 @@
 import { initSession } from '../../session/init.js';
 import { initNavigation } from '../../js/nav.js';
 import { debug } from '../../js/utils/debug.js';
+import { R } from '../../i18n/strings-loader.js';
 import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
 import MembersAPI from './api/members-api.js';
 import { formatPhone, maskKennitala } from '../../js/utils/format.js';
@@ -99,8 +100,7 @@ const adminStrings = new Map();
         return;
       }
 
-      // Initialize navigation (hamburger menu)
-      initNavigation();
+      // Note: Navigation now initialized by nav-header component
 
       // Set up event listeners
       setupEventListeners();
@@ -132,7 +132,7 @@ const adminStrings = new Map();
   // Load i18n strings from admin portal
   async function loadStrings() {
     try {
-      const response = await fetch('/admin/i18n/values-is/strings.xml');
+      const response = await fetch('/admin/i18n/values-is/admin-portal-strings.xml');
       if (!response.ok) {
         debug.warn('Could not load admin i18n strings');
         return;

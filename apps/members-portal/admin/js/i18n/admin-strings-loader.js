@@ -2,13 +2,15 @@
  * Admin Strings Loader
  *
  * Singleton class for loading and accessing admin-specific i18n strings
- * from /admin/i18n/values-is/strings.xml
+ * from /admin/i18n/values-is/admin-portal-strings.xml
  *
  * Usage:
  *   import { adminStrings } from './i18n/admin-strings-loader.js';
  *   await adminStrings.load();
  *   const text = adminStrings.get('sync_members_title');
  */
+
+import { debug } from '../../../js/utils/debug.js';
 
 class AdminStringsLoader {
   constructor() {
@@ -20,7 +22,7 @@ class AdminStringsLoader {
     if (this.loaded) return this.strings;
 
     try {
-      const response = await fetch('/admin/i18n/values-is/strings.xml');
+      const response = await fetch('/admin/i18n/values-is/admin-portal-strings.xml');
       if (!response.ok) {
         throw new Error(`Failed to load admin strings: ${response.statusText}`);
       }

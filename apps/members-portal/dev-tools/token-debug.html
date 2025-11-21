@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <title>Token Debug</title>
+</head>
+<body>
+  <h1>Firebase Token Debug</h1>
+  <button id="checkToken">Check My Token</button>
+  <pre id="output"></pre>
+
+  <script type="module">
+    import { getFirebaseAuth } from '/firebase/app.js';
+    const auth = getFirebaseAuth();
+
+    document.getElementById('checkToken').addEventListener('click', async () => {
+      const user = auth.currentUser;
+      if (!user) {
+        document.getElementById('output').textContent = '❌ Not logged in!';
+        return;
+      }
+
+      try {
+        // Force refresh to get latest claims
+        const idTokenResult = await user.getIdTokenResult(true);
+        
+        const output = {
+          uid: user.uid,
+          claims: idTokenResult.claims,
+          roles: idTokenResult.claims.roles,
+          rolesType: typeof idTokenResult.claims.roles,
+          isArray: Array.isArray(idTokenResult.claims.roles)
+        };
+
+        document.getElementById('output').textContent = JSON.stringify(output, null, 2);
+      } catch (error) {
+        document.getElementById('output').textContent = `❌ Error: ${error.message}`;
+      }
+    });
+  </script>
+</body>
+</html>

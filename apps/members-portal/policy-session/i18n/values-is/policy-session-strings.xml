@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- Policy Session Component Strings -->
+  
+  <!-- Amendment Form -->
+  <string name="amendment_submit">Senda inn breytingatillögu</string>
+  <string name="amendment_submitting">Sendir inn...</string>
+  <string name="amendment_section_label">Veldu kafla til að breyta:</string>
+  <string name="amendment_section_placeholder">Veldu kafla...</string>
+  <string name="amendment_original_text">Núverandi texti:</string>
+  <string name="amendment_proposed_text">Tillaga að breytingu:</string>
+  <string name="amendment_proposed_placeholder">Sláðu inn tillögu að breytingu...</string>
+  <string name="amendment_rationale_label">Rökstuðningur (valfrjálst):</string>
+  <string name="amendment_rationale_placeholder">Útskýrðu hvers vegna þessi breyting bætir stefnuna...</string>
+  <string name="amendment_success">Breytingatillaga send inn!</string>
+  <string name="amendment_confirm_title">Senda inn breytingatillögu?</string>
+  <string name="amendment_confirm_message">Ertu viss um að þú viljir senda inn þessa breytingatillögu? Þú getur ekki breytt henni eftir sendingu.</string>
+  <string name="amendment_error_required">Vinsamlegast veldu kafla og settu fram tillögu</string>
+  <string name="amendment_error_submission">Ekki tókst að senda inn tillögu</string>
+  <string name="amendment_number">Tillaga</string>
+
+  <!-- Voting Strings -->
+  <string name="vote_yes">Já</string>
+  <string name="vote_no">Nei</string>
+  <string name="vote_abstain">Sitja hjá</string>
+  <string name="vote_confirm_title">Staðfesta atkvæði</string>
+  <string name="vote_confirm_yes">Kjósa JÁ til að samþykkja þessa tillögu?</string>
+  <string name="vote_confirm_no">Kjósa NEI til að hafna þessari tillögu?</string>
+  <string name="vote_success">Atkvæði skráð!</string>
+  <string name="vote_error">Ekki tókst að skrá atkvæði</string>
+  <string name="vote_voting">Skrái atkvæði...</string>
+  <string name="vote_already_voted">Þegar kosið</string>
+
+  <!-- Results Display -->
+  <string name="results_title">Niðurstöður</string>
+  <string name="results_amendments_heading">Niðurstöður breytingatillagna</string>
+  <string name="results_final_policy_heading">Atkvæði um endanlega stefnu</string>
+  <string name="results_participants">Fjöldi þátttakenda:</string>
+  <string name="results_accepted">Samþykkt</string>
+  <string name="results_rejected">Hafnað</string>
+  <string name="results_approved">Samþykkt</string>
+  <string name="results_not_approved">Ekki samþykkt</string>
+  <string name="results_loading">Hleð niðurstöðum...</string>
+  <string name="results_error">Ekki tókst að sækja niðurstöður</string>
+
+  <!-- Policy Session Page -->
+  <string name="phase_discussion_title">Umræðufasi</string>
+  <string name="phase_discussion_message">Skoðaðu drög að stefnu. Hægt verður að leggja fram breytingatillögur í hlé.</string>
+  <string name="phase_break_title">Hlé - Senda inn breytingatillögur</string>
+  <string name="phase_voting_title">Atkvæðagreiðsla</string>
+  <string name="policy_items_voting_heading">Kjósa um stefnuliði</string>
+  <string name="amendments_voting_heading">Kjósa um breytingatillögur</string>
+  <string name="final_vote_heading">Atkvæði um endanlega stefnu</string>
+  <string name="final_vote_description">Kjóstu um að samþykkja eða hafna endanlegri stefnu með samþykktum breytingum.</string>
+  <string name="no_amendments">Engar tillögur sendar inn.</string>
+  <string name="final_vote_yes">Já - Samþykkja stefnu</string>
+  <string name="final_vote_no">Nei - Hafna stefnu</string>
+  <string name="final_vote_abstain">Sitja hjá</string>
+  
+  <!-- Phase Filters -->
+  <string name="filter_discussion">Stefnudrög</string>
+  <string name="filter_break">Breytingatillögur</string>
+  <string name="filter_voting">Atkvæðagreiðsla</string>
+  <string name="filter_closed">Niðurstöður</string>
+
+  <!-- Back Navigation -->
+  <string name="back_to_elections">Aftur á kosningasvæði</string>
+
+  <!-- API Error Messages -->
+  <string name="api_error_not_found">Stefnufundur fannst ekki</string>
+  <string name="api_error_break_only">Breytingatillögur er aðeins hægt að leggja fram í hlé</string>
+  <string name="api_error_missing_fields">Vantar nauðsynleg gögn</string>
+  <string name="api_error_invalid_section">Ógildur liður</string>
+  <string name="api_error_item_not_found">Liður fannst ekki</string>
+  <string name="api_error_already_voted">Þú hefur nú þegar greitt atkvæði</string>
+  <string name="api_error_invalid_vote">Atkvæði verður að vera &quot;yes&quot; eða &quot;no&quot;</string>
+  <string name="api_error_voting_only">Atkvæðagreiðsla er aðeins í boði á atkvæðagreiðslutíma</string>
+  <string name="api_error_amendment_not_found">Breytingatillaga fannst ekki</string>
+  <string name="api_error_invalid_final_vote">Atkvæði verður að vera &quot;yes&quot;, &quot;no&quot; eða &quot;abstain&quot;</string>
+  
+  <!-- API Success Messages -->
+  <string name="api_success_amendment_submitted">Breytingatillaga send inn</string>
+  <string name="api_success_vote_recorded">Atkvæði skráð</string>
+</resources>

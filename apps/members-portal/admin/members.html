@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="/styles/global.css">
   <link rel="stylesheet" href="/styles/components/nav.css">
   <link rel="stylesheet" href="/styles/components/page.css">
+  <link rel="stylesheet" href="/styles/components/button.css?v=20251106">
   <link rel="stylesheet" href="/styles/components/toast.css?v=20251105">
   <link rel="stylesheet" href="/styles/components/modal.css?v=20251105">
   <link rel="stylesheet" href="/styles/components/searchable-select.css?v=20251105">
@@ -27,40 +28,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 </head>
 <body class="authenticated admin">
-  <!-- Navigation -->
-  <nav class="nav">
-    <div class="nav__container">
-      <a href="/admin/admin.html" class="nav__brand" id="nav-brand">Loading...</a>
-
-      <!-- Hamburger Button (mobile only) -->
-      <button class="nav__hamburger" id="nav-hamburger" aria-expanded="false">
-        <span class="nav__hamburger-line"></span>
-        <span class="nav__hamburger-line"></span>
-        <span class="nav__hamburger-line"></span>
-      </button>
-
-      <!-- Overlay for mobile menu -->
-      <div class="nav__overlay" id="nav-overlay"></div>
-
-      <!-- Navigation Drawer -->
-      <div class="nav__drawer" id="nav-drawer" aria-hidden="true">
-        <!-- Close button (mobile only) -->
-        <button class="nav__close" id="nav-close">
-          <span class="nav__close-icon">✕</span>
-        </button>
-
-        <div class="nav__links">
-          <a href="/admin/admin.html" class="nav__link" id="nav-admin-dashboard">Loading...</a>
-          <a href="/admin/members.html" class="nav__link nav__link--active" id="nav-admin-members">Loading...</a>
-          <a href="/admin/sync-members.html" class="nav__link" id="nav-admin-sync">Loading...</a>
-          <a href="/admin/sync-queue.html" class="nav__link" id="nav-admin-queue">Loading...</a>
-          <a href="/admin/sync-history.html" class="nav__link" id="nav-admin-history">Loading...</a>
-          <a href="/members-area/dashboard.html" class="nav__link" id="nav-back-to-member">Loading...</a>
-          <a href="#" class="nav__link nav__link--logout" id="nav-logout">Loading...</a>
-        </div>
-      </div>
-    </div>
-  </nav>
+  <!-- Navigation component inserted here -->
 
   <!-- Main Content -->
   <main class="page">
@@ -173,5 +141,14 @@
 
   <!-- Scripts -->
   <script type="module" src="/admin/js/members-list.js"></script>
+
+  <!-- Initialize Navigation Component -->
+  <script type="module">
+    import { initNavHeader, NAV_CONFIGS } from '../../ui/components/nav-header.js';
+    
+    // Initialize navigation with appropriate config
+    await initNavHeader(NAV_CONFIGS.adminMembers);
+  </script>
+
 </body>
 </html>

@@ -1,17 +1,137 @@
 # Ekklesia Documentation Guide
 
-**Last Updated**: 2025-11-04
+**Last Updated**: 2025-11-07
 **Status**: ✅ Active - Documentation Standards
 **Purpose**: Standards for writing clear, maintainable documentation
+
+---
+
+## 📝 Documentation Language Policy
+
+**CRITICAL RULE: All project documentation MUST be written in English.**
+
+### ✅ Must Be in English
+
+All documentation tracked in git must be in English:
+- ✅ All `.md` files in `/docs/`, `/services/`, `/apps/`, and project root
+- ✅ All `README.md` files at all levels
+- ✅ Code comments (JSDoc, Python docstrings, inline comments)
+- ✅ Git commit messages
+- ✅ GitHub issues, PRs, and comments
+- ✅ API documentation
+- ✅ Architecture Decision Records (ADRs)
+- ✅ Test descriptions and assertions
+- ✅ Configuration file comments
+- ✅ Script help text and error messages
+- ✅ Checklists and guides
+
+### ⚠️ Exceptions (Non-English Allowed)
+
+**User-facing text only** (target language appropriate):
+- ✅ i18n files (`values-is/strings.xml`, `locales/is.json`) - Icelandic/Danish/etc.
+- ✅ UI strings and labels
+- ✅ Error messages shown to end users
+
+**Personal notes** (English preferred):
+- 📝 `.claude/` directory - Personal AI assistant notes (in `.gitignore`)
+- 📝 `.gitignore.local` - Personal ignore rules
+- 📝 `*.draft.md` - Personal working documents (in `.gitignore`)
+- 📝 `*.notes.md` - Personal notes (in `.gitignore`)
+
+**Why English for personal notes?**: Reduces confusion, maintains consistency, easier to share with team if needed, better AI assistant compatibility.
+
+### ❌ Common Mistakes to Avoid
+
+**Mistake 1**: Writing documentation in Icelandic because "it's faster"
+```
+❌ Bad: Creating docs/checklists/CHECKLIST.md in Icelandic
+✅ Good: Writing docs/checklists/CHECKLIST.md in English from the start
+```
+
+**Mistake 2**: Keeping dual versions (English + Icelandic)
+```
+❌ Bad: docs/DEBUG_MODE.md (English) + docs/DEBUG_MODE.is.md (Icelandic)
+✅ Good: Only docs/DEBUG_MODE.md (English)
+```
+
+**Mistake 3**: Personal working documents in project docs
+```
+❌ Bad: ARCHIVE_GIT_TRACKING_ANALYSIS.md in project root (any language)
+✅ Good: .claude/git-tracking-notes.md (personal notes, English preferred)
+```
+
+### 🗣️ Communication vs Documentation
+
+**Important distinction**: How you communicate with teammates vs how you document code.
+
+| Context | Language | Location | Examples |
+|---------|----------|----------|----------|
+| **Project Documentation** | 🇬🇧 English | `/docs/`, `/services/`, code | README.md, JSDoc, guides |
+| **Git History** | 🇬🇧 English | Git commits, PRs, issues | Commit messages, PR descriptions |
+| **Personal Notes** | 🇬🇧 English preferred | `.claude/`, local only | Working notes, drafts |
+| **Team Chat** | 🇮🇸 Icelandic OK | Slack, Discord, verbal | Daily communication |
+| **Code Review Comments** | 🇬🇧 English | GitHub PR reviews | Technical feedback |
+
+**Rationale**:
+- **Documentation** (project + personal): Permanent record, maintains consistency, reduces confusion
+- **Chat**: Ephemeral and internal, native language OK for team communication
+
+### 🔍 Why English-Only Documentation?
+
+1. **International Collaboration**: Future developers may not speak Icelandic
+2. **Industry Best Practice**: English is the lingua franca of software development
+3. **AI Assistant Compatibility**: Tools like GitHub Copilot, Claude Code work best with English
+4. **Open Source Ready**: If we open-source in future, docs are already accessible
+5. **Consistency**: One language means clear expectations, no confusion
+6. **Search & Discovery**: English documentation is more discoverable online
+
+### 🛡️ Enforcement
+
+**Code Review**:
+- ❌ Block PRs with non-English documentation
+- ⚠️ Request translation before merge
+
+**Pre-commit Hooks** (if implemented):
+- Check for common Icelandic characters in `/docs/` markdown files
+- Allow exceptions for i18n files
+
+**Documentation Audits** (periodic):
+- Run: `find docs/ -name "*.md" -exec grep -l "[þðæöáíúýé]" {} \;`
+- Review flagged files for language policy compliance
+
+### 📋 Translation Checklist
+
+If you accidentally created documentation in Icelandic:
+
+1. **Translate to English**: Rewrite the document in English
+2. **Update Links**: Search for links to the old filename
+3. **Delete Icelandic Version**: Don't keep dual versions
+4. **Optional**: Save Icelandic version in `.claude/` for personal reference
+5. **Commit**: Commit the English version only
+
+**Example**:
+```bash
+# You have docs/guide.md in Icelandic
+# 1. Translate and save
+vim docs/guide.md  # Rewrite in English
+
+# 2. Optional: Save personal Icelandic copy
+mkdir -p .claude/
+cp docs/guide.md .claude/guide-is-original.md
+
+# 3. Commit English version
+git add docs/guide.md
+git commit -m "docs: Translate guide.md to English per language policy"
+```
 
 ---
 
 ## Overview
 
 Good documentation is as important as good code. This guide defines standards for:
-- JSDoc comments (inline code documentation)
-- README files (directory/project overviews)
-- Architecture Decision Records (ADRs - why decisions were made)
+- [JSDoc](https://jsdoc.app/) comments (inline code documentation)
+- [README](https://www.makeareadme.com/) files (directory/project overviews)
+- [Architecture Decision Records (ADRs)](https://adr.github.io/) - why decisions were made
 - Guide documents (like this one)
 - API documentation
 
@@ -144,6 +264,94 @@ function getUserFromLocalStorage(userId) {
 
 ## README Files
 
+### Root vs Directory READMEs
+
+**Important distinction**: Root README serves a different purpose than directory READMEs.
+
+| Type | Purpose | Length | Content |
+|------|---------|--------|---------|
+| **Root README** | Gateway to documentation | ~80-120 lines | Overview + links |
+| **Directory README** | Detailed component docs | ~150-300 lines | Complete guide |
+
+### Root README (Repository Gateway)
+
+**Purpose**: First impression and navigation hub for the entire repository.
+
+**Philosophy**: Root README is a **gateway**, not a **manual**.
+
+**Should contain**:
+- ✅ Project name and 1-2 sentence description
+- ✅ Status badges (tests, security, deployment)
+- ✅ Quick links to main documentation (DOCUMENTATION_MAP.md)
+- ✅ Quick Start commands (clone + basic orientation)
+- ✅ Security vulnerability reporting contact
+- ✅ Prerequisites (tools needed)
+- ✅ High-level status (production services operational)
+- ✅ Support/contact information
+- ✅ Last updated date
+
+**Should NOT contain** (link instead):
+- ❌ Detailed architecture explanations
+- ❌ Complete feature lists
+- ❌ Technical implementation details
+- ❌ Security ratings and detailed features
+- ❌ Cost breakdowns
+- ❌ Current work/epic details
+
+**Why**:
+- Easier to scan
+- Easier to maintain (single source of truth)
+- Avoids duplication
+- Faster for new contributors to get oriented
+
+**Root README Template**:
+```markdown
+# Project Name
+
+[1-2 sentence description]
+
+[Status badges]
+
+## 📚 Documentation
+
+**Start Here**: [DOCUMENTATION_MAP.md](../../DOCUMENTATION_MAP.md)
+
+Quick Links:
+- [Getting Started](../README.md)
+- [Architecture](../architecture/)
+- [Scripts](../../scripts/README.md)
+
+## 🚀 Quick Start
+
+[3-5 clone/setup commands]
+
+## 🔒 Security
+
+Report vulnerabilities: [email] (see [SECURITY.md](../../SECURITY.md))
+
+## 📊 Status
+
+Production: ✅ Operational ([details](../../DOCUMENTATION_MAP.md))
+
+## 🧑‍💻 Development
+
+Prerequisites: [list tools]
+
+[Setup commands including pre-commit hooks]
+
+## 📞 Support
+
+[Contact info]
+
+**Last Updated**: [date]
+```
+
+**Target length**: 80-120 lines
+
+---
+
+### Directory READMEs (Component/Service Details)
+
 ### When to Create a README
 
 Create a README.md in a directory when:
@@ -157,7 +365,7 @@ Create a README.md in a directory when:
 - `apps/members-portal/README.md` - Members portal structure
 - `docs/standards/README.md` - Index of all standards (this file's location)
 
-### README Template
+### Directory README Template
 
 ```markdown
 # [Component/Service Name]
@@ -594,7 +802,7 @@ async function submitVote(electionId, answer) {
 
 ```
 docs/
-├── CODE_STANDARDS.md              # Master index (this file's parent)
+├── CODE_STANDARDS_MAP.md          # Category map (this file's parent)
 ├── standards/                      # All coding standards
 │   ├── CSS_BEM_GUIDE.md
 │   ├── HTML_GUIDE.md
@@ -680,7 +888,7 @@ Before merging code, verify:
 
 - **JavaScript Guide**: [/docs/standards/JAVASCRIPT_GUIDE.md](/docs/standards/JAVASCRIPT_GUIDE.md) - JSDoc syntax
 - **Git Workflow Guide**: [/docs/standards/GIT_WORKFLOW_GUIDE.md](/docs/standards/GIT_WORKFLOW_GUIDE.md) - Commit messages
-- **Master Code Standards**: [/docs/CODE_STANDARDS.md](/docs/CODE_STANDARDS.md)
+- **Master Code Standards**: [/docs/CODE_STANDARDS_MAP.md](/docs/CODE_STANDARDS_MAP.md)
 
 **External Resources**:
 - **JSDoc Reference**: https://jsdoc.app/
@@ -689,6 +897,6 @@ Before merging code, verify:
 
 ---
 
-**Last Updated**: 2025-11-04
+**Last Updated**: 2025-11-14
 **Maintained By**: All developers
 **Status**: ✅ Active - Required for all documentation

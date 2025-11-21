@@ -849,7 +849,7 @@ Responsive grid for displaying label-value pairs in admin pages.
   </div>
   <div class="admin-field">
     <label class="admin-field__label">Kennitala</label>
-    <p class="admin-field__value">010190-1234</p>
+    <p class="admin-field__value">111111-1111</p>
   </div>
 </div>
 ```
@@ -1075,7 +1075,7 @@ apps/members-portal/admin/styles/
 - **CSS Best Practices**: https://developer.mozilla.org/en-US/docs/Web/CSS
 - **Design Team Standards**: (provided by design team)
 - **Conversion Script**: `scripts/convert-to-bem.js`
-- **Master Code Standards**: [/docs/CODE_STANDARDS.md](/docs/CODE_STANDARDS.md)
+- **Master Code Standards**: [/docs/CODE_STANDARDS_MAP.md](/docs/CODE_STANDARDS_MAP.md)
 
 ---
 

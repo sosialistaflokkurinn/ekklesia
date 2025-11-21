@@ -8,17 +8,17 @@
 ## Current Implementation (Firebase-based)
 
 **Production**: https://ekklesia-prod-10-2025.web.app
-**Technology**: Firebase Hosting + Cloud Functions (Python 3.11) + Firebase Authentication
+**Technology**: [Firebase Hosting](https://firebase.google.com/docs/hosting) + [Cloud Functions](https://firebase.google.com/docs/functions) ([Python 3.11](https://www.python.org/)) + [Firebase Authentication](https://firebase.google.com/docs/auth)
 
 ### What's Running
 
 - **Firebase Hosting**: Static HTML from `public/` → `apps/members-portal/` (symlink)
-- **Cloud Functions** (Python 3.11, 2nd gen):
-  - `handleKenniAuth` - OAuth token exchange with Kenni.is
+- **Cloud Functions** ([Python 3.11](https://www.python.org/), [2nd gen](https://cloud.google.com/functions/docs/2nd-gen/overview)):
+  - `handleKenniAuth` - OAuth token exchange with [Kenni.is](https://idp.kenni.is/)
   - `verifyMembership` - Kennitala verification against membership list
 - **Firebase Authentication**: Custom tokens with kennitala claims
 - **Firestore**: User profiles and session data
-- **Kenni.is Integration**: Direct OAuth PKCE (no intermediary)
+- **Kenni.is Integration**: Direct [OAuth PKCE](https://oauth.net/2/pkce/) (no intermediary)
 
 **Cost**: $0/month (Firebase free tier)
 
@@ -26,17 +26,17 @@
 
 ## Features
 
-✅ **Milestone 3 Complete** - Kenni.is National eID Authentication
+✅ **Milestone 3 Complete** - [Kenni.is National eID](https://idp.kenni.is/) Authentication
 
-- Direct Kenni.is OAuth PKCE integration ✅
-- Firebase custom token authentication ✅
+- Direct [Kenni.is OAuth PKCE](https://oauth.net/2/pkce/) integration ✅
+- [Firebase custom token](https://firebase.google.com/docs/auth/admin/create-custom-tokens) authentication ✅
 - Kennitala extraction and verification ✅
-- Member verification against Firestore members collection (Epic #43) ✅
+- Member verification against [Firestore](https://firebase.google.com/docs/firestore) members collection ([Epic #43](../../docs/features/election-voting/EPIC_43_MEMBER_MANAGEMENT_SYSTEM.md)) ✅
 - User profile with national eID data ✅
 - Icelandic language UI ✅
-- Component-based CSS architecture ✅
-- Internationalization (i18n) with R.string pattern ✅
-- Firestore user profiles ✅
+- Component-based CSS architecture ([BEM](http://getbem.com/)) ✅
+- Internationalization (i18n) with [R.string pattern](../../docs/standards/I18N_GUIDE.md) ✅
+- [Firestore](https://firebase.google.com/docs/firestore) user profiles ✅
 
 ---
 
@@ -44,23 +44,25 @@
 
 ### CSS Methodology
 
-Following `.claude/rules.md` CSS principles:
+Following [`.claude/rules.md`](../../.claude/rules.md) CSS principles:
 
-**1. Global Stylesheet** (`styles/global.css`):
-- CSS reset
+**1. Global Stylesheet** ([`styles/global.css`](../../apps/members-portal/styles/global.css)):
+- [CSS reset](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Reset)
 - Typography system
-- Color palette (CSS custom properties)
+- Color palette ([CSS custom properties](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties))
 - Spacing and layout variables
 - Socialist red brand colors
 
-**2. Component Stylesheets** (`styles/components/`):
+**2. Component Stylesheets** ([`styles/components/`](../../apps/members-portal/styles/components/)):
 - `login.css` - Authentication page styles
 - Scoped, semantic CSS
-- No utility-first frameworks (no Tailwind)
+- No utility-first frameworks (no [Tailwind](https://tailwindcss.com/))
+
+**Documentation**: See [CSS & BEM Guide](../../docs/standards/CSS_BEM_GUIDE.md)
 
 **Benefits for Designers**:
 - Clear separation: HTML structure + scoped CSS
-- CSS custom properties for easy theming
+- [CSS custom properties](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties) for easy theming
 - Semantic class names
 - Easy to iterate without touching JavaScript
 
@@ -268,7 +270,6 @@ kenni-client-secret
 
 **Current Implementation**:
 - [../docs/status/CURRENT_PRODUCTION_STATUS.md](../docs/status/CURRENT_PRODUCTION_STATUS.md) - Infrastructure status
-- [../docs/SYSTEM_ARCHITECTURE_OVERVIEW.md](../docs/SYSTEM_ARCHITECTURE_OVERVIEW.md) - System architecture
 
 **Local Documentation** (not in git):
 - `docs/FIREBASE_KENNI_SETUP.md` - Complete setup guide

@@ -77,12 +77,34 @@ Comprehensive reference for all operational guides organized by category.
 
 ## Developer Guides
 
+### Git Strategy & Configuration
+
+#### GITIGNORE_STRATEGY.md
+**Location:** [GITIGNORE_STRATEGY.md](GITIGNORE_STRATEGY.md)
+**Summary:** Two-tier .gitignore strategy for team-wide and personal development environments
+
+- Shared template (.gitignore.example) vs personal config (.gitignore)
+- Security patterns and PII protection
+- Setup for new developers
+- Maintenance workflow and best practices
+- Use when: Setting up dev environment, managing ignored files
+
+#### LOCAL_ONLY_FILES.md
+**Location:** [../LOCAL_ONLY_FILES.md](../LOCAL_ONLY_FILES.md)
+**Summary:** Catalog of all gitignored files and directories (not in version control)
+
+- Policy meeting notes with sensitive discussions
+- Member login tracking scripts
+- PII-containing documentation patterns
+- Security considerations and access control
+- Use when: Understanding what stays local, auditing ignored files
+
 ### Git Guides
-**Location:** [git/](git/)  
+**Location:** [git/](git/)
 Available guides in this directory for git workflows
 
 ### GitHub Guides
-**Location:** [github/](github/)  
+**Location:** [github/](github/)
 Available guides for GitHub management and integration
 
 ---

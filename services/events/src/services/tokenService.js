@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const { query } = require('../config/database');
 const { isElectionActive } = require('./electionService');
 const { registerToken: registerWithElections } = require('./electionsClient');
+const logger = require('../utils/logger');
 
 /**
  * Token Service
@@ -41,7 +42,11 @@ async function checkEligibility(election, kennitala) {
       errors.push('You have already voted in this election');
     } else if (now > expiresAt) {
       // Expired token - delete it and allow new token issuance
-      console.log(`INFO: Deleting expired token for kennitala ${kennitala.substring(0, 7)}****`);
+      logger.info('Deleting expired token', {
+        operation: 'check_eligibility',
+        token_id: token.id,
+        expired_at: expiresAt
+      });
       await query('DELETE FROM voting_tokens WHERE id = $1', [token.id]);
       // Don't add to errors - allow new token to be issued
     } else {
@@ -90,7 +95,10 @@ async function issueVotingToken(election, kennitala) {
 
   // If conflict (token already exists), fetch existing token
   if (result.rowCount === 0) {
-    console.log('Token already exists for kennitala, returning existing token');
+    logger.info('Token already exists, returning existing', {
+      operation: 'issue_voting_token',
+      idempotent: true
+    });
     const existing = await query(`
       SELECT token_hash FROM voting_tokens WHERE kennitala = $1
     `, [kennitala]);
@@ -103,14 +111,25 @@ async function issueVotingToken(election, kennitala) {
     return existing.rows[0].token_hash;
   }
 
-  console.log('Voting token issued:', { kennitala, expiresAt });
+  logger.info('Voting token issued', {
+    operation: 'issue_voting_token',
+    expires_at: expiresAt
+  });
 
   // Phase 5: Register token with Elections service via S2S
   try {
     await registerWithElections(tokenHash);
-    console.log('Token registered with Elections service:', { tokenHash: tokenHash.substring(0, 8) + '...' });
+    logger.info('Token registered with Elections service', {
+      operation: 's2s_register_token',
+      success: true
+    });
   } catch (error) {
-    console.error('Failed to register token with Elections service:', error);
+    logger.error('Failed to register token with Elections service', {
+      operation: 's2s_register_token',
+      error: error.message,
+      stack: error.stack,
+      graceful_degradation: true
+    });
     // Continue even if Elections service registration fails (graceful degradation)
     // Member can still use token, but vote won't be recorded until Elections service is available
   }

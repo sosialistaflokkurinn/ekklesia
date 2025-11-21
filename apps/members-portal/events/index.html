@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Loading...</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/styles/global.css?v=20251027">
+  <link rel="stylesheet" href="/styles/components/nav.css?v=20251027">
+  <link rel="stylesheet" href="/styles/components/page.css?v=20251027">
+</head>
+<body class="authenticated">
+  <!-- Navigation component inserted here -->
+
+  <!-- Page Content -->
+  <div class="page__container">
+    <div class="page__header">
+      <h1 class="page__title" id="events-title">Loading...</h1>
+      <p class="page__subtitle" id="events-subtitle">Loading...</p>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="card">
+      <div class="button-group">
+        <!-- Tab buttons created dynamically by events.js -->
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading-state" class="card">
+      <div class="card__content u-text-center">
+        <div class="spinner"></div>
+        <p id="loading-message">Loading...</p>
+      </div>
+    </div>
+
+    <!-- Error State -->
+    <div id="error-state" class="card u-hidden">
+      <div class="card__content">
+        <div class="message message--error">
+          <p id="error-message">Loading...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="card u-hidden">
+      <div class="card__content u-text-center">
+        <p id="empty-message">Loading...</p>
+      </div>
+    </div>
+
+    <!-- Events List -->
+    <div id="events-list" class="u-hidden">
+      <!-- Events will be dynamically inserted here -->
+    </div>
+  </div>
+
+  <script type="module" src="/js/events.js?v=20251027"></script>
+
+  <!-- Initialize Navigation Component -->
+  <script type="module">
+    import { initNavHeader, NAV_CONFIGS } from '../../ui/components/nav-header.js';
+    
+    // Initialize navigation with appropriate config
+    await initNavHeader(NAV_CONFIGS.events);
+  </script>
+
+</body>
+</html>

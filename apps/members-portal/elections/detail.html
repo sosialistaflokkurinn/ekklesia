@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Loading...</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/styles/global.css?v=20251110">
+  <link rel="stylesheet" href="/styles/components/button.css?v=20251110">
+  <link rel="stylesheet" href="/styles/components/modal.css?v=20251110">
+  <link rel="stylesheet" href="/styles/components/nav.css?v=20251110">
+  <link rel="stylesheet" href="/styles/components/page.css?v=20251110">
+  <link rel="stylesheet" href="/styles/components/countdown-timer.css?v=20251110">
+  <link rel="stylesheet" href="/styles/components/voting-form.css?v=20251110">
+  <link rel="stylesheet" href="/styles/components/election-detail.css?v=20251110">
+</head>
+<body class="authenticated">
+  <!-- Navigation component inserted here -->
+
+  <div class="page__container">
+    <!-- Loading State -->
+    <div id="election-loading" class="election-detail__loading u-hidden">
+      <div class="spinner"></div>
+      <p id="loading-message">Loading...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="election-error" class="election-detail__error u-hidden">
+      <p id="error-message">Loading...</p>
+      <!-- Retry button created dynamically by election-detail.js -->
+    </div>
+
+    <!-- Election Detail Content -->
+    <article id="election-content" class="election-detail u-hidden">
+      <!-- Back Button -->
+      <div class="election-detail__back">
+        <a href="/elections/index.html" class="btn btn--back" id="back-link">
+          ← <span id="back-text">Loading...</span>
+        </a>
+      </div>
+
+      <!-- Header -->
+      <header class="election-detail__header">
+        <div class="election-detail__header-top">
+          <h1 class="election-detail__title" id="election-title">Loading...</h1>
+          <span class="election-detail__status-badge" id="election-status-badge">Loading...</span>
+        </div>
+
+        <!-- Already Voted Badge -->
+        <div id="already-voted-badge" class="election-detail__voted-badge u-hidden">
+          <span id="voted-badge-text">Loading...</span>
+        </div>
+      </header>
+
+      <!-- Election Schedule (populated by schedule-display component) -->
+      <div id="schedule-display-container">
+        <!-- Schedule display component will be inserted here by JavaScript -->
+      </div>
+
+      <!-- Election Description -->
+      <section class="election-detail__info" id="election-description-section" style="display: none;">
+        <div class="election-detail__description" id="election-description">
+          <!-- Optional description will be inserted here -->
+        </div>
+      </section>
+
+      <!-- Voting Form Container (voting-form component inserted here) -->
+      <div id="voting-form-container">
+        <!-- Voting form component will be inserted here by JavaScript -->
+      </div>
+
+      <!-- Results Section (shown if closed) -->
+      <section id="results-section" class="election-detail__results u-hidden">
+        <h3 class="election-detail__results-title" id="results-title">Loading...</h3>
+
+        <div class="election-detail__results-summary">
+          <span id="results-total-votes-label">Loading...</span>
+          <span id="results-total-votes" class="election-detail__results-total">0</span>
+        </div>
+
+        <div id="results-list" class="election-detail__results-list">
+          <!-- Results will be inserted dynamically -->
+        </div>
+      </section>
+
+      <!-- Upcoming Section (shown if upcoming) -->
+      <section id="upcoming-section" class="election-detail__upcoming u-hidden">
+        <p id="upcoming-message" class="election-detail__upcoming-message">Loading...</p>
+      </section>
+    </article>
+
+  </div>
+
+  <script type="module" src="./js/election-detail.js?v=20251110"></script>
+
+  <!-- Initialize Navigation Component -->
+  <script type="module">
+    import { initNavHeader, NAV_CONFIGS } from '../../ui/components/nav-header.js';
+    
+    // Initialize navigation with appropriate config
+    await initNavHeader(NAV_CONFIGS.elections);
+  </script>
+
+</body>
+</html>
