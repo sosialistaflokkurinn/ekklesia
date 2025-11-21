@@ -12,6 +12,7 @@ import { initAuthenticatedPage } from '../../js/page-init.js';
 import { debug } from '../../js/utils/debug.js';
 import { R } from '../i18n/strings-loader.js';
 import { getAdminElectionById } from '../../js/api/elections-api.js';
+import { openElection, closeElection, updateElection } from './api/elections-admin-api.js';
 import { electionState } from '../../js/utils/election-state.js';
 import { createScheduleControl } from '../../js/components/schedule-control.js';
 import { createScheduleDisplay } from '../../js/components/schedule-display.js';
@@ -64,20 +65,46 @@ function displayElectionControl(election) {
   // Create schedule control component
   const scheduleControl = createScheduleControl({
     electionId: election.id,
-    onStarted: (state) => {
+    onStarted: async (state) => {
       debug.log('Election started:', state);
-      // TODO: Call API to update election status
-      alert('Kosning byrjuð! ✅\n\n(Í production myndi þetta kalla á API)');
+      try {
+        // Update duration if changed
+        if (state.duration) {
+          await updateElection(election.id, { duration_minutes: state.duration });
+        }
+        // Open election
+        await openElection(election.id);
+        // Reload to sync state
+        await loadElection(election.id);
+      } catch (error) {
+        debug.error('Failed to start election:', error);
+        alert(R.string.error_generic || 'Villa kom upp við að hefja kosningu');
+      }
     },
-    onClosed: (state) => {
+    onClosed: async (state) => {
       debug.log('Election closed:', state);
-      // TODO: Call API to close election
-      alert('Kosningu lokað! 🔒\n\n(Í production myndi þetta kalla á API)');
+      try {
+        await closeElection(election.id);
+        // Reload to sync state
+        await loadElection(election.id);
+      } catch (error) {
+        debug.error('Failed to close election:', error);
+        alert(R.string.error_generic || 'Villa kom upp við að loka kosningu');
+      }
     },
-    onScheduled: (state) => {
+    onScheduled: async (state) => {
       debug.log('Election scheduled:', state);
-      // TODO: Call API to schedule election
-      alert('Kosning áætluð! 📅\n\n(Í production myndi þetta kalla á API)');
+      try {
+        await updateElection(election.id, {
+          scheduled_start: state.starts,
+          scheduled_end: state.ends
+        });
+        // Reload to sync state
+        await loadElection(election.id);
+      } catch (error) {
+        debug.error('Failed to schedule election:', error);
+        alert(R.string.error_generic || 'Villa kom upp við að áætla kosningu');
+      }
     }
   });
 
