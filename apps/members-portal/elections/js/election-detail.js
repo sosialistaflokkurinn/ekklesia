@@ -196,10 +196,12 @@ function displayVotingSection(election) {
     votingForm = null;
   }
 
-  // Create voting form component
+  // Create voting form
   votingForm = createVotingForm({
     question: election.question,
     answers: election.answers,
+    allowMultiple: election.voting_type === 'multi-choice',
+    maxSelections: election.max_selections,
     questionLabel: R.string.election_question_label,
     votingTitle: R.string.voting_select_answer,
     voteButtonText: R.string.btn_vote,
