@@ -324,4 +324,10 @@
   <string name="modal_confirm_btn">Staðfesta</string>
   <string name="modal_cancel_btn">Hætta við</string>
   <string name="modal_ok_btn">Í lagi</string>
+  <string name="role_badge_member">Félagi</string>
+  <string name="role_badge_superuser">Kerfisstjóri</string>
+  <string name="role_badge_admin">Stjórnandi</string>
+  <string name="role_badge_election_manager">Kosningastjóri</string>
+  <string name="role_election_manager">Kosningastjóri</string>
+  <string name="role_superadmin">Ofurkerfisstjóri</string>
 </resources>

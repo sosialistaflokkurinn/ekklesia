@@ -17,12 +17,6 @@
   <string name="profile_django_save_error">Villa við vistun í eldra kerfi (Django). Breytingar voru ekki vistaðar. Reyndu aftur.</string>
   <string name="quick_links_title">Flýtileiðir</string>
   <string name="results_votes">%s atkvæði</string>
-  <string name="role_badge_admin">Stjórnandi</string>
-  <string name="role_badge_election_manager">Kosningastjóri</string>
-  <string name="role_badge_member">Félagi</string>
-  <string name="role_badge_superuser">Kerfisstjóri</string>
-  <string name="role_election_manager">Kosningastjóri</string>
-  <string name="role_superadmin">Ofurkerfisstjóri</string>
   <string name="tab_all_elections">Allar kosningar</string>
   <string name="tab_candidate_elections">Framboð</string>
   <string name="tab_policy_sessions">Stefnumótun</string>
