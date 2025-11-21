@@ -202,7 +202,8 @@ export function createVotingForm(options = {}) {
     const label = document.createElement('label');
     label.htmlFor = `${formId}-answer-${answer.id}`;
     label.className = 'voting-form__answer-label';
-    label.textContent = answer.text;
+    // Support both 'text' and 'answer_text' properties
+    label.textContent = answer.text || answer.answer_text || '';
 
     optionDiv.appendChild(input);
     optionDiv.appendChild(label);
