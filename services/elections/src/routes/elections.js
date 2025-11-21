@@ -315,8 +315,15 @@ router.post('/elections/:id/vote', voteLimiter, verifyMemberToken, async (req, r
     const ballotIds = [];
     for (const answerId of answer_ids) {
       // Find answer text from election.answers array
-      const answerObj = election.answers.find(a => a.id === answerId);
-      const answerText = answerObj ? answerObj.text : answerId; // Fallback to ID if not found
+      let answerText = answerId;
+      const answerObj = election.answers.find(a => {
+        if (typeof a === 'string') return a === answerId;
+        return a.id === answerId;
+      });
+      
+      if (answerObj && typeof answerObj === 'object') {
+        answerText = answerObj.text || answerObj.answer_text || answerId;
+      }
 
       const ballotResult = await client.query(
         `INSERT INTO elections.ballots (election_id, member_uid, answer_id, answer, token_hash, submitted_at)

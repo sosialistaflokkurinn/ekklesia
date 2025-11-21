@@ -165,8 +165,8 @@ export function createVotingForm(options = {}) {
 
   // Create answer options
   answers.forEach((answer) => {
-    // Support both id and answer_id
-    const answerId = answer.id || answer.answer_id;
+    // Support both id and answer_id, or use text/string as fallback
+    const answerId = answer.id || answer.answer_id || (typeof answer === 'string' ? answer : answer.text || answer.answer_text);
     
     const optionDiv = document.createElement('div');
     optionDiv.className = 'voting-form__answer-option';
@@ -203,10 +203,10 @@ export function createVotingForm(options = {}) {
     });
 
     const label = document.createElement('label');
-    label.htmlFor = `${formId}-answer-${answer.id}`;
+    label.htmlFor = `${formId}-answer-${answerId}`;
     label.className = 'voting-form__answer-label';
-    // Support both 'text' and 'answer_text' properties
-    label.textContent = answer.text || answer.answer_text || '';
+    // Support both 'text' and 'answer_text' properties, or string
+    label.textContent = answer.text || answer.answer_text || (typeof answer === 'string' ? answer : '');
 
     optionDiv.appendChild(input);
     optionDiv.appendChild(label);
