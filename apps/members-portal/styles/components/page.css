@@ -127,8 +127,8 @@ body.authenticated {
 
 .info-grid__item:hover {
   background: white;
-  box-shadow: 0 4px 12px rgba(243, 180, 27, 0.15);
-  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(243, 180, 27, 0.6);
+  transform: translateY(-3px);
 }
 
 .info-grid__label {
