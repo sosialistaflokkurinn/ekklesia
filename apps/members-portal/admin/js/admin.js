@@ -7,7 +7,7 @@
 
 // Import from member portal public directory (two levels up from /admin/js/)
 import { initSession } from '../../session/init.js';
-import { initNavigation } from '../../js/nav.js';
+import { initNavigation } from '../../js/nav-interactions.js';
 import { debug } from '../../js/utils/debug.js';
 import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
 import { collection, query, orderBy, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
@@ -180,15 +180,15 @@ function setPageText(strings, userData) {
   // Page title
   document.getElementById('page-title').textContent = strings.admin_dashboard_title;
 
-  // Navigation
-  document.getElementById('nav-brand').textContent = strings.admin_brand;
-  document.getElementById('nav-admin-dashboard').textContent = strings.nav_admin_dashboard;
-  document.getElementById('nav-admin-members').textContent = strings.nav_admin_members;
-  document.getElementById('nav-admin-sync').textContent = strings.nav_admin_sync;
-  document.getElementById('nav-admin-queue').textContent = strings.nav_admin_queue;
-  document.getElementById('nav-admin-history').textContent = strings.nav_admin_history;
-  document.getElementById('nav-back-to-member').textContent = strings.nav_back_to_member;
-  document.getElementById('nav-logout').textContent = strings.nav_logout;
+  // Navigation - Handled by nav-header.js component
+  // document.getElementById('nav-brand').textContent = strings.admin_brand;
+  // document.getElementById('nav-admin-dashboard').textContent = strings.nav_admin_dashboard;
+  // document.getElementById('nav-admin-members').textContent = strings.nav_admin_members;
+  // document.getElementById('nav-admin-sync').textContent = strings.nav_admin_sync;
+  // document.getElementById('nav-admin-queue').textContent = strings.nav_admin_queue;
+  // document.getElementById('nav-admin-history').textContent = strings.nav_admin_history;
+  // document.getElementById('nav-back-to-member').textContent = strings.nav_back_to_member;
+  // document.getElementById('nav-logout').textContent = strings.nav_logout;
 
   // Welcome card - with personalized greeting
   debug.log('Building welcome message for:', userData.displayName);

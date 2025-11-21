@@ -59,7 +59,7 @@ export function updateNavigation() {
     const openLabel = R.string.nav_hamburger_open || 'Opna valmynd';
     hamburger.setAttribute('aria-label', openLabel);
 
-    // Store labels in data attributes for dynamic toggling in nav.js
+    // Store labels in data attributes for dynamic toggling in nav-interactions.js
     hamburger.setAttribute('data-open-label', openLabel);
 
     const closeLabel = R.string.nav_hamburger_close || 'Loka valmynd';

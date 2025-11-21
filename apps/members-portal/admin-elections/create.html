@@ -383,12 +383,9 @@
   <!-- Scripts -->
   <script type="module">
     import { getFirebaseAuth } from '../firebase/app.js';
-    import { initNavigation } from '../js/nav.js';
+    // Navigation initialized by navigation-bar.js below
 
     const auth = getFirebaseAuth();
-
-    // Initialize navigation with hamburger menu
-    initNavigation();
 
     // Handle logout
     document.getElementById('nav-logout')?.addEventListener('click', async (e) => {
@@ -404,7 +401,7 @@
 
   <!-- Initialize Navigation Component -->
   <script type="module">
-    import { initNavHeader, NAV_CONFIGS } from '../../ui/components/nav-header.js';
+    import { initNavHeader, NAV_CONFIGS } from '../../ui/components/navigation-bar.js';
     
     // Initialize navigation with appropriate config
     await initNavHeader(NAV_CONFIGS.adminElectionsCreate);

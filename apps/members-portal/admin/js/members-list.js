@@ -11,7 +11,7 @@
 
 // Import from member portal public directory
 import { initSession } from '../../session/init.js';
-import { initNavigation } from '../../js/nav.js';
+import { initNavigation } from '../../js/nav-interactions.js';
 import { debug } from '../../js/utils/debug.js';
 import { R } from '../../i18n/strings-loader.js';
 import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
@@ -171,30 +171,30 @@ const adminStrings = new Map();
     // Page title
     document.title = R.string.members_list_title || 'Félagar';
 
-    // Navigation
-    const navBrand = document.getElementById('nav-brand');
-    if (navBrand) navBrand.textContent = R.string.app_name || 'Ekklesia';
+    // Navigation - Handled by nav-header.js component
+    // const navBrand = document.getElementById('nav-brand');
+    // if (navBrand) navBrand.textContent = R.string.app_name || 'Ekklesia';
 
-    const navAdminDashboard = document.getElementById('nav-admin-dashboard');
-    if (navAdminDashboard) navAdminDashboard.textContent = R.string.nav_admin_dashboard || 'Stjórnborð';
+    // const navAdminDashboard = document.getElementById('nav-admin-dashboard');
+    // if (navAdminDashboard) navAdminDashboard.textContent = R.string.nav_admin_dashboard || 'Stjórnborð';
 
-    const navAdminMembers = document.getElementById('nav-admin-members');
-    if (navAdminMembers) navAdminMembers.textContent = R.string.nav_admin_members || 'Félagar';
+    // const navAdminMembers = document.getElementById('nav-admin-members');
+    // if (navAdminMembers) navAdminMembers.textContent = R.string.nav_admin_members || 'Félagar';
 
-    const navAdminSync = document.getElementById('nav-admin-sync');
-    if (navAdminSync) navAdminSync.textContent = R.string.nav_admin_sync || 'Samstilling';
+    // const navAdminSync = document.getElementById('nav-admin-sync');
+    // if (navAdminSync) navAdminSync.textContent = R.string.nav_admin_sync || 'Samstilling';
 
-    const navAdminQueue = document.getElementById('nav-admin-queue');
-    if (navAdminQueue) navAdminQueue.textContent = R.string.nav_admin_queue || 'Biðröð';
+    // const navAdminQueue = document.getElementById('nav-admin-queue');
+    // if (navAdminQueue) navAdminQueue.textContent = R.string.nav_admin_queue || 'Biðröð';
 
-    const navAdminHistory = document.getElementById('nav-admin-history');
-    if (navAdminHistory) navAdminHistory.textContent = R.string.nav_admin_history || 'Saga';
+    // const navAdminHistory = document.getElementById('nav-admin-history');
+    // if (navAdminHistory) navAdminHistory.textContent = R.string.nav_admin_history || 'Saga';
 
-    const navBackToMember = document.getElementById('nav-back-to-member');
-    if (navBackToMember) navBackToMember.textContent = R.string.nav_back_to_member || 'Til baka';
+    // const navBackToMember = document.getElementById('nav-back-to-member');
+    // if (navBackToMember) navBackToMember.textContent = R.string.nav_back_to_member || 'Til baka';
 
-    const navLogout = document.getElementById('nav-logout');
-    if (navLogout) navLogout.textContent = R.string.nav_logout || 'Útskrá';
+    // const navLogout = document.getElementById('nav-logout');
+    // if (navLogout) navLogout.textContent = R.string.nav_logout || 'Útskrá';
 
     // Page header
     const pageTitle = document.getElementById('page-header-title');

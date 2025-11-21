@@ -238,7 +238,7 @@ export async function initNavHeader(options = {}, mountPoint = null) {
   }
 
   // Initialize navigation behavior (hamburger menu, etc.)
-  const { initNavigation } = await import('../../js/nav.js');
+  const { initNavigation } = await import('../../js/nav-interactions.js');
   initNavigation();
 
   return nav;

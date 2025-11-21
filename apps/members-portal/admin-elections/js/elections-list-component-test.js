@@ -14,7 +14,7 @@ import { getFirebaseAuth } from '../../firebase/app.js';
 import { getElectionRole, canPerformAction, requireAdmin, PERMISSIONS, hasPermission } from '../../js/rbac.js';
 import { R } from '../i18n/strings-loader.js';
 import { initElectionsListStrings } from './elections-list-i18n.js';
-// REMOVED: import { initNavigation } from '../../js/nav.js';
+// REMOVED: import { initNavigation } from '../../js/nav-interactions.js';
 import { formatDate, getTimeRemaining } from './date-utils.js';
 import { createStatusBadge } from '../../js/components/badge.js';
 import { showModal, showAlert } from '../../js/components/modal.js';
