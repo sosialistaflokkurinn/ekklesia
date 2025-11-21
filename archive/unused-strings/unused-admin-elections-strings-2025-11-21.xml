@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+  <string name="admin_elections_page_title">Rafræn kosningastjórnun - Sósíalistaflokkurinn</string>
+  <string name="confirm_delete_placeholder">Sláðu inn heiti kosningar...</string>
+  <string name="confirm_hide_title">Fela kosningu?</string>
+  <string name="confirm_unhide_title">Sýna kosningu?</string>
+  <string name="empty_state_description">Byrjaðu á því að búa til fyrstu kosninguna þína!</string>
+  <string name="empty_state_title">Engar kosningar ennþá</string>
+  <string name="error_create_election_detail">❌ Villa: %s</string>
+  <string name="error_no_permission">Þú hefur ekki heimild til þessarar aðgerðar.</string>
+  <string name="label_closed_already">Lokið</string>
+  <string name="results_no_elections">Engar kosningar fundust</string>
+  <string name="review_start_immediate">Handvirkt</string>
+  <string name="role_election_manager">📊 Kosningastjóri</string>
+  <string name="role_superadmin">👑 Superadmin</string>
+  <string name="status_draft">Drög</string>
+  <string name="status_hidden">Falið</string>
+  <string name="status_published">Virk</string>
+  <string name="table_header_question">Spurning</string>
+  <string name="validation_answers_min">Þú verður að hafa að minnsta kosti %d svarmöguleika</string>
+  <string name="validation_end_time_past">Lokatími má ekki vera liðinn</string>
+  <string name="validation_not_authorized">Þú hefur ekki heimild til að búa til kosningar.</string>
+</resources>

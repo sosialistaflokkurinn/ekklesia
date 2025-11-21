@@ -37,8 +37,6 @@
   <string name="stat_duration_label">Tímalengd</string>
   <string name="stat_status_label">Staða</string>
   <string name="stat_time_label">Tímalengd</string>
-  <string name="role_admin">Stjórnandi</string>
-  <string name="role_election_manager">Kosningastjóri</string>
   <string name="history_title">Samstillingasaga</string>
   <string name="history_subtitle">Yfirlit yfir fyrri keyrslur</string>
   <string name="history_table_date">Dagsetning</string>
@@ -67,7 +65,6 @@
   <string name="members_searching">Leita í öllum félögum...</string>
   <string name="members_error_loading">Villa kom upp við að hlaða félagaskrá</string>
   <string name="members_btn_view">Skoða</string>
-  <string name="members_btn_edit">Breyta</string>
   <string name="members_status_active">Virkur</string>
   <string name="members_status_inactive">Óvirkur</string>
   <string name="members_status_unknown">Óþekkt</string>
@@ -83,90 +80,27 @@
   <string name="btn_back_to_dashboard">Aftur í yfirlit</string>
   <string name="btn_view_history">Skoða keyrslusögu</string>
   <string name="loading_sync_logs">Sæki samstillingasögu...</string>
-  <string name="month_january">janúar</string>
-  <string name="month_february">febrúar</string>
-  <string name="month_march">mars</string>
-  <string name="month_april">apríl</string>
-  <string name="month_may">maí</string>
-  <string name="month_june">júní</string>
-  <string name="month_july">júlí</string>
-  <string name="month_august">ágúst</string>
-  <string name="month_september">september</string>
-  <string name="month_october">október</string>
-  <string name="month_november">nóvember</string>
-  <string name="month_december">desember</string>
-  <string name="member_detail_title">Félagsupplýsingar</string>
-  <string name="member_detail_subtitle">Skoða upplýsingar um félaga</string>
-  <string name="member_detail_basic_info">Grunnupplýsingar</string>
-  <string name="member_detail_address">Heimilisfang</string>
-  <string name="member_detail_membership">Félagsaðild</string>
-  <string name="member_detail_metadata">Kerfisgögn</string>
-  <string name="member_detail_error">Villa kom upp við að hlaða félaga</string>
-  <string name="member_edit_title">Breyta félaga</string>
-  <string name="member_edit_subtitle">Uppfæra upplýsingar um félaga</string>
-  <string name="member_edit_save_button">Vista breytingar</string>
-  <string name="member_edit_cancel_button">Hætta við</string>
-  <string name="member_edit_saving">Vista breytingar...</string>
-  <string name="member_edit_error">Villa kom upp við að vista</string>
-  <string name="member_edit_validation_error">Vinsamlegast leiðréttu villurnar</string>
-  <string name="member_edit_missing_django_id">Ekki er hægt að breyta þessum félaga (vantar Django ID)</string>
-  <string name="member_edit_loading_error">Villa kom upp við að hlaða félaga</string>
-  <string name="member_edit_cancel_confirm">Ertu viss um að þú viljir hætta við? Óvistaðar breytingar tapast.</string>
-  <string name="member_edit_field_name">Nafn *</string>
-  <string name="member_edit_field_email">Netfang</string>
-  <string name="member_edit_field_phone">Sími</string>
-  <string name="member_edit_field_birthday">Fæðingardagur</string>
-  <string name="member_edit_field_gender">Kyn</string>
-  <string name="member_edit_field_gender_m">Karl</string>
-  <string name="member_edit_field_gender_f">Kona</string>
-  <string name="member_edit_field_gender_x">Annað</string>
-  <string name="member_edit_field_street">Gata</string>
-  <string name="member_edit_field_number">Númer</string>
-  <string name="member_edit_field_postal_code">Póstnúmer</string>
-  <string name="member_edit_field_city">Staður</string>
-  <string name="member_edit_readonly_note">* Kennitala og ID er óbreytanleg</string>
-  <string name="validation_required">Þetta svæði er nauðsynlegt</string>
-  <string name="validation_invalid_email">Ógilt netfang</string>
-  <string name="validation_invalid_phone">Símanúmer verður að vera 7 tölustafir</string>
-  <string name="validation_invalid_postal_code">Póstnúmer verður að vera 3 tölustafir</string>
-  
-  <!-- Modal dialog strings -->
-  <string name="member_edit_cancel_confirm_title">Hætta við breytingar?</string>
-  <string name="member_edit_cancel_confirm_message">Allar óvistaðar breytingar munu tapast.</string>
-  <string name="member_edit_continue_editing">Halda áfram að breyta</string>
   <string name="btn_cancel">Hætta við</string>
   <string name="sync_trigger_confirm_title">Keyra samstillingu?</string>
   <string name="sync_trigger_confirm_message">Þetta mun sækja öll gögn frá Django og uppfæra Firestore.</string>
   <string name="sync_trigger_confirm_btn">Keyra samstillingu</string>
-  
-  <!-- Members list filter options -->
   <string name="filter_status_all">Allir</string>
   <string name="filter_status_active">Virkir</string>
   <string name="filter_status_inactive">Óvirkir</string>
-  
-  <!-- Electoral districts -->
   <string name="district_all">Öll kjördæmi</string>
   <string name="district_reykjavik">Reykjavíkurkjördæmi</string>
   <string name="district_sudvestur">Suðvesturkjördæmi</string>
   <string name="district_sudur">Suðurkjördæmi</string>
   <string name="district_nordvestur">Norðvesturkjördæmi</string>
   <string name="district_nordaustur">Norðausturkjördæmi</string>
-  <string name="district_sudur_alt">Suður</string>
-  <string name="district_nordur_alt">Norður</string>
-  
-  <!-- Members table headers -->
   <string name="members_table_header_id">Django ID</string>
   <string name="members_table_header_name">Nafn</string>
   <string name="members_table_header_email">Netfang</string>
   <string name="members_table_header_kennitala">Kennitala</string>
   <string name="members_table_header_status">Staða</string>
   <string name="members_table_header_actions">Aðgerðir</string>
-  
-  <!-- UI text -->
   <string name="members_empty_message">Engir félagar fundust</string>
   <string name="members_retry_button">Reyna aftur</string>
-
-  <!-- Sync queue strings -->
   <string name="queue_title">Samstillingarbiðröð</string>
   <string name="queue_subtitle">Breytingar sem bíða samstillingar við Django</string>
   <string name="queue_table_created">Stofnað</string>
@@ -177,28 +111,9 @@
   <string name="queue_empty">Engin biðröð fannst</string>
   <string name="loading_queue">Sæki samstillingarbiðröð...</string>
   <string name="error_load_queue">Gat ekki sótt samstillingarbiðröð: %s</string>
-  <string name="queue_action_update">Uppfæra</string>
-  <string name="queue_action_create">Stofna</string>
-  <string name="queue_action_delete">Eyða</string>
-  <string name="queue_status_pending">Bíður</string>
-  <string name="queue_status_synced">Samstillt</string>
-  <string name="queue_status_failed">Mistókst</string>
-
-  <!-- Profile field names (for sync queue) -->
-  <string name="profile_name">Nafn</string>
   <string name="profile_email">Netfang</string>
   <string name="profile_phone">Sími</string>
-  <string name="profile_birthday">Fæðingardagur</string>
-  <string name="profile_gender">Kyn</string>
-  <string name="profile_street">Gata</string>
-  <string name="profile_number">Númer</string>
-  <string name="profile_postal_code">Póstnúmer</string>
-  <string name="profile_city">Staður</string>
-
-  <!-- Toast messages -->
   <string name="saved">Vistað</string>
-
-  <!-- Member Profile Page -->
   <string name="member_profile_title">Félagsupplýsingar</string>
   <string name="member_profile_page_title">Félagsupplýsingar - Ekklesia</string>
   <string name="member_loading_text">Hleð upplýsingum...</string>
@@ -222,8 +137,6 @@
   <string name="label_django_id">Django ID</string>
   <string name="label_synced_at">Síðast samstillt</string>
   <string name="placeholder_email">nafn@example.is</string>
-
-  <!-- Members list pagination and search -->
   <string name="members_search_placeholder">Leita að nafni eða kennitölu...</string>
   <string name="pagination_showing">Sýni %d-%d</string>
   <string name="pagination_showing_results">Sýni %d niðurstöður</string>

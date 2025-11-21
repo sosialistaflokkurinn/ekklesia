@@ -268,7 +268,8 @@ export const NAV_CONFIGS = {
       { href: '/members-area/dashboard.html', textKey: 'nav_dashboard' },
       { href: '/members-area/profile.html', textKey: 'nav_profile' },
       { href: '/elections/', textKey: 'nav_elections' },
-      { href: '/events/', textKey: 'nav_events' }
+      { href: '/events/', textKey: 'nav_events' },
+      { href: '/policy-session/', textKey: 'nav_policy_session' }
     ]
   },
 
@@ -285,7 +286,8 @@ export const NAV_CONFIGS = {
       { href: '/members-area/dashboard.html', textKey: 'nav_dashboard' },
       { href: '/members-area/profile.html', textKey: 'nav_profile' },
       { href: '/elections/', textKey: 'nav_elections' },
-      { href: '/events/', textKey: 'nav_events' }
+      { href: '/events/', textKey: 'nav_events' },
+      { href: '/policy-session/', textKey: 'nav_policy_session' }
     ]
   },
 
@@ -299,8 +301,11 @@ export const NAV_CONFIGS = {
       textKey: 'nav_elections'  // "Kosningar"
     },
     links: [
+      { href: '/members-area/dashboard.html', textKey: 'nav_dashboard' },
+      { href: '/members-area/profile.html', textKey: 'nav_profile' },
       { href: '/elections/', textKey: 'nav_elections' },
-      { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
+      { href: '/events/', textKey: 'nav_events' },
+      { href: '/policy-session/', textKey: 'nav_policy_session' }
     ],
     tabs: [
       { href: '/elections/?type=general', textKey: 'election_type_general' },
@@ -319,8 +324,11 @@ export const NAV_CONFIGS = {
       textKey: 'nav_events'  // "Viðburðir"
     },
     links: [
+      { href: '/members-area/dashboard.html', textKey: 'nav_dashboard' },
+      { href: '/members-area/profile.html', textKey: 'nav_profile' },
+      { href: '/elections/', textKey: 'nav_elections' },
       { href: '/events/', textKey: 'nav_events' },
-      { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
+      { href: '/policy-session/', textKey: 'nav_policy_session' }
     ]
   },
 
@@ -334,8 +342,11 @@ export const NAV_CONFIGS = {
       textKey: 'nav_policy_session'  // "Stefnumótun"
     },
     links: [
-      { href: '/policy-session/', textKey: 'nav_policy_session' },
-      { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
+      { href: '/members-area/dashboard.html', textKey: 'nav_dashboard' },
+      { href: '/members-area/profile.html', textKey: 'nav_profile' },
+      { href: '/elections/', textKey: 'nav_elections' },
+      { href: '/events/', textKey: 'nav_events' },
+      { href: '/policy-session/', textKey: 'nav_policy_session' }
     ]
   },
 
