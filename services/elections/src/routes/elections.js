@@ -318,7 +318,7 @@ router.post('/elections/:id/vote', voteLimiter, verifyMemberToken, async (req, r
       let answerText = answerId;
       const answerObj = election.answers.find(a => {
         if (typeof a === 'string') return a === answerId;
-        return a.id === answerId;
+        return (a.id || a.answer_text || a.text) === answerId;
       });
       
       if (answerObj && typeof answerObj === 'object') {
