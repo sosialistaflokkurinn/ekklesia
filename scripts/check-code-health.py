@@ -50,7 +50,18 @@ class CodeHealthChecker:
         self.project_root = Path(project_root)
         self.verbose = verbose
         self.issues: List[Issue] = []
+        # Optimization: Cache JS files list excluding node_modules
+        self.js_files = self._get_js_files()
         
+    def _get_js_files(self) -> List[Path]:
+        """Get all JS files excluding node_modules"""
+        files = []
+        # Use glob but filter out node_modules
+        for path in self.project_root.glob('apps/members-portal/**/*.js'):
+            if 'node_modules' not in str(path):
+                files.append(path)
+        return files
+
     def check_all(self):
         """Run all checks"""
         print(f"{BLUE}🔍 Ekklesia Code Health Check{NC}")
@@ -71,8 +82,9 @@ class CodeHealthChecker:
         """Check for pages with navigation but no initNavigation()"""
         print(f"{BLUE}📱 Checking for missing initNavigation()...{NC}")
         
-        # Find all HTML files with nav element
-        html_files = list(self.project_root.glob('apps/members-portal/**/*.html'))
+        # Find all HTML files with nav element (excluding node_modules)
+        html_files = [p for p in self.project_root.glob('apps/members-portal/**/*.html') 
+                     if 'node_modules' not in str(p)]
         
         for html_file in html_files:
             if not self._has_nav_element(html_file):
@@ -115,13 +127,7 @@ class CodeHealthChecker:
             ('showStatus', r'showStatus\(', r'import.*showStatus.*from'),
         ]
         
-        js_files = list(self.project_root.glob('apps/members-portal/**/*.js'))
-        
-        for js_file in js_files:
-            # Skip node_modules
-            if 'node_modules' in str(js_file):
-                continue
-                
+        for js_file in self.js_files:
             content = js_file.read_text(encoding='utf-8')
             lines = content.split('\n')
             
@@ -155,9 +161,7 @@ class CodeHealthChecker:
         """Check for console.log (should use debug)"""
         print(f"{BLUE}🚫 Checking for console.log usage...{NC}")
         
-        js_files = list(self.project_root.glob('apps/members-portal/**/*.js'))
-        
-        for js_file in js_files:
+        for js_file in self.js_files:
             # Skip debug.js itself
             if 'debug.js' in str(js_file):
                 continue
@@ -187,9 +191,7 @@ class CodeHealthChecker:
         """Check for hardcoded API URLs"""
         print(f"{BLUE}🔗 Checking for hardcoded URLs...{NC}")
         
-        js_files = list(self.project_root.glob('apps/members-portal/**/*.js'))
-        
-        for js_file in js_files:
+        for js_file in self.js_files:
             content = js_file.read_text(encoding='utf-8')
             lines = content.split('\n')
             
@@ -216,9 +218,7 @@ class CodeHealthChecker:
         """Check for async functions without try-catch"""
         print(f"{BLUE}⚠️  Checking error handling in async functions...{NC}")
         
-        js_files = list(self.project_root.glob('apps/members-portal/**/*.js'))
-        
-        for js_file in js_files:
+        for js_file in self.js_files:
             content = js_file.read_text(encoding='utf-8')
             
             # Find async functions
@@ -243,9 +243,7 @@ class CodeHealthChecker:
         """Check for addEventListener without removeEventListener"""
         print(f"{BLUE}🔁 Checking for potential memory leaks...{NC}")
         
-        js_files = list(self.project_root.glob('apps/members-portal/**/*.js'))
-        
-        for js_file in js_files:
+        for js_file in self.js_files:
             content = js_file.read_text(encoding='utf-8')
             
             add_count = content.count('addEventListener(')
@@ -271,10 +269,9 @@ class CodeHealthChecker:
         """Check for TODO comments"""
         print(f"{BLUE}📝 Checking for TODO comments...{NC}")
         
-        js_files = list(self.project_root.glob('apps/members-portal/**/*.js'))
         todo_count = 0
         
-        for js_file in js_files:
+        for js_file in self.js_files:
             content = js_file.read_text(encoding='utf-8')
             lines = content.split('\n')
             

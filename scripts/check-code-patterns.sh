@@ -23,6 +23,9 @@ NC='\033[0m' # No Color
 # Default search path
 SEARCH_PATH="${1:-apps/members-portal/js/}"
 
+# Optimization: Exclude directories at the grep level
+EXCLUDE_FLAGS="--exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist --exclude-dir=build --exclude-dir=coverage --exclude-dir=venv --exclude-dir=__pycache__"
+
 echo -e "${BLUE}🔍 Checking code patterns in: ${SEARCH_PATH}${NC}"
 echo ""
 
@@ -31,7 +34,7 @@ WARNINGS=0
 
 # Pattern 1: Wrong createBadge API usage
 echo -e "${BLUE}1️⃣  Checking createBadge API usage...${NC}"
-if grep -rn "createBadge({" "$SEARCH_PATH" 2>/dev/null | grep -v node_modules; then
+if grep -rn $EXCLUDE_FLAGS "createBadge({" "$SEARCH_PATH" 2>/dev/null; then
   echo -e "   ${RED}❌ Found createBadge({ usage${NC}"
   echo -e "   ${YELLOW}💡 Should be: createBadge(text, {variant: 'success'})${NC}"
   echo -e "   ${YELLOW}   Not: createBadge({text: 'foo', variant: 'success'})${NC}"
@@ -43,7 +46,7 @@ echo ""
 
 # Pattern 2: Wrong button API usage
 echo -e "${BLUE}2️⃣  Checking button API usage...${NC}"
-if grep -rn "\.setDisabled(" "$SEARCH_PATH" 2>/dev/null | grep -v node_modules; then
+if grep -rn $EXCLUDE_FLAGS "\.setDisabled(" "$SEARCH_PATH" 2>/dev/null; then
   echo -e "   ${RED}❌ Found .setDisabled( usage${NC}"
   echo -e "   ${YELLOW}💡 Should be: button.disable() or button.enable()${NC}"
   echo -e "   ${YELLOW}   Not: button.setDisabled(true/false)${NC}"
@@ -55,7 +58,8 @@ echo ""
 
 # Pattern 3: Development markers
 echo -e "${BLUE}3️⃣  Checking for development markers...${NC}"
-DEV_MARKERS=$(grep -rn "// NEW:\|// TODO:\|// FIXME:\|// HACK:\|// XXX:" "$SEARCH_PATH" 2>/dev/null | grep -v node_modules | grep -v "check-code-patterns.sh" || true)
+# We exclude this script itself from the check
+DEV_MARKERS=$(grep -rn $EXCLUDE_FLAGS "// NEW:\|// TODO:\|// FIXME:\|// HACK:\|// XXX:" "$SEARCH_PATH" 2>/dev/null | grep -v "check-code-patterns.sh" || true)
 if [ -n "$DEV_MARKERS" ]; then
   echo "$DEV_MARKERS"
   echo -e "   ${YELLOW}⚠️  Found development markers${NC}"
@@ -68,7 +72,7 @@ echo ""
 
 # Pattern 4: Unrealistic kennitala examples in documentation
 echo -e "${BLUE}4️⃣  Checking kennitala documentation examples...${NC}"
-if grep -rn -E "(0000000000|9999999999|XXXXXXXXXX)" "$SEARCH_PATH" 2>/dev/null | grep -v node_modules | grep -i "kennitala\|example\|@param\|@returns" | head -5; then
+if grep -rn $EXCLUDE_FLAGS -E "(0000000000|9999999999|XXXXXXXXXX)" "$SEARCH_PATH" 2>/dev/null | grep -i "kennitala\|example\|@param\|@returns" | head -5; then
   echo -e "   ${YELLOW}⚠️  Found unrealistic kennitala examples${NC}"
   echo -e "   ${YELLOW}💡 Use realistic DDMMYY format: 010300-9999 (Jan 3, 2000)${NC}"
   WARNINGS=$((WARNINGS + 1))
@@ -79,7 +83,7 @@ echo ""
 
 # Pattern 5: Async event listeners (warning only - need manual review)
 echo -e "${BLUE}5️⃣  Checking async event listeners for error handling...${NC}"
-ASYNC_LISTENERS=$(grep -rn "addEventListener.*async.*=>" "$SEARCH_PATH" 2>/dev/null | grep -v node_modules | head -10 || true)
+ASYNC_LISTENERS=$(grep -rn $EXCLUDE_FLAGS "addEventListener.*async.*=>" "$SEARCH_PATH" 2>/dev/null | head -10 || true)
 if [ -n "$ASYNC_LISTENERS" ]; then
   echo "$ASYNC_LISTENERS"
   echo -e "   ${YELLOW}⚠️  Found async event listeners${NC}"
@@ -99,7 +103,7 @@ echo ""
 echo -e "${BLUE}6️⃣  Checking for potentially missing callback parameters...${NC}"
 # This is a heuristic check - looks for common callback names used in code
 # but not defined in nearby function signatures
-CALLBACKS_USED=$(grep -rn "onSuccess\|onError\|onSubmit\|callback" "$SEARCH_PATH" 2>/dev/null | grep -v "function\|@param\|\/\/" | grep -v node_modules | head -5 || true)
+CALLBACKS_USED=$(grep -rn $EXCLUDE_FLAGS "onSuccess\|onError\|onSubmit\|callback" "$SEARCH_PATH" 2>/dev/null | grep -v "function\|@param\|\/\/" | head -5 || true)
 if [ -n "$CALLBACKS_USED" ]; then
   echo -e "   ${YELLOW}⚠️  Found callback references - verify they're in function params${NC}"
   echo -e "   ${YELLOW}💡 If used, ensure declared in function signature${NC}"
@@ -111,7 +115,7 @@ echo ""
 
 # Pattern 7: innerHTML usage (XSS risk)
 echo -e "${BLUE}7️⃣  Checking for innerHTML usage (XSS risk)...${NC}"
-INNERHTML_USAGE=$(grep -rn "\.innerHTML\s*=" "$SEARCH_PATH" 2>/dev/null | grep -v node_modules | grep -v "innerHTML = ''" | head -5 || true)
+INNERHTML_USAGE=$(grep -rn $EXCLUDE_FLAGS "\.innerHTML\s*=" "$SEARCH_PATH" 2>/dev/null | grep -v "innerHTML = ''" | head -5 || true)
 if [ -n "$INNERHTML_USAGE" ]; then
   echo "$INNERHTML_USAGE"
   echo -e "   ${YELLOW}⚠️  Found innerHTML assignments${NC}"
@@ -131,7 +135,7 @@ echo -e "${BLUE}8️⃣  Checking component factory return values...${NC}"
 # Focuses on components/ directory to avoid false positives from utilities
 COMPONENT_PATH="${SEARCH_PATH}components/"
 if [ -d "$COMPONENT_PATH" ]; then
-  SUSPICIOUS_RETURNS=$(grep -rn "export function create.*(" "$COMPONENT_PATH" 2>/dev/null | \
+  SUSPICIOUS_RETURNS=$(grep -rn $EXCLUDE_FLAGS "export function create.*(" "$COMPONENT_PATH" 2>/dev/null | \
     while IFS= read -r line; do
       file=$(echo "$line" | cut -d: -f1)
       # Check if the file has a return statement that's just 'return element;' or 'return container;'
@@ -166,8 +170,7 @@ echo ""
 echo -e "${BLUE}9️⃣  Checking for console.log/error in services...${NC}"
 SERVICES_PATH="services/"
 if [ -d "$SERVICES_PATH" ]; then
-  CONSOLE_USAGE=$(grep -rn "console\.\(log\|error\|warn\)" "$SERVICES_PATH" 2>/dev/null | \
-    grep -v node_modules | \
+  CONSOLE_USAGE=$(grep -rn $EXCLUDE_FLAGS "console\.\(log\|error\|warn\)" "$SERVICES_PATH" 2>/dev/null | \
     grep -v "logger.js" | \
     grep -v "// console\." | \
     grep -v check-code-patterns.sh | \

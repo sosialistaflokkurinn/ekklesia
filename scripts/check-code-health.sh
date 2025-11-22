@@ -29,33 +29,43 @@ echo -e "${BLUE}🔍 Ekklesia Code Health Check${NC}"
 echo "========================================"
 echo ""
 
+# Optimization: Cache file lists to avoid repeated disk scans
+echo -e "${BLUE}📂 Indexing files...${NC}"
+# Find JS files excluding node_modules
+JS_FILES=$(find apps/members-portal -name "*.js" -type f -not -path "*/node_modules/*")
+# Find HTML files excluding node_modules
+HTML_FILES=$(find apps/members-portal -name "*.html" -type f -not -path "*/node_modules/*")
+
 # Check 1: Missing initNavigation() calls
 echo -e "${BLUE}📱 Checking for pages with navigation but no initNavigation()...${NC}"
 MISSING_NAV_INIT=0
 
-# Find all HTML files with nav element
-for htmlfile in $(grep -rl '<nav class="nav">' apps/members-portal --include="*.html"); do
-  # Extract script src from HTML file (look for type="module")
-  module_script=$(grep -oP 'type="module" src="\K[^"]+' "$htmlfile" | head -1)
-  
-  if [[ -z "$module_script" ]]; then
-    # Try alternative: src="..." type="module"
-    module_script=$(grep -oP 'src="\K[^"]+(?="[^>]*type="module")' "$htmlfile" | head -1)
-  fi
-  
-  if [[ -n "$module_script" ]]; then
-    # Resolve relative path
-    html_dir=$(dirname "$htmlfile")
-    jsfile="$html_dir/$module_script"
+# Use cached HTML files list
+for htmlfile in $HTML_FILES; do
+  # Check if file has nav element
+  if grep -q '<nav class="nav">' "$htmlfile"; then
+    # Extract script src from HTML file (look for type="module")
+    module_script=$(grep -oP 'type="module" src="\K[^"]+' "$htmlfile" | head -1)
     
-    if [[ -f "$jsfile" ]]; then
-      # Check if JS file imports and calls initNavigation
-      if ! grep -q "initNavigation" "$jsfile"; then
-        echo -e "  ${YELLOW}⚠️  Missing initNavigation():${NC}"
-        echo "      HTML: $htmlfile"
-        echo "      JS:   $jsfile"
-        ((MISSING_NAV_INIT++))
-        ((ISSUES_FOUND++))
+    if [[ -z "$module_script" ]]; then
+      # Try alternative: src="..." type="module"
+      module_script=$(grep -oP 'src="\K[^"]+(?="[^>]*type="module")' "$htmlfile" | head -1)
+    fi
+    
+    if [[ -n "$module_script" ]]; then
+      # Resolve relative path
+      html_dir=$(dirname "$htmlfile")
+      jsfile="$html_dir/$module_script"
+      
+      if [[ -f "$jsfile" ]]; then
+        # Check if JS file imports and calls initNavigation
+        if ! grep -q "initNavigation" "$jsfile"; then
+          echo -e "  ${YELLOW}⚠️  Missing initNavigation():${NC}"
+          echo "      HTML: $htmlfile"
+          echo "      JS:   $jsfile"
+          ((MISSING_NAV_INIT++))
+          ((ISSUES_FOUND++))
+        fi
       fi
     fi
   fi
@@ -70,7 +80,7 @@ echo ""
 echo -e "${BLUE}🐛 Checking for debug usage without import...${NC}"
 MISSING_DEBUG=0
 
-for jsfile in $(find apps/members-portal -name "*.js" -type f); do
+for jsfile in $JS_FILES; do
   # Check if file uses debug but doesn't import it
   if grep -q "debug\.\(log\|warn\|error\|info\)" "$jsfile"; then
     if ! grep -q "import.*debug.*from" "$jsfile"; then
@@ -90,7 +100,7 @@ echo ""
 echo -e "${BLUE}💬 Checking for showToast usage without import...${NC}"
 MISSING_TOAST=0
 
-for jsfile in $(find apps/members-portal -name "*.js" -type f); do
+for jsfile in $JS_FILES; do
   # Check if file uses showToast but doesn't import it
   if grep -q "showToast(" "$jsfile"; then
     if ! grep -q "import.*showToast.*from" "$jsfile"; then
@@ -110,7 +120,7 @@ echo ""
 echo -e "${BLUE}🚫 Checking for console.log (should use debug instead)...${NC}"
 CONSOLE_LOGS=0
 
-for jsfile in $(find apps/members-portal -name "*.js" -type f); do
+for jsfile in $JS_FILES; do
   # Exclude debug.js itself
   if [[ "$jsfile" == *"debug.js"* ]]; then
     continue
@@ -133,7 +143,7 @@ echo ""
 echo -e "${BLUE}🌐 Checking for R.string usage without import...${NC}"
 MISSING_I18N=0
 
-for jsfile in $(find apps/members-portal -name "*.js" -type f); do
+for jsfile in $JS_FILES; do
   # Check if file uses R.string but doesn't import R
   if grep -q "R\.string\." "$jsfile"; then
     if ! grep -q "import.*R.*from.*i18n" "$jsfile"; then
@@ -153,7 +163,7 @@ echo ""
 echo -e "${BLUE}🔁 Checking for potential duplicate event listeners...${NC}"
 DUPLICATE_LISTENERS=0
 
-for jsfile in $(find apps/members-portal -name "*.js" -type f); do
+for jsfile in $JS_FILES; do
   # Check if file has addEventListener but no removeEventListener
   if grep -q "addEventListener(" "$jsfile"; then
     # Count addEventListener vs removeEventListener
@@ -181,7 +191,7 @@ echo ""
 echo -e "${BLUE}⚠️  Checking for async functions without try-catch...${NC}"
 MISSING_TRY_CATCH=0
 
-for jsfile in $(find apps/members-portal -name "*.js" -type f); do
+for jsfile in $JS_FILES; do
   # Find async functions
   async_funcs=$(grep -n "async function\|async (" "$jsfile" | wc -l || true)
   
@@ -207,7 +217,7 @@ echo ""
 echo -e "${BLUE}🔗 Checking for hardcoded API URLs...${NC}"
 HARDCODED_URLS=0
 
-for jsfile in $(find apps/members-portal -name "*.js" -type f); do
+for jsfile in $JS_FILES; do
   # Look for https:// in fetch/axios calls
   if grep -n "fetch.*https://\|axios.*https://" "$jsfile" | grep -v "gstatic\|googleapis\|firebasejs"; then
     echo -e "  ${YELLOW}⚠️  Hardcoded URL found:${NC} $jsfile"
@@ -225,7 +235,7 @@ echo ""
 echo -e "${BLUE}📝 Checking for TODO comments...${NC}"
 TODO_COUNT=0
 
-for jsfile in $(find apps/members-portal -name "*.js" -type f); do
+for jsfile in $JS_FILES; do
   todos=$(grep -n "// TODO\|// FIXME\|// HACK" "$jsfile" || true)
   if [[ -n "$todos" ]]; then
     echo -e "  ${BLUE}ℹ️  TODOs found:${NC} $jsfile"
