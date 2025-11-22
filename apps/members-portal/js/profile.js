@@ -21,7 +21,7 @@ import { setTextContent, validateElements } from '../ui/dom.js';
 import { el } from './utils/dom.js';
 import { formatPhone, validatePhone, formatInternationalPhone, validateInternationalPhone, validateInternationalPostalCode, formatMembershipDuration } from './utils/format.js';
 import { getCountryName, getCountriesSorted, searchCountries, getCountryFlag, getCountryCallingCode } from './utils/countries.js';
-import { updateMemberProfile, updateMemberForeignAddress } from './api/members-client.js';
+import { updateMemberProfile } from './api/members-client.js';
 import { debug } from './utils/debug.js';
 import { showToast } from './components/toast.js';
 import { showStatus, createStatusIcon } from './components/status.js';
@@ -867,49 +867,7 @@ async function saveChanges() {
     const region = R.string.config_firebase_region;
     await updateMemberProfile(currentUserData.kennitala, updates, originalMemberData, region);
 
-    // If foreign address provided, save it separately
-    if (foreignAddressData) {
-      const originalForeignAddress = originalData.foreign_address || null;
 
-      try {
-        await updateMemberForeignAddress(
-          currentUserData.kennitala,
-          foreignAddressData,
-          originalForeignAddress,
-          region
-        );
-
-        // Update UI to show foreign address
-        const countryValue = document.getElementById('value-country');
-        const foreignAddressValue = document.getElementById('value-foreign-address');
-        const foreignPostalValue = document.getElementById('value-foreign-postal');
-        const foreignMunicipalityValue = document.getElementById('value-foreign-municipality');
-
-        if (countryValue) countryValue.textContent = getCountryName(foreignAddressData.country);
-        if (foreignAddressValue) foreignAddressValue.textContent = foreignAddressData.address;
-        if (foreignPostalValue) foreignPostalValue.textContent = foreignAddressData.postal_code || '-';
-        if (foreignMunicipalityValue) foreignMunicipalityValue.textContent = foreignAddressData.municipality || '-';
-
-      } catch (foreignAddressError) {
-        // Foreign address save failed (Django API not implemented yet)
-        console.warn('Foreign address save failed:', foreignAddressError);
-
-        // Show warning (basic profile was saved successfully)
-        showError(
-          R.string.profile_foreign_address_blocked ||
-          'Grunnupplýsingar vistaðar, en erlent heimilisfang er ekki virkt ennþá. Vinsamlegast reyndu aftur síðar.'
-        );
-
-        // Re-enable buttons so user can try again (if buttons exist)
-        if (editElements.btnSave) editElements.btnSave.disabled = false;
-        if (editElements.btnCancel) editElements.btnCancel.disabled = false;
-        if (saveText) {
-          saveText.textContent = R.string.profile_save_button;
-        }
-
-        return; // Don't exit edit mode, let user try again
-      }
-    }
 
     // Show success message
     showSuccess(R.string.profile_save_success);

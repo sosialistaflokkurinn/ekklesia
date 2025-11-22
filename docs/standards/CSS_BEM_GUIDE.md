@@ -101,6 +101,24 @@ Raw values for colors, spacing, and typography. These should rarely be used dire
 --color-gray-100: #edf2f7;
 --color-gray-200: #e2e8f0;
 --color-gray-800: #1a202c;
+
+/* Admin Palette (Role-based) */
+--color-admin-purple: #805ad5;   /* Election Manager */
+--color-admin-blue: #4299e1;     /* Member Admin */
+--color-admin-orange: #dd6b20;   /* Superadmin */
+--color-admin-green: #38a169;    /* Success states */
+--color-admin-red: #e53e3e;      /* Destructive actions */
+
+/* Admin Transparency (for shadows/gradients) */
+--color-admin-blue-alpha-40: rgba(66, 153, 225, 0.4);
+--color-admin-blue-alpha-60: rgba(66, 153, 225, 0.6);
+
+/* Transparency Utilities */
+--color-white-alpha-10: rgba(255, 255, 255, 0.1);
+--color-white-alpha-90: rgba(255, 255, 255, 0.9);
+--color-overlay: rgba(0, 0, 0, 0.5);
+--color-overlay-dark: rgba(0, 0, 0, 0.75);
+
 /* ... full palette in global.css ... */
 ```
 
@@ -350,6 +368,49 @@ The login page uses a dedicated `.login` block instead of the generic `.containe
 .nav__link--logout { /* Modifier */
   background: rgba(255, 255, 255, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.3);
+}
+```
+
+---
+
+### Admin Portal (`.admin-*`)
+
+**Block**: `.admin-nav`, `.admin-header`, `.admin-container`
+**Elements**: `.admin-nav__link`, `.admin-header__title`
+**Modifiers**: `.admin-nav__link--active`
+
+The admin portal uses specific blocks to maintain a distinct visual identity while sharing the same design tokens.
+
+#### Structure
+```html
+<div class="admin-container">
+  <header class="admin-header">
+    <h1>Election Management</h1>
+    <div class="admin-header__actions">
+      <button class="btn btn--primary">New Election</button>
+    </div>
+  </header>
+  
+  <nav class="admin-nav">
+    <a href="#" class="admin-nav__link admin-nav__link--active">Dashboard</a>
+    <a href="#" class="admin-nav__link">Settings</a>
+  </nav>
+</div>
+```
+
+#### CSS
+```css
+.admin-nav {
+  background: var(--color-bg-card);
+  border-bottom: 1px solid var(--color-border);
+  height: 60px;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
 }
 ```
 
@@ -778,17 +839,19 @@ The admin portal uses dedicated CSS variables defined in `admin.css` to maintain
 ```css
 :root {
   /* Admin section/card colors */
-  --admin-card-bg: var(--color-white);          /* White background for all admin cards */
-  --admin-card-border: var(--color-border-light); /* Light gray border */
+  --admin-card-bg: var(--color-bg-card);          /* Cream light background */
+  --admin-card-border: var(--color-border);       /* Cream dark border */
 
   /* Admin text colors */
-  --admin-text-primary: var(--color-black);      /* Black text for main content */
-  --admin-text-secondary: #4a4a4a;               /* Dark gray for labels */
-  --admin-text-muted: var(--color-gray-500);     /* Muted gray for subtle text */
+  --admin-text-primary: var(--color-text);        /* Main text */
+  --admin-text-secondary: var(--color-text-muted); /* Secondary text */
+  --admin-text-muted: var(--color-text-muted);     /* Muted text */
 }
 ```
 
-**Usage**: These variables ensure all admin cards (member details, member edit, sync pages) have consistent white backgrounds and black text, regardless of the page-specific theme.
+**Usage**: These variables map to the global design tokens to ensure consistency with the main site while allowing for admin-specific overrides if needed.
+
+**Note**: For role-specific colors (e.g., Election Manager purple), use the global Admin Palette variables (`--color-admin-*`) defined in `global.css`.
 
 ---
 
@@ -1031,47 +1094,7 @@ Consistent back navigation for all admin pages.
 
 ---
 
-### Admin File Structure
 
-```
-apps/members-portal/admin/styles/
-├── admin.css              # Admin-specific overrides and variables
-├── admin-shared.css       # Shared admin components (NEW - 2025-10-31)
-├── member-detail.css      # Member detail page-specific styles
-├── member-edit.css        # Member edit page-specific styles
-├── members.css            # Member list page styles
-├── sync-members.css       # Sync page styles
-└── sync-history.css       # Sync history page styles
-```
-
-**Design Pattern**:
-- `admin.css` - Global admin variables and overrides
-- `admin-shared.css` - Reusable components (`.admin-section`, `.admin-grid`, etc.)
-- Page-specific CSS - Page-unique styles only
-
-**Benefits**:
-- Single source of truth for admin component styles
-- Consistent white cards and black text across all admin pages
-- Easy to change color scheme globally via CSS variables
-- Reduced code duplication (~42 lines saved in initial refactoring)
-
----
-
-### Admin Component Usage
-
-**When to use `.admin-*` vs page-specific classes**:
-
-✅ **Use `.admin-*` for**:
-- Card sections (`.admin-section`)
-- Field grids (`.admin-grid`, `.admin-field`)
-- Status badges (`.admin-badge`)
-- Loading/error states (`.admin-loading`, `.admin-error`)
-- Back navigation (`.admin-back`)
-
-✅ **Use page-specific classes for**:
-- Form inputs (`.member-edit__input`)
-- Page-specific actions (`.member-detail__actions`)
-- Unique page elements (`.member-edit__note`)
 
 ---
 

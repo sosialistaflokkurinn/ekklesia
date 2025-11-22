@@ -81,9 +81,8 @@ function generateState() {
  * Handle OAuth callback from Kenni.is
  *
  * @param {string} authCode - Authorization code from Kenni.is
- * @param {Object} functions - Firebase Functions instance
  */
-async function handleOAuthCallback(authCode, functions) {
+async function handleOAuthCallback(authCode) {
   const statusEl = document.getElementById('status');
   const statusTextEl = document.getElementById('status-text');
   const authButtonsEl = document.getElementById('auth-buttons');
@@ -154,7 +153,8 @@ async function handleOAuthCallback(authCode, functions) {
     // Automatically verify membership after login
     statusTextEl.textContent = R.string.status_verifying_membership;
     try {
-      const verifyMembership = httpsCallable(functions, 'verifyMembership');
+      // Use the wrapper correctly: httpsCallable(name, region)
+      const verifyMembership = httpsCallable('verifyMembership', R.string.config_firebase_region);
       await verifyMembership();
       debug.log(R.string.log_membership_verified);
     } catch (verifyError) {
@@ -255,9 +255,9 @@ async function init() {
   // Load i18n strings
   await R.load('is');
 
-  // Get Firebase app and functions
+  // Get Firebase app
   const app = getApp();
-  const functions = getFunctions(app, R.string.config_firebase_region);
+  // functions instance is managed internally by firebase/app.js wrappers
 
   // Update UI strings
   updateLoginStrings();
@@ -280,7 +280,7 @@ async function init() {
     }
 
     // Handle OAuth callback
-    await handleOAuthCallback(authCode, functions);
+    await handleOAuthCallback(authCode);
     return;
   }
 

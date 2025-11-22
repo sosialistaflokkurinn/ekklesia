@@ -988,15 +988,17 @@ router.get('/elections/:id/results', requireElectionManager, async (req, res) =>
 
     // Get results using helper function from migration 004
     const resultsData = await pool.query(
-      'SELECT * FROM get_election_results($1)',
+      'SELECT * FROM elections.get_election_results($1)',
       [id]
     );
 
     // Calculate total votes
     const totalVotes = resultsData.rows.reduce((sum, row) => sum + parseInt(row.votes, 10), 0);
 
-    // Parse answers JSON
-    const answers = JSON.parse(election.answers);
+    // Parse answers JSON (handle both string and object)
+    const answers = typeof election.answers === 'string' 
+      ? JSON.parse(election.answers) 
+      : election.answers;
 
     // Build results array with answer text
     const resultsArray = resultsData.rows.map(row => {

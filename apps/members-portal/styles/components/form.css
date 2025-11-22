@@ -156,7 +156,7 @@
 .form-field__input.error:focus,
 .form-field__select.error:focus,
 .form-field__textarea.error:focus {
-  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+  box-shadow: var(--shadow-focus-error);
 }
 
 /* Success State */
@@ -398,7 +398,7 @@
 
 .form-radio-label input[type="radio"]:focus,
 .form-checkbox-label input[type="checkbox"]:focus {
-  outline: 2px solid var(--color-primary);
+  outline: var(--outline-focus);
   outline-offset: 2px;
 }
 

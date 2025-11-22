@@ -38,7 +38,6 @@ Python code in Ekklesia follows **modern [Python 3.11+](https://docs.python.org/
   - OAuth authentication (`handlekenniauth`)
   - Membership sync (`syncmembers`)
   - Audit logging (`auditmemberchanges`)
-  - Member management (`updatememberforeignaddress`)
 
 - **Admin Scripts** ([`scripts/admin/`](../../scripts/admin/)) - Development tools
   - Documentation audit (`audit-documentation.py`)

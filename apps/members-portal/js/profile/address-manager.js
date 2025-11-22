@@ -112,7 +112,7 @@ export class AddressManager {
     if (this.addresses.length === 0) {
       const emptyMessage = el('p', '', {
         style: {
-          color: 'var(--color-gray-500, #6b7280)',
+          color: 'var(--color-gray-500)',
           fontStyle: 'italic'
         }
       }, R.string.profile_no_addresses);

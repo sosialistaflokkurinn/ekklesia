@@ -18,7 +18,7 @@
   padding: var(--spacing-xl);
   max-width: 600px;
   width: 100%;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-2xl);
 }
 
 .login__subtitle {
@@ -116,7 +116,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--overlay-bg-light);
   z-index: 1000;
   justify-content: center;
   align-items: center;
@@ -150,7 +150,7 @@
 /* Mobile: Make overlay more visible */
 @media (max-width: 600px) {
   .login__loading {
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--overlay-bg-lighter);
   }
 }
 

@@ -88,8 +88,8 @@
 }
 
 .spinner--white {
-  border-color: rgba(255, 255, 255, 0.3);
-  border-top-color: white;
+  border-color: var(--color-white-alpha-30);
+  border-top-color: var(--color-white);
 }
 
 .spinner--success {
@@ -139,7 +139,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color: var(--overlay-bg-light);
   z-index: 9999;
   min-height: 100vh;
 }
@@ -310,7 +310,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color: var(--overlay-bg-light);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -318,7 +318,7 @@
 }
 
 .spinner-overlay--dark {
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: var(--overlay-bg-dark);
 }
 
 /* ===========================

@@ -51,6 +51,7 @@ Our code standards prioritize:
 - Use canonical [BEM methodology](http://getbem.com/) (Block Element Modifier)
 - [Design Tokens](../docs/standards/CSS_BEM_GUIDE.md) (3-layer architecture: Primitives, Semantic, Component)
 - **Semantic Layer**: Use `--color-text`, `--color-bg`, `--color-primary` (not raw hex values)
+- **Admin Palette**: Use `--color-admin-*` variables for admin interfaces
 - Utility classes with `.u-` prefix
 - Component-based file organization
 - No inline styles

@@ -30,31 +30,48 @@ h1 {
 /* === Colors === */
 
 :root {
-  /* Primary colors - Socialist red */
-  --color-primary: #d32f2f;
-  --color-primary-dark: #b71c1c;
-  --color-primary-alpha-10: rgba(211, 47, 47, 0.1);
-  --color-primary-alpha-2: rgba(211, 47, 47, 0.02);
+  /* Primary colors - Socialist red (Rebranded) */
+  --color-primary: #f91a1d;
+  --color-primary-dark: #d31518;
+  --color-primary-alpha-10: rgba(249, 26, 29, 0.1);
+  --color-primary-alpha-2: rgba(249, 26, 29, 0.02);
+
+  /* Brand Colors */
+  --color-cream: #fce9d8;
+  --color-cream-light: #fff9f2; /* Lighter shade for cards */
+  --color-cream-dark: #e6d0be;  /* Darker shade for borders */
 
   /* Accent */
   --color-accent-gold: #f3b41b;
 
   /* Status colors */
   --color-success-bg: #c6f6d5;
+  --color-success-bg-subtle: rgba(40, 167, 69, 0.1);
   --color-success-text: #22543d;
   --color-success-border: #38a169;
   --color-success: #48bb78;
 
   /* Error colors - Orange for contrast with red primary */
   --color-error-bg: #fff3e0;
+  --color-error-bg-subtle: rgba(220, 53, 69, 0.1);
   --color-error-text: #e65100;
   --color-error-border: #ff6f00;
   --color-error: #ff9800;
 
+  /* Warning colors */
+  --color-warning-bg: #fff3cd;
+  --color-warning-text: #856404;
+  --color-warning-border: #ffc107;
+  --color-warning: #ffc107;
+  --color-warning-dark: #856404;
+
   --color-info-bg: #ebf8ff;
+  --color-info-bg-hover: #bee3f8;
+  --color-info-bg-subtle: rgba(23, 162, 184, 0.05);
   --color-info-text: #2c5282;
   --color-info-border: #3182ce;
   --color-info: #63b3ed;
+  --color-info-dark: #2b6cb0;
 
   /* Neutral colors */
   --color-gray-50: #f7fafc;
@@ -64,19 +81,46 @@ h1 {
   --color-gray-400: #a0aec0;
   --color-gray-500: #718096;
   --color-gray-600: #4a5568;
+  --color-gray-650: #374151;
   --color-gray-700: #2d3748;
   --color-gray-800: #1a202c;
   --color-gray-900: #171923;
+  --color-gray-bg-subtle: rgba(108, 117, 125, 0.1);
 
   /* Additional color variants */
-  --color-primary-light: #ff6b6b;  /* Lighter red for gradients */
-  --color-primary-pale: #ffebee;   /* Very light pink for backgrounds - GOOD contrast */
+  --color-primary-light: #ff4d4f;  /* Lighter red for gradients */
+  --color-primary-pale: #fce9d8;   /* Cream background - Brand Color */
   --color-primary-deep: #b71c1c;   /* Darker red for text on light bg - GOOD contrast */
+
+  /* Accent variants */
+  --color-accent-gold-alpha: rgba(243, 180, 27, 0.3);
+
+  /* Admin Theme Colors */
+  --color-admin-purple-light: #f3e5f5;
+  --color-admin-purple: #7b1fa2;
+  --color-admin-blue: #1976d2;
+  --color-admin-blue-dark: #1565c0;
+  --color-admin-orange: #f57c00;
+  --color-admin-orange-dark: #ef6c00;
+  --color-admin-gray: #616161;
+  --color-admin-gray-dark: #424242;
+  --color-admin-green: #388e3c;
+  --color-admin-green-dark: #2e7d32;
+  --color-admin-red: #c62828;
+  --color-admin-red-dark: #b71c1c;
+
+  --color-admin-blue-alpha-40: rgba(102, 126, 234, 0.4);
+  --color-admin-blue-alpha-60: rgba(102, 126, 234, 0.6);
+
+  /* Gradients */
+  --gradient-success: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+  --gradient-info: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
 
   /* Success color variants for badges */
   --color-success-bg-light: #e8f5e9;  /* Very light green background */
   --color-success-green: #2e7d32;     /* Dark green text - 6.4:1 contrast */
   --color-success-darker: #1b5e20;    /* Darkest green - 8.2:1 contrast */
+  --color-success-light: #68d391;
 
   --color-white: #ffffff;
   --color-black: #000000;
@@ -91,37 +135,86 @@ h1 {
   /* Shadow colors */
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
   --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --shadow-md-strong: 0 2px 4px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.1);
   --shadow-xl: 0 4px 20px rgba(0, 0, 0, 0.15);
-  --shadow-primary: 0 4px 12px rgba(183, 28, 28, 0.22);
-  --shadow-primary-pressed: 0 3px 10px rgba(183, 28, 28, 0.2);
+  --shadow-2xl: 0 20px 60px rgba(0, 0, 0, 0.3);
+  --shadow-primary: 0 4px 12px rgba(249, 26, 29, 0.22);
+  --shadow-primary-pressed: 0 3px 10px rgba(249, 26, 29, 0.2);
+  --shadow-success: 0 2px 4px rgba(76, 175, 80, 0.2);
+  --shadow-info: 0 2px 4px rgba(33, 150, 243, 0.2);
 
   /* Input & Focus shadows */
   --shadow-inset-sm: inset 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-focus-primary: 0 0 0 3px var(--color-primary-alpha-10);
+  --shadow-focus-blue: 0 0 0 3px rgba(66, 153, 225, 0.1);
+  --shadow-focus-error: 0 0 0 3px rgba(245, 101, 101, 0.1);
 
   /* Dropdown & overlay shadows */
   --shadow-dropdown: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-dropdown-lg: 0 10px 25px rgba(0, 0, 0, 0.1), 0 4px 10px rgba(0, 0, 0, 0.05);
   --shadow-toast: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-toast-floating: 0 4px 12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  --shadow-drawer: -4px 0 12px rgba(0, 0, 0, 0.15);
+  --shadow-gold-glow: 0 8px 24px rgba(243, 180, 27, 0.6);
+  --shadow-md-dark: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --shadow-sm-dark: 0 1px 4px rgba(0, 0, 0, 0.2);
 
   /* Overlay */
   --overlay-bg: rgba(0, 0, 0, 0.5);
+  --overlay-bg-light: rgba(255, 255, 255, 0.9);
+  --overlay-bg-lighter: rgba(255, 255, 255, 0.95);
+  --overlay-bg-dark: rgba(0, 0, 0, 0.7);
 
-  /* Additional status colors */
-  --color-warning-bg: #fff3e0;
-  --color-warning-text: #e65100;
-  --color-warning-border: #ffa726;
-  --color-warning-dark: #856404;
+  /* Transparent colors */
+  --color-white-alpha-10: rgba(255, 255, 255, 0.1);
+  --color-white-alpha-20: rgba(255, 255, 255, 0.2);
+  --color-white-alpha-30: rgba(255, 255, 255, 0.3);
+  --color-white-alpha-40: rgba(255, 255, 255, 0.4);
+  --color-white-alpha-50: rgba(255, 255, 255, 0.5);
+  --color-white-alpha-60: rgba(255, 255, 255, 0.6);
+  --color-white-alpha-70: rgba(255, 255, 255, 0.7);
+  --color-white-alpha-80: rgba(255, 255, 255, 0.8);
+  --color-white-alpha-90: rgba(255, 255, 255, 0.9);
+
+  /* Primary Pale Alpha Variants */
+  --color-primary-pale-alpha-15: rgba(252, 233, 216, 0.15);
+  --color-primary-pale-alpha-25: rgba(252, 233, 216, 0.25);
+  --color-primary-pale-alpha-30: rgba(252, 233, 216, 0.3);
+  --color-primary-pale-alpha-50: rgba(252, 233, 216, 0.5);
+  --color-primary-pale-alpha-70: rgba(252, 233, 216, 0.7);
+  --color-primary-pale-alpha-90: rgba(252, 233, 216, 0.9);
+
+  /* Gold variants */
+  --color-gold-bright: #ffcc00;
+  --gradient-gold: linear-gradient(135deg, var(--color-accent-gold) 0%, var(--color-gold-bright) 100%);
+  --gradient-gold-hover: linear-gradient(135deg, var(--color-gold-bright) 0%, var(--color-accent-gold) 100%);
+
+  /* Special shadows */
+  --shadow-gold: 0 2px 8px rgba(243, 180, 27, 0.3);
+  --shadow-gold-sm: 0 2px 6px rgba(243, 180, 27, 0.3);
+  --shadow-gold-lg: 0 4px 12px rgba(243, 180, 27, 0.4);
+  --shadow-glow-red: 0 0 20px rgba(211, 47, 47, 0.6), 0 0 40px rgba(211, 47, 47, 0.4);
+  --shadow-glow-red-sm: 0 0 15px rgba(211, 47, 47, 0.5);
+
+  /* Focus outlines */
+  --outline-focus-inverse: 2px solid rgba(255, 255, 255, 0.7);
+  --outline-focus: 2px solid var(--color-primary);
+
+  /* Borders */
+  --color-border-subtle-dark: rgba(0, 0, 0, 0.1);
+  --color-border-subtle-darker: rgba(0, 0, 0, 0.2);
 
   /* Success color variants (Material Design) */
-  --color-success-bg-light: #e8f5e9;
-  --color-success-green: #2e7d32;
+  /* --color-success-bg-light: #e8f5e9; Duplicate removed */
+  /* --color-success-green: #2e7d32; Duplicate removed */
 
   /* Error color variants (Material Design) */
   --color-error-bg-light: #ffebee;
   --color-error-bg-lighter: #fbe9e7;
   --color-error-red: #c62828;
   --color-error-deep-orange: #d84315;
+  --color-error-light: #fc8181;
 
   /* Spacing */
   --spacing-xs: 4px;
@@ -141,11 +234,19 @@ h1 {
   /* Base Elements */
   --color-text: var(--color-gray-800);
   --color-text-muted: var(--color-gray-600);
-  --color-text-inverse: var(--color-white);
-  --color-text-on-primary: var(--color-white);
+  --color-text-inverse: var(--color-cream);
+  --color-text-on-primary: var(--color-cream);
+  
+  /* Backgrounds */
   --color-bg: var(--color-white);
+  --color-bg-card: var(--color-cream-light);
   --color-bg-subtle: var(--color-gray-50);
-  --color-border: var(--color-border-light);
+  --color-bg-hover: var(--color-cream-light);
+  
+  /* Borders & Dividers */
+  --color-border: var(--color-cream-dark);
+  --color-divider: var(--color-cream-dark);
+  --color-input-border: var(--color-cream-dark);
 
   /* Aliases for Backward Compatibility / Common Patterns */
   --color-text-primary: var(--color-text);
@@ -160,7 +261,7 @@ h1 {
 /* === Layout === */
 
 body {
-  background: #ffffff;
+  background: var(--color-cream-light);
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -297,12 +398,12 @@ body {
 }
 
 .profile-discrepancy__old {
-  background-color: rgba(200, 0, 0, 0.1);
+  background-color: var(--color-error-bg-light);
   border-left: 3px solid var(--color-error);
 }
 
 .profile-discrepancy__new {
-  background-color: rgba(0, 150, 0, 0.1);
+  background-color: var(--color-success-bg-light);
   border-left: 3px solid var(--color-success);
 }
 
@@ -314,4 +415,6 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
+
+
 

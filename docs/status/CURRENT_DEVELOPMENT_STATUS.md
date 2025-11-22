@@ -258,7 +258,7 @@ Ekklesia infrastructure is **stable and ready for development**. Phase 4 complet
 
 | Component | Status | Details |
 |-----------|--------|---------|
-| **Cloud Run** | ✅ Deployed | 13 services: handlekenniauth, verifymembership, healthz, syncmembers, bidirectional-sync, updatememberprofile, updatememberforeignaddress, get-django-token, elections-service, events-service, auditmemberchanges (europe-west2) - See [CLOUD_RUN_SERVICES.md](../infrastructure/CLOUD_RUN_SERVICES.md) |
+| **Cloud Run** | ✅ Deployed | 12 services: handlekenniauth, verifymembership, healthz, syncmembers, bidirectional-sync, updatememberprofile, get-django-token, elections-service, events-service, auditmemberchanges (europe-west2) - See [CLOUD_RUN_SERVICES.md](../infrastructure/CLOUD_RUN_SERVICES.md) |
 | **Cloud Functions** | ✅ Deployed | bidirectional_sync (revision 00008-sef), sync_members, track_member_changes |
 | **Cloud SQL** | ✅ Operational | PostgreSQL 15.1, 2 schemas (public, elections) |
 | **Firestore** | ✅ Active | Members collection, sync_queue collection with composite index |

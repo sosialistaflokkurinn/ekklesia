@@ -122,7 +122,7 @@
 .badge--role {
   background: var(--color-accent-gold);
   color: var(--color-gray-900);
-  border: 1px solid rgba(255, 193, 7, 0.3);
+  border: 1px solid var(--color-accent-gold-alpha);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -155,17 +155,17 @@
 }
 
 .badge--election.badge--active {
-  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+  background: var(--gradient-success);
   color: white;
   border: none;
-  box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
+  box-shadow: var(--shadow-success);
 }
 
 .badge--election.badge--upcoming {
-  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+  background: var(--gradient-info);
   color: white;
   border: none;
-  box-shadow: 0 2px 4px rgba(33, 150, 243, 0.2);
+  box-shadow: var(--shadow-info);
 }
 
 .badge--election.badge--closed {
@@ -179,21 +179,21 @@
    =========================== */
 
 .badge--member-active {
-  background-color: #e8f5e9;
-  color: #2e7d32;
-  border: 1px solid #a5d6a7;
+  background-color: var(--color-success-bg-light);
+  color: var(--color-success-text);
+  border: 1px solid var(--color-success-border);
 }
 
 .badge--member-inactive {
-  background-color: #ffebee;
-  color: #c62828;
-  border: 1px solid #ef9a9a;
+  background-color: var(--color-error-bg-lighter);
+  color: var(--color-error-text);
+  border: 1px solid var(--color-error-border);
 }
 
 .badge--member-unknown {
-  background-color: #f5f5f5;
-  color: #757575;
-  border: 1px solid #e0e0e0;
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-600);
+  border: 1px solid var(--color-gray-300);
 }
 
 /* ===========================
@@ -223,7 +223,7 @@
 
 .badge--clickable:hover {
   transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md-strong);
   opacity: 0.9;
 }
 
@@ -408,15 +408,15 @@
 }
 
 .elections__status-badge--active {
-  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+  background: var(--gradient-success);
   color: white;
-  box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
+  box-shadow: var(--shadow-success);
 }
 
 .elections__status-badge--upcoming {
-  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+  background: var(--gradient-info);
   color: white;
-  box-shadow: 0 2px 4px rgba(33, 150, 243, 0.2);
+  box-shadow: var(--shadow-info);
 }
 
 .elections__status-badge--closed {
@@ -426,18 +426,18 @@
 
 /* Members table status */
 .members-table__status--active {
-  background-color: #e8f5e9;
-  color: #2e7d32;
+  background-color: var(--color-success-bg-light);
+  color: var(--color-success-text);
 }
 
 .members-table__status--inactive {
-  background-color: #ffebee;
-  color: #c62828;
+  background-color: var(--color-error-bg-lighter);
+  color: var(--color-error-text);
 }
 
 .members-table__status--unknown {
-  background-color: #f5f5f5;
-  color: #757575;
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-600);
 }
 
 /* ===========================

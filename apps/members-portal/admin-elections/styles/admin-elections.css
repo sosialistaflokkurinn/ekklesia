@@ -23,9 +23,9 @@
 }
 
 .admin-header h1 {
-  font-size: 2rem;
-  font-weight: 600;
-  color: var(--color-text-primary, #1a1a1a);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
   margin: 0;
 }
 
@@ -48,8 +48,8 @@
 
 .filter-btn {
   padding: 0.5rem 1rem;
-  border: 1px solid var(--color-border, #e0e0e0);
-  background: white;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.875rem;
@@ -57,13 +57,13 @@
 }
 
 .filter-btn:hover {
-  background: var(--color-background-hover, #f5f5f5);
+  background: var(--color-bg-hover);
 }
 
 .filter-btn.active {
-  background: var(--color-primary, #d32f2f);
-  color: white;
-  border-color: var(--color-primary, #d32f2f);
+  background: var(--color-primary);
+  color: var(--color-text-on-primary);
+  border-color: var(--color-primary);
 }
 
 /* Search */
@@ -92,8 +92,8 @@
 
 .filter-btn {
   padding: 0.5rem 1rem;
-  border: 1px solid var(--color-border, #e0e0e0);
-  background: white;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-card);
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.875rem;
@@ -102,13 +102,13 @@
 }
 
 .filter-btn:hover {
-  background: var(--color-bg-hover, #f5f5f5);
+  background: var(--color-cream-light);
 }
 
 .filter-btn.active {
-  background: var(--color-primary, #d32f2f);
-  color: white;
-  border-color: var(--color-primary, #d32f2f);
+  background: var(--color-primary);
+  color: var(--color-text-on-primary);
+  border-color: var(--color-primary);
 }
 
 /* Search Box */
@@ -121,15 +121,15 @@
 .search-input {
   width: 100%;
   padding: 0.5rem 1rem;
-  border: 1px solid var(--color-border, #e0e0e0);
+  border: 1px solid var(--color-input-border);
   border-radius: 4px;
   font-size: 0.875rem;
 }
 
 .search-input:focus {
   outline: none;
-  border-color: var(--color-primary, #d32f2f);
-  box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-alpha-10);
 }
 
 /* Create Button */
@@ -145,18 +145,18 @@
 }
 
 .btn-primary {
-  background: var(--color-primary, #d32f2f);
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-text-on-primary);
 }
 
 .btn-primary:hover {
-  background: #b71c1c;
+  background: var(--color-primary-dark);
 }
 
 /* Results Info */
 .results-info {
   margin-bottom: 1rem;
-  color: var(--color-text-secondary, #666);
+  color: var(--color-text-secondary);
   font-size: 0.875rem;
 }
 
@@ -167,8 +167,8 @@
 }
 
 .spinner {
-  border: 4px solid var(--color-border, #e0e0e0);
-  border-top: 4px solid var(--color-primary, #d32f2f);
+  border: 4px solid var(--color-border);
+  border-top: 4px solid var(--color-primary);
   border-radius: 50%;
   width: 50px;
   height: 50px;
@@ -183,9 +183,10 @@
 
 /* Elections Table */
 .elections-table-container {
-  background: white;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
   overflow: hidden;
 }
 
@@ -195,7 +196,8 @@
 }
 
 .elections-table thead {
-  background: var(--color-background-secondary, #f5f5f5);
+  background: var(--color-cream);
+  border-bottom: 1px solid var(--color-divider);
 }
 
 .elections-table th {
@@ -203,23 +205,23 @@
   padding: 1rem;
   font-weight: 600;
   font-size: 0.875rem;
-  color: var(--color-text-secondary, #666);
+  color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .elections-table tbody tr {
-  border-bottom: 1px solid var(--color-border, #e0e0e0);
+  border-bottom: 1px solid var(--color-divider);
   transition: background 0.2s;
 }
 
 .elections-table tbody tr:hover {
-  background: var(--color-background-hover, #f9f9f9);
+  background: var(--color-cream);
 }
 
 .elections-table tbody tr.election-hidden {
   opacity: 0.6;
-  background: #f5f5f5;
+  background: var(--color-gray-50);
 }
 
 .elections-table td {
@@ -229,7 +231,7 @@
 
 /* Election Title */
 .election-title a {
-  color: var(--color-primary, #d32f2f);
+  color: var(--color-primary);
   text-decoration: none;
   font-weight: 500;
 }
@@ -242,8 +244,8 @@
   display: inline-block;
   margin-left: 0.5rem;
   padding: 0.25rem 0.5rem;
-  background: #666;
-  color: white;
+  background: var(--color-gray-600);
+  color: var(--color-white);
   font-size: 0.75rem;
   border-radius: 3px;
 }
@@ -260,29 +262,29 @@
 }
 
 .status-draft {
-  background: #e3f2fd;
-  color: #1976d2;
+  background: var(--color-info-bg);
+  color: var(--color-info-text);
 }
 
 .status-active {
-  background: #e8f5e9;
-  color: #388e3c;
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
 }
 
 .status-closed {
-  background: #f3e5f5;
-  color: #7b1fa2;
+  background: var(--color-admin-purple-light);
+  color: var(--color-admin-purple);
 }
 
 .status-archived {
-  background: #f5f5f5;
-  color: #666;
+  background: var(--color-gray-100);
+  color: var(--color-gray-600);
 }
 
 /* Dates */
 .election-dates {
   font-size: 0.875rem;
-  color: var(--color-text-secondary, #666);
+  color: var(--color-text-secondary);
 }
 
 .election-dates div {
@@ -296,7 +298,7 @@
 /* Stats */
 .election-stats {
   font-size: 0.875rem;
-  color: var(--color-text-secondary, #666);
+  color: var(--color-text-secondary);
   font-weight: 500;
 }
 
@@ -324,66 +326,66 @@
 }
 
 .btn-primary {
-  background: var(--color-primary, #d32f2f);
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-text-on-primary);
 }
 
 .btn-primary:hover {
-  background: var(--color-primary-dark, #b71c1c);
+  background: var(--color-primary-dark);
 }
 
 .btn-view {
-  background: #1976d2;
+  background: var(--color-admin-blue);
   color: white;
 }
 
 .btn-view:hover {
-  background: #1565c0;
+  background: var(--color-admin-blue-dark);
 }
 
 .btn-edit {
-  background: #f57c00;
+  background: var(--color-admin-orange);
   color: white;
 }
 
 .btn-edit:hover {
-  background: #ef6c00;
+  background: var(--color-admin-orange-dark);
 }
 
 .btn-hide {
-  background: #616161;
+  background: var(--color-admin-gray);
   color: white;
 }
 
 .btn-hide:hover {
-  background: #424242;
+  background: var(--color-admin-gray-dark);
 }
 
 .btn-unhide {
-  background: #388e3c;
+  background: var(--color-admin-green);
   color: white;
 }
 
 .btn-unhide:hover {
-  background: #2e7d32;
+  background: var(--color-admin-green-dark);
 }
 
 .btn-danger {
-  background: #c62828;
+  background: var(--color-admin-red);
   color: white;
 }
 
 .btn-danger:hover {
-  background: #b71c1c;
+  background: var(--color-admin-red-dark);
 }
 
 /* Empty State */
 .empty-state {
   text-align: center;
   padding: 4rem 2rem;
-  background: white;
+  background: var(--color-bg-card);
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 .empty-state__icon {
@@ -394,12 +396,12 @@
 .empty-state h2 {
   font-size: 1.5rem;
   font-weight: 600;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-text-primary);
   margin: 0 0 0.5rem;
 }
 
 .empty-state p {
-  color: var(--color-text-secondary, #666);
+  color: var(--color-text-secondary);
   margin: 0 0 2rem;
 }
 
@@ -414,12 +416,12 @@
 }
 
 .role-superadmin {
-  background: #7b1fa2;
+  background: var(--color-admin-purple);
   color: white;
 }
 
 .role-manager {
-  background: #1976d2;
+  background: var(--color-admin-blue);
   color: white;
 }
 
@@ -493,11 +495,11 @@
   }
   
   .election-card {
-    background: white;
-    border: 1px solid var(--color-border, #e0e0e0);
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
     border-radius: 8px;
     padding: 1rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-md);
   }
   
   .election-card__header {
@@ -511,7 +513,7 @@
   .election-card__title {
     font-size: 1rem;
     font-weight: 600;
-    color: var(--color-text-primary, #1a1a1a);
+    color: var(--color-text-primary);
     margin: 0;
     flex: 1;
   }
@@ -530,12 +532,12 @@
   }
   
   .election-card__label {
-    color: var(--color-text-secondary, #666);
+    color: var(--color-text-secondary);
     font-weight: 500;
   }
   
   .election-card__value {
-    color: var(--color-text-primary, #1a1a1a);
+    color: var(--color-text-primary);
     font-weight: 400;
   }
   

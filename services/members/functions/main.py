@@ -30,7 +30,7 @@ def healthz(req: https_fn.Request) -> https_fn.Response:
     """Health check endpoint - delegates to handler"""
     return healthz_handler(req)
 
-@https_fn.on_request()
+@https_fn.on_request(secrets=["kenni-client-secret"])
 def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
     """OAuth authentication endpoint - delegates to handler"""
     return handleKenniAuth_handler(req)
@@ -80,7 +80,6 @@ def cleanupauditlogs(req: https_fn.CallableRequest) -> dict:
 # NOTE: These are already in separate files and work correctly
 from audit_members import auditmemberchanges
 from get_django_token import get_django_token
-from update_member_foreign_address import updatememberforeignaddress
 from bidirectional_sync import bidirectional_sync
 from track_member_changes import track_firestore_changes
 
@@ -102,7 +101,6 @@ __all__ = [
     # Audit and sync functions
     'auditmemberchanges',
     'get_django_token',
-    'updatememberforeignaddress',
     'bidirectional_sync',
     'track_firestore_changes',
 ]

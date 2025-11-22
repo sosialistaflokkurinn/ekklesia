@@ -30,7 +30,7 @@
 
 .wizard-header h1 {
   font-size: 2rem;
-  color: var(--color-text);
+  color: var(--color-text-primary);
   margin: 0;
 }
 
@@ -50,7 +50,7 @@
   left: 1rem;
   right: 1rem;
   height: 2px;
-  background: #e0e0e0;
+  background: var(--color-divider);
   z-index: 0;
 }
 
@@ -69,26 +69,26 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: white;
-  border: 2px solid #e0e0e0;
+  background: var(--color-bg-card);
+  border: 2px solid var(--color-border);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  color: #999;
+  color: var(--color-text-muted);
   transition: all 0.3s;
 }
 
 .wizard-step.active .step-number {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: white;
+  color: var(--color-text-on-primary);
 }
 
 .wizard-step.completed .step-number {
-  background: #4caf50;
-  border-color: #4caf50;
-  color: white;
+  background: var(--color-success);
+  border-color: var(--color-success);
+  color: var(--color-white);
 }
 
 .wizard-step.completed .step-number::after {
@@ -97,7 +97,7 @@
 
 .step-label {
   font-size: 0.85rem;
-  color: #666;
+  color: var(--color-text-secondary);
   text-align: center;
   font-weight: 500;
 }
@@ -109,10 +109,10 @@
 
 /* Wizard Form */
 .wizard-form {
-  background: white;
+  background: var(--color-bg-card);
   border-radius: 8px;
   padding: 2rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-md);
 }
 
 /* Wizard Content */
@@ -122,12 +122,12 @@
 
 .wizard-content h2 {
   font-size: 1.5rem;
-  color: var(--color-text);
+  color: var(--color-text-primary);
   margin: 0 0 0.5rem;
 }
 
 .step-description {
-  color: #666;
+  color: var(--color-text-secondary);
   margin-bottom: 2rem;
 }
 
@@ -139,19 +139,19 @@
 .form-group label {
   display: block;
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--color-text-primary);
   margin-bottom: 0.5rem;
 }
 
 .form-group label.required::after {
   content: ' *';
-  color: #e53935;
+  color: var(--color-error);
 }
 
 .form-control {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-input-border);
   border-radius: 4px;
   font-size: 1rem;
   font-family: inherit;
@@ -161,11 +161,11 @@
 .form-control:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
+  box-shadow: 0 0 0 3px var(--color-primary-alpha-10);
 }
 
 .form-control::placeholder {
-  color: #999;
+  color: var(--color-text-muted);
 }
 
 textarea.form-control {
@@ -177,7 +177,7 @@ textarea.form-control {
   display: block;
   margin-top: 0.5rem;
   font-size: 0.85rem;
-  color: #666;
+  color: var(--color-text-secondary);
 }
 
 /* Radio Groups */
@@ -192,7 +192,7 @@ textarea.form-control {
   align-items: flex-start;
   gap: 0.75rem;
   padding: 1rem;
-  border: 2px solid #e0e0e0;
+  border: 2px solid var(--color-input-border);
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
@@ -200,7 +200,7 @@ textarea.form-control {
 
 .radio-label:hover {
   border-color: var(--color-primary);
-  background: #fff5f5;
+  background: var(--color-cream-light);
 }
 
 .radio-label input[type="radio"] {
@@ -220,12 +220,12 @@ textarea.form-control {
 
 .radio-text strong {
   font-size: 1rem;
-  color: var(--color-text);
+  color: var(--color-text-primary);
 }
 
 .radio-text small {
   font-size: 0.85rem;
-  color: #666;
+  color: var(--color-text-secondary);
 }
 
 /* Answer Options */
@@ -248,7 +248,7 @@ textarea.form-control {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #999;
+  color: var(--color-text-muted);
   cursor: grab;
   user-select: none;
 }
@@ -263,8 +263,8 @@ textarea.form-control {
 
 .answer-item__remove-btn {
   padding: 0.5rem 1rem;
-  background: #f44336;
-  color: white;
+  background: var(--color-error);
+  color: var(--color-white);
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -273,7 +273,7 @@ textarea.form-control {
 }
 
 .answer-item__remove-btn:hover {
-  background: #d32f2f;
+  background: var(--color-error-text);
 }
 
 /* Duration Options */
@@ -286,8 +286,8 @@ textarea.form-control {
 
 .duration-btn {
   padding: 0.5rem 1rem;
-  border: 2px solid #e0e0e0;
-  background: white;
+  border: 2px solid var(--color-border);
+  background: var(--color-bg-card);
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s;
@@ -301,14 +301,14 @@ textarea.form-control {
 .duration-btn.active {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: white;
+  color: var(--color-text-on-primary);
 }
 
 /* Review Section */
 .review-section {
   margin-bottom: 2rem;
   padding-bottom: 2rem;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--color-divider);
 }
 
 .review-section:last-of-type {
@@ -317,7 +317,7 @@ textarea.form-control {
 
 .review-section h3 {
   font-size: 1.2rem;
-  color: var(--color-text);
+  color: var(--color-text-primary);
   margin: 0 0 1rem;
 }
 
@@ -330,16 +330,16 @@ textarea.form-control {
 
 .review-list dt {
   font-weight: 600;
-  color: #666;
+  color: var(--color-text-secondary);
 }
 
 .review-list dd {
   margin: 0;
-  color: var(--color-text);
+  color: var(--color-text-primary);
 }
 
 .review-list dd em {
-  color: #999;
+  color: var(--color-text-muted);
   font-style: italic;
 }
 
@@ -359,7 +359,7 @@ textarea.form-control {
   align-items: center;
   margin-top: 3rem;
   padding-top: 2rem;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--color-divider);
 }
 
 .wizard-nav-right {
@@ -381,21 +381,21 @@ textarea.form-control {
 
 .btn-primary {
   background: var(--color-primary);
-  color: white;
+  color: var(--color-text-on-primary);
 }
 
 .btn-primary:hover {
-  background: #b71c1c;
+  background: var(--color-primary-dark);
 }
 
 .btn-secondary {
-  background: #f5f5f5;
-  color: var(--color-text);
-  border: 1px solid #ddd;
+  background: var(--color-bg-subtle);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
 }
 
 .btn-secondary:hover {
-  background: #e0e0e0;
+  background: var(--color-border);
 }
 
 .btn:disabled {
@@ -410,7 +410,7 @@ textarea.form-control {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0,0,0,0.7);
+  background: var(--color-overlay-dark);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -419,14 +419,14 @@ textarea.form-control {
 
 .loading-spinner {
   text-align: center;
-  color: white;
+  color: var(--color-white);
 }
 
 .spinner {
   width: 50px;
   height: 50px;
-  border: 4px solid rgba(255,255,255,0.3);
-  border-top-color: white;
+  border: 4px solid var(--color-white-alpha-30);
+  border-top-color: var(--color-white);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin: 0 auto 1rem;
@@ -509,9 +509,9 @@ textarea.form-control {
 }
 
 .alert-warning {
-  background-color: #fff3cd;
-  border-color: #ffc107;
-  color: #856404;
+  background-color: var(--color-warning-bg);
+  border-color: var(--color-warning-border);
+  color: var(--color-warning-text);
 }
 
 .alert strong {

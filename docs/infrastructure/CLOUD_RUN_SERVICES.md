@@ -331,38 +331,7 @@ Ekklesia uses [Google Cloud Run](https://cloud.google.com/run) to deploy and man
 
 ---
 
-#### 8. updatememberforeignaddress
-**Type**: Cloud Function (Python 3.13)
-**Purpose**: Update member foreign address (non-Icelandic addresses)
-**Deployment**: Firebase Cloud Functions Gen2
-**URL**: https://updatememberforeignaddress-ymzrguoifa-nw.a.run.app
-**Authentication**: Require authentication (Firebase Auth)
-**Latest Deploy**: 2025-11-10
 
-**Key Features**:
-- Update foreign address for members living abroad
-- CRUD operations: POST (create), PATCH (update)
-- Country code → Django country ID mapping
-- Push changes to Django backend foreign address API
-- Support for current/historical addresses
-
-**Technology Stack**:
-- Python 3.13 (Firebase Functions Gen2)
-- Firebase Admin SDK (Python)
-- Django API integration (`/felagar/api/members/:kennitala/foreign-addresses/`)
-- **Secret Manager**: `DJANGO_API_TOKEN` (Django API authentication)
-
-**Code Location**: `services/members/functions/update_member_foreign_address.py`
-
-**Update Flow**:
-1. Frontend sends foreign address update (kennitala + address data)
-2. Service validates Firebase token
-3. Convert country code (e.g., "US") → Django country ID (e.g., 211)
-4. Check if foreign address already exists (GET)
-5. If exists: PATCH update, If not: POST create
-6. Return success with method used (POST/PATCH)
-
----
 
 #### 9. get-django-token
 **Type**: Cloud Function (Python 3.13)
@@ -555,7 +524,7 @@ Ekklesia uses [Google Cloud Run](https://cloud.google.com/run) to deploy and man
 | syncmembers | 2025-11-10 | gudrodur@sosialistaflokkurinn.is | Secret Manager integration (DJANGO_API_TOKEN) |
 | updatememberprofile | 2025-11-10 | gudrodur@sosialistaflokkurinn.is | Secret Manager integration, env var usage |
 | bidirectional-sync | 2025-11-10 | gudrodur@sosialistaflokkurinn.is | Secret Manager integration, remove direct API calls |
-| updatememberforeignaddress | 2025-11-10 | gudrodur@sosialistaflokkurinn.is | Secret Manager integration |
+
 | get-django-token | 2025-11-10 | gudrodur@sosialistaflokkurinn.is | Secret Manager integration, admin token access |
 | elections-service | 2025-10-31 | gudrodur@sosialistaflokkurinn.is | Dependencies update (express 4.21.2, dotenv 16.6.1) |
 | events-service | 2025-10-31 | gudrodur@sosialistaflokkurinn.is | Dependencies update (express 4.21.2, firebase-admin 13.5.0) |
@@ -623,7 +592,7 @@ Ekklesia uses [Google Cloud Run](https://cloud.google.com/run) to deploy and man
 | syncmembers | 0 | 1 | 1 | 512Mi | 1 |
 | updatememberprofile | 0 | 5 | 10 | 256Mi | 1 |
 | bidirectional-sync | 0 | 1 | 1 | 512Mi | 1 |
-| updatememberforeignaddress | 0 | 5 | 10 | 256Mi | 1 |
+
 | get-django-token | 0 | 100 | 1 | 256Mi | 1 |
 | auditmemberchanges | 0 | 5 | 10 | 256Mi | 1 |
 | track_member_changes | 0 | 10 | 1 | 256Mi | 1 |
@@ -694,7 +663,7 @@ Meeting cost:           ~$3.80
 | syncmembers | Firebase Auth | Admin/superuser role required |
 | updatememberprofile | Firebase Auth | User updates own profile only |
 | bidirectional-sync | Public (scheduled) | Cloud Scheduler trigger only |
-| updatememberforeignaddress | Firebase Auth | User updates own address |
+
 | get-django-token | Firebase Auth | Admin/superuser role required |
 | auditmemberchanges | Internal only | Called by other services |
 | track_member_changes | Internal (Eventarc) | Triggered by Firestore writes |
@@ -742,7 +711,7 @@ Meeting cost:           ~$3.80
 | Secret Name | Used By | Purpose |
 |-------------|---------|---------|
 | `kenni-client-secret` | handlekenniauth | Kenni.is OAuth client secret |
-| `django-api-token` | syncmembers, updatememberprofile, bidirectional-sync, updatememberforeignaddress, get-django-token | Django API authentication |
+| `django-api-token` | syncmembers, updatememberprofile, bidirectional-sync, get-django-token | Django API authentication |
 
 **Configuration Method**:
 ```bash
@@ -1057,7 +1026,7 @@ gcloud logging read "resource.labels.service_name=elections-service AND severity
 | 2025-11-22 | Fixed bidirectional-sync queue processing | gudrodur |
 | 2025-11-10 | Unified Secret Manager integration across all services | Claude Code |
 | 2025-11-10 | Updated handlekenniauth to Python 3.13 with PKCE flow | Claude Code |
-| 2025-11-10 | Added bidirectional-sync, updatememberforeignaddress, get-django-token services | Claude Code |
+| 2025-11-10 | Added bidirectional-sync, get-django-token services | Claude Code |
 | 2025-11-10 | Updated all member services to use environment variable injection for secrets | Claude Code |
 | 2025-11-10 | Expanded service inventory from 8 to 13 services | Claude Code |
 | 2025-10-31 | Initial documentation | Claude + Gemini analysis |

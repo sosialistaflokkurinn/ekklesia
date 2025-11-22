@@ -11,19 +11,19 @@
 
 :root {
   /* Admin section/card colors */
-  --admin-card-bg: var(--color-white);          /* White background for all admin cards */
-  --admin-card-border: var(--color-border-light); /* Light gray border */
+  --admin-card-bg: var(--color-bg-card);          /* Cream light background */
+  --admin-card-border: var(--color-border);       /* Cream dark border */
 
   /* Admin text colors */
-  --admin-text-primary: var(--color-black);      /* Black text for main content */
-  --admin-text-secondary: #4a4a4a;               /* Dark gray for labels */
-  --admin-text-muted: var(--color-gray-500);     /* Muted gray for subtle text */
+  --admin-text-primary: var(--color-text);        /* Main text */
+  --admin-text-secondary: var(--color-text-muted); /* Secondary text */
+  --admin-text-muted: var(--color-text-muted);     /* Muted text */
   
   /* Admin navigation */
   --admin-nav-height: 60px;
-  --admin-nav-bg: var(--color-white);
-  --admin-nav-border: var(--color-border-light);
-  --admin-nav-link-hover: var(--color-gray-50);
+  --admin-nav-bg: var(--color-bg-card);           /* Cream light */
+  --admin-nav-border: var(--color-border);        /* Cream dark */
+  --admin-nav-link-hover: var(--color-bg-subtle); /* Subtle hover */
 }
 
 /* ========================================== */
@@ -40,7 +40,7 @@
   background: var(--admin-nav-bg);
   border-bottom: 1px solid var(--admin-nav-border);
   z-index: 1000;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-md);
 }
 
 .admin-nav__container {
@@ -84,13 +84,14 @@
   transition: background 0.2s;
 }
 
-.admin-nav__links a:hover {
-  background: var(--admin-nav-link-hover);
+.admin-nav__link:hover {
+  background: var(--color-white-alpha-10);
+  color: var(--color-white);
 }
 
-.admin-nav__links a.active {
-  background: var(--color-primary);
-  color: white;
+.admin-nav__link.active {
+  background: var(--color-white-alpha-20);
+  color: var(--color-white);
 }
 
 .admin-nav__user {
@@ -155,8 +156,8 @@
 /* ========================================== */
 
 body.admin {
-  /* Keep same white background as member portal */
-  background: #ffffff;
+  /* Use cream background consistent with member portal */
+  background: var(--color-cream);
   /* Override global.css flexbox centering (used for login page) */
   display: block;
   align-items: unset;
@@ -351,7 +352,7 @@ body.admin .members-count {
 }
 
 .card--admin-welcome .u-text-muted {
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--color-white-alpha-80);
 }
 
 /* Fix h1 color in welcome card (override global.css) */
@@ -361,7 +362,7 @@ body.admin .members-count {
 
 /* Fix subtitle color in welcome card */
 .card--welcome .u-text-muted {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--color-white-alpha-90);
 }
 
 /* ========================================== */
