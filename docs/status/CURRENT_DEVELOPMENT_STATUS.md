@@ -1,6 +1,6 @@
 # Ekklesia Current Development Status
 
-**Last Updated:** 2025-11-21
+**Last Updated:** 2025-11-22
 **Status:** 🟡 Development Phase - Active Feature Development
 **Current Phase:** 5 - Feature Development & Deployment
 **Target Completion:** November 2025
@@ -42,9 +42,16 @@ Ekklesia infrastructure is **stable and ready for development**. Phase 4 complet
 
 ---
 
-## Recent Development Activity (Nov 15-21, 2025)
+## Recent Development Activity (Nov 15-22, 2025)
 
 **Major Achievements:**
+
+- ✅ **Membership Sync Infrastructure Fixes (Nov 22)** - Resolved CORS & Sync Architecture
+  - **Issue**: CORS errors when calling `syncmembers` from browser (Callable function limitation).
+  - **Fix**: Refactored `syncmembers` to HTTP Trigger (`on_request`) with manual CORS and Auth handling.
+  - **New Service**: Deployed `track_member_changes` (Firestore trigger) for bi-directional sync.
+  - **Deployment**: `syncmembers`, `bidirectional-sync`, `track_member_changes` deployed to production.
+  - **Verification**: Verified `syncmembers` via curl with Bearer token.
 
 - ✅ **Critical Frontend Fixes (Nov 22)** - Resolved App Check & Voting UI issues
   - **Issue 1**: "Double App Check initialized" warning and `ReferenceError` in `auth.js`.

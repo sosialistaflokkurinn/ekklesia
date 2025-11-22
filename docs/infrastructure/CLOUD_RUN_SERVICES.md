@@ -1,7 +1,7 @@
 # Cloud Run Services Architecture
 
 **Document Type**: Infrastructure Documentation
-**Last Updated**: 2025-11-10
+**Last Updated**: 2025-11-22
 **Status**: ✅ Active - Deployed Services (Beta)
 **Project**: ekklesia-prod-10-2025
 **Region**: europe-west2 (London)
@@ -221,12 +221,12 @@ Ekklesia uses [Google Cloud Run](https://cloud.google.com/run) to deploy and man
 ### Data Synchronization Services
 
 #### 5. syncmembers
-**Type**: Cloud Function (Python 3.13)
+**Type**: Cloud Function (Python 3.13) - HTTP Trigger
 **Purpose**: Manual membership synchronization (admin-triggered)
 **Deployment**: Firebase Cloud Functions Gen2
 **URL**: https://syncmembers-ymzrguoifa-nw.a.run.app
-**Authentication**: Require authentication (admin/superuser role required)
-**Latest Deploy**: 2025-11-10
+**Authentication**: Allow unauthenticated (CORS preflight) + Manual Bearer Token Verification
+**Latest Deploy**: 2025-11-22
 
 **Key Features**:
 - Manual sync from Django backend (triggered by admin)
@@ -234,6 +234,7 @@ Ekklesia uses [Google Cloud Run](https://cloud.google.com/run) to deploy and man
 - Firestore members collection update
 - Sync statistics and audit logging
 - Normalizes kennitala, phone, and email formats
+- **Manual CORS handling** for browser fetch support
 
 **Technology Stack**:
 - Python 3.13 (Firebase Functions Gen2)
@@ -246,14 +247,16 @@ Ekklesia uses [Google Cloud Run](https://cloud.google.com/run) to deploy and man
 **Usage**: 19 references in codebase
 
 **Sync Process**:
-1. Admin triggers sync from dashboard
-2. Service validates admin/superuser role
-3. Fetch all members from Django API (paginated)
-4. Transform Django member format → Firestore format
-5. Normalize kennitala (remove hyphen), phone (7 digits), email (lowercase)
-6. Upsert members to Firestore (keyed by kennitala)
-7. Create sync log with statistics (added, updated, errors)
-8. Return sync results to admin
+1. Admin triggers sync from dashboard (browser fetch)
+2. Service handles CORS preflight (OPTIONS)
+3. Service manually verifies Firebase ID token (Bearer)
+4. Service validates admin/superuser role
+5. Fetch all members from Django API (paginated)
+6. Transform Django member format → Firestore format
+7. Normalize kennitala (remove hyphen), phone (7 digits), email (lowercase)
+8. Upsert members to Firestore (keyed by kennitala)
+9. Create sync log with statistics (added, updated, errors)
+10. Return sync results to admin
 
 ---
 
@@ -300,7 +303,7 @@ Ekklesia uses [Google Cloud Run](https://cloud.google.com/run) to deploy and man
 **Deployment**: gcloud functions (Gen2)
 **URL**: https://bidirectional-sync-ymzrguoifa-nw.a.run.app
 **Authentication**: Allow unauthenticated (triggered by Cloud Scheduler)
-**Latest Deploy**: 2025-11-10
+**Latest Deploy**: 2025-11-22
 
 **Key Features**:
 - Scheduled sync (Cloud Scheduler: daily at 3:30 AM UTC)
@@ -438,7 +441,39 @@ Ekklesia uses [Google Cloud Run](https://cloud.google.com/run) to deploy and man
 
 ---
 
-#### 11. healthz
+#### 11. track_member_changes
+**Type**: Cloud Function (Python 3.11)
+**Purpose**: Track Firestore member changes for sync
+**Deployment**: gcloud functions (Gen2)
+**Trigger**: Firestore document write (`members/{memberId}`)
+**Authentication**: Internal (Eventarc Trigger)
+**Latest Deploy**: 2025-11-22
+
+**Key Features**:
+- Real-time change tracking
+- Adds changes to `sync_queue` collection
+- Filters out redundant updates
+- Supports bi-directional sync architecture
+
+**Technology Stack**:
+- Python 3.11 (Cloud Functions Gen2)
+- Firebase Admin SDK (Python)
+- Firestore Triggers (Eventarc)
+
+**Code Location**: `services/members/functions/track_member_changes.py`
+
+**Usage**: Critical for Firestore -> Django sync
+
+**Sync Process**:
+1. Firestore document written (create/update/delete)
+2. Function triggered by Eventarc
+3. Extract changed fields
+4. Add entry to `sync_queue` with status 'pending'
+5. `bidirectional-sync` later processes this queue
+
+---
+
+#### 12. healthz
 **Type**: Cloud Function (Python 3.13)
 **Purpose**: Health check and configuration sanity endpoint
 **Deployment**: Firebase Cloud Functions Gen2
@@ -484,12 +519,37 @@ Ekklesia uses [Google Cloud Run](https://cloud.google.com/run) to deploy and man
 
 ---
 
+#### 13. cleanupauditlogs
+**Type**: Cloud Function (Python 3.13)
+**Purpose**: Cleanup old audit logs (retention policy enforcement)
+**Deployment**: Firebase Cloud Functions Gen2
+**Authentication**: Require authentication (Callable)
+**Latest Deploy**: 2025-11-10
+
+**Key Features**:
+- Keeps only most recent N logs (default 50)
+- Prevents unlimited storage growth
+- Manual trigger or scheduled
+
+**Technology Stack**:
+- Python 3.13 (Firebase Functions Gen2)
+- Firebase Admin SDK (Python)
+
+**Code Location**: `services/members/functions/cleanup_audit_logs.py`
+
+**Usage**: Maintenance task
+
+---
+
 ## Deployment History
 
 ### Recent Deployments (Last 7 Days)
 
 | Service | Date | Deployer | Changes |
 |---------|------|----------|---------|
+| syncmembers | 2025-11-22 | gudrodur@sosialistaflokkurinn.is | Refactor to HTTP trigger, manual CORS/Auth |
+| bidirectional-sync | 2025-11-22 | gudrodur@sosialistaflokkurinn.is | Redeploy for sync queue fixes |
+| track_member_changes | 2025-11-22 | gudrodur@sosialistaflokkurinn.is | Initial deployment (Firestore trigger) |
 | handlekenniauth | 2025-11-10 | gudrodur@sosialistaflokkurinn.is | Secret Manager integration (KENNI_IS_CLIENT_SECRET) |
 | healthz | 2025-11-10 | gudrodur@sosialistaflokkurinn.is | Updated to Python 3.13, config sanity checks |
 | syncmembers | 2025-11-10 | gudrodur@sosialistaflokkurinn.is | Secret Manager integration (DJANGO_API_TOKEN) |
@@ -566,6 +626,7 @@ Ekklesia uses [Google Cloud Run](https://cloud.google.com/run) to deploy and man
 | updatememberforeignaddress | 0 | 5 | 10 | 256Mi | 1 |
 | get-django-token | 0 | 100 | 1 | 256Mi | 1 |
 | auditmemberchanges | 0 | 5 | 10 | 256Mi | 1 |
+| track_member_changes | 0 | 10 | 1 | 256Mi | 1 |
 | healthz | 0 | 1 | 80 | 256Mi | 1 |
 
 **Scaling Strategy**:
@@ -636,6 +697,7 @@ Meeting cost:           ~$3.80
 | updatememberforeignaddress | Firebase Auth | User updates own address |
 | get-django-token | Firebase Auth | Admin/superuser role required |
 | auditmemberchanges | Internal only | Called by other services |
+| track_member_changes | Internal (Eventarc) | Triggered by Firestore writes |
 | healthz | Public (GET) | No authentication required |
 
 ### Security Features
@@ -990,6 +1052,9 @@ gcloud logging read "resource.labels.service_name=elections-service AND severity
 
 | Date | Change | Author |
 |------|--------|--------|
+| 2025-11-22 | Refactored syncmembers to HTTP trigger with manual CORS/Auth | gudrodur |
+| 2025-11-22 | Deployed track_member_changes Firestore trigger | gudrodur |
+| 2025-11-22 | Fixed bidirectional-sync queue processing | gudrodur |
 | 2025-11-10 | Unified Secret Manager integration across all services | Claude Code |
 | 2025-11-10 | Updated handlekenniauth to Python 3.13 with PKCE flow | Claude Code |
 | 2025-11-10 | Added bidirectional-sync, updatememberforeignaddress, get-django-token services | Claude Code |
@@ -1001,5 +1066,5 @@ gcloud logging read "resource.labels.service_name=elections-service AND severity
 ---
 
 **Document Status**: ✅ Complete and Verified
-**Last Review**: 2025-11-10
-**Next Review**: 2025-12-10 (monthly infrastructure review)
+**Last Review**: 2025-11-22
+**Next Review**: 2025-12-22 (monthly infrastructure review)

@@ -33,13 +33,36 @@ gcloud functions deploy bidirectional_sync \
   --timeout=540s \
   --memory=512MB \
   --max-instances=1 \
-  --set-env-vars=GCP_PROJECT=${PROJECT_ID},DJANGO_API_BASE_URL=https://starf.sosialistaflokkurinn.is/felagar
+  --set-env-vars=GCP_PROJECT=${PROJECT_ID},DJANGO_API_BASE_URL=https://starf.sosialistaflokkurinn.is/felagar \
+  --set-secrets=DJANGO_API_TOKEN=django-api-token:latest
 
 echo -e "\n${GREEN}✓ bidirectional_sync deployed${NC}"
 SYNC_URL=$(gcloud functions describe bidirectional_sync --region=${REGION} --gen2 --format='value(serviceConfig.uri)')
 echo -e "${BLUE}Function URL:${NC} ${SYNC_URL}"
 
-echo -e "\n${YELLOW}Step 2: Deploying track_member_changes function...${NC}"
+echo -e "\n${YELLOW}Step 2: Deploying syncmembers function...${NC}"
+echo "This function performs a full sync from Django to Firestore"
+echo "Triggered by: Manual HTTP request (Admin only)"
+
+gcloud functions deploy syncmembers \
+  --gen2 \
+  --runtime=python311 \
+  --region=${REGION} \
+  --source=. \
+  --entry-point=syncmembers \
+  --trigger-http \
+  --allow-unauthenticated \
+  --timeout=540s \
+  --memory=512MB \
+  --max-instances=1 \
+  --set-env-vars=GCP_PROJECT=${PROJECT_ID},DJANGO_API_BASE_URL=https://starf.sosialistaflokkurinn.is/felagar \
+  --set-secrets=DJANGO_API_TOKEN=django-api-token:latest
+
+echo -e "\n${GREEN}✓ syncmembers deployed${NC}"
+SYNC_MEMBERS_URL=$(gcloud functions describe syncmembers --region=${REGION} --gen2 --format='value(serviceConfig.uri)')
+echo -e "${BLUE}Function URL:${NC} ${SYNC_MEMBERS_URL}"
+
+echo -e "\n${YELLOW}Step 3: Deploying track_member_changes function...${NC}"
 echo "This function tracks changes to Firestore members collection"
 echo "Triggered by: Firestore document write (create, update, delete)"
 
@@ -68,7 +91,11 @@ echo "1. bidirectional_sync - HTTP trigger"
 echo "   URL: ${SYNC_URL}"
 echo "   Purpose: Sync Django ↔ Firestore (scheduled 3:30 AM)"
 echo ""
-echo "2. track_member_changes - Firestore trigger"
+echo "2. syncmembers - HTTP trigger (Authenticated)"
+echo "   URL: ${SYNC_MEMBERS_URL}"
+echo "   Purpose: Full sync Django → Firestore (Manual)"
+echo ""
+echo "3. track_member_changes - Firestore trigger"
 echo "   Purpose: Track changes to /members/ collection"
 echo "   Trigger: Document write on members/{memberId}"
 

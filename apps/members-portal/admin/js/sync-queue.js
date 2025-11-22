@@ -14,6 +14,7 @@ import { collection, query, orderBy, limit, getDocs } from 'https://www.gstatic.
 import { adminStrings } from './i18n/admin-strings-loader.js';
 import { checkAdminAccess } from './utils/admin-helpers.js';
 import { el } from '../../js/utils/dom.js';
+import { showToast } from '../../js/components/toast.js';
 
 // Initialize Firebase services
 const auth = getFirebaseAuth();
@@ -215,6 +216,55 @@ async function loadQueue() {
 }
 
 /**
+ * Trigger bidirectional sync manually
+ */
+async function triggerBidirectionalSync() {
+  const strings = adminStrings.strings;
+  
+  if (!confirm(strings.queue_process_confirm)) {
+    return;
+  }
+
+  const btn = document.getElementById('process-queue-btn');
+  const originalText = btn.textContent;
+  btn.textContent = strings.queue_processing;
+  btn.disabled = true;
+
+  try {
+    const user = auth.currentUser;
+    if (!user) throw new Error('Not authenticated');
+    
+    const token = await user.getIdToken();
+    
+    // Call bidirectional-sync Cloud Function
+    // Note: This function is usually triggered by Cloud Scheduler, but we can trigger it manually via HTTP
+    const response = await fetch('https://bidirectional-sync-ymzrguoifa-nw.a.run.app', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    showToast(strings.queue_process_success, 'success');
+    
+    // Reload queue after short delay to show updates
+    setTimeout(loadQueue, 2000);
+
+  } catch (error) {
+    debug.error('Failed to trigger sync:', error);
+    showToast(strings.queue_process_error, 'error');
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+}
+
+/**
  * Set page text from admin strings
  */
 function setPageText(strings) {
@@ -234,6 +284,9 @@ function setPageText(strings) {
   // Page header
   document.getElementById('queue-title').textContent = strings.queue_title;
   document.getElementById('queue-subtitle').textContent = strings.queue_subtitle;
+  
+  // Process button
+  document.getElementById('process-queue-btn').textContent = strings.queue_process_btn;
 
   // Table headers
   document.getElementById('th-created').textContent = strings.queue_table_created;
@@ -252,6 +305,9 @@ function setPageText(strings) {
 function setupEventListeners() {
   // Retry button (if error occurs)
   document.getElementById('retry-button').addEventListener('click', loadQueue);
+  
+  // Process queue button
+  document.getElementById('process-queue-btn').addEventListener('click', triggerBidirectionalSync);
 }
 
 /**

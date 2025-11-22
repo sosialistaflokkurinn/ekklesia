@@ -18,6 +18,9 @@ from sync_members import (
     normalize_kennitala
 )
 import os
+import json
+from shared.auth_helpers import verify_firebase_token
+from shared.cors import get_allowed_origin
 
 # Django API base URL - use environment variable or default
 DJANGO_API_BASE_URL = os.getenv('DJANGO_API_BASE_URL', 'https://starf.sosialistaflokkurinn.is/felagar')
@@ -433,8 +436,46 @@ def bidirectional_sync(request):
     HTTP endpoint for manual triggering.
     
     Returns:
-        tuple: (dict response, int status_code)
+        tuple: (dict response, int status_code, dict headers)
     """
+    # Handle CORS
+    origin = request.headers.get('Origin')
+    allowed_origin = get_allowed_origin(origin)
+    headers = {
+        'Access-Control-Allow-Origin': allowed_origin,
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Max-Age': '3600'
+    }
+
+    if request.method == 'OPTIONS':
+        return ('', 204, headers)
+
+    # Verify Authentication
+    is_authorized = False
+    user_agent = request.headers.get('User-Agent', '')
+    
+    # 1. Check for Cloud Scheduler
+    if 'Google-Cloud-Scheduler' in user_agent:
+        is_authorized = True
+        log_json('INFO', 'Bidirectional sync triggered by Cloud Scheduler')
+        
+    # 2. Check for Firebase ID Token (Manual Trigger)
+    elif request.headers.get('Authorization'):
+        try:
+            decoded_token = verify_firebase_token(request)
+            roles = decoded_token.get('roles', [])
+            if 'admin' in roles or 'superuser' in roles:
+                is_authorized = True
+                log_json('INFO', 'Bidirectional sync triggered manually', uid=decoded_token.get('uid'))
+            else:
+                log_json('WARN', 'Unauthorized manual sync attempt', uid=decoded_token.get('uid'), roles=roles)
+        except Exception as e:
+            log_json('WARN', 'Token verification failed', error=str(e))
+            
+    if not is_authorized:
+        return (json.dumps({'error': 'Unauthorized'}), 401, headers)
+
     db = firestore.Client()
     token = get_django_api_token()
     
@@ -492,4 +533,4 @@ def bidirectional_sync(request):
         'completed_at': firestore.SERVER_TIMESTAMP
     })
     
-    return (stats, 200)
+    return (stats, 200, headers)

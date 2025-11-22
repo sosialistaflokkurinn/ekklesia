@@ -6,6 +6,7 @@ Handles membership verification, sync operations, and profile updates.
 
 from datetime import datetime, timezone
 from typing import Dict, Any
+import json
 
 from firebase_admin import auth, firestore
 from firebase_functions import https_fn, options
@@ -101,35 +102,51 @@ def verifyMembership_handler(req: https_fn.CallableRequest) -> dict:
         )
 
 
-def syncmembers_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
+from shared.auth_helpers import verify_firebase_token
+from shared.cors import get_allowed_origin
+
+def syncmembers_handler(req: https_fn.Request) -> https_fn.Response:
     """
     Epic #43: Manual trigger to sync all members from Django to Firestore.
 
     Requires authentication and 'admin' or 'superuser' role.
+    Handles CORS manually to support direct fetch calls.
 
     Returns:
-        Dict with sync statistics
+        Response object with sync statistics
     """
-    # Verify authentication
-    if not req.auth:
-        raise https_fn.HttpsError(
-            code=https_fn.FunctionsErrorCode.UNAUTHENTICATED,
-            message="Authentication required"
-        )
+    # Handle CORS
+    origin = req.headers.get('Origin')
+    allowed_origin = get_allowed_origin(origin)
+    headers = {
+        'Access-Control-Allow-Origin': allowed_origin,
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Max-Age': '3600'
+    }
 
-    # Verify admin or superuser role
-    roles = req.auth.token.get('roles', [])
-    has_access = 'admin' in roles or 'superuser' in roles
-    if not has_access:
-        log_json("warn", "Unauthorized sync attempt", uid=req.auth.uid, roles=roles)
-        raise https_fn.HttpsError(
-            code=https_fn.FunctionsErrorCode.PERMISSION_DENIED,
-            message="Admin or superuser role required"
-        )
-
-    log_json("info", "Member sync initiated", uid=req.auth.uid)
+    if req.method == 'OPTIONS':
+        return https_fn.Response(status=204, headers=headers)
 
     try:
+        # Verify authentication
+        decoded_token = verify_firebase_token(req)
+        uid = decoded_token.get('uid')
+        roles = decoded_token.get('roles', [])
+
+        # Verify admin or superuser role
+        has_access = 'admin' in roles or 'superuser' in roles
+        if not has_access:
+            log_json("warn", "Unauthorized sync attempt", uid=uid, roles=roles)
+            return https_fn.Response(
+                status=403,
+                response=json.dumps({'error': "Admin or superuser role required"}),
+                headers=headers,
+                content_type='application/json'
+            )
+
+        log_json("info", "Member sync initiated", uid=uid)
+
         # Run sync
         stats = sync_all_members()
 
@@ -138,21 +155,49 @@ def syncmembers_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
         log_id = create_sync_log(db, stats)
 
         log_json("info", "Member sync completed successfully",
-                 uid=req.auth.uid,
+                 uid=uid,
                  stats=stats,
                  log_id=log_id)
 
-        return {
-            'success': True,
-            'stats': stats,
-            'log_id': log_id
+        response_data = {
+            'result': {  # Wrap in result for Callable compatibility if needed, though we are raw HTTP now
+                'success': True,
+                'stats': stats,
+                'log_id': log_id
+            }
         }
+        
+        return https_fn.Response(
+            status=200,
+            response=json.dumps(response_data),
+            headers=headers,
+            content_type='application/json'
+        )
 
+    except https_fn.HttpsError as e:
+        status_code = 500
+        if e.code == https_fn.FunctionsErrorCode.UNAUTHENTICATED:
+            status_code = 401
+        elif e.code == https_fn.FunctionsErrorCode.PERMISSION_DENIED:
+            status_code = 403
+        elif e.code == https_fn.FunctionsErrorCode.INVALID_ARGUMENT:
+            status_code = 400
+        elif e.code == https_fn.FunctionsErrorCode.NOT_FOUND:
+            status_code = 404
+            
+        return https_fn.Response(
+            status=status_code,
+            response=json.dumps({'error': e.message}),
+            headers=headers,
+            content_type='application/json'
+        )
     except Exception as e:
-        log_json("error", "Member sync failed", error=str(e), uid=req.auth.uid)
-        raise https_fn.HttpsError(
-            code=https_fn.FunctionsErrorCode.INTERNAL,
-            message=f"Sync failed: {str(e)}"
+        log_json("error", "Member sync failed", error=str(e))
+        return https_fn.Response(
+            status=500,
+            response=json.dumps({'error': f"Sync failed: {str(e)}"}),
+            headers=headers,
+            content_type='application/json'
         )
 
 

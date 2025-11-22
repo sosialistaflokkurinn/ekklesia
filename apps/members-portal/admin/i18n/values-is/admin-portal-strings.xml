@@ -143,4 +143,9 @@
   <string name="pagination_page">Síða %d</string>
   <string name="members_count_in_district">%d félagar í %s</string>
   <string name="members_count_with_status">%d %s félagar</string>
+  <string name="queue_process_btn">Afgreiða biðröð</string>
+  <string name="queue_process_confirm">Ertu viss um að þú viljir afgreiða biðröðina núna? Þetta mun keyra samstillingu á öllum biðröðum.</string>
+  <string name="queue_process_success">Biðröð afgreidd</string>
+  <string name="queue_process_error">Villa við að afgreiða biðröð</string>
+  <string name="queue_processing">Afgreiði biðröð...</string>
 </resources>

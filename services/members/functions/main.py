@@ -53,8 +53,8 @@ def verifyMembership(req: https_fn.CallableRequest) -> dict:
     """Verify membership - delegates to handler"""
     return verifyMembership_handler(req)
 
-@https_fn.on_call(timeout_sec=540, memory=512)
-def syncmembers(req: https_fn.CallableRequest):
+@https_fn.on_request(timeout_sec=540, memory=512)
+def syncmembers(req: https_fn.Request) -> https_fn.Response:
     """Sync members from Django - delegates to handler"""
     return syncmembers_handler(req)
 
