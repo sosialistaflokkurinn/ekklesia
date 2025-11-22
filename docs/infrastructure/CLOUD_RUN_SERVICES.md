@@ -333,7 +333,7 @@ Ekklesia uses [Google Cloud Run](https://cloud.google.com/run) to deploy and man
 
 
 
-#### 9. get-django-token
+#### 8. get-django-token
 **Type**: Cloud Function (Python 3.13)
 **Purpose**: Provide Django API token to authorized admins
 **Deployment**: gcloud functions (Gen2)
@@ -365,7 +365,7 @@ Ekklesia uses [Google Cloud Run](https://cloud.google.com/run) to deploy and man
 
 ### Audit & Monitoring Services
 
-#### 10. auditmemberchanges
+#### 9. auditmemberchanges
 **Type**: Cloud Function (Python)
 **Purpose**: Audit logging for member data changes
 **Deployment**: Firebase Cloud Functions
@@ -410,7 +410,7 @@ Ekklesia uses [Google Cloud Run](https://cloud.google.com/run) to deploy and man
 
 ---
 
-#### 11. track_member_changes
+#### 10. track_member_changes
 **Type**: Cloud Function (Python 3.11)
 **Purpose**: Track Firestore member changes for sync
 **Deployment**: gcloud functions (Gen2)
@@ -442,7 +442,7 @@ Ekklesia uses [Google Cloud Run](https://cloud.google.com/run) to deploy and man
 
 ---
 
-#### 12. healthz
+#### 11. healthz
 **Type**: Cloud Function (Python 3.13)
 **Purpose**: Health check and configuration sanity endpoint
 **Deployment**: Firebase Cloud Functions Gen2
@@ -488,7 +488,7 @@ Ekklesia uses [Google Cloud Run](https://cloud.google.com/run) to deploy and man
 
 ---
 
-#### 13. cleanupauditlogs
+#### 12. cleanupauditlogs
 **Type**: Cloud Function (Python 3.13)
 **Purpose**: Cleanup old audit logs (retention policy enforcement)
 **Deployment**: Firebase Cloud Functions Gen2

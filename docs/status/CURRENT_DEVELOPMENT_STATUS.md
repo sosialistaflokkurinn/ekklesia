@@ -142,7 +142,6 @@ Ekklesia infrastructure is **stable and ready for development**. Phase 4 complet
   - **Functions Updated**:
     - `sync_members.py` - Removed `SecretManagerServiceClient`, use `os.environ.get('DJANGO_API_TOKEN')`
     - `bidirectional_sync.py` - Removed unused secretmanager import
-    - `update_member_foreign_address.py` - Removed `get_secret()` function
     - `get_django_token.py` - Removed secret_client global
   - **Benefits**: Simplified code, faster performance (Cloud Run caches secrets), consistent pattern
   - **Configuration**: `gcloud run services update SERVICE --set-secrets="DJANGO_API_TOKEN=django-api-token:latest"`
