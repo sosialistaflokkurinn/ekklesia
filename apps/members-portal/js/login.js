@@ -9,10 +9,13 @@
 import { R } from '/i18n/strings-loader.js';
 import { debug } from './utils/debug.js';
 import { getCurrentUser, auth, appCheck } from '/js/auth.js';
-import { signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import { getApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js';
-import { getToken as getAppCheckToken } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app-check.js';
+import {
+  signInWithCustomToken,
+  getApp,
+  getFunctions,
+  httpsCallable,
+  getAppCheckTokenValue
+} from '/firebase/app.js';
 
 /**
  * Base64 URL encode a buffer
@@ -96,18 +99,17 @@ async function handleOAuthCallback(authCode, functions) {
     }
 
     // Get App Check token for enhanced security
-    let appCheckTokenResponse;
-    try {
-      appCheckTokenResponse = await getAppCheckToken(appCheck, false);
+    const appCheckToken = await getAppCheckTokenValue();
+    if (appCheckToken) {
       debug.log('✅ App Check token obtained for handleKenniAuth');
-    } catch (error) {
-      debug.warn('⚠️ App Check token unavailable, continuing without it:', error);
+    } else {
+      debug.warn('⚠️ App Check token unavailable, continuing without it');
     }
 
     // Call Cloud Function to exchange code for token
     const headers = { 'Content-Type': 'application/json', 'X-Request-ID': generateRequestId() };
-    if (appCheckTokenResponse) {
-      headers['X-Firebase-AppCheck'] = appCheckTokenResponse.token;
+    if (appCheckToken) {
+      headers['X-Firebase-AppCheck'] = appCheckToken;
     }
 
     const response = await fetch(R.string.config_api_handle_auth, {

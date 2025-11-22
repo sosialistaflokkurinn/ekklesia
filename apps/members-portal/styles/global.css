@@ -135,6 +135,26 @@ h1 {
   --radius-md: 6px;
   --radius-lg: 8px;
   --radius-xl: 12px;
+
+  /* === Semantic Layer (Standardized) === */
+  
+  /* Base Elements */
+  --color-text: var(--color-gray-800);
+  --color-text-muted: var(--color-gray-600);
+  --color-text-inverse: var(--color-white);
+  --color-text-on-primary: var(--color-white);
+  --color-bg: var(--color-white);
+  --color-bg-subtle: var(--color-gray-50);
+  --color-border: var(--color-border-light);
+
+  /* Aliases for Backward Compatibility / Common Patterns */
+  --color-text-primary: var(--color-text);
+  --color-text-secondary: var(--color-text-muted);
+  --color-bg-primary: var(--color-bg);
+  --color-bg-secondary: var(--color-bg-subtle);
+  
+  /* Legacy Support */
+  --border-radius: var(--radius-md);
 }
 
 /* === Layout === */

@@ -1,3 +1,5 @@
+import { el } from '../utils/dom.js';
+
 /**
  * Badge Component
  *
@@ -29,15 +31,15 @@ export function createBadge(text, options = {}) {
     onClick = null
   } = options;
 
-  const badge = document.createElement('span');
-  badge.className = `badge badge--${variant} badge--${size}`;
-  badge.textContent = text;
-
+  const classes = `badge badge--${variant} badge--${size}${clickable ? ' badge--clickable' : ''}`;
+  const attrs = {};
+  
   if (clickable) {
-    badge.classList.add('badge--clickable');
-    badge.setAttribute('role', 'button');
-    badge.setAttribute('tabindex', '0');
+    attrs.role = 'button';
+    attrs.tabindex = '0';
   }
+
+  const badge = el('span', classes, attrs, text);
 
   if (onClick) {
     badge.onclick = onClick;

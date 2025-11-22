@@ -324,7 +324,10 @@ function showConfirmationModal(answerIds) {
 
   // Get selected answer objects
   const selectedAnswers = answerIds.map(id =>
-    currentElection.answers.find(a => (a.id || a.answer_id) === id)
+    currentElection.answers.find(a => {
+      const aId = a.id || a.answer_id || (typeof a === 'string' ? a : a.text || a.answer_text);
+      return aId === id;
+    })
   ).filter(Boolean);
 
   if (selectedAnswers.length === 0) {

@@ -4,48 +4,20 @@
  * Common auth functions used across the member portal.
  */
 
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { debug } from './utils/debug.js';
 import {
-  getAuth,
+  getFirebaseAuth,
+  getFirebaseAppCheck,
+  getAppCheckTokenValue as firebaseGetAppCheckTokenValue,
   onAuthStateChanged as firebaseOnAuthStateChanged,
   signOut as firebaseSignOut
-} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import {
-  initializeAppCheck,
-  ReCaptchaEnterpriseProvider,
-  getToken as getAppCheckToken
-} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app-check.js';
+} from '../firebase/app.js';
 
-// Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyBsDqnt8G54VAANlucQpI20r3Sw1p2Bcp4",
-  authDomain: "ekklesia-prod-10-2025.firebaseapp.com",
-  projectId: "ekklesia-prod-10-2025",
-  storageBucket: "ekklesia-prod-10-2025.firebasestorage.app",
-  messagingSenderId: "521240388393",
-  appId: "1:521240388393:web:de2a986ae545e20bb5cd38"
-};
+// Get Auth instance from centralized firebase/app.js
+export const auth = getFirebaseAuth();
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-
-// Initialize Firebase App Check with reCAPTCHA Enterprise
-// Site Key: 6LfDgOgrAAAAAIKly84yNibZNZsEGD31PnFQLYpM
-// See: docs/security/FIREBASE_APP_CHECK_SETUP.md
-let appCheck = null;
-try {
-  appCheck = initializeAppCheck(app, {
-    provider: new ReCaptchaEnterpriseProvider('6LfDgOgrAAAAAIKly84yNibZNZsEGD31PnFQLYpM'),
-    isTokenAutoRefreshEnabled: true  // Automatically refresh tokens
-  });
-  debug.log('✅ Firebase App Check initialized (reCAPTCHA Enterprise)');
-} catch (error) {
-  debug.warn('⚠️ Firebase App Check initialization failed (will degrade gracefully):', error);
-}
-
-export { appCheck };
+// Get App Check instance from centralized firebase/app.js
+export const appCheck = getFirebaseAppCheck();
 
 /**
  * Auth Guard - Redirect to login if not authenticated
@@ -118,19 +90,7 @@ export async function getUserData(user) {
  * @returns {Promise<string|null>} App Check token or null if unavailable
  */
 async function getAppCheckTokenValue() {
-  if (!appCheck) {
-    debug.warn('App Check not initialized, requests will not include App Check token');
-    return null;
-  }
-
-  try {
-    const tokenResponse = await getAppCheckToken(appCheck);
-    return tokenResponse.token;
-  } catch (error) {
-    debug.error('Failed to get App Check token:', error);
-    // Degrade gracefully - return null instead of throwing
-    return null;
-  }
+  return await firebaseGetAppCheckTokenValue();
 }
 
 /**

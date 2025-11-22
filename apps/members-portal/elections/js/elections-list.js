@@ -216,7 +216,7 @@ function createElectionCard(election) {
     <p class="elections__card-question">${escapeHTML(election.question)}</p>
     ${votedHTML}
     <div class="elections__card-footer">
-      <span class="elections__card-date">${formatDate(election.voting_starts_at)}</span>
+      <span class="elections__card-date">${formatDate(election.voting_starts_at || election.scheduled_start)}</span>
       <span class="elections__card-cta">${R.string.election_card_cta}</span>
     </div>
   `;

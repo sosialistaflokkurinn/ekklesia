@@ -1,3 +1,5 @@
+import { el } from './dom.js';
+
 /**
  * Shared Formatting and Validation Utilities (Members Portal)
  * Epic #116 - Member Admin UI
@@ -348,8 +350,7 @@ export function validateInternationalPostalCode(code, country = null) {
  * (though using textContent is preferred when possible)
  */
 export function escapeHTML(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
+  const div = el('div', '', {}, text);
   return div.innerHTML;
 }
 

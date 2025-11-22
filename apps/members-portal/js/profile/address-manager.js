@@ -15,6 +15,7 @@ import { debug } from '../utils/debug.js';
 import { showToast } from '../components/toast.js';
 import { showStatus, createStatusIcon } from '../components/status.js';
 import { SearchableSelect } from '../components/searchable-select.js';
+import { el } from '../utils/dom.js';
 
 /**
  * Expand collapsible section helper
@@ -109,10 +110,13 @@ export class AddressManager {
     container.innerHTML = '';
 
     if (this.addresses.length === 0) {
-      const emptyMessage = document.createElement('p');
-      emptyMessage.textContent = R.string.profile_no_addresses;
-      emptyMessage.style.color = 'var(--color-gray-500, #6b7280)';
-      emptyMessage.style.fontStyle = 'italic';
+      const emptyMessage = el('p', '', {
+        style: {
+          color: 'var(--color-gray-500, #6b7280)',
+          fontStyle: 'italic'
+        }
+      }, R.string.profile_no_addresses);
+      
       container.appendChild(emptyMessage);
       this.updateSimpleDisplay();
       return;
@@ -121,31 +125,20 @@ export class AddressManager {
     const countries = getCountriesSorted();
 
     this.addresses.forEach((address, index) => {
-      const addressItem = document.createElement('div');
-      addressItem.className = 'address-item';
-      if (address.is_default) {
-        addressItem.classList.add('address-item--default');
-      }
-
       // Row 1: Country selector + Status + Default star + Delete button
-      const row1 = document.createElement('div');
-      row1.className = 'address-item__row address-item__row--controls';
-
       const statusIcon = createStatusIcon();
 
-      // Country selector
-      const countrySelector = document.createElement('select');
-      countrySelector.className = 'item-country-selector';
-      countries.forEach(country => {
-        const option = document.createElement('option');
-        option.value = country.code;
-        option.textContent = `${getCountryFlag(country.code)} ${country.nameIs}`;
-        option.setAttribute('data-search', `${country.nameIs} ${country.nameEn} ${country.code}`);
-        if (country.code === address.country) {
-          option.selected = true;
-        }
-        countrySelector.appendChild(option);
+      // Country selector options
+      const options = countries.map(country => {
+        return el('option', '', {
+          value: country.code,
+          'data-search': `${country.nameIs} ${country.nameEn} ${country.code}`,
+          selected: country.code === address.country
+        }, `${getCountryFlag(country.code)} ${country.nameIs}`);
       });
+
+      // Country selector
+      const countrySelector = el('select', 'item-country-selector', {}, ...options);
 
       // Country change listener
       countrySelector.addEventListener('change', async (e) => {
@@ -163,51 +156,46 @@ export class AddressManager {
       });
 
       // Default star icon
-      const defaultIcon = document.createElement('span');
-      defaultIcon.className = 'item-default-icon';
-      defaultIcon.textContent = address.is_default ? '⭐' : '☆';
-      defaultIcon.title = address.is_default
-        ? (R.string.profile_address_default_set)
-        : (R.string.profile_address_set_default);
-      defaultIcon.addEventListener('click', () => this.setDefault(index));
+      const defaultIcon = el('span', 'item-default-icon', {
+        title: address.is_default ? R.string.profile_address_default_set : R.string.profile_address_set_default,
+        onclick: () => this.setDefault(index)
+      }, address.is_default ? '⭐' : '☆');
 
       // Delete button
-      const deleteBtn = document.createElement('button');
-      deleteBtn.className = 'item-delete-btn';
-      deleteBtn.textContent = '🗑️';
-      deleteBtn.title = R.string.profile_address_delete;
-      deleteBtn.disabled = this.addresses.length === 1;
-      deleteBtn.addEventListener('click', () => this.delete(index));
+      const deleteBtn = el('button', 'item-delete-btn', {
+        title: R.string.profile_address_delete,
+        disabled: this.addresses.length === 1,
+        onclick: () => this.delete(index)
+      }, '🗑️');
 
-      row1.appendChild(countrySelector);
-      row1.appendChild(statusIcon);
-      row1.appendChild(defaultIcon);
-      row1.appendChild(deleteBtn);
+      const row1 = el('div', 'address-item__row address-item__row--controls', {},
+        countrySelector,
+        statusIcon,
+        defaultIcon,
+        deleteBtn
+      );
 
       // Row 2: Street input + Number + Letter
-      const row2 = document.createElement('div');
-      row2.className = 'address-item__row';
+      const streetInput = el('input', 'address-input address-input--street', {
+        type: 'text',
+        value: address.street || '',
+        placeholder: R.string.label_street
+      });
 
-      const streetInput = document.createElement('input');
-      streetInput.type = 'text';
-      streetInput.className = 'address-input address-input--street';
-      streetInput.value = address.street || '';
-      streetInput.placeholder = R.string.label_street;
+      const numberInput = el('input', 'address-input address-input--number', {
+        type: 'text',
+        value: address.number || '',
+        placeholder: R.string.label_house_number,
+        style: { width: '80px' }
+      });
 
-      const numberInput = document.createElement('input');
-      numberInput.type = 'text';
-      numberInput.className = 'address-input address-input--number';
-      numberInput.value = address.number || '';
-      numberInput.placeholder = R.string.label_house_number;
-      numberInput.style.width = '80px';
-
-      const letterInput = document.createElement('input');
-      letterInput.type = 'text';
-      letterInput.className = 'address-input address-input--letter';
-      letterInput.value = address.letter || '';
-      letterInput.placeholder = R.string.label_house_letter;
-      letterInput.style.width = '60px';
-      letterInput.maxLength = 2;
+      const letterInput = el('input', 'address-input address-input--letter', {
+        type: 'text',
+        value: address.letter || '',
+        placeholder: R.string.label_house_letter,
+        style: { width: '60px' },
+        maxLength: 2
+      });
 
       streetInput.addEventListener('blur', async (e) => {
         const newStreet = e.target.value.trim();
@@ -254,25 +242,24 @@ export class AddressManager {
         }
       });
 
-      row2.appendChild(streetInput);
-      row2.appendChild(numberInput);
-      row2.appendChild(letterInput);
+      const row2 = el('div', 'address-item__row', {},
+        streetInput,
+        numberInput,
+        letterInput
+      );
 
       // Row 3: Postal code + City
-      const row3 = document.createElement('div');
-      row3.className = 'address-item__row';
+      const postalInput = el('input', 'address-input address-input--postal', {
+        type: 'text',
+        value: address.postal_code || '',
+        placeholder: R.string.label_postal_code
+      });
 
-      const postalInput = document.createElement('input');
-      postalInput.type = 'text';
-      postalInput.className = 'address-input address-input--postal';
-      postalInput.value = address.postal_code || '';
-      postalInput.placeholder = R.string.label_postal_code;
-
-      const cityInput = document.createElement('input');
-      cityInput.type = 'text';
-      cityInput.className = 'address-input address-input--city';
-      cityInput.value = address.city || '';
-      cityInput.placeholder = R.string.label_city;
+      const cityInput = el('input', 'address-input address-input--city', {
+        type: 'text',
+        value: address.city || '',
+        placeholder: R.string.label_city
+      });
 
       postalInput.addEventListener('blur', async (e) => {
         const newPostal = e.target.value.trim();
@@ -304,13 +291,17 @@ export class AddressManager {
         }
       });
 
-      row3.appendChild(postalInput);
-      row3.appendChild(cityInput);
+      const row3 = el('div', 'address-item__row', {},
+        postalInput,
+        cityInput
+      );
 
       // Assemble
-      addressItem.appendChild(row1);
-      addressItem.appendChild(row2);
-      addressItem.appendChild(row3);
+      const addressItem = el('div', `address-item${address.is_default ? ' address-item--default' : ''}`, {},
+        row1,
+        row2,
+        row3
+      );
 
       container.appendChild(addressItem);
 

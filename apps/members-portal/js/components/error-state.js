@@ -1,3 +1,6 @@
+import { el } from '../utils/dom.js';
+import { R } from '../i18n/strings-loader.js';
+
 /**
  * Error State Component
  *
@@ -19,25 +22,16 @@
  */
 export function createErrorState(message, options = {}) {
   const {
-    retryText = 'Retry',
+    retryText = R.string.retry || 'Retry',
     onRetry = null
   } = options;
 
-  const container = document.createElement('div');
-  container.className = 'error-state';
-
-  const messageEl = document.createElement('p');
-  messageEl.className = 'error-state__message';
-  messageEl.textContent = message;
-
-  container.appendChild(messageEl);
+  const messageEl = el('p', 'error-state__message', {}, message);
+  const container = el('div', 'error-state', {}, messageEl);
 
   let retryBtn = null;
   if (onRetry) {
-    retryBtn = document.createElement('button');
-    retryBtn.className = 'btn btn--primary';
-    retryBtn.textContent = retryText;
-    retryBtn.onclick = onRetry;
+    retryBtn = el('button', 'btn btn--primary', { onclick: onRetry }, retryText);
     container.appendChild(retryBtn);
   }
 
@@ -47,13 +41,13 @@ export function createErrorState(message, options = {}) {
     setMessage: (newMessage) => {
       messageEl.textContent = newMessage;
     },
-    setRetryHandler: (handler, text = 'Retry') => {
+    setRetryHandler: (handler, text = R.string.retry || 'Retry') => {
       if (!retryBtn) {
-        retryBtn = document.createElement('button');
-        retryBtn.className = 'btn btn--primary';
+        retryBtn = el('button', 'btn btn--primary', {}, text);
         container.appendChild(retryBtn);
+      } else {
+        retryBtn.textContent = text;
       }
-      retryBtn.textContent = text;
       retryBtn.onclick = handler;
     },
     destroy: () => {

@@ -6,7 +6,7 @@
 
 /* Page layout for authenticated pages */
 body.authenticated {
-  background: var(--color-white);
+  background: var(--color-bg);
   min-height: 100vh;
   display: block;
   padding: 0;
@@ -23,7 +23,7 @@ body.authenticated {
   display: flex;
   gap: 0;
   margin-bottom: 2rem;
-  border-bottom: 2px solid var(--color-border-light);
+  border-bottom: 2px solid var(--color-border);
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -33,7 +33,7 @@ body.authenticated {
   background: none;
   border: none;
   border-bottom: 3px solid transparent;
-  color: var(--color-gray-600);
+  color: var(--color-text-muted);
   cursor: pointer;
   font-weight: 500;
   transition: all 0.3s;
@@ -45,8 +45,8 @@ body.authenticated {
 }
 
 .page__tab:hover {
-  color: var(--color-gray-800);
-  background: var(--color-gray-50);
+  color: var(--color-text);
+  background: var(--color-bg-subtle);
 }
 
 .page__tab--active {
@@ -80,18 +80,18 @@ body.authenticated {
 
 .page__title {
   font-size: 32px;
-  color: var(--color-gray-800);
+  color: var(--color-text);
   margin-bottom: var(--spacing-sm);
 }
 
 .page__subtitle {
   font-size: 16px;
-  color: var(--color-gray-500);
+  color: var(--color-text-muted);
 }
 
 /* Card components */
 .card {
-  background: var(--color-white);
+  background: var(--color-bg-card);
   border-radius: var(--radius-lg);
   padding: var(--spacing-xl);
   box-shadow: var(--shadow-sm);
@@ -101,12 +101,12 @@ body.authenticated {
 .card__title {
   font-size: 20px;
   font-weight: 600;
-  color: var(--color-gray-800);
+  color: var(--color-text);
   margin-bottom: var(--spacing-md);
 }
 
 .card__content {
-  color: var(--color-gray-600);
+  color: var(--color-text-muted);
 }
 
 /* Info grid for user data */
@@ -118,7 +118,7 @@ body.authenticated {
 
 .info-grid__item {
   padding: var(--spacing-md);
-  background: white;
+  background: var(--color-bg);
   border-radius: var(--radius-sm);
   border-left: 4px solid var(--color-accent-gold);
   transition: all 0.2s ease;
@@ -126,7 +126,7 @@ body.authenticated {
 }
 
 .info-grid__item.u-clickable:hover {
-  background: white;
+  background: var(--color-bg);
   box-shadow: 0 8px 24px rgba(243, 180, 27, 0.6);
   transform: translateY(-3px);
 }
@@ -135,13 +135,13 @@ body.authenticated {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: var(--color-gray-500);
+  color: var(--color-text-muted);
   margin-bottom: var(--spacing-xs);
 }
 
 .info-grid__value {
   font-size: 16px;
-  color: var(--color-gray-800);
+  color: var(--color-text);
   font-weight: 500;
 }
 

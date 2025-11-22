@@ -18,6 +18,7 @@ import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
 import MembersAPI from './api/members-api.js';
 import { formatPhone, maskKennitala } from '../../js/utils/format.js';
 import { filterMembersByDistrict, getElectoralDistrictName } from './utils/electoral-districts.js';
+import { el } from '../../js/utils/dom.js';
 import { createListPageStates } from './utils/ui-states.js';
 import { initSearchableSelects } from '../../js/components/searchable-select.js';
 
@@ -443,50 +444,24 @@ const adminStrings = new Map();
     elements.tableBody.innerHTML = '';
 
     members.forEach(member => {
-      const row = document.createElement('tr');
-      row.className = 'members-table__row';
-
-      // Django ID
-      const idCell = document.createElement('td');
-      idCell.className = 'members-table__cell';
-      idCell.textContent = member.metadata?.django_id || '-';
-      row.appendChild(idCell);
-
-      // Name
-      const nameCell = document.createElement('td');
-      nameCell.className = 'members-table__cell';
-      nameCell.textContent = member.name || '-';
-      row.appendChild(nameCell);
-
-      // Phone (formatted as XXX-XXXX)
-      const phoneCell = document.createElement('td');
-      phoneCell.className = 'members-table__cell';
-      phoneCell.textContent = formatPhone(member.phone) || '-';
-      row.appendChild(phoneCell);
-
-      // Email
-      const emailCell = document.createElement('td');
-      emailCell.className = 'members-table__cell';
-      emailCell.textContent = member.email || '-';
-      row.appendChild(emailCell);
-
-      // Kennitala (masked)
-      const kennitalaCell = document.createElement('td');
-      kennitalaCell.className = 'members-table__cell';
-      kennitalaCell.textContent = maskKennitala(member.kennitala);
-      row.appendChild(kennitalaCell);
-
-      // Actions
-      const actionsCell = document.createElement('td');
-      actionsCell.className = 'members-table__cell members-table__cell--actions';
-
-      const viewBtn = document.createElement('a');
-      viewBtn.href = `/admin/member-profile.html?id=${member.kennitala}`;
-      viewBtn.className = 'members-table__action';
-      viewBtn.textContent = adminStrings.get('members_btn_view');
-      actionsCell.appendChild(viewBtn);
-
-      row.appendChild(actionsCell);
+      const row = el('tr', 'members-table__row', {},
+        // Django ID
+        el('td', 'members-table__cell', {}, member.metadata?.django_id || '-'),
+        // Name
+        el('td', 'members-table__cell', {}, member.name || '-'),
+        // Phone (formatted as XXX-XXXX)
+        el('td', 'members-table__cell', {}, formatPhone(member.phone) || '-'),
+        // Email
+        el('td', 'members-table__cell', {}, member.email || '-'),
+        // Kennitala (masked)
+        el('td', 'members-table__cell', {}, maskKennitala(member.kennitala)),
+        // Actions
+        el('td', 'members-table__cell members-table__cell--actions', {},
+          el('a', 'members-table__action', {
+            href: `/admin/member-profile.html?id=${member.kennitala}`
+          }, adminStrings.get('members_btn_view'))
+        )
+      );
 
       elements.tableBody.appendChild(row);
     });

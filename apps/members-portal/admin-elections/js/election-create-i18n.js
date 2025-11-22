@@ -24,10 +24,11 @@ export async function initElectionCreateStrings() {
 
   // Set page title and static text
   document.getElementById('page-title').textContent = R.string.create_election_page_title;
-  document.getElementById('nav-brand').textContent = R.string.admin_brand;
-  document.getElementById('nav-elections-list').textContent = R.string.nav_elections_list;
-  document.getElementById('nav-back-to-member').textContent = R.string.admin_nav_back_to_member;
-  document.getElementById('nav-logout').textContent = R.string.admin_nav_logout;
+  // Navigation elements are handled by navigation-bar.js component
+  // document.getElementById('nav-brand').textContent = R.string.admin_brand;
+  // document.getElementById('nav-elections-list').textContent = R.string.nav_elections_list;
+  // document.getElementById('nav-back-to-member').textContent = R.string.admin_nav_back_to_member;
+  // document.getElementById('nav-logout').textContent = R.string.admin_nav_logout;
   document.getElementById('back-link').textContent = R.string.back_to_list;
   document.getElementById('page-heading').textContent = R.string.create_election_heading;
 

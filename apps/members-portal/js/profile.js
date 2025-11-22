@@ -18,6 +18,7 @@ import { requireAuth, getUserData, signOut, AuthenticationError } from '../sessi
 import { httpsCallable, getFirebaseFirestore } from '../firebase/app.js';
 import { doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { setTextContent, validateElements } from '../ui/dom.js';
+import { el } from './utils/dom.js';
 import { formatPhone, validatePhone, formatInternationalPhone, validateInternationalPhone, validateInternationalPostalCode, formatMembershipDuration } from './utils/format.js';
 import { getCountryName, getCountriesSorted, searchCountries, getCountryFlag, getCountryCallingCode } from './utils/countries.js';
 import { updateMemberProfile, updateMemberForeignAddress } from './api/members-client.js';
@@ -495,15 +496,12 @@ function setupCountryAutocomplete() {
     countryInput.setAttribute('aria-expanded', 'true');
 
     countries.forEach((country, index) => {
-      const li = document.createElement('li');
-      li.className = 'autocomplete-item';
-      li.textContent = country.nameIs;  // Show Icelandic name
-      li.setAttribute('role', 'option');
-      li.setAttribute('data-code', country.code);
-      li.setAttribute('data-name', country.nameIs);
-
-      // Click to select
-      li.addEventListener('click', () => selectCountry(li));
+      const li = el('li', 'autocomplete-item', {
+        role: 'option',
+        'data-code': country.code,
+        'data-name': country.nameIs,
+        onclick: () => selectCountry(li)
+      }, country.nameIs);
 
       dropdown.appendChild(li);
     });

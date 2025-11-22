@@ -13,6 +13,7 @@ import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
 import { collection, query, orderBy, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { adminStrings } from './i18n/admin-strings-loader.js';
 import { checkAdminAccess } from './utils/admin-helpers.js';
+import { el } from '../../js/utils/dom.js';
 
 // Initialize Firebase services
 const auth = getFirebaseAuth();
@@ -155,8 +156,6 @@ function getFieldName(changes) {
  * Create a table row for a sync queue item
  */
 function createQueueRow(item, strings) {
-  const tr = document.createElement('tr');
-
   // Format timestamp (use created_at from Firestore)
   const timestamp = item.created_at?.toDate?.() || (item.created_at ? new Date(item.created_at) : new Date());
   const formattedDate = timestamp.toLocaleString('is-IS', {
@@ -185,16 +184,16 @@ function createQueueRow(item, strings) {
                      status === 'failed' ? 'status-failed' :
                      'status-pending';
 
-  // Build row HTML
-  tr.innerHTML = `
-    <td>${formattedDate}</td>
-    <td>${maskedKennitala}</td>
-    <td>${actionText}</td>
-    <td>${fieldText}</td>
-    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-  `;
-
-  return tr;
+  // Build row using el() helper
+  return el('tr', '', {},
+    el('td', '', {}, formattedDate),
+    el('td', '', {}, maskedKennitala),
+    el('td', '', {}, actionText),
+    el('td', '', {}, fieldText),
+    el('td', '', {}, 
+      el('span', `status-badge ${statusClass}`, {}, statusText)
+    )
+  );
 }
 
 /**

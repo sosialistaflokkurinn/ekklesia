@@ -23,7 +23,7 @@
 .voting-form__question-title {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--color-gray-600);
+  color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: var(--spacing-sm);
@@ -32,14 +32,14 @@
 .voting-form__question-text {
   font-size: 1.75rem;
   font-weight: 700;
-  color: var(--color-gray-900);
+  color: var(--color-text);
   line-height: 1.4;
   margin: 0;
 }
 
 /* Voting Section */
 .voting-form__voting {
-  background-color: var(--color-gray-50);
+  background-color: var(--color-bg-subtle);
   padding: var(--spacing-sm);
   border-radius: var(--radius-md);
   margin-bottom: var(--spacing-lg);
@@ -48,17 +48,17 @@
 .voting-form__voting-title {
   font-size: 1.125rem;
   font-weight: 600;
-  color: var(--color-gray-800);
+  color: var(--color-text);
   margin-bottom: var(--spacing-lg);
 }
 
 /* Selection Helper (for multi-select) */
 .voting-form__selection-helper {
   font-size: 0.875rem;
-  color: var(--color-gray-600);
+  color: var(--color-text-muted);
   margin-bottom: var(--spacing-md);
   padding: var(--spacing-xs) var(--spacing-sm);
-  background-color: var(--color-gray-100);
+  background-color: var(--color-bg-alt);
   border-radius: var(--radius-sm);
   text-align: center;
 }
@@ -86,8 +86,8 @@
   align-items: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-md);
-  background-color: var(--color-white);
-  border: 2px solid var(--color-border-medium);
+  background-color: var(--color-bg);
+  border: 2px solid var(--color-border);
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -116,7 +116,7 @@
 .voting-form__answer-label {
   font-size: 1.25rem;
   font-weight: 600;
-  color: var(--color-gray-900);
+  color: var(--color-text);
   cursor: pointer;
   flex: 1;
   line-height: 1.5;

@@ -28,11 +28,11 @@ export async function initElectionsListStrings() {
       // Page title
       'page-title': 'admin_elections_title',
 
-      // Navigation
-      'nav-brand': 'admin_elections_brand',
-      'nav-elections-list': 'nav_elections_list',
-      'nav-back-to-member': 'admin_nav_back_to_member',
-      'nav-logout': 'admin_nav_logout',
+      // Navigation - Handled by navigation-bar.js
+      // 'nav-brand': 'admin_elections_brand',
+      // 'nav-elections-list': 'nav_elections_list',
+      // 'nav-back-to-member': 'admin_nav_back_to_member',
+      // 'nav-logout': 'admin_nav_logout',
 
       // Filter buttons
       'filter-all': 'filter_all',

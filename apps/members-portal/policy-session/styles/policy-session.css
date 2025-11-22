@@ -65,11 +65,25 @@
   margin-bottom: var(--spacing-xl, 2rem);
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Hide scrollbar Firefox */
+}
+
+.policy-session__filters::-webkit-scrollbar {
+  display: none; /* Hide scrollbar Chrome/Safari */
+}
+
+@media (max-width: 600px) {
+  .policy-session__filters {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    overflow-x: visible;
+  }
 }
 
 .policy-session__filter-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: var(--spacing-xs, 0.25rem);
   padding: var(--spacing-sm, 0.5rem) var(--spacing-md, 1rem);
   background-color: var(--color-background-white, #ffffff);
@@ -81,6 +95,18 @@
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
+  flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .policy-session__filter-btn {
+    white-space: normal;
+    text-align: center;
+    width: 100%;
+    padding: var(--spacing-sm, 0.5rem);
+    font-size: var(--font-size-sm, 0.9rem);
+    min-height: 44px; /* Touch target size */
+  }
 }
 
 .policy-session__filter-btn:hover {

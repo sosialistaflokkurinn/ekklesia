@@ -19,6 +19,7 @@
 
 import { debug } from '../utils/debug.js';
 import { R } from '../../i18n/strings-loader.js';
+import { el } from '../utils/dom.js';
 
 /**
  * Active modal instance (only one modal at a time)
@@ -64,65 +65,46 @@ export function showModal(options = {}) {
     activeModal.close();
   }
 
-  // Create modal overlay
-  const overlay = document.createElement('div');
-  overlay.className = 'modal-overlay';
-  overlay.setAttribute('role', 'dialog');
-  overlay.setAttribute('aria-modal', 'true');
-  overlay.setAttribute('aria-labelledby', 'modal-title');
-
-  // Create modal container
-  const modal = document.createElement('div');
-  modal.className = `modal modal--${size}`;
-
   // Create modal header
-  const header = document.createElement('div');
-  header.className = 'modal__header';
+  const titleElement = el('h2', 'modal__title', { id: 'modal-title' }, title);
+  const closeButton = el('button', 'modal__close', {
+    'aria-label': R.string?.modal_close_aria || 'Loka',
+    onclick: () => instance.close()
+  }, '×');
 
-  const titleElement = document.createElement('h2');
-  titleElement.id = 'modal-title';
-  titleElement.className = 'modal__title';
-  titleElement.textContent = title;
-  header.appendChild(titleElement);
-
-  const closeButton = document.createElement('button');
-  closeButton.className = 'modal__close';
-  closeButton.setAttribute('aria-label', R.string?.modal_close_aria || 'Close');
-  closeButton.innerHTML = '×';
-  closeButton.onclick = () => instance.close();
-  header.appendChild(closeButton);
-
-  modal.appendChild(header);
+  const header = el('div', 'modal__header', {}, titleElement, closeButton);
 
   // Create modal body
-  const body = document.createElement('div');
-  body.className = 'modal__body';
-
+  const body = el('div', 'modal__body');
   if (typeof content === 'string') {
     body.innerHTML = content;
   } else if (content instanceof HTMLElement) {
     body.appendChild(content);
   }
 
-  modal.appendChild(body);
+  // Create modal container
+  const modal = el('div', `modal modal--${size}`, {}, header, body);
 
   // Create modal footer (if buttons provided)
   if (buttons.length > 0) {
-    const footer = document.createElement('div');
-    footer.className = 'modal__footer';
-
+    const footer = el('div', 'modal__footer');
     buttons.forEach(buttonConfig => {
-      const button = document.createElement('button');
-      button.className = buttonConfig.primary ? 'btn btn--primary' : 'btn btn--secondary';
-      button.textContent = buttonConfig.text;
-      button.onclick = buttonConfig.onClick;
+      const button = el('button', 
+        buttonConfig.primary ? 'btn btn--primary' : 'btn btn--secondary',
+        { onclick: buttonConfig.onClick },
+        buttonConfig.text
+      );
       footer.appendChild(button);
     });
-
     modal.appendChild(footer);
   }
 
-  overlay.appendChild(modal);
+  // Create modal overlay
+  const overlay = el('div', 'modal-overlay', {
+    role: 'dialog',
+    'aria-modal': 'true',
+    'aria-labelledby': 'modal-title'
+  }, modal);
 
   // Modal instance API
   const instance = {

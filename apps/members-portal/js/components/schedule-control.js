@@ -22,7 +22,7 @@
  *   container.appendChild(control.element);
  */
 
-import { formatDateIcelandic } from '../utils/format.js';
+import { formatDateIcelandic, formatDateTimeLocal } from '../utils/format.js';
 import { createCountdownTimer } from './countdown-timer.js';
 import { electionState } from '../utils/election-state.js';
 import { debug } from '../utils/debug.js';
@@ -31,6 +31,7 @@ import {
   DURATION_PRESETS, 
   DEFAULT_DURATION_MINUTES 
 } from '../utils/election-constants.js';
+import { el } from '../utils/dom.js';
 
 /**
  * Duration presets imported from shared constants
@@ -59,20 +60,19 @@ export function createScheduleControl(options = {}) {
     throw new Error('createScheduleControl: electionId is required');
   }
 
-  // Create main container
-  const container = document.createElement('div');
-  container.className = 'schedule-control';
-
   // Create sections
   const statusSection = createStatusSection();
   const startNowSection = createStartNowSection();
   const scheduleSection = createScheduleSection();
   const closeSection = createCloseSection();
 
-  container.appendChild(statusSection.element);
-  container.appendChild(startNowSection.element);
-  container.appendChild(scheduleSection.element);
-  container.appendChild(closeSection.element);
+  // Create main container
+  const container = el('div', 'schedule-control', {},
+    statusSection.element,
+    startNowSection.element,
+    scheduleSection.element,
+    closeSection.element
+  );
 
   // Countdown timer instance
   let countdownTimer = null;
@@ -81,22 +81,15 @@ export function createScheduleControl(options = {}) {
    * Create status section
    */
   function createStatusSection() {
-    const section = document.createElement('div');
-    section.className = 'schedule-control__status';
+    const emoji = el('span', 'schedule-control__status-emoji', { role: 'img' });
+    const text = el('span', 'schedule-control__status-text');
+    const countdown = el('div', 'schedule-control__countdown u-hidden');
 
-    const emoji = document.createElement('span');
-    emoji.className = 'schedule-control__status-emoji';
-    emoji.setAttribute('role', 'img');
-
-    const text = document.createElement('span');
-    text.className = 'schedule-control__status-text';
-
-    const countdown = document.createElement('div');
-    countdown.className = 'schedule-control__countdown u-hidden';
-
-    section.appendChild(emoji);
-    section.appendChild(text);
-    section.appendChild(countdown);
+    const section = el('div', 'schedule-control__status', {},
+      emoji,
+      text,
+      countdown
+    );
 
     return {
       element: section,
@@ -110,36 +103,31 @@ export function createScheduleControl(options = {}) {
    * Create "Start Now" section
    */
   function createStartNowSection() {
-    const section = document.createElement('div');
-    section.className = 'schedule-control__section';
-
-    const heading = document.createElement('h3');
-    heading.className = 'schedule-control__heading';
+    const heading = el('h3', 'schedule-control__heading');
     heading.innerHTML = '⚡ Byrja núna';
 
-    const description = document.createElement('p');
-    description.className = 'schedule-control__description';
-    description.textContent = 'Opna kosningu strax og velja tímalengd';
+    const description = el('p', 'schedule-control__description', {}, 'Opna kosningu strax og velja tímalengd');
 
     // Duration selector
-    const durationGroup = document.createElement('div');
-    durationGroup.className = 'schedule-control__duration-group';
+    const durationLabel = el('label', 'schedule-control__label', {}, 'Tímalengd:');
+    const durationButtons = el('div', 'schedule-control__duration-buttons');
 
-    const durationLabel = document.createElement('label');
-    durationLabel.className = 'schedule-control__label';
-    durationLabel.textContent = 'Tímalengd:';
-
-    const durationButtons = document.createElement('div');
-    durationButtons.className = 'schedule-control__duration-buttons';
+    // Custom duration input
+    const customInput = el('input', 'schedule-control__custom-input u-hidden', {
+      type: 'number',
+      min: '1',
+      max: '480',
+      value: String(DEFAULT_DURATION_MINUTES),
+      placeholder: 'Mínútur'
+    });
 
     let selectedDuration = DEFAULT_DURATION_MINUTES; // Default from shared constants (2 minutes)
 
     DURATION_PRESETS.forEach(preset => {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'schedule-control__duration-btn';
-      button.textContent = preset.label;
-      button.dataset.value = preset.value;
+      const button = el('button', 'schedule-control__duration-btn', {
+        type: 'button',
+        'data-value': preset.value
+      }, preset.label);
 
       if (preset.value === selectedDuration) {
         button.classList.add('schedule-control__duration-btn--active');
@@ -167,27 +155,18 @@ export function createScheduleControl(options = {}) {
       durationButtons.appendChild(button);
     });
 
-    // Custom duration input
-    const customInput = document.createElement('input');
-    customInput.type = 'number';
-    customInput.min = '1';
-    customInput.max = '480';
-    customInput.value = String(DEFAULT_DURATION_MINUTES);
-    customInput.className = 'schedule-control__custom-input u-hidden';
-    customInput.placeholder = 'Mínútur';
-
     customInput.addEventListener('input', () => {
       selectedDuration = parseInt(customInput.value) || DEFAULT_DURATION_MINUTES;
     });
 
-    durationGroup.appendChild(durationLabel);
-    durationGroup.appendChild(durationButtons);
-    durationGroup.appendChild(customInput);
+    const durationGroup = el('div', 'schedule-control__duration-group', {},
+      durationLabel,
+      durationButtons,
+      customInput
+    );
 
     // Start button
-    const startButton = document.createElement('button');
-    startButton.type = 'button';
-    startButton.className = 'btn btn--primary schedule-control__action-btn';
+    const startButton = el('button', 'btn btn--primary schedule-control__action-btn', { type: 'button' });
     startButton.innerHTML = '🚀 Byrja kosningu núna';
 
     startButton.addEventListener('click', async () => {
@@ -206,10 +185,12 @@ export function createScheduleControl(options = {}) {
       }
     });
 
-    section.appendChild(heading);
-    section.appendChild(description);
-    section.appendChild(durationGroup);
-    section.appendChild(startButton);
+    const section = el('div', 'schedule-control__section', {},
+      heading,
+      description,
+      durationGroup,
+      startButton
+    );
 
     return {
       element: section,
@@ -222,64 +203,42 @@ export function createScheduleControl(options = {}) {
    * Create scheduled start section
    */
   function createScheduleSection() {
-    const section = document.createElement('div');
-    section.className = 'schedule-control__section';
-
-    const heading = document.createElement('h3');
-    heading.className = 'schedule-control__heading';
     // Collapsible header (click to expand/collapse)
-    const headerButton = document.createElement('button');
-    headerButton.type = 'button';
-    headerButton.className = 'schedule-control__heading schedule-control__heading--collapsible';
+    const headerButton = el('button', 'schedule-control__heading schedule-control__heading--collapsible', {
+      type: 'button',
+      'aria-expanded': 'false'
+    });
     headerButton.innerHTML = '<span class="schedule-control__toggle-icon">▶</span> Áætla kosningu (valfrjálst)';
-    headerButton.setAttribute('aria-expanded', 'false');
     
-    const description = document.createElement('p');
-    description.className = 'schedule-control__description schedule-control__description--hint';
+    const description = el('p', 'schedule-control__description schedule-control__description--hint');
     description.innerHTML = '<small>Sjaldgæft - flestir byrja kosningar strax með "Byrja núna"</small>';
 
-    // Collapsible content (hidden by default)
-    const collapsibleContent = document.createElement('div');
-    collapsibleContent.className = 'schedule-control__collapsible u-hidden';
-    collapsibleContent.setAttribute('aria-hidden', 'true');
-
     // Date/time inputs
-    const scheduleInputs = document.createElement('div');
-    scheduleInputs.className = 'schedule-control__inputs';
-
-    const dateLabel = document.createElement('label');
-    dateLabel.className = 'schedule-control__label';
-    dateLabel.textContent = 'Byrjar:';
-
-    const dateInput = document.createElement('input');
-    dateInput.type = 'datetime-local';
-    dateInput.className = 'schedule-control__input';
+    const dateLabel = el('label', 'schedule-control__label', {}, 'Byrjar:');
+    const dateInput = el('input', 'schedule-control__input', { type: 'datetime-local' });
 
     // Set default to now + 1 hour
     const defaultStart = new Date();
     defaultStart.setHours(defaultStart.getHours() + 1);
     dateInput.value = formatDateTimeLocal(defaultStart);
 
-    const durationLabel = document.createElement('label');
-    durationLabel.className = 'schedule-control__label';
-    durationLabel.textContent = 'Tímalengd (mínútur):';
+    const durationLabel = el('label', 'schedule-control__label', {}, 'Tímalengd (mínútur):');
+    const durationInput = el('input', 'schedule-control__input', {
+      type: 'number',
+      min: '1',
+      max: '480',
+      value: String(DEFAULT_DURATION_MINUTES)
+    });
 
-    const durationInput = document.createElement('input');
-    durationInput.type = 'number';
-    durationInput.min = '1';
-    durationInput.max = '480';
-    durationInput.value = String(DEFAULT_DURATION_MINUTES);
-    durationInput.className = 'schedule-control__input';
-
-    scheduleInputs.appendChild(dateLabel);
-    scheduleInputs.appendChild(dateInput);
-    scheduleInputs.appendChild(durationLabel);
-    scheduleInputs.appendChild(durationInput);
+    const scheduleInputs = el('div', 'schedule-control__inputs', {},
+      dateLabel,
+      dateInput,
+      durationLabel,
+      durationInput
+    );
 
     // Schedule button
-    const scheduleButton = document.createElement('button');
-    scheduleButton.type = 'button';
-    scheduleButton.className = 'btn schedule-control__action-btn';
+    const scheduleButton = el('button', 'btn schedule-control__action-btn', { type: 'button' });
     scheduleButton.innerHTML = '📅 Áætla kosningu';
 
     scheduleButton.addEventListener('click', async () => {
@@ -349,20 +308,12 @@ export function createScheduleControl(options = {}) {
    * Create close section
    */
   function createCloseSection() {
-    const section = document.createElement('div');
-    section.className = 'schedule-control__section schedule-control__section--close u-hidden';
-
-    const heading = document.createElement('h3');
-    heading.className = 'schedule-control__heading schedule-control__heading--danger';
+    const heading = el('h3', 'schedule-control__heading schedule-control__heading--danger');
     heading.innerHTML = '🛑 Loka kosningu';
 
-    const description = document.createElement('p');
-    description.className = 'schedule-control__description';
-    description.textContent = 'Loka kosningu strax og útiloka frekari atkvæðagreiðslu';
+    const description = el('p', 'schedule-control__description', {}, 'Loka kosningu strax og útiloka frekari atkvæðagreiðslu');
 
-    const closeButton = document.createElement('button');
-    closeButton.type = 'button';
-    closeButton.className = 'btn btn--danger schedule-control__action-btn';
+    const closeButton = el('button', 'btn btn--danger schedule-control__action-btn', { type: 'button' });
     closeButton.innerHTML = '🔒 Loka kosningu núna';
 
     closeButton.addEventListener('click', async () => {
@@ -385,9 +336,11 @@ export function createScheduleControl(options = {}) {
       }
     });
 
-    section.appendChild(heading);
-    section.appendChild(description);
-    section.appendChild(closeButton);
+    const section = el('div', 'schedule-control__section schedule-control__section--close u-hidden', {},
+      heading,
+      description,
+      closeButton
+    );
 
     return {
       element: section,

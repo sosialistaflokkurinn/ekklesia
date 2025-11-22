@@ -48,9 +48,12 @@ class ElectionState extends EventTarget {
     this.state = {
       id: election.id,
       status: election.status,
-      voting_starts_at: election.voting_starts_at,
-      voting_ends_at: election.voting_ends_at,
-      duration_minutes: this.calculateDuration(election.voting_starts_at, election.voting_ends_at),
+      voting_starts_at: election.voting_starts_at || election.scheduled_start,
+      voting_ends_at: election.voting_ends_at || election.scheduled_end,
+      duration_minutes: this.calculateDuration(
+        election.voting_starts_at || election.scheduled_start,
+        election.voting_ends_at || election.scheduled_end
+      ),
       title: election.title,
       question: election.question,
       has_voted: election.has_voted || false
