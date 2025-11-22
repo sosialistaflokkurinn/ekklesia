@@ -15,7 +15,6 @@ import { debounce } from '../../js/utils/debounce.js';
 import { initSearchableSelects } from '../../js/components/searchable-select.js';
 import { requireAdmin } from '../../js/rbac.js';
 // Note: initNavigation import removed - now handled by nav-header component
-import { firebaseApp } from '../../firebase/app.js';
 import { PhoneManager } from '../../js/profile/phone-manager.js';
 import { AddressManager } from '../../js/profile/address-manager.js';
 import { migrateOldPhoneFields, migrateOldAddressFields } from '../../js/profile/migration.js';

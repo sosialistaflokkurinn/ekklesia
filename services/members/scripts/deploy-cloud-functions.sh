@@ -33,7 +33,7 @@ gcloud functions deploy bidirectional_sync \
   --timeout=540s \
   --memory=512MB \
   --max-instances=1 \
-  --set-env-vars=GCP_PROJECT=${PROJECT_ID}
+  --set-env-vars=GCP_PROJECT=${PROJECT_ID},DJANGO_API_BASE_URL=https://starf.sosialistaflokkurinn.is/felagar
 
 echo -e "\n${GREEN}✓ bidirectional_sync deployed${NC}"
 SYNC_URL=$(gcloud functions describe bidirectional_sync --region=${REGION} --gen2 --format='value(serviceConfig.uri)')

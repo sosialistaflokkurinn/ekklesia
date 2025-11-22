@@ -20,7 +20,7 @@ from sync_members import (
 import os
 
 # Django API base URL - use environment variable or default
-DJANGO_API_BASE_URL = os.getenv('DJANGO_API_BASE_URL', 'https://felagakerfi.piratar.is/felagar')
+DJANGO_API_BASE_URL = os.getenv('DJANGO_API_BASE_URL', 'https://starf.sosialistaflokkurinn.is/felagar')
 
 
 def get_last_sync_time(db: firestore.Client) -> datetime:
