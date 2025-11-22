@@ -131,6 +131,11 @@ Functional names mapped to primitives. **Use these in your components.** This la
   /* Borders */
   --color-border: var(--color-gray-200);
   --border-radius: var(--radius-md);
+
+  /* Primary Actions */
+  --color-primary: #d32f2f;
+  --color-primary-hover: #b71c1c;
+  --color-on-primary: #FFFFFF;
 }
 ```
 
@@ -140,6 +145,7 @@ Specific overrides for components (defined in component files).
 ```css
 .card {
   background-color: var(--color-bg-card); /* Uses Semantic Layer */
+  color: var(--color-text);
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius);
 }

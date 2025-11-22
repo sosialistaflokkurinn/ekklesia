@@ -98,6 +98,23 @@ const errorMsg = R.format(R.string.error_authentication, error.message);
 // Result: "Villa við auðkenningu: Invalid token"
 ```
 
+## Maintenance Tools
+
+We provide scripts to help manage the string database:
+
+- `scripts/find-unused-strings.py`: Scans codebase for `R.string.key` usage and reports unused keys.
+- `scripts/archive-unused-strings.py`: Automatically moves unused strings to `archive/unused_strings.xml`.
+- `scripts/restore-strings.py`: Restores strings from archive if they are needed again.
+
+**Usage**:
+```bash
+# Find unused strings
+python3 scripts/find-unused-strings.py
+
+# Archive unused strings
+python3 scripts/archive-unused-strings.py
+```
+
 ### 4. Configuration Values
 
 Configuration values (URLs, constants) are also stored in strings.xml:

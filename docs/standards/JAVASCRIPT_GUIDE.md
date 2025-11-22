@@ -90,6 +90,8 @@ Use arrow functions for callbacks, regular functions for top-level:
 ```javascript
 // ✅ Good: Regular function for top-level
 async function savePhoneNumbers(phoneNumbers) {
+  const { getFirebaseAuth } = await import('../firebase/auth.js');
+  const auth = getFirebaseAuth();
   const user = auth.currentUser;
   // ...
 }
