@@ -11,8 +11,9 @@ import { createButton } from './button.js';
 import { createBadge } from './badge.js';
 import { showToast } from './toast.js';
 import { showConfirm } from './modal.js';
-import { R } from '/i18n/strings-loader.js';
+import { R } from '../../i18n/strings-loader.js';
 import { voteOnAmendment } from '../api/elections-api.js';
+import { el } from '../utils/dom.js';
 
 /**
  * Escape HTML to prevent XSS
@@ -86,20 +87,6 @@ export function createAmendmentVoteCard(options = {}) {
   // Track voted state
   let hasVoted = amendment.has_voted || false;
 
-  // Create container element
-  const container = document.createElement('div');
-  container.className = 'amendment-vote-card';
-
-  // Card header
-  const header = document.createElement('div');
-  header.className = 'amendment-vote-card__header';
-
-  const title = document.createElement('h3');
-  title.className = 'amendment-vote-card__title';
-  title.textContent = `${strings.amendmentNumber} ${amendment.voting_order}: ${amendment.section_heading}`;
-
-  header.appendChild(title);
-
   // Already voted badge (initially hidden)
   const votedBadge = createBadge(
     `✓ ${strings.alreadyVoted}`,
@@ -108,67 +95,30 @@ export function createAmendmentVoteCard(options = {}) {
   votedBadge.element.className += ' amendment-vote-card__voted-badge';
   votedBadge.element.style.display = hasVoted ? 'inline-flex' : 'none';
 
-  header.appendChild(votedBadge.element);
+  const header = el('div', 'amendment-vote-card__header', {},
+    el('h3', 'amendment-vote-card__title', {}, `${strings.amendmentNumber} ${amendment.voting_order}: ${amendment.section_heading}`),
+    votedBadge.element
+  );
 
-  // Card body
-  const body = document.createElement('div');
-  body.className = 'amendment-vote-card__body';
+  const originalSection = el('div', 'amendment-vote-card__text-section', {},
+    el('div', 'amendment-vote-card__text-label amendment-vote-card__text-label--original', {}, strings.originalTextLabel),
+    el('div', 'amendment-vote-card__text amendment-vote-card__text--original', {}, amendment.original_text)
+  );
 
-  // Original text section
-  const originalSection = document.createElement('div');
-  originalSection.className = 'amendment-vote-card__text-section';
+  const proposedSection = el('div', 'amendment-vote-card__text-section', {},
+    el('div', 'amendment-vote-card__text-label amendment-vote-card__text-label--proposed', {}, strings.proposedTextLabel),
+    el('div', 'amendment-vote-card__text amendment-vote-card__text--proposed', {}, amendment.proposed_text)
+  );
 
-  const originalLabel = document.createElement('div');
-  originalLabel.className = 'amendment-vote-card__text-label amendment-vote-card__text-label--original';
-  originalLabel.textContent = strings.originalTextLabel;
-
-  const originalText = document.createElement('div');
-  originalText.className = 'amendment-vote-card__text amendment-vote-card__text--original';
-  originalText.textContent = amendment.original_text;
-
-  originalSection.appendChild(originalLabel);
-  originalSection.appendChild(originalText);
-
-  // Proposed text section
-  const proposedSection = document.createElement('div');
-  proposedSection.className = 'amendment-vote-card__text-section';
-
-  const proposedLabel = document.createElement('div');
-  proposedLabel.className = 'amendment-vote-card__text-label amendment-vote-card__text-label--proposed';
-  proposedLabel.textContent = strings.proposedTextLabel;
-
-  const proposedText = document.createElement('div');
-  proposedText.className = 'amendment-vote-card__text amendment-vote-card__text--proposed';
-  proposedText.textContent = amendment.proposed_text;
-
-  proposedSection.appendChild(proposedLabel);
-  proposedSection.appendChild(proposedText);
-
-  body.appendChild(originalSection);
-  body.appendChild(proposedSection);
+  const body = el('div', 'amendment-vote-card__body', {}, originalSection, proposedSection);
 
   // Rationale section (optional)
   if (amendment.rationale && amendment.rationale.trim()) {
-    const rationaleSection = document.createElement('div');
-    rationaleSection.className = 'amendment-vote-card__rationale';
-
-    const rationaleLabel = document.createElement('div');
-    rationaleLabel.className = 'amendment-vote-card__rationale-label';
-    rationaleLabel.textContent = strings.rationaleLabel;
-
-    const rationaleText = document.createElement('div');
-    rationaleText.className = 'amendment-vote-card__rationale-text';
-    rationaleText.textContent = amendment.rationale;
-
-    rationaleSection.appendChild(rationaleLabel);
-    rationaleSection.appendChild(rationaleText);
-
-    body.appendChild(rationaleSection);
+    body.appendChild(el('div', 'amendment-vote-card__rationale', {},
+      el('div', 'amendment-vote-card__rationale-label', {}, strings.rationaleLabel),
+      el('div', 'amendment-vote-card__rationale-text', {}, amendment.rationale)
+    ));
   }
-
-  // Card footer - voting buttons
-  const footer = document.createElement('div');
-  footer.className = 'amendment-vote-card__footer';
 
   const yesBtn = createButton({
     text: strings.yesButton,
@@ -184,13 +134,9 @@ export function createAmendmentVoteCard(options = {}) {
     disabled: hasVoted
   });
 
-  footer.appendChild(yesBtn.element);
-  footer.appendChild(noBtn.element);
+  const footer = el('div', 'amendment-vote-card__footer', {}, yesBtn.element, noBtn.element);
 
-  // Assemble card
-  container.appendChild(header);
-  container.appendChild(body);
-  container.appendChild(footer);
+  const container = el('div', 'amendment-vote-card', {}, header, body, footer);
 
   // Vote handler
   async function handleVote(vote) {

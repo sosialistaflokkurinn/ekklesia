@@ -10,6 +10,7 @@ import { debug } from '../../js/utils/debug.js';
 import { getAdminElectionById } from '../../js/api/elections-api.js';
 import { formatDateTime, formatDateOnly, formatTimeInput } from './date-utils.js';
 import { showModal } from '../../js/components/modal.js';
+import { el } from '../../js/utils/dom.js';
 
 // Refactored modules (Phase 2)
 import { validateBasicInfo, validateAnswerOptions, validateSchedule, validateStep } from './validation/election-validation.js';
@@ -333,14 +334,12 @@ async function loadElectionForEdit(electionId) {
       // Add warning message
       const step3Container = document.querySelector('.wizard-step[data-step="3"]');
       if (step3Container && !step3Container.querySelector('.edit-restriction-warning')) {
-        const warning = document.createElement('div');
-        warning.className = 'alert alert-warning edit-restriction-warning';
-        warning.style.marginBottom = '1rem';
         const statusText = electionStatus === 'published' ? R.string.status_open : R.string.status_closed;
-        warning.innerHTML = `
-          <strong>${R.string.edit_restriction_title}</strong><br>
-          ${R.string.edit_restriction_message.replace('%s', statusText)}
-        `;
+        const warning = el('div', 'alert alert-warning edit-restriction-warning', { style: 'margin-bottom: 1rem;' },
+          el('strong', '', {}, R.string.edit_restriction_title),
+          el('br'),
+          R.string.edit_restriction_message.replace('%s', statusText)
+        );
         step3Container.insertBefore(warning, step3Container.firstChild);
       }
     }
@@ -502,22 +501,21 @@ function addAnswerOption() {
     return;
   }
 
-  const answerItem = document.createElement('div');
-  answerItem.className = 'answer-item';
-  answerItem.innerHTML = `
-    <span class="answer-item__drag-handle">⋮⋮</span>
-    <input 
-      type="text" 
-      class="answer-item__input form-control" 
-      placeholder="${R.format(R.string.placeholder_answer, answerCount + 1)}"
-      maxlength="200"
-      required
-    >
-    <button type="button" class="answer-item__remove-btn">${R.string.btn_remove_answer}</button>
-  `;
+  const removeBtn = el('button', 'answer-item__remove-btn', { type: 'button' }, R.string.btn_remove_answer);
+  
+  const answerItem = el('div', 'answer-item', {},
+    el('span', 'answer-item__drag-handle', {}, '⋮⋮'),
+    el('input', 'answer-item__input form-control', {
+      type: 'text',
+      placeholder: R.format(R.string.placeholder_answer, answerCount + 1),
+      maxlength: '200',
+      required: true
+    }),
+    removeBtn
+  );
 
   // Remove button handler
-  answerItem.querySelector('.answer-item__remove-btn').addEventListener('click', () => {
+  removeBtn.addEventListener('click', () => {
     const answerCount = container.querySelectorAll('.answer-item').length;
     if (answerCount <= 2) {
       alert(R.string.validation_min_answers_alert);
@@ -618,16 +616,12 @@ function updateReview() {
 
   if (formData.answers && formData.answers.length > 0) {
     formData.answers.forEach(answer => {
-      const li = document.createElement('li');
-      li.textContent = answer; // textContent escapes HTML automatically
-      reviewAnswersList.appendChild(li);
+      reviewAnswersList.appendChild(el('li', '', {}, answer));
     });
   } else {
-    const li = document.createElement('li');
-    const em = document.createElement('em');
-    em.textContent = R.string.review_no_answers;
-    li.appendChild(em);
-    reviewAnswersList.appendChild(li);
+    reviewAnswersList.appendChild(
+      el('li', '', {}, el('em', '', {}, R.string.review_no_answers))
+    );
   }
 
   // Schedule
@@ -674,28 +668,6 @@ function formatDuration(minutes) {
 // ============================================
 // SUBMISSION
 // ============================================
-
-/**
- * Retry helper for fetch requests
- * Retries network errors once before failing
- */
-async function fetchWithRetry(url, options, retries = 1) {
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    try {
-      const response = await fetch(url, options);
-      return response;
-    } catch (error) {
-      // Only retry on network errors, not on abort
-      if (error.name === 'AbortError' || attempt === retries) {
-        throw error;
-      }
-      
-      console.warn(`[Election Create] Fetch attempt ${attempt + 1} failed, retrying...`, error.message);
-      // Wait 1 second before retry
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-  }
-}
 
 /**
  * Handle form submission (create or update election)

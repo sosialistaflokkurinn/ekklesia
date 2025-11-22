@@ -11,8 +11,9 @@
 
 import { createBadge } from './badge.js';
 import { showErrorIn } from './error-state.js';
-import { R } from '/i18n/strings-loader.js';
+import { R } from '../../i18n/strings-loader.js';
 import { getPolicyResults } from '../api/elections-api.js';
+import { el } from '../utils/dom.js';
 
 /**
  * Create policy results display
@@ -63,11 +64,9 @@ export function createPolicyResultsDisplay(options = {}) {
   let currentResults = null;
 
   // Create container element
-  const container = document.createElement('div');
-  container.className = 'policy-results';
-
-  // Loading state initially
-  container.innerHTML = `<div class="policy-results__loading">${strings.loadingMessage}</div>`;
+  const container = el('div', 'policy-results', {},
+    el('div', 'policy-results__loading', {}, strings.loadingMessage)
+  );
 
   // Fetch and display results
   async function refresh() {
@@ -91,23 +90,11 @@ export function createPolicyResultsDisplay(options = {}) {
     container.innerHTML = '';
 
     // Participants count
-    const participantsDiv = document.createElement('div');
-    participantsDiv.className = 'policy-results__participants';
-    participantsDiv.textContent = `${strings.participantsLabel} ${results.total_participants}`;
-    container.appendChild(participantsDiv);
+    container.appendChild(el('div', 'policy-results__participants', {}, `${strings.participantsLabel} ${results.total_participants}`));
 
     // Amendment results section
     if (results.amendment_results && results.amendment_results.length > 0) {
-      const amendmentsSection = document.createElement('div');
-      amendmentsSection.className = 'policy-results__section';
-
-      const amendmentsHeading = document.createElement('h3');
-      amendmentsHeading.className = 'policy-results__heading';
-      amendmentsHeading.textContent = strings.amendmentsHeading;
-      amendmentsSection.appendChild(amendmentsHeading);
-
-      const amendmentsList = document.createElement('div');
-      amendmentsList.className = 'policy-results__list';
+      const amendmentsList = el('div', 'policy-results__list');
 
       // Sort by voting order
       const sortedAmendments = [...results.amendment_results].sort((a, b) => a.voting_order - b.voting_order);
@@ -117,37 +104,24 @@ export function createPolicyResultsDisplay(options = {}) {
         amendmentsList.appendChild(card);
       });
 
-      amendmentsSection.appendChild(amendmentsList);
-      container.appendChild(amendmentsSection);
+      container.appendChild(el('div', 'policy-results__section', {},
+        el('h3', 'policy-results__heading', {}, strings.amendmentsHeading),
+        amendmentsList
+      ));
     }
 
     // Final policy results section
     if (results.final_policy_results) {
-      const finalSection = document.createElement('div');
-      finalSection.className = 'policy-results__section';
-
-      const finalHeading = document.createElement('h3');
-      finalHeading.className = 'policy-results__heading';
-      finalHeading.textContent = strings.finalPolicyHeading;
-      finalSection.appendChild(finalHeading);
-
       const finalCard = createFinalPolicyResultCard(results.final_policy_results, strings);
-      finalSection.appendChild(finalCard);
-
-      container.appendChild(finalSection);
+      container.appendChild(el('div', 'policy-results__section', {},
+        el('h3', 'policy-results__heading', {}, strings.finalPolicyHeading),
+        finalCard
+      ));
     }
   }
 
   // Create amendment result card
   function createAmendmentResultCard(amendment, strings) {
-    const card = document.createElement('div');
-    card.className = 'policy-results__card';
-
-    // Heading
-    const heading = document.createElement('div');
-    heading.className = 'policy-results__card-heading';
-    heading.textContent = `${amendment.voting_order}. ${amendment.section_heading}`;
-
     // Status badge
     const statusBadge = createBadge(
       amendment.accepted ? strings.acceptedLabel : strings.rejectedLabel,
@@ -155,17 +129,16 @@ export function createPolicyResultsDisplay(options = {}) {
     );
     statusBadge.element.className += ' policy-results__status-badge';
 
-    heading.appendChild(statusBadge.element);
-    card.appendChild(heading);
-
-    // Vote counts
-    const votesDiv = document.createElement('div');
-    votesDiv.className = 'policy-results__votes';
+    const heading = el('div', 'policy-results__card-heading', {},
+      `${amendment.voting_order}. ${amendment.section_heading}`,
+      statusBadge.element
+    );
 
     const totalVotes = amendment.yes_votes + amendment.no_votes;
     const yesPercentage = totalVotes > 0 ? Math.round((amendment.yes_votes / totalVotes) * 100) : 0;
     const noPercentage = totalVotes > 0 ? Math.round((amendment.no_votes / totalVotes) * 100) : 0;
 
+    const votesDiv = el('div', 'policy-results__votes');
     votesDiv.innerHTML = `
       <div class="policy-results__vote-item policy-results__vote-item--yes">
         <span class="policy-results__vote-label">${strings.yesLabel}:</span>
@@ -177,16 +150,11 @@ export function createPolicyResultsDisplay(options = {}) {
       </div>
     `;
 
-    card.appendChild(votesDiv);
-
-    return card;
+    return el('div', 'policy-results__card', {}, heading, votesDiv);
   }
 
   // Create final policy result card
   function createFinalPolicyResultCard(finalResults, strings) {
-    const card = document.createElement('div');
-    card.className = 'policy-results__card policy-results__card--final';
-
     // Status badge
     const statusBadge = createBadge(
       finalResults.approved ? strings.approvedLabel : strings.notApprovedLabel,
@@ -194,17 +162,12 @@ export function createPolicyResultsDisplay(options = {}) {
     );
     statusBadge.element.className += ' policy-results__status-badge';
 
-    card.appendChild(statusBadge.element);
-
-    // Vote counts
-    const votesDiv = document.createElement('div');
-    votesDiv.className = 'policy-results__votes policy-results__votes--final';
-
     const totalVotes = finalResults.yes_votes + finalResults.no_votes + finalResults.abstain_votes;
     const yesPercentage = totalVotes > 0 ? Math.round((finalResults.yes_votes / totalVotes) * 100) : 0;
     const noPercentage = totalVotes > 0 ? Math.round((finalResults.no_votes / totalVotes) * 100) : 0;
     const abstainPercentage = totalVotes > 0 ? Math.round((finalResults.abstain_votes / totalVotes) * 100) : 0;
 
+    const votesDiv = el('div', 'policy-results__votes policy-results__votes--final');
     votesDiv.innerHTML = `
       <div class="policy-results__vote-item policy-results__vote-item--yes">
         <span class="policy-results__vote-label">${strings.yesLabel}:</span>
@@ -220,9 +183,7 @@ export function createPolicyResultsDisplay(options = {}) {
       </div>
     `;
 
-    card.appendChild(votesDiv);
-
-    return card;
+    return el('div', 'policy-results__card policy-results__card--final', {}, statusBadge.element, votesDiv);
   }
 
   // Start polling for updates

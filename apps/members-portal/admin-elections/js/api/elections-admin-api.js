@@ -182,15 +182,22 @@ export async function fetchElection(electionId) {
 /**
  * Open (publish) an election
  * @param {string} electionId - Election ID to open
+ * @param {object} [payload] - Optional payload (e.g. voting_starts_at, voting_ends_at)
  * @returns {Promise<object>} Opened election data
  */
-export async function openElection(electionId) {
-  debug.log('[Elections API] Opening election:', electionId);
+export async function openElection(electionId, payload = {}) {
+  debug.log('[Elections API] Opening election:', electionId, payload);
   
   const url = `${API_BASE_URL}/elections/${electionId}/open`;
-  const response = await makeAuthenticatedRequest(url, {
+  const options = {
     method: 'POST'
-  });
+  };
+
+  if (Object.keys(payload).length > 0) {
+    options.body = JSON.stringify(payload);
+  }
+
+  const response = await makeAuthenticatedRequest(url, options);
 
   if (!response.ok) {
     const errorData = await response.json();
@@ -206,15 +213,22 @@ export async function openElection(electionId) {
 /**
  * Close an election
  * @param {string} electionId - Election ID to close
+ * @param {object} [payload] - Optional payload (e.g. voting_ends_at)
  * @returns {Promise<object>} Closed election data
  */
-export async function closeElection(electionId) {
-  debug.log('[Elections API] Closing election:', electionId);
+export async function closeElection(electionId, payload = {}) {
+  debug.log('[Elections API] Closing election:', electionId, payload);
   
   const url = `${API_BASE_URL}/elections/${electionId}/close`;
-  const response = await makeAuthenticatedRequest(url, {
+  const options = {
     method: 'POST'
-  });
+  };
+
+  if (Object.keys(payload).length > 0) {
+    options.body = JSON.stringify(payload);
+  }
+
+  const response = await makeAuthenticatedRequest(url, options);
 
   if (!response.ok) {
     const errorData = await response.json();
@@ -225,4 +239,86 @@ export async function closeElection(electionId) {
   const result = await response.json();
   debug.log('[Elections API] Election closed:', result);
   return result;
+}
+
+/**
+ * Fetch list of elections
+ * @param {boolean} includeHidden - Whether to include hidden elections
+ * @returns {Promise<Array>} List of elections
+ */
+export async function fetchElections(includeHidden = false) {
+  debug.log('[Elections API] Fetching elections list');
+  
+  const url = `${API_BASE_URL}/elections${includeHidden ? '?includeHidden=true' : ''}`;
+  const response = await makeAuthenticatedRequest(url, {
+    method: 'GET'
+  });
+
+  if (!response.ok) {
+    await handleErrorResponse(response, 'Failed to fetch elections list');
+  }
+
+  const result = await response.json();
+  debug.log('[Elections API] Elections fetched:', result.elections?.length || 0);
+  return result.elections || [];
+}
+
+/**
+ * Hide (soft delete) an election
+ * @param {string} electionId - Election ID to hide
+ * @returns {Promise<object>} Result
+ */
+export async function hideElection(electionId) {
+  debug.log('[Elections API] Hiding election:', electionId);
+  
+  const url = `${API_BASE_URL}/elections/${electionId}/hide`;
+  const response = await makeAuthenticatedRequest(url, {
+    method: 'POST'
+  });
+
+  if (!response.ok) {
+    await handleErrorResponse(response, 'Failed to hide election');
+  }
+
+  return await response.json();
+}
+
+/**
+ * Unhide (restore) an election
+ * @param {string} electionId - Election ID to unhide
+ * @returns {Promise<object>} Result
+ */
+export async function unhideElection(electionId) {
+  debug.log('[Elections API] Unhiding election:', electionId);
+  
+  const url = `${API_BASE_URL}/elections/${electionId}/unhide`;
+  const response = await makeAuthenticatedRequest(url, {
+    method: 'POST'
+  });
+
+  if (!response.ok) {
+    await handleErrorResponse(response, 'Failed to unhide election');
+  }
+
+  return await response.json();
+}
+
+/**
+ * Delete an election (hard delete)
+ * @param {string} electionId - Election ID to delete
+ * @returns {Promise<object>} Result
+ */
+export async function deleteElection(electionId) {
+  debug.log('[Elections API] Deleting election:', electionId);
+  
+  const url = `${API_BASE_URL}/elections/${electionId}`;
+  const response = await makeAuthenticatedRequest(url, {
+    method: 'DELETE'
+  });
+
+  if (!response.ok) {
+    await handleErrorResponse(response, 'Failed to delete election');
+  }
+
+  return await response.json();
 }
