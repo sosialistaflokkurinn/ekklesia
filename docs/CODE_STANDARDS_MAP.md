@@ -50,6 +50,7 @@ Our code standards prioritize:
 **Summary**:
 - Use canonical [BEM methodology](http://getbem.com/) (Block Element Modifier)
 - [Design Tokens](../docs/standards/CSS_BEM_GUIDE.md) (3-layer architecture: Primitives, Semantic, Component)
+- **Semantic Layer**: Use `--color-text`, `--color-bg`, `--color-primary` (not raw hex values)
 - Utility classes with `.u-` prefix
 - Component-based file organization
 - No inline styles
@@ -304,6 +305,10 @@ document.getElementById('btn-save').textContent = 'Vista';
 - [String Format Placeholders](../docs/standards/I18N_GUIDE.md)
 - [Configuration Values](../docs/standards/I18N_GUIDE.md)
 
+**Tools**:
+- `scripts/find-unused-strings.py` - Audit string usage
+- `scripts/archive-unused-strings.py` - Clean up `strings.xml`
+
 ---
 
 ### 7. Data Quality & UX
@@ -528,7 +533,7 @@ npm run format:check
 Automatically runs before every commit:
 - [ESLint](https://eslint.org/) checks
 - [Prettier](https://prettier.io/) formatting
-- Kennitala/PII detection
+- Kennitala/PII detection (Optimized single-pass scan)
 - File size limits
 
 **Setup**:
@@ -536,7 +541,21 @@ Automatically runs before every commit:
 # Install pre-commit hooks
 npm install
 # Hooks are automatically installed via package.json
+# Custom optimized hooks are located in git-hooks/
 ```
+
+### Maintenance Scripts
+
+We provide several scripts to help maintain code quality and standards:
+
+**Code Health**:
+- `scripts/check-code-health.py`: Comprehensive health check (PII, patterns, file sizes)
+- `scripts/check-code-patterns.sh`: Fast grep-based pattern check
+
+**String Management**:
+- `scripts/find-unused-strings.py`: Find unused i18n strings
+- `scripts/archive-unused-strings.py`: Move unused strings to archive
+- `scripts/restore-strings.py`: Restore archived strings if needed
 
 ---
 
