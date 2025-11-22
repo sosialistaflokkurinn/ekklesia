@@ -48,6 +48,7 @@ This category map provides navigation to all infrastructure documentation includ
   - `validate-all.sh` - Master validation script (runs all checks)
   - `check-docs-freshness.sh` - Monitors documentation freshness
   - `validate-links.py` - Validates markdown links
+  - `audit-docs.py` - Comprehensive documentation audit against codebase
   - `validate_documentation_map.py` - Validates DOCUMENTATION_MAP.md structure
 
 ---
