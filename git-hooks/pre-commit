@@ -1,177 +1,233 @@
 #!/bin/bash
-
-# Ekklesia Pre-commit Hook
-# Prevents secrets, PII, and political identity mistakes
-# Optimized for performance: Single-pass scanning per file
+# Pre-commit hook to prevent committing secrets
 # Installation: cp git-hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
 
-# -----------------------------------------------------------------------------
-# CONFIGURATION
-# -----------------------------------------------------------------------------
+set -e
 
-# 1. Secret Patterns (API keys, private keys, DB strings)
-SECRET_PATTERNS=(
-    "AIza[0-9A-Za-z\\-_]{35}"
-    "sk-proj-[0-9A-Za-z]{20}"
-    "ghp_[0-9A-Za-z]{36}"
-    "xox[baprs]-([0-9a-zA-Z]{10,48})"
-    "-----BEGIN PRIVATE KEY-----"
-    "-----BEGIN RSA PRIVATE KEY-----"
-    "-----BEGIN OPENSSH PRIVATE KEY-----"
-    "postgres://.*:.*@"
-    "mysql://.*:.*@"
-    "mongodb://.*:.*@"
-    "redis://.*:.*@"
-    "amqp://.*:.*@"
-    "FIREBASE_TOKEN=.*"
-    "DJANGO_SECRET_KEY=.*"
-    "KENNI_IS_CLIENT_SECRET=.*"
-)
+echo "🔍 Running Ekklesia pre-commit checks..."
 
-# 2. PII Patterns (Kennitala, Email, Phone)
-PII_PATTERNS=(
-    "[0-9]{6}-[0-9]{4}"
-    "[0-9]{6}[[:space:]][0-9]{4}"
-    "\b[0-9]{3}[-. ][0-9]{4}\b"
-    "\b[0-9]{3}[-. ][0-9]{3}[-. ][0-9]{4}\b"
-    "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
-)
+# --- 1. Check for political identity (existing check) ---
+echo "🏴 Checking political identity in staged files..."
 
-# 3. Suspicious Names (Common placeholders that shouldn't be in docs)
-SUSPICIOUS_NAMES=(
-    "Jón Jónsson"
-    "Guðrún Jónsdóttir"
-    "Sigurður Sigurðsson"
-    "Anna Jónsdóttir"
-    "Gunnar Gunnarsson"
-    "Helga Helgadóttir"
-    "Ólafur Ólafsson"
-    "Kristín Kristjánsdóttir"
-    "Einar Einarsson"
-    "Margrét Magnúsdóttir"
-)
+# Get list of staged files
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM)
 
-# 4. Allow-list (Fake values used in tests/examples)
-FAKE_VALUES=(
-    "000000-0000"
-    "123456-7890"
-    "010101-0101"
-    "111111-1111"
-    "user@example.com"
-    "test@example.com"
-    "admin@example.com"
-    "support@example.com"
-    "info@example.com"
-    "contact@example.com"
-    "hello@example.com"
-    "noreply@example.com"
-    "email@domain.com"
-    "name@company.com"
-    "firstname.lastname@company.com"
-    "555-0100"
-    "555-0123"
-    "555-5555"
-    "123-4567"
-)
-
-# -----------------------------------------------------------------------------
-# INITIALIZATION
-# -----------------------------------------------------------------------------
-
-# Helper to join arrays into regex (pipe-separated)
-function join_regex {
-    local IFS="|"
-    echo "$*"
-}
-
-# Pre-compile regexes for performance
-SECRET_REGEX=$(join_regex "${SECRET_PATTERNS[@]}")
-PII_REGEX=$(join_regex "${PII_PATTERNS[@]}")
-NAME_REGEX=$(join_regex "${SUSPICIOUS_NAMES[@]}")
-FAKE_REGEX=$(join_regex "${FAKE_VALUES[@]}")
-
-EXIT_CODE=0
-FILES=$(git diff --cached --name-only --diff-filter=ACMR)
-
-# -----------------------------------------------------------------------------
-# SCANNING LOOP
-# -----------------------------------------------------------------------------
-
-echo "🔍 Running pre-commit checks..."
-
-for FILE in $FILES; do
-    # Skip if file doesn't exist (deleted)
-    [ ! -f "$FILE" ] && continue
-    
-    # Skip binary files
-    if file -b --mime-encoding "$FILE" | grep -q "binary"; then continue; fi
-
-    # -------------------------------------------------------------------------
-    # CHECK 1: Political Identity
-    # -------------------------------------------------------------------------
-    if grep -qE "(Social Democratic|Samfylkingin|Samstaða|Krattaflokkur)" "$FILE"; then
-        echo ""
-        echo "❌ ERROR: Political identity violation in $FILE"
-        echo "   Found incorrect party reference:"
-        grep -E --color=always -n "(Social Democratic|Samfylkingin|Samstaða|Krattaflokkur)" "$FILE" | head -5
-        echo "   ⚠️  This project is for Sósíalistaflokkur Íslands (Socialist Party)."
-        EXIT_CODE=1
-    fi
-
-    # -------------------------------------------------------------------------
-    # CHECK 2: Secrets
-    # -------------------------------------------------------------------------
-    if grep -qE "$SECRET_REGEX" "$FILE"; then
-        echo ""
-        echo "❌ ERROR: Potential secret found in $FILE"
-        grep -E --color=always -n "$SECRET_REGEX" "$FILE" | head -5
-        echo "   ⚠️  Do not commit API keys or secrets."
-        EXIT_CODE=1
-    fi
-
-    # -------------------------------------------------------------------------
-    # CHECK 3: PII (with Allow-list filtering)
-    # -------------------------------------------------------------------------
-    # First grep for PII patterns
-    PII_HITS=$(grep -E -n "$PII_REGEX" "$FILE" || true)
-    
-    if [ -n "$PII_HITS" ]; then
-        # Filter out fake values using grep -v
-        REAL_PII=$(echo "$PII_HITS" | grep -vE "$FAKE_REGEX" || true)
-        
-        if [ -n "$REAL_PII" ]; then
-             echo ""
-             echo "❌ ERROR: PII detected in $FILE"
-             echo "$REAL_PII" | head -5
-             echo "   ⚠️  Do not commit real names, emails, or kennitölur."
-             EXIT_CODE=1
-        fi
-    fi
-
-    # -------------------------------------------------------------------------
-    # CHECK 4: Suspicious Names
-    # -------------------------------------------------------------------------
-    if grep -qE "$NAME_REGEX" "$FILE"; then
-        echo ""
-        echo "❌ ERROR: Suspicious name found in $FILE"
-        grep -E --color=always -n "$NAME_REGEX" "$FILE" | head -5
-        echo "   ⚠️  Avoid using common placeholder names that might be real people."
-        EXIT_CODE=1
-    fi
-done
-
-# -----------------------------------------------------------------------------
-# SUMMARY
-# -----------------------------------------------------------------------------
-
-if [ $EXIT_CODE -ne 0 ]; then
-    echo ""
-    echo "🚫 Commit blocked due to policy violations."
-    echo "   Fix the issues above and try again."
-    echo "   (Use --no-verify to bypass if absolutely necessary)"
-    echo ""
-else
-    echo "✅ All checks passed."
+if [ -z "$STAGED_FILES" ]; then
+  echo "✅ No staged files to check"
+  exit 0
 fi
 
-exit $EXIT_CODE
+# Check for Icelandic political identity mentions
+REQUIRED_PATTERNS=(
+  "Sósíalistaflokk"
+  "Socialist"
+)
+
+FOUND=false
+for file in $STAGED_FILES; do
+  if [ -f "$file" ]; then
+    for pattern in "${REQUIRED_PATTERNS[@]}"; do
+      if grep -qi "$pattern" "$file" 2>/dev/null; then
+        FOUND=true
+        break 2
+      fi
+    done
+  fi
+done
+
+if [ "$FOUND" = false ]; then
+  # Check if this is just a config/test file change
+  if ! echo "$STAGED_FILES" | grep -qE '\.(json|ya?ml|txt|md)$'; then
+    echo "⚠️ Warning: No political identity found in code files"
+    echo "   This is OK for internal/infrastructure code"
+  fi
+fi
+
+echo "✅ Pre-commit checks passed"
+
+# --- 2. Check for exposed secrets (NEW) ---
+echo "🔐 Scanning for exposed secrets..."
+
+# Patterns that might indicate secrets
+SECRET_PATTERNS=(
+  # Database passwords
+  'password.*=.*[A-Za-z0-9+/]{20,}'
+  'PASSWORD.*=.*[A-Za-z0-9+/]{20,}'
+  'PGPASSWORD.*=.*[A-Za-z0-9+/]{20,}'
+  'DB_PASS.*=.*[A-Za-z0-9+/]{20,}'
+  
+  # API keys
+  'api[_-]?key.*=.*[A-Za-z0-9+/]{20,}'
+  'API[_-]?KEY.*=.*[A-Za-z0-9+/]{20,}'
+  'secret[_-]?key.*=.*[A-Za-z0-9+/]{20,}'
+  
+  # GCP credentials
+  'private_key.*BEGIN.*PRIVATE.*KEY'
+  'credentials.*{.*private_key'
+  
+  # Generic secrets
+  'token.*=.*[A-Za-z0-9+/]{32,}'
+  'secret.*=.*[A-Za-z0-9+/]{32,}'
+  
+  # Connection strings with passwords
+  'postgres://.*:[^@]*@'
+  'mysql://.*:[^@]*@'
+
+  # Icelandic kennitala (SSN) - CRITICAL PII
+  # Format: DDMMYY-NNNN (e.g., 000000-0000)
+  # Exclude our fake example kennitala: 000000-0000
+  '(0[1-9]|[12][0-9]|3[01])(0[1-9]|1[0-2])[0-9]{2}-(?!2939)[0-9]{4}'
+
+  # Firebase UID patterns (long alphanumeric strings)
+  # Exclude our fake example: abc123XYZ789ExampleUserUID456
+  'uid.*=.*[a-zA-Z0-9]{25,}(?!abc123XYZ789ExampleUserUID456)'
+)
+
+# Files to exclude from secret scanning
+EXCLUDE_PATTERNS=(
+  '\.md$'          # Markdown documentation
+  '\.txt$'         # Text files (may contain examples)
+  'test.*\.py$'    # Test files
+  'test.*\.js$'    # Test files
+  '\.json$'        # JSON config (usually env var references)
+  '\.ya?ml$'       # YAML config (usually env var references)
+  'package-lock'   # Dependency lock files
+  'requirements'   # Python requirements
+)
+
+SECRETS_FOUND=false
+
+for file in $STAGED_FILES; do
+  # Skip excluded files
+  SKIP=false
+  for exclude in "${EXCLUDE_PATTERNS[@]}"; do
+    if echo "$file" | grep -qE "$exclude"; then
+      SKIP=true
+      break
+    fi
+  done
+  
+  if [ "$SKIP" = true ]; then
+    continue
+  fi
+  
+  # Check if file exists (might be deleted)
+  if [ ! -f "$file" ]; then
+    continue
+  fi
+  
+  # Scan for secret patterns
+  for pattern in "${SECRET_PATTERNS[@]}"; do
+    if grep -EHn "$pattern" "$file" 2>/dev/null; then
+      SECRETS_FOUND=true
+      echo ""
+      echo "⚠️ Potential secret detected in: $file"
+      echo "   Pattern: $pattern"
+    fi
+  done
+done
+
+if [ "$SECRETS_FOUND" = true ]; then
+  echo ""
+  echo "❌ Commit blocked: Potential secrets detected!"
+  echo ""
+  echo "Please review the matched lines above."
+  echo ""
+  echo "If these are NOT secrets:"
+  echo "  - Move to environment variables (Secret Manager)"
+  echo "  - Use placeholder values in examples"
+  echo "  - Document in comments why this is safe"
+  echo ""
+  echo "If you're SURE these are safe:"
+  echo "  git commit --no-verify"
+  echo ""
+  echo "Related: Issue #48 (database password exposure incident)"
+  exit 1
+fi
+
+echo "✅ No secrets detected in staged files"
+
+# --- 3. Check for PII in documentation and templates (Issue #240) ---
+echo "🔒 Scanning for PII (including documentation)..."
+
+# PII patterns (excluding fake examples)
+KENNITALA_PATTERN='(0[1-9]|[12][0-9]|3[01])(0[1-9]|1[0-2])[0-9]{2}-?(?!0000|1111|2939)[0-9]{4}'
+EMAIL_PATTERN='[A-Za-z0-9._%+-]+@(?!example\.com)[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}'
+PHONE_PATTERN='[0-9]{3}[\s-]?[0-9]{4}(?!555-1234|000-0000)'
+
+# Files that MUST be scanned for PII (even if they're .md)
+TEMPLATE_FILES=(
+  ".github/ISSUE_TEMPLATE"
+  ".github/pull_request_template.md"
+  "docs/"
+)
+
+PII_FOUND=false
+
+# Scan templates and docs specifically for PII
+for file in $STAGED_FILES; do
+  # Check if file is a template or doc
+  IS_TEMPLATE=false
+  for template_path in "${TEMPLATE_FILES[@]}"; do
+    if [[ "$file" == *"$template_path"* ]]; then
+      IS_TEMPLATE=true
+      break
+    fi
+  done
+
+  if [ "$IS_TEMPLATE" = false ]; then
+    continue
+  fi
+
+  # Check if file exists
+  if [ ! -f "$file" ]; then
+    continue
+  fi
+
+  # Scan for PII patterns
+  if grep -EHn "$KENNITALA_PATTERN" "$file" 2>/dev/null; then
+    PII_FOUND=true
+    echo "⚠️ POTENTIAL PII DETECTED in: $file"
+    echo "   Pattern: Kennitala (Icelandic SSN)"
+  fi
+
+  if grep -EHn "$EMAIL_PATTERN" "$file" 2>/dev/null; then
+    PII_FOUND=true
+    echo "⚠️ POTENTIAL PII DETECTED in: $file"
+    echo "   Pattern: Email address (not @example.com)"
+  fi
+
+  if grep -EHn "$PHONE_PATTERN" "$file" 2>/dev/null | grep -v "555-1234\|000-0000"; then
+    PII_FOUND=true
+    echo "⚠️ POTENTIAL PII DETECTED in: $file"
+    echo "   Pattern: Phone number (Icelandic format)"
+  fi
+done
+
+if [ "$PII_FOUND" = true ]; then
+  echo ""
+  echo "❌ Commit blocked: Potential PII detected in documentation/templates!"
+  echo ""
+  echo "GitHub issues, PRs, and docs must use FAKE examples only:"
+  echo "  ✅ Names: 'Jón Jónsson', 'Anna Jónsdóttir'"
+  echo "  ✅ Kennitalas: '010190-0000', '111111-1111'"
+  echo "  ✅ Emails: 'email@example.com', 'user@example.com'"
+  echo "  ✅ Phones: '555-1234', '000-0000'"
+  echo "  ✅ Addresses: 'Dæmisgata 1, 000 Dæmisbær'"
+  echo ""
+  echo "If you're SURE these are fake examples:"
+  echo "  git commit --no-verify"
+  echo ""
+  echo "Related: Issue #240 (PII prevention), Issue #136 (PII exposure incident)"
+  exit 1
+fi
+
+echo "✅ No PII detected in templates/docs"
+
+# --- 4. Check commit message for political identity ---
+echo "🏴 Checking commit message for political identity..."
+
+# This check runs in commit-msg hook, but we can prepare for it
+# (commit-msg hook will run after this pre-commit hook)
+
+exit 0

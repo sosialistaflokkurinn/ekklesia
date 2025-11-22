@@ -42,8 +42,14 @@ This category map provides navigation to all infrastructure documentation includ
 - [Firebase CLI](https://firebase.google.com/docs/cli) - Deployment tooling
 - [gcloud CLI](https://cloud.google.com/sdk/gcloud) - Cloud deployment
 
+### Scripts & Automation
+- [Scripts README](../scripts/README.md) - Overview of all automation scripts
+- [Admin Scripts](../scripts/admin/) - Administrative tasks
+- [Maintenance Scripts](../scripts/maintenance/) - Code health and pattern validation
+- [Setup Scripts](../scripts/setup/) - Environment setup and git hooks
+- [Utility Scripts](../scripts/utils/) - Helper tools and context loaders
+
 ### Documentation Maintenance
-- [Admin Scripts README](../scripts/admin/README.md) - Administrative tools overview
 - [Documentation Maintenance Scripts](../scripts/admin/documentation-maintenance/README.md) - Validation and audit tools
   - `validate-all.sh` - Master validation script (runs all checks)
   - `check-docs-freshness.sh` - Monitors documentation freshness
