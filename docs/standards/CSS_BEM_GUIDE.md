@@ -82,67 +82,67 @@ This document describes the CSS design system for the Ekklesia Members Service, 
 
 ---
 
-## CSS Variables
+## Design Tokens Architecture
 
-### Colors
+We use a 3-layer architecture for CSS variables (Design Tokens) to ensure consistency and maintainability.
 
-#### Primary Colors (Socialist Red)
+### Layer 1: Primitives (Base Values)
+Raw values for colors, spacing, and typography. These should rarely be used directly in components.
+
+#### Colors
 ```css
---color-primary: #d32f2f        /* Main brand red */
---color-primary-dark: #b71c1c   /* Darker red for hover states */
---color-accent-gold: #f3b41b    /* Socialist star accent */
+/* Primary Colors (Socialist Red) */
+--color-primary: #d32f2f;        /* Main brand red */
+--color-primary-dark: #b71c1c;   /* Darker red for hover states */
+--color-accent-gold: #f3b41b;    /* Socialist star accent */
+
+/* Neutral Colors (Gray Scale) */
+--color-gray-50: #f7fafc;
+--color-gray-100: #edf2f7;
+--color-gray-200: #e2e8f0;
+--color-gray-800: #1a202c;
+/* ... full palette in global.css ... */
 ```
 
-#### Status Colors
+#### Spacing
 ```css
-/* Success (Green) */
---color-success-bg: #c6f6d5
---color-success-text: #22543d
---color-success-border: #38a169
---color-success: #48bb78
-
-/* Error (Orange - for contrast with red primary) */
---color-error-bg: #fff3e0
---color-error-text: #e65100
---color-error-border: #ff6f00
---color-error: #ff9800
-
-/* Info (Blue) */
---color-info-bg: #ebf8ff
---color-info-text: #2c5282
---color-info-border: #3182ce
---color-info: #63b3ed
+--spacing-xs: 4px;
+--spacing-sm: 8px;
+--spacing-md: 16px;
+--spacing-lg: 24px;
+--spacing-xl: 40px;
 ```
 
-#### Neutral Colors (Gray Scale)
+### Layer 2: Semantic Layer (System Tokens)
+Functional names mapped to primitives. **Use these in your components.** This layer enables theming (e.g., Dark Mode) without changing component code.
+
 ```css
---color-gray-50: #f7fafc   /* Lightest */
---color-gray-100: #edf2f7
---color-gray-200: #e2e8f0
---color-gray-300: #cbd5e0
---color-gray-400: #a0aec0
---color-gray-500: #718096  /* Mid gray */
---color-gray-600: #4a5568
---color-gray-700: #2d3748
---color-gray-800: #1a202c  /* Text color */
---color-gray-900: #171923  /* Darkest */
+:root {
+  /* Text */
+  --color-text: var(--color-gray-800);
+  --color-text-light: var(--color-gray-600);
+  --color-text-inverse: #FFFFFF;
+
+  /* Backgrounds */
+  --color-bg: #FFFFFF;
+  --color-bg-alt: var(--color-gray-100);
+  --color-bg-card: #FFFFFF;
+
+  /* Borders */
+  --color-border: var(--color-gray-200);
+  --border-radius: var(--radius-md);
+}
 ```
 
-### Spacing
-```css
---spacing-xs: 4px    /* Extra small */
---spacing-sm: 8px    /* Small */
---spacing-md: 16px   /* Medium (default) */
---spacing-lg: 24px   /* Large */
---spacing-xl: 40px   /* Extra large */
-```
+### Layer 3: Component Layer
+Specific overrides for components (defined in component files).
 
-### Border Radius
 ```css
---radius-sm: 4px     /* Small - buttons, inputs */
---radius-md: 6px     /* Medium */
---radius-lg: 8px     /* Large - cards */
---radius-xl: 12px    /* Extra large - containers */
+.card {
+  background-color: var(--color-bg-card); /* Uses Semantic Layer */
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+}
 ```
 
 ---

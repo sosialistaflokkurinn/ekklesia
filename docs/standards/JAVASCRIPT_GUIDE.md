@@ -412,9 +412,24 @@ const elements = document.getElementsByTagName('div');
 
 ### Creating Elements
 
-Create elements programmatically:
+Use the `el` helper from `js/utils/dom.js` to reduce verbosity and improve readability:
 
-✅ **Good**:
+✅ **Preferred (using helper)**:
+```javascript
+import { el } from '../utils/dom.js';
+
+const btn = el('button', 'btn btn--primary', {
+  type: 'button',
+  onclick: handleClick
+}, 'Click Me');
+
+const card = el('div', 'card', {},
+  el('h2', 'card__title', {}, 'Title'),
+  el('p', 'card__text', {}, 'Content')
+);
+```
+
+✅ **Low-level (document.createElement)**:
 ```javascript
 /**
  * Create status icon element
@@ -426,6 +441,7 @@ function createStatusIcon() {
   statusIcon.className = 'profile-field__status';
   return statusIcon;
 }
+```
 
 /**
  * Create phone number input

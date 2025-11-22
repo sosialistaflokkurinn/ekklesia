@@ -1,6 +1,6 @@
 # Ekklesia Current Development Status
 
-**Last Updated:** 2025-11-14
+**Last Updated:** 2025-11-21
 **Status:** 🟡 Development Phase - Active Feature Development
 **Current Phase:** 5 - Feature Development & Deployment
 **Target Completion:** November 2025
@@ -42,7 +42,48 @@ Ekklesia infrastructure is **stable and ready for development**. Phase 4 complet
 
 ---
 
-## Recent Development Activity (Nov 10-14, 2025)
+## Recent Development Activity (Nov 15-21, 2025)
+
+**Major Achievements:**
+
+- ✅ **Critical Frontend Fixes (Nov 22)** - Resolved App Check & Voting UI issues
+  - **Issue 1**: "Double App Check initialized" warning and `ReferenceError` in `auth.js`.
+    - **Cause**: Mixed imports (CDN vs `firebase/app.js`) caused multiple Firebase instances.
+    - **Fix**: Centralized all Firebase imports to `apps/members-portal/firebase/app.js` (Singleton pattern).
+    - **Files**: `auth.js`, `login.js` updated to use centralized exports.
+  - **Issue 2**: Voting confirmation modal not appearing for string-based answers.
+    - **Cause**: `election-detail.js` only matched answers by ID, but "Pineapple Debate" used string answers.
+    - **Fix**: Updated matching logic to support both ID and string/text matching.
+    - **Verification**: Confirmed vote submission in production DB (1 vote recorded).
+  - **Deployment**: `members-portal` deployed to production (Nov 22).
+
+- ✅ **Critical Voting Bug Fixes (Nov 21)** - Resolved 400 Bad Request on vote submission
+  - **Issue**: Backend rejected string-based answers (expected IDs), but frontend sent text for some question types.
+  - **Fix**: Implemented robust answer matching in `elections-service` (backend) and `voting-form.js` (frontend).
+  - **Commits**:
+    - `9e9e035` - fix(voting): Robust answer matching (fallback to answer_text/text if id missing)
+    - `aa17392` - fix(voting): Support string-based answers in voting flow
+    - `74bac8b` - fix(voting): Support both id/answer_id and text/answer_text in voting form
+  - **Deployment**: `elections-service` and `members-portal` deployed to production (Nov 21).
+
+- ✅ **Admin Elections UI Integration (Nov 21)** - Connected UI to real API
+  - **Commits**:
+    - `6f9d64e` - feat(admin-elections): Connect election control UI to real API endpoints
+    - `bc8d5ef` - fix(admin-elections): Remove manual navigation update causing null reference error
+  - **Impact**: Admin dashboard now fully functional with live data.
+
+- ✅ **UI & Navigation Polish (Nov 21)**
+  - **Commits**:
+    - `39d2a56` - fix(nav): standardize member area navigation
+    - `0461c35` - style(dashboard): increase hover effect intensity on quick links
+  - **Impact**: Improved consistency and visual feedback.
+
+- ✅ **i18n Cleanup (Nov 21)**
+  - **Commits**:
+    - `826dda0` - chore(i18n): archive unused strings
+    - `5dc4936` - fix(i18n): restore dynamically used role strings
+
+## Previous Development Activity (Nov 10-14, 2025)
 
 **Major Achievements:**
 
@@ -194,10 +235,10 @@ Ekklesia infrastructure is **stable and ready for development**. Phase 4 complet
 
 | Service | Status | Version | Last Deploy | Location |
 |---------|--------|---------|-------------|----------|
-| **Elections Service** | ✅ Running | MVP + Admin API | 2025-11-09 | `services/elections` |
+| **Elections Service** | ✅ Running | MVP + Admin API | 2025-11-21 | `services/elections` |
 | **Elections Admin API** | ✅ Running | v1.0 | 2025-11-09 | 10 endpoints (CRUD, lifecycle, results) |
 | **Events Service** | ✅ Running | MVP | 2025-10-19 | `services/events` |
-| **Members Service** | ✅ Running | Phase 4 | 2025-10-18 | Frontend: `apps/members-portal/`<br>Functions: `services/members/` |
+| **Members Service** | ✅ Running | Phase 4 | 2025-11-21 | Frontend: `apps/members-portal/`<br>Functions: `services/members/` |
 | **Member Sync Functions** | ✅ Running | Fixed | 2025-11-09 | `bidirectional_sync`, `sync_members`, `track_member_changes` |
 | **Cloud SQL Database** | ✅ Running | 15.1 | 2025-10-17 | PostgreSQL, europe-west2 |
 | **Firebase Project** | ✅ Active | Config | 2025-10-15 | ekklesia-prod-10-2025 |

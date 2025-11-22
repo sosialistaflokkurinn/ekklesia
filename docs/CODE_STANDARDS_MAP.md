@@ -1,6 +1,6 @@
 # Ekklesia Code Standards
 
-**Last Updated**: 2025-11-14
+**Last Updated**: 2025-11-22
 **Status**: ✅ Active - Master Index for All Code Standards
 **Purpose**: Unified reference for all coding conventions, style guides, and best practices
 
@@ -31,6 +31,7 @@ Our code standards prioritize:
 | **CSS** | Use BEM methodology | `.nav__link--active` |
 | **HTML** | Semantic elements | `<nav>`, `<main>`, `<article>` |
 | **JavaScript** | ES6+ modules | `import { R } from './strings-loader.js'` |
+| **Components** | Use `el()` helper | `el('div', 'card', {}, content)` |
 | **Python** | Type hints + docstrings | `def foo(x: str) -> int:` |
 | **i18n** | R.string pattern | `R.string.page_title` |
 | **Data Quality** | Always validate input | `validateKennitala(kt)` |
@@ -48,7 +49,7 @@ Our code standards prioritize:
 
 **Summary**:
 - Use canonical [BEM methodology](http://getbem.com/) (Block Element Modifier)
-- [CSS variables](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties) for colors, spacing, and sizing
+- [Design Tokens](../docs/standards/CSS_BEM_GUIDE.md) (3-layer architecture: Primitives, Semantic, Component)
 - Utility classes with `.u-` prefix
 - Component-based file organization
 - No inline styles
@@ -164,7 +165,46 @@ function savePhoneNumbers(phoneNumbers, callback) {
 
 ---
 
-### 4. Python Standards
+### 4. Component Standards
+
+**Guide**: [Component Library Guide](../docs/standards/COMPONENT_LIBRARY_GUIDE.md)
+
+**Summary**:
+- Use `el()` helper for DOM creation (no `document.createElement`)
+- Functional components with factory pattern (`createButton`, `createCard`)
+- Return component API `{ element, update, destroy }`
+- Use `R.string` for all text content
+- BEM naming for classes
+
+**Key Conventions**:
+```javascript
+// ✅ Good: Component Factory Pattern
+import { el } from '../utils/dom.js';
+import { R } from '/i18n/strings-loader.js';
+
+export function createWelcomeCard({ username }) {
+  const title = el('h2', 'card__title', {}, R.string.welcome_title);
+  const text = el('p', 'card__text', {}, 
+    R.format(R.string.welcome_message, username)
+  );
+
+  const card = el('div', 'card card--welcome', {}, title, text);
+
+  return {
+    element: card,
+    update: (newUsername) => { /* ... */ },
+    destroy: () => card.remove()
+  };
+}
+```
+
+**Quick Links**:
+- [DOM Helper (`el()`)](../docs/standards/COMPONENT_LIBRARY_GUIDE.md#dom-helper)
+- [Component API Pattern](../docs/standards/COMPONENT_LIBRARY_GUIDE.md#component-api)
+
+---
+
+### 5. Python Standards
 
 **Guide**: [Python Style Guide](../docs/standards/PYTHON_GUIDE.md)
 
@@ -230,7 +270,7 @@ def normalize_kennitala(kennitala):
 
 ---
 
-### 5. Internationalization (i18n)
+### 6. Internationalization (i18n)
 
 **Guide**: [i18n & R.string Guide](../docs/standards/I18N_GUIDE.md)
 
@@ -266,7 +306,7 @@ document.getElementById('btn-save').textContent = 'Vista';
 
 ---
 
-### 6. Data Quality & UX
+### 7. Data Quality & UX
 
 **Guide**: [Data Quality & UX Guide](../docs/standards/DATA_QUALITY_UX.md)
 
@@ -314,7 +354,7 @@ async function saveEmail(email) {
 
 ---
 
-### 7. Documentation Standards
+### 8. Documentation Standards
 
 **Guide**: [Documentation Guide](../docs/standards/DOCUMENTATION_GUIDE.md)
 
@@ -355,7 +395,7 @@ function showStatusFeedback(statusElement, state, clearDelayMs = 2000) {
 
 ---
 
-### 8. Git Workflow
+### 9. Git Workflow
 
 **Guide**: [Git Workflow Guide](../docs/standards/GIT_WORKFLOW_GUIDE.md)
 
@@ -397,7 +437,7 @@ git commit -m "Fixed stuff"
 
 ---
 
-### 9. Quality & Testing
+### 10. Quality & Testing
 
 **Guide**: [Quality & Testing Guide](../docs/standards/QUALITY_TESTING_GUIDE.md)
 
