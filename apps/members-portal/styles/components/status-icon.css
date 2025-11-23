@@ -22,7 +22,7 @@
   width: 20px;
   height: 20px;
   flex-shrink: 0;
-  font-size: 16px;
+  font-size: var(--font-size-base);
   font-weight: bold;
   line-height: 1;
 }
@@ -39,31 +39,31 @@
 .status-icon--xs {
   width: 14px;
   height: 14px;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
 }
 
 .status-icon--sm {
   width: 18px;
   height: 18px;
-  font-size: 14px;
+  font-size: var(--font-size-sm);
 }
 
 .status-icon--md {
   width: 20px;
   height: 20px;
-  font-size: 16px;
+  font-size: var(--font-size-base);
 }
 
 .status-icon--lg {
   width: 24px;
   height: 24px;
-  font-size: 20px;
+  font-size: var(--font-size-xl);
 }
 
 .status-icon--xl {
   width: 32px;
   height: 32px;
-  font-size: 24px;
+  font-size: var(--font-size-2xl);
 }
 
 /* ===========================
@@ -213,7 +213,7 @@
 
 .status-icon--pending::after {
   content: "⋯";
-  letter-spacing: 2px;
+  letter-spacing: var(--letter-spacing-widest);
   animation: status-icon-blink 1.4s ease-in-out infinite;
 }
 
@@ -287,7 +287,7 @@
 }
 
 .status-icon-group__text {
-  font-size: 0.9375rem;
+  font-size: var(--font-size-base);
   color: var(--color-text);
 }
 
@@ -333,18 +333,18 @@
   .status-icon {
     width: 18px;
     height: 18px;
-    font-size: 14px;
+    font-size: var(--font-size-sm);
   }
 
   .status-icon--lg {
     width: 22px;
     height: 22px;
-    font-size: 18px;
+    font-size: var(--font-size-lg);
   }
 
   .status-icon--xl {
     width: 28px;
     height: 28px;
-    font-size: 22px;
+    font-size: var(--font-size-xl);
   }
 }

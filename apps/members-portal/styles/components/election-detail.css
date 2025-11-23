@@ -34,7 +34,7 @@
 .election-detail__back-link {
   color: var(--color-primary);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   transition: color 0.2s ease;
 }
 
@@ -57,8 +57,8 @@
 }
 
 .election-detail__title {
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   margin: 0;
   flex: 1;
@@ -69,10 +69,10 @@
   display: inline-block;
   padding: 0.5rem 1rem;
   border-radius: var(--radius-md);
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--letter-spacing-wider);
   white-space: nowrap;
 }
 
@@ -99,7 +99,7 @@
   color: var(--color-success-green);                /* Dark green - 6.4:1 ratio */
   border: 1px solid var(--color-success-border);    /* Green border */
   border-radius: var(--radius-md);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   margin-top: var(--spacing-sm);
   margin-bottom: var(--spacing-lg);
 }
@@ -139,18 +139,18 @@
 }
 
 .election-detail__schedule-label {
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   color: var(--color-gray-600);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--letter-spacing-wider);
 }
 
 .election-detail__schedule-value {
-  font-size: 1.125rem;
+  font-size: var(--font-size-md);
   color: var(--color-gray-800);
-  font-weight: 700;
-  line-height: 1.4;
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-snug);
 }
 
 .election-detail__description {
@@ -158,7 +158,7 @@
   padding-top: var(--spacing-md);
   border-top: 1px solid var(--color-border-light);
   color: var(--color-gray-600);
-  line-height: 1.6;
+  line-height: var(--line-height-relaxed);
 }
 
 /* Schedule Display Component */
@@ -189,15 +189,15 @@
 }
 
 .schedule-display__status-emoji {
-  font-size: 1.5rem;
-  line-height: 1;
+  font-size: var(--font-size-xl);
+  line-height: var(--line-height-none);
 }
 
 .schedule-display__status-text {
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--letter-spacing-wider);
 }
 
 .schedule-display__status--upcoming .schedule-display__status-text {
@@ -224,16 +224,16 @@
 }
 
 .election-detail__question-title {
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-gray-800);
   margin-bottom: var(--spacing-sm);
 }
 
 .election-detail__question-text {
-  font-size: 1.125rem;
+  font-size: var(--font-size-md);
   color: var(--color-gray-800);
-  line-height: 1.6;
+  line-height: var(--line-height-relaxed);
   margin: 0;
 }
 
@@ -246,8 +246,8 @@
 }
 
 .election-detail__voting-title {
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-gray-800);
   margin-bottom: var(--spacing-lg);
 }
@@ -289,7 +289,7 @@
 }
 
 .election-detail__answer-label {
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   color: var(--color-gray-800);
   cursor: pointer;
   flex: 1;
@@ -298,8 +298,8 @@
 .election-detail__vote-btn {
   width: 100%;
   padding: 1rem 2rem;
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
 }
 
 /* Already Voted Section */
@@ -320,8 +320,8 @@
 }
 
 .election-detail__results-title {
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-gray-800);
   margin-bottom: var(--spacing-lg);
 }
@@ -333,13 +333,13 @@
   margin-bottom: var(--spacing-lg);
   padding-bottom: var(--spacing-md);
   border-bottom: 2px solid var(--color-border-light);
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   color: var(--color-gray-600);
 }
 
 .election-detail__results-total {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
   color: var(--color-primary);
 }
 
@@ -360,8 +360,8 @@
 }
 
 .election-detail__upcoming-message {
-  font-size: 1.125rem;
-  font-weight: 500;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
   margin: 0;
 }
 
@@ -370,7 +370,7 @@
 .election-results__error {
   text-align: center;
   padding: var(--spacing-xl);
-  font-size: 1.125rem;
+  font-size: var(--font-size-md);
   color: var(--color-gray-600);
 }
 
@@ -413,12 +413,12 @@
   color: white;
   border-radius: 50%;
   font-weight: bold;
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
 }
 
 .election-results__answer-text {
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-gray-800);
 }
 
@@ -430,8 +430,8 @@
 }
 
 .election-results__percentage {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
   color: var(--color-primary);
   min-width: 60px;
 }
@@ -464,8 +464,8 @@
 }
 
 .election-results__votes {
-  font-size: 1rem;
-  font-weight: 500;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
   color: var(--color-gray-600);
   min-width: 100px;
   text-align: right;
@@ -475,7 +475,7 @@
 /* Only election-specific modal styles remain here */
 
 .modal__selected-answer {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--color-primary-deep);              /* Darker red - GOOD contrast */
   padding: var(--spacing-md);
   background-color: var(--color-primary-pale);   /* Very light pink - GOOD contrast */
@@ -491,7 +491,7 @@
   }
 
   .election-detail__title {
-    font-size: 1.5rem;
+    font-size: var(--font-size-xl);
   }
 
   .election-detail__schedule {

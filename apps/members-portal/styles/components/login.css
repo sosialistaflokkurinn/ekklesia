@@ -24,7 +24,7 @@
 .login__subtitle {
   color: var(--color-text-muted);
   margin-bottom: 30px;
-  font-size: 14px;
+  font-size: var(--font-size-sm);
 }
 
 /* === Status Indicator === */
@@ -33,7 +33,7 @@
   padding: var(--spacing-md);
   border-radius: var(--radius-lg);
   margin-bottom: 20px;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .login__status--authenticated {
@@ -64,7 +64,7 @@
 
 .login .btn--full-width {
   width: 100%;
-  font-size: 16px;
+  font-size: var(--font-size-base);
 }
 
 /* === Debug Log === */
@@ -75,7 +75,7 @@
   padding: var(--spacing-md);
   border-radius: var(--radius-lg);
   font-family: 'Courier New', monospace;
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   max-height: 300px;
   overflow-y: auto;
   margin-top: 20px;
@@ -138,9 +138,9 @@
 }
 
 .login__loading-text {
-  font-size: 16px;
+  font-size: var(--font-size-base);
   color: var(--color-text-muted);
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 @keyframes spin {

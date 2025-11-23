@@ -38,8 +38,8 @@
    =========================== */
 
 .form-field__label {
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
   color: var(--color-gray-700);
   margin-bottom: 0.5rem;
 }
@@ -70,7 +70,7 @@
   flex: 1;
   width: 100%;
   padding: 0.5rem 0.75rem;
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   font-family: inherit;
   color: var(--color-gray-900);
   background-color: var(--color-gray-50);
@@ -215,8 +215,8 @@
   content: "✓";
   display: block;
   color: var(--color-success);
-  font-size: 18px;
-  font-weight: bold;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
   line-height: 1;
 }
 
@@ -229,8 +229,8 @@
   content: "✕";
   display: block;
   color: var(--color-error);
-  font-size: 16px;
-  font-weight: bold;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
   line-height: 1;
 }
 
@@ -240,7 +240,7 @@
 
 .form-field__error {
   color: var(--color-error);
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   margin-top: 0.5rem;
   display: none;
 }
@@ -251,7 +251,7 @@
 
 .form-field__success {
   color: var(--color-success-text);
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   margin-top: 0.5rem;
   display: none;
 }
@@ -291,7 +291,7 @@
   padding: 1rem;
   border-radius: 4px;
   margin-top: 1rem;
-  font-size: 0.9375rem;
+  font-size: var(--font-size-sm);
 }
 
 .form-message--success {
@@ -319,7 +319,7 @@
 }
 
 .form-message__title {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   margin-bottom: 0.5rem;
 }
 
@@ -378,7 +378,7 @@
   align-items: center;
   gap: 0.5rem;
   cursor: pointer;
-  font-size: 0.9375rem;
+  font-size: var(--font-size-sm);
   color: var(--color-gray-700);
 }
 

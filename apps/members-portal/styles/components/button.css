@@ -24,8 +24,8 @@
   color: var(--color-text-inverse);
   border: none;
   border-radius: var(--radius-md);
-  font-size: 16px;
-  font-weight: 500;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
   text-decoration: none;
   transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
@@ -117,8 +117,8 @@
   padding: 12px 24px;
   background: var(--gradient-gold);
   color: var(--color-black);
-  font-weight: 600;
-  font-size: 16px;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-base);
   text-decoration: none;
   border-radius: 8px;
   border: 2px solid var(--color-border-subtle-dark);
@@ -146,7 +146,7 @@
 
 .btn--sm {
   padding: 0.5rem 1rem;
-  font-size: 0.9rem;
+  font-size: var(--font-size-sm);
 }
 
 .btn--full-width {

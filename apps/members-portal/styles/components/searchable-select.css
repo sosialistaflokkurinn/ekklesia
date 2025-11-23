@@ -30,7 +30,7 @@
   background: var(--color-bg-card);
   border: 1px solid var(--color-input-border);
   border-radius: 8px;
-  font-size: 15px;
+  font-size: var(--font-size-base);
   line-height: 1.5;
   color: var(--color-gray-800);
   cursor: pointer;
@@ -145,7 +145,7 @@
   padding: 8px 12px 8px 36px;
   border: 1px solid var(--color-input-border);
   border-radius: 6px;
-  font-size: 14px;
+  font-size: var(--font-size-sm);
   line-height: 1.5;
   background: var(--color-bg-card);
   color: var(--color-gray-800);
@@ -202,7 +202,7 @@
   cursor: pointer;
   transition: background 0.15s ease;
   color: var(--color-gray-800);
-  font-size: 15px;
+  font-size: var(--font-size-base);
   line-height: 1.5;
 }
 
@@ -217,7 +217,7 @@
 .searchable-select__option--selected {
   background: var(--color-info-bg-hover);
   color: var(--color-info-text);
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   position: relative;
 }
 
@@ -228,7 +228,7 @@
   top: 50%;
   transform: translateY(-50%);
   color: var(--color-info-text);
-  font-weight: bold;
+  font-weight: var(--font-weight-bold);
 }
 
 .searchable-select__option--disabled {
@@ -245,7 +245,7 @@
   padding: 16px;
   text-align: center;
   color: var(--color-gray-500);
-  font-size: 14px;
+  font-size: var(--font-size-sm);
 }
 
 /* ============================================
@@ -290,11 +290,11 @@
 
   .searchable-select__option {
     padding: 14px 16px;
-    font-size: 16px; /* Prevent iOS zoom */
+    font-size: var(--font-size-base); /* Prevent iOS zoom */
   }
 
   .searchable-select__input {
-    font-size: 16px; /* Prevent iOS zoom */
+    font-size: var(--font-size-base); /* Prevent iOS zoom */
   }
 }
 
@@ -387,23 +387,23 @@
 /* Small size */
 .searchable-select--sm .searchable-select__trigger {
   padding: 6px 12px;
-  font-size: 14px;
+  font-size: var(--font-size-sm);
 }
 
 .searchable-select--sm .searchable-select__option {
   padding: 8px 12px;
-  font-size: 14px;
+  font-size: var(--font-size-sm);
 }
 
 /* Large size */
 .searchable-select--lg .searchable-select__trigger {
   padding: 14px 20px;
-  font-size: 16px;
+  font-size: var(--font-size-base);
 }
 
 .searchable-select--lg .searchable-select__option {
   padding: 12px 20px;
-  font-size: 16px;
+  font-size: var(--font-size-base);
 }
 
 /* Error state */

@@ -6,7 +6,7 @@ import datetime
 from pathlib import Path
 
 # Configuration
-ROOT_DIR = Path(__file__).resolve().parent.parent
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 STYLES_DIR = ROOT_DIR / "apps" / "members-portal" / "styles"
 METADATA_DIR = ROOT_DIR / ".metadata_store"
 METADATA_FILE = METADATA_DIR / "css_inventory.json"
@@ -17,6 +17,10 @@ HEX_COLOR_PATTERN = re.compile(r"#[0-9a-fA-F]{3,6}")
 RGB_PATTERN = re.compile(r"rgb\s*\(|rgba\s*\(")
 VAR_PATTERN = re.compile(r"var\s*\(--")
 IMPORTANT_PATTERN = re.compile(r"!important")
+
+# New Analysis Patterns
+TYPOGRAPHY_PROP_PATTERN = re.compile(r"(font-(?:size|weight|family|style)|line-height|letter-spacing)\s*:\s*([^;]+)")
+SPACING_PROP_PATTERN = re.compile(r"(margin(?:-[a-z]+)?|padding(?:-[a-z]+)?|gap|row-gap|column-gap)\s*:\s*([^;]+)")
 
 def analyze_file(filepath):
     """Analyzes a single CSS file and returns metrics."""
@@ -42,6 +46,18 @@ def analyze_file(filepath):
     hardcoded_colors = hex_count + rgb_count
     
     important_count = len(IMPORTANT_PATTERN.findall(content))
+
+    # Typography Analysis
+    typography_matches = TYPOGRAPHY_PROP_PATTERN.findall(content)
+    typography_total = len(typography_matches)
+    typography_vars = sum(1 for _, val in typography_matches if "var(" in val)
+    typography_hardcoded = typography_total - typography_vars
+
+    # Spacing Analysis
+    spacing_matches = SPACING_PROP_PATTERN.findall(content)
+    spacing_total = len(spacing_matches)
+    spacing_vars = sum(1 for _, val in spacing_matches if "var(" in val)
+    spacing_hardcoded = spacing_total - spacing_vars
 
     # Dependencies (Imports)
     # Looking for @import "..." or @import url(...)
@@ -69,7 +85,15 @@ def analyze_file(filepath):
             "uses_bem": uses_bem,
             "uses_css_vars": uses_css_vars,
             "hardcoded_colors": hardcoded_colors,
-            "important_count": important_count
+            "important_count": important_count,
+            "typography": {
+                "total": typography_total,
+                "hardcoded": typography_hardcoded
+            },
+            "spacing": {
+                "total": spacing_total,
+                "hardcoded": spacing_hardcoded
+            }
         },
         "dependencies": imports
     }

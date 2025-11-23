@@ -48,8 +48,8 @@
 /* Toast message text */
 .toast__message {
   flex: 1;
-  font-size: 15px;
-  font-weight: 500;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
   line-height: 1.5;
   color: var(--color-gray-800);
 }
@@ -68,7 +68,7 @@
   border: none;
   border-radius: 50%;
   
-  font-size: 20px;
+  font-size: var(--font-size-xl);
   line-height: 1;
   color: var(--color-gray-500);
   

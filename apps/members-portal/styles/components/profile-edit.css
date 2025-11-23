@@ -44,7 +44,7 @@
   padding: 0.5rem;
   border: 1px solid var(--color-gray-300);
   border-radius: 4px;
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   font-family: inherit;
   background-color: var(--color-white);
 }
@@ -67,7 +67,7 @@
 
 .profile-edit__error {
   color: var(--color-error);
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   display: none;
   margin-top: 0.25rem;
 }
@@ -89,7 +89,7 @@
   flex: 1;
   width: 100%;
   padding: 0.5rem 0.75rem;
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   font-family: inherit;
   color: var(--color-gray-900);
   background-color: var(--color-gray-50);
@@ -160,8 +160,8 @@
   content: "✓";
   display: block;
   color: var(--color-success);
-  font-size: 18px;
-  font-weight: bold;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
   line-height: 1;
 }
 
@@ -173,14 +173,14 @@
   content: "✕";
   display: block;
   color: var(--color-error);
-  font-size: 16px;
-  font-weight: bold;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
   line-height: 1;
 }
 
 .profile-field__error {
   color: var(--color-error);
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   display: none;
   margin-top: 0.25rem;
   grid-column: 1 / -1;
@@ -239,7 +239,7 @@ body.profile-editing .profile-edit__input-wrapper {
   align-items: center;
   gap: 0.5rem;
   cursor: pointer;
-  font-size: 0.9375rem;
+  font-size: var(--font-size-base);
   color: var(--color-gray-700);
 }
 
@@ -287,7 +287,7 @@ body.profile-editing .profile-edit__input-wrapper {
   display: block;
   padding: 0.75rem;
   color: var(--color-gray-500);
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   text-align: center;
 }
 
@@ -295,7 +295,7 @@ body.profile-editing .profile-edit__input-wrapper {
   padding: 0.75rem;
   cursor: pointer;
   color: var(--color-gray-900);
-  font-size: 0.9375rem;
+  font-size: var(--font-size-base);
   border-bottom: 1px solid var(--color-gray-100);
   transition: background-color 0.15s ease;
 }
@@ -311,7 +311,7 @@ body.profile-editing .profile-edit__input-wrapper {
 }
 
 .autocomplete-item--selected {
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 /* ===========================
@@ -325,8 +325,8 @@ body.profile-editing .profile-edit__input-wrapper {
   z-index: 9999;
   padding: 1rem 1.5rem;
   border-radius: 4px;
-  font-size: 0.9375rem;
-  font-weight: 500;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
   box-shadow: var(--shadow-toast);
   opacity: 0;
   transform: translateY(-10px);
@@ -369,11 +369,11 @@ body.profile-editing .profile-edit__input-wrapper {
 }
 
 .expand-icon {
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   transition: transform 0.2s ease;
   margin-left: 0.5rem;
   color: var(--color-gray-500);
-  font-weight: bold;
+  font-weight: var(--font-weight-bold);
 }
 
 .expand-icon--expanded {
@@ -437,7 +437,7 @@ body.profile-editing .profile-edit__input-wrapper {
   border-radius: 4px;
   background-color: var(--color-white);
   cursor: pointer;
-  font-size: 0.9375rem;
+  font-size: var(--font-size-base);
   min-width: 120px;
   font-family: inherit;
 }
@@ -459,7 +459,7 @@ body.profile-editing .profile-edit__input-wrapper {
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--color-gray-300);
   border-radius: 4px;
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   font-family: inherit;
   background-color: var(--color-white);
   cursor: text;
@@ -478,7 +478,7 @@ body.profile-editing .profile-edit__input-wrapper {
 
 .phone-default-icon,
 .item-default-icon {
-  font-size: 1.25rem;
+  font-size: var(--font-size-xl);
   cursor: pointer;
   opacity: 0.3;
   transition: opacity 0.2s ease;
@@ -503,7 +503,7 @@ body.profile-editing .profile-edit__input-wrapper {
   border-radius: 4px;
   color: var(--color-error);
   cursor: pointer;
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   transition: all 0.2s ease;
 }
 
@@ -558,7 +558,7 @@ body.profile-editing .profile-edit__input-wrapper {
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--color-gray-300);
   border-radius: 4px;
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   font-family: inherit;
   background-color: var(--color-white);
   cursor: text;

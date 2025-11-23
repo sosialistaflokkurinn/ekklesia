@@ -19,12 +19,22 @@ def analyze_css(data):
     total_important = sum(d["consistency"]["important_count"] for d in data)
     total_hardcoded = sum(d["consistency"]["hardcoded_colors"] for d in data)
     
+    # New metrics
+    total_typography = sum(d["consistency"].get("typography", {}).get("total", 0) for d in data)
+    hardcoded_typography = sum(d["consistency"].get("typography", {}).get("hardcoded", 0) for d in data)
+    total_spacing = sum(d["consistency"].get("spacing", {}).get("total", 0) for d in data)
+    hardcoded_spacing = sum(d["consistency"].get("spacing", {}).get("hardcoded", 0) for d in data)
+    
     return {
         "total": total,
         "bem_percentage": (bem_usage / total) * 100,
         "vars_percentage": (vars_usage / total) * 100,
         "total_important": total_important,
-        "total_hardcoded_colors": total_hardcoded
+        "total_hardcoded_colors": total_hardcoded,
+        "total_typography": total_typography,
+        "hardcoded_typography": hardcoded_typography,
+        "total_spacing": total_spacing,
+        "hardcoded_spacing": hardcoded_spacing
     }
 
 def analyze_js(data):
@@ -82,6 +92,8 @@ def main():
         print(f"CSS Vars Usage: {css_stats['vars_percentage']:.1f}%")
         print(f"Total !important: {css_stats['total_important']}")
         print(f"Total Hardcoded Colors: {css_stats['total_hardcoded_colors']}")
+        print(f"Typography: {css_stats['total_typography']} props ({css_stats['hardcoded_typography']} hardcoded)")
+        print(f"Spacing: {css_stats['total_spacing']} props ({css_stats['hardcoded_spacing']} hardcoded)")
     
     print("\n--- JS ANALYSIS ---")
     if js_stats:

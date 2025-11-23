@@ -123,7 +123,7 @@
   font-weight: var(--font-weight-semibold, 600);
   color: var(--color-text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--letter-spacing-wide);
 }
 
 .policy-results__vote-count {

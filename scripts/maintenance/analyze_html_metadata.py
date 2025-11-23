@@ -6,7 +6,7 @@ import datetime
 from pathlib import Path
 
 # Configuration
-ROOT_DIR = Path(__file__).resolve().parent.parent
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 HTML_DIR = ROOT_DIR / "apps" / "members-portal"
 METADATA_DIR = ROOT_DIR / ".metadata_store"
 METADATA_FILE = METADATA_DIR / "html_inventory.json"

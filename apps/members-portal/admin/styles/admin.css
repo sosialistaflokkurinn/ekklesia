@@ -58,8 +58,8 @@
 }
 
 .admin-nav__logo a {
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-primary);
   text-decoration: none;
   transition: opacity 0.2s;
@@ -80,7 +80,7 @@
   color: var(--color-text-primary);
   text-decoration: none;
   border-radius: 4px;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   transition: background 0.2s;
 }
 
@@ -101,17 +101,17 @@
 }
 
 .admin-nav__user #user-email {
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   color: var(--color-gray-600);
 }
 
 .admin-nav__user .role-indicator {
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   padding: 0.25rem 0.5rem;
   background: var(--color-accent-gold);
   color: var(--color-gray-900);
   border-radius: 4px;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 /* Responsive */
@@ -189,10 +189,10 @@ body.admin .members-count {
   background: var(--color-accent-gold);
   color: var(--color-gray-900);
   border-radius: var(--radius-sm);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--letter-spacing-wide);
 }
 
 .role-badge--developer {
@@ -218,7 +218,7 @@ body.admin .members-count {
 
 .sync-progress p {
   color: var(--color-gray-600);
-  font-size: 14px;
+  font-size: var(--font-size-sm);
 }
 
 /* Spinner Animation */
@@ -281,13 +281,13 @@ body.admin .members-count {
 .history-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: var(--font-size-sm);
 }
 
 .history-table th {
   background: var(--color-gray-50);
   color: var(--color-gray-700);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   text-align: left;
   padding: 12px 16px;
   border-bottom: 2px solid var(--color-border-medium);
@@ -308,7 +308,7 @@ body.admin .members-count {
   .history-table th,
   .history-table td {
     padding: 8px 12px;
-    font-size: 13px;
+    font-size: var(--font-size-xs);
   }
 }
 
@@ -320,10 +320,10 @@ body.admin .members-count {
   display: inline-block;
   padding: 4px 12px;
   border-radius: var(--radius-sm);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--letter-spacing-wide);
 }
 
 .status-badge.status-success {

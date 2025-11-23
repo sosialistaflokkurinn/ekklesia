@@ -53,19 +53,19 @@
       </div>
 
       <!-- Error State -->
-      <div id="member-error" class="admin-error" style="display: none;">
+      <div id="member-error" class="admin-error hidden">
         <p class="admin-error__message" id="member-error-message"></p>
         <button class="btn btn--secondary" id="btn-retry"></button>
       </div>
 
       <!-- Not Found State -->
-      <div id="member-not-found" class="admin-not-found" style="display: none;">
+      <div id="member-not-found" class="admin-not-found hidden">
         <p class="admin-not-found__message" id="member-not-found-message"></p>
         <a href="/admin/members.html" class="btn btn--secondary" id="btn-back-to-members"></a>
       </div>
 
       <!-- Member Profile -->
-      <div id="member-profile" style="display: none;">
+      <div id="member-profile" class="hidden">
         <!-- Basic Information -->
         <div class="card">
           <h3 class="card__title" id="section-personal-info"></h3>
@@ -148,10 +148,10 @@
           </h3>
 
           <!-- Simple Display (collapsed) -->
-          <div class="info-grid__value" id="value-phone-simple" style="display: block;">-</div>
+          <div class="info-grid__value" id="value-phone-simple">-</div>
 
           <!-- Expanded Section -->
-          <div id="phone-numbers-section" style="display: none;">
+          <div id="phone-numbers-section" class="hidden">
             <div id="phone-numbers-list"></div>
             <button type="button" class="btn btn--secondary" id="btn-add-phone">
               <span id="btn-add-phone-text"></span>
@@ -168,10 +168,10 @@
           </h3>
 
           <!-- Simple Display (collapsed) -->
-          <div class="info-grid__value" id="value-address-simple" style="display: block;">-</div>
+          <div class="info-grid__value" id="value-address-simple">-</div>
 
           <!-- Expanded Section -->
-          <div id="addresses-section" style="display: none;">
+          <div id="addresses-section" class="hidden">
             <div id="addresses-list"></div>
             <button type="button" class="btn btn--secondary" id="btn-add-address">
               <span id="btn-add-address-text"></span>

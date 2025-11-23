@@ -100,8 +100,8 @@
 
 .modal__title {
   margin: 0;
-  font-size: 20px;
-  font-weight: 600;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-gray-800);
 }
 
@@ -118,7 +118,7 @@
   border: none;
   border-radius: var(--radius-sm);
   
-  font-size: 24px;
+  font-size: var(--font-size-2xl);
   line-height: 1;
   color: var(--color-gray-500);
   
@@ -145,7 +145,7 @@
 
 .modal__message {
   margin: 0;
-  font-size: 15px;
+  font-size: var(--font-size-base);
   line-height: 1.6;
   color: var(--color-gray-700);
 }
@@ -179,7 +179,7 @@
 
 .modal__answer-list li {
   margin-bottom: var(--spacing-xs);
-  font-size: 15px;
+  font-size: var(--font-size-base);
   line-height: 1.5;
   color: var(--color-gray-700);
 }

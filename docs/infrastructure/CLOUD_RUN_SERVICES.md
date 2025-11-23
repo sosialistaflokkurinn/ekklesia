@@ -1019,18 +1019,18 @@ gcloud logging read "resource.labels.service_name=elections-service AND severity
 
 ## Changelog
 
-| Date | Change | Author |
-|------|--------|--------|
-| 2025-11-22 | Refactored syncmembers to HTTP trigger with manual CORS/Auth | gudrodur |
-| 2025-11-22 | Deployed track_member_changes Firestore trigger | gudrodur |
-| 2025-11-22 | Fixed bidirectional-sync queue processing | gudrodur |
-| 2025-11-10 | Unified Secret Manager integration across all services | Claude Code |
-| 2025-11-10 | Updated handlekenniauth to Python 3.13 with PKCE flow | Claude Code |
-| 2025-11-10 | Added bidirectional-sync, get-django-token services | Claude Code |
-| 2025-11-10 | Updated all member services to use environment variable injection for secrets | Claude Code |
-| 2025-11-10 | Expanded service inventory from 8 to 13 services | Claude Code |
-| 2025-10-31 | Initial documentation | Claude + Gemini analysis |
-| 2025-10-31 | Updated elections-service & events-service dependencies | gudrodur |
+| Date | Change |
+|------|--------|
+| 2025-11-22 | Refactored syncmembers to HTTP trigger with manual CORS/Auth |
+| 2025-11-22 | Deployed track_member_changes Firestore trigger |
+| 2025-11-22 | Fixed bidirectional-sync queue processing |
+| 2025-11-10 | Unified Secret Manager integration across all services |
+| 2025-11-10 | Updated handlekenniauth to Python 3.13 with PKCE flow |
+| 2025-11-10 | Added bidirectional-sync, get-django-token services |
+| 2025-11-10 | Updated all member services to use environment variable injection for secrets |
+| 2025-11-10 | Expanded service inventory from 8 to 13 services |
+| 2025-10-31 | Initial documentation |
+| 2025-10-31 | Updated elections-service & events-service dependencies |
 
 ---
 

@@ -23,8 +23,8 @@
 }
 
 .admin-header h1 {
-  font-size: 1.75rem;
-  font-weight: 700;
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   margin: 0;
 }
@@ -52,7 +52,7 @@
   background: var(--color-bg);
   border-radius: 4px;
   cursor: pointer;
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   transition: all 0.2s;
 }
 
@@ -96,8 +96,8 @@
   background: var(--color-bg-card);
   border-radius: 4px;
   cursor: pointer;
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
   transition: all 0.2s;
 }
 
@@ -123,7 +123,7 @@
   padding: 0.5rem 1rem;
   border: 1px solid var(--color-input-border);
   border-radius: 4px;
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
 }
 
 .search-input:focus {
@@ -137,8 +137,8 @@
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 4px;
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
@@ -157,7 +157,7 @@
 .results-info {
   margin-bottom: 1rem;
   color: var(--color-text-secondary);
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
 }
 
 /* Loading Spinner */
@@ -203,11 +203,11 @@
 .elections-table th {
   text-align: left;
   padding: 1rem;
-  font-weight: 600;
-  font-size: 0.875rem;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--letter-spacing-wide);
 }
 
 .elections-table tbody tr {
@@ -233,7 +233,7 @@
 .election-title a {
   color: var(--color-primary);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .election-title a:hover {
@@ -246,7 +246,7 @@
   padding: 0.25rem 0.5rem;
   background: var(--color-gray-600);
   color: var(--color-white);
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   border-radius: 3px;
 }
 
@@ -255,10 +255,10 @@
   display: inline-block;
   padding: 0.25rem 0.75rem;
   border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--letter-spacing-wide);
 }
 
 .status-draft {
@@ -283,7 +283,7 @@
 
 /* Dates */
 .election-dates {
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
 }
 
@@ -297,9 +297,9 @@
 
 /* Stats */
 .election-stats {
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 /* Action Buttons */
@@ -314,15 +314,15 @@
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
   transition: all 0.2s;
   white-space: nowrap;
 }
 
 .btn-sm {
   padding: 0.375rem 0.75rem;
-  font-size: 0.813rem;
+  font-size: var(--font-size-xs);
 }
 
 .btn-primary {
@@ -389,13 +389,13 @@
 }
 
 .empty-state__icon {
-  font-size: 4rem;
+  font-size: var(--font-size-6xl);
   margin-bottom: 1rem;
 }
 
 .empty-state h2 {
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
   margin: 0 0 0.5rem;
 }
@@ -410,8 +410,8 @@
   display: inline-block;
   padding: 0.25rem 0.75rem;
   border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   margin-right: 1rem;
 }
 
@@ -441,7 +441,7 @@
   }
   
   .admin-header h1 {
-    font-size: 1.5rem;
+    font-size: var(--font-size-2xl);
   }
   
   /* Controls */
@@ -510,35 +510,31 @@
     gap: 0.5rem;
   }
   
-  .election-card__title {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--color-text-primary);
-    margin: 0;
-    flex: 1;
-  }
-  
-  .election-card__info {
+.election-card__title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+  flex: 1;
+}  .election-card__info {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
     margin-bottom: 1rem;
   }
   
-  .election-card__info-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.875rem;
-  }
-  
-  .election-card__label {
+.election-card__info-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-sm);
+}  .election-card__label {
     color: var(--color-text-secondary);
-    font-weight: 500;
+    font-weight: var(--font-weight-medium);
   }
   
   .election-card__value {
     color: var(--color-text-primary);
-    font-weight: 400;
+    font-weight: var(--font-weight-normal);
   }
   
   .election-card__actions {
@@ -550,14 +546,14 @@
   .election-card__actions .btn {
     flex: 0 0 calc(50% - 0.25rem);  /* 2 buttons per row */
     min-width: 0;
-    font-size: 0.875rem;
+    font-size: var(--font-size-sm);
     padding: 0.5rem 0.75rem;
   }
   
   /* Results info */
   .results-info {
     margin-bottom: 1rem;
-    font-size: 0.875rem;
+    font-size: var(--font-size-sm);
   }
   
   /* Empty state */
@@ -566,10 +562,10 @@
   }
   
   .empty-state__icon {
-    font-size: 3rem;
+    font-size: var(--font-size-5xl);
   }
   
   .empty-state h2 {
-    font-size: 1.25rem;
+    font-size: var(--font-size-xl);
   }
 }

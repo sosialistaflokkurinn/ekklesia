@@ -27,13 +27,13 @@
 }
 
 .elections__header h1 {
-  font-size: 2rem;
+  font-size: var(--font-size-2xl);
   margin-bottom: 0.5rem;
   color: var(--color-gray-800);
 }
 
 .elections__header p {
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   color: var(--color-gray-600);
 }
 
@@ -54,7 +54,7 @@
   border-bottom: 3px solid transparent;
   color: var(--color-gray-600);
   cursor: pointer;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   transition: all 0.3s;
   white-space: nowrap;
   position: relative;
@@ -76,7 +76,7 @@
   color: var(--color-gray-600);
   padding: 0.25rem 0.5rem;
   border-radius: 12px;
-  font-size: 0.85rem;
+  font-size: var(--font-size-sm);
   margin-left: 0.5rem;
 }
 
@@ -121,21 +121,21 @@
 }
 
 .elections__card-title {
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-gray-800);
   margin: 0;
   flex: 1;
-  line-height: 1.4;
+  line-height: var(--line-height-snug);
 }
 
 .elections__status-badge {
   padding: 0.4rem 0.8rem;
   border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--letter-spacing-caps);
   flex-shrink: 0;
   white-space: nowrap;
 }
@@ -157,8 +157,8 @@
 
 .elections__card-question {
   color: var(--color-gray-600);
-  font-size: 0.95rem;
-  line-height: 1.5;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
   margin: 0;
   flex-grow: 1;
 }
@@ -168,8 +168,8 @@
   color: var(--color-success-border);
   padding: 0.5rem 0.75rem;
   border-radius: 4px;
-  font-size: 0.85rem;
-  font-weight: 500;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
 }
 
 .elections__card-footer {
@@ -178,7 +178,7 @@
   align-items: center;
   padding-top: 0.5rem;
   border-top: 1px solid var(--color-border-lighter);
-  font-size: 0.85rem;
+  font-size: var(--font-size-sm);
 }
 
 .elections__card-date {
@@ -187,7 +187,7 @@
 
 .elections__card-cta {
   color: var(--color-primary);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 /* Loading, Error, Empty States */
@@ -224,7 +224,7 @@
 
 .elections__loading p {
   color: var(--color-gray-600);
-  font-size: 1rem;
+  font-size: var(--font-size-base);
 }
 
 .elections__error {
@@ -235,12 +235,12 @@
 .elections__error p {
   color: var(--color-primary-dark);
   margin: 0 0 1rem 0;
-  font-size: 1rem;
+  font-size: var(--font-size-base);
 }
 
 .elections__empty {
   color: var(--color-gray-500);
-  font-size: 1.1rem;
+  font-size: var(--font-size-md);
   padding: 3rem 2rem;
 }
 
@@ -280,15 +280,15 @@
 }
 
 .election-detail__header h1 {
-  font-size: 1.8rem;
+  font-size: var(--font-size-2xl);
   color: var(--color-gray-800);
   margin: 0 0 0.5rem 0;
 }
 
 .election-detail__question {
-  font-size: 1.1rem;
+  font-size: var(--font-size-md);
   color: var(--color-gray-600);
-  line-height: 1.6;
+  line-height: var(--line-height-relaxed);
   margin: 0 0 1rem 0;
 }
 
@@ -302,8 +302,8 @@
 .election-detail__status {
   padding: 0.4rem 0.8rem;
   border-radius: 4px;
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
 }
 
@@ -324,7 +324,7 @@
 
 .election-detail__date {
   color: var(--color-gray-500);
-  font-size: 0.95rem;
+  font-size: var(--font-size-base);
 }
 
 /* ========================================== */
@@ -336,7 +336,7 @@
 }
 
 .voting h2 {
-  font-size: 1.3rem;
+  font-size: var(--font-size-lg);
   margin-bottom: 1.5rem;
   color: var(--color-gray-800);
 }
@@ -379,13 +379,13 @@
 }
 
 .voting__option-label {
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   color: var(--color-gray-800);
   flex-grow: 1;
 }
 
 .voting__option input:checked + .voting__option-label {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--color-primary);
 }
 
@@ -397,8 +397,7 @@
   padding: 1.5rem;
   text-align: center;
   color: var(--color-success-border);
-  font-size: 1.1rem;
-  margin: 2rem 0;
+  font-size: var(--font-size-md);
 }
 
 /* Upcoming Election Message */
@@ -409,7 +408,7 @@
   padding: 1.5rem;
   text-align: center;
   color: var(--color-warning-text);
-  font-size: 1.1rem;
+  font-size: var(--font-size-lg);
   margin: 2rem 0;
 }
 
@@ -422,7 +421,7 @@
 }
 
 .results h2 {
-  font-size: 1.3rem;
+  font-size: var(--font-size-xl);
   margin-bottom: 1.5rem;
   color: var(--color-gray-800);
 }
@@ -446,12 +445,12 @@
 }
 
 .results__item-label {
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   color: var(--color-gray-800);
 }
 
 .results__item-percentage {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--color-primary);
 }
 
@@ -469,7 +468,7 @@
 }
 
 .results__votes {
-  font-size: 0.85rem;
+  font-size: var(--font-size-sm);
   color: var(--color-gray-500);
 }
 

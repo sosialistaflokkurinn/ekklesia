@@ -6,7 +6,7 @@ import datetime
 from pathlib import Path
 
 # Configuration
-ROOT_DIR = Path(__file__).resolve().parent.parent
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 # Directories to scan for Python code
 SCAN_DIRS = [
     ROOT_DIR / "services" / "members",

@@ -20,7 +20,7 @@
   color: var(--color-primary);
   text-decoration: none;
   margin-bottom: 1rem;
-  font-size: 0.9rem;
+  font-size: var(--font-size-sm);
   transition: opacity 0.2s;
 }
 
@@ -29,7 +29,7 @@
 }
 
 .wizard-header h1 {
-  font-size: 2rem;
+  font-size: var(--font-size-4xl);
   color: var(--color-text-primary);
   margin: 0;
 }
@@ -74,7 +74,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text-muted);
   transition: all 0.3s;
 }
@@ -96,15 +96,15 @@
 }
 
 .step-label {
-  font-size: 0.85rem;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   text-align: center;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .wizard-step.active .step-label {
   color: var(--color-primary);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 /* Wizard Form */
@@ -121,7 +121,7 @@
 }
 
 .wizard-content h2 {
-  font-size: 1.5rem;
+  font-size: var(--font-size-2xl);
   color: var(--color-text-primary);
   margin: 0 0 0.5rem;
 }
@@ -138,7 +138,7 @@
 
 .form-group label {
   display: block;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
   margin-bottom: 0.5rem;
 }
@@ -153,7 +153,7 @@
   padding: 0.75rem;
   border: 1px solid var(--color-input-border);
   border-radius: 4px;
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   font-family: inherit;
   transition: border-color 0.2s;
 }
@@ -176,7 +176,7 @@ textarea.form-control {
 .form-text {
   display: block;
   margin-top: 0.5rem;
-  font-size: 0.85rem;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
 }
 
@@ -219,12 +219,12 @@ textarea.form-control {
 }
 
 .radio-text strong {
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   color: var(--color-text-primary);
 }
 
 .radio-text small {
-  font-size: 0.85rem;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
 }
 
@@ -291,7 +291,7 @@ textarea.form-control {
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .duration-btn:hover {
@@ -316,7 +316,7 @@ textarea.form-control {
 }
 
 .review-section h3 {
-  font-size: 1.2rem;
+  font-size: var(--font-size-xl);
   color: var(--color-text-primary);
   margin: 0 0 1rem;
 }
@@ -329,7 +329,7 @@ textarea.form-control {
 }
 
 .review-list dt {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text-secondary);
 }
 
@@ -372,8 +372,8 @@ textarea.form-control {
   padding: 0.75rem 1.5rem;
   border: none;
   border-radius: 4px;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   transition: all 0.2s;
   font-family: inherit;
@@ -456,7 +456,7 @@ textarea.form-control {
   }
   
   .step-label {
-    font-size: 0.7rem;
+    font-size: var(--font-size-xs);
   }
   
   .wizard-navigation {
@@ -504,7 +504,7 @@ textarea.form-control {
   padding: 1rem;
   border-radius: 8px;
   border: 1px solid;
-  font-size: 0.95rem;
+  font-size: var(--font-size-base);
   line-height: 1.5;
 }
 
@@ -517,6 +517,6 @@ textarea.form-control {
 .alert strong {
   display: block;
   margin-bottom: 0.25rem;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 

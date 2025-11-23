@@ -26,8 +26,8 @@
 
 .nav__brand {
   color: var(--color-text-inverse);
-  font-size: 20px;
-  font-weight: 600;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
   text-decoration: none;
   margin-right: var(--spacing-xl); /* Add spacing between brand and nav links */
 }
@@ -128,7 +128,7 @@
 
 .nav__link.nav__link--active {
   background: var(--color-white-alpha-20);
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .nav__link--logout {
@@ -183,7 +183,7 @@
     right: var(--spacing-md);
     background: none;
     border: none;
-    font-size: 32px;
+    font-size: var(--font-size-3xl);
     color: var(--color-text-muted);
     cursor: pointer;
     padding: var(--spacing-sm);
@@ -214,8 +214,8 @@
     padding: var(--spacing-md) var(--spacing-lg);
     color: var(--color-text);
     text-decoration: none;
-    font-weight: 500;
-    font-size: 15px;
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-base);
     border-left: 3px solid transparent;
     transition: all 0.2s;
     display: block;
@@ -230,7 +230,7 @@
     color: var(--color-primary);
     border-left-color: var(--color-primary);
     background: var(--color-primary-lighter);
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
   }
 
   /* Navigation links - vertical stack */
@@ -247,7 +247,7 @@
     color: var(--color-gray-800);
     border-bottom: 1px solid var(--color-border-light);
     text-align: left;
-    font-size: 16px;
+    font-size: var(--font-size-base);
     min-height: 44px;
     display: flex;
     align-items: center;
@@ -261,7 +261,7 @@
   .nav__link.nav__link--active {
     background: var(--color-primary);
     color: white;
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
   }
 
   .nav__link--logout {
@@ -270,7 +270,7 @@
     border-top: 2px solid var(--color-border-medium);
     margin-top: auto;
     color: var(--color-primary);
-    font-weight: 500;
+    font-weight: var(--font-weight-medium);
   }
 
   .nav__link--logout:hover {

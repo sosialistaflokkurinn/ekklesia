@@ -15,16 +15,58 @@
 
 /* === Typography === */
 
+:root {
+  /* Font Family */
+  --font-family-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --font-family-mono: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+  /* Font Sizes */
+  --font-size-xs: 0.75rem;     /* 12px */
+  --font-size-sm: 0.875rem;    /* 14px */
+  --font-size-base: 1rem;      /* 16px */
+  --font-size-md: 1.125rem;    /* 18px */
+  --font-size-lg: 1.25rem;     /* 20px */
+  --font-size-xl: 1.5rem;      /* 24px */
+  --font-size-2xl: 1.875rem;   /* 30px */
+  --font-size-3xl: 2.25rem;    /* 36px */
+  --font-size-4xl: 3rem;       /* 48px */
+
+  /* Font Weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Line Heights */
+  --line-height-none: 1;
+  --line-height-tight: 1.25;
+  --line-height-snug: 1.375;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.625;
+  --line-height-loose: 2;
+
+  /* Letter Spacing */
+  --letter-spacing-tighter: -0.05em;
+  --letter-spacing-tight: -0.025em;
+  --letter-spacing-normal: 0em;
+  --letter-spacing-wide: 0.025em;
+  --letter-spacing-wider: 0.05em;
+  --letter-spacing-widest: 0.1em;
+  --letter-spacing-caps: 0.5px; /* Specific for badges/uppercase */
+}
+
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  line-height: 1.6;
+  font-family: var(--font-family-sans);
+  line-height: var(--line-height-relaxed);
   color: var(--color-gray-800);
+  font-size: var(--font-size-base);
 }
 
 h1 {
-  font-size: 24px;
+  font-size: var(--font-size-xl);
   margin-bottom: 8px;
   color: var(--color-gray-800);
+  font-weight: var(--font-weight-bold);
 }
 
 /* === Colors === */
@@ -306,7 +348,7 @@ body {
   text-decoration: none;
   z-index: 100;
   border-radius: 0 0 4px 0;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .u-skip-link:focus {
@@ -344,7 +386,7 @@ body {
 /* Text utilities */
 .u-text-muted {
   color: var(--color-gray-500);
-  font-size: 14px;
+  font-size: var(--font-size-sm);
 }
 
 .u-text-error {
@@ -379,7 +421,7 @@ body {
 }
 
 .profile-discrepancy__label {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   margin-bottom: var(--spacing-sm);
   color: var(--color-text);
 }
@@ -394,7 +436,7 @@ body {
 .profile-discrepancy__new {
   padding: var(--spacing-sm);
   border-radius: 4px;
-  font-size: 0.9rem;
+  font-size: var(--font-size-sm);
 }
 
 .profile-discrepancy__old {
@@ -411,9 +453,9 @@ body {
 .profile-discrepancy__new strong {
   display: block;
   margin-bottom: 4px;
-  font-size: 0.8rem;
+  font-size: var(--font-size-xs);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--letter-spacing-wide);
 }
 
 

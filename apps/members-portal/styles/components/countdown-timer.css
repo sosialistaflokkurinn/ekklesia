@@ -19,17 +19,17 @@
 
 /* Stopwatch format (0:15:32) */
 .countdown-timer__stopwatch {
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
   font-family: 'Courier New', monospace;
   color: var(--color-primary);
-  letter-spacing: 0.05em;
+  letter-spacing: var(--letter-spacing-wide);
 }
 
 /* Human-readable format (15 mínútur eftir) */
 .countdown-timer__human {
-  font-size: 1rem;
-  font-weight: 500;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
   color: var(--color-text-muted);
   text-align: center;
 }
@@ -78,10 +78,10 @@
 /* Responsive */
 @media (max-width: 768px) {
   .countdown-timer__stopwatch {
-    font-size: 1.5rem;
+    font-size: var(--font-size-2xl);
   }
 
   .countdown-timer__human {
-    font-size: 0.875rem;
+    font-size: var(--font-size-sm);
   }
 }

@@ -106,7 +106,7 @@
         </div>
         
         <!-- Step 2: Answer Options -->
-        <div class="wizard-content" data-step="2" style="display: none;">
+        <div class="wizard-content hidden" data-step="2">
           <h2 id="step-2-title">Loading...</h2>
           <p class="step-description" id="step-2-description">Loading...</p>
           
@@ -141,7 +141,7 @@
           </div>
           
           <!-- Max Selections (for multi-choice) -->
-          <div id="max-selections-group" class="form-group" style="display: none;">
+          <div id="max-selections-group" class="form-group hidden">
             <label for="max-selections" class="required" id="label-max-selections">Loading...</label>
             <input 
               type="number" 
@@ -169,7 +169,7 @@
         </div>
         
         <!-- Step 3: Schedule -->
-        <div class="wizard-content" data-step="3" style="display: none;">
+        <div class="wizard-content hidden" data-step="3">
           <h2 id="step-3-title">Loading...</h2>
           <p class="step-description" id="step-3-description">Loading...</p>
           
@@ -203,7 +203,7 @@
           </div>
           
           <!-- Scheduled Start Time -->
-          <div id="scheduled-start-group" class="form-group" style="display: none;">
+          <div id="scheduled-start-group" class="form-group hidden">
             <label for="scheduled-start" id="label-scheduled-start">Loading...</label>
             <input 
               type="datetime-local" 
@@ -231,7 +231,7 @@
           </div>
           
           <!-- Custom Duration -->
-          <div id="custom-duration-group" class="form-group" style="display: none;">
+          <div id="custom-duration-group" class="form-group hidden">
             <label for="custom-duration" id="label-custom-duration">Loading...</label>
             <input 
               type="number" 
@@ -252,7 +252,7 @@
             </label>
           </div>
           
-          <div id="manual-end-time-group" class="form-group" style="display: none;">
+          <div id="manual-end-time-group" class="form-group hidden">
             <label for="scheduled-end" id="label-scheduled-end">Loading...</label>
             <input 
               type="datetime-local" 
@@ -264,7 +264,7 @@
         </div>
         
         <!-- Step 4: Review -->
-        <div class="wizard-content" data-step="4" style="display: none;">
+        <div class="wizard-content hidden" data-step="4">
           <h2 id="step-4-title">Loading...</h2>
           <p class="step-description" id="step-4-description">Loading...</p>
           
@@ -320,8 +320,7 @@
           <button 
             type="button" 
             id="prev-btn" 
-            class="btn btn--secondary"
-            style="display: none;"
+            class="btn btn--secondary hidden"
           >
             Loading...
           </button>
@@ -338,8 +337,7 @@
             <button 
               type="button" 
               id="create-draft-btn" 
-              class="btn btn--secondary"
-              style="display: none;"
+              class="btn btn--secondary hidden"
             >
               Loading...
             </button>
@@ -347,8 +345,7 @@
             <button 
               type="submit" 
               id="create-open-btn" 
-              class="btn btn--primary"
-              style="display: none;"
+              class="btn btn--primary hidden"
             >
               Loading...
             </button>
@@ -361,7 +358,7 @@
   </main>
   
   <!--  Loading Overlay -->
-  <div id="loading-overlay" class="loading-overlay" style="display: none;">
+  <div id="loading-overlay" class="loading-overlay hidden">
     <div class="loading-spinner">
       <div class="spinner"></div>
       <p id="loading-text">Loading...</p>

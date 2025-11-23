@@ -19,9 +19,9 @@
   display: inline-block;
   padding: 0.375rem 0.75rem;
   border-radius: 20px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  line-height: 1.2;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-tight);
   text-align: center;
   white-space: nowrap;
   vertical-align: baseline;
@@ -31,16 +31,16 @@
 /* Smaller badge variant */
 .badge--sm {
   padding: 0.25rem 0.5rem;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--letter-spacing-caps);
 }
 
 /* Larger badge variant */
 .badge--lg {
   padding: 0.5rem 1rem;
-  font-size: 1rem;
+  font-size: var(--font-size-base);
 }
 
 /* Pill (more rounded) variant */
@@ -123,9 +123,9 @@
   background: var(--color-accent-gold);
   color: var(--color-gray-900);
   border: 1px solid var(--color-accent-gold-alpha);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--letter-spacing-wide);
 }
 
 .badge--role.badge--admin {
@@ -149,9 +149,9 @@
    =========================== */
 
 .badge--election {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--letter-spacing-wide);
 }
 
 .badge--election.badge--active {
@@ -262,7 +262,7 @@
 }
 
 .badge__icon {
-  font-size: 1em;
+  font-size: inherit;
   line-height: 1;
 }
 
@@ -310,8 +310,8 @@
   display: inline-block;
   padding: 0.375rem 0.75rem;
   border-radius: 20px;
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
   line-height: 1.2;
   text-align: center;
   white-space: nowrap;
@@ -344,10 +344,10 @@
   display: inline-block;
   padding: 4px 12px;
   border-radius: var(--radius-sm);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--letter-spacing-wide);
 }
 
 .status-badge.status-success {
@@ -381,10 +381,10 @@
   background: var(--color-accent-gold);
   color: var(--color-gray-900);
   border-radius: var(--radius-sm);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--letter-spacing-wide);
 }
 
 .role-badge--developer {
@@ -401,10 +401,10 @@
   display: inline-block;
   padding: 0.375rem 0.75rem;
   border-radius: 20px;
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--letter-spacing-wide);
 }
 
 .elections__status-badge--active {
@@ -446,17 +446,17 @@
 
 @media (max-width: 640px) {
   .badge {
-    font-size: 0.8125rem;
+    font-size: var(--font-size-xs);
     padding: 0.3125rem 0.625rem;
   }
 
   .badge--sm {
-    font-size: 0.6875rem;
+    font-size: var(--font-size-xs);
     padding: 0.1875rem 0.4375rem;
   }
 
   .badge--lg {
-    font-size: 0.9375rem;
+    font-size: var(--font-size-sm);
     padding: 0.4375rem 0.875rem;
   }
 
