@@ -6,7 +6,7 @@
   <title id="page-title">Stofna kosningu - Admin</title>
   
   <!-- DEBUG LOGGER - Auto-activates on LM-G710 (Jón's device) for election creation debugging -->
-  <script src="js/debug-logger.js"></script>
+  <script src="/admin-elections/js/debug-logger.js"></script>
   
   <!-- Global Styles -->
   <link rel="stylesheet" href="/styles/global.css">
@@ -367,7 +367,7 @@
   
   <!-- i18n Initialization -->
   <script type="module">
-    import { initElectionCreateStrings } from './js/election-create-i18n.js';
+    import { initElectionCreateStrings } from '/admin-elections/js/election-create-i18n.js';
 
     // Load and initialize all i18n strings
     await initElectionCreateStrings();
@@ -375,7 +375,7 @@
   
   <!-- Scripts -->
   <script type="module">
-    import { getFirebaseAuth } from '../firebase/app.js';
+    import { getFirebaseAuth } from '/firebase/app.js';
     // Navigation initialized by navigation-bar.js below
 
     const auth = getFirebaseAuth();
@@ -389,12 +389,12 @@
   </script>
   
   <!-- Main App -->
-  <script type="module" src="./js/election-create.js"></script>
+  <script type="module" src="/admin-elections/js/election-create.js"></script>
   
 
   <!-- Initialize Navigation Component -->
   <script type="module">
-    import { initNavHeader, NAV_CONFIGS } from '../../ui/components/navigation-bar.js';
+    import { initNavHeader, NAV_CONFIGS } from '/ui/components/navigation-bar.js';
     
     // Initialize navigation with appropriate config
     await initNavHeader(NAV_CONFIGS.adminElectionsCreate);

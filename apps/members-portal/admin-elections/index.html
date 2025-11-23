@@ -108,12 +108,12 @@
   <!-- Note: Navigation and logout are initialized in elections-list.js -->
   
   <!-- Main App -->
-  <script type="module" src="./js/elections-list.js"></script>
+  <script type="module" src="/admin-elections/js/elections-list.js"></script>
   
 
   <!-- Initialize Navigation Component -->
   <script type="module">
-    import { initNavHeader, NAV_CONFIGS } from '../../ui/components/navigation-bar.js';
+    import { initNavHeader, NAV_CONFIGS } from '/ui/components/navigation-bar.js';
     
     // Initialize navigation with appropriate config
     await initNavHeader(NAV_CONFIGS.adminElections);
