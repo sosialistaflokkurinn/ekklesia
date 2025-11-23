@@ -7,13 +7,13 @@ Detailed instructions for code health checker scripts.
 
 ```bash
 # Basic check
-python3 scripts/check-code-health.py
+python3 scripts/maintenance/check-code-health.py
 
 # Detailed output (shows all INFO items)
-python3 scripts/check-code-health.py --verbose
+python3 scripts/maintenance/check-code-health.py --verbose
 
 # Run bash version (faster but less thorough)
-./scripts/check-code-health.sh
+./scripts/maintenance/check-code-health.sh
 ```
 
 ## 🎯 What Gets Checked
