@@ -92,8 +92,8 @@ export function createVotingForm(options = {}) {
   const questionText = el('p', 'voting-form__question-text', {}, question);
   const questionSection = el('section', 'voting-form__question', {}, questionTitle, questionText);
 
-  // Voting section
-  const votingTitleEl = el('h3', 'voting-form__voting-title', {}, votingTitle);
+  // Generate unique IDs for ARIA
+  const helperId = `${formId}-helper`;
 
   // Selection helper text (for multi-select)
   let selectionHelperEl = null;
@@ -102,11 +102,18 @@ export function createVotingForm(options = {}) {
       ? R.format(R.string.voting_selection_helper, maxSelections)
       : `Veldu allt að ${maxSelections} valkosti`;
     
-    selectionHelperEl = el('p', 'voting-form__selection-helper', {}, helperText);
+    selectionHelperEl = el('p', 'voting-form__selection-helper', { id: helperId }, helperText);
   }
 
   // Answer options container
   const answerOptions = el('div', 'voting-form__answer-options');
+
+  // Fieldset and Legend (Accessibility improvement)
+  const legend = el('legend', 'voting-form__legend', {}, votingTitle);
+  
+  const fieldset = el('fieldset', 'voting-form__fieldset', {
+    'aria-describedby': selectionHelperEl ? helperId : undefined
+  }, legend, selectionHelperEl, answerOptions);
 
   // Vote button
   const voteButton = el('button', 'btn btn--primary voting-form__vote-btn', {
@@ -123,11 +130,9 @@ export function createVotingForm(options = {}) {
         onSubmit(selectedAnswerIds);
       }
     }
-  }, answerOptions, voteButton);
+  }, fieldset, voteButton);
 
   const votingSection = el('section', 'voting-form__voting', {}, 
-    votingTitleEl, 
-    selectionHelperEl, 
     form
   );
 

@@ -16,20 +16,6 @@ import { voteOnAmendment } from '../api/elections-api.js';
 import { el } from '../utils/dom.js';
 
 /**
- * Escape HTML to prevent XSS
- * @param {string} unsafe - Unsafe string
- * @returns {string} HTML-escaped string
- */
-function escapeHtml(unsafe) {
-  return unsafe
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-
-/**
  * Create amendment vote card
  *
  * @param {Object} options - Configuration options
@@ -92,7 +78,7 @@ export function createAmendmentVoteCard(options = {}) {
     `✓ ${strings.alreadyVoted}`,
     { variant: 'success' }
   );
-  votedBadge.element.className += ' amendment-vote-card__voted-badge';
+  votedBadge.element.classList.add('amendment-vote-card__voted-badge');
   votedBadge.element.style.display = hasVoted ? 'inline-flex' : 'none';
 
   const header = el('div', 'amendment-vote-card__header', {},
@@ -142,10 +128,10 @@ export function createAmendmentVoteCard(options = {}) {
   async function handleVote(vote) {
     // Show confirmation
     const confirmMessage = vote === 'yes' ? strings.confirmYesMessage : strings.confirmNoMessage;
-    const confirmed = await showConfirm({
-      title: strings.confirmTitle,
-      message: confirmMessage
-    });
+    const confirmed = await showConfirm(
+      strings.confirmTitle,
+      confirmMessage
+    );
 
     if (!confirmed) {
       return;

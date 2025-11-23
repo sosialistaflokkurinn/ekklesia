@@ -65,6 +65,9 @@ export function showModal(options = {}) {
     activeModal.close();
   }
 
+  // Store previously focused element to restore later
+  const previousActiveElement = document.activeElement;
+
   // Create modal header
   const titleElement = el('h2', 'modal__title', { id: 'modal-title' }, title);
   const closeButton = el('button', 'modal__close', {
@@ -120,9 +123,19 @@ export function showModal(options = {}) {
         }
         activeModal = null;
         
+        // Restore focus to previous element
+        if (previousActiveElement && previousActiveElement.focus) {
+          previousActiveElement.focus();
+        }
+        
         // Call onClose callback
         if (onClose) {
           onClose();
+        }
+
+        // Restore focus to previously focused element
+        if (previousActiveElement && typeof previousActiveElement.focus === 'function') {
+          previousActiveElement.focus();
         }
       }, 200);
     }
@@ -147,6 +160,34 @@ export function showModal(options = {}) {
     };
     document.addEventListener('keydown', handleEscape);
   }
+
+  // Focus trap
+  const handleTab = (e) => {
+    if (e.key === 'Tab') {
+      const focusableElements = modal.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      
+      if (focusableElements.length === 0) return;
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement) {
+          e.preventDefault();
+          lastElement.focus();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          e.preventDefault();
+          firstElement.focus();
+        }
+      }
+    }
+  };
+  
+  overlay.addEventListener('keydown', handleTab);
 
   // Add to DOM
   document.body.appendChild(overlay);

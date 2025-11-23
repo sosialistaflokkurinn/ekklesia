@@ -46,10 +46,14 @@ export function showToast(message, type = 'success', options = {}) {
     }, '×');
   }
 
+  // Determine ARIA role based on type
+  const role = type === 'error' ? 'alert' : 'status';
+  const ariaLive = type === 'error' ? 'assertive' : 'polite';
+
   // Create toast element
   const toast = el('div', `toast toast--${type}`, {
-    role: 'alert',
-    'aria-live': 'polite'
+    role: role,
+    'aria-live': ariaLive
   }, messageSpan, dismissBtn);
 
   // Add to DOM

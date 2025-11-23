@@ -45,11 +45,22 @@
   margin-bottom: var(--spacing-lg);
 }
 
-.voting-form__voting-title {
+/* Fieldset & Legend (Accessibility) */
+.voting-form__fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+.voting-form__legend {
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text);
   margin-bottom: var(--spacing-lg);
+  padding: 0;
+  width: 100%;
+  display: block; /* Ensure it behaves like a block */
 }
 
 /* Selection Helper (for multi-select) */
