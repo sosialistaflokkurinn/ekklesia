@@ -35,7 +35,7 @@ const MOCK_POLICY_SESSION = {
   id: 'policy-session-001',
   title: 'Málefni umsækjenda um alþjóðlega vernd og íbúa af erlendum uppruna',
   type: 'policy_session',
-  status: 'discussion', // 'discussion', 'break', 'voting', 'closed'
+  // status is now derived dynamically
   
   // Timeline
   discussion_starts_at: new Date(Date.now() - 3600000).toISOString(),
@@ -216,6 +216,32 @@ async function delay(ms = 500) {
 }
 
 /**
+ * Get current status based on time or override
+ */
+function getCurrentStatus() {
+  // Check for override in sessionStorage (for dev/testing)
+  try {
+    const override = sessionStorage.getItem('EK_MOCK_STATUS_OVERRIDE');
+    if (override && ['discussion', 'break', 'voting', 'closed'].includes(override)) {
+      return override;
+    }
+  } catch (e) {
+    // Ignore storage errors
+  }
+
+  const now = Date.now();
+  const breakStart = new Date(MOCK_POLICY_SESSION.break_starts_at).getTime();
+  const breakEnd = new Date(MOCK_POLICY_SESSION.break_ends_at).getTime();
+  const votingStart = new Date(MOCK_POLICY_SESSION.voting_starts_at).getTime();
+  const votingEnd = new Date(MOCK_POLICY_SESSION.voting_ends_at).getTime();
+
+  if (now >= breakStart && now < breakEnd) return 'break';
+  if (now >= votingStart && now < votingEnd) return 'voting';
+  if (now > votingEnd) return 'closed';
+  return 'discussion';
+}
+
+/**
  * Mock Policy Session API
  */
 export const PolicySessionAPI = {
@@ -233,6 +259,7 @@ export const PolicySessionAPI = {
     // Return deep copy to prevent mutations
     return {
       ...MOCK_POLICY_SESSION,
+      status: getCurrentStatus(),
       policy_draft: { 
         ...MOCK_POLICY_SESSION.policy_draft, 
         sections: MOCK_POLICY_SESSION.policy_draft.sections.map(s => ({ ...s }))
@@ -344,7 +371,7 @@ export const PolicySessionAPI = {
     }
 
     // Validate voting period
-    if (MOCK_POLICY_SESSION.status !== 'voting') {
+    if (getCurrentStatus() !== 'voting') {
       throw new Error(ERROR_MESSAGES.VOTING_ONLY);
     }
 
@@ -385,7 +412,7 @@ export const PolicySessionAPI = {
     }
 
     // Validate voting period
-    if (MOCK_POLICY_SESSION.status !== 'voting') {
+    if (getCurrentStatus() !== 'voting') {
       throw new Error(ERROR_MESSAGES.VOTING_ONLY);
     }
 
