@@ -18,6 +18,8 @@
   <string name="quick_action_sync_desc">Keyra samstillingu úr eldra Django-kerfi</string>
   <string name="quick_action_history_label">Samstillingasaga</string>
   <string name="quick_action_history_desc">Skoða yfirlit yfir fyrri samstillingar</string>
+  <string name="quick_action_queue_label">Samstillingarbiðröð</string>
+  <string name="quick_action_queue_desc">Skoða og afgreiða breytingar sem bíða</string>
   <string name="sync_members_title">Samstilla félagaskrá</string>
   <string name="sync_members_subtitle">Handvirk samstilling félagaskrár úr eldra Django-kerfi</string>
   <string name="sync_trigger_title">Hefja samstillingu</string>

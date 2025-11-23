@@ -206,6 +206,8 @@ function setPageText(strings, userData) {
   document.getElementById('quick-action-sync-desc').textContent = strings.quick_action_sync_desc;
   document.getElementById('quick-action-history-label').textContent = strings.quick_action_history_label;
   document.getElementById('quick-action-history-desc').textContent = strings.quick_action_history_desc;
+  document.getElementById('quick-action-queue-label').textContent = strings.quick_action_queue_label;
+  document.getElementById('quick-action-queue-desc').textContent = strings.quick_action_queue_desc;
 
   // Other titles
   document.getElementById('last-sync-title').textContent = strings.last_sync_title;
