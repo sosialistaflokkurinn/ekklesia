@@ -96,4 +96,4 @@ if __name__ == '__main__':
 
     # Run cleanup
     result = cleanup_old_audit_logs(keep_count=50)
-    print(f"Cleanup complete: {result}")
+    log_json('INFO', f"Cleanup complete: {result}")

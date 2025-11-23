@@ -6,11 +6,13 @@ These signals automatically track changes to Comrade model
 and add them to the MemberSyncQueue for syncing to Firestore.
 """
 
+import logging
 from django.db.models.signals import post_save, post_delete, pre_delete
 from django.dispatch import receiver
 from membership.models import Comrade
 from membership.models_sync import MemberSyncQueue
 
+logger = logging.getLogger(__name__)
 
 # Store member SSN before deletion so we can track it
 _member_ssn_before_delete = {}
@@ -58,7 +60,7 @@ def track_member_changes_on_save(sender, instance, created, **kwargs):
     )
     
     # Log for debugging
-    print(u"[SYNC QUEUE] Added {} for member {}".format(action, instance.ssn))
+    logger.info(f"[SYNC QUEUE] Added {action} for member {instance.ssn}")
 
 
 @receiver(post_delete, sender=Comrade)
@@ -81,7 +83,7 @@ def track_member_deletion(sender, instance, **kwargs):
     )
     
     # Log for debugging
-    print(u"[SYNC QUEUE] Added delete for member {}".format(ssn))
+    logger.info(f"[SYNC QUEUE] Added delete for member {ssn}")
 
 
 # Alternative: If you want more granular field tracking, use django-dirtyfields
