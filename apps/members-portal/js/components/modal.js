@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Modal Dialog Component
  *

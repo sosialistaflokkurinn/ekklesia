@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Searchable Select Component
  * 
