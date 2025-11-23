@@ -42,7 +42,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  padding: 12px;
+  padding: var(--spacing-sm-md);
   min-width: 48px;
   min-height: 48px;
   z-index: 1001;
@@ -51,12 +51,12 @@
 
 .nav__hamburger-line {
   display: block;
-  width: 24px;
+  width: var(--spacing-lg);
   height: 3px;
   background: var(--color-text-inverse);
-  margin: 5px 0;
+  margin: var(--spacing-xs) 0;
   transition: all 0.3s ease;
-  border-radius: 2px;
+  border-radius: var(--radius-xs);
 }
 
 /* Hamburger animation when open */

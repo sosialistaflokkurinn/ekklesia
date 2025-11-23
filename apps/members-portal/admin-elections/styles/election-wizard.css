@@ -6,12 +6,12 @@
 .wizard-container {
   max-width: 900px;
   margin: 0 auto;
-  padding: 2rem 1rem;
+  padding: var(--spacing-xl) var(--spacing-md);
 }
 
 /* Wizard Header */
 .wizard-header {
-  margin-bottom: 2rem;
+  margin-bottom: var(--spacing-xl);
 }
 
 .back-link {
@@ -19,7 +19,7 @@
   align-items: center;
   color: var(--color-primary);
   text-decoration: none;
-  margin-bottom: 1rem;
+  margin-bottom: var(--spacing-md);
   font-size: var(--font-size-sm);
   transition: opacity 0.2s;
 }
@@ -38,17 +38,17 @@
 .wizard-progress {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 3rem;
+  margin-bottom: var(--spacing-2xl);
   position: relative;
-  padding: 0 1rem;
+  padding: 0 var(--spacing-md);
 }
 
 .wizard-progress::before {
   content: '';
   position: absolute;
   top: 20px;
-  left: 1rem;
-  right: 1rem;
+  left: var(--spacing-md);
+  right: var(--spacing-md);
   height: 2px;
   background: var(--color-divider);
   z-index: 0;
@@ -58,7 +58,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
   position: relative;
   z-index: 1;
   flex: 1;
@@ -66,8 +66,8 @@
 }
 
 .step-number {
-  width: 40px;
-  height: 40px;
+  width: var(--spacing-xl);
+  height: var(--spacing-xl);
   border-radius: 50%;
   background: var(--color-bg-card);
   border: 2px solid var(--color-border);
@@ -110,8 +110,8 @@
 /* Wizard Form */
 .wizard-form {
   background: var(--color-bg-card);
-  border-radius: 8px;
-  padding: 2rem;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
   box-shadow: var(--shadow-md);
 }
 
@@ -123,24 +123,24 @@
 .wizard-content h2 {
   font-size: var(--font-size-2xl);
   color: var(--color-text-primary);
-  margin: 0 0 0.5rem;
+  margin: 0 0 var(--spacing-sm);
 }
 
 .step-description {
   color: var(--color-text-secondary);
-  margin-bottom: 2rem;
+  margin-bottom: var(--spacing-xl);
 }
 
 /* Form Groups */
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--spacing-lg);
 }
 
 .form-group label {
   display: block;
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--spacing-sm);
 }
 
 .form-group label.required::after {
@@ -150,9 +150,9 @@
 
 .form-control {
   width: 100%;
-  padding: 0.75rem;
+  padding: var(--spacing-sm-md);
   border: 1px solid var(--color-input-border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-size: var(--font-size-base);
   font-family: inherit;
   transition: border-color 0.2s;
@@ -175,7 +175,7 @@ textarea.form-control {
 
 .form-text {
   display: block;
-  margin-top: 0.5rem;
+  margin-top: var(--spacing-sm);
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
 }
@@ -184,16 +184,16 @@ textarea.form-control {
 .radio-group {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--spacing-md);
 }
 
 .radio-label {
   display: flex;
   align-items: flex-start;
-  gap: 0.75rem;
-  padding: 1rem;
+  gap: var(--spacing-sm-md);
+  padding: var(--spacing-md);
   border: 2px solid var(--color-input-border);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: all 0.2s;
 }

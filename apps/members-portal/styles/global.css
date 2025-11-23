@@ -259,13 +259,18 @@ h1 {
   --color-error-light: #fc8181;
 
   /* Spacing */
+  --spacing-2xs: 2px;
   --spacing-xs: 4px;
   --spacing-sm: 8px;
+  --spacing-sm-md: 12px;
   --spacing-md: 16px;
   --spacing-lg: 24px;
   --spacing-xl: 40px;
+  --spacing-2xl: 48px;
+  --spacing-3xl: 64px;
 
   /* Border radius */
+  --radius-xs: 2px;
   --radius-sm: 4px;
   --radius-md: 6px;
   --radius-lg: 8px;

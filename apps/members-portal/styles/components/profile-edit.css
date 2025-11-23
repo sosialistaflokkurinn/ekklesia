@@ -13,9 +13,9 @@
    =========================== */
 
 .profile-edit__actions {
-  margin-top: 2rem;
+  margin-top: var(--spacing-xl);
   display: flex;
-  gap: 1rem;
+  gap: var(--spacing-base);
   justify-content: flex-start;
 }
 
@@ -41,9 +41,9 @@
 
 .profile-edit__input {
   width: 100%;
-  padding: 0.5rem;
+  padding: var(--spacing-sm);
   border: 1px solid var(--color-gray-300);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-size: var(--font-size-base);
   font-family: inherit;
   background-color: var(--color-white);
@@ -81,7 +81,7 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
 }
 
 .profile-field__input {
@@ -94,7 +94,7 @@
   color: var(--color-gray-900);
   background-color: var(--color-gray-50);
   border: 1px solid var(--color-gray-200);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   transition: all 0.2s ease;
   cursor: text;
   box-shadow: var(--shadow-inset-sm);
@@ -198,18 +198,18 @@
   background-color: var(--color-success-bg);
   border: 1px solid var(--color-success);
   color: var(--color-success-text);
-  padding: 1rem;
-  border-radius: 4px;
-  margin-top: 1rem;
+  padding: var(--spacing-base);
+  border-radius: var(--radius-sm);
+  margin-top: var(--spacing-base);
 }
 
 .profile-edit__error-message {
   background-color: var(--color-error-bg);
   border: 1px solid var(--color-error);
   color: var(--color-error-text);
-  padding: 1rem;
-  border-radius: 4px;
-  margin-top: 1rem;
+  padding: var(--spacing-base);
+  border-radius: var(--radius-sm);
+  margin-top: var(--spacing-base);
 }
 
 /* ===========================
@@ -273,7 +273,7 @@ body.profile-editing .profile-edit__input-wrapper {
   background-color: var(--color-white);
   border: 1px solid var(--color-gray-300);
   border-top: none;
-  border-radius: 0 0 4px 4px;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
   box-shadow: var(--shadow-dropdown);
   max-height: 300px;
   overflow-y: auto;
@@ -320,11 +320,11 @@ body.profile-editing .profile-edit__input-wrapper {
 
 .profile-toast {
   position: fixed;
-  top: 20px;
-  right: 20px;
+  top: var(--spacing-lg);
+  right: var(--spacing-lg);
   z-index: 9999;
-  padding: 1rem 1.5rem;
-  border-radius: 4px;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--radius-sm);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   box-shadow: var(--shadow-toast);
@@ -371,7 +371,7 @@ body.profile-editing .profile-edit__input-wrapper {
 .expand-icon {
   font-size: var(--font-size-sm);
   transition: transform 0.2s ease;
-  margin-left: 0.5rem;
+  margin-left: var(--spacing-xs);
   color: var(--color-gray-500);
   font-weight: var(--font-weight-bold);
 }
@@ -385,16 +385,16 @@ body.profile-editing .profile-edit__input-wrapper {
 }
 
 .collapsible-section {
-  margin-top: 1rem;
-  padding-top: 1rem;
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-md);
   border-top: 1px solid var(--color-gray-200);
 }
 
 .collapsible-list {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
 }
 
 /* ===========================
@@ -402,26 +402,26 @@ body.profile-editing .profile-edit__input-wrapper {
    =========================== */
 
 .phone-numbers-section {
-  margin-top: 1rem;
-  padding-top: 1rem;
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-md);
   border-top: 1px solid var(--color-gray-200);
 }
 
 .phone-numbers-list {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
 }
 
 .phone-number-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm);
   background-color: var(--color-gray-50);
   border: 1px solid var(--color-gray-200);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   transition: border-color 0.2s ease;
 }
 
@@ -432,9 +432,9 @@ body.profile-editing .profile-edit__input-wrapper {
 
 .phone-country-selector,
 .item-country-selector {
-  padding: 0.5rem;
+  padding: var(--spacing-xs);
   border: 1px solid var(--color-gray-300);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background-color: var(--color-white);
   cursor: pointer;
   font-size: var(--font-size-base);
@@ -456,9 +456,9 @@ body.profile-editing .profile-edit__input-wrapper {
 
 .phone-number-input {
   flex: 1;
-  padding: 0.5rem 0.75rem;
+  padding: var(--spacing-xs) var(--spacing-sm);
   border: 1px solid var(--color-gray-300);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-size: var(--font-size-base);
   font-family: inherit;
   background-color: var(--color-white);
@@ -497,7 +497,7 @@ body.profile-editing .profile-edit__input-wrapper {
 
 .phone-delete-btn,
 .item-delete-btn {
-  padding: 0.375rem 0.5rem;
+  padding: var(--spacing-2xs) var(--spacing-xs);
   background-color: transparent;
   border: 1px solid var(--color-gray-300);
   border-radius: 4px;

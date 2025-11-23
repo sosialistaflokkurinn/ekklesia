@@ -6,7 +6,7 @@
 .admin-container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: var(--spacing-xl);
 }
 
 /* Mobile List - Hidden on desktop */
@@ -19,7 +19,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: var(--spacing-xl);
 }
 
 .admin-header h1 {
@@ -34,23 +34,23 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
-  gap: 1rem;
+  margin-bottom: var(--spacing-lg);
+  gap: var(--spacing-md);
   flex-wrap: wrap;
 }
 
 /* Filters */
 .filters {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
   flex-wrap: wrap;
 }
 
 .filter-btn {
-  padding: 0.5rem 1rem;
+  padding: var(--spacing-sm) var(--spacing-md);
   border: 1px solid var(--color-border);
   background: var(--color-bg);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: var(--font-size-sm);
   transition: all 0.2s;
@@ -72,15 +72,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
   flex-wrap: wrap;
 }
 
 .elections-controls-right {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--spacing-md);
 }
 
 /* Filters */
@@ -91,10 +91,10 @@
 }
 
 .filter-btn {
-  padding: 0.5rem 1rem;
+  padding: var(--spacing-sm) var(--spacing-md);
   border: 1px solid var(--color-border);
   background: var(--color-bg-card);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
@@ -120,9 +120,9 @@
 
 .search-input {
   width: 100%;
-  padding: 0.5rem 1rem;
+  padding: var(--spacing-sm) var(--spacing-md);
   border: 1px solid var(--color-input-border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-size: var(--font-size-sm);
 }
 
@@ -134,9 +134,9 @@
 
 /* Create Button */
 .btn {
-  padding: 0.5rem 1rem;
+  padding: var(--spacing-sm) var(--spacing-md);
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
@@ -155,7 +155,7 @@
 
 /* Results Info */
 .results-info {
-  margin-bottom: 1rem;
+  margin-bottom: var(--spacing-md);
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
 }
@@ -163,7 +163,7 @@
 /* Loading Spinner */
 .loading-spinner {
   text-align: center;
-  padding: 3rem;
+  padding: var(--spacing-2xl);
 }
 
 .spinner {
@@ -173,7 +173,7 @@
   width: 50px;
   height: 50px;
   animation: spin 1s linear infinite;
-  margin: 0 auto 1rem;
+  margin: 0 auto var(--spacing-md);
 }
 
 @keyframes spin {
@@ -185,7 +185,7 @@
 .elections-table-container {
   background: var(--color-bg-card);
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
 }

@@ -9,8 +9,8 @@
 
 .members-controls {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
   flex-wrap: wrap;
   align-items: center;
 }
@@ -22,9 +22,9 @@
 
 .members-controls__search-input {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: var(--spacing-sm-md) var(--spacing-md);
   border: 1px solid var(--color-input-border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-size: var(--font-size-base);
   font-family: inherit;
   transition: border-color 0.2s ease;
@@ -46,9 +46,9 @@
 
 .members-controls__filter-select {
   width: 100%;
-  padding: 0.75rem 2.5rem 0.75rem 1rem;
+  padding: var(--spacing-sm-md) 2.5rem var(--spacing-sm-md) var(--spacing-md);
   border: 1px solid var(--color-input-border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-size: var(--font-size-base);
   font-family: inherit;
   background-color: var(--color-bg);
@@ -98,7 +98,7 @@
    ============================================ */
 
 .members-count {
-  margin-bottom: 1rem;
+  margin-bottom: var(--spacing-md);
   color: var(--color-text-secondary, var(--color-gray-600));
   font-size: var(--font-size-sm);
 }
@@ -110,7 +110,7 @@
 .members-table-container {
   overflow-x: auto;
   border: 1px solid var(--color-border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: var(--color-bg);
 }
 
@@ -126,7 +126,7 @@
 }
 
 .members-table__header {
-  padding: 1rem;
+  padding: var(--spacing-md);
   text-align: left;
   font-weight: var(--font-weight-semibold);
   color: var(--color-text);
@@ -153,7 +153,7 @@
 }
 
 .members-table__cell {
-  padding: 1rem;
+  padding: var(--spacing-md);
   color: var(--color-text);
   vertical-align: middle;
 }
@@ -166,8 +166,8 @@
 /* Status badge */
 .members-table__status {
   display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
+  padding: 0.25rem var(--spacing-sm-md);
+  border-radius: var(--radius-xl);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   text-transform: capitalize;
@@ -191,12 +191,12 @@
 /* Action links */
 .members-table__action {
   display: inline-block;
-  padding: 0.35rem 0.75rem;
-  margin-left: 0.5rem;
+  padding: 0.35rem var(--spacing-sm-md);
+  margin-left: var(--spacing-sm);
   color: var(--color-primary);
   text-decoration: none;
   border: 1px solid var(--color-primary);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-size: var(--font-size-sm);
   transition: all 0.2s ease;
 }
