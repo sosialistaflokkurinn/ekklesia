@@ -64,7 +64,7 @@ body {
 
 h1 {
   font-size: var(--font-size-xl);
-  margin-bottom: 8px;
+  margin-bottom: var(--spacing-sm);
   color: var(--color-gray-800);
   font-weight: var(--font-weight-bold);
 }
@@ -308,7 +308,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: var(--spacing-lg);
 }
 
 /* === Utility Classes === */
@@ -452,7 +452,7 @@ body {
 .profile-discrepancy__old strong,
 .profile-discrepancy__new strong {
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: var(--spacing-xs);
   font-size: var(--font-size-xs);
   text-transform: uppercase;
   letter-spacing: var(--letter-spacing-wide);

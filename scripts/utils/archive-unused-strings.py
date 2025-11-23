@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+"""
+Script to archive unused i18n strings from XML files.
+Moves unused strings to an archive file to keep the main strings file clean.
+"""
 import os
 import xml.etree.ElementTree as ET
 import datetime

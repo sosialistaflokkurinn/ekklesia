@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+"""
+Python Metadata Analyzer
+
+Analyzes Python files for code quality indicators like missing docstrings,
+print statements (vs logging), and type hints.
+Generates a JSON inventory in .metadata_store.
+"""
 import os
 import json
 import re

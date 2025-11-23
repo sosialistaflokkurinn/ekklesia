@@ -169,7 +169,7 @@ body.admin {
    No override needed - white background with dark text has good contrast */
 
 body.admin .members-count {
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--color-white-alpha-80);
 }
 
 /* ========================================== */

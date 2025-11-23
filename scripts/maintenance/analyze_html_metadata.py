@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+"""
+HTML Metadata Analyzer
+
+Analyzes HTML files for metadata, including missing lang attributes and inline styles.
+Generates a JSON inventory in .metadata_store.
+"""
 import os
 import json
 import re

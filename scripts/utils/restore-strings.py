@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+"""
+Script to restore previously archived i18n strings.
+Useful when a string was mistakenly identified as unused or is needed again.
+"""
 import os
 import xml.etree.ElementTree as ET
 import sys

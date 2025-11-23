@@ -107,6 +107,7 @@ async function loadEvents(filter = 'upcoming') {
 
     // TODO: Replace with actual Events API call
     // For now, show hardcoded events
+    debug.warn('Using mock event data (Epic #98)');
     await new Promise(resolve => setTimeout(resolve, 500)); // Simulate loading
 
     // Hardcoded event data - Facebook events

@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+"""
+JavaScript Metadata Analyzer
+
+Analyzes JavaScript files for code quality indicators like console.log usage,
+TODO comments, and async/await patterns.
+Generates a JSON inventory in .metadata_store.
+"""
 import os
 import json
 import re

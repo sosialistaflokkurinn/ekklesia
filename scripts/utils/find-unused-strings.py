@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+"""
+Script to find unused i18n strings in the codebase.
+Scans XML files for definitions and source code for usages.
+"""
 import os
 import xml.etree.ElementTree as ET
 import re

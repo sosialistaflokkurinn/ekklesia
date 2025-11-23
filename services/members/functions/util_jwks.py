@@ -1,3 +1,7 @@
+"""
+Utility for handling JSON Web Key Sets (JWKS) and JWT verification.
+Provides caching for JWKS clients to improve performance.
+"""
 import time
 import os
 import requests
