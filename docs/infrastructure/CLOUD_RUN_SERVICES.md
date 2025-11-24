@@ -18,6 +18,124 @@ Ekklesia uses [Google Cloud Run](https://cloud.google.com/run) to deploy and man
 
 ---
 
+## Architecture Diagrams
+
+Visual representations of the Ekklesia Cloud Run architecture, showing how services interact and how authentication flows through the system.
+
+### Service Architecture Overview
+
+The diagram below shows the high-level architecture of Ekklesia's microservices, organized into layers:
+
+```mermaid
+graph TB
+    subgraph "Client Layer"
+        MP[Members Portal]
+        AP[Admin Portal]
+        PP[Public Pages]
+    end
+
+    subgraph "Firebase"
+        Auth[Firebase Auth]
+        FS[Firestore]
+    end
+
+    subgraph "Cloud Run Services"
+        Elections[Elections Service<br/>PostgreSQL]
+        Events[Events Service<br/>PostgreSQL]
+        Members[Members Service<br/>Firestore]
+        HandleAuth[handlekenniauth<br/>OAuth]
+        Verify[verifymembership<br/>Django sync]
+    end
+
+    subgraph "Django Backend"
+        Django[Django REST API<br/>PostgreSQL socialism]
+    end
+
+    MP --> Auth
+    AP --> Auth
+    PP --> Auth
+    Auth --> Elections
+    Auth --> Events
+    Auth --> Members
+    Auth --> Verify
+    Members --> Django
+    Verify --> Django
+    Elections -.sync.-> Django
+    MP --> HandleAuth
+    AP --> HandleAuth
+    HandleAuth --> Auth
+    HandleAuth --> FS
+```
+
+**Key Components:**
+- **Client Layer**: Member portal, admin portal, and public-facing pages
+- **Firebase**: Centralized authentication and Firestore database
+- **Cloud Run Services**: 13 microservices handling elections, membership, and authentication
+- **Django Backend**: Legacy PostgreSQL database (socialism DB) with REST API
+
+### Authentication Flow
+
+This sequence diagram shows how users authenticate through Kenni.is (Icelandic eID) and access protected Cloud Run services:
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Portal as Members Portal
+    participant Kenni as Kenni.is
+    participant HandleAuth as handlekenniauth
+    participant Firebase
+    participant Service as Cloud Run Service
+
+    User->>Portal: Access protected page
+    Portal->>Kenni: Redirect to SSO (PKCE)
+    Kenni->>User: Request eID credentials
+    User->>Kenni: Provide kennitala auth
+    Kenni->>HandleAuth: Return auth code
+    HandleAuth->>Kenni: Exchange code for ID token
+    Kenni->>HandleAuth: Return ID token + profile
+    HandleAuth->>Firebase: Create/update user
+    HandleAuth->>Firebase: Issue custom token
+    Firebase->>Portal: User signed in (JWT)
+    Portal->>Service: API call + Firebase JWT
+    Service->>Firebase: Verify token
+    Firebase->>Service: Token valid + user claims
+    Service->>Portal: Protected resource
+```
+
+**Security Features:**
+- **PKCE**: Proof Key for Code Exchange prevents authorization code interception
+- **Kenni.is**: Government-backed eID authentication using Icelandic National Registry
+- **Firebase JWT**: Short-lived tokens with custom claims for role-based access control
+- **Token Verification**: All Cloud Run services verify tokens with Firebase before serving requests
+
+### Service Dependencies
+
+This diagram shows the dependencies between Cloud Run services:
+
+```mermaid
+graph LR
+    Elections[Elections Service] -->|Server-to-Server| Django[Django API]
+    Members[Members Service] -->|Sync member data| Django
+    Verify[verifymembership] -->|Check membership| Django
+    Portal[Members Portal] -->|Authentication| Firebase[Firebase Auth]
+    Portal -->|API calls| Elections
+    Portal -->|API calls| Events
+    Portal -->|API calls| Members
+    Admin[Admin Portal] -->|Authentication| Firebase
+    Admin -->|Admin API| Elections
+    Events[Events Service] -->|Token generation| Elections
+    HandleAuth[handlekenniauth] -->|OAuth callback| Firebase
+    HandleAuth -->|User profile| Firestore[Firestore]
+```
+
+**Dependency Notes:**
+- **Django Backend**: Source of truth for membership data, synced to Cloud Run services
+- **Firebase Auth**: Central authentication for all services (JWT verification)
+- **Elections Service**: Independent PostgreSQL database for anonymous voting
+- **Events Service**: Token generation for elections (coordinates with Elections Service)
+
+---
+
 ## Service Inventory
 
 ### Core Voting Services
