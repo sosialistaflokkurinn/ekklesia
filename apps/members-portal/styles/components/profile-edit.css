@@ -644,5 +644,33 @@ body.profile-editing .profile-edit__input-wrapper {
 
   .address-item__row {
     width: 100%;
+    flex-wrap: wrap;
+  }
+
+  /* Stack address inputs vertically on mobile */
+  .address-input {
+    flex: 1 1 100%;
+    min-width: 100%;
+  }
+
+  .address-input--street {
+    flex: 1 1 100%;
+  }
+
+  .address-input--number,
+  .address-input--letter {
+    flex: 1 1 calc(50% - 0.25rem);
+    min-width: 0;
+  }
+
+  .address-input--postal {
+    flex: 1 1 calc(40% - 0.25rem);
+    max-width: none;
+    min-width: 0;
+  }
+
+  .address-input--city {
+    flex: 1 1 calc(60% - 0.25rem);
+    min-width: 0;
   }
 }
