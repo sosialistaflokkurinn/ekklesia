@@ -687,30 +687,55 @@ graph LR
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                         Frontend (Firebase Hosting)              │
-│                     apps/members-portal/                         │
-└────────────────────────┬────────────────────────────────────────┘
-                         │
-         ┌───────────────┼───────────────┐
-         ▼               ▼               ▼
-   ┌──────────┐   ┌──────────┐   ┌──────────┐
-   │handlekenn│   │verifymemb│   │elections-│
-   │  iauth   │   │ ership   │   │ service  │
-   └────┬─────┘   └────┬─────┘   └────┬─────┘
-        │              │              │
-        └──────────────┼──────────────┘
-                       ▼
-              ┌─────────────────┐
-              │  events-service │
-              └────────┬────────┘
-                       │
-         ┌─────────────┼─────────────┐
-         ▼             ▼             ▼
-   ┌──────────┐  ┌──────────┐  ┌──────────┐
-   │syncmembers│  │updatemem│  │auditmemb│
-   └──────────┘  │berprofile│  │erchanges│
-                 └──────────┘  └──────────┘
+│                   Frontend (Firebase Hosting)                    │
+│                  apps/members-portal/                            │
+└──────┬────────────────┬────────────────┬────────────────────────┘
+       │                │                │
+       ▼                ▼                ▼
+┌─────────────┐  ┌─────────────┐  ┌─────────────┐
+│handlekenn   │  │verifymemb   │  │elections-   │
+│iauth        │  │ership       │  │service      │
+│             │  │             │  │             │
+│→ Kenni.is   │  │→ Firestore  │  │→ PostgreSQL │
+│→ Firestore  │  │             │  │→ Firestore  │
+└─────────────┘  └─────────────┘  └─────────────┘
+
+       ▼
+┌─────────────┐
+│events-      │
+│service      │
+│             │
+│→ PostgreSQL │
+│→ Firestore  │
+└─────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│              Scheduled Sync Jobs (Dagleg samstilling)            │
+└──────┬────────────────┬────────────────────────────────────────┘
+       │                │
+       ▼                ▼
+┌──────────────┐  ┌──────────────┐
+│bidirectional │  │syncmembers   │
+│_sync         │  │(legacy)      │
+│              │  │              │
+│→ Django API  │  │→ Django API  │
+│→ Firestore   │  │→ Firestore   │
+│(kl. 3:30)    │  │(klst.)       │
+└──────────────┘  └──────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│              Admin Portal (django-api.js)                        │
+│              Direct Django Access                                │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │
+                           ▼
+                    ┌─────────────┐
+                    │Django API   │
+                    │(direct)     │
+                    └─────────────┘
 ```
+
+**Athugasemd:** Einungis `bidirectional_sync` og `syncmembers` tengjast Django API beint. Allar aðrar þjónustur nota Firestore eða PostgreSQL.
 
 ### External Dependencies
 
@@ -724,8 +749,21 @@ graph LR
 - App Check (elections-service, events-service)
 
 **External APIs**:
-- Kenni.is OAuth (handlekenniauth)
-- Django Backend API (syncmembers, verifymembership, updatememberprofile)
+- **Kenni.is OAuth**: handlekenniauth (authentication flow)
+- **Django Backend API**:
+  - bidirectional_sync (primary sync, daily at 3:30)
+  - syncmembers (legacy full sync, hourly - scheduled for deprecation)
+  - django-api.js (admin portal direct access)
+  - updatememberprofile (indirect - calls syncmembers internally)
+
+**Services that do NOT connect to Django** (read from Firestore instead):
+- verifymembership ✓
+- elections-service ✓
+- events-service ✓
+- handlekenniauth ✓ (connects to Kenni.is OAuth)
+- auditmemberchanges ✓
+- track_member_changes ✓
+- get-django-token ✓ (generates tokens, doesn't call Django)
 
 ---
 
