@@ -84,24 +84,62 @@ function displayRecentSync(log) {
   const stats = log.stats || {};
   const status = stats.failed > 0 ? adminStrings.get('sync_status_with_errors') : adminStrings.get('sync_status_success_simple');
 
+  // Build detailed stats grid
+  let gridItems = `
+    <div class="info-grid__item">
+      <div class="info-grid__label">${adminStrings.get('history_table_date')}</div>
+      <div class="info-grid__value">${formattedDate}</div>
+    </div>
+    <div class="info-grid__item">
+      <div class="info-grid__label">${adminStrings.get('stat_status_label')}</div>
+      <div class="info-grid__value">${status}</div>
+    </div>
+    <div class="info-grid__item">
+      <div class="info-grid__label">${adminStrings.get('stat_total_label')}</div>
+      <div class="info-grid__value">${stats.total_members || 0}</div>
+    </div>
+    <div class="info-grid__item">
+      <div class="info-grid__label">${adminStrings.get('stat_synced_label')}</div>
+      <div class="info-grid__value">${stats.synced || 0}</div>
+    </div>
+  `;
+
+  // Add failed count if there are failures
+  if (stats.failed > 0) {
+    gridItems += `
+      <div class="info-grid__item">
+        <div class="info-grid__label">${adminStrings.get('stat_failed_label')}</div>
+        <div class="info-grid__value" style="color: var(--color-error, #dc2626)">${stats.failed}</div>
+      </div>
+    `;
+  }
+
+  // Add skipped count if there are skipped members
+  if (stats.skipped > 0) {
+    gridItems += `
+      <div class="info-grid__item">
+        <div class="info-grid__label">${adminStrings.get('stat_skipped_label')}</div>
+        <div class="info-grid__value" style="color: var(--color-muted, #6b7280)">${stats.skipped}</div>
+      </div>
+    `;
+  }
+
+  // Add duration
+  gridItems += `
+    <div class="info-grid__item">
+      <div class="info-grid__label">${adminStrings.get('stat_time_label')}</div>
+      <div class="info-grid__value">${calculateDuration(stats)}</div>
+    </div>
+  `;
+
   summary.innerHTML = `
     <div class="info-grid">
-      <div class="info-grid__item">
-        <div class="info-grid__label">${adminStrings.get('history_table_date')}</div>
-        <div class="info-grid__value">${formattedDate}</div>
-      </div>
-      <div class="info-grid__item">
-        <div class="info-grid__label">${adminStrings.get('stat_status_label')}</div>
-        <div class="info-grid__value">${status}</div>
-      </div>
-      <div class="info-grid__item">
-        <div class="info-grid__label">${adminStrings.get('stat_synced_label')}</div>
-        <div class="info-grid__value">${stats.synced || 0} / ${stats.total_members || 0}</div>
-      </div>
-      <div class="info-grid__item">
-        <div class="info-grid__label">${adminStrings.get('stat_time_label')}</div>
-        <div class="info-grid__value">${calculateDuration(stats)}</div>
-      </div>
+      ${gridItems}
+    </div>
+    <div style="margin-top: 1.5rem; text-align: center;">
+      <a href="/admin/sync-history.html" class="btn btn--outline">
+        ${adminStrings.get('btn_view_history')}
+      </a>
     </div>
   `;
 
