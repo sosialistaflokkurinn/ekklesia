@@ -581,6 +581,37 @@ All metadata is stored in:
 
 Strategic documents for improving documentation quality based on markdown metadata analysis.
 
+### 🎯 Master Implementation Plan ⭐ NEW
+
+**Document:** [docs/standards/DOCUMENTATION_QUALITY_IMPLEMENTATION_PLAN.md](../../docs/standards/DOCUMENTATION_QUALITY_IMPLEMENTATION_PLAN.md)
+
+**Purpose:** Comprehensive 4-week plan to implement all documentation quality strategies
+
+**Scope:**
+- Week 1: Foundation & Quick Wins (baseline, archive, mark completed)
+- Week 2: TODO Consolidation (split checklists, GitHub migration)
+- Week 3: Visual Documentation (diagrams, screenshots)
+- Week 4: Standards & Maintenance (frontmatter, automation)
+
+**Target Metrics:**
+- TODO Health Score: 40/100 → 70+/100
+- Unchecked TODOs: 1,780 → <800 (55% reduction)
+- Completion Rate: 13.8% → >30%
+- Files with images: 6 → 35+ (1.8% → 10%)
+
+**Quick Start:**
+```bash
+# Run baseline analysis
+python3 scripts/maintenance/check-todo-health.py --verbose > tmp/analysis/baseline-$(date +%Y-%m-%d).txt
+
+# Start Week 1 work
+# See implementation plan for detailed daily tasks
+```
+
+**Status:** Planning complete, ready for implementation
+
+---
+
 ### Available Strategies
 
 #### 1. TODO Cleanup Strategy ⭐ NEW
@@ -820,5 +851,10 @@ cat .metadata_store/md_inventory.json | \
 
 **Documentation Quality Initiative**
 **Date:** 2025-11-24
-**Status:** Strategy documents created, implementation pending
-**Next Steps:** Create TODO health check script, begin Week 1 cleanup
+**Status:** Master implementation plan created, strategies documented, ready to begin Week 1
+**Documents:**
+- [DOCUMENTATION_QUALITY_IMPLEMENTATION_PLAN.md](../../docs/standards/DOCUMENTATION_QUALITY_IMPLEMENTATION_PLAN.md) - 4-week master plan
+- [TODO_CLEANUP_STRATEGY.md](../../docs/standards/TODO_CLEANUP_STRATEGY.md) - TODO management strategy
+- [CHECKLIST_SPLITTING_RECOMMENDATIONS.md](../../docs/standards/CHECKLIST_SPLITTING_RECOMMENDATIONS.md) - Checklist splitting guide
+- [DIAGRAM_RECOMMENDATIONS.md](../../docs/standards/DIAGRAM_RECOMMENDATIONS.md) - Visual documentation plan
+**Next Steps:** Begin Week 1 - Run baseline analysis, archive historical files, mark completed TODOs
