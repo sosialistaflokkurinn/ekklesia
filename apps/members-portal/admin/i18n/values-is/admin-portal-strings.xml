@@ -14,6 +14,8 @@
   <string name="admin_welcome_neutral">Velkomin/n, %s</string>
   <string name="admin_welcome_subtitle">Hér getur þú haft umsjón með samstillingu félagaskrár og öðrum aðgerðum.</string>
   <string name="admin_actions_title">Aðgerðir</string>
+  <string name="quick_action_members_label">Félagar</string>
+  <string name="quick_action_members_desc">Skoða og breyta félagaskrá</string>
   <string name="quick_action_sync_label">Samstilla félagaskrá</string>
   <string name="quick_action_sync_desc">Keyra samstillingu úr eldra Django-kerfi</string>
   <string name="quick_action_history_label">Samstillingasaga</string>
