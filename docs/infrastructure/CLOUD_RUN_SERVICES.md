@@ -102,6 +102,7 @@ sequenceDiagram
     participant Portal as Members Portal
     participant Kenni as Kenni.is
     participant HandleAuth as handlekenniauth
+    participant Firestore
     participant Firebase
     participant Service as Cloud Run Service
 
@@ -112,8 +113,9 @@ sequenceDiagram
     Kenni->>HandleAuth: Return auth code
     HandleAuth->>Kenni: Exchange code for ID token
     Kenni->>HandleAuth: Return ID token + profile
+    HandleAuth->>Firestore: Uppfæra /users/ með profile
     HandleAuth->>Firebase: Create/update user
-    HandleAuth->>Firebase: Issue custom token
+    HandleAuth->>Firebase: Issue custom token (with claims)
     Firebase->>Portal: User signed in (JWT)
     Portal->>Service: API call + Firebase JWT
     Service->>Firebase: Verify token
