@@ -1,3 +1,19 @@
+---
+title: "Voting Flow & Anonymity Analysis"
+created: 2025-11-21
+updated: 2025-11-24
+status: active
+category: security
+tags: [voting, anonymity, privacy, elections, tokens, authentication]
+related:
+  - ./GDPR_VOTING_ANONYMITY_ANALYSIS.md
+  - ../../features/election-voting/EPIC_87_ELECTION_DISCOVERY.md
+  - ../current/FIREBASE_APP_CHECK_RESEARCH.md
+author: Security Team
+reviewers: [privacy-officer, legal-advisor]
+next_review: 2026-05-21
+---
+
 # Voting Flow & Anonymity Analysis
 
 **Date**: 2025-11-11

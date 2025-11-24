@@ -1,3 +1,18 @@
+---
+title: "Django Backend System Documentation"
+created: 2025-11-06
+updated: 2025-11-24
+status: active
+category: systems
+tags: [django, backend, api, postgresql, membership, rest-api]
+related:
+  - ../infrastructure/CLOUD_RUN_SERVICES.md
+  - ../integration/DJANGO_API_IMPLEMENTATION.md
+  - ../integration/BIDIRECTIONAL_SYNC.md
+author: Backend Team
+next_review: 2026-02-24
+---
+
 # Django Backend System Documentation
 
 **Document Type**: System Reference

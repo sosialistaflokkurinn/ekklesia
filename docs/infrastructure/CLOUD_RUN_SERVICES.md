@@ -1,3 +1,18 @@
+---
+title: "Cloud Run Services Architecture"
+created: 2025-11-06
+updated: 2025-11-24
+status: active
+category: infrastructure
+tags: [cloud-run, microservices, firebase, architecture, gcp, deployment]
+related:
+  - ../systems/DJANGO_BACKEND_SYSTEM.md
+  - ../integration/ARCHITECTURE.md
+  - ./FIRESTORE_SCHEMA.md
+author: Infrastructure Team
+next_review: 2026-02-24
+---
+
 # Cloud Run Services Architecture
 
 **Document Type**: Infrastructure Documentation

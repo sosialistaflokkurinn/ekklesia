@@ -1,3 +1,19 @@
+---
+title: "Firebase App Check for Cloud Run Services: A Comprehensive Analysis"
+created: 2025-10-21
+updated: 2025-11-24
+status: active
+category: security
+tags: [firebase, app-check, security, recaptcha, cloud-run, authentication]
+related:
+  - ../policies/VOTING_ANONYMITY_MODEL.md
+  - ../../infrastructure/CLOUD_RUN_SERVICES.md
+  - ../../features/authentication/KENNI_IS_OAUTH.md
+author: Security Team
+reviewers: [security-lead, infrastructure-team]
+next_review: 2026-05-21
+---
+
 # Firebase App Check for Cloud Run Services: A Comprehensive Analysis
 
 **Document Type**: Academic Research Paper & Implementation Guide

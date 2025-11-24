@@ -1,3 +1,18 @@
+---
+title: "TODO Cleanup Strategy"
+created: 2025-11-24
+updated: 2025-11-24
+status: active
+category: standards
+tags: [todo, documentation, maintenance, workflow, quality]
+related:
+  - ./CHECKLIST_SPLITTING_RECOMMENDATIONS.md
+  - ./FRONTMATTER_STANDARD.md
+  - ./DOCUMENTATION_QUALITY_IMPLEMENTATION_PLAN.md
+author: Development Team
+next_review: 2026-02-24
+---
+
 # TODO Cleanup Strategy
 
 **Created:** 2025-11-24
