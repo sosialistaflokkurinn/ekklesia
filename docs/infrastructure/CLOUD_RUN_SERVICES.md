@@ -57,9 +57,9 @@ graph TB
     subgraph "Cloud Run Services"
         Elections[Elections Service<br/>PostgreSQL]
         Events[Events Service<br/>PostgreSQL]
-        Members[Members Service<br/>Firestore]
+        Sync[bidirectional_sync<br/>Python Function]
         HandleAuth[handlekenniauth<br/>OAuth]
-        Verify[verifymembership<br/>Django sync]
+        Verify[verifymembership<br/>Firestore]
     end
 
     subgraph "Django Backend"
@@ -71,23 +71,26 @@ graph TB
     PP --> Auth
     Auth --> Elections
     Auth --> Events
-    Auth --> Members
     Auth --> Verify
-    Members --> Django
-    Verify --> Django
     MP --> HandleAuth
     AP --> HandleAuth
     HandleAuth --> Auth
     HandleAuth --> FS
-    HandleAuth -.membership check.-> Django
+
+    Sync -->|Tvíhliða sync| Django
+    Sync -->|Sync data| FS
+    Verify -->|Lesa membership| FS
 ```
 
 **Key Components:**
 - **Client Layer**: Member portal, admin portal, and public-facing pages
-- **Firebase**: Centralized authentication and Firestore database (custom claims include membership data)
+- **Firebase**: Centralized authentication and Firestore database (custom claims include membership data synced from Django)
 - **Cloud Run Services**: 13 microservices handling elections, membership, and authentication
-- **Django Backend**: Legacy PostgreSQL database (socialism DB) with REST API - source of truth for membership
-- **Note**: Elections Service does NOT call Django directly; it uses Firebase custom claims set by handlekenniauth
+- **Django Backend**: Legacy PostgreSQL database (socialism DB) with REST API - source of truth for membership data
+- **bidirectional_sync**: EINA tengingin við Django - keyrir daglega klukkan 3:30, syncrar Django ↔ Firestore
+- **handlekenniauth**: Kallar á Kenni.is OAuth API, ekki Django (les membership úr Firestore)
+- **verifyMembership**: Les bara úr Firestore, kallar EKKI á Django beint
+- **Elections/Events Services**: Nota Firebase custom claims, ENGAR Django tengingar
 
 ### Authentication Flow
 
@@ -130,29 +133,36 @@ This diagram shows the dependencies between Cloud Run services:
 
 ```mermaid
 graph LR
-    Members[Members Service] -->|Sync member data| Django[Django API]
-    Verify[verifymembership] -->|Check membership| Django
-    HandleAuth[handlekenniauth] -->|Verify membership| Django
-    Portal[Members Portal] -->|Authentication| Firebase[Firebase Auth]
-    Portal -->|API calls| Elections
-    Portal -->|API calls| Events
-    Portal -->|API calls| Members
+    Sync[bidirectional_sync<br/>Python Function] -->|Tvíhliða sync| Django[Django API]
+    Sync -->|Uppfæra Firestore| Firestore[Firestore]
+
+    Verify[verifymembership] -->|Lesa membership| Firestore
+    HandleAuth[handlekenniauth] -->|OAuth flow| KenniIs[Kenni.is API]
+    HandleAuth -->|Uppfæra users| Firestore
+    HandleAuth -->|Custom claims| Firebase[Firebase Auth]
+
+    Portal[Members Portal] -->|Authentication| Firebase
+    Portal -->|API calls| Elections[Elections Service]
+    Portal -->|API calls| Events[Events Service]
+
     Admin[Admin Portal] -->|Authentication| Firebase
     Admin -->|Admin API| Elections
-    Events[Events Service] -->|Token generation| Elections
-    HandleAuth -->|OAuth callback + custom claims| Firebase
-    HandleAuth -->|User profile| Firestore[Firestore]
-    Firebase -->|JWT with custom claims| Elections[Elections Service]
+
+    Events -->|S2S register tokens| Elections
+
+    Firebase -->|JWT with custom claims| Elections
     Firebase -->|JWT with custom claims| Events
+    Firebase -->|JWT verification| Verify
 ```
 
 **Dependency Notes:**
-- **Django Backend**: Source of truth for membership data, synced to Firestore via Members Service
-- **Firebase Auth**: Central authentication for all services (JWT verification with custom claims)
-- **Elections Service**: Independent PostgreSQL database for anonymous voting; NO direct Django connection
-- **Events Service**: Token generation for elections (coordinates with Elections Service)
-- **Membership verification flow**: Django → handlekenniauth → Firebase custom claims → Elections Service
-- **Key insight**: Elections/Events Services use Firebase JWT custom claims for eligibility, not direct Django API calls
+- **EINA Django tenging**: `bidirectional_sync` (Python Cloud Function) syncrar daglega klukkan 3:30
+- **Django Backend**: Source of truth fyrir membership data, synced til Firestore
+- **handlekenniauth**: Kallar á **Kenni.is OAuth API**, EKKI Django (les membership úr Firestore)
+- **verifyMembership**: Les **bara úr Firestore**, kallar EKKI á Django beint
+- **Firebase Auth**: Central authentication fyrir allar þjónustur (JWT verification with custom claims)
+- **Elections/Events Services**: Nota Firebase JWT custom claims fyrir eligibility, ENGAR Django API tengingar
+- **Key insight**: Membership data syncast frá Django → Firestore, síðan nota allar þjónustur Firestore
 
 ---
 
