@@ -46,16 +46,25 @@ def get_django_api_token() -> str:
 
     The token is injected via Secret Manager at runtime by Cloud Run.
 
+    Tries both naming conventions:
+    - 'django-api-token' (Firebase Functions Gen2 format)
+    - 'DJANGO_API_TOKEN' (gcloud deploy format)
+
     Returns:
         Django API token string
 
     Raises:
-        ValueError: If DJANGO_API_TOKEN is not set
+        ValueError: If token is not found in either format
     """
-    token = os.environ.get('DJANGO_API_TOKEN')
+    # Try Firebase Functions format first (lowercase with hyphens)
+    token = os.environ.get('django-api-token')
+
+    # Fall back to gcloud format (uppercase with underscores)
+    if not token:
+        token = os.environ.get('DJANGO_API_TOKEN')
 
     if not token:
-        raise ValueError("DJANGO_API_TOKEN environment variable not set")
+        raise ValueError("Django API token not found in environment (tried 'django-api-token' and 'DJANGO_API_TOKEN')")
 
     log_json('INFO', 'Django API token retrieved from environment',
              event='django_api_token_retrieved',

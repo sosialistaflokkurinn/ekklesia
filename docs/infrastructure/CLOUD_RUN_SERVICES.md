@@ -31,6 +31,27 @@ Ekklesia uses [Google Cloud Run](https://cloud.google.com/run) to deploy and man
 
 **Security**: All services use [Google Secret Manager](https://cloud.google.com/secret-manager) for sensitive credentials (OAuth secrets, API tokens). Secrets are injected as environment variables at runtime by Cloud Run.
 
+### ⚠️ Secret Manager Environment Variable Naming
+
+**IMPORTANT**: Different deployment methods create different environment variable names:
+
+| Deployment Method | Secret Name | Environment Variable | Example |
+|------------------|-------------|---------------------|---------|
+| **Firebase CLI** | `django-api-token` | `django-api-token` | Lowercase, hyphens preserved |
+| **gcloud CLI** | `django-api-token` | `DJANGO_API_TOKEN` | Uppercase, hyphens → underscores |
+
+**Recommendation**: Code should check both formats for maximum compatibility:
+
+```python
+# ✅ Good - checks both formats
+token = os.environ.get('django-api-token') or os.environ.get('DJANGO_API_TOKEN')
+
+# ❌ Bad - only checks one format
+token = os.environ.get('DJANGO_API_TOKEN')  # Fails with Firebase deploy
+```
+
+**Example**: See `services/members/functions/sync_members.py:get_django_api_token()` for reference implementation.
+
 ---
 
 ## Architecture Diagrams
@@ -390,7 +411,8 @@ graph LR
 - Python 3.13 (Firebase Functions Gen2)
 - Firebase Admin SDK (Python)
 - Django API integration (`/felagar/api/full/`)
-- **Secret Manager**: `DJANGO_API_TOKEN` (Django API authentication)
+- **Secret Manager**: `django-api-token` (Django API authentication)
+  - Environment variable: `django-api-token` (Firebase deploy) or `DJANGO_API_TOKEN` (gcloud deploy)
 
 **Code Location**: `services/members/functions/sync_members.py`
 
@@ -451,7 +473,10 @@ This service provides **real-time self-service** profile management, distinct fr
 - Python 3.13 (Firebase Functions Gen2)
 - Firebase Admin SDK (Python)
 - Django API integration: `PATCH /felagar/api/full/{django_id}/` (via `sync_members.update_django_member()`)
-- **Secret Manager**: `DJANGO_API_TOKEN` (Django API authentication)
+- **Secret Manager**: `django-api-token` (Django API authentication)
+  - ⚠️ **Environment Variable Naming**: Firebase Functions creates env var with exact secret name: `django-api-token` (lowercase, hyphens)
+  - Differs from gcloud deploy format: `DJANGO_API_TOKEN` (uppercase, underscores)
+  - Code supports both formats for compatibility (see `sync_members.get_django_api_token()`)
 
 **Code Location**: `services/members/functions/membership/functions.py` (updatememberprofile_handler)
 
@@ -497,7 +522,10 @@ This service provides **real-time self-service** profile management, distinct fr
 - Python 3.13 (Cloud Functions Gen2)
 - Firebase Admin SDK (Python)
 - Django API integration
-- **Secret Manager**: `DJANGO_API_TOKEN` (Django API authentication)
+- **Secret Manager**: `django-api-token` (Django API authentication)
+  - ⚠️ Deployed via **gcloud** (not Firebase CLI)
+  - Environment variable configured as: `DJANGO_API_TOKEN` (uppercase, underscores)
+  - Uses `--set-secrets=DJANGO_API_TOKEN=django-api-token:latest` flag
 
 **Code Location**: `services/members/functions/bidirectional_sync.py`
 
