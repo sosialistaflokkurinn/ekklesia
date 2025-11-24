@@ -139,6 +139,10 @@ export function createPolicyResultsDisplay(options = {}) {
     const noPercentage = totalVotes > 0 ? Math.round((amendment.no_votes / totalVotes) * 100) : 0;
 
     const votesDiv = el('div', 'policy-results__votes');
+    // SECURITY: Safe to use innerHTML here - all variables are typed/controlled:
+    // - strings.* are from i18n (developer-controlled)
+    // - yes_votes, no_votes are numbers from API (type-safe)
+    // - percentages are calculated numbers (type-safe)
     votesDiv.innerHTML = `
       <div class="policy-results__vote-item policy-results__vote-item--yes">
         <span class="policy-results__vote-label">${strings.yesLabel}:</span>
@@ -168,6 +172,7 @@ export function createPolicyResultsDisplay(options = {}) {
     const abstainPercentage = totalVotes > 0 ? Math.round((finalResults.abstain_votes / totalVotes) * 100) : 0;
 
     const votesDiv = el('div', 'policy-results__votes policy-results__votes--final');
+    // SECURITY: Safe to use innerHTML here - all variables are typed/controlled (see above)
     votesDiv.innerHTML = `
       <div class="policy-results__vote-item policy-results__vote-item--yes">
         <span class="policy-results__vote-label">${strings.yesLabel}:</span>

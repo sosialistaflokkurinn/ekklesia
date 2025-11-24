@@ -169,7 +169,7 @@ function savePhoneNumbers(phoneNumbers, callback) {
 
 ### 4. Component Standards
 
-**Guide**: [Component Library Guide](../docs/standards/COMPONENT_LIBRARY_GUIDE.md)
+**Guide**: [Component Library Guide](../apps/members-portal/js/components/README.md)
 
 **Summary**:
 - Use `el()` helper for DOM creation (no `document.createElement`)
@@ -201,8 +201,8 @@ export function createWelcomeCard({ username }) {
 ```
 
 **Quick Links**:
-- [DOM Helper (`el()`)](../docs/standards/COMPONENT_LIBRARY_GUIDE.md#dom-helper)
-- [Component API Pattern](../docs/standards/COMPONENT_LIBRARY_GUIDE.md#component-api)
+- [DOM Helper (`el()`)](../apps/members-portal/js/components/README.md#dom-helper)
+- [Component API Pattern](../apps/members-portal/js/components/README.md#component-api)
 
 ---
 
@@ -233,8 +233,8 @@ def normalize_kennitala(kennitala: str) -> Optional[str]:
         Normalized kennitala with hyphen, or None if invalid
 
     Example:
-        >>> normalize_kennitala("1234567890")
-        "123456-7890"
+        >>> normalize_kennitala("0103009999")
+        "010300-9999"  # Jan 3, 2000
     """
     if not kennitala:
         return None
@@ -274,7 +274,10 @@ def normalize_kennitala(kennitala):
 
 ### 6. Internationalization (i18n)
 
-**Guide**: [i18n & R.string Guide](../docs/standards/I18N_GUIDE.md)
+**Guides**:
+- [i18n & R.string Guide](../docs/standards/I18N_GUIDE.md) - R.string pattern implementation
+- [i18n Architecture](standards/I18N_ARCHITECTURE.md) - System architecture
+- [Admin Elections i18n](standards/ADMIN_ELECTIONS_I18N.md) - Admin interface translation
 
 **Summary**:
 - [XML-based strings](https://developer.android.com/guide/topics/resources/string-resource) (Android R.string pattern)

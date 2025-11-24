@@ -15,6 +15,8 @@ import { el } from '../utils/dom.js';
  * @param {Object} options - Card configuration
  * @param {string} options.title - Card title
  * @param {string|HTMLElement} options.content - Card content (HTML string or element)
+ *   ⚠️  SECURITY: If passing HTML string, content MUST be trusted/sanitized to prevent XSS.
+ *   Prefer HTMLElement or use textContent for user-generated content.
  * @param {string} options.variant - Card variant ('default', 'welcome', 'admin-welcome')
  * @param {Array} options.actions - Action buttons [{text, onClick, primary}]
  * @returns {Object} Component API with {element, setTitle, setContent, destroy}

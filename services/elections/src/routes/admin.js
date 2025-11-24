@@ -1104,7 +1104,7 @@ router.post('/elections/:id/anonymize', requireSuperadmin, async (req, res) => {
       duration_ms: duration,
     });
 
-    console.log('[Admin] Election anonymized', {
+    logger.info('[Admin] Election anonymized', {
       uid_hash: hashUidForLogging(req.user.uid),
       election_id: id,
       anonymized_count,

@@ -97,7 +97,7 @@
 .admin-nav__user {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--spacing-md);
 }
 
 .admin-nav__user #user-email {
@@ -107,7 +107,7 @@
 
 .admin-nav__user .role-indicator {
   font-size: var(--font-size-xs);
-  padding: 0.25rem 0.5rem;
+  padding: var(--spacing-xs) var(--spacing-sm);
   background: var(--color-accent-gold);
   color: var(--color-gray-900);
   border-radius: 4px;
@@ -117,8 +117,8 @@
 /* Responsive */
 @media (max-width: 1220px) {
   .admin-nav__container {
-    padding: 0 1rem;
-    gap: 1rem;
+    padding: 0 var(--spacing-md);
+    gap: var(--spacing-md);
   }
 
   .admin-nav__links {

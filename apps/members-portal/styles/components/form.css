@@ -241,7 +241,7 @@
 .form-field__error {
   color: var(--color-error);
   font-size: var(--font-size-sm);
-  margin-top: 0.5rem;
+  margin-top: var(--spacing-sm);
   display: none;
 }
 
@@ -252,7 +252,7 @@
 .form-field__success {
   color: var(--color-success-text);
   font-size: var(--font-size-sm);
-  margin-top: 0.5rem;
+  margin-top: var(--spacing-sm);
   display: none;
 }
 
@@ -265,9 +265,9 @@
    =========================== */
 
 .form-actions {
-  margin-top: 2rem;
+  margin-top: var(--spacing-xl-2);
   display: flex;
-  gap: 1rem;
+  gap: var(--spacing-md);
   justify-content: flex-start;
 }
 
@@ -288,9 +288,9 @@
    =========================== */
 
 .form-message {
-  padding: 1rem;
+  padding: var(--spacing-md);
   border-radius: 4px;
-  margin-top: 1rem;
+  margin-top: var(--spacing-md);
   font-size: var(--font-size-sm);
 }
 
@@ -320,16 +320,16 @@
 
 .form-message__title {
   font-weight: var(--font-weight-semibold);
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--spacing-sm);
 }
 
 .form-message__list {
   margin: 0;
-  padding-left: 1.5rem;
+  padding-left: var(--spacing-lg);
 }
 
 .form-message__list li {
-  margin: 0.25rem 0;
+  margin: var(--spacing-xs) 0;
 }
 
 /* ===========================
@@ -339,7 +339,7 @@
 .form-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
+  gap: var(--spacing-lg);
 }
 
 .form-grid--2col {
@@ -362,21 +362,21 @@
 .form-checkbox-group {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  margin-top: 0.5rem;
+  gap: var(--spacing-sm-md);
+  margin-top: var(--spacing-sm);
 }
 
 .form-radio-group--inline,
 .form-checkbox-group--inline {
   flex-direction: row;
-  gap: 1.5rem;
+  gap: var(--spacing-lg);
 }
 
 .form-radio-label,
 .form-checkbox-label {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
   cursor: pointer;
   font-size: var(--font-size-sm);
   color: var(--color-gray-700);

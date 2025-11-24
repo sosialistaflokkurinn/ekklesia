@@ -146,9 +146,17 @@ export class PhoneManager {
           debug.log(`✏️ Country changed, updating...`);
           this.phoneNumbers[index].country = newCountry;
           showStatus(statusIcon, 'loading', { baseClass: 'profile-field__status' });
-          await this.save();
-          showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
-          this.render();
+          try {
+            await this.save();
+            showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
+            this.render();
+          } catch (error) {
+            debug.error('Failed to save phone country:', error);
+            showStatus(statusIcon, 'error', { baseClass: 'profile-field__status' });
+            // Revert change
+            this.phoneNumbers[index].country = phone.country;
+            this.render();
+          }
         } else {
           debug.log('ℹ️ No change, skipping save');
         }
@@ -171,8 +179,16 @@ export class PhoneManager {
           debug.log(`✏️ Phone number changed, updating...`);
           this.phoneNumbers[index].number = newNumber;
           showStatus(statusIcon, 'loading', { baseClass: 'profile-field__status' });
-          await this.save();
-          showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
+          try {
+            await this.save();
+            showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
+          } catch (error) {
+            debug.error('Failed to save phone number:', error);
+            showStatus(statusIcon, 'error', { baseClass: 'profile-field__status' });
+            // Revert change
+            this.phoneNumbers[index].number = phone.number;
+            e.target.value = phone.number;
+          }
         } else {
           debug.log('ℹ️ No change, skipping save');
         }

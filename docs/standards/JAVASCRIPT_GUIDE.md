@@ -882,7 +882,7 @@ describe('isValidEmail', () => {
 
 describe('validateKennitala', () => {
   test('validates correct kennitala', () => {
-    expect(validateKennitala('1234567890')).toBe(true);
+    expect(validateKennitala('0103009999')).toBe(true); // Jan 3, 2000
   });
 
   test('rejects invalid kennitala', () => {

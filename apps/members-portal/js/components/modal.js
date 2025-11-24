@@ -27,17 +27,19 @@ let activeModal = null;
 
 /**
  * Show a modal dialog
- * 
+ *
  * @param {Object} options - Modal configuration
  * @param {string} options.title - Modal title
  * @param {string|HTMLElement} options.content - Modal content (HTML string or element)
+ *   ⚠️  SECURITY: If passing HTML string, content MUST be trusted/sanitized to prevent XSS.
+ *   Prefer HTMLElement or use textContent for user-generated content.
  * @param {Array<Object>} options.buttons - Button configurations
  * @param {boolean} options.closeOnOverlay - Close when clicking overlay (default: true)
  * @param {boolean} options.closeOnEscape - Close on ESC key (default: true)
  * @param {Function} options.onClose - Callback when modal closes
  * @param {string} options.size - Modal size: 'sm', 'md', 'lg', 'xl' (default: 'md')
  * @returns {Object} Modal instance with close() method
- * 
+ *
  * @example
  * const modal = showModal({
  *   title: 'Confirmation',

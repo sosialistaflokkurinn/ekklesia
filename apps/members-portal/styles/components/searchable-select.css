@@ -124,7 +124,7 @@
 
 .searchable-select__search {
   position: relative;
-  padding: 12px;
+  padding: var(--spacing-sm-md);
   border-bottom: 1px solid var(--color-divider);
   background: var(--color-cream-light);
 }
@@ -168,7 +168,7 @@
 
 .searchable-select__list {
   margin: 0;
-  padding: 4px 0;
+  padding: var(--spacing-xs) 0;
   list-style: none;
   overflow-y: auto;
   overflow-x: hidden;

@@ -159,9 +159,8 @@ class ElectionState extends EventTarget {
       duration: durationMinutes
     });
 
-    // TODO: Call API to update election on server
-    // await updateElectionAPI(this.state.id, { status: 'active', ... });
-    debug.warn('API update not implemented yet (Epic #24)');
+    // TODO(#283): Call Admin Elections API to persist state to server
+    // await ElectionsAdminAPI.openElection(this.state.id);
 
     this.dispatchEvent(new CustomEvent('started', {
       detail: this.state
@@ -180,9 +179,8 @@ class ElectionState extends EventTarget {
 
     debug.log('Election closed immediately');
 
-    // TODO: Call API to update election on server
-    // await updateElectionAPI(this.state.id, { status: 'closed', ... });
-    debug.warn('API update not implemented yet (Epic #24)');
+    // TODO(#283): Call Admin Elections API to persist state to server
+    // await ElectionsAdminAPI.closeElection(this.state.id);
 
     this.dispatchEvent(new CustomEvent('closed', {
       detail: this.state

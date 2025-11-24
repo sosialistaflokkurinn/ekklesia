@@ -266,6 +266,7 @@ h1 {
   --spacing-md: 16px;
   --spacing-lg: 24px;
   --spacing-xl: 40px;
+  --spacing-xl-2: 32px;    /* 2rem - Added for CSS refactoring */
   --spacing-2xl: 48px;
   --spacing-3xl: 64px;
 

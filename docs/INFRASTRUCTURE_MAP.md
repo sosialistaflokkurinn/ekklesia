@@ -1,6 +1,6 @@
 # Infrastructure Category Map
 
-**Last Updated**: 2025-11-14
+**Last Updated**: 2025-11-24
 **Status**: ✅ Level 2 Category Map
 **Purpose**: Cloud infrastructure, services, deployment pipelines, and documentation maintenance
 
@@ -38,6 +38,7 @@ This category map provides navigation to all infrastructure documentation includ
 - [Cloud SQL Proxy](https://cloud.google.com/sql/docs/postgres/sql-proxy) - Secure database connections
 
 ### Deployment
+- [Setup Documentation Index](setup/INDEX.md) - Setup and deployment docs overview
 - [Deployment Scripts README](../scripts/deployment/README.md) - Deployment automation tools
 - [Firebase CLI](https://firebase.google.com/docs/cli) - Deployment tooling
 - [gcloud CLI](https://cloud.google.com/sdk/gcloud) - Cloud deployment

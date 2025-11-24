@@ -68,16 +68,16 @@ pool.on('remove', (client) => {
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
-  console.log('[DB] SIGTERM received, closing pool...');
+  logger.info('[DB] SIGTERM received, closing pool...');
   await pool.end();
-  console.log('[DB] Pool closed');
+  logger.info('[DB] Pool closed');
   process.exit(0);
 });
 
 process.on('SIGINT', async () => {
-  console.log('[DB] SIGINT received, closing pool...');
+  logger.info('[DB] SIGINT received, closing pool...');
   await pool.end();
-  console.log('[DB] Pool closed');
+  logger.info('[DB] Pool closed');
   process.exit(0);
 });
 
@@ -89,10 +89,12 @@ pool.query('SELECT NOW() as current_time', (err, res) => {
     });
     process.exit(1);
   }
-  console.log('[DB] Successfully connected to database');
-  console.log(`[DB] Schema: elections`);
-  console.log(`[DB] Pool: min=${pool.options.min}, max=${pool.options.max}`);
-  console.log(`[DB] Current time: ${res.rows[0].current_time}`);
+  logger.info('[DB] Successfully connected to database', {
+    schema: 'elections',
+    pool_min: pool.options.min,
+    pool_max: pool.options.max,
+    current_time: res.rows[0].current_time
+  });
 });
 
 module.exports = pool;

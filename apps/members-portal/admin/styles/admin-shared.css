@@ -106,7 +106,7 @@
    Actions
    =========================== */
 .admin-actions {
-  margin-top: 2rem;
+  margin-top: var(--spacing-xl-2);
   display: flex;
   gap: var(--spacing-md);
 }
@@ -152,11 +152,11 @@
 @media (max-width: 768px) {
   .admin-grid {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: var(--spacing-md);
   }
 
   .admin-section {
-    padding: 1rem;
+    padding: var(--spacing-md);
   }
 
   .admin-section__title {

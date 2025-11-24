@@ -131,47 +131,59 @@ app.use((err, req, res, next) => {
 // =====================================================
 
 app.listen(PORT, () => {
-  console.log('='.repeat(60));
-  console.log('🗳️  Elections Service - Admin + Voting API');
-  console.log('='.repeat(60));
-  console.log(`✓ Server running on port ${PORT}`);
-  console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`✓ CORS origins: ${corsOrigins.join(', ')}`);
-  console.log(`✓ Schema: elections`);
-  console.log(`✓ Election: ${process.env.ELECTION_TITLE || 'Prófunarkosning 2025'}`);
-  console.log('='.repeat(60));
-  console.log('📡 Voting API Endpoints:');
-  console.log(`   GET    http://localhost:${PORT}/health`);
-  console.log(`   POST   http://localhost:${PORT}/api/s2s/register-token (S2S)`);
-  console.log(`   GET    http://localhost:${PORT}/api/s2s/results (S2S)`);
-  console.log(`   POST   http://localhost:${PORT}/api/vote`);
-  console.log(`   GET    http://localhost:${PORT}/api/token-status`);
-  console.log('='.repeat(60));
-  console.log('🔧 Admin API Endpoints (RBAC Protected):');
-  console.log(`   GET    http://localhost:${PORT}/api/admin/elections`);
-  console.log(`   POST   http://localhost:${PORT}/api/admin/elections`);
-  console.log(`   GET    http://localhost:${PORT}/api/admin/elections/:id`);
-  console.log(`   PATCH  http://localhost:${PORT}/api/admin/elections/:id`);
-  console.log(`   POST   http://localhost:${PORT}/api/admin/elections/:id/open`);
-  console.log(`   POST   http://localhost:${PORT}/api/admin/elections/:id/close`);
-  console.log(`   POST   http://localhost:${PORT}/api/admin/elections/:id/hide`);
-  console.log(`   POST   http://localhost:${PORT}/api/admin/elections/:id/unhide`);
-  console.log(`   DELETE http://localhost:${PORT}/api/admin/elections/:id (Superadmin)`);
-  console.log(`   GET    http://localhost:${PORT}/api/admin/elections/:id/results`);
-  console.log('='.repeat(60));
-  console.log('⚠️  CRITICAL: This service must handle 300 votes/sec spike');
-  console.log('📖 See: docs/USAGE_CONTEXT.md for load characteristics');
-  console.log('📖 See: docs/OPERATIONAL_PROCEDURES.md for meeting prep');
-  console.log('='.repeat(60));
+  logger.info('Elections Service started', {
+    service: 'elections-service',
+    port: PORT,
+    environment: process.env.NODE_ENV || 'development',
+    cors_origins: corsOrigins,
+    schema: 'elections',
+    election_title: process.env.ELECTION_TITLE || 'Prófunarkosning 2025',
+  });
+
+  // Development-only startup banner
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('='.repeat(60));
+    console.log('🗳️  Elections Service - Admin + Voting API');
+    console.log('='.repeat(60));
+    console.log(`✓ Server running on port ${PORT}`);
+    console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`✓ CORS origins: ${corsOrigins.join(', ')}`);
+    console.log(`✓ Schema: elections`);
+    console.log(`✓ Election: ${process.env.ELECTION_TITLE || 'Prófunarkosning 2025'}`);
+    console.log('='.repeat(60));
+    console.log('📡 Voting API Endpoints:');
+    console.log(`   GET    http://localhost:${PORT}/health`);
+    console.log(`   POST   http://localhost:${PORT}/api/s2s/register-token (S2S)`);
+    console.log(`   GET    http://localhost:${PORT}/api/s2s/results (S2S)`);
+    console.log(`   POST   http://localhost:${PORT}/api/vote`);
+    console.log(`   GET    http://localhost:${PORT}/api/token-status`);
+    console.log('='.repeat(60));
+    console.log('🔧 Admin API Endpoints (RBAC Protected):');
+    console.log(`   GET    http://localhost:${PORT}/api/admin/elections`);
+    console.log(`   POST   http://localhost:${PORT}/api/admin/elections`);
+    console.log(`   GET    http://localhost:${PORT}/api/admin/elections/:id`);
+    console.log(`   PATCH  http://localhost:${PORT}/api/admin/elections/:id`);
+    console.log(`   POST   http://localhost:${PORT}/api/admin/elections/:id/open`);
+    console.log(`   POST   http://localhost:${PORT}/api/admin/elections/:id/close`);
+    console.log(`   POST   http://localhost:${PORT}/api/admin/elections/:id/hide`);
+    console.log(`   POST   http://localhost:${PORT}/api/admin/elections/:id/unhide`);
+    console.log(`   DELETE http://localhost:${PORT}/api/admin/elections/:id (Superadmin)`);
+    console.log(`   GET    http://localhost:${PORT}/api/admin/elections/:id/results`);
+    console.log('='.repeat(60));
+    console.log('⚠️  CRITICAL: This service must handle 300 votes/sec spike');
+    console.log('📖 See: docs/USAGE_CONTEXT.md for load characteristics');
+    console.log('📖 See: docs/OPERATIONAL_PROCEDURES.md for meeting prep');
+    console.log('='.repeat(60));
+  }
 });
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
-  console.log('SIGTERM received, shutting down gracefully...');
+  logger.info('SIGTERM received, shutting down gracefully...');
   process.exit(0);
 });
 
 process.on('SIGINT', () => {
-  console.log('SIGINT received, shutting down gracefully...');
+  logger.info('SIGINT received, shutting down gracefully...');
   process.exit(0);
 });

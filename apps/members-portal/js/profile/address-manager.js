@@ -149,9 +149,17 @@ export class AddressManager {
           debug.log('✏️ Country changed, updating...');
           this.addresses[index].country = newCountry;
           showStatus(statusIcon, 'loading', { baseClass: 'profile-field__status' });
-          await this.save();
-          showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
-          this.render();
+          try {
+            await this.save();
+            showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
+            this.render();
+          } catch (error) {
+            debug.error('Failed to save address country:', error);
+            showStatus(statusIcon, 'error', { baseClass: 'profile-field__status' });
+            // Revert change
+            this.addresses[index].country = address.country;
+            this.render();
+          }
         }
       });
 
@@ -205,8 +213,16 @@ export class AddressManager {
           debug.log('✏️ Street changed, updating...');
           this.addresses[index].street = newStreet;
           showStatus(statusIcon, 'loading', { baseClass: 'profile-field__status' });
-          await this.save();
-          showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
+          try {
+            await this.save();
+            showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
+          } catch (error) {
+            debug.error('Failed to save street:', error);
+            showStatus(statusIcon, 'error', { baseClass: 'profile-field__status' });
+            // Revert change
+            this.addresses[index].street = address.street;
+            e.target.value = address.street;
+          }
         } else {
           debug.log('ℹ️ No change, skipping save');
         }
@@ -220,8 +236,16 @@ export class AddressManager {
           debug.log('✏️ House number changed, updating...');
           this.addresses[index].number = newNumber;
           showStatus(statusIcon, 'loading', { baseClass: 'profile-field__status' });
-          await this.save();
-          showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
+          try {
+            await this.save();
+            showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
+          } catch (error) {
+            debug.error('Failed to save house number:', error);
+            showStatus(statusIcon, 'error', { baseClass: 'profile-field__status' });
+            // Revert change
+            this.addresses[index].number = address.number;
+            e.target.value = address.number;
+          }
         } else {
           debug.log('ℹ️ No change, skipping save');
         }
@@ -235,8 +259,16 @@ export class AddressManager {
           debug.log('✏️ House letter changed, updating...');
           this.addresses[index].letter = newLetter;
           showStatus(statusIcon, 'loading', { baseClass: 'profile-field__status' });
-          await this.save();
-          showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
+          try {
+            await this.save();
+            showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
+          } catch (error) {
+            debug.error('Failed to save house letter:', error);
+            showStatus(statusIcon, 'error', { baseClass: 'profile-field__status' });
+            // Revert change
+            this.addresses[index].letter = address.letter;
+            e.target.value = address.letter;
+          }
         } else {
           debug.log('ℹ️ No change, skipping save');
         }
@@ -269,8 +301,16 @@ export class AddressManager {
           debug.log('✏️ Postal code changed, updating...');
           this.addresses[index].postal_code = newPostal;
           showStatus(statusIcon, 'loading', { baseClass: 'profile-field__status' });
-          await this.save();
-          showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
+          try {
+            await this.save();
+            showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
+          } catch (error) {
+            debug.error('Failed to save postal code:', error);
+            showStatus(statusIcon, 'error', { baseClass: 'profile-field__status' });
+            // Revert change
+            this.addresses[index].postal_code = address.postal_code;
+            e.target.value = address.postal_code;
+          }
         } else {
           debug.log('ℹ️ No change, skipping save');
         }
@@ -284,8 +324,16 @@ export class AddressManager {
           debug.log('✏️ City changed, updating...');
           this.addresses[index].city = newCity;
           showStatus(statusIcon, 'loading', { baseClass: 'profile-field__status' });
-          await this.save();
-          showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
+          try {
+            await this.save();
+            showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
+          } catch (error) {
+            debug.error('Failed to save city:', error);
+            showStatus(statusIcon, 'error', { baseClass: 'profile-field__status' });
+            // Revert change
+            this.addresses[index].city = address.city;
+            e.target.value = address.city;
+          }
         } else {
           debug.log('ℹ️ No change, skipping save');
         }
