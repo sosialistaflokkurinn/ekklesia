@@ -202,6 +202,10 @@ function setPageText(strings, userData) {
 
   // Quick actions
   document.getElementById('admin-actions-title').textContent = strings.admin_actions_title;
+  document.getElementById('quick-action-members-label').textContent = strings.quick_action_members_label;
+  document.getElementById('quick-action-members-desc').textContent = strings.quick_action_members_desc;
+  document.getElementById('quick-action-elections-label').textContent = strings.quick_action_elections_label;
+  document.getElementById('quick-action-elections-desc').textContent = strings.quick_action_elections_desc;
   document.getElementById('quick-action-sync-label').textContent = strings.quick_action_sync_label;
   document.getElementById('quick-action-sync-desc').textContent = strings.quick_action_sync_desc;
   document.getElementById('quick-action-history-label').textContent = strings.quick_action_history_label;
