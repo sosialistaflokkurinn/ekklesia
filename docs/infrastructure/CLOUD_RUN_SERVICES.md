@@ -60,18 +60,19 @@ graph TB
     Auth --> Verify
     Members --> Django
     Verify --> Django
-    Elections -.sync.-> Django
     MP --> HandleAuth
     AP --> HandleAuth
     HandleAuth --> Auth
     HandleAuth --> FS
+    HandleAuth -.membership check.-> Django
 ```
 
 **Key Components:**
 - **Client Layer**: Member portal, admin portal, and public-facing pages
-- **Firebase**: Centralized authentication and Firestore database
+- **Firebase**: Centralized authentication and Firestore database (custom claims include membership data)
 - **Cloud Run Services**: 13 microservices handling elections, membership, and authentication
-- **Django Backend**: Legacy PostgreSQL database (socialism DB) with REST API
+- **Django Backend**: Legacy PostgreSQL database (socialism DB) with REST API - source of truth for membership
+- **Note**: Elections Service does NOT call Django directly; it uses Firebase custom claims set by handlekenniauth
 
 ### Authentication Flow
 
@@ -114,9 +115,9 @@ This diagram shows the dependencies between Cloud Run services:
 
 ```mermaid
 graph LR
-    Elections[Elections Service] -->|Server-to-Server| Django[Django API]
-    Members[Members Service] -->|Sync member data| Django
+    Members[Members Service] -->|Sync member data| Django[Django API]
     Verify[verifymembership] -->|Check membership| Django
+    HandleAuth[handlekenniauth] -->|Verify membership| Django
     Portal[Members Portal] -->|Authentication| Firebase[Firebase Auth]
     Portal -->|API calls| Elections
     Portal -->|API calls| Events
@@ -124,15 +125,19 @@ graph LR
     Admin[Admin Portal] -->|Authentication| Firebase
     Admin -->|Admin API| Elections
     Events[Events Service] -->|Token generation| Elections
-    HandleAuth[handlekenniauth] -->|OAuth callback| Firebase
+    HandleAuth -->|OAuth callback + custom claims| Firebase
     HandleAuth -->|User profile| Firestore[Firestore]
+    Firebase -->|JWT with custom claims| Elections[Elections Service]
+    Firebase -->|JWT with custom claims| Events
 ```
 
 **Dependency Notes:**
-- **Django Backend**: Source of truth for membership data, synced to Cloud Run services
-- **Firebase Auth**: Central authentication for all services (JWT verification)
-- **Elections Service**: Independent PostgreSQL database for anonymous voting
+- **Django Backend**: Source of truth for membership data, synced to Firestore via Members Service
+- **Firebase Auth**: Central authentication for all services (JWT verification with custom claims)
+- **Elections Service**: Independent PostgreSQL database for anonymous voting; NO direct Django connection
 - **Events Service**: Token generation for elections (coordinates with Elections Service)
+- **Membership verification flow**: Django → handlekenniauth → Firebase custom claims → Elections Service
+- **Key insight**: Elections/Events Services use Firebase JWT custom claims for eligibility, not direct Django API calls
 
 ---
 
