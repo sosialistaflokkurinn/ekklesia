@@ -366,6 +366,7 @@ export const NAV_CONFIGS = {
     links: [
       { href: '/admin/', textKey: 'nav_dashboard' },
       { href: '/admin/members.html', textKey: 'nav_admin_members' },
+      { href: '/admin-elections/', textKey: 'nav_admin_elections' },
       { href: '/admin/sync-members.html', textKey: 'nav_admin_sync' },
       { href: '/admin/sync-history.html', textKey: 'nav_admin_sync_history' },
       { href: '/admin/sync-queue.html', textKey: 'nav_admin_sync_queue' },
@@ -385,6 +386,7 @@ export const NAV_CONFIGS = {
     links: [
       { href: '/admin/', textKey: 'nav_dashboard' },
       { href: '/admin/members.html', textKey: 'nav_admin_members' },
+      { href: '/admin-elections/', textKey: 'nav_admin_elections' },
       { href: '/admin/sync-members.html', textKey: 'nav_admin_sync' },
       { href: '/admin/sync-history.html', textKey: 'nav_admin_sync_history' },
       { href: '/admin/sync-queue.html', textKey: 'nav_admin_sync_queue' },
@@ -404,6 +406,7 @@ export const NAV_CONFIGS = {
     links: [
       { href: '/admin/', textKey: 'nav_dashboard' },
       { href: '/admin/members.html', textKey: 'nav_admin_members' },
+      { href: '/admin-elections/', textKey: 'nav_admin_elections' },
       { href: '/admin/sync-members.html', textKey: 'nav_admin_sync' },
       { href: '/admin/sync-history.html', textKey: 'nav_admin_sync_history' },
       { href: '/admin/sync-queue.html', textKey: 'nav_admin_sync_queue' },
@@ -423,6 +426,7 @@ export const NAV_CONFIGS = {
     links: [
       { href: '/admin/', textKey: 'nav_dashboard' },
       { href: '/admin/members.html', textKey: 'nav_admin_members' },
+      { href: '/admin-elections/', textKey: 'nav_admin_elections' },
       { href: '/admin/sync-members.html', textKey: 'nav_admin_sync' },
       { href: '/admin/sync-history.html', textKey: 'nav_admin_sync_history' },
       { href: '/admin/sync-queue.html', textKey: 'nav_admin_sync_queue' },
@@ -442,6 +446,7 @@ export const NAV_CONFIGS = {
     links: [
       { href: '/admin/', textKey: 'nav_dashboard' },
       { href: '/admin/members.html', textKey: 'nav_admin_members' },
+      { href: '/admin-elections/', textKey: 'nav_admin_elections' },
       { href: '/admin/sync-members.html', textKey: 'nav_admin_sync' },
       { href: '/admin/sync-history.html', textKey: 'nav_admin_sync_history' },
       { href: '/admin/sync-queue.html', textKey: 'nav_admin_sync_queue' },
@@ -461,6 +466,7 @@ export const NAV_CONFIGS = {
     links: [
       { href: '/admin/', textKey: 'nav_dashboard' },
       { href: '/admin/members.html', textKey: 'nav_admin_members' },
+      { href: '/admin-elections/', textKey: 'nav_admin_elections' },
       { href: '/admin/sync-members.html', textKey: 'nav_admin_sync' },
       { href: '/admin/sync-history.html', textKey: 'nav_admin_sync_history' },
       { href: '/admin/sync-queue.html', textKey: 'nav_admin_sync_queue' },
