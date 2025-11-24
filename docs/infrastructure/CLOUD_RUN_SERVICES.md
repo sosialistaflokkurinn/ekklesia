@@ -410,40 +410,71 @@ graph LR
 
 ---
 
-#### 6. updatememberprofile
+#### 6. updatememberprofile (Real-Time Self-Service Profile Updates)
 **Type**: Cloud Function (Python 3.13)
-**Purpose**: Update member profile information
+**Purpose**: **User-initiated real-time profile updates** with immediate Django + Firestore synchronization
 **Deployment**: Firebase Cloud Functions Gen2
 **URL**: https://updatememberprofile-ymzrguoifa-nw.a.run.app
 **Authentication**: Require authentication (Firebase Auth - members can only update their own profile)
 **Latest Deploy**: 2025-11-10
 
+**Display Name (descriptive):** "Self-Service Member Profile Update (Real-Time)"
+
+**Why This Service Exists:**
+
+This service provides **real-time self-service** profile management, distinct from the daily batch sync provided by `bidirectional-sync`. Key differences:
+
+| Feature | updatememberprofile | bidirectional-sync |
+|---------|-------------------|-------------------|
+| **Trigger** | User action (on-demand) | Scheduled (daily 3:30 AM) |
+| **Latency** | 1-2 seconds (real-time) | Up to 24 hours |
+| **Scope** | Single user | All members (batch) |
+| **Authorization** | User updates own profile | System/admin only |
+| **UX Impact** | Immediate feedback | No user interaction |
+
+**Without this service:**
+- Users would wait up to 24 hours for profile updates
+- No self-service capability (requires admin intervention)
+- Poor user experience for profile management
+
+**Analysis Report:** See `tmp/reports/UPDATEMEMBERPROFILE_ANALYSIS.md` for detailed rationale
+
 **Key Features**:
-- Update member profile (name, email, phone)
-- Push changes to Django backend (ComradeFullViewSet PATCH)
-- Update Firestore cache with canonical Django data
-- Self-service profile updates (users update their own data)
-- Phone normalization (7 local digits, removes country code)
+- ⚡ **Real-time updates** - Django + Firestore updated in 1-2 seconds
+- 🔐 **Self-service authorization** - Users can only update their own profile
+- 📱 **Immediate user feedback** - Returns success/error instantly
+- 🔄 **Dual-target sync** - Updates both Django (source of truth) and Firestore (cache) simultaneously
+- 📞 **Phone normalization** - Removes country code (+354), keeps 7 local digits
+- ✅ **Data consistency** - Updates Firestore with canonical Django data after Django update succeeds
 
 **Technology Stack**:
 - Python 3.13 (Firebase Functions Gen2)
 - Firebase Admin SDK (Python)
-- Django API integration (`/felagar/api/members/:id/`)
+- Django API integration: `PATCH /felagar/api/full/{django_id}/` (via `sync_members.update_django_member()`)
 - **Secret Manager**: `DJANGO_API_TOKEN` (Django API authentication)
 
 **Code Location**: `services/members/functions/membership/functions.py` (updatememberprofile_handler)
 
 **Usage**: 3 references in codebase
 
-**Update Flow**:
+**Real-Time Update Flow** (1-2 seconds total):
 1. Frontend sends profile update request with kennitala + updates
-2. Service validates Firebase token
+2. Service validates Firebase token (~100ms)
 3. Service verifies user is updating their own profile (kennitala match)
-4. Lookup Django member ID from Firestore (faster than Django search)
+4. Lookup Django member ID from Firestore (faster than Django search) (~100ms)
 5. Build Django PATCH payload (name, contact_info.email, contact_info.phone)
-6. Push update to Django API
-7. Update Firestore with normalized data
-8. Return success with updated member data
+6. **Push update to Django API** → `PATCH /api/full/{django_id}/` (~500ms)
+7. **Update Firestore cache** with normalized data (profile.name, profile.email, profile.phone) (~200ms)
+8. Return success with updated member data to user
+
+**Error Handling:**
+- If Django update fails → User sees error, Firestore not updated
+- If Firestore update fails → Django already updated (source of truth), will sync on next `bidirectional-sync`
+
+**Fields Updated:**
+- `name` (full name from Þjóðskrá)
+- `email` (contact email)
+- `phone` (mobile phone, normalized to 7 digits)
 
 ---
 
