@@ -7,5 +7,5 @@ google-cloud-secret-manager==2.25.0
 python-dotenv==1.2.1
 
 # Testing dependencies
-pytest==9.0.0
+pytest==9.0.1
 pytest-cov==7.0.0
