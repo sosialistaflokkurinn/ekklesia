@@ -5,6 +5,13 @@ Verifies all documentation against live system state and codebase
 
 Executes CLI tools (gcloud, firebase, psql) to verify live system state.
 Validates all documentation against actual code, configuration, and deployment.
+
+Supports YAML frontmatter parsing for metadata tracking:
+  ---
+  updated: 2025-01-15
+  reviewed: 2025-01-10
+  status: current
+  ---
 """
 
 import os
@@ -13,9 +20,10 @@ import json
 import subprocess
 import sys
 import logging
+import yaml
 from pathlib import Path
 from typing import Dict, List, Set, Tuple, Optional
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # Configure logging
 logging.basicConfig(
@@ -46,7 +54,11 @@ class DocumentationAuditor:
             "config_mismatches": [],
             "endpoint_validation_failure": [],
             "configuration_validation_failure": [],
-            "database_validation_failure": []
+            "database_validation_failure": [],
+            "frontmatter_missing_updated": [],
+            "frontmatter_invalid_date": [],
+            "frontmatter_date_parse_error": [],
+            "stale_frontmatter": []
         }
         
         self.healthy_files = []
@@ -70,6 +82,41 @@ class DocumentationAuditor:
             'TypeError', 'AttributeError', 'RuntimeError', 'NotImplementedError'
         }
         
+    def parse_frontmatter(self, md_file: Path) -> Dict:
+        """Parse YAML frontmatter from markdown file
+
+        Returns dict with frontmatter fields (updated, reviewed, status, etc.)
+        Returns empty dict if no frontmatter found
+        """
+        try:
+            with open(md_file, 'r', encoding='utf-8') as f:
+                content = f.read()
+
+            # Check if file starts with ---
+            if not content.startswith('---\n'):
+                return {}
+
+            # Extract frontmatter block (between first --- and second ---)
+            parts = content.split('---\n', 2)
+            if len(parts) < 3:
+                return {}
+
+            frontmatter_text = parts[1]
+
+            # Parse YAML
+            try:
+                frontmatter = yaml.safe_load(frontmatter_text)
+                if isinstance(frontmatter, dict):
+                    return frontmatter
+                return {}
+            except yaml.YAMLError as e:
+                logger.warning(f"Invalid YAML frontmatter in {md_file}: {e}")
+                return {}
+
+        except Exception as e:
+            logger.warning(f"Error parsing frontmatter in {md_file}: {e}")
+            return {}
+
     def find_all_md_files(self) -> List[Path]:
         """Find all markdown files in docs directory"""
         md_files = list(self.docs_dir.rglob("*.md"))
@@ -612,19 +659,88 @@ class DocumentationAuditor:
         
         return issues
     
+    def check_frontmatter_freshness(self, md_file: Path, days_threshold: int = 90) -> List[Dict]:
+        """Check if frontmatter 'updated' date is stale
+
+        Args:
+            md_file: Path to markdown file
+            days_threshold: Number of days before considering stale (default: 90)
+
+        Returns:
+            List of issues if frontmatter is stale or invalid
+        """
+        issues = []
+
+        frontmatter = self.parse_frontmatter(md_file)
+
+        if not frontmatter:
+            # No frontmatter - not an issue, will use git date
+            return issues
+
+        updated_date = frontmatter.get('updated')
+
+        if not updated_date:
+            # Frontmatter exists but no 'updated' field
+            issues.append({
+                "file": str(md_file.relative_to(self.project_root)),
+                "type": "frontmatter_missing_updated",
+                "severity": "low",
+                "message": "Frontmatter exists but missing 'updated' field"
+            })
+            return issues
+
+        try:
+            # Parse date (supports YYYY-MM-DD format)
+            if isinstance(updated_date, str):
+                updated_dt = datetime.strptime(updated_date, "%Y-%m-%d")
+            elif isinstance(updated_date, datetime):
+                updated_dt = updated_date
+            else:
+                issues.append({
+                    "file": str(md_file.relative_to(self.project_root)),
+                    "type": "frontmatter_invalid_date",
+                    "severity": "medium",
+                    "message": f"Invalid date format: {updated_date}"
+                })
+                return issues
+
+            # Check if stale
+            days_old = (datetime.now() - updated_dt).days
+
+            if days_old > days_threshold:
+                issues.append({
+                    "file": str(md_file.relative_to(self.project_root)),
+                    "type": "stale_frontmatter",
+                    "severity": "medium",
+                    "days_old": days_old,
+                    "updated_date": updated_date,
+                    "message": f"Document not updated in {days_old} days (threshold: {days_threshold})"
+                })
+
+        except ValueError as e:
+            issues.append({
+                "file": str(md_file.relative_to(self.project_root)),
+                "type": "frontmatter_date_parse_error",
+                "severity": "medium",
+                "message": f"Could not parse date '{updated_date}': {e}"
+            })
+
+        return issues
+
     def audit_file(self, md_file: Path) -> Tuple[bool, List]:
         """Audit a single markdown file"""
         file_issues = []
-        
+
         # Run all checks
         file_issues.extend(self.check_broken_links(md_file))
         file_issues.extend(self.check_placeholder_content(md_file))
         file_issues.extend(self.check_file_references(md_file))
         file_issues.extend(self.check_function_references(md_file))
         file_issues.extend(self.check_markdown_formatting(md_file))
-        
+        file_issues.extend(self.check_frontmatter_freshness(md_file))
+
         is_healthy = len(file_issues) == 0
-        
+
         return is_healthy, file_issues
     
     def audit_all_files(self) -> None:

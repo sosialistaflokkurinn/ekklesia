@@ -224,7 +224,81 @@ fi
 
 echo "✅ No PII detected in templates/docs"
 
-# --- 4. Check commit message for political identity ---
+# --- 4. Check for TODO management issues (NEW) ---
+echo "📝 Checking TODO management..."
+
+# Count new unchecked TODOs in staged files
+NEW_TODOS=0
+COMPLETED_TODOS=0
+TODO_FILES=()
+
+for file in $STAGED_FILES; do
+  # Only check markdown and code files
+  if ! echo "$file" | grep -qE '\.(md|py|js|ts|tsx|jsx|go|java|rb|php)$'; then
+    continue
+  fi
+
+  # Check if file exists
+  if [ ! -f "$file" ]; then
+    continue
+  fi
+
+  # Count unchecked TODOs (- [ ] pattern or TODO: pattern)
+  FILE_TODOS=$(grep -E '(-\s*\[\s*\]\s*TODO|TODO:|# TODO|// TODO)' "$file" 2>/dev/null | wc -l)
+
+  # Count completed but not removed TODOs
+  FILE_COMPLETED=$(grep -E '(-\s*\[x\]\s*TODO.*|TODO.*DONE|TODO.*COMPLETED|TODO.*FIXED)' "$file" 2>/dev/null | wc -l)
+
+  if [ "$FILE_TODOS" -gt 0 ]; then
+    NEW_TODOS=$((NEW_TODOS + FILE_TODOS))
+    TODO_FILES+=("$file: $FILE_TODOS TODOs")
+  fi
+
+  if [ "$FILE_COMPLETED" -gt 0 ]; then
+    COMPLETED_TODOS=$((COMPLETED_TODOS + FILE_COMPLETED))
+    echo "⚠️  Found $FILE_COMPLETED completed TODO(s) in: $file"
+    echo "   Consider removing completed TODOs or archiving them"
+  fi
+done
+
+# Warn if adding many new TODOs (>5)
+if [ "$NEW_TODOS" -gt 5 ]; then
+  echo ""
+  echo "⚠️  Warning: Adding $NEW_TODOS new TODOs in this commit"
+  echo ""
+  for todo_file in "${TODO_FILES[@]}"; do
+    echo "   - $todo_file"
+  done
+  echo ""
+  echo "   💡 TODO Best Practices:"
+  echo "   - Keep TODOs focused and actionable"
+  echo "   - Add GitHub Issue references for complex work"
+  echo "   - Consider creating GitHub Issues instead (for >3 related TODOs)"
+  echo "   - See: docs/standards/TODO_CLEANUP_STRATEGY.md"
+  echo ""
+  echo "   To proceed anyway: git commit (no --no-verify needed, this is a warning)"
+  echo ""
+fi
+
+# Suggest removal of completed TODOs
+if [ "$COMPLETED_TODOS" -gt 0 ]; then
+  echo ""
+  echo "⚠️  Found $COMPLETED_TODOS completed TODO(s) that should be removed"
+  echo ""
+  echo "   💡 Cleanup Suggestions:"
+  echo "   - Remove completed TODOs from code"
+  echo "   - Archive significant work to docs/archive/"
+  echo "   - Update related GitHub Issues if applicable"
+  echo ""
+  echo "   To proceed anyway: git commit (no --no-verify needed, this is a warning)"
+  echo ""
+fi
+
+if [ "$NEW_TODOS" -le 5 ] && [ "$COMPLETED_TODOS" -eq 0 ]; then
+  echo "✅ TODO management check passed"
+fi
+
+# --- 5. Check commit message for political identity ---
 echo "🏴 Checking commit message for political identity..."
 
 # This check runs in commit-msg hook, but we can prepare for it
