@@ -446,15 +446,25 @@ const adminStrings = new Map();
     members.forEach(member => {
       const row = el('tr', 'members-table__row', {},
         // Django ID
-        el('td', 'members-table__cell', {}, member.metadata?.django_id || '-'),
+        el('td', 'members-table__cell', {
+          dataset: { label: adminStrings.get('members_table_header_id') }
+        }, member.metadata?.django_id || '-'),
         // Name
-        el('td', 'members-table__cell', {}, member.name || '-'),
+        el('td', 'members-table__cell', {
+          dataset: { label: adminStrings.get('members_table_header_name') }
+        }, member.name || '-'),
         // Phone (formatted as XXX-XXXX)
-        el('td', 'members-table__cell', {}, formatPhone(member.phone) || '-'),
+        el('td', 'members-table__cell', {
+          dataset: { label: adminStrings.get('member_phone') }
+        }, formatPhone(member.phone) || '-'),
         // Email
-        el('td', 'members-table__cell', {}, member.email || '-'),
+        el('td', 'members-table__cell', {
+          dataset: { label: adminStrings.get('members_table_header_email') }
+        }, member.email || '-'),
         // Kennitala (masked)
-        el('td', 'members-table__cell', {}, maskKennitala(member.kennitala)),
+        el('td', 'members-table__cell', {
+          dataset: { label: adminStrings.get('members_table_header_kennitala') }
+        }, maskKennitala(member.kennitala)),
         // Actions
         el('td', 'members-table__cell members-table__cell--actions', {},
           el('a', 'members-table__action', {

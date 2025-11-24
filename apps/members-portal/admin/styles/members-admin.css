@@ -210,21 +210,89 @@
   color: var(--color-text-on-primary);
 }
 
-/* Mobile table adjustments */
+/* Mobile table adjustments - Card Layout */
 @media (max-width: 768px) {
-  .members-table {
-    font-size: var(--font-size-sm);
+  /* Remove table container overflow */
+  .members-table-container {
+    overflow-x: visible;
+    border: none;
+    background: transparent;
   }
 
-  .members-table__header,
+  /* Convert table to block layout */
+  .members-table,
+  .members-table__head,
+  .members-table__body,
+  .members-table__row,
   .members-table__cell {
-    padding: var(--spacing-sm-md) var(--spacing-sm);
+    display: block;
   }
 
-  /* Hide less important columns on mobile */
-  .members-table__header:nth-child(4), /* Phone */
-  .members-table__cell:nth-child(4) {
+  /* Hide table header */
+  .members-table__head {
     display: none;
+  }
+
+  /* Style each row as a card */
+  .members-table__row {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+  }
+
+  .members-table__row:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  .members-table__row:last-child {
+    border: 1px solid var(--color-border);
+  }
+
+  /* Style cells with labels */
+  .members-table__cell {
+    padding: var(--spacing-sm) 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid var(--color-border-subtle);
+    gap: var(--spacing-sm);
+  }
+
+  .members-table__cell:last-child {
+    border-bottom: none;
+    padding-top: var(--spacing-md);
+    justify-content: flex-start;
+  }
+
+  /* Add labels before each cell using CSS */
+  .members-table__cell::before {
+    content: attr(data-label);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    flex-shrink: 0;
+    min-width: 100px;
+  }
+
+  /* Remove label for action cell */
+  .members-table__cell--actions::before {
+    content: none;
+  }
+
+  /* Actions cell styling */
+  .members-table__cell--actions {
+    justify-content: flex-start;
+    padding-top: var(--spacing-md);
+  }
+
+  .members-table__action {
+    margin-left: 0;
+    margin-right: var(--spacing-sm);
   }
 }
 
