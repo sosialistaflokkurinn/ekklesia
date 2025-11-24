@@ -52,7 +52,7 @@ This category map provides navigation to all development-related documentation i
 - [Documentation Guide](../docs/standards/DOCUMENTATION_GUIDE.md) - Writing docs & READMEs
 
 ### Feature Implementation
-- [Election Feature Checklist](development/guides/ELECTION_FEATURE_CHECKLIST.md) - Election feature guide
+- [Election Feature Guide](development/guides/election-feature/OVERVIEW.md) - Election feature development guide (6 focused checklists)
 - [Admin Election Backend Checklist](development/guides/ADMIN_ELECTION_BACKEND_IMPLEMENTATION_CHECKLIST.md) - Backend implementation
 
 ### GitHub Workflow

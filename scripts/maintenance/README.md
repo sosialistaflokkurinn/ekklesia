@@ -412,3 +412,413 @@ Potential additions:
 
 **Last Updated:** 2025-11-17  
 **Maintained by:** Development Team
+
+---
+
+## 📊 Metadata Analysis Scripts
+
+Scripts for analyzing codebase metadata and generating inventory files.
+
+### Available Scripts
+
+#### 1. CSS Metadata Analysis
+```bash
+python3 scripts/maintenance/analyze_css_metadata.py
+```
+**Output:** `.metadata_store/css_inventory.json`
+
+**Analyzes:**
+- BEM methodology usage
+- CSS custom properties
+- Hardcoded colors/spacing
+- File dependencies
+
+#### 2. HTML Metadata Analysis
+```bash
+python3 scripts/maintenance/analyze_html_metadata.py
+```
+**Output:** `.metadata_store/html_inventory.json`
+
+**Analyzes:**
+- Page structure
+- Script/style dependencies
+- i18n usage
+- Navigation patterns
+
+#### 3. JavaScript Metadata Analysis
+```bash
+python3 scripts/maintenance/analyze_js_metadata.py
+```
+**Output:** `.metadata_store/js_inventory.json`
+
+**Analyzes:**
+- Import/export patterns
+- Function definitions
+- API calls
+- Complexity metrics
+
+#### 4. Python Metadata Analysis
+```bash
+python3 scripts/maintenance/analyze_py_metadata.py
+```
+**Output:** `.metadata_store/py_inventory.json`
+
+**Analyzes:**
+- Import statements
+- Function/class definitions
+- Type hints
+- Docstrings
+
+#### 5. Markdown Metadata Analysis ⭐ NEW
+```bash
+python3 scripts/maintenance/analyze_md_metadata.py
+```
+**Output:** `.metadata_store/md_inventory.json`
+
+**Analyzes:**
+- Heading structure (h1-h6)
+- Code blocks and inline code
+- Links (internal vs external)
+- TODOs (checked vs unchecked)
+- Lists, tables, images
+- File size and line count
+
+#### 6. Markdown Insights Analysis
+```bash
+python3 scripts/maintenance/analyze_md_insights.py
+```
+**Output:** Console report with insights
+
+**Provides:**
+- Documentation quality metrics
+- TODO completion rates
+- Size distribution analysis
+- Structure quality assessment
+- Actionable recommendations
+
+### Usage Examples
+
+#### Run all metadata analyzers
+```bash
+cd /home/gudro/Development/projects/ekklesia
+python3 scripts/maintenance/analyze_css_metadata.py
+python3 scripts/maintenance/analyze_html_metadata.py
+python3 scripts/maintenance/analyze_js_metadata.py
+python3 scripts/maintenance/analyze_py_metadata.py
+python3 scripts/maintenance/analyze_md_metadata.py
+```
+
+#### Query markdown metadata
+```bash
+# Find files without H1 heading
+cat .metadata_store/md_inventory.json | \
+  jq '.[] | select(.structure.has_h1 == false) | .filepath'
+
+# Find TODO-heavy files
+cat .metadata_store/md_inventory.json | \
+  jq 'sort_by(-.todos.unchecked) | .[0:10] | .[] | {filepath, unchecked: .todos.unchecked}'
+
+# Find largest markdown files
+cat .metadata_store/md_inventory.json | \
+  jq 'sort_by(-.stats.size_bytes) | .[0:10] | .[] | {filepath, size_kb: (.stats.size_bytes / 1024)}'
+```
+
+#### Compare metadata over time
+```bash
+# Create dated backup
+cp .metadata_store/md_inventory.json .metadata_store/md_inventory_$(date +%Y-%m-%d).json
+
+# Compare with previous version
+diff <(jq '.[] | .filepath' .metadata_store/md_inventory_2025-11-20.json) \
+     <(jq '.[] | .filepath' .metadata_store/md_inventory.json)
+```
+
+### Output Structure
+
+All inventory files follow this pattern:
+```json
+[
+  {
+    "filepath": "relative/path/to/file",
+    "filename": "file.ext",
+    "category": "docs/development",
+    "stats": {
+      "size_bytes": 12345,
+      "line_count": 456,
+      "last_modified": "2025-11-24T10:11:12"
+    },
+    "analysis": { /* file-type specific metrics */ }
+  }
+]
+```
+
+### Metadata Store Location
+
+All metadata is stored in:
+```
+.metadata_store/
+├── css_inventory.json    (13 KB)
+├── html_inventory.json   (21 KB)
+├── js_inventory.json     (22 KB)
+├── py_inventory.json     (23 KB)
+└── md_inventory.json     (252 KB)
+```
+
+### Related Documentation
+
+- [Markdown Insights Report](../../tmp/github-issues/MARKDOWN_INSIGHTS.md) - Full markdown analysis
+- [Election Anonymization Status](../../tmp/github-issues/ELECTION_ANONYMIZATION_STATUS.md) - Security analysis
+- [GitHub Issues Index](../../tmp/github-issues/ISSUES_INDEX.md) - Open issues report
+
+---
+
+**Last Updated:** 2025-11-24
+**New Scripts:** `analyze_md_metadata.py`, `analyze_md_insights.py`
+
+---
+
+## 📋 Documentation Quality Strategies
+
+Strategic documents for improving documentation quality based on markdown metadata analysis.
+
+### Available Strategies
+
+#### 1. TODO Cleanup Strategy ⭐ NEW
+**Document:** [docs/standards/TODO_CLEANUP_STRATEGY.md](../../docs/standards/TODO_CLEANUP_STRATEGY.md)
+
+**Purpose:** Systematic approach to managing 1,780 unchecked TODOs across documentation
+
+**Key Features:**
+- 4-state TODO lifecycle (Active, Completed, Archived, Deferred)
+- 6 priority categories (🔴 Critical, 🟡 High, 🔵 Medium, ⚪ Low, 📝 Doc, 🧪 Test)
+- 4-week implementation plan
+- File-specific recommendations for top 5 worst offenders
+- Tools & automation suggestions
+- Success metrics tracking
+
+**Quick Start:**
+```bash
+# Analyze current TODO status
+cat .metadata_store/md_inventory.json | \
+  jq '[.[] | select(.todos.total > 0)] |
+      {total_todos: (map(.todos.total) | add),
+       unchecked: (map(.todos.unchecked) | add),
+       checked: (map(.todos.checked) | add),
+       files: length}'
+
+# Find TODO-heavy files (>20 TODOs)
+cat .metadata_store/md_inventory.json | \
+  jq '[.[] | select(.todos.total > 20)] |
+      sort_by(-.todos.unchecked) |
+      .[] | {filepath, unchecked: .todos.unchecked}'
+```
+
+**Implementation Tools:**
+- TODO health check script (see below)
+- GitHub sync script for migrating TODOs to issues
+- Weekly TODO report automation
+
+---
+
+#### 2. Checklist Splitting Recommendations ⭐ NEW
+**Document:** [docs/standards/CHECKLIST_SPLITTING_RECOMMENDATIONS.md](../../docs/standards/CHECKLIST_SPLITTING_RECOMMENDATIONS.md)
+
+**Purpose:** Guidelines for splitting large, unwieldy checklists into manageable files
+
+**Key Features:**
+- Analysis of 34 TODO-heavy files (>20 TODOs each)
+- Specific splitting strategies for top 5 files
+- ✅ **COMPLETED:** ELECTION_FEATURE_CHECKLIST.md (1,441 lines → 6 focused files) - 2025-11-24
+- Splitting guidelines (when to split, how to split)
+- 4 splitting patterns: By phase, By concern, By team, GitHub Issues
+
+**Top Recommendations:**
+1. ~~**ELECTION_FEATURE_CHECKLIST.md** (198 TODOs)~~ ✅ **COMPLETED 2025-11-24**
+   - ✅ Split into: Backend, Frontend, i18n, A11y, Testing, Deployment
+   - ✅ Created OVERVIEW.md with progress tracking
+
+2. **I18N_POST_DEPLOYMENT_TEST** (61 TODOs)
+   - Archive (historical test from Nov 5)
+
+3. **CODE_QUALITY_IMPROVEMENT_PLAN** (60 TODOs)
+   - Consolidate with CODE_QUALITY_CHECKLIST
+   - Split into 5 phase files
+
+4. **EPIC_87 & EPIC_24** (103 TODOs total)
+   - Migrate to GitHub Issues + Project Boards
+   - Simplify markdown to overview
+
+**Expected Impact:** 422 TODOs → ~150 in docs + ~200 in GitHub Issues
+
+---
+
+#### 3. Diagram Recommendations ⭐ NEW
+**Document:** [docs/standards/DIAGRAM_RECOMMENDATIONS.md](../../docs/standards/DIAGRAM_RECOMMENDATIONS.md)
+
+**Purpose:** Identify where diagrams, screenshots, and images would improve documentation
+
+**Key Features:**
+- Analysis showing only 1.8% of files have images (6/327)
+- Prioritized list of 18 files needing diagrams
+- Specific diagram type recommendations (sequence, architecture, ER, flow, etc.)
+- Recommended tools (Mermaid.js, draw.io, Excalidraw, dbdiagram.io)
+- Diagram standards and best practices
+- 4-week implementation plan
+
+**Top Priorities:**
+1. **Infrastructure Diagrams** (7 files)
+   - CLOUD_RUN_SERVICES.md - Architecture overview, auth flow
+   - DJANGO_BACKEND_SYSTEM.md - API flow, database schema
+   - FIREBASE_APP_CHECK_RESEARCH.md - Security flow
+
+2. **Security & Compliance** (4 files)
+   - VOTING_ANONYMITY_MODEL.md - Token/member flows
+   - GDPR_VOTING_ANONYMITY_ANALYSIS.md - Compliance tree
+
+3. **Component Documentation** (5 files)
+   - Component README - Dependency graph
+   - ELECTION_FEATURE_CHECKLIST - Workflow diagram
+
+4. **User Journeys** (3 files)
+   - Login flow screenshots
+   - Voting flow screenshots
+
+**Expected Impact:** 6 files with images → 35+ files (10%)
+
+---
+
+### Implementation Scripts
+
+#### TODO Health Check Script (Planned)
+
+**File:** `scripts/maintenance/check-todo-health.py` (to be created)
+
+**Purpose:** Monitor TODO health across markdown files
+
+**Features:**
+```python
+#!/usr/bin/env python3
+"""
+Check TODO health across markdown files
+Reports completion rates, stale files, etc.
+"""
+
+def check_todo_health():
+    # Find files with 0% completion and >20 TODOs
+    # Find files not modified in 90+ days with unchecked TODOs
+    # Calculate completion rates by category
+    # Generate actionable recommendations
+```
+
+**Usage:**
+```bash
+# Run health check
+python3 scripts/maintenance/check-todo-health.py
+
+# Output:
+# Stale TODO files: 25
+# Old unchecked TODOs: 12
+# Completion rate by category:
+#   docs/development: 8.0%
+#   docs/features: 6.8%
+#   tmp: 31.1%
+```
+
+---
+
+#### GitHub TODO Sync Script (Planned)
+
+**File:** `scripts/maintenance/sync-todos-to-github.py` (to be created)
+
+**Purpose:** Sync critical TODOs to GitHub Issues
+
+**Features:**
+```python
+#!/usr/bin/env python3
+"""
+Sync critical TODOs (🔴 CRITICAL, 🟡 HIGH) to GitHub Issues
+"""
+
+def sync_todos_to_github():
+    # Parse markdown files for priority TODOs
+    # Create GitHub issues via gh CLI
+    # Link back to documentation
+    # Add appropriate labels
+```
+
+**Usage:**
+```bash
+# Sync all critical TODOs
+python3 scripts/maintenance/sync-todos-to-github.py --priority critical
+
+# Sync specific file
+python3 scripts/maintenance/sync-todos-to-github.py --file docs/features/EPIC_87.md
+```
+
+---
+
+### Quick Reference Commands
+
+#### TODO Analysis
+```bash
+# Total TODO count
+cat .metadata_store/md_inventory.json | \
+  jq '[.[] | .todos.total] | add'
+
+# Completion rate
+cat .metadata_store/md_inventory.json | \
+  jq '[.[] | .todos] |
+      {total: (map(.total) | add),
+       checked: (map(.checked) | add)} |
+      {completion_rate: ((.checked / .total) * 100)}'
+
+# Files with 0% completion and >20 TODOs
+cat .metadata_store/md_inventory.json | \
+  jq '[.[] | select(.todos.total > 20 and .todos.checked == 0)] |
+      length'
+```
+
+#### Checklist Size Analysis
+```bash
+# Files over 500 lines
+cat .metadata_store/md_inventory.json | \
+  jq '[.[] | select(.stats.line_count > 500)] |
+      sort_by(-.stats.line_count) |
+      .[] | {filepath, lines: .stats.line_count, todos: .todos.total}'
+
+# Largest checklists (by TODO count)
+cat .metadata_store/md_inventory.json | \
+  jq 'sort_by(-.todos.total) | .[0:10] |
+      .[] | {filepath, todos: .todos.total, size_kb: (.stats.size_bytes / 1024 | floor)}'
+```
+
+#### Image/Diagram Analysis
+```bash
+# Files without images (large docs only)
+cat .metadata_store/md_inventory.json | \
+  jq '[.[] | select(.content.images == 0 and .stats.size_bytes > 10000)] |
+      sort_by(-.stats.size_bytes) |
+      .[0:20] |
+      .[] | {filepath, size_kb: (.stats.size_bytes / 1024 | floor)}'
+
+# Files that already have images
+cat .metadata_store/md_inventory.json | \
+  jq '[.[] | select(.content.images > 0)] |
+      .[] | {filepath, images: .content.images}'
+```
+
+---
+
+### Related Strategy Documents
+
+- [TODO Cleanup Strategy](../../docs/standards/TODO_CLEANUP_STRATEGY.md) - Managing 1,780 unchecked TODOs
+- [Checklist Splitting Recommendations](../../docs/standards/CHECKLIST_SPLITTING_RECOMMENDATIONS.md) - Breaking down large checklists
+- [Diagram Recommendations](../../docs/standards/DIAGRAM_RECOMMENDATIONS.md) - Adding visual documentation
+- [Markdown Insights Report](../../tmp/github-issues/MARKDOWN_INSIGHTS.md) - Full markdown analysis
+
+---
+
+**Documentation Quality Initiative**
+**Date:** 2025-11-24
+**Status:** Strategy documents created, implementation pending
+**Next Steps:** Create TODO health check script, begin Week 1 cleanup
