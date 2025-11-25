@@ -21,5 +21,9 @@ See: [CLOUD_RUN_SERVICES.md](../../../infrastructure/CLOUD_RUN_SERVICES.md)
 
 ## Archived Files
 
-- `BIDIRECTIONAL_SYNC.md` - Queue-based sync documentation
-- `BI_DIRECTIONAL_SYNC_DESIGN.md` - Original design document
+| File | Description |
+|------|-------------|
+| `BIDIRECTIONAL_SYNC.md` | Queue-based sync documentation |
+| `BI_DIRECTIONAL_SYNC_DESIGN.md` | Original design document |
+| `IMPLEMENTATION_STATUS.md` | Implementation tracking for queue system |
+| `DEPLOYMENT_GUIDE.md` | Deployment guide for old functions |
