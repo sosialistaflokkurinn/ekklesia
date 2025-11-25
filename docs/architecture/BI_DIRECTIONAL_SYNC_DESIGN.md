@@ -1,7 +1,17 @@
 # Bi-Directional Sync Design - Django ↔ Firestore
 
-**Date**: 2025-11-05  
-**Status**: 🚧 **DESIGN PHASE**  
+> ⚠️ **DEPRECATED (2025-11-25)**: This design was **implemented but then replaced** by real-time sync.
+>
+> **What changed:**
+> - The queue-based approach was replaced with instant HTTP webhooks
+> - Django signals call `sync_from_django` Cloud Function directly
+> - No scheduled 3:30 AM sync - changes sync instantly
+> - Deleted: `bidirectional_sync.py`, `track_member_changes.py`, `sync_queue` collection
+>
+> **See instead:** [CLOUD_RUN_SERVICES.md](../infrastructure/CLOUD_RUN_SERVICES.md) for current architecture.
+
+**Date**: 2025-11-05
+**Status**: ~~🚧 DESIGN PHASE~~ **ARCHIVED - Replaced by Real-Time Sync**
 **Epic**: Bi-Directional Member Data Sync
 
 ---

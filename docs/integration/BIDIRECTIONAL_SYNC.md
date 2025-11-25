@@ -1,7 +1,17 @@
 # Bi-Directional Sync System
 
-**Implemented**: 2025-11-05  
-**Status**: Production
+> ⚠️ **DEPRECATED (2025-11-25)**: This queue-based sync system has been **replaced by real-time sync**.
+>
+> **What changed:**
+> - Django signals now call `sync_from_django` Cloud Function directly (instant sync)
+> - `updatememberprofile` handles Firestore → Django sync (instant)
+> - No more `sync_queue` collection or `MemberSyncQueue` table
+> - Deleted: `bidirectional_sync.py`, `track_member_changes.py`
+>
+> **See instead:** [CLOUD_RUN_SERVICES.md](../infrastructure/CLOUD_RUN_SERVICES.md) for current architecture.
+
+**Implemented**: 2025-11-05
+**Status**: ~~Production~~ **ARCHIVED - Replaced by Real-Time Sync**
 
 ## 🎯 Purpose
 

@@ -1,7 +1,12 @@
 # Ekklesia Integration Documentation
 
-**Date**: November 5, 2025  
+**Date**: November 25, 2025
 **Status**: Production - Active System
+
+> ⚠️ **Architecture Update (2025-11-25)**: Sync is now real-time via webhooks, not scheduled.
+> - Deleted: `bidirectional_sync`, `track_member_changes`, `sync_queue`
+> - New: `sync_from_django` (instant Django → Firestore webhook)
+> See [CLOUD_RUN_SERVICES.md](../infrastructure/CLOUD_RUN_SERVICES.md) for current architecture.
 
 ## 📋 Overview
 
@@ -43,11 +48,9 @@ This is the main documentation for the Ekklesia membership system, consisting of
    - Data flow
    - Infrastructure
 
-2. **[BIDIRECTIONAL_SYNC.md](./BIDIRECTIONAL_SYNC.md)**
-   - How bi-directional sync works
-   - Sync queue mechanism
-   - Conflict resolution
-   - Scheduling
+2. **[BIDIRECTIONAL_SYNC.md](./BIDIRECTIONAL_SYNC.md)** ⚠️ *DEPRECATED*
+   - ~~Sync queue mechanism~~ (replaced by real-time)
+   - See CLOUD_RUN_SERVICES.md for current architecture
 
 ### Component Documentation
 
