@@ -1,12 +1,28 @@
 # Deployment Guide
 
-**Project**: Ekklesia Member Sync System  
-**Version**: 1.0  
-**Last Updated**: November 5, 2025
+**Project**: Ekklesia Member Sync System
+**Version**: 2.0
+**Last Updated**: November 25, 2025
+
+> ⚠️ **MAJOR UPDATE (2025-11-25)**: Sync architecture changed to real-time webhooks.
+>
+> **Deleted functions** (do NOT deploy):
+> - `bidirectional_sync` → replaced by `sync_from_django`
+> - `track_member_changes` → no longer needed
+>
+> **New functions** (deploy with Firebase CLI):
+> - `sync_from_django` - Django → Firestore webhook
+> - `search_addresses` - Address autocomplete (iceaddr)
+> - `validate_address` - Address validation (iceaddr)
+> - `validate_postal_code` - Postal code validation (iceaddr)
+>
+> **Deploy command**: `firebase deploy --only functions`
+>
+> See [CLOUD_RUN_SERVICES.md](../infrastructure/CLOUD_RUN_SERVICES.md) for current architecture.
 
 ## 🎯 Overview
 
-This guide covers deployment procedures for all components of the bi-directional sync system:
+This guide covers deployment procedures for all components of the sync system:
 
 1. Django Backend (Linode VPS)
 2. Cloud Functions (GCP)
@@ -281,9 +297,11 @@ python-dateutil==2.8.2
 functions-framework==3.4.0
 ```
 
-#### 3. Deploy bidirectional_sync
+#### ~~3. Deploy bidirectional_sync~~ (DELETED - DO NOT USE)
 
-```bash
+> ⚠️ **DELETED**: Use `firebase deploy --only functions:sync_from_django` instead.
+
+~~```bash
 gcloud functions deploy bidirectional_sync \
   --gen2 \
   --runtime=python311 \
@@ -317,9 +335,11 @@ curl -X POST https://bidirectional-sync-ymzrguoifa-nw.a.run.app
 # Expected: JSON response with sync results
 ```
 
-#### 5. Deploy track_member_changes
+#### ~~5. Deploy track_member_changes~~ (DELETED - DO NOT USE)
 
-```bash
+> ⚠️ **DELETED**: This function is no longer needed. Real-time sync replaces it.
+
+~~```bash
 gcloud functions deploy track_member_changes \
   --gen2 \
   --runtime=python311 \

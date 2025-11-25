@@ -1,18 +1,34 @@
 # Bi-Directional Sync Deployment Guide
 
-**Date**: 2025-11-05  
-**Purpose**: Guide for deploying bi-directional sync between Django and Firestore
+> ⚠️ **DEPRECATED (2025-11-25)**: This entire guide documents **queue-based sync** which has been **replaced by real-time webhooks**.
+>
+> **DO NOT USE** the deployment commands in this guide.
+>
+> **New deployment:**
+> ```bash
+> cd services/members/functions
+> firebase deploy --only functions
+> ```
+>
+> **New functions:**
+> - `sync_from_django` - Instant Django → Firestore webhook
+> - `updatememberprofile` - Instant Firestore → Django sync
+>
+> See [CLOUD_RUN_SERVICES.md](../../../docs/infrastructure/CLOUD_RUN_SERVICES.md) for current architecture.
+
+**Date**: 2025-11-05 (ARCHIVED)
+**Purpose**: ~~Guide for deploying bi-directional sync between Django and Firestore~~ **OUTDATED**
 
 ---
 
-## Overview
+## ~~Overview~~ (OUTDATED)
 
-This deployment enables bi-directional synchronization between Django backend and Firestore:
+~~This deployment enables bi-directional synchronization between Django backend and Firestore:~~
 
-- **Django → Firestore**: Changes made in Django admin appear in Ekklesia
-- **Firestore → Django**: Changes made in Ekklesia appear in Django
-- **Scheduled Sync**: Runs automatically at 3:30 AM daily
-- **Delta Sync**: Only changed data is synced (efficient)
+- ~~**Django → Firestore**: Changes made in Django admin appear in Ekklesia~~
+- ~~**Firestore → Django**: Changes made in Ekklesia appear in Django~~
+- ~~**Scheduled Sync**: Runs automatically at 3:30 AM daily~~ → **NOW INSTANT**
+- ~~**Delta Sync**: Only changed data is synced (efficient)~~ → **NOW REAL-TIME**
 
 ---
 

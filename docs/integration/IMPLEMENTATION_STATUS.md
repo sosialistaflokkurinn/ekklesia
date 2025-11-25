@@ -1,7 +1,17 @@
 # Implementation Status
 
-**Last Updated**: November 5, 2025  
-**Project**: Ekklesia Bi-Directional Sync  
+> ⚠️ **HISTORICAL DOCUMENT (2025-11-25)**: This documents the **queue-based sync** which has been **replaced by real-time sync**.
+>
+> **What changed:**
+> - `MemberSyncQueue` table → no longer used
+> - `bidirectional_sync` function → replaced by `sync_from_django`
+> - `track_member_changes` function → deleted
+> - Scheduled 3:30 AM sync → instant webhooks
+>
+> See [CLOUD_RUN_SERVICES.md](../infrastructure/CLOUD_RUN_SERVICES.md) for current architecture.
+
+**Last Updated**: November 5, 2025 (Historical - Queue-Based Sync)
+**Project**: Ekklesia Bi-Directional Sync
 **Epic**: #159 Profile and Admin UI
 
 ## 📊 Overall Status
