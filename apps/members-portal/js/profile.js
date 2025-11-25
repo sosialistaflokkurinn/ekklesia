@@ -229,6 +229,13 @@ function updateProfileStrings() {
 
   // Addresses button
   setTextContent('btn-add-address-text', R.string.btn_add_address_text, 'profile page');
+
+  // Communication preferences section
+  setTextContent('section-communication', R.string.section_communication || 'Samskiptastillingar', 'profile page');
+  setTextContent('label-reachable', R.string.label_reachable || 'Má hafa samband', 'profile page');
+  setTextContent('label-reachable-description', R.string.label_reachable_description || 'Leyfir flokknum að hafa samband vegna frétta og atburða', 'profile page');
+  setTextContent('label-groupable', R.string.label_groupable || 'Má bæta í hópa', 'profile page');
+  setTextContent('label-groupable-description', R.string.label_groupable_description || 'Leyfir flokknum að bæta þér í vinnuhópa og póstlista', 'profile page');
 }
 
 /**
@@ -1190,6 +1197,92 @@ function updateSimpleAddressDisplay() {
 }
 
 /**
+ * Initialize communication preferences (reachable/groupable toggles)
+ * Sets initial values and adds change listeners for auto-save
+ */
+function initCommunicationPreferences() {
+  const profile = currentUserData?.profile || {};
+
+  // Reachable toggle
+  const reachableInput = document.getElementById('input-reachable');
+  const reachableStatus = document.getElementById('status-reachable');
+
+  if (reachableInput) {
+    // Default to true if not set
+    reachableInput.checked = profile.reachable !== false;
+
+    reachableInput.addEventListener('change', async (e) => {
+      const newValue = e.target.checked;
+      debug.log(`📞 Reachable changed: ${newValue}`);
+
+      showStatus(reachableStatus, 'loading', { baseClass: 'profile-field__status' });
+      try {
+        const db = getFirebaseFirestore();
+        const kennitalaKey = currentUserData.kennitala.replace(/-/g, '');
+        const memberDocRef = doc(db, 'members', kennitalaKey);
+
+        await updateDoc(memberDocRef, {
+          'profile.reachable': newValue,
+          'profile.updated_at': new Date()
+        });
+
+        // Update local state
+        if (!currentUserData.profile) currentUserData.profile = {};
+        currentUserData.profile.reachable = newValue;
+
+        showStatus(reachableStatus, 'success', { baseClass: 'profile-field__status' });
+        showToast(R.string.profile_preferences_saved || 'Stillingar vistaðar', 'success');
+      } catch (error) {
+        debug.error('Failed to save reachable preference:', error);
+        showStatus(reachableStatus, 'error', { baseClass: 'profile-field__status' });
+        // Revert UI
+        reachableInput.checked = !newValue;
+      }
+    });
+  }
+
+  // Groupable toggle
+  const groupableInput = document.getElementById('input-groupable');
+  const groupableStatus = document.getElementById('status-groupable');
+
+  if (groupableInput) {
+    // Default to true if not set
+    groupableInput.checked = profile.groupable !== false;
+
+    groupableInput.addEventListener('change', async (e) => {
+      const newValue = e.target.checked;
+      debug.log(`👥 Groupable changed: ${newValue}`);
+
+      showStatus(groupableStatus, 'loading', { baseClass: 'profile-field__status' });
+      try {
+        const db = getFirebaseFirestore();
+        const kennitalaKey = currentUserData.kennitala.replace(/-/g, '');
+        const memberDocRef = doc(db, 'members', kennitalaKey);
+
+        await updateDoc(memberDocRef, {
+          'profile.groupable': newValue,
+          'profile.updated_at': new Date()
+        });
+
+        // Update local state
+        if (!currentUserData.profile) currentUserData.profile = {};
+        currentUserData.profile.groupable = newValue;
+
+        showStatus(groupableStatus, 'success', { baseClass: 'profile-field__status' });
+        showToast(R.string.profile_preferences_saved || 'Stillingar vistaðar', 'success');
+      } catch (error) {
+        debug.error('Failed to save groupable preference:', error);
+        showStatus(groupableStatus, 'error', { baseClass: 'profile-field__status' });
+        // Revert UI
+        groupableInput.checked = !newValue;
+      }
+    });
+  }
+
+  debug.log('✅ Communication preferences initialized');
+}
+
+/**
  * Initialize profile page
  *
  * @returns {Promise<void>}
@@ -1282,6 +1375,9 @@ async function init() {
       debug.log('🔄 Migration patched addresses, auto-saving to Firestore...');
       await addressManager.save();
     }
+
+    // Initialize communication preferences (reachable/groupable)
+    initCommunicationPreferences();
 
     // Update profile-specific UI
     updateProfileStrings();

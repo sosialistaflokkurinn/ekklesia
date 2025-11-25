@@ -1,7 +1,7 @@
 ---
 title: "Cloud Run Services Architecture"
 created: 2025-11-06
-updated: 2025-11-24
+updated: 2025-11-25
 status: active
 category: infrastructure
 tags: [cloud-run, microservices, firebase, architecture, gcp, deployment]
@@ -10,14 +10,14 @@ related:
   - ../integration/ARCHITECTURE.md
   - ./FIRESTORE_SCHEMA.md
 author: Infrastructure Team
-next_review: 2026-02-24
+next_review: 2026-02-25
 ---
 
 # Cloud Run Services Architecture
 
 **Document Type**: Infrastructure Documentation
-**Last Updated**: 2025-11-22
-**Status**: ✅ Active - Deployed Services (Beta)
+**Last Updated**: 2025-11-25
+**Status**: ✅ Active - Production Services
 **Project**: ekklesia-prod-10-2025
 **Region**: europe-west2 (London)
 
@@ -25,9 +25,13 @@ next_review: 2026-02-24
 
 ## Overview
 
-Ekklesia uses [Google Cloud Run](https://cloud.google.com/run) to deploy and manage microservices. The platform consists of **13 independent services** that work together to provide election management, voting, and membership functionality.
+Ekklesia uses [Google Cloud Run](https://cloud.google.com/run) to deploy and manage microservices. The platform consists of **14 independent services** that work together to provide election management, voting, membership, and address validation functionality.
 
-**Architecture Philosophy**: [Microservices](https://microservices.io/) approach with small, single-purpose functions that scale independently.
+**Architecture Philosophy**:
+- **Microservices** - Small, single-purpose functions that scale independently
+- **Real-time sync** - No queues, immediate synchronization between Django and Firestore
+- **Django is source of truth** - All membership data originates from Django
+- **Firestore is read-optimized cache** - Frontend reads from Firestore for performance
 
 **Security**: All services use [Google Secret Manager](https://cloud.google.com/secret-manager) for sensitive credentials (OAuth secrets, API tokens). Secrets are injected as environment variables at runtime by Cloud Run.
 
@@ -35,32 +39,107 @@ Ekklesia uses [Google Cloud Run](https://cloud.google.com/run) to deploy and man
 
 **IMPORTANT**: Different deployment methods create different environment variable names:
 
-| Deployment Method | Secret Name | Environment Variable | Example |
-|------------------|-------------|---------------------|---------|
-| **Firebase CLI** | `django-api-token` | `django-api-token` | Lowercase, hyphens preserved |
-| **gcloud CLI** | `django-api-token` | `DJANGO_API_TOKEN` | Uppercase, hyphens → underscores |
+| Deployment Method | Secret Name | Environment Variable |
+|------------------|-------------|---------------------|
+| **Firebase CLI** | `django-api-token` | `django-api-token` |
+| **gcloud CLI** | `django-api-token` | `DJANGO_API_TOKEN` |
 
-**Recommendation**: Code should check both formats for maximum compatibility:
+**Recommendation**: Code should check both formats:
 
 ```python
-# ✅ Good - checks both formats
 token = os.environ.get('django-api-token') or os.environ.get('DJANGO_API_TOKEN')
-
-# ❌ Bad - only checks one format
-token = os.environ.get('DJANGO_API_TOKEN')  # Fails with Firebase deploy
 ```
-
-**Example**: See `services/members/functions/sync_members.py:get_django_api_token()` for reference implementation.
 
 ---
 
 ## Architecture Diagrams
 
-Visual representations of the Ekklesia Cloud Run architecture, showing how services interact and how authentication flows through the system.
+### Real-Time Bidirectional Sync
+
+The core architectural change in November 2025: **instant bidirectional sync without queues**.
+
+```mermaid
+graph TB
+    subgraph "Real-Time Sync Architecture"
+        subgraph "Django → Firestore (instant)"
+            DA[Django Admin]
+            DS[Django Signals<br/>post_save/post_delete]
+            SFD[sync-from-django<br/>Cloud Function]
+            FS1[(Firestore<br/>members/)]
+
+            DA -->|"1. Save"| DS
+            DS -->|"2. HTTP webhook"| SFD
+            SFD -->|"3. Write"| FS1
+        end
+
+        subgraph "Firestore → Django (instant)"
+            PP[Profile Page]
+            UMP[updatememberprofile<br/>Cloud Function]
+            DAPI[Django API<br/>/api/sync/address/]
+            FS2[(Firestore<br/>members/)]
+
+            PP -->|"1. Save to Firestore"| FS2
+            PP -->|"2. Call function"| UMP
+            UMP -->|"3. PATCH"| DAPI
+        end
+
+        subgraph "Manual Full Sync (admin only)"
+            Admin[Admin Page]
+            SM[syncmembers<br/>Cloud Function]
+            DFULL[Django API<br/>/api/full/]
+            FS3[(Firestore)]
+
+            Admin -->|"Trigger"| SM
+            SM -->|"Fetch all"| DFULL
+            SM -->|"Bulk write"| FS3
+        end
+    end
+```
+
+**Key Points:**
+- **No queue system** - Changes sync immediately via HTTP webhooks
+- **Django signals** trigger `sync-from-django` on every member save/delete
+- **Profile page** calls `updatememberprofile` after saving to Firestore
+- **syncmembers** is only for manual full sync (admin recovery tool)
+
+### Address Validation Flow (iceaddr)
+
+New in November 2025: Integration with official Icelandic address registry.
+
+```mermaid
+graph LR
+    subgraph "Address Validation Services"
+        Input[User types<br/>address]
+
+        subgraph "Cloud Functions"
+            SA[search-addresses<br/>Autocomplete]
+            VA[validate-address<br/>Full validation]
+            VP[validate-postal-code<br/>Quick check]
+        end
+
+        IceAddr[(iceaddr<br/>SQLite DB<br/>~500k addresses)]
+
+        Input -->|"As user types"| SA
+        SA -->|"Query"| IceAddr
+        SA -->|"Return matches"| Input
+
+        Input -->|"On blur/submit"| VA
+        VA -->|"Validate"| IceAddr
+        VA -->|"Return canonical + GPS"| Input
+
+        Input -->|"Postal code only"| VP
+        VP -->|"Lookup"| IceAddr
+        VP -->|"Return city name"| Input
+    end
+```
+
+**iceaddr Features:**
+- Official Icelandic address registry (Þjóðskrá)
+- ~500,000 addresses with GPS coordinates
+- SQLite database bundled with function (no external API)
+- Response time: <100ms
 
 ### Service Architecture Overview
-
-The diagram below shows the high-level architecture of Ekklesia's microservices, organized into layers:
 
 ```mermaid
 graph TB
@@ -75,47 +154,54 @@ graph TB
         FS[Firestore]
     end
 
-    subgraph "Cloud Run Services"
-        Elections[Elections Service<br/>PostgreSQL]
-        Events[Events Service<br/>PostgreSQL]
-        Sync[bidirectional_sync<br/>Python Function]
+    subgraph "Cloud Run - Auth"
         HandleAuth[handlekenniauth<br/>OAuth]
-        Verify[verifymembership<br/>Firestore]
+        Verify[verifymembership]
+    end
+
+    subgraph "Cloud Run - Voting"
+        Elections[elections-service<br/>PostgreSQL]
+        Events[events-service<br/>PostgreSQL]
+    end
+
+    subgraph "Cloud Run - Sync"
+        SyncDjango[sync-from-django]
+        UpdateProfile[updatememberprofile]
+        SyncMembers[syncmembers]
+    end
+
+    subgraph "Cloud Run - Address"
+        SearchAddr[search-addresses]
+        ValidateAddr[validate-address]
+        ValidatePostal[validate-postal-code]
     end
 
     subgraph "Django Backend"
-        Django[Django REST API<br/>PostgreSQL socialism]
+        Django[Django REST API<br/>PostgreSQL]
     end
 
     MP --> Auth
     AP --> Auth
-    PP --> Auth
-    Auth --> Elections
-    Auth --> Events
-    Auth --> Verify
     MP --> HandleAuth
-    AP --> HandleAuth
     HandleAuth --> Auth
     HandleAuth --> FS
 
-    Sync -->|Tvíhliða sync| Django
-    Sync -->|Sync data| FS
-    Verify -->|Lesa membership| FS
+    SyncDjango <-->|"Real-time"| Django
+    UpdateProfile -->|"Real-time"| Django
+    SyncMembers -->|"Manual"| Django
+    SyncDjango --> FS
+    UpdateProfile --> FS
+    SyncMembers --> FS
+
+    Verify --> FS
+    Elections --> FS
+    Events --> FS
+
+    MP --> SearchAddr
+    MP --> ValidateAddr
 ```
 
-**Key Components:**
-- **Client Layer**: Member portal, admin portal, and public-facing pages
-- **Firebase**: Centralized authentication and Firestore database (custom claims include membership data synced from Django)
-- **Cloud Run Services**: 13 microservices handling elections, membership, and authentication
-- **Django Backend**: Legacy PostgreSQL database (socialism DB) with REST API - source of truth for membership data
-- **bidirectional_sync**: EINA tengingin við Django - keyrir daglega klukkan 3:30, syncrar Django ↔ Firestore
-- **handlekenniauth**: Kallar á Kenni.is OAuth API, ekki Django (les membership úr Firestore)
-- **verifyMembership**: Les bara úr Firestore, kallar EKKI á Django beint
-- **Elections/Events Services**: Nota Firebase custom claims, ENGAR Django tengingar
-
 ### Authentication Flow
-
-This sequence diagram shows how users authenticate through Kenni.is (Icelandic eID) and access protected Cloud Run services:
 
 ```mermaid
 sequenceDiagram
@@ -134,7 +220,7 @@ sequenceDiagram
     Kenni->>HandleAuth: Return auth code
     HandleAuth->>Kenni: Exchange code for ID token
     Kenni->>HandleAuth: Return ID token + profile
-    HandleAuth->>Firestore: Uppfæra /users/ með profile
+    HandleAuth->>Firestore: Update /users/ with profile
     HandleAuth->>Firebase: Create/update user
     HandleAuth->>Firebase: Issue custom token (with claims)
     Firebase->>Portal: User signed in (JWT)
@@ -143,49 +229,6 @@ sequenceDiagram
     Firebase->>Service: Token valid + user claims
     Service->>Portal: Protected resource
 ```
-
-**Security Features:**
-- **PKCE**: Proof Key for Code Exchange prevents authorization code interception
-- **Kenni.is**: Government-backed eID authentication using Icelandic National Registry
-- **Firebase JWT**: Short-lived tokens with custom claims for role-based access control
-- **Token Verification**: All Cloud Run services verify tokens with Firebase before serving requests
-
-### Service Dependencies
-
-This diagram shows the dependencies between Cloud Run services:
-
-```mermaid
-graph LR
-    Sync[bidirectional_sync<br/>Python Function] -->|Tvíhliða sync| Django[Django API]
-    Sync -->|Uppfæra Firestore| Firestore[Firestore]
-
-    Verify[verifymembership] -->|Lesa membership| Firestore
-    HandleAuth[handlekenniauth] -->|OAuth flow| KenniIs[Kenni.is API]
-    HandleAuth -->|Uppfæra users| Firestore
-    HandleAuth -->|Custom claims| Firebase[Firebase Auth]
-
-    Portal[Members Portal] -->|Authentication| Firebase
-    Portal -->|API calls| Elections[Elections Service]
-    Portal -->|API calls| Events[Events Service]
-
-    Admin[Admin Portal] -->|Authentication| Firebase
-    Admin -->|Admin API| Elections
-
-    Events -->|S2S register tokens| Elections
-
-    Firebase -->|JWT with custom claims| Elections
-    Firebase -->|JWT with custom claims| Events
-    Firebase -->|JWT verification| Verify
-```
-
-**Dependency Notes:**
-- **EINA Django tenging**: `bidirectional_sync` (Python Cloud Function) syncrar daglega klukkan 3:30
-- **Django Backend**: Source of truth fyrir membership data, synced til Firestore
-- **handlekenniauth**: Kallar á **Kenni.is OAuth API**, EKKI Django (les membership úr Firestore)
-- **verifyMembership**: Les **bara úr Firestore**, kallar EKKI á Django beint
-- **Firebase Auth**: Central authentication fyrir allar þjónustur (JWT verification with custom claims)
-- **Elections/Events Services**: Nota Firebase JWT custom claims fyrir eligibility, ENGAR Django API tengingar
-- **Key insight**: Membership data syncast frá Django → Firestore, síðan nota allar þjónustur Firestore
 
 ---
 
@@ -198,78 +241,16 @@ graph LR
 **Purpose**: Anonymous ballot recording, voting, and election administration
 **Deployment**: Source-based (Dockerfile)
 **URL**: https://elections-service-521240388393.europe-west2.run.app
-**Authentication**:
-- Public access (token-based voting)
-- Firebase Auth (admin API)
-**Latest Deploy**: 2025-10-31 (revision 00010-lzw)
+**Authentication**: Public (token-based) + Firebase Auth (admin)
 
 **Key Features**:
 - Anonymous ballot submission
 - One-time token enforcement
 - Vote validation and recording
-- Results aggregation (server-to-server only)
-- **Admin API** (10 endpoints):
-  - Full CRUD for elections management
-  - Lifecycle management (draft → published → closed)
-  - Soft delete (hide/unhide)
-  - Hard delete (superadmin only)
-  - Results retrieval for closed elections
-
-**Technology Stack**:
-- [Node.js 18+](https://nodejs.org/)
-- [Express 4.21.2](https://expressjs.com/)
-- [PostgreSQL](https://www.postgresql.org/) (via [`pg` 8.11.3](https://node-postgres.com/))
-- [Firebase Admin 13.5.0](https://firebase.google.com/docs/admin/setup)
+- Results aggregation
+- Admin API (10 endpoints)
 
 **Code Location**: `services/elections/`
-
-**Dependencies**:
-```json
-{
-  "express": "^4.21.2",
-  "pg": "^8.11.3",
-  "firebase-admin": "^13.5.0",
-  "cors": "^2.8.5",
-  "dotenv": "^16.6.1"
-}
-```
-
-**Security Status**: ✅ 0 vulnerabilities (npm audit)
-
-**Admin API Endpoints** (Added Nov 2025 - Issue #192):
-
-*CRUD Operations:*
-1. `GET /api/admin/elections` - List elections (filters: status, hidden, search, pagination)
-2. `POST /api/admin/elections` - Create election (draft status)
-3. `GET /api/admin/elections/:id` - Get single election
-4. `PATCH /api/admin/elections/:id` - Update election (draft only)
-
-*Lifecycle Management:*
-5. `POST /api/admin/elections/:id/open` - Publish election
-6. `POST /api/admin/elections/:id/close` - Close voting
-
-*Soft Delete:*
-7. `POST /api/admin/elections/:id/hide` - Hide election
-8. `POST /api/admin/elections/:id/unhide` - Restore hidden election
-
-*Hard Delete & Results:*
-9. `DELETE /api/admin/elections/:id` - Permanent delete (superadmin only)
-10. `GET /api/admin/elections/:id/results` - Get results (closed elections)
-
-**RBAC Implementation**:
-- Middleware: `services/elections/src/middleware/rbacAuth.js`
-- Roles: `election-manager` (full CRUD), `superadmin` (+ hard delete)
-- Authentication: Firebase token verification with custom claims
-- All admin endpoints require valid Firebase ID token
-
-**Database Schema**:
-- Migration 003 (`003_admin_features.sql`) adds:
-  - `hidden` (BOOLEAN) - Soft delete flag
-  - `voting_type` (VARCHAR) - 'single-choice' or 'multi-choice'
-  - `max_selections` (INTEGER) - Max selections for multi-choice
-  - `eligibility` (VARCHAR) - Who can vote: 'members', 'admins', 'all'
-  - `scheduled_start`/`scheduled_end` (TIMESTAMP) - Optional scheduling
-  - `updated_by` (VARCHAR) - Last modifier UID
 
 ---
 
@@ -278,35 +259,15 @@ graph LR
 **Purpose**: Election management and voting token issuance
 **Deployment**: Source-based (Dockerfile)
 **URL**: https://events-service-521240388393.europe-west2.run.app
-**Authentication**: Public access (App Check + JWT validation)
-**Latest Deploy**: 2025-10-31 (revision 00021-w6g)
+**Authentication**: Public (App Check + JWT)
 
 **Key Features**:
 - Election lifecycle management
-- Voting token generation and issuance
+- Voting token generation
 - Token validation and tracking
-- Audit logging for token operations
-
-**Technology Stack**:
-- [Node.js 18+](https://nodejs.org/)
-- [Express 4.21.2](https://expressjs.com/)
-- [PostgreSQL](https://www.postgresql.org/) (via [`pg` 8.11.3](https://node-postgres.com/))
-- [Firebase Admin 13.5.0](https://firebase.google.com/docs/admin/setup)
+- Audit logging
 
 **Code Location**: `services/events/`
-
-**Dependencies**:
-```json
-{
-  "express": "^4.21.2",
-  "pg": "^8.11.3",
-  "firebase-admin": "^13.5.0",
-  "cors": "^2.8.5",
-  "dotenv": "^16.6.1"
-}
-```
-
-**Security Status**: ✅ 0 vulnerabilities (npm audit)
 
 ---
 
@@ -314,953 +275,363 @@ graph LR
 
 #### 3. handlekenniauth
 **Type**: Cloud Function (Python 3.13)
-**Purpose**: Kenni.is OAuth authentication integration with PKCE
-**Deployment**: Firebase Cloud Functions Gen2
+**Purpose**: Kenni.is OAuth authentication with PKCE
 **URL**: https://handlekenniauth-ymzrguoifa-nw.a.run.app
-**Authentication**: Public access (OAuth callback endpoint)
-**Latest Deploy**: 2025-11-10
+**Authentication**: Public (OAuth callback)
 
 **Key Features**:
-- Kenni.is OAuth 2.0 flow with PKCE
-- Government eID authentication (Icelandic National Registry)
-- User profile creation/update from Þjóðskrá
+- Kenni.is OAuth 2.0 with PKCE
+- Government eID (Icelandic National Registry)
 - Firebase custom token issuance
 - Rate limiting (10 attempts per 10 min per IP)
-- Input validation (DoS protection)
-- Structured logging with correlation IDs
-
-**Technology Stack**:
-- Python 3.13 (Firebase Functions Gen2)
-- Firebase Admin SDK (Python)
-- Firebase Authentication
-- Kenni.is OAuth 2.0 API
-- JWT token verification with JWKS caching
-- **Secret Manager**: `KENNI_IS_CLIENT_SECRET` (OAuth client secret)
+- **Secret**: `kenni-client-secret`
 
 **Code Location**: `services/members/functions/auth/kenni_flow.py`
-
-**Usage**: **Most frequently used service** (136 references in codebase)
-
-**OAuth Flow (PKCE)**:
-1. Frontend generates PKCE code verifier + challenge
-2. Frontend initiates OAuth with Kenni.is (includes challenge)
-3. User authenticates with Icelandic eID (kennitala)
-4. Kenni.is redirects back with authorization code
-5. Frontend sends code + verifier to this service
-6. Service exchanges code for ID token (validates verifier)
-7. Service verifies ID token signature (JWKS)
-8. Service creates/updates Firebase user
-9. Service issues Firebase custom token
-10. Frontend signs in with custom token
 
 ---
 
 #### 4. verifymembership
-**Type**: Cloud Function (Node.js)
-**Purpose**: Real-time membership verification
-**Deployment**: Firebase Cloud Functions
+**Type**: Cloud Function (Python 3.13)
+**Purpose**: Real-time membership verification from Firestore
 **URL**: https://verifymembership-521240388393.europe-west2.run.app
-**Authentication**: Require authentication (Firebase Auth)
-**Latest Deploy**: 2025-10-29
+**Authentication**: Require Firebase Auth
 
 **Key Features**:
 - Verify user is active member
-- Check membership status in Django backend
-- Cache verification results
-- Return membership details (name, email, phone, roles)
+- Read from Firestore (not Django)
+- Return membership details
 
-**Technology Stack**:
-- Node.js (Firebase Functions)
-- Firebase Admin SDK
-- Django API integration
-- Firestore (membership cache)
-
-**Code Location**: `services/members/functions/verifymembership/`
-
-**Usage**: 48 references in codebase (critical security function)
-
-**Verification Flow**:
-1. Frontend requests verification (with Firebase token)
-2. Service validates Firebase token
-3. Service checks Firestore cache (60 min TTL)
-4. If cache miss: fetch from Django API
-5. Update Firestore with fresh data
-6. Return membership details to frontend
+**Code Location**: `services/members/functions/membership/functions.py`
 
 ---
 
 ### Data Synchronization Services
 
-#### 5. syncmembers
-**Type**: Cloud Function (Python 3.13) - HTTP Trigger
-**Purpose**: Manual membership synchronization (admin-triggered)
-**Deployment**: Firebase Cloud Functions Gen2
-**URL**: https://syncmembers-ymzrguoifa-nw.a.run.app
-**Authentication**: Allow unauthenticated (CORS preflight) + Manual Bearer Token Verification
-**Latest Deploy**: 2025-11-22
+#### 5. sync-from-django ⭐ NEW
+**Type**: Cloud Function (Python 3.13)
+**Purpose**: Real-time Django → Firestore sync webhook
+**URL**: https://europe-west2-ekklesia-prod-10-2025.cloudfunctions.net/sync_from_django
+**Authentication**: API key (django-api-token)
+**Deployed**: 2025-11-25
 
 **Key Features**:
-- Manual sync from Django backend (triggered by admin)
-- Full member data sync (profile, contact, addresses, roles)
-- Firestore members collection update
-- Sync statistics and audit logging
-- Normalizes kennitala, phone, and email formats
-- **Manual CORS handling** for browser fetch support
+- Called by Django `post_save`/`post_delete` signals
+- Instant sync (no queue, no delay)
+- Transforms Django member data to Firestore format
+- Updates `profile.addresses` array
+- Supports create, update, delete actions
+- **Secret**: `django-api-token`
 
-**Technology Stack**:
-- Python 3.13 (Firebase Functions Gen2)
-- Firebase Admin SDK (Python)
-- Django API integration (`/felagar/api/full/`)
-- **Secret Manager**: `django-api-token` (Django API authentication)
-  - Environment variable: `django-api-token` (Firebase deploy) or `DJANGO_API_TOKEN` (gcloud deploy)
+**Code Location**: `services/members/functions/sync_from_django.py`
+
+**Request Format**:
+```json
+{
+  "kennitala": "1234567890",
+  "action": "create|update|delete",
+  "data": {
+    "id": 813,
+    "ssn": "1234567890",
+    "name": "Member Name",
+    "local_address": {
+      "street": "Streetname",
+      "number": 1,
+      "postal_code": 101,
+      "city": "Reykjavík"
+    },
+    "contact_info": { "email": "...", "phone": "..." },
+    "unions": [{"name": "Union"}],
+    "titles": [{"name": "Title"}]
+  }
+}
+```
+
+---
+
+#### 6. updatememberprofile
+**Type**: Cloud Function (Python 3.13)
+**Purpose**: Real-time Firestore → Django sync for profile AND address updates
+**URL**: https://updatememberprofile-ymzrguoifa-nw.a.run.app
+**Authentication**: Require Firebase Auth (own profile only)
+**Updated**: 2025-11-25
+
+**Key Features**:
+- Real-time profile updates (name, email, phone)
+- **Real-time address sync** to Django
+- Calls Django `/api/sync/address/` endpoint
+- Links addresses to Icelandic registry (map_address)
+- Logs to `syncHistory` subcollection
+- **Secret**: `django-api-token`
+
+**Code Location**: `services/members/functions/membership/functions.py`
+
+**Address Sync Flow**:
+1. User saves address in profile page
+2. Frontend saves to Firestore
+3. Frontend calls updatememberprofile
+4. Function extracts default address
+5. Calls Django `/api/sync/address/`
+6. Django creates/updates NewLocalAddress
+7. Django links to map_address registry
+8. Returns success with linked address ID
+
+---
+
+#### 7. syncmembers
+**Type**: Cloud Function (Python 3.13)
+**Purpose**: Manual full sync (admin-triggered disaster recovery)
+**URL**: https://syncmembers-ymzrguoifa-nw.a.run.app
+**Authentication**: Firebase Auth (admin/superuser only)
+
+**Key Features**:
+- Manual-only (no schedule)
+- Full member data sync from Django
+- Used for initial setup or recovery
+- **Secret**: `django-api-token`
 
 **Code Location**: `services/members/functions/sync_members.py`
 
-**Usage**: 19 references in codebase
-
-**Sync Process**:
-1. Admin triggers sync from dashboard (browser fetch)
-2. Service handles CORS preflight (OPTIONS)
-3. Service manually verifies Firebase ID token (Bearer)
-4. Service validates admin/superuser role
-5. Fetch all members from Django API (paginated)
-6. Transform Django member format → Firestore format
-7. Normalize kennitala (remove hyphen), phone (7 digits), email (lowercase)
-8. Upsert members to Firestore (keyed by kennitala)
-9. Create sync log with statistics (added, updated, errors)
-10. Return sync results to admin
+**When to Use**:
+- Initial database population
+- After major Django data migration
+- Disaster recovery
 
 ---
 
-#### 6. updatememberprofile (Real-Time Self-Service Profile Updates)
+### Address Validation Services (iceaddr) ⭐ NEW
+
+#### 8. search-addresses
 **Type**: Cloud Function (Python 3.13)
-**Purpose**: **User-initiated real-time profile updates** with immediate Django + Firestore synchronization
-**Deployment**: Firebase Cloud Functions Gen2
-**URL**: https://updatememberprofile-ymzrguoifa-nw.a.run.app
-**Authentication**: Require authentication (Firebase Auth - members can only update their own profile)
-**Latest Deploy**: 2025-11-10
-
-**Display Name (descriptive):** "Self-Service Member Profile Update (Real-Time)"
-
-**Why This Service Exists:**
-
-This service provides **real-time self-service** profile management, distinct from the daily batch sync provided by `bidirectional-sync`. Key differences:
-
-| Feature | updatememberprofile | bidirectional-sync |
-|---------|-------------------|-------------------|
-| **Trigger** | User action (on-demand) | Scheduled (daily 3:30 AM) |
-| **Latency** | 1-2 seconds (real-time) | Up to 24 hours |
-| **Scope** | Single user | All members (batch) |
-| **Authorization** | User updates own profile | System/admin only |
-| **UX Impact** | Immediate feedback | No user interaction |
-
-**Without this service:**
-- Users would wait up to 24 hours for profile updates
-- No self-service capability (requires admin intervention)
-- Poor user experience for profile management
-
-**Analysis Report:** See `tmp/reports/UPDATEMEMBERPROFILE_ANALYSIS.md` for detailed rationale
+**Purpose**: Icelandic address autocomplete
+**URL**: https://europe-west2-ekklesia-prod-10-2025.cloudfunctions.net/search_addresses
+**Authentication**: Allow unauthenticated
+**Deployed**: 2025-11-25
 
 **Key Features**:
-- ⚡ **Real-time updates** - Django + Firestore updated in 1-2 seconds
-- 🔐 **Self-service authorization** - Users can only update their own profile
-- 📱 **Immediate user feedback** - Returns success/error instantly
-- 🔄 **Dual-target sync** - Updates both Django (source of truth) and Firestore (cache) simultaneously
-- 📞 **Phone normalization** - Removes country code (+354), keeps 7 local digits
-- ✅ **Data consistency** - Updates Firestore with canonical Django data after Django update succeeds
+- Fast autocomplete (<100ms)
+- Searches street names, numbers
+- Returns GPS coordinates
+- Uses iceaddr SQLite database
 
-**Technology Stack**:
-- Python 3.13 (Firebase Functions Gen2)
-- Firebase Admin SDK (Python)
-- Django API integration: `PATCH /felagar/api/full/{django_id}/` (via `sync_members.update_django_member()`)
-- **Secret Manager**: `django-api-token` (Django API authentication)
-  - ⚠️ **Environment Variable Naming**: Firebase Functions creates env var with exact secret name: `django-api-token` (lowercase, hyphens)
-  - Differs from gcloud deploy format: `DJANGO_API_TOKEN` (uppercase, underscores)
-  - Code supports both formats for compatibility (see `sync_members.get_django_api_token()`)
+**Code Location**: `services/members/functions/search_addresses.py`
 
-**Code Location**: `services/members/functions/membership/functions.py` (updatememberprofile_handler)
+**Request**: `GET ?q=Laugaveg&limit=10`
 
-**Usage**: 3 references in codebase
-
-**Real-Time Update Flow** (1-2 seconds total):
-1. Frontend sends profile update request with kennitala + updates
-2. Service validates Firebase token (~100ms)
-3. Service verifies user is updating their own profile (kennitala match)
-4. Lookup Django member ID from Firestore (faster than Django search) (~100ms)
-5. Build Django PATCH payload (name, contact_info.email, contact_info.phone)
-6. **Push update to Django API** → `PATCH /api/full/{django_id}/` (~500ms)
-7. **Update Firestore cache** with normalized data (profile.name, profile.email, profile.phone) (~200ms)
-8. Return success with updated member data to user
-
-**Error Handling:**
-- If Django update fails → User sees error, Firestore not updated
-- If Firestore update fails → Django already updated (source of truth), will sync on next `bidirectional-sync`
-
-**Fields Updated:**
-- `name` (full name from Þjóðskrá)
-- `email` (contact email)
-- `phone` (mobile phone, normalized to 7 digits)
+**Response**:
+```json
+{
+  "results": [
+    {
+      "street": "Laugavegur",
+      "number": 1,
+      "postal_code": "101",
+      "city": "Reykjavík",
+      "latitude": 64.1466,
+      "longitude": -21.9426
+    }
+  ]
+}
+```
 
 ---
 
-#### 7. bidirectional-sync
+#### 9. validate-address
 **Type**: Cloud Function (Python 3.13)
-**Purpose**: Bi-directional sync Django ↔ Firestore
-**Deployment**: gcloud functions (Gen2)
-**URL**: https://bidirectional-sync-ymzrguoifa-nw.a.run.app
-**Authentication**: Allow unauthenticated (triggered by Cloud Scheduler)
-**Latest Deploy**: 2025-11-22
+**Purpose**: Full Icelandic address validation
+**URL**: https://europe-west2-ekklesia-prod-10-2025.cloudfunctions.net/validate_address
+**Authentication**: Allow unauthenticated
+**Deployed**: 2025-11-25
 
 **Key Features**:
-- Scheduled sync (Cloud Scheduler: daily at 3:30 AM UTC)
-- Bi-directional sync: Firestore → Django AND Django → Firestore
-- Detects changes since last sync (timestamp-based)
-- Syncs only modified members (optimized for performance)
-- Tracks sync queue for pending Firestore→Django updates
+- Validates street + house number
+- Returns canonical format
+- Returns GPS coordinates
+- Returns validation errors
 
-**Technology Stack**:
-- Python 3.13 (Cloud Functions Gen2)
-- Firebase Admin SDK (Python)
-- Django API integration
-- **Secret Manager**: `django-api-token` (Django API authentication)
-  - ⚠️ Deployed via **gcloud** (not Firebase CLI)
-  - Environment variable configured as: `DJANGO_API_TOKEN` (uppercase, underscores)
-  - Uses `--set-secrets=DJANGO_API_TOKEN=django-api-token:latest` flag
-
-**Code Location**: `services/members/functions/bidirectional_sync.py`
-
-**Sync Process**:
-1. Get last sync timestamp from Firestore metadata
-2. **Firestore → Django**: Check sync_queue for pending updates
-3. Push pending updates to Django API
-4. Mark queue items as synced
-5. **Django → Firestore**: Fetch modified members since last sync
-6. Update Firestore with Django changes
-7. Update last sync timestamp
+**Code Location**: `services/members/functions/validate_address.py`
 
 ---
 
-
-
-#### 8. get-django-token
+#### 10. validate-postal-code
 **Type**: Cloud Function (Python 3.13)
-**Purpose**: Provide Django API token to authorized admins
-**Deployment**: gcloud functions (Gen2)
-**URL**: https://get-django-token-ymzrguoifa-nw.a.run.app
-**Authentication**: Require authentication (admin/superuser role required)
-**Latest Deploy**: 2025-11-10
+**Purpose**: Quick postal code validation
+**URL**: https://europe-west2-ekklesia-prod-10-2025.cloudfunctions.net/validate_postal_code
+**Authentication**: Allow unauthenticated
+**Deployed**: 2025-11-25
 
 **Key Features**:
-- Securely provide Django API token to admin users
-- Role-based access control (admin or superuser only)
-- Firebase token verification
-- Audit logging of token access
+- Validates Icelandic postal codes (100-999)
+- Returns city/town name
+- Fast (<50ms)
 
-**Technology Stack**:
-- Python 3.13 (Cloud Functions Gen2)
-- Firebase Admin SDK (Python)
-- **Secret Manager**: `DJANGO_API_TOKEN` (Django API token)
-
-**Code Location**: `services/members/functions/get_django_token.py`
-
-**Access Flow**:
-1. Admin sends request with Firebase ID token
-2. Service verifies Firebase token
-3. Service checks user roles (must have admin or superuser)
-4. If authorized: return Django API token
-5. Log token access (user UID, email, timestamp)
+**Code Location**: `services/members/functions/validate_address.py`
 
 ---
 
 ### Audit & Monitoring Services
 
-#### 9. auditmemberchanges
-**Type**: Cloud Function (Python)
+#### 11. auditmemberchanges
+**Type**: Cloud Function (Python 3.13)
 **Purpose**: Audit logging for member data changes
-**Deployment**: Firebase Cloud Functions
 **URL**: https://auditmemberchanges-521240388393.europe-west2.run.app
-**Authentication**: Require authentication (internal only)
-**Latest Deploy**: 2025-10-29
+**Authentication**: Require authentication (internal)
 
 **Key Features**:
 - Log all member profile changes
-- Track who made changes (admin vs self-service)
-- Store change history in Firestore
+- Track who made changes
 - Retention: 90 days
 
-**Technology Stack**:
-- Python 3.11
-- Firebase Admin SDK (Python)
-- Firestore (audit logs)
-
-**Code Location**: `services/members/functions/auditmemberchanges/`
-
-**Usage**: 4 references in codebase
-
-**Logged Events**:
-- Profile updates (email, phone, address)
-- Role changes (admin, member)
-- Membership status changes
-- Authentication events
-
-**Audit Log Schema**:
-```json
-{
-  "timestamp": "2025-10-31T12:00:00Z",
-  "user_id": "firebase_uid",
-  "action": "profile_update",
-  "changes": {
-    "email": {"old": "old@example.com", "new": "new@example.com"}
-  },
-  "actor": "user_self | admin_uid",
-  "ip_address": "1.2.3.4"
-}
-```
-
----
-
-#### 10. track_member_changes
-**Type**: Cloud Function (Python 3.11)
-**Purpose**: Track Firestore member changes for sync
-**Deployment**: gcloud functions (Gen2)
-**Trigger**: Firestore document write (`members/{memberId}`)
-**Authentication**: Internal (Eventarc Trigger)
-**Latest Deploy**: 2025-11-22
-
-**Key Features**:
-- Real-time change tracking
-- Adds changes to `sync_queue` collection
-- Filters out redundant updates
-- Supports bi-directional sync architecture
-
-**Technology Stack**:
-- Python 3.11 (Cloud Functions Gen2)
-- Firebase Admin SDK (Python)
-- Firestore Triggers (Eventarc)
-
-**Code Location**: `services/members/functions/track_member_changes.py`
-
-**Usage**: Critical for Firestore -> Django sync
-
-**Sync Process**:
-1. Firestore document written (create/update/delete)
-2. Function triggered by Eventarc
-3. Extract changed fields
-4. Add entry to `sync_queue` with status 'pending'
-5. `bidirectional-sync` later processes this queue
-
----
-
-#### 11. healthz
-**Type**: Cloud Function (Python 3.13)
-**Purpose**: Health check and configuration sanity endpoint
-**Deployment**: Firebase Cloud Functions Gen2
-**URL**: https://healthz-ymzrguoifa-nw.a.run.app
-**Authentication**: Public access (GET only)
-**Latest Deploy**: 2025-11-10
-
-**Key Features**:
-- Configuration sanity checks (environment variables present)
-- JWKS cache statistics (Kenni.is token verification)
-- CORS support for monitoring tools
-- Correlation ID tracking
-
-**Technology Stack**:
-- Python 3.13 (Firebase Functions Gen2)
-- Firebase Admin SDK (Python)
-
-**Code Location**: `services/members/functions/auth/kenni_flow.py` (healthz_handler)
-
-**Usage**: 7 references in codebase
-
-**Health Check Response**:
-```json
-{
-  "ok": true,
-  "env": {
-    "KENNI_IS_ISSUER_URL": true,
-    "KENNI_IS_CLIENT_ID": true,
-    "KENNI_IS_CLIENT_SECRET": true,
-    "KENNI_IS_REDIRECT_URI": true
-  },
-  "jwks": {
-    "hits": 42,
-    "misses": 3,
-    "size": 1
-  },
-  "issuerConfigured": true,
-  "correlationId": "uuid-here"
-}
-```
-
-**Note**: Returns boolean values for environment variables (presence check only, not actual values)
+**Code Location**: `services/members/functions/audit_members.py`
 
 ---
 
 #### 12. cleanupauditlogs
 **Type**: Cloud Function (Python 3.13)
-**Purpose**: Cleanup old audit logs (retention policy enforcement)
-**Deployment**: Firebase Cloud Functions Gen2
-**Authentication**: Require authentication (Callable)
-**Latest Deploy**: 2025-11-10
+**Purpose**: Cleanup old audit logs
+**Authentication**: Callable (internal)
 
 **Key Features**:
-- Keeps only most recent N logs (default 50)
+- Keeps only most recent N logs
 - Prevents unlimited storage growth
-- Manual trigger or scheduled
 
-**Technology Stack**:
-- Python 3.13 (Firebase Functions Gen2)
-- Firebase Admin SDK (Python)
-
-**Code Location**: `services/members/functions/cleanup_audit_logs.py`
-
-**Usage**: Maintenance task
+**Code Location**: `services/members/functions/membership/functions.py`
 
 ---
 
-## Deployment History
+#### 13. healthz
+**Type**: Cloud Function (Python 3.13)
+**Purpose**: Health check and configuration sanity
+**URL**: https://healthz-ymzrguoifa-nw.a.run.app
+**Authentication**: Public (GET only)
 
-### Recent Deployments (Last 7 Days)
+**Key Features**:
+- Configuration sanity checks
+- JWKS cache statistics
+- Correlation ID tracking
 
-| Service | Date | Deployer | Changes |
-|---------|------|----------|---------|
-| syncmembers | 2025-11-22 | gudrodur@sosialistaflokkurinn.is | Refactor to HTTP trigger, manual CORS/Auth |
-| bidirectional-sync | 2025-11-22 | gudrodur@sosialistaflokkurinn.is | Redeploy for sync queue fixes |
-| track_member_changes | 2025-11-22 | gudrodur@sosialistaflokkurinn.is | Initial deployment (Firestore trigger) |
-| handlekenniauth | 2025-11-10 | gudrodur@sosialistaflokkurinn.is | Secret Manager integration (KENNI_IS_CLIENT_SECRET) |
-| healthz | 2025-11-10 | gudrodur@sosialistaflokkurinn.is | Updated to Python 3.13, config sanity checks |
-| syncmembers | 2025-11-10 | gudrodur@sosialistaflokkurinn.is | Secret Manager integration (DJANGO_API_TOKEN) |
-| updatememberprofile | 2025-11-10 | gudrodur@sosialistaflokkurinn.is | Secret Manager integration, env var usage |
-| bidirectional-sync | 2025-11-10 | gudrodur@sosialistaflokkurinn.is | Secret Manager integration, remove direct API calls |
+**Code Location**: `services/members/functions/auth/kenni_flow.py`
 
-| get-django-token | 2025-11-10 | gudrodur@sosialistaflokkurinn.is | Secret Manager integration, admin token access |
-| elections-service | 2025-10-31 | gudrodur@sosialistaflokkurinn.is | Dependencies update (express 4.21.2, dotenv 16.6.1) |
-| events-service | 2025-10-31 | gudrodur@sosialistaflokkurinn.is | Dependencies update (express 4.21.2, firebase-admin 13.5.0) |
+---
+
+### Admin Utilities
+
+#### 14. get-django-token
+**Type**: Cloud Function (Python 3.13)
+**Purpose**: Provide Django API token to authorized admins
+**URL**: https://get-django-token-ymzrguoifa-nw.a.run.app
+**Authentication**: Require Firebase Auth (admin/superuser)
+
+**Key Features**:
+- Securely provide Django API token
+- Role-based access control
+- Audit logging
+- **Secret**: `django-api-token`
+
+**Code Location**: `services/members/functions/get_django_token.py`
 
 ---
 
 ## Service Dependencies
 
-### Dependency Graph
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                   Frontend (Firebase Hosting)                    │
-│                  apps/members-portal/                            │
-└──────┬────────────────┬────────────────┬────────────────────────┘
-       │                │                │
-       ▼                ▼                ▼
-┌─────────────┐  ┌─────────────┐  ┌─────────────┐
-│handlekenn   │  │verifymemb   │  │elections-   │
-│iauth        │  │ership       │  │service      │
-│             │  │             │  │             │
-│→ Kenni.is   │  │→ Firestore  │  │→ PostgreSQL │
-│→ Firestore  │  │             │  │→ Firestore  │
-└─────────────┘  └─────────────┘  └─────────────┘
-
-       ▼
-┌─────────────┐
-│events-      │
-│service      │
-│             │
-│→ PostgreSQL │
-│→ Firestore  │
-└─────────────┘
-
-┌─────────────────────────────────────────────────────────────────┐
-│              Scheduled Sync Jobs (Dagleg samstilling)            │
-└──────┬────────────────┬────────────────────────────────────────┘
-       │                │
-       ▼                ▼
-┌──────────────┐  ┌──────────────┐
-│bidirectional │  │syncmembers   │
-│_sync         │  │(legacy)      │
-│              │  │              │
-│→ Django API  │  │→ Django API  │
-│→ Firestore   │  │→ Firestore   │
-│(kl. 3:30)    │  │(klst.)       │
-└──────────────┘  └──────────────┘
-
-┌─────────────────────────────────────────────────────────────────┐
-│              Admin Portal (django-api.js)                        │
-│              Direct Django Access                                │
-└──────────────────────────┬──────────────────────────────────────┘
-                           │
-                           ▼
-                    ┌─────────────┐
-                    │Django API   │
-                    │(direct)     │
-                    └─────────────┘
-```
-
-**Athugasemd:** Einungis `bidirectional_sync` og `syncmembers` tengjast Django API beint. Allar aðrar þjónustur nota Firestore eða PostgreSQL.
-
 ### External Dependencies
 
-**PostgreSQL Database (Cloud SQL)**:
-- elections-service (voting records)
-- events-service (token issuance, audit logs)
+**PostgreSQL (Cloud SQL)**:
+- elections-service
+- events-service
 
 **Firebase Services**:
 - Authentication (all services)
 - Firestore (membership cache, audit logs)
-- App Check (elections-service, events-service)
+- App Check (elections, events)
 
 **External APIs**:
-- **Kenni.is OAuth**: handlekenniauth (authentication flow)
-- **Django Backend API**:
-  - bidirectional_sync (primary sync, daily at 3:30)
-  - syncmembers (legacy full sync, hourly - scheduled for deprecation)
-  - django-api.js (admin portal direct access)
-  - updatememberprofile (indirect - calls syncmembers internally)
+- **Kenni.is OAuth**: handlekenniauth
+- **Django API**: sync-from-django, updatememberprofile, syncmembers
 
-**Services that do NOT connect to Django** (read from Firestore instead):
-- verifymembership ✓
-- elections-service ✓
-- events-service ✓
-- handlekenniauth ✓ (connects to Kenni.is OAuth)
-- auditmemberchanges ✓
-- track_member_changes ✓
-- get-django-token ✓ (generates tokens, doesn't call Django)
+### Services That Do NOT Call Django
+
+These services read from Firestore only:
+- ✅ verifymembership
+- ✅ elections-service
+- ✅ events-service
+- ✅ handlekenniauth (calls Kenni.is OAuth)
+- ✅ auditmemberchanges
+- ✅ search-addresses (iceaddr local DB)
+- ✅ validate-address (iceaddr local DB)
+- ✅ validate-postal-code (iceaddr local DB)
 
 ---
 
 ## Scaling Configuration
 
-### Auto-Scaling Settings
-
-| Service | Min Instances | Max Instances | Concurrency | Memory | CPU |
-|---------|--------------|---------------|-------------|--------|-----|
-| elections-service | 0 | 100 | 80 | 512Mi | 1 |
-| events-service | 0 | 100 | 80 | 512Mi | 1 |
-| handlekenniauth | 0 | 10 | 80 | 256Mi | 1 |
-| verifymembership | 0 | 10 | 80 | 256Mi | 1 |
-| syncmembers | 0 | 1 | 1 | 512Mi | 1 |
-| updatememberprofile | 0 | 5 | 10 | 256Mi | 1 |
-| bidirectional-sync | 0 | 1 | 1 | 512Mi | 1 |
-
-| get-django-token | 0 | 100 | 1 | 256Mi | 1 |
-| auditmemberchanges | 0 | 5 | 10 | 256Mi | 1 |
-| track_member_changes | 0 | 10 | 1 | 256Mi | 1 |
-| healthz | 0 | 1 | 80 | 256Mi | 1 |
-
-**Scaling Strategy**:
-- **Min instances = 0**: Cost optimization (scale to zero when idle)
-- **High concurrency**: Maximize throughput per instance
-- **Independent scaling**: Each service scales based on its own load
-
-**Expected Load Patterns**:
-- **Peak**: During monthly meetings (300-500 concurrent voters)
-- **Normal**: Low traffic between meetings
-- **Sync jobs**: Hourly scheduled (syncmembers)
-
----
-
-## Cost Optimization
-
-### Monthly Cost Estimate
-
-**Baseline (Low Traffic)**:
-```
-elections-service:      $0.50/month (10 requests/day)
-events-service:         $0.50/month (10 requests/day)
-handlekenniauth:        $1.00/month (50 authentications/month)
-verifymembership:       $0.30/month (membership checks)
-syncmembers:            $0.20/month (720 hourly runs)
-updatememberprofile:    $0.10/month (5 updates/month)
-auditmemberchanges:     $0.05/month (audit logging)
-healthz:                $0.05/month (health checks)
-────────────────────────────────────────────────────
-Total:                  ~$2.70/month
-```
-
-**Meeting Day (500 attendees, 5 elections)**:
-```
-elections-service:      $2.00 (2,500 votes + scaling)
-events-service:         $1.00 (2,500 token requests)
-handlekenniauth:        $0.50 (500 authentications)
-verifymembership:       $0.20 (500 verifications)
-Other services:         $0.10 (minimal activity)
-────────────────────────────────────────────────────
-Meeting cost:           ~$3.80
-```
-
-**Annual Estimate**: ~$35-50 (baseline + 12 meetings)
-
-**Cost Optimization Strategies**:
-1. ✅ Scale to zero when idle
-2. ✅ High concurrency per instance
-3. ✅ Efficient cold start (small functions)
-4. ✅ Cache membership data (reduce Django API calls)
-5. ✅ Scheduled sync (hourly, not real-time)
-
----
-
-## Security Architecture
-
-### Authentication Methods
-
-| Service | Method | Details |
-|---------|--------|---------|
-| elections-service | Token-based | One-time voting tokens from events-service |
-| events-service | JWT + App Check | Firebase JWT + App Check token |
-| handlekenniauth | OAuth callback | Kenni.is OAuth 2.0 PKCE flow |
-| verifymembership | Firebase Auth | Required Firebase ID token |
-| syncmembers | Firebase Auth | Admin/superuser role required |
-| updatememberprofile | Firebase Auth | User updates own profile only |
-| bidirectional-sync | Public (scheduled) | Cloud Scheduler trigger only |
-
-| get-django-token | Firebase Auth | Admin/superuser role required |
-| auditmemberchanges | Internal only | Called by other services |
-| track_member_changes | Internal (Eventarc) | Triggered by Firestore writes |
-| healthz | Public (GET) | No authentication required |
-
-### Security Features
-
-**elections-service**:
-- ✅ One-time token enforcement
-- ✅ Anonymous voting (no PII stored)
-- ✅ Rate limiting (300 req/sec)
-- ✅ CORS restrictions
-- ✅ Input validation
-
-**events-service**:
-- ✅ JWT signature validation
-- ✅ App Check token verification
-- ✅ Role-based access control
-- ✅ Audit logging (all token operations)
-- ✅ Token expiration (15 min default)
-
-**handlekenniauth**:
-- ✅ OAuth state validation (CSRF protection)
-- ✅ Kenni.is API signature verification
-- ✅ Session timeout (24 hours)
-- ✅ Secure cookie handling
-
-**verifymembership**:
-- ✅ Firebase token validation
-- ✅ Membership cache (reduce Django API exposure)
-- ✅ Rate limiting per user
-
-**All Services**:
-- ✅ HTTPS only
-- ✅ Secrets in Secret Manager (environment variable injection)
-- ✅ Service-to-service authentication
-- ✅ Network egress restrictions
-
-### Secret Manager Integration
-
-**Philosophy**: All sensitive credentials are stored in Google Secret Manager and injected as environment variables at Cloud Run startup. Functions never call Secret Manager API directly.
-
-**Secrets in Use**:
-
-| Secret Name | Used By | Purpose |
-|-------------|---------|---------|
-| `kenni-client-secret` | handlekenniauth | Kenni.is OAuth client secret |
-| `django-api-token` | syncmembers, updatememberprofile, bidirectional-sync, get-django-token | Django API authentication |
-
-**Configuration Method**:
-```bash
-# Cloud Run secret injection (recommended approach)
-gcloud run services update SERVICE_NAME \
-  --set-secrets="DJANGO_API_TOKEN=django-api-token:latest"
-```
-
-**Benefits**:
-- ✅ **No secrets in code** - Functions read from `os.environ.get()`
-- ✅ **Automatic rotation** - Update secret version, redeploy function
-- ✅ **Audit trail** - All secret access logged in Cloud Audit Logs
-- ✅ **IAM-controlled** - Service accounts need `secretmanager.secretAccessor` role
-- ✅ **Caching** - Cloud Run caches secrets (no API calls per request)
-- ✅ **Simplified code** - No Secret Manager client initialization required
-
-**Security Best Practices**:
-1. ✅ Use `latest` version tag for automatic updates
-2. ✅ Never log secret values (only log presence: `bool(secret)`)
-3. ✅ Validate secrets exist at startup (fail fast if missing)
-4. ✅ Use separate secrets per environment (prod/staging/dev)
-5. ✅ Rotate secrets every 90 days
-
----
-
-## Monitoring & Observability
-
-### Cloud Logging
-
-**Log Levels**:
-- `ERROR`: Service failures, unhandled exceptions
-- `WARN`: Rate limit reached, cache misses, deprecated features
-- `INFO`: Normal operations (auth success, vote recorded, sync complete)
-- `DEBUG`: Detailed troubleshooting (disabled in production)
-
-**Structured Logging**:
-```json
-{
-  "severity": "INFO",
-  "timestamp": "2025-10-31T12:00:00Z",
-  "service": "elections-service",
-  "event": "vote_recorded",
-  "metadata": {
-    "election_id": "123",
-    "token_hash_prefix": "a1b2c3",
-    "response_time_ms": 45
-  }
-}
-```
-
-### Metrics & Alerting
-
-**Key Metrics**:
-- Request rate (req/sec)
-- Response time (p50, p95, p99)
-- Error rate (%)
-- Instance count (current/max)
-- Memory usage (MB)
-- CPU usage (%)
-
-**Alerts** (configured in Cloud Monitoring):
-- Error rate > 5% for 5 minutes
-- Response time p95 > 1000ms for 5 minutes
-- Instance count > 80% of max for 10 minutes
-- Service down (no requests for 10 minutes on meeting day)
-
-### Health Check Endpoints
-
-| Service | Endpoint | Expected Response |
-|---------|----------|-------------------|
-| elections-service | `/health` | `{"status":"ok"}` |
-| events-service | `/health` | `{"status":"ok"}` |
-| healthz | `/` | `{"status":"healthy","services":{...}}` |
+| Service | Min | Max | Memory | Timeout |
+|---------|-----|-----|--------|---------|
+| elections-service | 0 | 100 | 512Mi | 60s |
+| events-service | 0 | 100 | 512Mi | 60s |
+| handlekenniauth | 0 | 10 | 256Mi | 30s |
+| verifymembership | 0 | 10 | 256Mi | 30s |
+| sync-from-django | 0 | 10 | 256Mi | 30s |
+| updatememberprofile | 0 | 5 | 256Mi | 30s |
+| syncmembers | 0 | 1 | 512Mi | 540s |
+| search-addresses | 0 | 10 | 256Mi | 30s |
+| validate-address | 0 | 10 | 256Mi | 30s |
+| validate-postal-code | 0 | 10 | 256Mi | 30s |
+| auditmemberchanges | 0 | 5 | 256Mi | 60s |
+| get-django-token | 0 | 1 | 256Mi | 30s |
+| healthz | 0 | 1 | 256Mi | 30s |
 
 ---
 
 ## Deployment Procedures
 
-### Manual Deployment (elections-service, events-service)
+### Firebase Functions
 
-**Prerequisites**:
-- `gcloud` CLI authenticated
-- Firebase CLI authenticated
-- Source code updated and tested locally
-
-**Elections Service**:
 ```bash
-cd services/elections
-
-# Deploy to Cloud Run
-gcloud run deploy elections-service \
-  --source=. \
-  --region=europe-west2 \
-  --project=ekklesia-prod-10-2025
-
-# Verify deployment
-curl https://elections-service-521240388393.europe-west2.run.app/health
-```
-
-**Events Service**:
-```bash
-cd services/events
-
-# Deploy to Cloud Run
-gcloud run deploy events-service \
-  --source=. \
-  --region=europe-west2 \
-  --project=ekklesia-prod-10-2025
-
-# Verify deployment
-curl https://events-service-521240388393.europe-west2.run.app/health
-```
-
-### Firebase Functions Deployment
-
-**Deploy All Functions**:
-```bash
-cd services/members
+cd services/members/functions
 
 # Deploy all functions
 firebase deploy --only functions
 
 # Deploy specific function
-firebase deploy --only functions:handlekenniauth
+firebase deploy --only functions:sync_from_django
+firebase deploy --only functions:updatememberprofile
 ```
 
-**Deploy to Staging First**:
+### Cloud Run Services (elections, events)
+
 ```bash
-# Deploy to staging project (if configured)
-firebase use staging
-firebase deploy --only functions
-
-# Test staging
-curl https://handlekenniauth-staging-....run.app/health
-
-# Deploy to production
-firebase use production
-firebase deploy --only functions
+cd services/elections
+gcloud run deploy elections-service \
+  --source=. \
+  --region=europe-west2 \
+  --project=ekklesia-prod-10-2025
 ```
 
 ---
 
 ## Troubleshooting
 
-### Common Issues
+### "Django sync failed"
 
-#### 1. "Service Unavailable (503)"
-
-**Cause**: Cold start or scaling timeout
-
-**Solution**:
-- Wait 10-30 seconds and retry
-- For meetings: Pre-warm with `--min-instances=10`
-- Check Cloud Run logs for errors
-
-**Investigation**:
+**Check Django signals are working:**
 ```bash
-gcloud logging read "resource.labels.service_name=elections-service AND severity>=ERROR" --limit=10
+# Check Django logs
+~/django-ssh.sh "sudo journalctl -u gunicorn -n 50"
+
+# Check sync-from-django logs
+gcloud functions logs read sync_from_django --region=europe-west2 --limit=20
 ```
 
-#### 2. "Authentication Failed"
+### "Address validation not working"
 
-**Cause**: Expired Firebase token or invalid App Check token
-
-**Solution**:
-- Refresh user authentication
-- Check App Check configuration
-- Verify Firebase project settings
-
-**Investigation**:
+**Check iceaddr functions:**
 ```bash
-# Check auth failures
-gcloud logging read "resource.labels.service_name=events-service AND textPayload=~'auth.*fail'" --limit=10
+# Test search
+curl "https://europe-west2-ekklesia-prod-10-2025.cloudfunctions.net/search_addresses?q=Laugaveg"
+
+# Check logs
+gcloud functions logs read search_addresses --region=europe-west2 --limit=10
 ```
-
-#### 3. "Database Connection Timeout"
-
-**Cause**: Cloud SQL instance paused or connection pool exhausted
-
-**Solution**:
-- Check Cloud SQL instance status
-- Restart Cloud SQL if needed
-- Increase connection pool size (if persistent issue)
-
-**Investigation**:
-```bash
-# Check Cloud SQL status
-gcloud sql instances describe ekklesia-db --project=ekklesia-prod-10-2025
-
-# Check connection errors
-gcloud logging read "resource.labels.service_name=elections-service AND textPayload=~'ECONNREFUSED|ETIMEDOUT'" --limit=10
-```
-
-#### 4. "Sync Failed (syncmembers)"
-
-**Cause**: Django API unreachable or rate limited
-
-**Solution**:
-- Check Django backend health
-- Verify API token in Secret Manager
-- Review sync logs for specific error
-
-**Investigation**:
-```bash
-# Check sync logs
-gcloud logging read "resource.labels.service_name=syncmembers AND severity>=ERROR" --limit=10
-```
-
----
-
-## Disaster Recovery
-
-### Service Outage Response
-
-**Critical Services (immediate response required)**:
-1. `handlekenniauth` - Users cannot log in
-2. `elections-service` - Users cannot vote
-3. `events-service` - Token issuance fails
-
-**High Priority (response within 1 hour)**:
-4. `verifymembership` - Membership checks fail
-
-**Medium Priority (response within 24 hours)**:
-5. `syncmembers` - Hourly sync fails (manual sync possible)
-6. `updatememberprofile` - Profile updates fail
-
-**Low Priority (response within 7 days)**:
-7. `auditmemberchanges` - Audit logging fails
-8. `healthz` - Health check unavailable
-
-### Recovery Procedures
-
-**Step 1: Identify Failed Service**
-```bash
-# List all services and their status
-gcloud run services list --region=europe-west2
-
-# Check recent deployments
-gcloud run revisions list --service=elections-service --region=europe-west2 --limit=5
-```
-
-**Step 2: Check Logs**
-```bash
-# Check error logs (last 10 minutes)
-gcloud logging read "resource.labels.service_name=elections-service AND severity>=ERROR AND timestamp>=\"$(date -u -d '10 minutes ago' '+%Y-%m-%dT%H:%M:%SZ')\"" --limit=50
-```
-
-**Step 3: Rollback (if recent deployment caused issue)**
-```bash
-# Rollback to previous revision
-gcloud run services update-traffic elections-service \
-  --to-revisions=elections-service-00009-xyz=100 \
-  --region=europe-west2
-```
-
-**Step 4: Redeploy (if service is corrupted)**
-```bash
-# Force new deployment
-cd services/elections
-gcloud run deploy elections-service \
-  --source=. \
-  --region=europe-west2 \
-  --tag=recovery-$(date +%s)
-```
-
-**Step 5: Verify Recovery**
-```bash
-# Test health endpoint
-curl https://elections-service-521240388393.europe-west2.run.app/health
-
-# Check recent logs (no errors)
-gcloud logging read "resource.labels.service_name=elections-service AND severity>=ERROR AND timestamp>=\"$(date -u -d '5 minutes ago' '+%Y-%m-%dT%H:%M:%SZ')\"" --limit=10
-```
-
----
-
-## Future Improvements
-
-### Phase 7 Roadmap (TBD)
-
-**Potential Optimizations**:
-1. ❓ Merge `healthz` + `auditmemberchanges` into single monitoring service
-2. ❓ Add request tracing (Cloud Trace integration)
-3. ❓ Implement caching layer (Cloud Memorystore)
-4. ❓ Add load testing automation (Artillery/k6)
-5. ❓ Multi-region deployment (disaster recovery)
-
-**Not Recommended**:
-- ❌ Merging core services (auth, verification, sync, voting)
-- ❌ Switching to monolithic architecture
-- ❌ Moving to always-on instances (cost increase)
-
----
-
-## Related Documentation
-
-- [Django Backend System](../systems/DJANGO_BACKEND_SYSTEM.md) - Backend integration details
-- Elections Service (see services/elections/)
-- Events Service (see services/events/)
-- [Members Deployment Guide](../setup/MEMBERS_DEPLOYMENT_GUIDE.md)
-- [Operational Procedures](../operations/OPERATIONAL_PROCEDURES.md)
-- [Usage Context & Load Patterns](../development/guides/workflows/USAGE_CONTEXT.md)
 
 ---
 
@@ -1268,19 +639,19 @@ gcloud logging read "resource.labels.service_name=elections-service AND severity
 
 | Date | Change |
 |------|--------|
-| 2025-11-22 | Refactored syncmembers to HTTP trigger with manual CORS/Auth |
-| 2025-11-22 | Deployed track_member_changes Firestore trigger |
+| 2025-11-25 | **MAJOR**: Real-time sync architecture (no queues) |
+| 2025-11-25 | Added sync-from-django (Django→Firestore webhook) |
+| 2025-11-25 | Added iceaddr services (search, validate, postal) |
+| 2025-11-25 | Updated updatememberprofile with address sync |
+| 2025-11-25 | **DELETED** bidirectional-sync (replaced by real-time) |
+| 2025-11-25 | **DELETED** track_member_changes (no queue needed) |
+| 2025-11-22 | Added track_member_changes Firestore trigger |
 | 2025-11-22 | Fixed bidirectional-sync queue processing |
-| 2025-11-10 | Unified Secret Manager integration across all services |
-| 2025-11-10 | Updated handlekenniauth to Python 3.13 with PKCE flow |
-| 2025-11-10 | Added bidirectional-sync, get-django-token services |
-| 2025-11-10 | Updated all member services to use environment variable injection for secrets |
-| 2025-11-10 | Expanded service inventory from 8 to 13 services |
+| 2025-11-10 | Secret Manager integration |
 | 2025-10-31 | Initial documentation |
-| 2025-10-31 | Updated elections-service & events-service dependencies |
 
 ---
 
 **Document Status**: ✅ Complete and Verified
-**Last Review**: 2025-11-22
-**Next Review**: 2025-12-22 (monthly infrastructure review)
+**Last Review**: 2025-11-25
+**Next Review**: 2025-12-25

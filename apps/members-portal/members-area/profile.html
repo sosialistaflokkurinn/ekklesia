@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="/styles/components/button.css?v=20251106">
   <link rel="stylesheet" href="/styles/components/form.css?v=20251105">
   <link rel="stylesheet" href="/styles/components/profile-edit.css?v=20251102">
+  <link rel="stylesheet" href="/styles/components/address-autocomplete.css?v=20251125">
   <link rel="stylesheet" href="/styles/components/toast.css?v=20251105">
   <link rel="stylesheet" href="/styles/components/searchable-select.css?v=20251105">
 </head>
@@ -135,6 +136,42 @@
 
       <div id="profile-error" class="profile-edit__error-message hidden">
         <p id="error-message"></p>
+      </div>
+    </div>
+
+    <!-- Communication Preferences -->
+    <div class="card">
+      <h3 class="card__title" id="section-communication"></h3>
+      <div class="info-grid">
+        <!-- Reachable toggle -->
+        <div class="info-grid__item info-grid__item--full">
+          <div class="profile-field profile-field--toggle">
+            <label class="toggle-field">
+              <input type="checkbox" id="input-reachable" name="reachable" class="toggle-field__input">
+              <span class="toggle-field__switch"></span>
+              <span class="toggle-field__label">
+                <span id="label-reachable"></span>
+                <span class="toggle-field__description" id="label-reachable-description"></span>
+              </span>
+            </label>
+            <span class="profile-field__status" id="status-reachable" aria-live="polite" aria-atomic="true"></span>
+          </div>
+        </div>
+
+        <!-- Groupable toggle -->
+        <div class="info-grid__item info-grid__item--full">
+          <div class="profile-field profile-field--toggle">
+            <label class="toggle-field">
+              <input type="checkbox" id="input-groupable" name="groupable" class="toggle-field__input">
+              <span class="toggle-field__switch"></span>
+              <span class="toggle-field__label">
+                <span id="label-groupable"></span>
+                <span class="toggle-field__description" id="label-groupable-description"></span>
+              </span>
+            </label>
+            <span class="profile-field__status" id="status-groupable" aria-live="polite" aria-atomic="true"></span>
+          </div>
+        </div>
       </div>
     </div>
 

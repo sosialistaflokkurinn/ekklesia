@@ -157,19 +157,39 @@ def transform_django_member_to_firestore(django_member: Dict[str, Any]) -> Dict[
     raw_kennitala = django_member.get('ssn', '')
     normalized_kennitala = normalize_kennitala(raw_kennitala) if raw_kennitala else ''
 
-    # Extract foreign addresses
+    # Build addresses array (profile.addresses format used by frontend)
+    addresses = []
+
+    # Add local address (Iceland) if present
+    if local_address.get('street'):
+        addresses.append({
+            'street': local_address.get('street', ''),
+            'number': str(local_address.get('number', '')) if local_address.get('number') else '',
+            'letter': local_address.get('letter', ''),
+            'postal_code': str(local_address.get('postal_code', '')) if local_address.get('postal_code') else '',
+            'city': local_address.get('city', ''),
+            'country': 'IS',
+            'is_default': True
+        })
+
+    # Add foreign addresses
     foreign_addresses_raw = django_member.get('foreign_addresses', []) or []
-    foreign_addresses = []
     for fa in foreign_addresses_raw:
-        foreign_addr = {
-            'id': fa.get('pk'),
-            'country': fa.get('country'),  # ISO country code or ID
-            'current': fa.get('current', False),
-            'municipality': fa.get('municipality', ''),
+        # Get country code (convert ID to code if needed)
+        country_id = fa.get('country')
+        # Common country ID mappings (add more as needed)
+        country_map = {109: 'IS', 45: 'DK', 46: 'SE', 47: 'NO', 354: 'IS'}
+        country_code = country_map.get(country_id, str(country_id) if country_id else '')
+
+        addresses.append({
+            'street': fa.get('address', ''),
+            'number': '',
+            'letter': '',
             'postal_code': fa.get('postal_code', ''),
-            'address': fa.get('address', '')
-        }
-        foreign_addresses.append(foreign_addr)
+            'city': fa.get('municipality', ''),
+            'country': country_code,
+            'is_default': fa.get('current', False) and not local_address.get('street')
+        })
 
     # Create Firestore document
     firestore_doc = {
@@ -179,22 +199,14 @@ def transform_django_member_to_firestore(django_member: Dict[str, Any]) -> Dict[
             'birthday': django_member.get('birthday'),
             'email': contact_info.get('email', ''),
             'phone': normalized_phone,
-            'foreign_phone': foreign_phone,  # ← NEW: International phone
+            'foreign_phone': foreign_phone,
             'facebook': contact_info.get('facebook', ''),
             'gender': django_member.get('gender'),
             'reachable': django_member.get('reachable', True),
             'groupable': django_member.get('groupable', True),
-            'housing_situation': django_member.get('housing_situation')
+            'housing_situation': django_member.get('housing_situation'),
+            'addresses': addresses  # NEW: addresses inside profile
         },
-        'address': {
-            'street': local_address.get('street', ''),
-            'number': local_address.get('number'),
-            'letter': local_address.get('letter', ''),
-            'postal_code': str(local_address.get('postal_code', '')) if local_address.get('postal_code') else '',
-            'city': local_address.get('city', ''),
-            'from_reykjavik': False  # Will be enhanced later with API lookup
-        },
-        'foreign_addresses': foreign_addresses,  # ← NEW: Foreign addresses array
         'membership': {
             'date_joined': date_joined,
             'status': 'active',  # Default, will be enhanced with actual status
@@ -540,4 +552,79 @@ def update_django_member(django_id: int, updates: Dict[str, Any]) -> Dict[str, A
         log_json('ERROR', error_msg,
                  event='update_django_member_exception',
                  django_id=django_id)
+        raise Exception(error_msg)
+
+
+def update_django_address(kennitala: str, address_data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Update a member's address in Django via the NewLocalAddress system.
+
+    This uses the /api/sync/address/ endpoint which:
+    1. Looks up the address in map_address (Iceland address registry)
+    2. Creates/updates NewLocalAddress linking member to map_address
+
+    Args:
+        kennitala: Member's kennitala (10 digits, no hyphen)
+        address_data: Dict with keys:
+            - street: Street name (e.g., "Gullengi")
+            - number: House number (e.g., 37)
+            - letter: House letter (e.g., "A") - optional
+            - postal_code: Postal code (e.g., "112")
+            - city: City name (e.g., "Reykjavík")
+            - country: Country code (e.g., "IS")
+
+    Returns:
+        Response from Django API with:
+            - success: bool
+            - message: str
+            - map_address_id: int or None
+            - address_linked: bool
+
+    Raises:
+        Exception if update fails
+    """
+    try:
+        django_token = get_django_api_token()
+
+        payload = {
+            'kennitala': kennitala,
+            'address': address_data
+        }
+
+        log_json('INFO', 'Updating Django address',
+                 event='update_django_address_start',
+                 kennitala=f"{kennitala[:6]}****",
+                 street=address_data.get('street', ''),
+                 postal_code=address_data.get('postal_code', ''))
+
+        response = requests.post(
+            f"{DJANGO_API_BASE_URL}/api/sync/address/",
+            headers={
+                'Authorization': f'Token {django_token}',
+                'Content-Type': 'application/json'
+            },
+            json=payload,
+            timeout=30
+        )
+
+        if response.status_code == 200:
+            result = response.json()
+            log_json('INFO', 'Django address updated',
+                     event='update_django_address_success',
+                     kennitala=f"{kennitala[:6]}****",
+                     map_address_id=result.get('map_address_id'),
+                     address_linked=result.get('address_linked'))
+            return result
+        else:
+            error_msg = f"Django address API returned {response.status_code}: {response.text[:200]}"
+            log_json('ERROR', error_msg,
+                     event='update_django_address_error',
+                     kennitala=f"{kennitala[:6]}****")
+            raise Exception(error_msg)
+
+    except requests.exceptions.RequestException as e:
+        error_msg = f"Django address API request failed: {str(e)}"
+        log_json('ERROR', error_msg,
+                 event='update_django_address_exception',
+                 kennitala=f"{kennitala[:6]}****")
         raise Exception(error_msg)

@@ -189,15 +189,53 @@ def apply_firestore_changes(request):
                         updated_fields.append('housing_situation')
                     
                     elif field_path == 'profile.email':
-                        # Handle email separately (ManyToMany relationship)
+                        # Handle email in ContactInfo
                         if value:
-                            email_obj, created = Email.objects.get_or_create(email=value)
-                            member.emails.clear()
-                            member.emails.add(email_obj)
-                
+                            from membership.models import ContactInfo
+                            contact, created = ContactInfo.objects.get_or_create(comrade=member)
+                            contact.email = value
+                            contact.save()
+
+                    elif field_path == 'profile.phone':
+                        # Handle phone in ContactInfo
+                        if value:
+                            from membership.models import ContactInfo
+                            contact, created = ContactInfo.objects.get_or_create(comrade=member)
+                            contact.phone = value
+                            contact.save()
+
+                    # Handle address fields (profile.address.street, etc.)
+                    elif field_path.startswith('profile.address.'):
+                        # Collect all address changes
+                        if not hasattr(member, '_address_changes'):
+                            member._address_changes = {}
+
+                        address_field = field_path.split('.')[-1]  # street, postal_code, city, country
+                        member._address_changes[address_field] = value
+
                 # Save member if any fields changed
                 if updated_fields:
                     member.save(update_fields=updated_fields)
+
+                # Handle address changes (update or create SimpleAddress)
+                if hasattr(member, '_address_changes') and member._address_changes:
+                    from membership.models import SimpleAddress
+
+                    simple_addr, created = SimpleAddress.objects.get_or_create(comrade=member)
+
+                    # Update SimpleAddress fields
+                    if 'street' in member._address_changes:
+                        simple_addr.street_address = member._address_changes['street']
+                    if 'postal_code' in member._address_changes:
+                        simple_addr.postal_code = member._address_changes['postal_code']
+                    if 'city' in member._address_changes:
+                        simple_addr.city = member._address_changes['city']
+                    if 'country' in member._address_changes:
+                        simple_addr.country = member._address_changes['country']
+
+                    simple_addr.save()
+
+                    logger.info(f'{"Created" if created else "Updated"} SimpleAddress for {kennitala}')
                 
                 results.append({
                     'ssn': kennitala,
@@ -300,6 +338,216 @@ def sync_status(request):
         'failed': failed_count,
         'oldest_pending': oldest_pending.created_at.isoformat() if oldest_pending else None
     })
+
+
+def find_map_address(street_name, house_number, postal_code, house_letter=''):
+    """
+    Find map_address by street name, house number, and postal code.
+
+    Args:
+        street_name: Street name (e.g., "Gullengi")
+        house_number: House number (e.g., 37)
+        postal_code: Postal code as string or int (e.g., "112" or 112)
+        house_letter: Optional house letter (e.g., "A")
+
+    Returns:
+        map_address instance or None
+    """
+    from map.models import Address as MapAddress, Street as MapStreet, PostalCode as MapPostalCode
+
+    try:
+        # Normalize postal code to integer
+        postal_code_int = int(str(postal_code).strip()) if postal_code else None
+
+        if not postal_code_int:
+            logger.warning(f'No postal code provided for address lookup')
+            return None
+
+        # Find postal code record
+        postal_code_obj = MapPostalCode.objects.filter(code=postal_code_int).first()
+        if not postal_code_obj:
+            logger.warning(f'Postal code {postal_code_int} not found in map_postalcode')
+            return None
+
+        # Find street by name and postal code
+        street = MapStreet.objects.filter(
+            name__iexact=street_name.strip(),
+            postal_code=postal_code_obj
+        ).first()
+
+        if not street:
+            logger.warning(f'Street "{street_name}" not found in postal code {postal_code_int}')
+            return None
+
+        # Find address by street and house number
+        address_query = MapAddress.objects.filter(
+            street=street,
+            number=int(house_number) if house_number else None
+        )
+
+        # Add letter filter if provided
+        if house_letter:
+            address_query = address_query.filter(letter__iexact=house_letter.strip())
+        else:
+            address_query = address_query.filter(letter='')
+
+        address = address_query.first()
+
+        if address:
+            logger.info(f'Found map_address {address.id} for {street_name} {house_number}{house_letter}, {postal_code_int}')
+        else:
+            logger.warning(f'Address {street_name} {house_number}{house_letter} not found in street {street.id}')
+
+        return address
+
+    except Exception as e:
+        logger.error(f'Error finding map_address: {str(e)}')
+        return None
+
+
+def update_member_local_address(member, address_data):
+    """
+    Update or create NewLocalAddress for a member.
+    This uses the proper Iceland address registry (map_address).
+
+    Args:
+        member: Comrade instance
+        address_data: dict with keys:
+            - street: Street name (e.g., "Gullengi")
+            - number: House number (e.g., 37)
+            - letter: House letter (e.g., "A") - optional
+            - postal_code: Postal code (e.g., "112")
+            - city: City name (for reference, not used in lookup)
+            - country: Country code (e.g., "IS")
+
+    Returns:
+        tuple (NewLocalAddress instance or None, bool created, str message)
+    """
+    from membership.models import NewLocalAddress
+
+    try:
+        country = address_data.get('country', 'IS')
+
+        # Only use map_address lookup for Iceland addresses
+        if country != 'IS':
+            logger.info(f'Non-Iceland address for {member.ssn}, skipping map_address lookup')
+            return None, False, 'Foreign address - use NewForeignAddress'
+
+        street_name = address_data.get('street', '')
+        house_number = address_data.get('number', '')
+        house_letter = address_data.get('letter', '')
+        postal_code = address_data.get('postal_code', '')
+
+        if not street_name or not postal_code:
+            return None, False, 'Missing street name or postal code'
+
+        # Find the map_address record
+        map_address = find_map_address(
+            street_name=street_name,
+            house_number=house_number,
+            postal_code=postal_code,
+            house_letter=house_letter
+        )
+
+        # Mark any existing current addresses as not current
+        NewLocalAddress.objects.filter(
+            comrade=member,
+            current=True
+        ).update(current=False)
+
+        if map_address:
+            # Create/update with linked map_address
+            local_addr, created = NewLocalAddress.objects.update_or_create(
+                comrade=member,
+                address=map_address,
+                defaults={
+                    'current': True,
+                    'unlocated': False,
+                    'country_id': 109,  # Iceland
+                }
+            )
+            logger.info(f'{"Created" if created else "Updated"} NewLocalAddress for {member.ssn} → map_address {map_address.id}')
+            return local_addr, created, 'Success - address linked to registry'
+        else:
+            # Create unlocated address (address not found in registry)
+            local_addr, created = NewLocalAddress.objects.update_or_create(
+                comrade=member,
+                address=None,
+                unlocated=True,
+                defaults={
+                    'current': True,
+                    'country_id': 109,  # Iceland
+                }
+            )
+            logger.info(f'{"Created" if created else "Updated"} unlocated NewLocalAddress for {member.ssn}')
+            return local_addr, created, 'Created but address not found in registry'
+
+    except Exception as e:
+        logger.error(f'Error updating NewLocalAddress for {member.ssn}: {str(e)}')
+        return None, False, f'Error: {str(e)}'
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAdminUser])
+def update_member_address(request):
+    """
+    POST /api/sync/address/
+
+    Update a member's local address (NewLocalAddress) using the Iceland address registry.
+
+    Request Body:
+        {
+            "kennitala": "0101701234",
+            "address": {
+                "street": "Gullengi",
+                "number": 37,
+                "letter": "",
+                "postal_code": "112",
+                "city": "Reykjavík",
+                "country": "IS"
+            }
+        }
+
+    Response:
+        {
+            "success": true,
+            "message": "Address updated",
+            "map_address_id": 12345,
+            "address_linked": true
+        }
+    """
+    try:
+        kennitala = request.data.get('kennitala', '').replace('-', '')
+        address_data = request.data.get('address', {})
+
+        if not kennitala:
+            return Response({'error': 'Missing kennitala'}, status=400)
+
+        if not address_data:
+            return Response({'error': 'Missing address data'}, status=400)
+
+        # Find member
+        try:
+            member = Comrade.objects.get(ssn=kennitala)
+        except Comrade.DoesNotExist:
+            return Response({'error': 'Member not found'}, status=404)
+
+        # Update address
+        local_addr, created, message = update_member_local_address(member, address_data)
+
+        return Response({
+            'success': local_addr is not None,
+            'message': message,
+            'created': created,
+            'map_address_id': local_addr.address_id if local_addr and local_addr.address else None,
+            'address_linked': local_addr.address is not None if local_addr else False,
+            'unlocated': local_addr.unlocated if local_addr else None
+        })
+
+    except Exception as e:
+        logger.error(f'Error in update_member_address: {str(e)}')
+        return Response({'error': str(e)}, status=500)
 
 
 @api_view(['GET'])

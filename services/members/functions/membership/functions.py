@@ -12,7 +12,7 @@ from firebase_admin import auth, firestore
 from firebase_functions import https_fn, options
 from utils_logging import log_json
 from shared.validators import normalize_kennitala, normalize_phone
-from sync_members import sync_all_members, create_sync_log, update_django_member
+from sync_members import sync_all_members, create_sync_log, update_django_member, update_django_address
 from cleanup_audit_logs import cleanup_old_audit_logs
 
 
@@ -216,7 +216,10 @@ def updatememberprofile_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
             'updates': {
                 'name': str (optional),
                 'email': str (optional),
-                'phone': str (optional)
+                'phone': str (optional),
+                'reachable': bool (optional),
+                'groupable': bool (optional),
+                'addresses': array (optional) - Array of address objects with is_default flag
             }
         }
 
@@ -316,13 +319,144 @@ def updatememberprofile_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
                 django_updates['contact_info'] = {}
             django_updates['contact_info']['phone'] = phone_digits
 
-        # Update Django via API
-        updated_member = update_django_member(django_id, django_updates)
+        # Handle reachable/groupable preferences
+        if 'reachable' in updates:
+            django_updates['reachable'] = updates['reachable']
+        if 'groupable' in updates:
+            django_updates['groupable'] = updates['groupable']
 
-        log_json("info", "Profile updated successfully in Django",
-                 uid=req.auth.uid,
-                 django_id=django_id,
-                 kennitala=f"{kennitala[:6]}****")
+        # Handle addresses - find default Iceland address and sync to Django NewLocalAddress
+        address_sync_result = None
+        if 'addresses' in updates and updates['addresses']:
+            addresses = updates['addresses']
+            # Find the default Iceland address for Django sync
+            default_iceland_address = None
+            for addr in addresses:
+                if addr.get('country', 'IS') == 'IS':
+                    if addr.get('is_default', False):
+                        default_iceland_address = addr
+                        break
+            # If no default, use first Iceland address
+            if not default_iceland_address:
+                for addr in addresses:
+                    if addr.get('country', 'IS') == 'IS':
+                        default_iceland_address = addr
+                        break
+
+            if default_iceland_address:
+                # Sync Iceland address to Django via NewLocalAddress system
+                try:
+                    address_sync_result = update_django_address(
+                        kennitala=kennitala_no_hyphen,
+                        address_data={
+                            'street': default_iceland_address.get('street', ''),
+                            'number': default_iceland_address.get('number', ''),
+                            'letter': default_iceland_address.get('letter', ''),
+                            'postal_code': default_iceland_address.get('postal_code', ''),
+                            'city': default_iceland_address.get('city', ''),
+                            'country': 'IS'
+                        }
+                    )
+                    log_json("info", "Address synced to Django NewLocalAddress",
+                             uid=req.auth.uid,
+                             street=default_iceland_address.get('street', ''),
+                             postal=default_iceland_address.get('postal_code', ''),
+                             map_address_id=address_sync_result.get('map_address_id'),
+                             address_linked=address_sync_result.get('address_linked'))
+
+                    # Log sync result to Firestore for audit trail
+                    sync_log_entry = {
+                        'type': 'address_sync',
+                        'timestamp': datetime.now(timezone.utc),
+                        'source': 'firestore',
+                        'target': 'django',
+                        'success': address_sync_result.get('success', False),
+                        'address': {
+                            'street': default_iceland_address.get('street', ''),
+                            'number': default_iceland_address.get('number', ''),
+                            'postal_code': default_iceland_address.get('postal_code', '')
+                        },
+                        'django_response': {
+                            'map_address_id': address_sync_result.get('map_address_id'),
+                            'address_linked': address_sync_result.get('address_linked'),
+                            'message': address_sync_result.get('message', '')
+                        }
+                    }
+                    member_ref.collection('syncHistory').add(sync_log_entry)
+
+                except Exception as addr_error:
+                    # Log but don't fail - address sync is secondary
+                    log_json("warn", "Django address sync failed",
+                             uid=req.auth.uid,
+                             error=str(addr_error))
+
+                    # Log failed sync to Firestore
+                    sync_log_entry = {
+                        'type': 'address_sync',
+                        'timestamp': datetime.now(timezone.utc),
+                        'source': 'firestore',
+                        'target': 'django',
+                        'success': False,
+                        'address': {
+                            'street': default_iceland_address.get('street', ''),
+                            'number': default_iceland_address.get('number', ''),
+                            'postal_code': default_iceland_address.get('postal_code', '')
+                        },
+                        'error': str(addr_error)
+                    }
+                    member_ref.collection('syncHistory').add(sync_log_entry)
+
+        # Update Django via API
+        profile_sync_success = False
+        profile_sync_error = None
+        try:
+            updated_member = update_django_member(django_id, django_updates)
+            profile_sync_success = True
+
+            log_json("info", "Profile updated successfully in Django",
+                     uid=req.auth.uid,
+                     django_id=django_id,
+                     kennitala=f"{kennitala[:6]}****")
+
+            # Log profile sync to Firestore syncHistory (for non-address fields)
+            if django_updates:
+                profile_sync_entry = {
+                    'type': 'profile_sync',
+                    'timestamp': datetime.now(timezone.utc),
+                    'source': 'firestore',
+                    'target': 'django',
+                    'success': True,
+                    'fields_updated': list(django_updates.keys()),
+                    'changes': {
+                        k: v for k, v in django_updates.items()
+                        if k not in ['contact_info']  # Don't log sensitive contact details
+                    }
+                }
+                # Add contact_info fields without actual values
+                if 'contact_info' in django_updates:
+                    profile_sync_entry['changes']['contact_info'] = list(django_updates['contact_info'].keys())
+                member_ref.collection('syncHistory').add(profile_sync_entry)
+
+        except Exception as django_error:
+            profile_sync_error = str(django_error)
+            log_json("error", "Django profile update failed",
+                     uid=req.auth.uid,
+                     django_id=django_id,
+                     error=profile_sync_error)
+
+            # Log failed sync to Firestore
+            if django_updates:
+                profile_sync_entry = {
+                    'type': 'profile_sync',
+                    'timestamp': datetime.now(timezone.utc),
+                    'source': 'firestore',
+                    'target': 'django',
+                    'success': False,
+                    'fields_attempted': list(django_updates.keys()),
+                    'error': profile_sync_error
+                }
+                member_ref.collection('syncHistory').add(profile_sync_entry)
+            raise
 
         # Also update Firestore (optimistic update from frontend already done,
         # but we update again with canonical Django data)
@@ -339,6 +473,16 @@ def updatememberprofile_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
                 firestore_updates['profile.email'] = updates['email']
             if 'phone' in updates:
                 firestore_updates['profile.phone'] = normalize_phone(updates['phone'])
+
+            # Handle reachable/groupable preferences
+            if 'reachable' in updates:
+                firestore_updates['profile.reachable'] = updates['reachable']
+            if 'groupable' in updates:
+                firestore_updates['profile.groupable'] = updates['groupable']
+
+            # Handle addresses - store full array in profile.addresses
+            if 'addresses' in updates:
+                firestore_updates['profile.addresses'] = updates['addresses']
 
             # Always update last_modified timestamp
             firestore_updates['metadata.last_modified'] = datetime.now(timezone.utc)

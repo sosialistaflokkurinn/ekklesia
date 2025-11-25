@@ -123,6 +123,22 @@ function setI18nStrings() {
   const btnAddAddressText = document.getElementById('btn-add-address-text');
   if (btnAddAddressText) btnAddAddressText.textContent = R.string.btn_add_address || '+ Bæta við heimilisfangi';
 
+  // Communication preferences section
+  const sectionCommunication = document.getElementById('section-communication');
+  if (sectionCommunication) sectionCommunication.textContent = R.string.section_communication || 'Samskiptastillingar';
+
+  const labelReachable = document.getElementById('label-reachable');
+  if (labelReachable) labelReachable.textContent = R.string.label_reachable || 'Má hafa samband';
+
+  const labelReachableDescription = document.getElementById('label-reachable-description');
+  if (labelReachableDescription) labelReachableDescription.textContent = R.string.label_reachable_description || 'Leyfir flokknum að hafa samband vegna frétta og atburða';
+
+  const labelGroupable = document.getElementById('label-groupable');
+  if (labelGroupable) labelGroupable.textContent = R.string.label_groupable || 'Má bæta í hópa';
+
+  const labelGroupableDescription = document.getElementById('label-groupable-description');
+  if (labelGroupableDescription) labelGroupableDescription.textContent = R.string.label_groupable_description || 'Leyfir flokknum að bæta þér í vinnuhópa og póstlista';
+
   // Email placeholder
   const inputEmail = document.getElementById('input-email');
   if (inputEmail) inputEmail.placeholder = R.string.placeholder_email || 'nafn@example.is';
@@ -318,6 +334,19 @@ async function renderProfile() {
     await addressManager.save({ silent: true });
   }
 
+  // Communication preferences (reachable/groupable)
+  const reachableInput = document.getElementById('input-reachable');
+  if (reachableInput) {
+    // Default to true if not set
+    reachableInput.checked = profile.reachable !== false;
+  }
+
+  const groupableInput = document.getElementById('input-groupable');
+  if (groupableInput) {
+    // Default to true if not set
+    groupableInput.checked = profile.groupable !== false;
+  }
+
   // Setup field listeners for auto-save
   setupFieldListeners();
 
@@ -412,6 +441,28 @@ function setupFieldListeners() {
       await saveField('gender', newGender, genderStatus);
     }
   });
+
+  // Reachable (immediate save on change)
+  const reachableInput = document.getElementById('input-reachable');
+  const reachableStatus = document.getElementById('status-reachable');
+  if (reachableInput) {
+    reachableInput.addEventListener('change', async (e) => {
+      const newReachable = e.target.checked;
+      await saveField('reachable', newReachable, reachableStatus);
+      showToast(R.string.profile_preferences_saved || 'Stillingar vistaðar', 'success');
+    });
+  }
+
+  // Groupable (immediate save on change)
+  const groupableInput = document.getElementById('input-groupable');
+  const groupableStatus = document.getElementById('status-groupable');
+  if (groupableInput) {
+    groupableInput.addEventListener('change', async (e) => {
+      const newGroupable = e.target.checked;
+      await saveField('groupable', newGroupable, groupableStatus);
+      showToast(R.string.profile_preferences_saved || 'Stillingar vistaðar', 'success');
+    });
+  }
 }
 
 /**

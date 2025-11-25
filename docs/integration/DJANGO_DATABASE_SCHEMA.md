@@ -1,8 +1,8 @@
 # Django Database Schema for Epic #43 Member Sync
 
 **Document Type**: Database Schema Reference
-**Last Updated**: 2025-10-26
-**Status**: ✅ Active - Epic #43 Implementation
+**Last Updated**: 2025-11-24
+**Status**: ✅ Active - Epic #43 Implementation (Updated with SimpleAddress & ContactInfo corrections)
 **Purpose**: Document Django database tables and fields to sync to Firestore
 
 ---
@@ -159,34 +159,11 @@ class Comrade(models.Model):
 
 ---
 
-### 6. `communication_email` (Email Addresses)
-
-**Purpose**: Email addresses for members (can have multiple)
-
-**Django Model**: `communication.models.Email`
-
-**Schema**:
-
-| Column | Type | Nullable | Description | Sync to Firestore? |
-|--------|------|----------|-------------|-------------------|
-| `id` | SERIAL (PK) | No | Email ID | ❌ No (just primary email) |
-| `email` | VARCHAR(254) | No | Email address | ✅ Yes (`profile.email`) |
-| `verified` | BOOLEAN | No | Email verified? | ✅ Yes (if available) |
-| `primary` | BOOLEAN | No | Primary email flag | ✅ Yes (only sync primary) |
-
-**Relationship**: Many-to-Many with `membership_comrade`
-
-**Sync Strategy**: Only sync **primary email** to Firestore `profile.email`
-
----
-
-### 7. Address Tables (✅ Verified)
-
-**Address System**: Django uses a complex multi-table structure for addresses:
-
-#### `membership_contactinfo` (Contact Details)
+### 6. `membership_contactinfo` (Contact Information) ✅ CORRECTED
 
 **Purpose**: Stores phone, email, and Facebook for each member (1:1 relationship)
+
+**Django Model**: `membership.models.ContactInfo`
 
 **Schema**:
 
@@ -196,8 +173,56 @@ class Comrade(models.Model):
 | `phone` | VARCHAR(32) | Yes | Phone number | ✅ Yes (`profile.phone`) |
 | `email` | VARCHAR(124) | Yes | Email address | ✅ Yes (`profile.email`) |
 | `facebook` | VARCHAR(255) | Yes | Facebook profile | ⏳ Optional |
+| `foreign_phone` | VARCHAR(32) | Yes | International phone | ⏳ Optional |
 
-**Note**: This is a **1:1 relationship** (one contact info per member)
+**Relationship**: One-to-One with `membership_comrade`
+
+**Sync Strategy**: Direct copy of email and phone to Firestore
+
+**⚠️ Important Note**:
+- `communication_email` model exists but is for **email campaigns** (subject, body, etc.), NOT email addresses
+- Actual email addresses are stored in `ContactInfo.email`
+- The `Email` model has an `identifier` field, not an `email` field
+
+---
+
+### 7. Address Tables (✅ Verified & Updated 2025-11-24)
+
+**Address System**: Django uses **TWO different systems** for storing addresses:
+
+1. **Simple System** (`membership_simpleaddress`) - Direct address storage
+2. **Complex System** (`membership_newlocaladdress` + `map_address`) - Linked to Iceland national address registry
+
+---
+
+#### 7a. `membership_simpleaddress` (Simple Address System) ✅ NEW
+
+**Purpose**: Direct storage of addresses (simpler than map system)
+
+**Django Model**: `membership.models.SimpleAddress`
+
+**Stats**: **829 addresses** stored in this table (verified 2025-11-24)
+
+**Schema**:
+
+| Column | Type | Nullable | Description | Sync to Firestore? |
+|--------|------|----------|-------------|-------------------|
+| `comrade` | OneToOneField | No | → `membership_comrade.id` | (use as join key) |
+| `street_address` | VARCHAR(255) | Yes | Full street address | ✅ Yes (`address.street`) |
+| `postal_code` | VARCHAR(10) | Yes | Postal code | ✅ Yes (`address.postal`) |
+| `city` | VARCHAR(100) | Yes | City name | ✅ Yes (`address.city`) |
+| `country` | VARCHAR(100) | Yes | Country name | ✅ Yes (`address.country`) |
+| `raw_address` | VARCHAR(500) | Yes | Unprocessed address text | ⏳ Optional |
+| `address_id` | INTEGER (FK) | Yes | → `map_address.id` (optional link) | ❌ No |
+| `new_country_id` | INTEGER (FK) | Yes | → Country FK | ❌ No |
+
+**Relationship**: One-to-One with `membership_comrade`
+
+**Sync Strategy**: Direct copy to Firestore `address` object
+
+---
+
+#### 7b. Complex Address System (Iceland National Registry)
 
 #### `membership_newlocaladdress` (Local/Iceland Addresses)
 
@@ -240,6 +265,39 @@ class Comrade(models.Model):
 | `name` | VARCHAR(128) | No | Street name (e.g., "Túngata") |
 | `postal_code_id` | INTEGER (FK) | No | → `map_postalcode.id` |
 | `municipality_id` | INTEGER (FK) | No | → `map_municipality.id` |
+
+---
+
+#### 📍 Iceland National Address Registry (Stadfangaskra.csv)
+
+**Source File**: `/home/gudro/Development/projects/ekklesia/data/Stadfangaskra.csv`
+
+**Purpose**: Complete Iceland address registry used by the map_address system
+
+**Stats**:
+- **137,163 addresses** in CSV file
+- Includes GPS coordinates, postal codes, municipalities
+- Updated regularly from national registry
+
+**Key Fields**:
+- `LANDNR` - Unique address ID (e.g., 101860)
+- `HEITI_NF` - Street name (e.g., "Njálsgata")
+- `HUSNR` - House number (e.g., "8")
+- `BOKST` - Letter (e.g., "C")
+- `POSTNR` - Postal code (e.g., "101")
+- `LM_HEIMILISFANG` - Formatted address (e.g., "Njálsgata 8C (101860)")
+- `N_HNIT_WGS84`, `E_HNIT_WGS84` - GPS coordinates
+
+**Example Entry**:
+```csv
+LANDNR: 101860
+Address: Njálsgata 8C, 101 Reykjavík
+GPS: 64.14399257, -21.92888234
+```
+
+**Usage**: The `map_address` table references addresses in this CSV file. When a member's address is validated, it's matched against this registry.
+
+---
 
 #### `membership_newforeignaddress` (Foreign Addresses)
 

@@ -406,5 +406,15 @@ export class PhoneManager {
     if (label) {
       label.addEventListener('click', () => this.toggleSection());
     }
+
+    // Ensure section starts collapsed (set inline style for toggle logic)
+    const section = document.getElementById('phone-numbers-section');
+    const simpleDisplay = document.getElementById('value-phone-simple');
+    if (section) {
+      section.style.display = 'none';
+    }
+    if (simpleDisplay) {
+      simpleDisplay.style.display = 'block';
+    }
   }
 }

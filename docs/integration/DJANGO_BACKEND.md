@@ -134,17 +134,23 @@ class Email(models.Model):
 **ContactInfo** (`membership/models.py`):
 ```python
 class ContactInfo(models.Model):
-    comrade = models.ForeignKey(Comrade, on_delete=models.CASCADE)
-    phone = models.CharField(max_length=20)
+    comrade = models.OneToOneField(Comrade, primary_key=True, on_delete=models.CASCADE)
+    phone = models.CharField(max_length=32, blank=True)
+    email = models.CharField(max_length=124, blank=True)
+    facebook = models.CharField(max_length=255, blank=True)
+    foreign_phone = models.CharField(max_length=32, blank=True)
 ```
 
 **SimpleAddress** (`membership/models.py`):
 ```python
 class SimpleAddress(models.Model):
-    comrade = models.ForeignKey(Comrade, on_delete=models.CASCADE)
-    street_address = models.CharField(max_length=255)
-    postal_code = models.CharField(max_length=10)
-    city = models.CharField(max_length=100)
+    comrade = models.OneToOneField(Comrade, on_delete=models.CASCADE)  # ✅ OneToOne, not ForeignKey
+    street_address = models.CharField(max_length=255, blank=True)
+    postal_code = models.CharField(max_length=10, blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    country = models.CharField(max_length=100, blank=True)
+    raw_address = models.CharField(max_length=500, blank=True)
+    address = models.ForeignKey('map.Address', null=True, blank=True, on_delete=models.SET_NULL)
 ```
 
 ## 🔔 Signal Handlers

@@ -111,7 +111,14 @@
   <string name="profile_address_cannot_delete_last">Ekki er hægt að eyða eina heimilisfanginu sem skráð er.</string>
   <string name="profile_address_saved">Heimilisfang uppfært</string>
   <string name="profile_address_save_error">Villa við vistun heimilisfangs</string>
+  <string name="profile_address_validated">Heimilisfang staðfest</string>
   <string name="btn_add_address_text">+ Bæta við heimilisfangi</string>
+  <string name="section_communication">Samskiptastillingar</string>
+  <string name="label_reachable">Má hafa samband</string>
+  <string name="label_reachable_description">Leyfir flokknum að hafa samband vegna frétta og atburða</string>
+  <string name="label_groupable">Má bæta í hópa</string>
+  <string name="label_groupable_description">Leyfir flokknum að bæta þér í vinnuhópa og póstlista</string>
+  <string name="profile_preferences_saved">Stillingar vistaðar</string>
   <string name="events_title">Viðburðir</string>
   <string name="events_subtitle">Fundir og viðburðir flokksins</string>
   <string name="events_tab_upcoming">Framundan</string>

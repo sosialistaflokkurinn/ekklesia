@@ -8,14 +8,24 @@
  */
 
 import { R } from '../../i18n/strings-loader.js';
-import { getFirebaseFirestore } from '../../firebase/app.js';
+import { getFirebaseFirestore, httpsCallable } from '../../firebase/app.js';
 import { doc, updateDoc, deleteField } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+// Cloud Function for syncing profile updates to Django
+const updateMemberProfileFunction = httpsCallable('updatememberprofile', 'europe-west2');
 import { getCountriesSorted, getCountryFlag } from '../utils/countries.js';
 import { debug } from '../utils/debug.js';
 import { showToast } from '../components/toast.js';
 import { showStatus, createStatusIcon } from '../components/status.js';
 import { SearchableSelect } from '../components/searchable-select.js';
+import { AddressAutocomplete } from '../components/address-autocomplete.js';
 import { el } from '../utils/dom.js';
+
+// Cloud Function for Icelandic address validation (iceaddr)
+const validateAddressFunction = httpsCallable('validate_address', 'europe-west2');
+
+// Store autocomplete instances for cleanup
+const autocompleteInstances = new Map();
 
 /**
  * Expand collapsible section helper
@@ -66,6 +76,75 @@ export class AddressManager {
    */
   initialize(addresses) {
     this.addresses = addresses || [];
+  }
+
+  /**
+   * Validate Icelandic address using iceaddr Cloud Function
+   * Only validates if country is Iceland (IS) and street + number are filled
+   *
+   * @param {number} index - Address index to validate
+   * @param {HTMLElement} statusIcon - Status icon element for feedback
+   * @returns {Promise<Object|null>} Validated address data or null
+   */
+  async validateIcelandicAddress(index, statusIcon) {
+    const address = this.addresses[index];
+
+    // Only validate Icelandic addresses
+    if (address.country !== 'IS') {
+      debug.log('🌍 Skipping validation - not Icelandic address');
+      return null;
+    }
+
+    // Need street and number for validation
+    if (!address.street || !address.number) {
+      debug.log('ℹ️ Skipping validation - missing street or number');
+      return null;
+    }
+
+    try {
+      debug.log(`🔍 Validating Icelandic address: ${address.street} ${address.number}${address.letter || ''}`);
+
+      const result = await validateAddressFunction({
+        street: address.street,
+        number: parseInt(address.number, 10) || address.number,
+        letter: address.letter || '',
+        postal_code: address.postal_code ? parseInt(address.postal_code, 10) : undefined
+      });
+
+      if (result.data.valid && result.data.address) {
+        const validated = result.data.address;
+        debug.log('✅ Address validated:', validated);
+
+        // Auto-fill city if empty or different
+        if (!address.city || address.city !== validated.city) {
+          debug.log(`🏙️ Auto-filling city: "${address.city}" → "${validated.city}"`);
+          this.addresses[index].city = validated.city;
+        }
+
+        // Auto-fill postal code if empty
+        if (!address.postal_code && validated.postal_code) {
+          debug.log(`📮 Auto-filling postal code: → "${validated.postal_code}"`);
+          this.addresses[index].postal_code = String(validated.postal_code);
+        }
+
+        // Store GPS coordinates for future use (e.g., map display)
+        this.addresses[index].latitude = validated.latitude;
+        this.addresses[index].longitude = validated.longitude;
+        this.addresses[index].hnitnum = validated.hnitnum;
+
+        debug.log(`📍 GPS stored: ${validated.latitude}, ${validated.longitude}`);
+
+        return validated;
+      } else {
+        debug.warn('⚠️ Address not found in national registry:', result.data.error);
+        // Don't prevent saving - user might know their address better
+        return null;
+      }
+    } catch (error) {
+      debug.error('❌ Address validation failed:', error);
+      // Don't prevent saving on validation error
+      return null;
+    }
   }
 
   /**
@@ -184,11 +263,14 @@ export class AddressManager {
       );
 
       // Row 2: Street input + Number + Letter
+      // Wrap street input for autocomplete dropdown positioning
+      const streetWrapper = el('div', 'address-input--street-wrapper', {});
       const streetInput = el('input', 'address-input address-input--street', {
         type: 'text',
         value: address.street || '',
         placeholder: R.string.label_street
       });
+      streetWrapper.appendChild(streetInput);
 
       const numberInput = el('input', 'address-input address-input--number', {
         type: 'text',
@@ -205,6 +287,50 @@ export class AddressManager {
         maxLength: 2
       });
 
+      // Initialize autocomplete for Icelandic addresses only
+      if (address.country === 'IS') {
+        // Cleanup previous autocomplete instance if any
+        const prevInstance = autocompleteInstances.get(`street-${index}`);
+        if (prevInstance) {
+          prevInstance.destroy();
+        }
+
+        const autocomplete = new AddressAutocomplete(streetInput, {
+          onSelect: async (selectedAddress) => {
+            debug.log('🏠 Autocomplete selected:', selectedAddress.display);
+
+            // Auto-fill all address fields
+            this.addresses[index].street = selectedAddress.street;
+            this.addresses[index].number = String(selectedAddress.number || '');
+            this.addresses[index].letter = selectedAddress.letter || '';
+            this.addresses[index].postal_code = String(selectedAddress.postal_code || '');
+            this.addresses[index].city = selectedAddress.city || '';
+
+            // Store GPS silently (user doesn't see this)
+            this.addresses[index].latitude = selectedAddress.latitude;
+            this.addresses[index].longitude = selectedAddress.longitude;
+            this.addresses[index].hnitnum = selectedAddress.hnitnum;
+
+            debug.log(`📍 GPS stored: ${selectedAddress.latitude}, ${selectedAddress.longitude}`);
+
+            // Save and re-render to show filled fields
+            showStatus(statusIcon, 'loading', { baseClass: 'profile-field__status' });
+            try {
+              await this.save();
+              showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
+              this.render();
+              showToast(R.string.profile_address_validated || 'Address validated', 'success');
+            } catch (error) {
+              debug.error('Failed to save autocomplete selection:', error);
+              showStatus(statusIcon, 'error', { baseClass: 'profile-field__status' });
+            }
+          }
+        });
+
+        autocompleteInstances.set(`street-${index}`, autocomplete);
+        debug.log(`🔍 Autocomplete initialized for address ${index}`);
+      }
+
       streetInput.addEventListener('blur', async (e) => {
         const newStreet = e.target.value.trim();
         debug.log(`🏠 Street blur (index ${index}): "${address.street}" → "${newStreet}"`);
@@ -214,7 +340,16 @@ export class AddressManager {
           this.addresses[index].street = newStreet;
           showStatus(statusIcon, 'loading', { baseClass: 'profile-field__status' });
           try {
-            await this.save();
+            // Validate Icelandic address if street and number are filled
+            const validated = await this.validateIcelandicAddress(index, statusIcon);
+            if (validated) {
+              // Re-render to show auto-filled fields
+              await this.save();
+              this.render();
+              showToast(R.string.profile_address_validated || 'Address validated', 'success');
+            } else {
+              await this.save();
+            }
             showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
           } catch (error) {
             debug.error('Failed to save street:', error);
@@ -237,7 +372,16 @@ export class AddressManager {
           this.addresses[index].number = newNumber;
           showStatus(statusIcon, 'loading', { baseClass: 'profile-field__status' });
           try {
-            await this.save();
+            // Validate Icelandic address if street and number are filled
+            const validated = await this.validateIcelandicAddress(index, statusIcon);
+            if (validated) {
+              // Re-render to show auto-filled fields
+              await this.save();
+              this.render();
+              showToast(R.string.profile_address_validated || 'Address validated', 'success');
+            } else {
+              await this.save();
+            }
             showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
           } catch (error) {
             debug.error('Failed to save house number:', error);
@@ -260,7 +404,16 @@ export class AddressManager {
           this.addresses[index].letter = newLetter;
           showStatus(statusIcon, 'loading', { baseClass: 'profile-field__status' });
           try {
-            await this.save();
+            // Validate Icelandic address if street and number are filled
+            const validated = await this.validateIcelandicAddress(index, statusIcon);
+            if (validated) {
+              // Re-render to show auto-filled fields
+              await this.save();
+              this.render();
+              showToast(R.string.profile_address_validated || 'Address validated', 'success');
+            } else {
+              await this.save();
+            }
             showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
           } catch (error) {
             debug.error('Failed to save house letter:', error);
@@ -275,7 +428,7 @@ export class AddressManager {
       });
 
       const row2 = el('div', 'address-item__row', {},
-        streetInput,
+        streetWrapper,
         numberInput,
         letterInput
       );
@@ -490,6 +643,21 @@ export class AddressManager {
       debug.log('✅ Addresses saved successfully to Firestore');
       debug.log('🗑️ Old address field deleted from root level');
 
+      // Sync to Django via Cloud Function (non-blocking)
+      try {
+        debug.log('🔄 Syncing addresses to Django...');
+        const syncResult = await updateMemberProfileFunction({
+          kennitala: this.currentUserData.kennitala,
+          updates: {
+            addresses: this.addresses
+          }
+        });
+        debug.log('✅ Django sync completed:', syncResult.data);
+      } catch (syncError) {
+        // Log but don't fail - Firestore save already succeeded
+        debug.warn('⚠️ Django sync failed (Firestore save succeeded):', syncError.message);
+      }
+
       if (statusIcon) {
         statusIcon.className = 'profile-field__status profile-field__status--success';
         debug.log('✓ Showing success checkmark');
@@ -564,6 +732,16 @@ export class AddressManager {
     const label = document.getElementById('label-addresses');
     if (label) {
       label.addEventListener('click', () => this.toggleSection());
+    }
+
+    // Ensure section starts collapsed (set inline style for toggle logic)
+    const section = document.getElementById('addresses-section');
+    const simpleDisplay = document.getElementById('value-address-simple');
+    if (section) {
+      section.style.display = 'none';
+    }
+    if (simpleDisplay) {
+      simpleDisplay.style.display = 'block';
     }
   }
 }
