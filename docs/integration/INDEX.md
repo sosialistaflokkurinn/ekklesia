@@ -48,9 +48,9 @@ This is the main documentation for the Ekklesia membership system, consisting of
    - Data flow
    - Infrastructure
 
-2. **[BIDIRECTIONAL_SYNC.md](./BIDIRECTIONAL_SYNC.md)** ⚠️ *DEPRECATED*
-   - ~~Sync queue mechanism~~ (replaced by real-time)
-   - See CLOUD_RUN_SERVICES.md for current architecture
+2. ~~BIDIRECTIONAL_SYNC.md~~ → **[Archived](../archive/integration/sync-queue-2025-11/)**
+   - Queue-based sync replaced by real-time webhooks (2025-11-25)
+   - See [CLOUD_RUN_SERVICES.md](../infrastructure/CLOUD_RUN_SERVICES.md) for current architecture
 
 ### Component Documentation
 
