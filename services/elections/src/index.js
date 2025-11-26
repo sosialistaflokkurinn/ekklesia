@@ -6,6 +6,7 @@ const logger = require('./utils/logger');
 
 const electionsRouter = require('./routes/elections');
 const adminRouter = require('./routes/admin'); // Admin CRUD routes (Issue #192)
+const correlationIdMiddleware = require('./middleware/correlationId');
 
 const app = express();
 const PORT = process.env.PORT || 8081;
@@ -34,18 +35,12 @@ app.use(express.json({
   strict: true
 }));
 
-// Request logging (development only)
-// Note: Using structured logger instead of console.log to prevent log injection
-if (process.env.NODE_ENV !== 'production') {
-  app.use((req, res, next) => {
-    logger.debug('Incoming request', {
-      operation: 'http_request',
-      method: req.method,
-      path: req.path
-    });
-    next();
-  });
-}
+// Correlation ID middleware - adds request tracing
+// Must be early in chain so all handlers have access to req.correlationId and req.logger
+app.use(correlationIdMiddleware);
+
+// Note: Request logging is now handled by correlationIdMiddleware
+// which provides automatic start/end logging with timing and correlation IDs
 
 // =====================================================
 // Routes

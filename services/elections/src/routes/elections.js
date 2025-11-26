@@ -121,7 +121,7 @@ router.get('/elections', readLimiter, verifyMemberToken, async (req, res) => {
     const total = parseInt(countResult.rows[0].total, 10);
     const duration = Date.now() - startTime;
 
-    logger.info('[Member API] List elections', {
+    (req.logger || logger).info('[Member API] List elections', {
       uid_hash: hashUidForLogging(req.user.uid),
       count: filteredElections.length,
       total,
@@ -139,7 +139,7 @@ router.get('/elections', readLimiter, verifyMemberToken, async (req, res) => {
     });
   } catch (error) {
     const duration = Date.now() - startTime;
-    logger.error('[Member API] List elections error:', error);
+    (req.logger || logger).error('[Member API] List elections error:', { error: error.message, stack: error.stack });
 
     res.status(500).json({
       error: 'Internal Server Error',
@@ -216,14 +216,14 @@ router.get('/elections/:id', readLimiter, verifyMemberToken, async (req, res) =>
       });
     }
 
-    logger.info('[Member API] Get election details', {
+    (req.logger || logger).info('[Member API] Get election details', {
       uid_hash: hashUidForLogging(req.user.uid),
       election_id: id,
     });
 
     res.json({ election });
   } catch (error) {
-    logger.error('[Member API] Get election error:', error);
+    (req.logger || logger).error('[Member API] Get election error:', { error: error.message, stack: error.stack });
 
     res.status(500).json({
       error: 'Internal Server Error',
@@ -359,7 +359,7 @@ router.post('/elections/:id/vote', voteLimiter, verifyMemberToken, async (req, r
 
     const duration = Date.now() - startTime;
 
-    logger.info('[Member API] Vote submitted', {
+    (req.logger || logger).info('[Member API] Vote submitted', {
       uid_hash: hashUidForLogging(req.user.uid),
       election_id: id,
       election_title: election.title,
@@ -388,8 +388,8 @@ router.post('/elections/:id/vote', voteLimiter, verifyMemberToken, async (req, r
     }
     const duration = Date.now() - startTime;
 
-    // Enhanced error logging for debugging
-    logger.error('[Member API] Vote submission error:', {
+    // Enhanced error logging for debugging (req.logger includes correlationId)
+    (req.logger || logger).error('[Member API] Vote submission error:', {
       error: error.message,
       stack: error.stack,
       election_id: id,
@@ -501,7 +501,7 @@ router.get('/elections/:id/results', readLimiter, verifyMemberToken, async (req,
       ? results.reduce((max, current) => (current.votes > max.votes ? current : max))
       : null;
 
-    logger.info('[Member API] Get results', {
+    (req.logger || logger).info('[Member API] Get results', {
       uid_hash: hashUidForLogging(req.user.uid),
       election_id: id,
       total_votes: totalVotes,
@@ -517,7 +517,7 @@ router.get('/elections/:id/results', readLimiter, verifyMemberToken, async (req,
       winner: winner && winner.votes > 0 ? winner : null,
     });
   } catch (error) {
-    logger.error('[Member API] Get results error:', error);
+    (req.logger || logger).error('[Member API] Get results error:', { error: error.message, stack: error.stack });
 
     res.status(500).json({
       error: 'Internal Server Error',
