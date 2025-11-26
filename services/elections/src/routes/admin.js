@@ -93,31 +93,48 @@ router.get('/elections', requireElectionManager, async (req, res) => {
     const limitNum = Math.min(Math.max(parseInt(limit, 10) || 50, 1), 200);
     const offsetNum = Math.max(parseInt(offset, 10) || 0, 0);
 
-    // Query elections
+    // Query elections with vote counts and computed fields
+    // Frontend expects: voting_starts_at, voting_ends_at, opened_at, duration_minutes
     const query = `
       SELECT
-        id,
-        title,
-        description,
-        question,
-        answers,
-        status,
-        hidden,
-        voting_type,
-        max_selections,
-        eligibility,
-        scheduled_start,
-        scheduled_end,
-        created_by,
-        created_at,
-        updated_at,
-        updated_by,
-        published_at,
-        closed_at,
-        archived_at
-      FROM elections.elections
-      ${whereClause}
-      ORDER BY created_at DESC
+        e.id,
+        e.title,
+        e.description,
+        e.question,
+        e.answers,
+        e.status,
+        e.hidden,
+        e.voting_type,
+        e.max_selections,
+        e.eligibility,
+        e.scheduled_start,
+        e.scheduled_end,
+        -- Aliases for frontend compatibility
+        e.scheduled_start as voting_starts_at,
+        e.scheduled_end as voting_ends_at,
+        e.published_at as opened_at,
+        -- Computed duration in minutes
+        CASE
+          WHEN e.scheduled_start IS NOT NULL AND e.scheduled_end IS NOT NULL
+          THEN EXTRACT(EPOCH FROM (e.scheduled_end - e.scheduled_start)) / 60
+          ELSE NULL
+        END as duration_minutes,
+        e.created_by,
+        e.created_at,
+        e.updated_at,
+        e.updated_by,
+        e.published_at,
+        e.closed_at,
+        e.archived_at,
+        COALESCE(b.vote_count, 0) as vote_count
+      FROM elections.elections e
+      LEFT JOIN (
+        SELECT election_id, COUNT(DISTINCT member_uid) as vote_count
+        FROM elections.ballots
+        GROUP BY election_id
+      ) b ON e.id = b.election_id
+      ${whereClause.replace(/\b(title|question|status|hidden)\b/g, 'e.$1')}
+      ORDER BY e.created_at DESC
       LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
     `;
 
@@ -128,8 +145,8 @@ router.get('/elections', requireElectionManager, async (req, res) => {
     // Count total for pagination
     const countQuery = `
       SELECT COUNT(*) as total
-      FROM elections.elections
-      ${whereClause}
+      FROM elections.elections e
+      ${whereClause.replace(/\b(title|question|status|hidden)\b/g, 'e.$1')}
     `;
     const countResult = await pool.query(
       countQuery,
@@ -159,17 +176,15 @@ router.get('/elections', requireElectionManager, async (req, res) => {
     });
   } catch (error) {
     const duration = Date.now() - startTime;
-    
-    // Log to console for Cloud Logging
-    console.error('[Admin] List elections error:', {
+
+    // Structured logging with full context
+    logger.error('[Admin] List elections error:', {
       error: error.message,
       stack: error.stack,
       uid: req.user?.uid,
       role: req.user?.role,
       query: req.query
     });
-    
-    logger.error('[Admin] List elections error:', { error: error.message, stack: error.stack });
     logAudit('list_elections', false, {
       uid_hash: hashUidForLogging(req.user.uid),
       error: error.message,
@@ -344,8 +359,18 @@ router.get('/elections/:id', requireElectionManager, async (req, res) => {
   const { id } = req.params;
 
   try {
+    // Get election data with computed fields for frontend compatibility
     const result = await pool.query(
-      'SELECT * FROM elections.elections WHERE id = $1',
+      `SELECT *,
+        scheduled_start as voting_starts_at,
+        scheduled_end as voting_ends_at,
+        published_at as opened_at,
+        CASE
+          WHEN scheduled_start IS NOT NULL AND scheduled_end IS NOT NULL
+          THEN EXTRACT(EPOCH FROM (scheduled_end - scheduled_start)) / 60
+          ELSE NULL
+        END as duration_minutes
+      FROM elections.elections WHERE id = $1`,
       [id]
     );
 
@@ -356,8 +381,21 @@ router.get('/elections/:id', requireElectionManager, async (req, res) => {
       });
     }
 
+    const election = result.rows[0];
+
+    // Count total votes for this election
+    const voteCountResult = await pool.query(
+      'SELECT COUNT(DISTINCT member_uid) as total_votes FROM elections.ballots WHERE election_id = $1',
+      [id]
+    );
+    const totalVotes = parseInt(voteCountResult.rows[0]?.total_votes || 0, 10);
+
     res.json({
-      election: result.rows[0],
+      election: {
+        ...election,
+        total_votes: totalVotes,
+        vote_count: totalVotes, // Alias for consistency with list endpoint
+      },
     });
   } catch (error) {
     logger.error('[Admin] Get election error:', { error: error.message, stack: error.stack });
@@ -583,6 +621,8 @@ router.patch('/elections/:id', requireElectionManager, async (req, res) => {
 router.post('/elections/:id/open', requireElectionManager, async (req, res) => {
   const startTime = Date.now();
   const { id } = req.params;
+  // Accept schedule from request body (frontend sends voting_starts_at/voting_ends_at)
+  const { voting_starts_at, voting_ends_at, scheduled_start, scheduled_end } = req.body || {};
 
   try {
     // Check election exists and is draft
@@ -614,15 +654,25 @@ router.post('/elections/:id/open', requireElectionManager, async (req, res) => {
       });
     }
 
-    // Update status to published and set published_at
+    // Map frontend field names to database columns
+    // Frontend sends: voting_starts_at, voting_ends_at
+    // Database uses: scheduled_start, scheduled_end
+    const startDateTime = voting_starts_at || scheduled_start || null;
+    const endDateTime = voting_ends_at || scheduled_end || null;
+
+    // Update status to published, set published_at, and optionally set schedule
     const result = await pool.query(
       `
       UPDATE elections.elections
-      SET status = 'published', published_at = NOW(), updated_by = $1
+      SET status = 'published',
+          published_at = NOW(),
+          scheduled_start = COALESCE($3, scheduled_start),
+          scheduled_end = COALESCE($4, scheduled_end),
+          updated_by = $1
       WHERE id = $2
       RETURNING *
     `,
-      [req.user.uid, id]
+      [req.user.uid, id, startDateTime, endDateTime]
     );
 
     const election = result.rows[0];
@@ -633,6 +683,8 @@ router.post('/elections/:id/open', requireElectionManager, async (req, res) => {
       role: req.user.role,
       election_id: id,
       title: election.title,
+      scheduled_start: election.scheduled_start,
+      scheduled_end: election.scheduled_end,
       duration_ms: duration,
     });
 

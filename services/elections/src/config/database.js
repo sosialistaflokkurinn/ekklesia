@@ -54,16 +54,12 @@ pool.on('error', (err, client) => {
 
 // Pool connection handler (log in development)
 pool.on('connect', (client) => {
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('[DB] New connection established');
-  }
+  logger.debug('[DB] New connection established');
 });
 
 // Pool remove handler (log in development)
 pool.on('remove', (client) => {
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('[DB] Connection removed from pool');
-  }
+  logger.debug('[DB] Connection removed from pool');
 });
 
 // Graceful shutdown

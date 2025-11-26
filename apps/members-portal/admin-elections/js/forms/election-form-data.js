@@ -40,26 +40,14 @@ export function collectFormData(isLoadingElectionData = false) {
   
   // Step 2: Answer Options
   formData.voting_type = document.querySelector('input[name="voting_type"]:checked').value;
-  formData.max_selections = formData.voting_type === 'multi-choice' 
-    ? parseInt(document.getElementById('max-selections').value) 
+  formData.max_selections = formData.voting_type === 'multi-choice'
+    ? parseInt(document.getElementById('max-selections').value)
     : 1; // Single-choice must have max_selections = 1
   formData.answers = getAnswers();
-  
-  // Step 3: Schedule
-  formData.start_timing = document.querySelector('input[name="start_timing"]:checked').value;
-  formData.scheduled_start = formData.start_timing === 'scheduled' 
-    ? document.getElementById('scheduled-start').value 
-    : null;
 
-  const useManualEndTime = document.getElementById('use-manual-end-time').checked;
-  if (useManualEndTime) {
-    formData.duration_minutes = null;
-    formData.scheduled_end = document.getElementById('scheduled-end').value;
-  } else {
-    formData.duration_minutes = parseInt(document.getElementById('duration-minutes').value);
-    formData.scheduled_end = null;
-  }
-  
+  // Note: Schedule options (start timing, duration) are now configured when opening
+  // the election from the elections list, not in the create/edit wizard.
+
   return formData;
 }
 
@@ -82,19 +70,8 @@ export function buildCreatePayload(formData, status = 'draft') {
       display_order: index
     }))
     // Note: status is NOT included - handled via separate /open endpoint
+    // Note: Schedule options are configured when opening from elections list
   };
-
-  // Add schedule if timing is scheduled
-  if (formData.start_timing === 'scheduled' && formData.scheduled_start) {
-    payload.scheduled_start = formData.scheduled_start;
-  }
-
-  // Add duration or end time
-  if (formData.scheduled_end) {
-    payload.scheduled_end = formData.scheduled_end;
-  } else if (formData.duration_minutes) {
-    payload.duration_minutes = formData.duration_minutes;
-  }
 
   return payload;
 }
@@ -151,16 +128,16 @@ export function populateFormFromElection(election, setLoadingFlag) {
     // Populate answers
     const answersContainer = document.getElementById('answers-container');
     answersContainer.innerHTML = ''; // Clear existing
-    
+
     if (election.answers && election.answers.length > 0) {
       election.answers.forEach((answer, index) => {
         const answerItem = document.createElement('div');
         answerItem.className = 'answer-item';
         answerItem.innerHTML = `
           <span class="answer-item__drag-handle">⋮⋮</span>
-          <input 
-            type="text" 
-            class="answer-item__input form-control" 
+          <input
+            type="text"
+            class="answer-item__input form-control"
             value="${answer.text}"
             placeholder="${R.format(R.string.placeholder_answer, index + 1)}"
             maxlength="200"
@@ -172,34 +149,7 @@ export function populateFormFromElection(election, setLoadingFlag) {
       });
     }
 
-    // Step 3: Schedule
-    const startTiming = election.scheduled_start ? 'scheduled' : 'immediate';
-    const startTimingRadio = document.querySelector(`input[name="start_timing"][value="${startTiming}"]`);
-    if (startTimingRadio) {
-      startTimingRadio.checked = true;
-      
-      // Show/hide scheduled start based on timing
-      const scheduledStartGroup = document.getElementById('scheduled-start-group');
-      if (startTiming === 'scheduled') {
-        scheduledStartGroup.style.display = 'block';
-        document.getElementById('scheduled-start').value = election.scheduled_start || '';
-      } else {
-        scheduledStartGroup.style.display = 'none';
-      }
-    }
-
-    // Duration or end time
-    if (election.scheduled_end) {
-      document.getElementById('use-manual-end-time').checked = true;
-      document.getElementById('manual-end-time-group').style.display = 'block';
-      document.getElementById('scheduled-end').value = election.scheduled_end;
-      document.getElementById('duration-group').style.display = 'none';
-    } else if (election.duration_minutes) {
-      document.getElementById('use-manual-end-time').checked = false;
-      document.getElementById('duration-group').style.display = 'block';
-      document.getElementById('duration-minutes').value = election.duration_minutes;
-      document.getElementById('manual-end-time-group').style.display = 'none';
-    }
+    // Note: Schedule options are now configured when opening from elections list
 
   } finally {
     // Always clear loading flag, even if error occurs

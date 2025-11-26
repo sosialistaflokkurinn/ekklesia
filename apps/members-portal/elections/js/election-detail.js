@@ -21,6 +21,7 @@ import { electionState } from '../../js/utils/election-state.js';
 import { createScheduleDisplay } from '../../js/components/schedule-display.js';
 import { createVotingForm } from '../../js/components/voting-form.js';
 import { createButton } from '../../js/components/button.js';
+import { setTextContentOptional, showElement, hideElement } from '../../ui/dom.js';
 
 // State
 let currentElection = null;
@@ -69,15 +70,16 @@ async function init() {
 
 /**
  * Update all static text elements with i18n strings
+ * Uses safe helpers that won't crash if elements are missing
  */
 function updateStaticText() {
-  document.getElementById('back-text').textContent = R.string.back_to_elections;
-  document.getElementById('loading-message').textContent = R.string.loading_election;
-  document.getElementById('error-message').textContent = R.string.error_load_election;
-  document.getElementById('results-title').textContent = R.string.results_title;
-  document.getElementById('results-total-votes-label').textContent = R.string.results_total_votes;
-  document.getElementById('voted-badge-text').textContent = R.string.election_already_voted;
-  document.getElementById('upcoming-message').textContent = R.string.election_upcoming_message;
+  setTextContentOptional('back-text', R.string.back_to_elections);
+  setTextContentOptional('loading-message', R.string.loading_election);
+  setTextContentOptional('error-message', R.string.error_load_election);
+  setTextContentOptional('results-title', R.string.results_title);
+  setTextContentOptional('results-total-votes-label', R.string.results_total_votes);
+  setTextContentOptional('voted-badge-text', R.string.election_already_voted);
+  setTextContentOptional('upcoming-message', R.string.election_upcoming_message);
 
   // Note: schedule labels and voting form labels are now handled by components
 }
@@ -116,14 +118,9 @@ async function loadElection(electionId) {
 
 /**
  * Display election information
+ * Note: Status is already normalized by API layer (published → active)
  */
 function displayElection(election) {
-  // Map backend status to frontend status
-  // Backend uses 'published', frontend expects 'active'
-  if (election.status === 'published') {
-    election.status = 'active';
-  }
-
   // Update header
   document.getElementById('election-title').textContent = election.title;
 

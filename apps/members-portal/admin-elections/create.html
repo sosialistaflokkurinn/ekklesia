@@ -35,7 +35,7 @@
         <h1 id="page-heading">Loading...</h1>
       </header>
       
-      <!-- Progress Steps -->
+      <!-- Progress Steps (3 steps: Basic Info, Answers, Review) -->
       <div class="wizard-progress">
         <div class="wizard-step active" data-step="1">
           <div class="step-number">1</div>
@@ -48,10 +48,6 @@
         <div class="wizard-step" data-step="3">
           <div class="step-number">3</div>
           <div class="step-label" id="wizard-step-3-label">Loading...</div>
-        </div>
-        <div class="wizard-step" data-step="4">
-          <div class="step-number">4</div>
-          <div class="step-label" id="wizard-step-4-label">Loading...</div>
         </div>
       </div>
       
@@ -168,105 +164,10 @@
           </div>
         </div>
         
-        <!-- Step 3: Schedule -->
+        <!-- Step 3: Review (Schedule moved to "Open" action in elections list) -->
         <div class="wizard-content hidden" data-step="3">
           <h2 id="step-3-title">Loading...</h2>
           <p class="step-description" id="step-3-description">Loading...</p>
-          
-          <div class="form-group">
-            <label class="required" id="label-start-timing">Loading...</label>
-            <div class="radio-group">
-              <label class="radio-label">
-                <input 
-                  type="radio" 
-                  name="start_timing" 
-                  value="immediate" 
-                  checked
-                >
-                <span class="radio-text">
-                  <strong id="start-immediate">Loading...</strong>
-                  <small id="start-immediate-desc">Loading...</small>
-                </span>
-              </label>
-              <label class="radio-label">
-                <input 
-                  type="radio" 
-                  name="start_timing" 
-                  value="scheduled"
-                >
-                <span class="radio-text">
-                  <strong id="start-scheduled">Loading...</strong>
-                  <small id="start-scheduled-desc">Loading...</small>
-                </span>
-              </label>
-            </div>
-          </div>
-          
-          <!-- Scheduled Start Time -->
-          <div id="scheduled-start-group" class="form-group hidden">
-            <label for="scheduled-start" id="label-scheduled-start">Loading...</label>
-            <input 
-              type="datetime-local" 
-              id="scheduled-start" 
-              name="scheduled_start" 
-              class="form-control"
-            >
-          </div>
-          
-          <!-- Duration -->
-          <div class="form-group">
-            <label class="required" id="label-duration">Loading...</label>
-            <div class="duration-options">
-              <button type="button" class="duration-btn" data-minutes="1" id="duration-1min">Loading...</button>
-              <button type="button" class="duration-btn active" data-minutes="2" id="duration-2min">Loading...</button>
-              <button type="button" class="duration-btn" data-minutes="3" id="duration-3min">Loading...</button>
-              <button type="button" class="duration-btn" data-minutes="custom" id="duration-custom">Loading...</button>
-            </div>
-            <input 
-              type="hidden" 
-              id="duration-minutes" 
-              name="duration_minutes" 
-              value="2"
-            >
-          </div>
-          
-          <!-- Custom Duration -->
-          <div id="custom-duration-group" class="form-group hidden">
-            <label for="custom-duration" id="label-custom-duration">Loading...</label>
-            <input 
-              type="number" 
-              id="custom-duration" 
-              class="form-control" 
-              min="1" 
-              max="10080" 
-              placeholder="Loading..."
-            >
-            <small class="form-text" id="help-custom-duration">Loading...</small>
-          </div>
-          
-          <!-- Or Manual End Time -->
-          <div class="form-group">
-            <label>
-              <input type="checkbox" id="use-manual-end-time">
-              <span id="label-use-manual-end">Loading...</span>
-            </label>
-          </div>
-          
-          <div id="manual-end-time-group" class="form-group hidden">
-            <label for="scheduled-end" id="label-scheduled-end">Loading...</label>
-            <input 
-              type="datetime-local" 
-              id="scheduled-end" 
-              name="scheduled_end" 
-              class="form-control"
-            >
-          </div>
-        </div>
-        
-        <!-- Step 4: Review -->
-        <div class="wizard-content hidden" data-step="4">
-          <h2 id="step-4-title">Loading...</h2>
-          <p class="step-description" id="step-4-description">Loading...</p>
           
           <div class="review-section">
             <h3 id="review-section-basic">Loading...</h3>
@@ -300,19 +201,6 @@
             </dl>
           </div>
           
-          <div class="review-section">
-            <h3 id="review-section-schedule">Loading...</h3>
-            <dl class="review-list">
-              <dt id="review-label-start-time">Loading...</dt>
-              <dd id="review-start-time">-</dd>
-              
-              <dt id="review-label-duration">Loading...</dt>
-              <dd id="review-duration">-</dd>
-              
-              <dt id="review-label-end-time">Loading...</dt>
-              <dd id="review-end-time">-</dd>
-            </dl>
-          </div>
         </div>
         
         <!-- Navigation Buttons -->
@@ -334,17 +222,9 @@
               Loading...
             </button>
             
-            <button 
-              type="button" 
-              id="create-draft-btn" 
-              class="btn btn--secondary hidden"
-            >
-              Loading...
-            </button>
-            
-            <button 
-              type="submit" 
-              id="create-open-btn" 
+            <button
+              type="button"
+              id="create-draft-btn"
               class="btn btn--primary hidden"
             >
               Loading...
@@ -358,7 +238,7 @@
   </main>
   
   <!--  Loading Overlay -->
-  <div id="loading-overlay" class="loading-overlay hidden">
+  <div id="loading-overlay" class="loading-overlay u-hidden">
     <div class="loading-spinner">
       <div class="spinner"></div>
       <p id="loading-text">Loading...</p>

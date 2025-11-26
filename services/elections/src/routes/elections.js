@@ -64,7 +64,7 @@ router.get('/elections', readLimiter, verifyMemberToken, async (req, res) => {
     const limitNum = Math.min(Math.max(parseInt(limit, 10) || 50, 1), 100);
     const offsetNum = Math.max(parseInt(offset, 10) || 0, 0);
 
-    // Query elections
+    // Query elections with computed fields for frontend compatibility
     const query = `
       SELECT
         e.id,
@@ -78,6 +78,16 @@ router.get('/elections', readLimiter, verifyMemberToken, async (req, res) => {
         e.eligibility,
         e.scheduled_start,
         e.scheduled_end,
+        -- Aliases for frontend compatibility
+        e.scheduled_start as voting_starts_at,
+        e.scheduled_end as voting_ends_at,
+        e.published_at as opened_at,
+        -- Computed duration in minutes
+        CASE
+          WHEN e.scheduled_start IS NOT NULL AND e.scheduled_end IS NOT NULL
+          THEN EXTRACT(EPOCH FROM (e.scheduled_end - e.scheduled_start)) / 60
+          ELSE NULL
+        END as duration_minutes,
         e.created_at,
         e.published_at,
         e.closed_at,
@@ -145,7 +155,7 @@ router.get('/elections/:id', readLimiter, verifyMemberToken, async (req, res) =>
   const { id } = req.params;
 
   try {
-    // Query election
+    // Query election with computed fields for frontend compatibility
     const result = await pool.query(
       `SELECT
         e.id,
@@ -159,6 +169,16 @@ router.get('/elections/:id', readLimiter, verifyMemberToken, async (req, res) =>
         e.eligibility,
         e.scheduled_start,
         e.scheduled_end,
+        -- Aliases for frontend compatibility
+        e.scheduled_start as voting_starts_at,
+        e.scheduled_end as voting_ends_at,
+        e.published_at as opened_at,
+        -- Computed duration in minutes
+        CASE
+          WHEN e.scheduled_start IS NOT NULL AND e.scheduled_end IS NOT NULL
+          THEN EXTRACT(EPOCH FROM (e.scheduled_end - e.scheduled_start)) / 60
+          ELSE NULL
+        END as duration_minutes,
         e.created_at,
         e.published_at,
         e.closed_at,

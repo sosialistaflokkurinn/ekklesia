@@ -178,6 +178,7 @@ function setupFilters() {
       // Get filter value
       currentFilter = btn.dataset.filter;
       filterElections();
+      renderElections();
     });
   });
 }
@@ -546,57 +547,162 @@ async function handleAction(event) {
 }
 
 /**
- * Open election with duration selector modal
+ * Open election with full schedule options modal
+ * Includes: start timing, duration options, custom duration, manual end time
  */
 async function handleOpenElection(electionId) {
   const election = elections.find(e => e.id === electionId);
   if (!election) return;
-  
-  // Create duration selector HTML
-  const durationHTML = `
-    <div style="margin-bottom: 1rem;">
-      <p style="margin-bottom: 0.5rem; font-weight: 600;">${R.string.confirm_open_duration}</p>
-      <select id="duration-select" class="form-control" style="width: 100%; padding: 0.5rem; font-size: 1rem; border: 1px solid var(--color-gray-300); border-radius: 4px;">
-        <option value="1">${R.string.duration_1min}</option>
-        <option value="2" selected>${R.string.duration_2min}</option>
-        <option value="3">${R.string.duration_3min}</option>
-      </select>
+
+  // Get current datetime for min values
+  const now = new Date();
+  const nowStr = now.toISOString().slice(0, 16); // Format: YYYY-MM-DDTHH:mm
+
+  // Create full schedule options HTML
+  const scheduleHTML = `
+    <div class="open-modal-form">
+      <!-- Start Timing -->
+      <div class="form-group" style="margin-bottom: 1.5rem;">
+        <label style="font-weight: 600; display: block; margin-bottom: 0.5rem;">
+          ${R.string.label_start_timing || 'Hvenær á kosning að byrja?'}
+        </label>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+          <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+            <input type="radio" name="start_timing" value="immediate" checked>
+            <span><strong>${R.string.start_immediate || 'Strax'}</strong> - ${R.string.start_immediate_desc || 'Kosningin opnast strax'}</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+            <input type="radio" name="start_timing" value="scheduled">
+            <span><strong>${R.string.start_scheduled || 'Tímasett'}</strong> - ${R.string.start_scheduled_desc || 'Velja upphafstíma'}</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Scheduled Start Time (hidden by default) -->
+      <div id="scheduled-start-group" class="form-group hidden" style="margin-bottom: 1.5rem;">
+        <label style="font-weight: 600; display: block; margin-bottom: 0.5rem;">
+          ${R.string.label_scheduled_start || 'Upphafstími'}
+        </label>
+        <input type="datetime-local" id="modal-scheduled-start" class="form-control"
+               style="width: 100%; padding: 0.5rem;" min="${nowStr}">
+      </div>
+
+      <!-- Duration Options -->
+      <div class="form-group" style="margin-bottom: 1.5rem;">
+        <label style="font-weight: 600; display: block; margin-bottom: 0.5rem;">
+          ${R.string.label_duration || 'Lengd kosningar'}
+        </label>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <button type="button" class="duration-btn" data-minutes="1" style="padding: 0.5rem 1rem; border: 2px solid var(--color-gray-300); background: white; border-radius: 4px; cursor: pointer;">
+            ${R.string.duration_1min || '1 mín'}
+          </button>
+          <button type="button" class="duration-btn active" data-minutes="2" style="padding: 0.5rem 1rem; border: 2px solid var(--color-primary); background: var(--color-primary); color: white; border-radius: 4px; cursor: pointer;">
+            ${R.string.duration_2min || '2 mín'}
+          </button>
+          <button type="button" class="duration-btn" data-minutes="3" style="padding: 0.5rem 1rem; border: 2px solid var(--color-gray-300); background: white; border-radius: 4px; cursor: pointer;">
+            ${R.string.duration_3min || '3 mín'}
+          </button>
+          <button type="button" class="duration-btn" data-minutes="custom" style="padding: 0.5rem 1rem; border: 2px solid var(--color-gray-300); background: white; border-radius: 4px; cursor: pointer;">
+            ${R.string.duration_custom || 'Sérsníða'}
+          </button>
+        </div>
+        <input type="hidden" id="modal-duration-minutes" value="2">
+      </div>
+
+      <!-- Custom Duration (hidden by default) -->
+      <div id="custom-duration-group" class="form-group hidden" style="margin-bottom: 1.5rem;">
+        <label style="font-weight: 600; display: block; margin-bottom: 0.5rem;">
+          ${R.string.label_custom_duration || 'Sérsniðin lengd (mínútur)'}
+        </label>
+        <input type="number" id="modal-custom-duration" class="form-control"
+               style="width: 100%; padding: 0.5rem;" min="1" max="10080" placeholder="${R.string.placeholder_custom_duration || 't.d. 240'}">
+        <small style="color: var(--color-gray-600); font-size: 0.875rem;">
+          ${R.string.help_custom_duration || '1 mínúta til 7 dagar'}
+        </small>
+      </div>
+
+      <!-- Manual End Time Toggle -->
+      <div class="form-group" style="margin-bottom: 1rem;">
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+          <input type="checkbox" id="modal-use-manual-end">
+          <span>${R.string.label_use_manual_end || 'Nota ákveðinn lokatíma frekar en tímalengd'}</span>
+        </label>
+      </div>
+
+      <!-- Manual End Time (hidden by default) -->
+      <div id="manual-end-group" class="form-group hidden" style="margin-bottom: 1rem;">
+        <label style="font-weight: 600; display: block; margin-bottom: 0.5rem;">
+          ${R.string.label_scheduled_end || 'Lokatími'}
+        </label>
+        <input type="datetime-local" id="modal-scheduled-end" class="form-control"
+               style="width: 100%; padding: 0.5rem;" min="${nowStr}">
+      </div>
+
+      <p style="color: var(--color-gray-600); font-size: 0.875rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--color-gray-200);">
+        ${R.string.confirm_open_note || 'Kosningin verður opin fyrir félagsmenn eftir að þú staðfestir.'}
+      </p>
     </div>
-    <p style="color: var(--color-gray-600); font-size: 0.875rem; margin-top: 1rem;">${R.string.confirm_open_note}</p>
   `;
-  
+
   const modal = showModal({
-    title: `${R.string.confirm_open_title} ${election.title}`,
-    content: durationHTML,
+    title: `${R.string.confirm_open_title || 'Opna kosningu:'} ${election.title}`,
+    content: scheduleHTML,
     size: 'md',
     buttons: [
       {
-        text: R.string.btn_cancel,
+        text: R.string.btn_cancel || 'Hætta við',
         onClick: () => modal.close()
       },
       {
-        text: R.string.btn_open,
+        text: R.string.btn_open || '🚀 Opna',
         primary: true,
         onClick: async () => {
-          const durationMinutes = parseInt(document.getElementById('duration-select').value);
+          // Collect schedule data from modal
+          const startTiming = document.querySelector('input[name="start_timing"]:checked')?.value || 'immediate';
+          const scheduledStart = document.getElementById('modal-scheduled-start')?.value;
+          const useManualEnd = document.getElementById('modal-use-manual-end')?.checked;
+          const scheduledEnd = document.getElementById('modal-scheduled-end')?.value;
+          const durationMinutes = parseInt(document.getElementById('modal-duration-minutes')?.value || '2');
+
+          // Validate
+          if (startTiming === 'scheduled' && !scheduledStart) {
+            showError(R.string.validation_scheduled_start || 'Veldu upphafstíma');
+            return;
+          }
+          if (useManualEnd && !scheduledEnd) {
+            showError(R.string.validation_scheduled_end || 'Veldu lokatíma');
+            return;
+          }
+
           modal.close();
-          
+
           try {
-            // Calculate end time
-            const now = new Date();
-            const endTime = new Date(now.getTime() + durationMinutes * 60000);
-            
+            // Calculate start and end times
+            let startTime, endTime;
+
+            if (startTiming === 'immediate') {
+              startTime = new Date();
+            } else {
+              startTime = new Date(scheduledStart);
+            }
+
+            if (useManualEnd) {
+              endTime = new Date(scheduledEnd);
+            } else {
+              endTime = new Date(startTime.getTime() + durationMinutes * 60000);
+            }
+
             await openElection(electionId, {
-              voting_starts_at: now.toISOString(),
+              voting_starts_at: startTime.toISOString(),
               voting_ends_at: endTime.toISOString()
             });
-            
-            debug.log('[Elections List] Election opened:', electionId, 'Duration:', durationMinutes, 'min');
-            showSuccess(R.string.success_opened);
-            
+
+            debug.log('[Elections List] Election opened:', electionId, 'Start:', startTime, 'End:', endTime);
+            showSuccess(R.string.success_opened || 'Kosning opnuð!');
+
             // Reload elections
             await loadElections();
-            
+
           } catch (error) {
             console.error('[Elections List] Error opening election:', error);
             showError(R.format(R.string.error_open_failed, error.message));
@@ -605,6 +711,87 @@ async function handleOpenElection(electionId) {
       }
     ]
   });
+
+  // Setup event listeners for the modal form
+  setupOpenModalListeners();
+}
+
+/**
+ * Setup event listeners for the Open modal form elements
+ */
+function setupOpenModalListeners() {
+  // Start timing radio buttons
+  document.querySelectorAll('input[name="start_timing"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      const scheduledGroup = document.getElementById('scheduled-start-group');
+      if (scheduledGroup) {
+        scheduledGroup.classList.toggle('hidden', e.target.value !== 'scheduled');
+      }
+    });
+  });
+
+  // Duration buttons
+  document.querySelectorAll('.open-modal-form .duration-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      // Remove active from all
+      document.querySelectorAll('.open-modal-form .duration-btn').forEach(b => {
+        b.style.border = '2px solid var(--color-gray-300)';
+        b.style.background = 'white';
+        b.style.color = 'inherit';
+        b.classList.remove('active');
+      });
+      // Add active to clicked
+      e.target.style.border = '2px solid var(--color-primary)';
+      e.target.style.background = 'var(--color-primary)';
+      e.target.style.color = 'white';
+      e.target.classList.add('active');
+
+      const minutes = e.target.dataset.minutes;
+      const customGroup = document.getElementById('custom-duration-group');
+      const durationInput = document.getElementById('modal-duration-minutes');
+      const manualEndCheckbox = document.getElementById('modal-use-manual-end');
+
+      if (minutes === 'custom') {
+        customGroup?.classList.remove('hidden');
+        durationInput.value = '';
+      } else {
+        customGroup?.classList.add('hidden');
+        durationInput.value = minutes;
+      }
+
+      // Uncheck manual end
+      if (manualEndCheckbox) {
+        manualEndCheckbox.checked = false;
+        document.getElementById('manual-end-group')?.classList.add('hidden');
+      }
+    });
+  });
+
+  // Custom duration input
+  const customDurationInput = document.getElementById('modal-custom-duration');
+  if (customDurationInput) {
+    customDurationInput.addEventListener('input', (e) => {
+      document.getElementById('modal-duration-minutes').value = e.target.value;
+    });
+  }
+
+  // Manual end time toggle
+  const manualEndCheckbox = document.getElementById('modal-use-manual-end');
+  if (manualEndCheckbox) {
+    manualEndCheckbox.addEventListener('change', (e) => {
+      document.getElementById('manual-end-group')?.classList.toggle('hidden', !e.target.checked);
+      if (e.target.checked) {
+        // Hide custom duration and deselect duration buttons
+        document.getElementById('custom-duration-group')?.classList.add('hidden');
+        document.querySelectorAll('.open-modal-form .duration-btn').forEach(b => {
+          b.style.border = '2px solid var(--color-gray-300)';
+          b.style.background = 'white';
+          b.style.color = 'inherit';
+          b.classList.remove('active');
+        });
+      }
+    });
+  }
 }
 
 /**

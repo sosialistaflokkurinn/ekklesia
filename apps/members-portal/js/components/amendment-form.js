@@ -191,7 +191,7 @@ export function createAmendmentForm({ sections, sessionId, R, onSubmitSuccess })
       }
 
     } catch (error) {
-      console.error('Amendment submission error:', error);
+      debug.error('Amendment submission error:', error);
       showToast(`${strings.errorSubmission}: ${error.message}`, 'error');
     } finally {
       submitBtn.setLoading(false, strings.submitButton);

@@ -219,6 +219,8 @@ def updatememberprofile_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
                 'phone': str (optional),
                 'reachable': bool (optional),
                 'groupable': bool (optional),
+                'gender': int (optional) - 1=male, 2=female, 3=other,
+                'birthday': str (optional) - ISO 8601 date string (YYYY-MM-DD),
                 'addresses': array (optional) - Array of address objects with is_default flag
             }
         }
@@ -243,11 +245,15 @@ def updatememberprofile_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
             message="kennitala is required"
         )
 
-    # Verify user is updating their own profile
+    # Check if user has admin/superuser role (can update any profile)
+    user_roles = req.auth.token.get('roles', [])
+    is_admin = 'admin' in user_roles or 'superuser' in user_roles
+
+    # Verify user is updating their own profile OR is an admin
     # Normalize both kennitalas to same format (no hyphens) for comparison
     user_kennitala = req.auth.token.get('kennitala', '').replace('-', '')
     request_kennitala = kennitala.replace('-', '')
-    if user_kennitala != request_kennitala:
+    if user_kennitala != request_kennitala and not is_admin:
         log_json("warn", "Unauthorized profile update attempt",
                  uid=req.auth.uid,
                  requested_kennitala=f"{kennitala[:6]}****",
@@ -256,6 +262,14 @@ def updatememberprofile_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
             code=https_fn.FunctionsErrorCode.PERMISSION_DENIED,
             message="You can only update your own profile"
         )
+
+    # Log admin action if updating another user's profile
+    if user_kennitala != request_kennitala and is_admin:
+        log_json("info", "Admin updating another member's profile",
+                 admin_uid=req.auth.uid,
+                 admin_kennitala=f"{user_kennitala[:6]}****",
+                 target_kennitala=f"{request_kennitala[:6]}****",
+                 roles=user_roles)
 
     log_json("info", "Profile update initiated",
              uid=req.auth.uid,
@@ -324,6 +338,12 @@ def updatememberprofile_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
             django_updates['reachable'] = updates['reachable']
         if 'groupable' in updates:
             django_updates['groupable'] = updates['groupable']
+
+        # Handle gender and birthday
+        if 'gender' in updates:
+            django_updates['gender'] = updates['gender']
+        if 'birthday' in updates:
+            django_updates['birthday'] = updates['birthday']
 
         # Handle addresses - find default Iceland address and sync to Django NewLocalAddress
         address_sync_result = None
@@ -480,6 +500,12 @@ def updatememberprofile_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
             if 'groupable' in updates:
                 firestore_updates['profile.groupable'] = updates['groupable']
 
+            # Handle gender and birthday
+            if 'gender' in updates:
+                firestore_updates['profile.gender'] = updates['gender']
+            if 'birthday' in updates:
+                firestore_updates['profile.birthday'] = updates['birthday']
+
             # Handle addresses - store full array in profile.addresses
             if 'addresses' in updates:
                 firestore_updates['profile.addresses'] = updates['addresses']
@@ -553,10 +579,10 @@ def cleanupauditlogs_handler(req: https_fn.CallableRequest) -> dict:
         )
 
     user_data = user_doc.to_dict()
-    roles = user_data.get('roles', {})
+    roles = user_data.get('roles', [])
 
-    # Require admin or superuser role
-    if not (roles.get('admin') or roles.get('superuser')):
+    # Require admin or superuser role (roles is a list like ['member', 'admin'])
+    if not ('admin' in roles or 'superuser' in roles):
         log_json("warn", "Unauthorized audit log cleanup attempt",
                  uid=uid,
                  roles=roles)

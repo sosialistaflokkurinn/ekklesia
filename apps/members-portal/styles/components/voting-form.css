@@ -65,18 +65,18 @@
 
 /* Selection Helper (for multi-select) */
 .voting-form__selection-helper {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-base);
   color: var(--color-text-muted);
   margin-bottom: var(--spacing-md);
-  padding: var(--spacing-xs) var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
   background-color: var(--color-bg-alt);
   border-radius: var(--radius-sm);
   text-align: center;
 }
 
 .voting-form__selection-helper--max {
-  color: var(--color-warning);
-  background-color: var(--color-warning-pale);
+  color: var(--color-success-dark, #166534);
+  background-color: var(--color-success-pale, #dcfce7);
   font-weight: var(--font-weight-medium);
 }
 

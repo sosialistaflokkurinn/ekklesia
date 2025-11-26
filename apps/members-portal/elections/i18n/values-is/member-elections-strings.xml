@@ -46,6 +46,8 @@
   <string name="vote_error">Villa við að skrá atkvæði</string>
   <string name="vote_success">Atkvæði skráð</string>
   <string name="vote_voting">Skrái atkvæði...</string>
+  <string name="voting_selection_helper">Veldu allt að %1 valkosti</string>
+  <string name="voting_selection_count">Valið %1 af %2 valkostum</string>
   <string name="results_title">Niðurstöður</string>
   <string name="results_total_votes">Heildaratkvæði:</string>
   <string name="results_no">Nei:</string>

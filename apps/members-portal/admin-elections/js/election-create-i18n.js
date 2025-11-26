@@ -32,11 +32,10 @@ export async function initElectionCreateStrings() {
   document.getElementById('back-link').textContent = R.string.back_to_list;
   document.getElementById('page-heading').textContent = R.string.create_election_heading;
 
-  // Progress steps
+  // Progress steps (3 steps: Basic Info, Answers, Review)
   document.getElementById('wizard-step-1-label').textContent = R.string.wizard_step_1;
   document.getElementById('wizard-step-2-label').textContent = R.string.wizard_step_2;
-  document.getElementById('wizard-step-3-label').textContent = R.string.wizard_step_3;
-  document.getElementById('wizard-step-4-label').textContent = R.string.wizard_step_4;
+  document.getElementById('wizard-step-3-label').textContent = R.string.wizard_step_4; // "Yfirlit" (Review)
 
   // Step 1
   document.getElementById('step-1-title').textContent = R.string.step_1_title;
@@ -65,29 +64,9 @@ export async function initElectionCreateStrings() {
   document.getElementById('add-answer-btn').textContent = R.string.btn_add_answer;
   document.getElementById('help-answer-options').textContent = R.string.help_answer_options;
 
-  // Step 3
-  document.getElementById('step-3-title').textContent = R.string.step_3_title;
-  document.getElementById('step-3-description').textContent = R.string.step_3_description;
-  document.getElementById('label-start-timing').textContent = R.string.label_start_timing;
-  document.getElementById('start-immediate').textContent = R.string.start_immediate;
-  document.getElementById('start-immediate-desc').textContent = R.string.start_immediate_desc;
-  document.getElementById('start-scheduled').textContent = R.string.start_scheduled;
-  document.getElementById('start-scheduled-desc').textContent = R.string.start_scheduled_desc;
-  document.getElementById('label-scheduled-start').textContent = R.string.label_scheduled_start;
-  document.getElementById('label-duration').textContent = R.string.label_duration;
-  document.getElementById('duration-1min').textContent = R.string.duration_1min;
-  document.getElementById('duration-2min').textContent = R.string.duration_2min;
-  document.getElementById('duration-3min').textContent = R.string.duration_3min;
-  document.getElementById('duration-custom').textContent = R.string.duration_custom;
-  document.getElementById('label-custom-duration').textContent = R.string.label_custom_duration;
-  document.getElementById('custom-duration').placeholder = R.string.placeholder_custom_duration;
-  document.getElementById('help-custom-duration').textContent = R.string.help_custom_duration;
-  document.getElementById('label-use-manual-end').textContent = R.string.label_use_manual_end;
-  document.getElementById('label-scheduled-end').textContent = R.string.label_scheduled_end;
-
-  // Step 4
-  document.getElementById('step-4-title').textContent = R.string.step_4_title;
-  document.getElementById('step-4-description').textContent = R.string.step_4_description;
+  // Step 3: Review (Schedule moved to "Open" action in elections list)
+  document.getElementById('step-3-title').textContent = R.string.step_4_title; // "Yfirlit"
+  document.getElementById('step-3-description').textContent = R.string.step_4_description;
   document.getElementById('review-section-basic').textContent = R.string.review_section_basic;
   document.getElementById('review-label-title').textContent = R.string.review_title;
   document.getElementById('review-label-question').textContent = R.string.review_question;
@@ -96,16 +75,11 @@ export async function initElectionCreateStrings() {
   document.getElementById('review-label-voting-type').textContent = R.string.review_voting_type;
   document.getElementById('review-label-max-selections').textContent = R.string.review_max_selections;
   document.getElementById('review-label-answers').textContent = R.string.review_answers;
-  document.getElementById('review-section-schedule').textContent = R.string.review_section_schedule;
-  document.getElementById('review-label-start-time').textContent = R.string.review_start_time;
-  document.getElementById('review-label-duration').textContent = R.string.review_duration;
-  document.getElementById('review-label-end-time').textContent = R.string.review_end_time;
 
   // Navigation buttons
   document.getElementById('prev-btn').textContent = R.string.btn_prev;
   document.getElementById('next-btn').textContent = R.string.btn_next;
   document.getElementById('create-draft-btn').textContent = R.string.btn_save_draft;
-  document.getElementById('create-open-btn').textContent = R.string.btn_create_open;
 
   // Loading text
   document.getElementById('loading-text').textContent = R.string.loading_create_election;

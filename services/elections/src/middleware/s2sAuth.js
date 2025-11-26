@@ -2,6 +2,7 @@
 // Validates API key for S2S endpoints (Events service only)
 
 const crypto = require('crypto');
+const logger = require('../utils/logger');
 
 function authenticateS2S(req, res, next) {
   const apiKey = req.headers['x-api-key'];
@@ -15,11 +16,10 @@ function authenticateS2S(req, res, next) {
 
   // Check if both keys exist
   if (!apiKey || !expectedKey) {
-    console.warn('[S2S Auth] Missing API key', {
+    logger.warn('[S2S Auth] Missing API key', {
       hasApiKey: !!apiKey,
       hasExpectedKey: !!expectedKey,
-      ip: req.ip,
-      timestamp: new Date().toISOString()
+      ip: req.ip
     });
     return res.status(401).json(authError);
   }
@@ -30,18 +30,16 @@ function authenticateS2S(req, res, next) {
 
   // Length check (fast path - still constant time for same lengths)
   if (apiKeyBuffer.length !== expectedBuffer.length) {
-    console.warn('[S2S Auth] Invalid API key attempt (length mismatch)', {
-      ip: req.ip,
-      timestamp: new Date().toISOString()
+    logger.warn('[S2S Auth] Invalid API key attempt (length mismatch)', {
+      ip: req.ip
     });
     return res.status(401).json(authError);
   }
 
   // Timing-safe comparison (prevents timing attacks)
   if (!crypto.timingSafeEqual(apiKeyBuffer, expectedBuffer)) {
-    console.warn('[S2S Auth] Invalid API key attempt', {
-      ip: req.ip,
-      timestamp: new Date().toISOString()
+    logger.warn('[S2S Auth] Invalid API key attempt', {
+      ip: req.ip
     });
     return res.status(401).json(authError);
   }

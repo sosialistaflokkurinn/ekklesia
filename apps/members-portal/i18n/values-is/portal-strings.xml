@@ -337,4 +337,6 @@
   <string name="role_badge_election_manager">Kosningastjóri</string>
   <string name="role_election_manager">Kosningastjóri</string>
   <string name="role_superadmin">Ofurkerfisstjóri</string>
+  <string name="voting_selection_helper">Veldu allt að %s valkosti</string>
+  <string name="voting_selection_count">Valið %s af %s</string>
 </resources>

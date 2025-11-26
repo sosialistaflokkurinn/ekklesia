@@ -14,6 +14,7 @@
 import { MockElectionsAPI } from '../../elections/js/api/elections-mock.js';
 import { debug } from '../utils/debug.js';
 import { authenticatedFetch } from '../auth.js';
+import { normalizeElectionStatus, normalizeElectionsStatus } from '../utils/format.js';
 
 // DEVELOPMENT FLAG: Toggle between mock and real API
 // NOTE: Real API endpoints implemented in Issue #248
@@ -23,11 +24,12 @@ const USE_MOCK_API = false;
 // Production Elections Service URL
 /**
  * Elections API Base URL
- * 
- * Backend is live at https://elections-service-ymzrguoifa-nw.a.run.app
+ *
+ * Backend is live at https://elections-service-521240388393.europe-west2.run.app
  * Deployed: Cloud Run (Europe West 2)
+ * Note: Must match URL in admin-elections/js/api/elections-admin-api.js
  */
-const ELECTIONS_API_BASE = 'https://elections-service-ymzrguoifa-nw.a.run.app';
+const ELECTIONS_API_BASE = 'https://elections-service-521240388393.europe-west2.run.app';
 
 /**
  * Get list of elections eligible for member
@@ -66,7 +68,8 @@ export async function getElections(filters = {}) {
     }
 
     const data = await response.json();
-    return data.elections || [];
+    // Normalize status: backend uses 'published', frontend expects 'active'
+    return normalizeElectionsStatus(data.elections || []);
 
   } catch (error) {
     debug.error('Error fetching elections:', error);
@@ -94,7 +97,8 @@ export async function getElectionById(electionId) {
     }
 
     const data = await response.json();
-    return data.election;  // Extract election object from response wrapper
+    // Normalize status: backend uses 'published', frontend expects 'active'
+    return normalizeElectionStatus(data.election);
 
   } catch (error) {
     debug.error(`Error fetching election ${electionId}:`, error);
@@ -119,7 +123,8 @@ export async function getAdminElectionById(electionId) {
     }
 
     const data = await response.json();
-    return data.election || data;  // Handle both response formats
+    // Handle both response formats and normalize status
+    return normalizeElectionStatus(data.election || data);
 
   } catch (error) {
     debug.error(`Error fetching admin election ${electionId}:`, error);

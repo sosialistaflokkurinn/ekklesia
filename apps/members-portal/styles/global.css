@@ -363,8 +363,13 @@ body {
   outline-offset: -4px;
 }
 
-/* Hidden by default */
+/* Hidden utility class - use !important to override any other display values */
 .u-hidden {
+  display: none !important;
+}
+
+/* Hidden class for JS toggle (no !important so JS style.display can override) */
+.hidden {
   display: none;
 }
 

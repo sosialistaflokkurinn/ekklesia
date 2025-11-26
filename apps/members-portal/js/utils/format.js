@@ -470,3 +470,56 @@ export function formatDateOnlyIcelandic(dateInput) {
   // Format: "6. nóvember 2025"
   return `${day}. ${ICELANDIC_MONTHS[monthIndex]} ${year}`;
 }
+
+/**
+ * Election Status Mapping
+ *
+ * Backend uses different status names than frontend expects.
+ * This provides a centralized mapping.
+ *
+ * Backend → Frontend:
+ * - 'published' → 'active'
+ * - 'paused' → 'paused'
+ * - 'closed' → 'closed'
+ * - 'archived' → 'closed'
+ * - 'draft' → 'draft'
+ */
+const ELECTION_STATUS_MAP = {
+  'published': 'active',
+  'paused': 'paused',
+  'closed': 'closed',
+  'archived': 'closed',
+  'draft': 'draft'
+};
+
+/**
+ * Map backend election status to frontend status
+ * @param {string} backendStatus - Status from backend API
+ * @returns {string} Frontend-compatible status
+ */
+export function mapElectionStatus(backendStatus) {
+  return ELECTION_STATUS_MAP[backendStatus] || backendStatus;
+}
+
+/**
+ * Normalize election object status from backend to frontend format
+ * @param {Object} election - Election object from API
+ * @returns {Object} Election with normalized status
+ */
+export function normalizeElectionStatus(election) {
+  if (!election) return election;
+  return {
+    ...election,
+    status: mapElectionStatus(election.status)
+  };
+}
+
+/**
+ * Normalize array of elections
+ * @param {Array} elections - Array of election objects
+ * @returns {Array} Elections with normalized status
+ */
+export function normalizeElectionsStatus(elections) {
+  if (!Array.isArray(elections)) return elections;
+  return elections.map(normalizeElectionStatus);
+}

@@ -5,8 +5,8 @@
  * Uses PhoneManager and AddressManager from profile refactoring.
  */
 
-import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
-import { doc, getDoc, updateDoc, addDoc, collection } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getFirebaseAuth, getFirebaseFirestore, httpsCallable } from '../../firebase/app.js';
+import { doc, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { R } from '../../i18n/strings-loader.js';
 import { showToast } from '../../js/components/toast.js';
 import { showStatus } from '../../js/components/status.js';
@@ -22,6 +22,9 @@ import { migrateOldPhoneFields, migrateOldAddressFields } from '../../js/profile
 // Initialize Firebase
 const auth = getFirebaseAuth();
 const db = getFirebaseFirestore();
+
+// Cloud Functions
+const updateMemberProfileFunction = httpsCallable('updatememberprofile', 'europe-west2');
 
 // Constants
 const SEARCHABLE_SELECT_INIT_DELAY = 100; // ms to wait for DOM ready before initializing SearchableSelect
@@ -492,27 +495,35 @@ async function saveField(fieldName, value, statusElement) {
     if (!memberData.profile) memberData.profile = {};
     memberData.profile[fieldName] = value;
 
-    // Add to sync queue for bi-directional sync to Django
+    // Sync to Django via Cloud Function
     try {
-      await addDoc(collection(db, 'sync_queue'), {
-        source: 'firestore',
-        target: 'django',
-        collection: 'members',
-        docId: kennitalaKey,
-        kennitala: currentKennitala,
-        django_id: memberData.metadata?.django_id || null,
-        action: 'update',
-        changes: {
-          [`profile.${fieldName}`]: value
-        },
-        created_at: new Date(),
-        synced_at: null,
-        sync_status: 'pending'
-      });
-      debug.log(`📝 Added to sync queue for field: ${fieldName}`);
+      debug.log(`🔄 Syncing ${fieldName} to Django...`);
+
+      // Map Firestore field names to Django API field names
+      const fieldMapping = {
+        'name': 'name',
+        'email': 'email',
+        'phone': 'phone',
+        'reachable': 'reachable',
+        'groupable': 'groupable',
+        'gender': 'gender',
+        'birthday': 'birthday'
+      };
+
+      const djangoFieldName = fieldMapping[fieldName];
+      if (djangoFieldName) {
+        const updates = { [djangoFieldName]: value };
+        const syncResult = await updateMemberProfileFunction({
+          kennitala: currentKennitala,
+          updates: updates
+        });
+        debug.log(`✅ Django sync result:`, syncResult.data);
+      } else {
+        debug.log(`ℹ️ Field ${fieldName} not mapped for Django sync`);
+      }
     } catch (syncError) {
-      // Log sync queue error but don't fail the save
-      debug.warn(`⚠️ Failed to add to sync queue:`, syncError);
+      // Log sync error but don't fail the save (Firestore was already updated)
+      debug.warn(`⚠️ Failed to sync to Django:`, syncError);
     }
 
     showStatus(statusElement, 'success', { baseClass: 'profile-field__status' });
