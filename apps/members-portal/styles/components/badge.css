@@ -391,9 +391,36 @@
   background: var(--color-accent-gold);
 }
 
+.role-badge--clickable {
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.role-badge--clickable:hover {
+  transform: translateY(-1px);
+}
+
+.role-badge--clickable:active {
+  transform: translateY(0);
+}
+
 .role-badge--admin {
   background: var(--color-primary-light);
   color: white;
+}
+
+.role-badge--admin.role-badge--clickable:hover {
+  background: var(--color-primary-dark);
+}
+
+.role-badge--superuser {
+  background: var(--color-admin-blue);
+  color: white;
+}
+
+.role-badge--superuser.role-badge--clickable:hover {
+  background: var(--color-admin-blue-dark);
 }
 
 /* Elections badge aliases */

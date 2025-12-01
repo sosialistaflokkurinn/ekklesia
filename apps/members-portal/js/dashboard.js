@@ -156,14 +156,14 @@ function renderRoleBadges(roles) {
     const key = `role_badge_${role}`;
     const label = R.string[key] || role;
 
-    // Admin → Member management dashboard
+    // Admin → Member management dashboard (red)
     if (role === 'admin') {
-      return `<a href="/admin/" class="role-badge role-badge--clickable" title="${R.string.role_badge_title_open_member_admin}">${label}</a>`;
+      return `<a href="/admin/" class="role-badge role-badge--admin role-badge--clickable" title="${R.string.role_badge_title_open_member_admin}">${label}</a>`;
     }
 
-    // Superuser → Elections management dashboard
+    // Superuser → Elections management dashboard (blue)
     if (role === 'superuser') {
-      return `<a href="/admin-elections/" class="role-badge role-badge--clickable" title="${R.string.role_badge_title_open_elections_admin}">${label}</a>`;
+      return `<a href="/admin-elections/" class="role-badge role-badge--superuser role-badge--clickable" title="${R.string.role_badge_title_open_elections_admin}">${label}</a>`;
     }
 
     return `<span class="role-badge">${label}</span>`;
