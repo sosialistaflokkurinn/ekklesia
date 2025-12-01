@@ -9,5 +9,5 @@ iceaddr==0.5.6
 setuptools>=65.0.0
 
 # Testing dependencies
-pytest==9.0.0
+pytest==9.0.1
 pytest-cov==7.0.0
