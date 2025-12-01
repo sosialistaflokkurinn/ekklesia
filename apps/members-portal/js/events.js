@@ -105,11 +105,11 @@ async function loadEvents(filter = 'upcoming') {
   try {
     showLoading();
 
-    // TODO: Replace with actual Events API call
-    // For now, show hardcoded events
+    // TODO(#284): Replace with actual Events API call
+    // const events = await EventsAPI.getEvents(filter);
     await new Promise(resolve => setTimeout(resolve, 500)); // Simulate loading
 
-    // Hardcoded event data - Facebook events
+    // Hardcoded event data - Facebook events (temporary)
     const allEvents = [
       // Upcoming events
       {

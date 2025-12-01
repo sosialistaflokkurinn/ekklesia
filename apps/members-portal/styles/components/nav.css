@@ -13,7 +13,7 @@
 .nav {
   background: var(--color-primary);
   padding: var(--spacing-md) var(--spacing-xl);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .nav__container {
@@ -25,9 +25,9 @@
 }
 
 .nav__brand {
-  color: white;
-  font-size: 20px;
-  font-weight: 600;
+  color: var(--color-text-inverse);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
   text-decoration: none;
   margin-right: var(--spacing-xl); /* Add spacing between brand and nav links */
 }
@@ -42,7 +42,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  padding: 12px;
+  padding: var(--spacing-sm-md);
   min-width: 48px;
   min-height: 48px;
   z-index: 1001;
@@ -51,12 +51,12 @@
 
 .nav__hamburger-line {
   display: block;
-  width: 24px;
+  width: var(--spacing-lg);
   height: 3px;
-  background: white;
-  margin: 5px 0;
+  background: var(--color-text-inverse);
+  margin: var(--spacing-xs) 0;
   transition: all 0.3s ease;
-  border-radius: 2px;
+  border-radius: var(--radius-xs);
 }
 
 /* Hamburger animation when open */
@@ -80,7 +80,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--overlay-bg);
   z-index: 999;
   opacity: 0;
   transition: opacity 0.3s ease;
@@ -113,7 +113,7 @@
 }
 
 .nav__link {
-  color: white;
+  color: var(--color-text-inverse);
   text-decoration: none;
   padding: var(--spacing-sm) var(--spacing-md);
   border-radius: var(--radius-sm);
@@ -127,17 +127,17 @@
 }
 
 .nav__link.nav__link--active {
-  background: rgba(255, 255, 255, 0.2);
-  font-weight: 500;
+  background: var(--color-white-alpha-20);
+  font-weight: var(--font-weight-medium);
 }
 
 .nav__link--logout {
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: var(--color-white-alpha-20);
+  border: 1px solid var(--color-white-alpha-30);
 }
 
 .nav__link--logout:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--color-white-alpha-30);
 }
 
 /* ========================================== */
@@ -159,8 +159,8 @@
     bottom: 0;
     width: 280px;
     max-width: 85vw;
-    background: var(--color-white);
-    box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-drawer);
     transform: translateX(100%);
     transition: transform 0.3s ease-in-out;
     z-index: 1000;
@@ -183,8 +183,8 @@
     right: var(--spacing-md);
     background: none;
     border: none;
-    font-size: 32px;
-    color: var(--color-gray-600);
+    font-size: var(--font-size-3xl);
+    color: var(--color-text-muted);
     cursor: pointer;
     padding: var(--spacing-sm);
     line-height: 1;
@@ -212,10 +212,10 @@
 
   .nav__tab {
     padding: var(--spacing-md) var(--spacing-lg);
-    color: var(--color-gray-700);
+    color: var(--color-text);
     text-decoration: none;
-    font-weight: 500;
-    font-size: 15px;
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-base);
     border-left: 3px solid transparent;
     transition: all 0.2s;
     display: block;
@@ -230,7 +230,7 @@
     color: var(--color-primary);
     border-left-color: var(--color-primary);
     background: var(--color-primary-lighter);
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
   }
 
   /* Navigation links - vertical stack */
@@ -247,7 +247,7 @@
     color: var(--color-gray-800);
     border-bottom: 1px solid var(--color-border-light);
     text-align: left;
-    font-size: 16px;
+    font-size: var(--font-size-base);
     min-height: 44px;
     display: flex;
     align-items: center;
@@ -261,7 +261,7 @@
   .nav__link.nav__link--active {
     background: var(--color-primary);
     color: white;
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
   }
 
   .nav__link--logout {
@@ -270,7 +270,7 @@
     border-top: 2px solid var(--color-border-medium);
     margin-top: auto;
     color: var(--color-primary);
-    font-weight: 500;
+    font-weight: var(--font-weight-medium);
   }
 
   .nav__link--logout:hover {

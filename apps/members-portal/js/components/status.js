@@ -1,3 +1,5 @@
+import { el } from '../utils/dom.js';
+
 /**
  * Status Feedback Component
  * 
@@ -26,7 +28,7 @@
  * @param {string} options.baseClass - Base CSS class (default: 'status')
  * 
  * @example
- * const statusIcon = document.createElement('span');
+ * const statusIcon = el('span');
  * showStatus(statusIcon, 'loading');
  * // ... perform async operation ...
  * showStatus(statusIcon, 'success');
@@ -89,13 +91,11 @@ export function createStatusIcon(options = {}) {
     ariaLabel = 'Status indicator'
   } = options;
 
-  const statusIcon = document.createElement('span');
-  statusIcon.className = baseClass;
-  statusIcon.setAttribute('role', 'status');
-  statusIcon.setAttribute('aria-label', ariaLabel);
-  statusIcon.setAttribute('aria-live', 'polite');
-
-  return statusIcon;
+  return el('span', baseClass, {
+    role: 'status',
+    'aria-label': ariaLabel,
+    'aria-live': 'polite'
+  });
 }
 
 /**

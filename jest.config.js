@@ -5,7 +5,8 @@ export default {
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
   testMatch: [
-    '**/__tests__/**/*.test.js'
+    '**/__tests__/**/*.test.js',
+    '**/*.test.js'
   ],
   collectCoverageFrom: [
     'apps/members-portal/admin-elections/js/**/*.js',

@@ -70,7 +70,6 @@ PERMISSIONS.VIEW_MEMBER_DETAILS // View member details
 PERMISSIONS.EDIT_MEMBER         // Edit member
 PERMISSIONS.SYNC_MEMBERS        // Run sync
 PERMISSIONS.VIEW_SYNC_HISTORY   // View sync history
-PERMISSIONS.VIEW_SYNC_QUEUE     // View sync queue
 ```
 
 ### Elections Admin Permissions
@@ -116,7 +115,6 @@ PERMISSIONS.VIEW_MEMBER_DETAILS // View member details
 PERMISSIONS.EDIT_MEMBER         // Edit member
 PERMISSIONS.SYNC_MEMBERS        // Run sync
 PERMISSIONS.VIEW_SYNC_HISTORY   // View sync history
-PERMISSIONS.VIEW_SYNC_QUEUE     // View sync queue
 ```
 
 ### Elections Admin Permissions

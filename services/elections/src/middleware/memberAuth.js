@@ -210,7 +210,10 @@ function validateAnswers(answerIds, election) {
   }
 
   // Get valid answer IDs
-  const validAnswerIds = answers.map(a => a.id);
+  const validAnswerIds = answers.map(a => {
+    if (typeof a === 'string') return a;
+    return a.id || a.answer_text || a.text;
+  });
 
   // Check all selected answers are valid
   const invalidAnswers = answerIds.filter(id => !validAnswerIds.includes(id));

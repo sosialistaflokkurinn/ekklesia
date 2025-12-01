@@ -61,7 +61,7 @@ Once Chrome is running with remote debugging, Claude Code can:
 ### Read Console Logs
 ```bash
 # Using CDP monitor script (see below)
-python3 /tmp/chrome_console_monitor.py
+python3 scripts/utils/chrome_console_monitor.py
 ```
 
 ### Inspect Current Page State
@@ -171,7 +171,7 @@ Make sure:
 ## Related Documentation
 
 - [Chrome DevTools Protocol Documentation](https://chromedevtools.github.io/devtools-protocol/)
-- [CDP Monitor Script](../../../scripts/chrome_console_monitor.py)
+- [CDP Monitor Script](../../../scripts/utils/chrome_console_monitor.py)
 - [Ekklesia Debug Logging](./DEBUG_LOGGING.md)
 
 ---

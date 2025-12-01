@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="/styles/components/button.css?v=20251106">
   <link rel="stylesheet" href="/styles/components/form.css?v=20251105">
   <link rel="stylesheet" href="/styles/components/profile-edit.css?v=20251105">
+  <link rel="stylesheet" href="/styles/components/address-autocomplete.css?v=20251125">
   <link rel="stylesheet" href="/styles/components/toast.css?v=20251105">
   <link rel="stylesheet" href="/styles/components/searchable-select.css?v=20251105">
 
@@ -53,19 +54,19 @@
       </div>
 
       <!-- Error State -->
-      <div id="member-error" class="admin-error" style="display: none;">
+      <div id="member-error" class="admin-error hidden">
         <p class="admin-error__message" id="member-error-message"></p>
         <button class="btn btn--secondary" id="btn-retry"></button>
       </div>
 
       <!-- Not Found State -->
-      <div id="member-not-found" class="admin-not-found" style="display: none;">
+      <div id="member-not-found" class="admin-not-found hidden">
         <p class="admin-not-found__message" id="member-not-found-message"></p>
         <a href="/admin/members.html" class="btn btn--secondary" id="btn-back-to-members"></a>
       </div>
 
       <!-- Member Profile -->
-      <div id="member-profile" style="display: none;">
+      <div id="member-profile" class="hidden">
         <!-- Basic Information -->
         <div class="card">
           <h3 class="card__title" id="section-personal-info"></h3>
@@ -148,10 +149,10 @@
           </h3>
 
           <!-- Simple Display (collapsed) -->
-          <div class="info-grid__value" id="value-phone-simple" style="display: block;">-</div>
+          <div class="info-grid__value" id="value-phone-simple">-</div>
 
           <!-- Expanded Section -->
-          <div id="phone-numbers-section" style="display: none;">
+          <div id="phone-numbers-section" class="hidden">
             <div id="phone-numbers-list"></div>
             <button type="button" class="btn btn--secondary" id="btn-add-phone">
               <span id="btn-add-phone-text"></span>
@@ -168,15 +169,51 @@
           </h3>
 
           <!-- Simple Display (collapsed) -->
-          <div class="info-grid__value" id="value-address-simple" style="display: block;">-</div>
+          <div class="info-grid__value" id="value-address-simple">-</div>
 
           <!-- Expanded Section -->
-          <div id="addresses-section" style="display: none;">
+          <div id="addresses-section" class="hidden">
             <div id="addresses-list"></div>
             <button type="button" class="btn btn--secondary" id="btn-add-address">
               <span id="btn-add-address-text"></span>
             </button>
             <span class="profile-field__status" id="status-addresses"></span>
+          </div>
+        </div>
+
+        <!-- Communication Preferences -->
+        <div class="card">
+          <h3 class="card__title" id="section-communication"></h3>
+          <div class="info-grid">
+            <!-- Reachable toggle -->
+            <div class="info-grid__item info-grid__item--full">
+              <div class="profile-field profile-field--toggle">
+                <label class="toggle-field">
+                  <input type="checkbox" id="input-reachable" name="reachable" class="toggle-field__input">
+                  <span class="toggle-field__switch"></span>
+                  <span class="toggle-field__label">
+                    <span id="label-reachable"></span>
+                    <span class="toggle-field__description" id="label-reachable-description"></span>
+                  </span>
+                </label>
+                <span class="profile-field__status" id="status-reachable" aria-live="polite" aria-atomic="true"></span>
+              </div>
+            </div>
+
+            <!-- Groupable toggle -->
+            <div class="info-grid__item info-grid__item--full">
+              <div class="profile-field profile-field--toggle">
+                <label class="toggle-field">
+                  <input type="checkbox" id="input-groupable" name="groupable" class="toggle-field__input">
+                  <span class="toggle-field__switch"></span>
+                  <span class="toggle-field__label">
+                    <span id="label-groupable"></span>
+                    <span class="toggle-field__description" id="label-groupable-description"></span>
+                  </span>
+                </label>
+                <span class="profile-field__status" id="status-groupable" aria-live="polite" aria-atomic="true"></span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -209,11 +246,11 @@
   </main>
 
   <!-- Scripts -->
-  <script type="module" src="/admin/js/member-profile.js"></script>
+  <script type="module" src="/admin/js/member-profile.js?v=20251122"></script>
 
   <!-- Initialize Navigation Component -->
   <script type="module">
-    import { initNavHeader, NAV_CONFIGS } from '../../ui/components/nav-header.js';
+    import { initNavHeader, NAV_CONFIGS } from '../../ui/components/navigation-bar.js?v=20251122';
     
     // Initialize navigation with appropriate config
     await initNavHeader(NAV_CONFIGS.adminMemberProfile);

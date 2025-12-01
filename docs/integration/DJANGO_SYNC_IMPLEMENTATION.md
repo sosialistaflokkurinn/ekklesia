@@ -1,5 +1,8 @@
 # Django → Ekklesia Weekly Sync Implementation
 
+# ⚠️ DEPRECATED
+**This document is outdated. Please refer to [Epic #43 Member Management System](../features/election-voting/EPIC_43_MEMBER_MANAGEMENT_SYSTEM.md) for the current implementation.**
+
 **Document Type**: Technical Implementation Guide
 **Last Updated**: 2025-10-15
 **Status**: 📋 Planned - Phase 5 (Dec 2025)

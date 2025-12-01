@@ -12,6 +12,7 @@ from typing import Tuple, Any
 from flask import jsonify, Request
 import firebase_admin
 from firebase_admin import auth
+from shared.cors import get_allowed_origin, cors_headers_for_origin
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -33,13 +34,11 @@ def get_django_token(request: Request) -> Tuple[Any, int, dict]:
         - Returns token from Secret Manager
     """
 
-    # CORS headers
-    headers = {
-        'Access-Control-Allow-Origin': 'https://ekklesia-prod-10-2025.web.app',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Authorization, Content-Type',
-        'Cache-Control': 'private, no-cache, no-store, must-revalidate'
-    }
+    # CORS headers - use shared CORS module for proper origin handling
+    req_origin = request.headers.get('Origin')
+    allowed_origin = get_allowed_origin(req_origin)
+    headers = cors_headers_for_origin(allowed_origin)
+    headers['Cache-Control'] = 'private, no-cache, no-store, must-revalidate'
 
     # Handle preflight
     if request.method == 'OPTIONS':

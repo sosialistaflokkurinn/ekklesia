@@ -1,3 +1,7 @@
+"""
+Utility for handling JSON Web Key Sets (JWKS) and JWT verification.
+Provides caching for JWKS clients to improve performance.
+"""
 import time
 import os
 import requests
@@ -16,12 +20,8 @@ def _now() -> float:
 
 DEFAULT_TTL = int(os.getenv('JWKS_CACHE_TTL_SECONDS', '3600'))
 if DEFAULT_TTL <= 0:
-    # Fall back to sane default and log via stdout (available early)
-    try:
-        from .utils_logging import log_json
-        log_json("warn", "Invalid JWKS_CACHE_TTL_SECONDS; falling back to 3600", value=DEFAULT_TTL)
-    except Exception:
-        print(f"Warning: JWKS_CACHE_TTL_SECONDS={DEFAULT_TTL} is invalid, using 3600")
+    # Fall back to sane default
+    log_json("warn", "Invalid JWKS_CACHE_TTL_SECONDS; falling back to 3600", value=DEFAULT_TTL)
     DEFAULT_TTL = 3600
 
 

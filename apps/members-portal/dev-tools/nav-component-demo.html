@@ -82,6 +82,41 @@
       background: var(--color-red-50);
       border-color: var(--color-red-200);
     }
+
+    /* Utility classes to replace inline styles */
+    .demo-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--color-gray-900);
+      margin-bottom: var(--spacing-lg);
+    }
+    
+    .demo-list {
+      list-style: disc;
+      padding-left: var(--spacing-lg);
+      color: var(--color-gray-700);
+      line-height: 1.8;
+    }
+    
+    .demo-list--spaced {
+      margin-bottom: var(--spacing-md);
+    }
+    
+    .demo-subtitle {
+      margin-bottom: var(--spacing-sm);
+    }
+    
+    .u-hidden {
+      display: none;
+    }
+    
+    .u-margin-bottom-md {
+      margin-bottom: var(--spacing-md);
+    }
+    
+    .u-margin-top-md {
+      margin-top: var(--spacing-md);
+    }
   </style>
 </head>
 <body>
@@ -90,8 +125,8 @@
 
   <!-- Navigation will be inserted here by component -->
 
-  <main id="main-content" class="demo-container">
-    <h1 style="font-size: 2.5rem; font-weight: 700; color: var(--color-gray-900); margin-bottom: var(--spacing-lg);">
+    <main id="main-content" class="demo-container">
+    <h1 class="demo-title">
       Navigation Component Demo
     </h1>
 
@@ -103,7 +138,7 @@
         It shows the Admin Elections configuration with two main links and a logout button.
       </p>
       
-      <div class="demo-code">import { initNavHeader, NAV_CONFIGS } from '../ui/components/nav-header.js';
+      <div class="demo-code">import { initNavHeader, NAV_CONFIGS } from '../ui/components/navigation-bar.js';
 
 // Initialize with pre-defined config
 await initNavHeader({
@@ -130,13 +165,13 @@ await initNavHeader({
         <button class="btn btn--secondary" id="demo-events">Events</button>
       </div>
       
-      <div id="demo-result" class="demo-result" style="display: none;"></div>
+            <div id="demo-result" class="demo-result u-hidden"></div>
     </section>
 
     <!-- Demo 3: Features -->
     <section class="demo-section">
       <h2 class="demo-section__title">3. Component Features</h2>
-      <ul style="list-style: disc; padding-left: var(--spacing-lg); color: var(--color-gray-700); line-height: 1.8;">
+      <ul class="demo-list demo-list--spaced">
         <li><strong>Responsive:</strong> Horizontal nav on desktop (>1220px), hamburger menu on mobile</li>
         <li><strong>Accessible:</strong> ARIA attributes, keyboard navigation (Escape, Tab), focus management</li>
         <li><strong>i18n Ready:</strong> All text uses R.string keys for internationalization</li>
@@ -152,16 +187,16 @@ await initNavHeader({
     <section class="demo-section">
       <h2 class="demo-section__title">4. Testing Instructions</h2>
       <div class="demo-section__description">
-        <p style="margin-bottom: var(--spacing-sm);"><strong>Desktop Testing (>1220px):</strong></p>
-        <ul style="list-style: disc; padding-left: var(--spacing-lg); margin-bottom: var(--spacing-md); line-height: 1.8;">
+        <p class="demo-subtitle"><strong>Desktop Testing (>1220px):</strong></p>
+        <ul class="demo-list demo-list--spaced">
           <li>Hamburger button should be hidden</li>
           <li>All navigation links visible horizontally</li>
           <li>Active link has underline/highlight</li>
           <li>Logout link on the right side</li>
         </ul>
         
-        <p style="margin-bottom: var(--spacing-sm);"><strong>Mobile Testing (≤1220px):</strong></p>
-        <ul style="list-style: disc; padding-left: var(--spacing-lg); margin-bottom: var(--spacing-md); line-height: 1.8;">
+        <p class="demo-subtitle"><strong>Mobile Testing (≤1220px):</strong></p>
+        <ul class="demo-list demo-list--spaced">
           <li>Hamburger button (3 lines) visible in top right</li>
           <li>Click hamburger → drawer slides in from right (280px width)</li>
           <li>Hamburger animates to X shape</li>
@@ -172,8 +207,8 @@ await initNavHeader({
           <li>If tabs present (Elections config), they appear at top of drawer</li>
         </ul>
         
-        <p style="margin-bottom: var(--spacing-sm);"><strong>Accessibility Testing:</strong></p>
-        <ul style="list-style: disc; padding-left: var(--spacing-lg); line-height: 1.8;">
+        <p class="demo-subtitle"><strong>Accessibility Testing:</strong></p>
+        <ul class="demo-list">
           <li>Tab navigation should work (focus visible)</li>
           <li>Hamburger has aria-expanded="false" when closed, "true" when open</li>
           <li>Drawer has aria-hidden="true" when closed, "false" when open</li>
@@ -187,7 +222,7 @@ await initNavHeader({
     <!-- Demo 5: Implementation Guide -->
     <section class="demo-section">
       <h2 class="demo-section__title">5. Implementation Guide</h2>
-      <p class="demo-section__description" style="margin-bottom: var(--spacing-md);">
+      <p class="demo-section__description u-margin-bottom-md">
         <strong>Step 1:</strong> Remove old navigation HTML from your page
       </p>
       <div class="demo-code">&lt;!-- DELETE THIS: --&gt;
@@ -197,11 +232,11 @@ await initNavHeader({
   &lt;/div&gt;
 &lt;/nav&gt;</div>
       
-      <p class="demo-section__description" style="margin-bottom: var(--spacing-md);">
+      <p class="demo-section__description u-margin-bottom-md">
         <strong>Step 2:</strong> Add component initialization script before closing &lt;/body&gt;
       </p>
       <div class="demo-code">&lt;script type="module"&gt;
-import { initNavHeader, NAV_CONFIGS } from '../ui/components/nav-header.js';
+import { initNavHeader, NAV_CONFIGS } from '../ui/components/navigation-bar.js';
 
 // Choose a pre-defined config or create custom
 await initNavHeader({
@@ -213,7 +248,7 @@ await initNavHeader({
 });
 &lt;/script&gt;</div>
 
-      <p class="demo-section__description" style="margin-bottom: var(--spacing-md);">
+      <p class="demo-section__description u-margin-bottom-md">
         <strong>Step 3:</strong> Ensure CSS and i18n are loaded (usually already present)
       </p>
       <div class="demo-code">&lt;!-- In &lt;head&gt; --&gt;
@@ -222,7 +257,7 @@ await initNavHeader({
 &lt;!-- Before your component script --&gt;
 &lt;script src="../i18n/strings-loader.js"&gt;&lt;/script&gt;</div>
 
-      <p class="demo-section__description" style="margin-top: var(--spacing-md);">
+      <p class="demo-section__description u-margin-top-md">
         <strong>Done!</strong> Your page now uses the reusable navigation component. 
         No more copy-paste HTML. All 14 pages can use the same component code.
       </p>
@@ -232,7 +267,7 @@ await initNavHeader({
   <!-- Scripts -->
   <script src="../i18n/strings-loader.js"></script>
   <script type="module">
-    import { initNavHeader, NAV_CONFIGS } from '../ui/components/nav-header.js';
+    import { initNavHeader, NAV_CONFIGS } from '../ui/components/navigation-bar.js';
 
     // Initialize default navigation (Admin Elections)
     await initNavHeader({

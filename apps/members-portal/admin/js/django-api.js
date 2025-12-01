@@ -8,7 +8,6 @@
 import { getFirebaseAuth } from '../../firebase/app.js';
 import { debug } from '../../js/utils/debug.js';
 import { validatePhone } from '../../js/utils/format.js';
-import { debug } from '../../js/utils/debug.js';
 
 const auth = getFirebaseAuth();
 
@@ -16,8 +15,10 @@ const auth = getFirebaseAuth();
 const DJANGO_API_BASE = 'https://starf.sosialistaflokkurinn.is';
 const TOKEN_FUNCTION_URL = 'https://europe-west2-ekklesia-prod-10-2025.cloudfunctions.net/get_django_token';
 
-// Cache for Django token (valid for session)
+// Cache for Django token with expiration
 let cachedToken = null;
+let tokenCacheTime = null;
+const TOKEN_CACHE_TTL_MS = 45 * 60 * 1000; // 45 minutes (Firebase tokens expire ~1 hour)
 
 /**
  * Get Django API token from Cloud Function
@@ -26,9 +27,16 @@ let cachedToken = null;
  * @throws {Error} If token retrieval fails
  */
 async function getDjangoToken() {
-  // Return cached token if available
-  if (cachedToken) {
-    return cachedToken;
+  // Return cached token if available and not expired
+  if (cachedToken && tokenCacheTime) {
+    const tokenAge = Date.now() - tokenCacheTime;
+    if (tokenAge < TOKEN_CACHE_TTL_MS) {
+      return cachedToken;
+    }
+    // Token expired, clear cache
+    debug.log('[Django API] Token cache expired, fetching new token');
+    cachedToken = null;
+    tokenCacheTime = null;
   }
 
   try {
@@ -56,6 +64,8 @@ async function getDjangoToken() {
 
     const data = await response.json();
     cachedToken = data.token;
+    tokenCacheTime = Date.now();
+    debug.log('[Django API] Token cached, expires in 45 minutes');
     return cachedToken;
 
   } catch (error) {
@@ -216,4 +226,5 @@ export function validateMemberData(data) {
  */
 export function clearTokenCache() {
   cachedToken = null;
+  tokenCacheTime = null;
 }

@@ -1,6 +1,6 @@
 # CSS Architecture
 
-**Last Updated**: 2025-11-05
+**Last Updated**: 2025-11-24
 **Pattern**: Component-based CSS with shared components
 **Methodology**: BEM (partially applied)
 
@@ -59,7 +59,7 @@ Components in `/styles/components/` are **reused by both member and admin portal
 | **Page Layout** | `page.css` | 2.9 KB | Member portal (6 pages) + Admin portal (6 pages) |
 | **Login** | `login.css` | 3.1 KB | Member portal login page |
 | **Events Test** | `events-test.css` | 2.6 KB | Member portal test page |
-| **Profile Edit** | `profile-edit.css` | 13.2 KB | Member portal profile page |
+| **Profile Edit** | `profile-edit.css` | 13.2 KB | Member & admin profile pages (mobile-responsive) |
 
 **Total shared**: 27.5 KB
 

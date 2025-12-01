@@ -1,6 +1,6 @@
 # Ekklesia Code Standards
 
-**Last Updated**: 2025-11-14
+**Last Updated**: 2025-11-22
 **Status**: ✅ Active - Master Index for All Code Standards
 **Purpose**: Unified reference for all coding conventions, style guides, and best practices
 
@@ -31,6 +31,7 @@ Our code standards prioritize:
 | **CSS** | Use BEM methodology | `.nav__link--active` |
 | **HTML** | Semantic elements | `<nav>`, `<main>`, `<article>` |
 | **JavaScript** | ES6+ modules | `import { R } from './strings-loader.js'` |
+| **Components** | Use `el()` helper | `el('div', 'card', {}, content)` |
 | **Python** | Type hints + docstrings | `def foo(x: str) -> int:` |
 | **i18n** | R.string pattern | `R.string.page_title` |
 | **Data Quality** | Always validate input | `validateKennitala(kt)` |
@@ -48,7 +49,9 @@ Our code standards prioritize:
 
 **Summary**:
 - Use canonical [BEM methodology](http://getbem.com/) (Block Element Modifier)
-- [CSS variables](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties) for colors, spacing, and sizing
+- [Design Tokens](../docs/standards/CSS_BEM_GUIDE.md) (3-layer architecture: Primitives, Semantic, Component)
+- **Semantic Layer**: Use `--color-text`, `--color-bg`, `--color-primary` (not raw hex values)
+- **Admin Palette**: Use `--color-admin-*` variables for admin interfaces
 - Utility classes with `.u-` prefix
 - Component-based file organization
 - No inline styles
@@ -164,7 +167,46 @@ function savePhoneNumbers(phoneNumbers, callback) {
 
 ---
 
-### 4. Python Standards
+### 4. Component Standards
+
+**Guide**: [Component Library Guide](../apps/members-portal/js/components/README.md)
+
+**Summary**:
+- Use `el()` helper for DOM creation (no `document.createElement`)
+- Functional components with factory pattern (`createButton`, `createCard`)
+- Return component API `{ element, update, destroy }`
+- Use `R.string` for all text content
+- BEM naming for classes
+
+**Key Conventions**:
+```javascript
+// ✅ Good: Component Factory Pattern
+import { el } from '../utils/dom.js';
+import { R } from '/i18n/strings-loader.js';
+
+export function createWelcomeCard({ username }) {
+  const title = el('h2', 'card__title', {}, R.string.welcome_title);
+  const text = el('p', 'card__text', {}, 
+    R.format(R.string.welcome_message, username)
+  );
+
+  const card = el('div', 'card card--welcome', {}, title, text);
+
+  return {
+    element: card,
+    update: (newUsername) => { /* ... */ },
+    destroy: () => card.remove()
+  };
+}
+```
+
+**Quick Links**:
+- [DOM Helper (`el()`)](../apps/members-portal/js/components/README.md#dom-helper)
+- [Component API Pattern](../apps/members-portal/js/components/README.md#component-api)
+
+---
+
+### 5. Python Standards
 
 **Guide**: [Python Style Guide](../docs/standards/PYTHON_GUIDE.md)
 
@@ -191,8 +233,8 @@ def normalize_kennitala(kennitala: str) -> Optional[str]:
         Normalized kennitala with hyphen, or None if invalid
 
     Example:
-        >>> normalize_kennitala("1234567890")
-        "123456-7890"
+        >>> normalize_kennitala("0103009999")
+        "010300-9999"  # Jan 3, 2000
     """
     if not kennitala:
         return None
@@ -230,9 +272,12 @@ def normalize_kennitala(kennitala):
 
 ---
 
-### 5. Internationalization (i18n)
+### 6. Internationalization (i18n)
 
-**Guide**: [i18n & R.string Guide](../docs/standards/I18N_GUIDE.md)
+**Guides**:
+- [i18n & R.string Guide](../docs/standards/I18N_GUIDE.md) - R.string pattern implementation
+- [i18n Architecture](standards/I18N_ARCHITECTURE.md) - System architecture
+- [Admin Elections i18n](standards/ADMIN_ELECTIONS_I18N.md) - Admin interface translation
 
 **Summary**:
 - [XML-based strings](https://developer.android.com/guide/topics/resources/string-resource) (Android R.string pattern)
@@ -264,9 +309,13 @@ document.getElementById('btn-save').textContent = 'Vista';
 - [String Format Placeholders](../docs/standards/I18N_GUIDE.md)
 - [Configuration Values](../docs/standards/I18N_GUIDE.md)
 
+**Tools**:
+- `scripts/find-unused-strings.py` - Audit string usage
+- `scripts/archive-unused-strings.py` - Clean up `strings.xml`
+
 ---
 
-### 6. Data Quality & UX
+### 7. Data Quality & UX
 
 **Guide**: [Data Quality & UX Guide](../docs/standards/DATA_QUALITY_UX.md)
 
@@ -314,7 +363,7 @@ async function saveEmail(email) {
 
 ---
 
-### 7. Documentation Standards
+### 8. Documentation Standards
 
 **Guide**: [Documentation Guide](../docs/standards/DOCUMENTATION_GUIDE.md)
 
@@ -355,7 +404,7 @@ function showStatusFeedback(statusElement, state, clearDelayMs = 2000) {
 
 ---
 
-### 8. Git Workflow
+### 9. Git Workflow
 
 **Guide**: [Git Workflow Guide](../docs/standards/GIT_WORKFLOW_GUIDE.md)
 
@@ -397,7 +446,7 @@ git commit -m "Fixed stuff"
 
 ---
 
-### 9. Quality & Testing
+### 10. Quality & Testing
 
 **Guide**: [Quality & Testing Guide](../docs/standards/QUALITY_TESTING_GUIDE.md)
 
@@ -488,7 +537,7 @@ npm run format:check
 Automatically runs before every commit:
 - [ESLint](https://eslint.org/) checks
 - [Prettier](https://prettier.io/) formatting
-- Kennitala/PII detection
+- Kennitala/PII detection (Optimized single-pass scan)
 - File size limits
 
 **Setup**:
@@ -496,7 +545,21 @@ Automatically runs before every commit:
 # Install pre-commit hooks
 npm install
 # Hooks are automatically installed via package.json
+# Custom optimized hooks are located in git-hooks/
 ```
+
+### Maintenance Scripts
+
+We provide several scripts to help maintain code quality and standards:
+
+**Code Health**:
+- `scripts/check-code-health.py`: Comprehensive health check (PII, patterns, file sizes)
+- `scripts/check-code-patterns.sh`: Fast grep-based pattern check
+
+**String Management**:
+- `scripts/find-unused-strings.py`: Find unused i18n strings
+- `scripts/archive-unused-strings.py`: Move unused strings to archive
+- `scripts/restore-strings.py`: Restore archived strings if needed
 
 ---
 

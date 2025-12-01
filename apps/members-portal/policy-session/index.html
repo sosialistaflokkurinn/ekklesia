@@ -6,26 +6,26 @@
   <title id="page-title">Policy Session - Loading...</title>
 
   <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2" sizes="any">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico?v=2">
   
   <!-- Global & Component Styles -->
-  <link rel="stylesheet" href="../styles/global.css?v=20251106-25">
-  <link rel="stylesheet" href="../styles/components/button.css?v=20251106-25">
-  <link rel="stylesheet" href="../styles/components/badge.css?v=20251106-25">
-  <link rel="stylesheet" href="../styles/components/modal.css?v=20251106-25">
-  <link rel="stylesheet" href="../styles/components/toast.css?v=20251106-25">
-  <link rel="stylesheet" href="../styles/components/nav.css?v=20251107-03">
-  <link rel="stylesheet" href="../styles/components/page.css?v=20251107-02">
-  <link rel="stylesheet" href="../styles/components/countdown-timer.css?v=20251106-25">
-  <link rel="stylesheet" href="../styles/components/voting-form.css?v=20251106-25">
+  <link rel="stylesheet" href="/styles/global.css?v=20251122-01">
+  <link rel="stylesheet" href="/styles/components/button.css?v=20251106-25">
+  <link rel="stylesheet" href="/styles/components/badge.css?v=20251106-25">
+  <link rel="stylesheet" href="/styles/components/modal.css?v=20251106-25">
+  <link rel="stylesheet" href="/styles/components/toast.css?v=20251106-25">
+  <link rel="stylesheet" href="/styles/components/nav.css?v=20251107-03">
+  <link rel="stylesheet" href="/styles/components/page.css?v=20251107-02">
+  <link rel="stylesheet" href="/styles/components/countdown-timer.css?v=20251106-25">
+  <link rel="stylesheet" href="/styles/components/voting-form.css?v=20251106-25">
   
-  <!-- Local Policy Session Styles -->
-  <link rel="stylesheet" href="./styles/amendment-form.css?v=20251106-26">
-  <link rel="stylesheet" href="./styles/amendment-vote-card.css?v=20251106-26">
-  <link rel="stylesheet" href="./styles/policy-item-vote-card.css?v=20251107-01">
-  <link rel="stylesheet" href="./styles/policy-results-display.css?v=20251106-26">
-  <link rel="stylesheet" href="./styles/policy-session.css?v=20251106-26">
+  <!-- Policy Session Components -->
+  <link rel="stylesheet" href="/styles/components/amendment-form.css?v=20251122-01">
+  <link rel="stylesheet" href="/styles/components/amendment-vote-card.css?v=20251122-01">
+  <link rel="stylesheet" href="/styles/components/policy-item-vote-card.css?v=20251122-01">
+  <link rel="stylesheet" href="/styles/components/policy-results-display.css?v=20251122-01">
+  <link rel="stylesheet" href="/styles/components/policy-session.css?v=20251122-01">
 </head>
 <body class="authenticated">
   <!-- Navigation component inserted here -->
@@ -140,11 +140,11 @@
   </div>
 
   <!-- JavaScript Modules -->
-  <script type="module" src="./js/policy-session.js?v=20251106-26"></script>
+  <script type="module" src="/policy-session/js/policy-session.js?v=20251106-26"></script>
 
   <!-- Initialize Navigation Component -->
   <script type="module">
-    import { initNavHeader, NAV_CONFIGS } from '../../ui/components/nav-header.js';
+    import { initNavHeader, NAV_CONFIGS } from '/ui/components/navigation-bar.js?v=20251121c';
     
     // Initialize navigation with appropriate config
     await initNavHeader(NAV_CONFIGS.policySession);

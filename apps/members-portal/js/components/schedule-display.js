@@ -25,7 +25,8 @@ import { formatDateIcelandic } from '../utils/format.js';
 import { createCountdownTimer } from './countdown-timer.js';
 import { electionState } from '../utils/election-state.js';
 import { debug } from '../utils/debug.js';
-import { R } from '/i18n/strings-loader.js';
+import { R } from '../../i18n/strings-loader.js';
+import { el } from '../utils/dom.js';
 
 /**
  * Status emoji mapping
@@ -51,68 +52,45 @@ export function createScheduleDisplay(options = {}) {
     showCountdown = true
   } = options;
 
-  // Create container
-  const container = document.createElement('div');
-  container.className = 'election-detail__info';
-
   // Status indicator (top of info section)
-  const statusContainer = document.createElement('div');
-  statusContainer.className = 'schedule-display__status';
+  const statusEmoji = el('span', 'schedule-display__status-emoji', {
+    role: 'img',
+    'aria-label': 'Status'
+  });
+  const statusText = el('span', 'schedule-display__status-text');
 
-  const statusEmoji = document.createElement('span');
-  statusEmoji.className = 'schedule-display__status-emoji';
-  statusEmoji.setAttribute('role', 'img');
-  statusEmoji.setAttribute('aria-label', 'Status');
-
-  const statusText = document.createElement('span');
-  statusText.className = 'schedule-display__status-text';
-
-  statusContainer.appendChild(statusEmoji);
-  statusContainer.appendChild(statusText);
+  const statusContainer = el('div', 'schedule-display__status', {},
+    statusEmoji,
+    statusText
+  );
 
   // Schedule grid
-  const scheduleGrid = document.createElement('div');
-  scheduleGrid.className = 'election-detail__schedule';
+  const startValue = el('span', 'election-detail__schedule-value');
+  const startItem = el('div', 'election-detail__schedule-item', {},
+    el('span', 'election-detail__schedule-label', {}, startLabel),
+    startValue
+  );
 
-  // Start time item
-  const startItem = document.createElement('div');
-  startItem.className = 'election-detail__schedule-item';
+  const endValue = el('span', 'election-detail__schedule-value');
+  const endItem = el('div', 'election-detail__schedule-item', {},
+    el('span', 'election-detail__schedule-label', {}, endLabel),
+    endValue
+  );
 
-  const startLabelEl = document.createElement('span');
-  startLabelEl.className = 'election-detail__schedule-label';
-  startLabelEl.textContent = startLabel;
-
-  const startValue = document.createElement('span');
-  startValue.className = 'election-detail__schedule-value';
-
-  startItem.appendChild(startLabelEl);
-  startItem.appendChild(startValue);
-
-  // End time item
-  const endItem = document.createElement('div');
-  endItem.className = 'election-detail__schedule-item';
-
-  const endLabelEl = document.createElement('span');
-  endLabelEl.className = 'election-detail__schedule-label';
-  endLabelEl.textContent = endLabel;
-
-  const endValue = document.createElement('span');
-  endValue.className = 'election-detail__schedule-value';
-
-  endItem.appendChild(endLabelEl);
-  endItem.appendChild(endValue);
-
-  scheduleGrid.appendChild(startItem);
-  scheduleGrid.appendChild(endItem);
+  const scheduleGrid = el('div', 'election-detail__schedule', {},
+    startItem,
+    endItem
+  );
 
   // Countdown container (shown only when active)
-  const countdownContainer = document.createElement('div');
-  countdownContainer.className = 'schedule-display__countdown u-hidden';
+  const countdownContainer = el('div', 'schedule-display__countdown u-hidden');
 
-  // Assemble
-  container.appendChild(statusContainer);
-  container.appendChild(scheduleGrid);
-  container.appendChild(countdownContainer);
+  // Create container
+  const container = el('div', 'election-detail__info', {},
+    statusContainer,
+    scheduleGrid,
+    countdownContainer
+  );
 
   // Countdown timer instance
   let countdownTimer = null;

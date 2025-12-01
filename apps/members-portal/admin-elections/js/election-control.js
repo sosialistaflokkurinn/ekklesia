@@ -1,17 +1,19 @@
 /**
  * Admin Election Control Page
  *
- * Allows administrators to control election schedule:
- * - Start election immediately
- * - Schedule election for specific time
+ * Allows administrators to:
+ * - View election status and vote count
  * - Close election manually
  * - Preview how members see the election
+ *
+ * Note: Elections are started/opened from the elections list page.
  */
 
 import { initAuthenticatedPage } from '../../js/page-init.js';
 import { debug } from '../../js/utils/debug.js';
 import { R } from '../i18n/strings-loader.js';
 import { getAdminElectionById } from '../../js/api/elections-api.js';
+import { closeElection } from './api/elections-admin-api.js';
 import { electionState } from '../../js/utils/election-state.js';
 import { createScheduleControl } from '../../js/components/schedule-control.js';
 import { createScheduleDisplay } from '../../js/components/schedule-display.js';
@@ -64,20 +66,17 @@ function displayElectionControl(election) {
   // Create schedule control component
   const scheduleControl = createScheduleControl({
     electionId: election.id,
-    onStarted: (state) => {
-      debug.log('Election started:', state);
-      // TODO: Call API to update election status
-      alert('Kosning byrjuð! ✅\n\n(Í production myndi þetta kalla á API)');
-    },
-    onClosed: (state) => {
+    voteCount: election.vote_count || election.total_votes || 0,
+    onClosed: async (state) => {
       debug.log('Election closed:', state);
-      // TODO: Call API to close election
-      alert('Kosningu lokað! 🔒\n\n(Í production myndi þetta kalla á API)');
-    },
-    onScheduled: (state) => {
-      debug.log('Election scheduled:', state);
-      // TODO: Call API to schedule election
-      alert('Kosning áætluð! 📅\n\n(Í production myndi þetta kalla á API)');
+      try {
+        await closeElection(election.id);
+        // Reload to sync state
+        await loadElection(election.id);
+      } catch (error) {
+        debug.error('Failed to close election:', error);
+        alert(R.string.error_generic || 'Villa kom upp við að loka kosningu');
+      }
     }
   });
 
@@ -129,12 +128,6 @@ async function init() {
 
     // Initialize authenticated page
     await initAuthenticatedPage();
-
-    // Update navigation
-    document.getElementById('nav-admin-dashboard').textContent = R.string.nav_admin_dashboard || 'Yfirlit';
-    document.getElementById('nav-admin-members').textContent = R.string.nav_admin_members || 'Félagsmenn';
-    document.getElementById('nav-back-to-member').textContent = R.string.nav_back_to_member || 'Til baka í félagasvæði';
-    document.getElementById('nav-logout').textContent = R.string.nav_logout;
 
     // Get election ID from URL
     const electionId = getElectionIdFromURL();

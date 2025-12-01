@@ -12,6 +12,8 @@
  * @module components/toast
  */
 
+import { el } from '../utils/dom.js';
+
 /**
  * Show a toast notification
  * 
@@ -32,27 +34,27 @@ export function showToast(message, type = 'success', options = {}) {
     dismissible = true
   } = options;
 
-  // Create toast element
-  const toast = document.createElement('div');
-  toast.className = `toast toast--${type}`;
-  toast.setAttribute('role', 'alert');
-  toast.setAttribute('aria-live', 'polite');
-
   // Create message span
-  const messageSpan = document.createElement('span');
-  messageSpan.className = 'toast__message';
-  messageSpan.textContent = message;
-  toast.appendChild(messageSpan);
+  const messageSpan = el('span', 'toast__message', {}, message);
 
-  // Add dismiss button if dismissible
+  // Create dismiss button if dismissible
+  let dismissBtn = null;
   if (dismissible) {
-    const dismissBtn = document.createElement('button');
-    dismissBtn.className = 'toast__dismiss';
-    dismissBtn.setAttribute('aria-label', 'Close');
-    dismissBtn.innerHTML = '×';
-    dismissBtn.onclick = () => hideToast(toast);
-    toast.appendChild(dismissBtn);
+    dismissBtn = el('button', 'toast__dismiss', {
+      'aria-label': 'Close',
+      onclick: () => hideToast(toast)
+    }, '×');
   }
+
+  // Determine ARIA role based on type
+  const role = type === 'error' ? 'alert' : 'status';
+  const ariaLive = type === 'error' ? 'assertive' : 'polite';
+
+  // Create toast element
+  const toast = el('div', `toast toast--${type}`, {
+    role: role,
+    'aria-live': ariaLive
+  }, messageSpan, dismissBtn);
 
   // Add to DOM
   document.body.appendChild(toast);

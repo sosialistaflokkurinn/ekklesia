@@ -98,3 +98,64 @@ export function validateElements(ids, context = 'page') {
     );
   }
 }
+
+/**
+ * Set text content if element exists (soft/optional version)
+ * Silently does nothing if element is not found.
+ *
+ * @param {string} id - Element ID
+ * @param {string} text - Text content
+ * @returns {boolean} True if element was found and updated
+ */
+export function setTextContentOptional(id, text) {
+  const element = document.getElementById(id);
+  if (element) {
+    element.textContent = text;
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Toggle CSS class on element safely
+ * Does nothing if element is not found.
+ *
+ * @param {string} id - Element ID
+ * @param {string} className - CSS class name
+ * @param {boolean} add - True to add class, false to remove
+ * @returns {boolean} True if element was found and updated
+ */
+export function toggleClassOptional(id, className, add) {
+  const element = document.getElementById(id);
+  if (element) {
+    if (add) {
+      element.classList.add(className);
+    } else {
+      element.classList.remove(className);
+    }
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Show element by removing u-hidden class
+ * Does nothing if element is not found.
+ *
+ * @param {string} id - Element ID
+ * @returns {boolean} True if element was found and shown
+ */
+export function showElement(id) {
+  return toggleClassOptional(id, 'u-hidden', false);
+}
+
+/**
+ * Hide element by adding u-hidden class
+ * Does nothing if element is not found.
+ *
+ * @param {string} id - Element ID
+ * @returns {boolean} True if element was found and hidden
+ */
+export function hideElement(id) {
+  return toggleClassOptional(id, 'u-hidden', true);
+}

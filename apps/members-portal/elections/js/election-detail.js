@@ -21,6 +21,7 @@ import { electionState } from '../../js/utils/election-state.js';
 import { createScheduleDisplay } from '../../js/components/schedule-display.js';
 import { createVotingForm } from '../../js/components/voting-form.js';
 import { createButton } from '../../js/components/button.js';
+import { setTextContentOptional, showElement, hideElement } from '../../ui/dom.js';
 
 // State
 let currentElection = null;
@@ -69,15 +70,16 @@ async function init() {
 
 /**
  * Update all static text elements with i18n strings
+ * Uses safe helpers that won't crash if elements are missing
  */
 function updateStaticText() {
-  document.getElementById('back-text').textContent = R.string.back_to_elections;
-  document.getElementById('loading-message').textContent = R.string.loading_election;
-  document.getElementById('error-message').textContent = R.string.error_load_election;
-  document.getElementById('results-title').textContent = R.string.results_title;
-  document.getElementById('results-total-votes-label').textContent = R.string.results_total_votes;
-  document.getElementById('voted-badge-text').textContent = R.string.election_already_voted;
-  document.getElementById('upcoming-message').textContent = R.string.election_upcoming_message;
+  setTextContentOptional('back-text', R.string.back_to_elections);
+  setTextContentOptional('loading-message', R.string.loading_election);
+  setTextContentOptional('error-message', R.string.error_load_election);
+  setTextContentOptional('results-title', R.string.results_title);
+  setTextContentOptional('results-total-votes-label', R.string.results_total_votes);
+  setTextContentOptional('voted-badge-text', R.string.election_already_voted);
+  setTextContentOptional('upcoming-message', R.string.election_upcoming_message);
 
   // Note: schedule labels and voting form labels are now handled by components
 }
@@ -116,14 +118,9 @@ async function loadElection(electionId) {
 
 /**
  * Display election information
+ * Note: Status is already normalized by API layer (published → active)
  */
 function displayElection(election) {
-  // Map backend status to frontend status
-  // Backend uses 'published', frontend expects 'active'
-  if (election.status === 'published') {
-    election.status = 'active';
-  }
-
   // Update header
   document.getElementById('election-title').textContent = election.title;
 
@@ -196,10 +193,12 @@ function displayVotingSection(election) {
     votingForm = null;
   }
 
-  // Create voting form component
+  // Create voting form
   votingForm = createVotingForm({
     question: election.question,
     answers: election.answers,
+    allowMultiple: election.voting_type === 'multi-choice',
+    maxSelections: election.max_selections,
     questionLabel: R.string.election_question_label,
     votingTitle: R.string.voting_select_answer,
     voteButtonText: R.string.btn_vote,
@@ -322,7 +321,10 @@ function showConfirmationModal(answerIds) {
 
   // Get selected answer objects
   const selectedAnswers = answerIds.map(id =>
-    currentElection.answers.find(a => a.id === id)
+    currentElection.answers.find(a => {
+      const aId = a.id || a.answer_id || (typeof a === 'string' ? a : a.text || a.answer_text);
+      return aId === id;
+    })
   ).filter(Boolean);
 
   if (selectedAnswers.length === 0) {
@@ -332,14 +334,15 @@ function showConfirmationModal(answerIds) {
   // Create selected answer display (single or multiple)
   let selectedAnswerHtml;
   if (selectedAnswers.length === 1) {
+    const answerText = selectedAnswers[0].text || selectedAnswers[0].answer_text || '';
     selectedAnswerHtml = `
       <p class="modal__selected-answer">
-        <strong>${R.string.your_answer}:</strong> ${escapeHTML(selectedAnswers[0].text)}
+        <strong>${R.string.your_answer}:</strong> ${escapeHTML(answerText)}
       </p>
     `;
   } else {
     const answersList = selectedAnswers.map(a =>
-      `<li>${escapeHTML(a.text)}</li>`
+      `<li>${escapeHTML(a.text || a.answer_text || '')}</li>`
     ).join('');
     selectedAnswerHtml = `
       <div class="modal__selected-answers">

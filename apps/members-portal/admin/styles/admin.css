@@ -11,19 +11,19 @@
 
 :root {
   /* Admin section/card colors */
-  --admin-card-bg: var(--color-white);          /* White background for all admin cards */
-  --admin-card-border: var(--color-border-light); /* Light gray border */
+  --admin-card-bg: var(--color-bg-card);          /* Cream light background */
+  --admin-card-border: var(--color-border);       /* Cream dark border */
 
   /* Admin text colors */
-  --admin-text-primary: var(--color-black);      /* Black text for main content */
-  --admin-text-secondary: #4a4a4a;               /* Dark gray for labels */
-  --admin-text-muted: var(--color-gray-500);     /* Muted gray for subtle text */
+  --admin-text-primary: var(--color-text);        /* Main text */
+  --admin-text-secondary: var(--color-text-muted); /* Secondary text */
+  --admin-text-muted: var(--color-text-muted);     /* Muted text */
   
   /* Admin navigation */
   --admin-nav-height: 60px;
-  --admin-nav-bg: var(--color-white);
-  --admin-nav-border: var(--color-border-light);
-  --admin-nav-link-hover: var(--color-gray-50);
+  --admin-nav-bg: var(--color-bg-card);           /* Cream light */
+  --admin-nav-border: var(--color-border);        /* Cream dark */
+  --admin-nav-link-hover: var(--color-bg-subtle); /* Subtle hover */
 }
 
 /* ========================================== */
@@ -40,7 +40,7 @@
   background: var(--admin-nav-bg);
   border-bottom: 1px solid var(--admin-nav-border);
   z-index: 1000;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-md);
 }
 
 .admin-nav__container {
@@ -49,8 +49,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 2rem;
-  gap: 2rem;
+  padding: 0 var(--spacing-xl);
+  gap: var(--spacing-xl);
 }
 
 .admin-nav__logo {
@@ -58,8 +58,8 @@
 }
 
 .admin-nav__logo a {
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-primary);
   text-decoration: none;
   transition: opacity 0.2s;
@@ -71,53 +71,54 @@
 
 .admin-nav__links {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
   flex: 1;
 }
 
 .admin-nav__links a {
-  padding: 0.5rem 1rem;
+  padding: var(--spacing-sm) var(--spacing-md);
   color: var(--color-text-primary);
   text-decoration: none;
-  border-radius: 4px;
-  font-weight: 500;
+  border-radius: var(--radius-sm);
+  font-weight: var(--font-weight-medium);
   transition: background 0.2s;
 }
 
-.admin-nav__links a:hover {
-  background: var(--admin-nav-link-hover);
+.admin-nav__link:hover {
+  background: var(--color-white-alpha-10);
+  color: var(--color-white);
 }
 
-.admin-nav__links a.active {
-  background: var(--color-primary);
-  color: white;
+.admin-nav__link.active {
+  background: var(--color-white-alpha-20);
+  color: var(--color-white);
 }
 
 .admin-nav__user {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--spacing-md);
 }
 
 .admin-nav__user #user-email {
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   color: var(--color-gray-600);
 }
 
 .admin-nav__user .role-indicator {
-  font-size: 0.75rem;
-  padding: 0.25rem 0.5rem;
+  font-size: var(--font-size-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
   background: var(--color-accent-gold);
   color: var(--color-gray-900);
   border-radius: 4px;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 /* Responsive */
 @media (max-width: 1220px) {
   .admin-nav__container {
-    padding: 0 1rem;
-    gap: 1rem;
+    padding: 0 var(--spacing-md);
+    gap: var(--spacing-md);
   }
 
   .admin-nav__links {
@@ -155,8 +156,8 @@
 /* ========================================== */
 
 body.admin {
-  /* Keep same white background as member portal */
-  background: #ffffff;
+  /* Use cream background consistent with member portal */
+  background: var(--color-cream);
   /* Override global.css flexbox centering (used for login page) */
   display: block;
   align-items: unset;
@@ -168,7 +169,7 @@ body.admin {
    No override needed - white background with dark text has good contrast */
 
 body.admin .members-count {
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--color-white-alpha-80);
 }
 
 /* ========================================== */
@@ -188,10 +189,10 @@ body.admin .members-count {
   background: var(--color-accent-gold);
   color: var(--color-gray-900);
   border-radius: var(--radius-sm);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--letter-spacing-wide);
 }
 
 .role-badge--developer {
@@ -217,7 +218,7 @@ body.admin .members-count {
 
 .sync-progress p {
   color: var(--color-gray-600);
-  font-size: 14px;
+  font-size: var(--font-size-sm);
 }
 
 /* Spinner Animation */
@@ -280,13 +281,13 @@ body.admin .members-count {
 .history-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: var(--font-size-sm);
 }
 
 .history-table th {
   background: var(--color-gray-50);
   color: var(--color-gray-700);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   text-align: left;
   padding: 12px 16px;
   border-bottom: 2px solid var(--color-border-medium);
@@ -307,7 +308,7 @@ body.admin .members-count {
   .history-table th,
   .history-table td {
     padding: 8px 12px;
-    font-size: 13px;
+    font-size: var(--font-size-xs);
   }
 }
 
@@ -319,10 +320,10 @@ body.admin .members-count {
   display: inline-block;
   padding: 4px 12px;
   border-radius: var(--radius-sm);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--letter-spacing-wide);
 }
 
 .status-badge.status-success {
@@ -351,7 +352,7 @@ body.admin .members-count {
 }
 
 .card--admin-welcome .u-text-muted {
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--color-white-alpha-80);
 }
 
 /* Fix h1 color in welcome card (override global.css) */
@@ -361,7 +362,7 @@ body.admin .members-count {
 
 /* Fix subtitle color in welcome card */
 .card--welcome .u-text-muted {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--color-white-alpha-90);
 }
 
 /* ========================================== */

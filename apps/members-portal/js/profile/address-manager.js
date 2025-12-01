@@ -8,13 +8,24 @@
  */
 
 import { R } from '../../i18n/strings-loader.js';
-import { getFirebaseFirestore } from '../../firebase/app.js';
+import { getFirebaseFirestore, httpsCallable } from '../../firebase/app.js';
 import { doc, updateDoc, deleteField } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+// Cloud Function for syncing profile updates to Django
+const updateMemberProfileFunction = httpsCallable('updatememberprofile', 'europe-west2');
 import { getCountriesSorted, getCountryFlag } from '../utils/countries.js';
 import { debug } from '../utils/debug.js';
 import { showToast } from '../components/toast.js';
 import { showStatus, createStatusIcon } from '../components/status.js';
 import { SearchableSelect } from '../components/searchable-select.js';
+import { AddressAutocomplete } from '../components/address-autocomplete.js';
+import { el } from '../utils/dom.js';
+
+// Cloud Function for Icelandic address validation (iceaddr)
+const validateAddressFunction = httpsCallable('validate_address', 'europe-west2');
+
+// Store autocomplete instances for cleanup
+const autocompleteInstances = new Map();
 
 /**
  * Expand collapsible section helper
@@ -68,6 +79,75 @@ export class AddressManager {
   }
 
   /**
+   * Validate Icelandic address using iceaddr Cloud Function
+   * Only validates if country is Iceland (IS) and street + number are filled
+   *
+   * @param {number} index - Address index to validate
+   * @param {HTMLElement} statusIcon - Status icon element for feedback
+   * @returns {Promise<Object|null>} Validated address data or null
+   */
+  async validateIcelandicAddress(index, statusIcon) {
+    const address = this.addresses[index];
+
+    // Only validate Icelandic addresses
+    if (address.country !== 'IS') {
+      debug.log('🌍 Skipping validation - not Icelandic address');
+      return null;
+    }
+
+    // Need street and number for validation
+    if (!address.street || !address.number) {
+      debug.log('ℹ️ Skipping validation - missing street or number');
+      return null;
+    }
+
+    try {
+      debug.log(`🔍 Validating Icelandic address: ${address.street} ${address.number}${address.letter || ''}`);
+
+      const result = await validateAddressFunction({
+        street: address.street,
+        number: parseInt(address.number, 10) || address.number,
+        letter: address.letter || '',
+        postal_code: address.postal_code ? parseInt(address.postal_code, 10) : undefined
+      });
+
+      if (result.data.valid && result.data.address) {
+        const validated = result.data.address;
+        debug.log('✅ Address validated:', validated);
+
+        // Auto-fill city if empty or different
+        if (!address.city || address.city !== validated.city) {
+          debug.log(`🏙️ Auto-filling city: "${address.city}" → "${validated.city}"`);
+          this.addresses[index].city = validated.city;
+        }
+
+        // Auto-fill postal code if empty
+        if (!address.postal_code && validated.postal_code) {
+          debug.log(`📮 Auto-filling postal code: → "${validated.postal_code}"`);
+          this.addresses[index].postal_code = String(validated.postal_code);
+        }
+
+        // Store GPS coordinates for future use (e.g., map display)
+        this.addresses[index].latitude = validated.latitude;
+        this.addresses[index].longitude = validated.longitude;
+        this.addresses[index].hnitnum = validated.hnitnum;
+
+        debug.log(`📍 GPS stored: ${validated.latitude}, ${validated.longitude}`);
+
+        return validated;
+      } else {
+        debug.warn('⚠️ Address not found in national registry:', result.data.error);
+        // Don't prevent saving - user might know their address better
+        return null;
+      }
+    } catch (error) {
+      debug.error('❌ Address validation failed:', error);
+      // Don't prevent saving on validation error
+      return null;
+    }
+  }
+
+  /**
    * Get current addresses
    */
   getAddresses() {
@@ -109,10 +189,13 @@ export class AddressManager {
     container.innerHTML = '';
 
     if (this.addresses.length === 0) {
-      const emptyMessage = document.createElement('p');
-      emptyMessage.textContent = R.string.profile_no_addresses;
-      emptyMessage.style.color = 'var(--color-gray-500, #6b7280)';
-      emptyMessage.style.fontStyle = 'italic';
+      const emptyMessage = el('p', '', {
+        style: {
+          color: 'var(--color-gray-500)',
+          fontStyle: 'italic'
+        }
+      }, R.string.profile_no_addresses);
+      
       container.appendChild(emptyMessage);
       this.updateSimpleDisplay();
       return;
@@ -121,31 +204,20 @@ export class AddressManager {
     const countries = getCountriesSorted();
 
     this.addresses.forEach((address, index) => {
-      const addressItem = document.createElement('div');
-      addressItem.className = 'address-item';
-      if (address.is_default) {
-        addressItem.classList.add('address-item--default');
-      }
-
       // Row 1: Country selector + Status + Default star + Delete button
-      const row1 = document.createElement('div');
-      row1.className = 'address-item__row address-item__row--controls';
-
       const statusIcon = createStatusIcon();
 
-      // Country selector
-      const countrySelector = document.createElement('select');
-      countrySelector.className = 'item-country-selector';
-      countries.forEach(country => {
-        const option = document.createElement('option');
-        option.value = country.code;
-        option.textContent = `${getCountryFlag(country.code)} ${country.nameIs}`;
-        option.setAttribute('data-search', `${country.nameIs} ${country.nameEn} ${country.code}`);
-        if (country.code === address.country) {
-          option.selected = true;
-        }
-        countrySelector.appendChild(option);
+      // Country selector options
+      const options = countries.map(country => {
+        return el('option', '', {
+          value: country.code,
+          'data-search': `${country.nameIs} ${country.nameEn} ${country.code}`,
+          selected: country.code === address.country
+        }, `${getCountryFlag(country.code)} ${country.nameIs}`);
       });
+
+      // Country selector
+      const countrySelector = el('select', 'item-country-selector', {}, ...options);
 
       // Country change listener
       countrySelector.addEventListener('change', async (e) => {
@@ -156,58 +228,108 @@ export class AddressManager {
           debug.log('✏️ Country changed, updating...');
           this.addresses[index].country = newCountry;
           showStatus(statusIcon, 'loading', { baseClass: 'profile-field__status' });
-          await this.save();
-          showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
-          this.render();
+          try {
+            await this.save();
+            showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
+            this.render();
+          } catch (error) {
+            debug.error('Failed to save address country:', error);
+            showStatus(statusIcon, 'error', { baseClass: 'profile-field__status' });
+            // Revert change
+            this.addresses[index].country = address.country;
+            this.render();
+          }
         }
       });
 
       // Default star icon
-      const defaultIcon = document.createElement('span');
-      defaultIcon.className = 'item-default-icon';
-      defaultIcon.textContent = address.is_default ? '⭐' : '☆';
-      defaultIcon.title = address.is_default
-        ? (R.string.profile_address_default_set)
-        : (R.string.profile_address_set_default);
-      defaultIcon.addEventListener('click', () => this.setDefault(index));
+      const defaultIcon = el('span', 'item-default-icon', {
+        title: address.is_default ? R.string.profile_address_default_set : R.string.profile_address_set_default,
+        onclick: () => this.setDefault(index)
+      }, address.is_default ? '⭐' : '☆');
 
       // Delete button
-      const deleteBtn = document.createElement('button');
-      deleteBtn.className = 'item-delete-btn';
-      deleteBtn.textContent = '🗑️';
-      deleteBtn.title = R.string.profile_address_delete;
-      deleteBtn.disabled = this.addresses.length === 1;
-      deleteBtn.addEventListener('click', () => this.delete(index));
+      const deleteBtn = el('button', 'item-delete-btn', {
+        title: R.string.profile_address_delete,
+        disabled: this.addresses.length === 1,
+        onclick: () => this.delete(index)
+      }, '🗑️');
 
-      row1.appendChild(countrySelector);
-      row1.appendChild(statusIcon);
-      row1.appendChild(defaultIcon);
-      row1.appendChild(deleteBtn);
+      const row1 = el('div', 'address-item__row address-item__row--controls', {},
+        countrySelector,
+        statusIcon,
+        defaultIcon,
+        deleteBtn
+      );
 
       // Row 2: Street input + Number + Letter
-      const row2 = document.createElement('div');
-      row2.className = 'address-item__row';
+      // Wrap street input for autocomplete dropdown positioning
+      const streetWrapper = el('div', 'address-input--street-wrapper', {});
+      const streetInput = el('input', 'address-input address-input--street', {
+        type: 'text',
+        value: address.street || '',
+        placeholder: R.string.label_street
+      });
+      streetWrapper.appendChild(streetInput);
 
-      const streetInput = document.createElement('input');
-      streetInput.type = 'text';
-      streetInput.className = 'address-input address-input--street';
-      streetInput.value = address.street || '';
-      streetInput.placeholder = R.string.label_street;
+      const numberInput = el('input', 'address-input address-input--number', {
+        type: 'text',
+        value: address.number || '',
+        placeholder: R.string.label_house_number,
+        style: { width: '80px' }
+      });
 
-      const numberInput = document.createElement('input');
-      numberInput.type = 'text';
-      numberInput.className = 'address-input address-input--number';
-      numberInput.value = address.number || '';
-      numberInput.placeholder = R.string.label_house_number;
-      numberInput.style.width = '80px';
+      const letterInput = el('input', 'address-input address-input--letter', {
+        type: 'text',
+        value: address.letter || '',
+        placeholder: R.string.label_house_letter,
+        style: { width: '60px' },
+        maxLength: 2
+      });
 
-      const letterInput = document.createElement('input');
-      letterInput.type = 'text';
-      letterInput.className = 'address-input address-input--letter';
-      letterInput.value = address.letter || '';
-      letterInput.placeholder = R.string.label_house_letter;
-      letterInput.style.width = '60px';
-      letterInput.maxLength = 2;
+      // Initialize autocomplete for Icelandic addresses only
+      if (address.country === 'IS') {
+        // Cleanup previous autocomplete instance if any
+        const prevInstance = autocompleteInstances.get(`street-${index}`);
+        if (prevInstance) {
+          prevInstance.destroy();
+        }
+
+        const autocomplete = new AddressAutocomplete(streetInput, {
+          onSelect: async (selectedAddress) => {
+            debug.log('🏠 Autocomplete selected:', selectedAddress.display);
+
+            // Auto-fill all address fields
+            this.addresses[index].street = selectedAddress.street;
+            this.addresses[index].number = String(selectedAddress.number || '');
+            this.addresses[index].letter = selectedAddress.letter || '';
+            this.addresses[index].postal_code = String(selectedAddress.postal_code || '');
+            this.addresses[index].city = selectedAddress.city || '';
+
+            // Store GPS silently (user doesn't see this)
+            this.addresses[index].latitude = selectedAddress.latitude;
+            this.addresses[index].longitude = selectedAddress.longitude;
+            this.addresses[index].hnitnum = selectedAddress.hnitnum;
+
+            debug.log(`📍 GPS stored: ${selectedAddress.latitude}, ${selectedAddress.longitude}`);
+
+            // Save and re-render to show filled fields
+            showStatus(statusIcon, 'loading', { baseClass: 'profile-field__status' });
+            try {
+              await this.save();
+              showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
+              this.render();
+              showToast(R.string.profile_address_validated || 'Address validated', 'success');
+            } catch (error) {
+              debug.error('Failed to save autocomplete selection:', error);
+              showStatus(statusIcon, 'error', { baseClass: 'profile-field__status' });
+            }
+          }
+        });
+
+        autocompleteInstances.set(`street-${index}`, autocomplete);
+        debug.log(`🔍 Autocomplete initialized for address ${index}`);
+      }
 
       streetInput.addEventListener('blur', async (e) => {
         const newStreet = e.target.value.trim();
@@ -217,8 +339,25 @@ export class AddressManager {
           debug.log('✏️ Street changed, updating...');
           this.addresses[index].street = newStreet;
           showStatus(statusIcon, 'loading', { baseClass: 'profile-field__status' });
-          await this.save();
-          showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
+          try {
+            // Validate Icelandic address if street and number are filled
+            const validated = await this.validateIcelandicAddress(index, statusIcon);
+            if (validated) {
+              // Re-render to show auto-filled fields
+              await this.save();
+              this.render();
+              showToast(R.string.profile_address_validated || 'Address validated', 'success');
+            } else {
+              await this.save();
+            }
+            showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
+          } catch (error) {
+            debug.error('Failed to save street:', error);
+            showStatus(statusIcon, 'error', { baseClass: 'profile-field__status' });
+            // Revert change
+            this.addresses[index].street = address.street;
+            e.target.value = address.street;
+          }
         } else {
           debug.log('ℹ️ No change, skipping save');
         }
@@ -232,8 +371,25 @@ export class AddressManager {
           debug.log('✏️ House number changed, updating...');
           this.addresses[index].number = newNumber;
           showStatus(statusIcon, 'loading', { baseClass: 'profile-field__status' });
-          await this.save();
-          showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
+          try {
+            // Validate Icelandic address if street and number are filled
+            const validated = await this.validateIcelandicAddress(index, statusIcon);
+            if (validated) {
+              // Re-render to show auto-filled fields
+              await this.save();
+              this.render();
+              showToast(R.string.profile_address_validated || 'Address validated', 'success');
+            } else {
+              await this.save();
+            }
+            showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
+          } catch (error) {
+            debug.error('Failed to save house number:', error);
+            showStatus(statusIcon, 'error', { baseClass: 'profile-field__status' });
+            // Revert change
+            this.addresses[index].number = address.number;
+            e.target.value = address.number;
+          }
         } else {
           debug.log('ℹ️ No change, skipping save');
         }
@@ -247,32 +403,48 @@ export class AddressManager {
           debug.log('✏️ House letter changed, updating...');
           this.addresses[index].letter = newLetter;
           showStatus(statusIcon, 'loading', { baseClass: 'profile-field__status' });
-          await this.save();
-          showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
+          try {
+            // Validate Icelandic address if street and number are filled
+            const validated = await this.validateIcelandicAddress(index, statusIcon);
+            if (validated) {
+              // Re-render to show auto-filled fields
+              await this.save();
+              this.render();
+              showToast(R.string.profile_address_validated || 'Address validated', 'success');
+            } else {
+              await this.save();
+            }
+            showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
+          } catch (error) {
+            debug.error('Failed to save house letter:', error);
+            showStatus(statusIcon, 'error', { baseClass: 'profile-field__status' });
+            // Revert change
+            this.addresses[index].letter = address.letter;
+            e.target.value = address.letter;
+          }
         } else {
           debug.log('ℹ️ No change, skipping save');
         }
       });
 
-      row2.appendChild(streetInput);
-      row2.appendChild(numberInput);
-      row2.appendChild(letterInput);
+      const row2 = el('div', 'address-item__row', {},
+        streetWrapper,
+        numberInput,
+        letterInput
+      );
 
       // Row 3: Postal code + City
-      const row3 = document.createElement('div');
-      row3.className = 'address-item__row';
+      const postalInput = el('input', 'address-input address-input--postal', {
+        type: 'text',
+        value: address.postal_code || '',
+        placeholder: R.string.label_postal_code
+      });
 
-      const postalInput = document.createElement('input');
-      postalInput.type = 'text';
-      postalInput.className = 'address-input address-input--postal';
-      postalInput.value = address.postal_code || '';
-      postalInput.placeholder = R.string.label_postal_code;
-
-      const cityInput = document.createElement('input');
-      cityInput.type = 'text';
-      cityInput.className = 'address-input address-input--city';
-      cityInput.value = address.city || '';
-      cityInput.placeholder = R.string.label_city;
+      const cityInput = el('input', 'address-input address-input--city', {
+        type: 'text',
+        value: address.city || '',
+        placeholder: R.string.label_city
+      });
 
       postalInput.addEventListener('blur', async (e) => {
         const newPostal = e.target.value.trim();
@@ -282,8 +454,16 @@ export class AddressManager {
           debug.log('✏️ Postal code changed, updating...');
           this.addresses[index].postal_code = newPostal;
           showStatus(statusIcon, 'loading', { baseClass: 'profile-field__status' });
-          await this.save();
-          showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
+          try {
+            await this.save();
+            showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
+          } catch (error) {
+            debug.error('Failed to save postal code:', error);
+            showStatus(statusIcon, 'error', { baseClass: 'profile-field__status' });
+            // Revert change
+            this.addresses[index].postal_code = address.postal_code;
+            e.target.value = address.postal_code;
+          }
         } else {
           debug.log('ℹ️ No change, skipping save');
         }
@@ -297,20 +477,32 @@ export class AddressManager {
           debug.log('✏️ City changed, updating...');
           this.addresses[index].city = newCity;
           showStatus(statusIcon, 'loading', { baseClass: 'profile-field__status' });
-          await this.save();
-          showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
+          try {
+            await this.save();
+            showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
+          } catch (error) {
+            debug.error('Failed to save city:', error);
+            showStatus(statusIcon, 'error', { baseClass: 'profile-field__status' });
+            // Revert change
+            this.addresses[index].city = address.city;
+            e.target.value = address.city;
+          }
         } else {
           debug.log('ℹ️ No change, skipping save');
         }
       });
 
-      row3.appendChild(postalInput);
-      row3.appendChild(cityInput);
+      const row3 = el('div', 'address-item__row', {},
+        postalInput,
+        cityInput
+      );
 
       // Assemble
-      addressItem.appendChild(row1);
-      addressItem.appendChild(row2);
-      addressItem.appendChild(row3);
+      const addressItem = el('div', `address-item${address.is_default ? ' address-item--default' : ''}`, {},
+        row1,
+        row2,
+        row3
+      );
 
       container.appendChild(addressItem);
 
@@ -451,6 +643,21 @@ export class AddressManager {
       debug.log('✅ Addresses saved successfully to Firestore');
       debug.log('🗑️ Old address field deleted from root level');
 
+      // Sync to Django via Cloud Function (non-blocking)
+      try {
+        debug.log('🔄 Syncing addresses to Django...');
+        const syncResult = await updateMemberProfileFunction({
+          kennitala: this.currentUserData.kennitala,
+          updates: {
+            addresses: this.addresses
+          }
+        });
+        debug.log('✅ Django sync completed:', syncResult.data);
+      } catch (syncError) {
+        // Log but don't fail - Firestore save already succeeded
+        debug.warn('⚠️ Django sync failed (Firestore save succeeded):', syncError.message);
+      }
+
       if (statusIcon) {
         statusIcon.className = 'profile-field__status profile-field__status--success';
         debug.log('✓ Showing success checkmark');
@@ -525,6 +732,16 @@ export class AddressManager {
     const label = document.getElementById('label-addresses');
     if (label) {
       label.addEventListener('click', () => this.toggleSection());
+    }
+
+    // Ensure section starts collapsed (set inline style for toggle logic)
+    const section = document.getElementById('addresses-section');
+    const simpleDisplay = document.getElementById('value-address-simple');
+    if (section) {
+      section.style.display = 'none';
+    }
+    if (simpleDisplay) {
+      simpleDisplay.style.display = 'block';
     }
   }
 }

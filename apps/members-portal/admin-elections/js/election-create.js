@@ -10,6 +10,7 @@ import { debug } from '../../js/utils/debug.js';
 import { getAdminElectionById } from '../../js/api/elections-api.js';
 import { formatDateTime, formatDateOnly, formatTimeInput } from './date-utils.js';
 import { showModal } from '../../js/components/modal.js';
+import { el } from '../../js/utils/dom.js';
 
 // Refactored modules (Phase 2)
 import { validateBasicInfo, validateAnswerOptions, validateSchedule, validateStep } from './validation/election-validation.js';
@@ -28,7 +29,7 @@ const DOM_INIT_DELAY_MS = 100; // Time for wizard to initialize DOM elements
 // ============================================
 
 let currentStep = 1;
-const totalSteps = 4;
+const totalSteps = 3;  // Reduced: Basic Info, Answers, Review (Schedule moved to "Open" action)
 let isEditMode = false;
 let editingElectionId = null;
 let editingElectionStatus = 'draft'; // Track status of election being edited
@@ -133,37 +134,26 @@ function initWizard(electionId) {
   document.getElementById('next-btn').addEventListener('click', handleNext);
   document.getElementById('prev-btn').addEventListener('click', handlePrev);
 
-  // Form submission
+  // Form submission - only draft creation from wizard
+  // (Opening election is done from elections list)
   document.getElementById('create-draft-btn').addEventListener('click', () => handleSubmit('draft'));
-  document.getElementById('create-open-btn').addEventListener('click', () => handleSubmit('open'));
 
   // Voting type change
   document.querySelectorAll('input[name="voting_type"]').forEach(radio => {
     radio.addEventListener('change', handleVotingTypeChange);
   });
 
-  // Start timing change
-  document.querySelectorAll('input[name="start_timing"]').forEach(radio => {
-    radio.addEventListener('change', handleStartTimingChange);
-  });
-
   // Add answer button
   document.getElementById('add-answer-btn').addEventListener('click', addAnswerOption);
 
-  // Duration buttons
-  document.querySelectorAll('.duration-btn').forEach(btn => {
-    btn.addEventListener('click', handleDurationClick);
-  });
-
-  // Manual end time toggle
-  document.getElementById('use-manual-end-time').addEventListener('change', (e) => {
-    document.getElementById('manual-end-time-group').style.display = e.target.checked ? 'block' : 'none';
-    document.getElementById('custom-duration-group').style.display = 'none';
-    document.querySelector('.duration-btn.active')?.classList.remove('active');
-  });
+  // Note: Schedule-related event listeners removed - schedule is now configured when opening election
 
   // Update progress on form changes
   document.getElementById('election-wizard-form').addEventListener('input', updateFormData);
+
+  // Initialize first step display
+  showStep(1);
+  debug.log('[Create Election] Wizard initialized, showing step 1');
 }
 
 /**
@@ -333,14 +323,12 @@ async function loadElectionForEdit(electionId) {
       // Add warning message
       const step3Container = document.querySelector('.wizard-step[data-step="3"]');
       if (step3Container && !step3Container.querySelector('.edit-restriction-warning')) {
-        const warning = document.createElement('div');
-        warning.className = 'alert alert-warning edit-restriction-warning';
-        warning.style.marginBottom = '1rem';
         const statusText = electionStatus === 'published' ? R.string.status_open : R.string.status_closed;
-        warning.innerHTML = `
-          <strong>${R.string.edit_restriction_title}</strong><br>
-          ${R.string.edit_restriction_message.replace('%s', statusText)}
-        `;
+        const warning = el('div', 'alert alert-warning edit-restriction-warning', { style: 'margin-bottom: 1rem;' },
+          el('strong', '', {}, R.string.edit_restriction_title),
+          el('br'),
+          R.string.edit_restriction_message.replace('%s', statusText)
+        );
         step3Container.insertBefore(warning, step3Container.firstChild);
       }
     }
@@ -408,15 +396,17 @@ function handlePrev() {
 }
 
 function showStep(step) {
-  // Hide all steps
+  // Hide all steps - use classList for reliability
   document.querySelectorAll('.wizard-content').forEach(content => {
-    content.style.display = 'none';
+    content.classList.add('hidden');
+    content.style.display = '';  // Clear inline style
   });
 
-  // Show current step
+  // Show current step - remove hidden class
   const currentContent = document.querySelector(`.wizard-content[data-step="${step}"]`);
   if (currentContent) {
-    currentContent.style.display = 'block';
+    currentContent.classList.remove('hidden');
+    currentContent.style.display = '';  // Clear inline style, let CSS handle it
   }
 
   // Update progress indicators
@@ -429,22 +419,22 @@ function showStep(step) {
     }
   });
 
-  // Update navigation buttons
+  // Update navigation buttons - use classList for reliability
   const prevBtn = document.getElementById('prev-btn');
   const nextBtn = document.getElementById('next-btn');
   const createDraftBtn = document.getElementById('create-draft-btn');
-  const createOpenBtn = document.getElementById('create-open-btn');
 
-  prevBtn.style.display = step > 1 ? 'block' : 'none';
-  nextBtn.style.display = step < totalSteps ? 'block' : 'none';
-  createDraftBtn.style.display = step === totalSteps ? 'block' : 'none';
-  
-  // "Vista og opna" button: Show in create mode, hide in edit mode
-  if (step === totalSteps && !isEditMode) {
-    createOpenBtn.style.display = 'block';
-  } else {
-    createOpenBtn.style.display = 'none';
-  }
+  // Previous button: show on steps 2+
+  prevBtn.classList.toggle('hidden', step <= 1);
+  prevBtn.style.display = '';
+
+  // Next button: show on steps 1-2 (not on final review step)
+  nextBtn.classList.toggle('hidden', step >= totalSteps);
+  nextBtn.style.display = '';
+
+  // Create draft button: show on final step (step 3)
+  createDraftBtn.classList.toggle('hidden', step !== totalSteps);
+  createDraftBtn.style.display = '';
 
   // Update review if on last step
   if (step === totalSteps) {
@@ -462,11 +452,11 @@ function showStep(step) {
  * @returns {boolean} True if validation passes
  */
 function validateCurrentStep() {
-  if (currentStep === 4) {
-    return true; // Review step, no validation
+  if (currentStep === 3) {
+    return true; // Review step (step 3), no validation
   }
-  
-  // Use imported validation module
+
+  // Use imported validation module - only steps 1 and 2 need validation
   return validateStep(currentStep);
 }
 
@@ -502,22 +492,21 @@ function addAnswerOption() {
     return;
   }
 
-  const answerItem = document.createElement('div');
-  answerItem.className = 'answer-item';
-  answerItem.innerHTML = `
-    <span class="answer-item__drag-handle">⋮⋮</span>
-    <input 
-      type="text" 
-      class="answer-item__input form-control" 
-      placeholder="${R.format(R.string.placeholder_answer, answerCount + 1)}"
-      maxlength="200"
-      required
-    >
-    <button type="button" class="answer-item__remove-btn">${R.string.btn_remove_answer}</button>
-  `;
+  const removeBtn = el('button', 'answer-item__remove-btn', { type: 'button' }, R.string.btn_remove_answer);
+  
+  const answerItem = el('div', 'answer-item', {},
+    el('span', 'answer-item__drag-handle', {}, '⋮⋮'),
+    el('input', 'answer-item__input form-control', {
+      type: 'text',
+      placeholder: R.format(R.string.placeholder_answer, answerCount + 1),
+      maxlength: '200',
+      required: true
+    }),
+    removeBtn
+  );
 
   // Remove button handler
-  answerItem.querySelector('.answer-item__remove-btn').addEventListener('click', () => {
+  removeBtn.addEventListener('click', () => {
     const answerCount = container.querySelectorAll('.answer-item').length;
     if (answerCount <= 2) {
       alert(R.string.validation_min_answers_alert);
@@ -544,12 +533,12 @@ function updateAnswerPlaceholders() {
 
 function handleVotingTypeChange(e) {
   const maxSelectionsGroup = document.getElementById('max-selections-group');
-  maxSelectionsGroup.style.display = e.target.value === 'multi-choice' ? 'block' : 'none';
+  maxSelectionsGroup.classList.toggle('hidden', e.target.value !== 'multi-choice');
 }
 
 function handleStartTimingChange(e) {
   const scheduledStartGroup = document.getElementById('scheduled-start-group');
-  scheduledStartGroup.style.display = e.target.value === 'scheduled' ? 'block' : 'none';
+  scheduledStartGroup.classList.toggle('hidden', e.target.value !== 'scheduled');
 }
 
 function handleDurationClick(e) {
@@ -565,16 +554,16 @@ function handleDurationClick(e) {
   const manualEndTimeCheckbox = document.getElementById('use-manual-end-time');
 
   if (minutes === 'custom') {
-    customDurationGroup.style.display = 'block';
+    customDurationGroup.classList.remove('hidden');
     durationInput.value = '';
   } else {
-    customDurationGroup.style.display = 'none';
+    customDurationGroup.classList.add('hidden');
     durationInput.value = minutes;
   }
 
   // Uncheck manual end time
   manualEndTimeCheckbox.checked = false;
-  document.getElementById('manual-end-time-group').style.display = 'none';
+  document.getElementById('manual-end-time-group').classList.add('hidden');
 }
 
 // Handle custom duration input
@@ -618,40 +607,15 @@ function updateReview() {
 
   if (formData.answers && formData.answers.length > 0) {
     formData.answers.forEach(answer => {
-      const li = document.createElement('li');
-      li.textContent = answer; // textContent escapes HTML automatically
-      reviewAnswersList.appendChild(li);
+      reviewAnswersList.appendChild(el('li', '', {}, answer));
     });
   } else {
-    const li = document.createElement('li');
-    const em = document.createElement('em');
-    em.textContent = R.string.review_no_answers;
-    li.appendChild(em);
-    reviewAnswersList.appendChild(li);
+    reviewAnswersList.appendChild(
+      el('li', '', {}, el('em', '', {}, R.string.review_no_answers))
+    );
   }
 
-  // Schedule
-  const startTimeText = formData.start_timing === 'immediate' 
-    ? R.string.start_immediate 
-    : formatDateTime(formData.scheduled_start);
-  document.getElementById('review-start-time').textContent = startTimeText;
-
-  let durationText = '';
-  let endTimeText = '';
-
-  if (formData.scheduled_end) {
-    durationText = R.string.review_duration_custom;
-    endTimeText = formatDateTime(formData.scheduled_end);
-  } else {
-    durationText = formatDuration(formData.duration_minutes);
-    // Calculate end time
-    const startTime = formData.scheduled_start ? new Date(formData.scheduled_start) : new Date();
-    const endTime = new Date(startTime.getTime() + formData.duration_minutes * 60000);
-    endTimeText = formatDateTime(endTime.toISOString());
-  }
-
-  document.getElementById('review-duration').textContent = durationText;
-  document.getElementById('review-end-time').textContent = endTimeText;
+  // Note: Schedule section removed - now configured when opening election from list
 }
 
 // Date formatting is now handled by date-utils.js module
@@ -674,28 +638,6 @@ function formatDuration(minutes) {
 // ============================================
 // SUBMISSION
 // ============================================
-
-/**
- * Retry helper for fetch requests
- * Retries network errors once before failing
- */
-async function fetchWithRetry(url, options, retries = 1) {
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    try {
-      const response = await fetch(url, options);
-      return response;
-    } catch (error) {
-      // Only retry on network errors, not on abort
-      if (error.name === 'AbortError' || attempt === retries) {
-        throw error;
-      }
-      
-      console.warn(`[Election Create] Fetch attempt ${attempt + 1} failed, retrying...`, error.message);
-      // Wait 1 second before retry
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-  }
-}
 
 /**
  * Handle form submission (create or update election)

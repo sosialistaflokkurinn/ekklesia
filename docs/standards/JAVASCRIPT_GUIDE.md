@@ -90,6 +90,8 @@ Use arrow functions for callbacks, regular functions for top-level:
 ```javascript
 // ✅ Good: Regular function for top-level
 async function savePhoneNumbers(phoneNumbers) {
+  const { getFirebaseAuth } = await import('../firebase/auth.js');
+  const auth = getFirebaseAuth();
   const user = auth.currentUser;
   // ...
 }
@@ -412,9 +414,24 @@ const elements = document.getElementsByTagName('div');
 
 ### Creating Elements
 
-Create elements programmatically:
+Use the `el` helper from `js/utils/dom.js` to reduce verbosity and improve readability:
 
-✅ **Good**:
+✅ **Preferred (using helper)**:
+```javascript
+import { el } from '../utils/dom.js';
+
+const btn = el('button', 'btn btn--primary', {
+  type: 'button',
+  onclick: handleClick
+}, 'Click Me');
+
+const card = el('div', 'card', {},
+  el('h2', 'card__title', {}, 'Title'),
+  el('p', 'card__text', {}, 'Content')
+);
+```
+
+✅ **Low-level (document.createElement)**:
 ```javascript
 /**
  * Create status icon element
@@ -426,6 +443,7 @@ function createStatusIcon() {
   statusIcon.className = 'profile-field__status';
   return statusIcon;
 }
+```
 
 /**
  * Create phone number input
@@ -864,7 +882,7 @@ describe('isValidEmail', () => {
 
 describe('validateKennitala', () => {
   test('validates correct kennitala', () => {
-    expect(validateKennitala('1234567890')).toBe(true);
+    expect(validateKennitala('0103009999')).toBe(true); // Jan 3, 2000
   });
 
   test('rejects invalid kennitala', () => {

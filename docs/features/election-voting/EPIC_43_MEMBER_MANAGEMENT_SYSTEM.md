@@ -62,7 +62,7 @@ Epic #43 búr til **nýtt member management kerfi** sem synkar full member data 
 │                                                               │
 │  ┌────────────────────────────────────────────────────────┐  │
 │  │ Cloud Function: syncMembers                            │  │
-│  │ - Triggered by admin button (callable function)        │  │
+│  │ - Triggered by admin button (HTTP trigger)             │  │
 │  │ - Fetch ALL member data from Django                    │  │
 │  │ - Store in Firestore (batch write)                     │  │
 │  │ - Log sync history                                     │  │

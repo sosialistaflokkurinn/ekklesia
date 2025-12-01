@@ -1,3 +1,19 @@
+---
+title: "Firebase App Check for Cloud Run Services: A Comprehensive Analysis"
+created: 2025-10-21
+updated: 2025-11-24
+status: active
+category: security
+tags: [firebase, app-check, security, recaptcha, cloud-run, authentication]
+related:
+  - ../policies/VOTING_ANONYMITY_MODEL.md
+  - ../../infrastructure/CLOUD_RUN_SERVICES.md
+  - ../../features/authentication/KENNI_IS_OAUTH.md
+author: Security Team
+reviewers: [security-lead, infrastructure-team]
+next_review: 2026-05-21
+---
+
 # Firebase App Check for Cloud Run Services: A Comprehensive Analysis
 
 **Document Type**: Academic Research Paper & Implementation Guide
@@ -360,6 +376,107 @@ The Ekklesia platform consists of three microservices:
 3. ✅ Token automatically refreshed (1-hour validity)
 4. ✅ CORS configured to accept App Check header
 5. ⏸️ Server-side validation (future work - monitoring mode for now)
+
+### 3.4 Complete Security Flow Diagram
+
+This Mermaid sequence diagram shows the complete end-to-end authentication and authorization flow with Firebase App Check integration:
+
+```mermaid
+sequenceDiagram
+    participant User as User<br/>(Browser)
+    participant App as Client App<br/>(ekklesia.web.app)
+    participant AppCheck as Firebase App Check
+    participant reCAPTCHA as reCAPTCHA Enterprise<br/>(Bot Detection)
+    participant Kenni as Kenni.is<br/>(Government eID)
+    participant HandleAuth as handleKenniAuth<br/>(Cloud Function)
+    participant Firebase as Firebase Auth
+    participant CloudRun as Cloud Run Service
+
+    Note over User,CloudRun: Phase 1: Initialize App Check (Page Load)
+    User->>App: Visit portal
+    App->>AppCheck: Initialize App Check<br/>(auth.js:39)
+    AppCheck->>reCAPTCHA: Request bot assessment
+    reCAPTCHA->>reCAPTCHA: Analyze:<br/>- IP reputation<br/>- Browser fingerprint<br/>- Behavioral signals
+    reCAPTCHA->>AppCheck: Return score (0.0-1.0)
+    AppCheck->>App: Issue App Check token<br/>(JWT, 1-hour validity)
+
+    Note over User,CloudRun: Phase 2: User Authentication (Kenni.is OAuth)
+    User->>App: Click "Login with Kenni.is"
+    App->>App: Generate PKCE<br/>code_verifier + challenge
+    App->>Kenni: Redirect to OAuth<br/>(PKCE challenge + state)
+    Kenni->>User: Request kennitala credentials
+    User->>Kenni: Enter kennitala + password
+    Kenni->>Kenni: Verify against<br/>Þjóðskrá (National Registry)
+    Kenni->>App: Callback with auth code
+
+    Note over User,CloudRun: Phase 3: Token Exchange (Server-Side)
+    App->>AppCheck: Get current App Check token
+    AppCheck->>App: Return valid token
+    App->>HandleAuth: POST /handleKenniAuth<br/>Headers:<br/>  X-Firebase-AppCheck: <JWT><br/>Body: {code, verifier, state}
+
+    HandleAuth->>HandleAuth: Verify CORS<br/>(allow App Check header)
+    HandleAuth->>AppCheck: [Optional] Verify App Check token
+    AppCheck->>HandleAuth: Token valid (or monitoring mode)
+
+    HandleAuth->>Kenni: Exchange auth code<br/>(code + verifier)
+    Kenni->>HandleAuth: Return ID token + profile
+    HandleAuth->>HandleAuth: Extract kennitala<br/>from ID token
+    HandleAuth->>HandleAuth: Verify membership<br/>(Django API check)
+
+    HandleAuth->>Firebase: Create/update user<br/>(kennitala as UID)
+    Firebase->>HandleAuth: User record created
+    HandleAuth->>Firebase: Issue custom token<br/>(with custom claims)
+    Firebase->>HandleAuth: Return custom token
+
+    HandleAuth->>App: 200 OK<br/>{firebaseToken: "..."}
+
+    Note over User,CloudRun: Phase 4: Session Establishment
+    App->>Firebase: Sign in with custom token
+    Firebase->>App: Session established<br/>(Firebase JWT)
+    App->>User: Redirect to portal dashboard
+
+    Note over User,CloudRun: Phase 5: API Requests (Ongoing)
+    User->>App: Access protected resource
+    App->>CloudRun: API call<br/>Authorization: Bearer <Firebase JWT>
+    CloudRun->>Firebase: Verify Firebase JWT
+    Firebase->>CloudRun: Token valid + user claims
+    CloudRun->>App: Protected resource
+    App->>User: Display content
+```
+
+**Key Security Layers**:
+
+1. **App Check Token** (Layer 1 - App Legitimacy)
+   - Proves request originates from legitimate web app
+   - Issued by Firebase App Check after reCAPTCHA assessment
+   - 1-hour validity with auto-refresh
+   - Sent as `X-Firebase-AppCheck` header
+
+2. **reCAPTCHA Enterprise** (Layer 2 - Bot Detection)
+   - Invisible reCAPTCHA v3 (no user interaction)
+   - Returns risk score 0.0 (bot) to 1.0 (human)
+   - Free tier: 10,000 assessments/month
+   - Analyzes IP, browser fingerprint, behavioral signals
+
+3. **Kenni.is OAuth with PKCE** (Layer 3 - User Identity)
+   - Government-backed eID authentication
+   - PKCE prevents authorization code interception
+   - Verifies against Þjóðskrá (Icelandic National Registry)
+   - Returns verified kennitala (personal ID)
+
+4. **Firebase Custom Token** (Layer 4 - Session Management)
+   - Short-lived JWT with custom claims
+   - Includes user roles and permissions
+   - Auto-refreshed by Firebase SDK
+   - Used for all subsequent API calls
+
+5. **Cloud Run Authorization** (Layer 5 - Resource Access)
+   - Verifies Firebase JWT on every request
+   - Enforces role-based access control (RBAC)
+   - Checks membership status before serving data
+   - Anonymous ballots prevent vote tracking
+
+**Monitoring Mode**: Currently, App Check tokens are sent but not enforced on the server side. The backend logs App Check headers for monitoring but does not reject requests with invalid/missing tokens. This allows gradual rollout and testing without breaking existing functionality.
 
 ---
 

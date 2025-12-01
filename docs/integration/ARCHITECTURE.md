@@ -1,7 +1,16 @@
 # System Architecture
 
-**Status**: Production  
-**Last Updated**: 2025-11-05
+**Status**: Production
+**Last Updated**: 2025-11-25
+
+> ⚠️ **SYNC ARCHITECTURE UPDATE (2025-11-25)**
+>
+> The bi-directional sync has been **simplified to real-time**:
+> - **Deleted**: `bidirectional_sync`, `track_member_changes`, `sync_queue` collection
+> - **New**: `sync_from_django` (instant Django → Firestore webhook)
+> - **Updated**: `updatememberprofile` (instant Firestore → Django sync)
+>
+> See [CLOUD_RUN_SERVICES.md](../infrastructure/CLOUD_RUN_SERVICES.md) for current architecture.
 
 ## 🎯 Overview
 
@@ -10,7 +19,7 @@ The Ekklesia system consists of two separate systems working together:
 1. **Django Backend** - Legacy membership system with PostgreSQL
 2. **Ekklesia Portal** - Modern Firebase/GCP application
 
-The systems are integrated via **bi-directional sync** that keeps data synchronized between them.
+The systems are integrated via **real-time bidirectional sync** (no queues, instant updates).
 
 ## 🏛️ System Components
 

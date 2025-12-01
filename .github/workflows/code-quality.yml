@@ -25,10 +25,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run code pattern checks
+      - name: Check Code Patterns
         run: |
-          chmod +x scripts/check-code-patterns.sh
-          ./scripts/check-code-patterns.sh apps/members-portal/js/
+          chmod +x scripts/maintenance/check-code-patterns.sh
+          ./scripts/maintenance/check-code-patterns.sh apps/members-portal/js/
         continue-on-error: true
 
       - name: Summary

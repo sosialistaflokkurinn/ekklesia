@@ -1,3 +1,6 @@
+import { el } from '../utils/dom.js';
+import { R } from '../i18n/strings-loader.js';
+
 /**
  * Loading State Component
  *
@@ -15,19 +18,13 @@
  * @param {string} size - Spinner size ('sm', 'md', 'lg')
  * @returns {Object} Component API with {element, setMessage, destroy}
  */
-export function createLoadingState(message = 'Loading...', size = 'md') {
-  const container = document.createElement('div');
-  container.className = 'loading-state';
-
-  const spinner = document.createElement('div');
-  spinner.className = `spinner${size !== 'md' ? ' spinner--' + size : ''}`;
-
-  const text = document.createElement('p');
-  text.className = 'loading-state__text';
-  text.textContent = message;
-
-  container.appendChild(spinner);
-  container.appendChild(text);
+export function createLoadingState(message = R.string.loading || 'Loading...', size = 'md') {
+  const text = el('p', 'loading-state__text', {}, message);
+  
+  const container = el('div', 'loading-state', {},
+    el('div', `spinner${size !== 'md' ? ' spinner--' + size : ''}`),
+    text
+  );
 
   // Return component API
   return {
@@ -47,7 +44,7 @@ export function createLoadingState(message = 'Loading...', size = 'md') {
  * @param {HTMLElement} container - Target container
  * @param {string} message - Loading message
  */
-export function showLoadingIn(container, message = 'Loading...') {
+export function showLoadingIn(container, message) {
   container.innerHTML = '';
   const loadingState = createLoadingState(message);
   container.appendChild(loadingState.element);

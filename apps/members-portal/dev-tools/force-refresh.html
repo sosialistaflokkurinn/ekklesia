@@ -35,6 +35,12 @@
     }
     .success { color: #2e7d32; }
     .error { color: #c62828; }
+    .btn-success {
+      background: #388e3c;
+    }
+    .btn-success:hover {
+      background: #2e7d32;
+    }
   </style>
 </head>
 <body>
@@ -42,9 +48,7 @@
   <p>Þessi síða þvingar Firebase til að refresh-a ID token með nýjustu custom claims.</p>
   
   <button id="refreshBtn">🔄 Refresh Token Now</button>
-  <button id="checkBtn" style="background: #388e3c;">✓ Check New Token</button>
-  
-  <h2>Status:</h2>
+  <button id="checkBtn" class="btn-success">✓ Check New Token</button>  <h2>Status:</h2>
   <pre id="output">Click "Refresh Token Now" button...</pre>
 
   <script type="module">

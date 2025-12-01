@@ -21,52 +21,63 @@
 }
 
 .voting-form__question-title {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--color-gray-600);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--letter-spacing-wide);
   margin-bottom: var(--spacing-sm);
 }
 
 .voting-form__question-text {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: var(--color-gray-900);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
   line-height: 1.4;
   margin: 0;
 }
 
 /* Voting Section */
 .voting-form__voting {
-  background-color: var(--color-gray-50);
+  background-color: var(--color-bg-subtle);
   padding: var(--spacing-sm);
   border-radius: var(--radius-md);
   margin-bottom: var(--spacing-lg);
 }
 
-.voting-form__voting-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--color-gray-800);
+/* Fieldset & Legend (Accessibility) */
+.voting-form__fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+.voting-form__legend {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
   margin-bottom: var(--spacing-lg);
+  padding: 0;
+  width: 100%;
+  display: block; /* Ensure it behaves like a block */
 }
 
 /* Selection Helper (for multi-select) */
 .voting-form__selection-helper {
-  font-size: 0.875rem;
-  color: var(--color-gray-600);
+  font-size: var(--font-size-base);
+  color: var(--color-text-muted);
   margin-bottom: var(--spacing-md);
-  padding: var(--spacing-xs) var(--spacing-sm);
-  background-color: var(--color-gray-100);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-bg-alt);
   border-radius: var(--radius-sm);
   text-align: center;
 }
 
 .voting-form__selection-helper--max {
-  color: var(--color-warning);
-  background-color: var(--color-warning-pale);
-  font-weight: 500;
+  color: var(--color-success-dark, #166534);
+  background-color: var(--color-success-pale, #dcfce7);
+  font-weight: var(--font-weight-medium);
 }
 
 .voting-form__form {
@@ -86,8 +97,8 @@
   align-items: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-md);
-  background-color: var(--color-white);
-  border: 2px solid var(--color-border-medium);
+  background-color: var(--color-bg);
+  border: 2px solid var(--color-border);
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -114,9 +125,9 @@
 }
 
 .voting-form__answer-label {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--color-gray-900);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
   cursor: pointer;
   flex: 1;
   line-height: 1.5;
@@ -126,8 +137,8 @@
 .voting-form__vote-btn {
   width: 100%;
   padding: 1rem 2rem;
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
 }
 
 .voting-form__vote-btn:disabled {
@@ -165,15 +176,15 @@
   }
 
   .voting-form__question-title {
-    font-size: 0.75rem;
+    font-size: var(--font-size-xs);
   }
 
   .voting-form__question-text {
-    font-size: 1.375rem;
+    font-size: var(--font-size-xl);
   }
 
   .voting-form__voting-title {
-    font-size: 1rem;
+    font-size: var(--font-size-base);
   }
 
   .voting-form__answer-option {
@@ -181,11 +192,11 @@
   }
 
   .voting-form__answer-label {
-    font-size: 1.125rem;
+    font-size: var(--font-size-lg);
   }
 
   .voting-form__vote-btn {
     padding: 0.875rem 1.5rem;
-    font-size: 1rem;
+    font-size: var(--font-size-base);
   }
 }

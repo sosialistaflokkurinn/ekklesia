@@ -65,7 +65,7 @@ All Ekklesia logs are prefixed with `[EKKLESIA:namespace]` for easy filtering:
    - Network request inspection
    - JavaScript execution
 
-3. **CDP Monitor Script** (`scripts/chrome_console_monitor.py`)
+3. **CDP Monitor Script** (`scripts/utils/chrome_console_monitor.py`)
    - Python-based console listener
    - Filters and formats logs
    - Writes to file or stdout
@@ -159,13 +159,13 @@ google-chrome --remote-debugging-port=9222 --user-data-dir=/tmp/chrome-debug
 **Step 3: Start CDP Monitor**
 ```bash
 cd ~/Development/projects/ekklesia
-python3 scripts/chrome_console_monitor.py
+python3 scripts/utils/chrome_console_monitor.py
 
 # OR filter for Ekklesia logs only
-python3 scripts/chrome_console_monitor.py --filter "EKKLESIA"
+python3 scripts/utils/chrome_console_monitor.py --filter "EKKLESIA"
 
 # OR save to file
-python3 scripts/chrome_console_monitor.py --output /tmp/ekklesia-console.log
+python3 scripts/utils/chrome_console_monitor.py --output /tmp/ekklesia-console.log
 ```
 
 **Step 4: Claude Code reads logs**
@@ -305,7 +305,7 @@ google-chrome --remote-debugging-port=9222 --user-data-dir=/tmp/chrome-debug
 
 - [Chrome Remote Debugging Setup](./CHROME_REMOTE_DEBUGGING.md)
 - [MCP Chrome DevTools Config](../../../.claude/mcp-chrome-devtools.md)
-- [CDP Monitor Script Usage](../../../scripts/chrome_console_monitor.py)
+- [CDP Monitor Script Usage](../../../scripts/utils/chrome_console_monitor.py)
 
 ---
 

@@ -12,7 +12,7 @@
   align-items: center;
   justify-content: center;
   min-height: 400px;
-  padding: var(--space-xl);
+  padding: var(--spacing-xl);
   text-align: center;
 }
 
@@ -28,13 +28,13 @@
 
 /* Back Link */
 .election-detail__back {
-  margin-bottom: var(--space-md);
+  margin-bottom: var(--spacing-md);
 }
 
 .election-detail__back-link {
   color: var(--color-primary);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   transition: color 0.2s ease;
 }
 
@@ -45,20 +45,20 @@
 
 /* Header */
 .election-detail__header {
-  margin-bottom: var(--space-lg);
+  margin-bottom: var(--spacing-lg);
 }
 
 .election-detail__header-top {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: var(--space-md);
-  margin-bottom: var(--space-sm);
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
 }
 
 .election-detail__title {
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   margin: 0;
   flex: 1;
@@ -68,11 +68,11 @@
 .election-detail__status-badge {
   display: inline-block;
   padding: 0.5rem 1rem;
-  border-radius: var(--border-radius);
-  font-size: 0.875rem;
-  font-weight: 600;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--letter-spacing-wider);
   white-space: nowrap;
 }
 
@@ -98,9 +98,9 @@
   background-color: var(--color-success-bg-light);  /* Light green - GOOD contrast */
   color: var(--color-success-green);                /* Dark green - 6.4:1 ratio */
   border: 1px solid var(--color-success-border);    /* Green border */
-  border-radius: var(--border-radius);
-  font-weight: 600;
-  margin-top: var(--space-sm);
+  border-radius: var(--radius-md);
+  font-weight: var(--font-weight-semibold);
+  margin-top: var(--spacing-sm);
   margin-bottom: var(--spacing-lg);
 }
 
@@ -111,10 +111,10 @@
 
 /* Election Info */
 .election-detail__info {
-  background-color: var(--color-bg-secondary);
-  padding: var(--space-lg);
-  border-radius: var(--border-radius);
-  margin-bottom: var(--space-lg);
+  background-color: var(--color-gray-50);
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-lg);
 }
 
 .election-detail__schedule {
@@ -139,26 +139,26 @@
 }
 
 .election-detail__schedule-label {
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   color: var(--color-gray-600);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--letter-spacing-wider);
 }
 
 .election-detail__schedule-value {
-  font-size: 1.125rem;
+  font-size: var(--font-size-md);
   color: var(--color-gray-800);
-  font-weight: 700;
-  line-height: 1.4;
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-snug);
 }
 
 .election-detail__description {
-  margin-top: var(--space-md);
-  padding-top: var(--space-md);
-  border-top: 1px solid var(--color-border);
-  color: var(--color-text-secondary);
-  line-height: 1.6;
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--color-border-light);
+  color: var(--color-gray-600);
+  line-height: var(--line-height-relaxed);
 }
 
 /* Schedule Display Component */
@@ -189,15 +189,15 @@
 }
 
 .schedule-display__status-emoji {
-  font-size: 1.5rem;
-  line-height: 1;
+  font-size: var(--font-size-xl);
+  line-height: var(--line-height-none);
 }
 
 .schedule-display__status-text {
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--letter-spacing-wider);
 }
 
 .schedule-display__status--upcoming .schedule-display__status-text {
@@ -220,53 +220,53 @@
 
 /* Question Section */
 .election-detail__question {
-  margin-bottom: var(--space-xl);
+  margin-bottom: var(--spacing-xl);
 }
 
 .election-detail__question-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin-bottom: var(--space-sm);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-800);
+  margin-bottom: var(--spacing-sm);
 }
 
 .election-detail__question-text {
-  font-size: 1.125rem;
-  color: var(--color-text-primary);
-  line-height: 1.6;
+  font-size: var(--font-size-md);
+  color: var(--color-gray-800);
+  line-height: var(--line-height-relaxed);
   margin: 0;
 }
 
 /* Voting Section */
 .election-detail__voting {
-  background-color: var(--color-bg-secondary);
-  padding: var(--space-xl);
-  border-radius: var(--border-radius);
-  margin-bottom: var(--space-lg);
+  background-color: var(--color-gray-50);
+  padding: var(--spacing-xl);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-lg);
 }
 
 .election-detail__voting-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin-bottom: var(--space-lg);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-800);
+  margin-bottom: var(--spacing-lg);
 }
 
 .election-detail__answer-options {
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
-  margin-bottom: var(--space-xl);
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-xl);
 }
 
 .election-detail__answer-option {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
-  padding: var(--space-md);
-  background-color: var(--color-bg-primary);
-  border: 2px solid var(--color-border);
-  border-radius: var(--border-radius);
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  background-color: var(--color-white);
+  border: 2px solid var(--color-border-light);
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -289,8 +289,8 @@
 }
 
 .election-detail__answer-label {
-  font-size: 1rem;
-  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+  color: var(--color-gray-800);
   cursor: pointer;
   flex: 1;
 }
@@ -298,70 +298,70 @@
 .election-detail__vote-btn {
   width: 100%;
   padding: 1rem 2rem;
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
 }
 
 /* Already Voted Section */
 .election-detail__already-voted {
   text-align: center;
-  padding: var(--space-xl);
-  background-color: var(--color-bg-secondary);
-  border-radius: var(--border-radius);
-  color: var(--color-text-secondary);
+  padding: var(--spacing-xl);
+  background-color: var(--color-gray-50);
+  border-radius: var(--radius-md);
+  color: var(--color-gray-600);
 }
 
 /* Results Section */
 .election-detail__results {
-  background-color: var(--color-bg-secondary);
-  padding: var(--space-xl);
-  border-radius: var(--border-radius);
-  margin-bottom: var(--space-lg);
+  background-color: var(--color-gray-50);
+  padding: var(--spacing-xl);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-lg);
 }
 
 .election-detail__results-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin-bottom: var(--space-lg);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-800);
+  margin-bottom: var(--spacing-lg);
 }
 
 .election-detail__results-summary {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
-  margin-bottom: var(--space-lg);
-  padding-bottom: var(--space-md);
-  border-bottom: 2px solid var(--color-border);
-  font-size: 1rem;
-  color: var(--color-text-secondary);
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 2px solid var(--color-border-light);
+  font-size: var(--font-size-base);
+  color: var(--color-gray-600);
 }
 
 .election-detail__results-total {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
   color: var(--color-primary);
 }
 
 .election-detail__results-list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-lg);
+  gap: var(--spacing-lg);
 }
 
 /* Upcoming Section */
 .election-detail__upcoming {
   text-align: center;
-  padding: var(--space-xl);
+  padding: var(--spacing-xl);
   background-color: var(--color-warning-light);
-  border-radius: var(--border-radius);
+  border-radius: var(--radius-md);
   color: var(--color-warning-dark);
-  margin-bottom: var(--space-lg);
+  margin-bottom: var(--spacing-lg);
 }
 
 .election-detail__upcoming-message {
-  font-size: 1.125rem;
-  font-weight: 500;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
   margin: 0;
 }
 
@@ -369,9 +369,9 @@
 .election-results__empty,
 .election-results__error {
   text-align: center;
-  padding: var(--space-xl);
-  font-size: 1.125rem;
-  color: var(--color-text-secondary);
+  padding: var(--spacing-xl);
+  font-size: var(--font-size-md);
+  color: var(--color-gray-600);
 }
 
 .election-results__error {
@@ -379,16 +379,16 @@
 }
 
 .election-results__item {
-  margin-bottom: var(--space-lg);
-  padding: var(--space-md);
-  border-radius: var(--border-radius);
-  background-color: var(--color-background-secondary);
+  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  background-color: var(--color-gray-50);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .election-results__item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-lg);
 }
 
 .election-results__item--winner {
@@ -399,8 +399,8 @@
 .election-results__answer {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
-  margin-bottom: var(--space-md);
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
 }
 
 .election-results__winner-badge {
@@ -413,40 +413,40 @@
   color: white;
   border-radius: 50%;
   font-weight: bold;
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
 }
 
 .election-results__answer-text {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--color-text);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-800);
 }
 
 .election-results__stats {
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: var(--space-md);
+  gap: var(--spacing-md);
 }
 
 .election-results__percentage {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
   color: var(--color-primary);
   min-width: 60px;
 }
 
 .election-results__bar-container {
   height: 32px;
-  background-color: var(--color-background);
-  border-radius: var(--border-radius);
+  background-color: var(--color-gray-100);
+  border-radius: var(--radius-md);
   overflow: hidden;
   position: relative;
 }
 
 .election-results__bar {
   height: 100%;
-  border-radius: var(--border-radius);
+  border-radius: var(--radius-md);
   transition: width 0.8s ease-out;
   position: relative;
 }
@@ -464,9 +464,9 @@
 }
 
 .election-results__votes {
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--color-text-secondary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-600);
   min-width: 100px;
   text-align: right;
 }
@@ -475,7 +475,7 @@
 /* Only election-specific modal styles remain here */
 
 .modal__selected-answer {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--color-primary-deep);              /* Darker red - GOOD contrast */
   padding: var(--spacing-md);
   background-color: var(--color-primary-pale);   /* Very light pink - GOOD contrast */
@@ -491,7 +491,7 @@
   }
 
   .election-detail__title {
-    font-size: 1.5rem;
+    font-size: var(--font-size-xl);
   }
 
   .election-detail__schedule {
@@ -502,7 +502,7 @@
   .election-detail__voting,
   .election-detail__results,
   .election-detail__info {
-    padding: var(--space-md);
+    padding: var(--spacing-md);
   }
 
   .modal__container {

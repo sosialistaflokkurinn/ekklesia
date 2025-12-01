@@ -1,45 +1,80 @@
 # Cloud Functions Documentation
 
-**Platform**: Google Cloud Platform (GCP)  
-**Region**: europe-west2  
-**Runtime**: Python 3.11  
-**Last Updated**: November 5, 2025
+**Platform**: Google Cloud Platform (GCP)
+**Region**: europe-west2
+**Runtime**: Python 3.13
+**Last Updated**: November 25, 2025
 
 ## 🎯 Overview
 
 Cloud Functions provide serverless compute for the Ekklesia system. They handle:
 
-- Bi-directional sync between Django and Firestore
-- Member change tracking in Firestore
-- Scheduled sync operations (3:30 AM daily)
-- Member profile updates
+- **Real-time bidirectional sync** between Django and Firestore (instant, no queues)
+- Member profile updates with address sync
 - Authentication with Kenni.is
+- Address validation with iceaddr
 
-**Current Functions:**
-1. `bidirectional_sync` - Main sync orchestrator (HTTP)
-2. `track_member_changes` - Firestore trigger
-3. `syncmembers` - Legacy full sync
-4. `updatememberprofile` - Member profile updates
-5. `handleKenniAuth` - Kenni.is authentication
-6. `verifyMembership` - Membership verification
+**Current Functions (14 total):**
+1. `sync_from_django` - Django → Firestore webhook (NEW)
+2. `syncmembers` - Manual full sync
+3. `updatememberprofile` - Firestore → Django profile sync
+4. `handleKenniAuth` - Kenni.is authentication
+5. `verifyMembership` - Membership verification
+6. `search_addresses` - Address autocomplete (iceaddr)
+7. `validate_address` - Address validation (iceaddr)
+8. `validate_postal_code` - Postal code validation (iceaddr)
+9. `auditmemberchanges` - Audit logging
+10. `cleanupauditlogs` - Audit cleanup
+11. `healthz` - Health check
+12. `get_django_token` - Django token utility
 
-## 📦 Function: bidirectional_sync
+> **Architecture Change (2025-11-25):** Deleted `bidirectional_sync` and `track_member_changes`.
+> Sync now happens instantly via HTTP webhooks instead of scheduled queue processing.
+> See [CLOUD_RUN_SERVICES.md](../infrastructure/CLOUD_RUN_SERVICES.md) for details.
+
+## 📦 Function: sync_from_django (NEW)
 
 ### Overview
 
-**Type**: HTTP Trigger  
-**Runtime**: Python 3.11  
-**Timeout**: 540 seconds (9 minutes)  
-**Memory**: 512MB  
-**Revision**: bidirectional-sync-00006-dun
+**Type**: HTTP Trigger
+**Runtime**: Python 3.13
+**Timeout**: 30 seconds
+**Memory**: 256MB
 
-**URL**: https://bidirectional-sync-ymzrguoifa-nw.a.run.app
+**URL**: https://europe-west2-ekklesia-prod-10-2025.cloudfunctions.net/sync_from_django
 
 ### Purpose
 
-Main sync orchestrator that runs bi-directional synchronization:
-1. **Firestore → Django**: Apply member edits from Ekklesia portal to Django
-2. **Django → Firestore**: Pull member changes from Django admin to Firestore
+Real-time webhook called by Django signals for instant Django → Firestore sync.
+Replaces the old scheduled `bidirectional_sync` function.
+
+**Request Format:**
+```json
+{
+  "kennitala": "0101701234",
+  "action": "create|update|delete",
+  "data": { /* serialized member data */ }
+}
+```
+
+**Code Location:** `services/members/functions/sync_from_django.py`
+
+---
+
+## ~~📦 Function: bidirectional_sync~~ (DELETED)
+
+> ⚠️ **DELETED (2025-11-25)**: Replaced by real-time `sync_from_django` webhook.
+> The scheduled queue-based sync is no longer used.
+
+~~**Type**: HTTP Trigger~~
+~~**Runtime**: Python 3.11~~
+~~**URL**: https://bidirectional-sync-ymzrguoifa-nw.a.run.app~~
+
+~~### Purpose~~
+
+~~Main sync orchestrator that runs bi-directional synchronization:~~
+~~1. **Firestore → Django**: Apply member edits from Ekklesia portal to Django~~
+~~2. **Django → Firestore**: Pull member changes from Django admin to Firestore~~
 
 ### Environment Variables
 
@@ -282,17 +317,20 @@ gcloud functions logs read bidirectional_sync \
   --limit=50 | grep -E "(ERROR|Failed)"
 ```
 
-## 📦 Function: track_member_changes
+## ~~📦 Function: track_member_changes~~ (DELETED)
 
-### Overview
+> ⚠️ **DELETED (2025-11-25)**: No longer needed with real-time sync architecture.
+> The sync_queue collection has been removed.
 
-**Type**: Firestore Trigger  
-**Runtime**: Python 3.11  
-**Trigger**: `document.write` on `/members/{memberId}`
+~~### Overview~~
 
-### Purpose
+~~**Type**: Firestore Trigger~~
+~~**Runtime**: Python 3.11~~
+~~**Trigger**: `document.write` on `/members/{memberId}`~~
 
-Logs all changes to member documents in Firestore for auditing purposes.
+~~### Purpose~~
+
+~~Logs all changes to member documents in Firestore for auditing purposes.~~
 
 ### Function Code
 
@@ -375,34 +413,18 @@ Checks if a person is an active member.
 
 ## ⏰ Cloud Scheduler
 
-### bidirectional-member-sync Job
+> ⚠️ **No longer used (2025-11-25)**: Scheduled sync has been replaced by real-time webhooks.
+> Django signals now call Cloud Functions directly for instant sync.
 
-**Schedule**: `30 3 * * *` (3:30 AM daily)  
-**Timezone**: Atlantic/Reykjavik  
-**Target**: bidirectional_sync Cloud Function  
-**Method**: POST  
-**Auth**: OIDC Token
+### ~~bidirectional-member-sync Job~~ (REMOVED)
 
-**Configuration:**
-```bash
-gcloud scheduler jobs create http bidirectional-member-sync \
-  --location=europe-west2 \
-  --schedule="30 3 * * *" \
-  --time-zone="Atlantic/Reykjavik" \
-  --uri="https://bidirectional-sync-ymzrguoifa-nw.a.run.app" \
-  --http-method=POST \
-  --oidc-service-account-email="521240388393-compute@developer.gserviceaccount.com"
-```
+~~**Schedule**: `30 3 * * *` (3:30 AM daily)~~
+~~**Timezone**: Atlantic/Reykjavik~~
+~~**Target**: bidirectional_sync Cloud Function~~
 
-**View Jobs:**
-```bash
-gcloud scheduler jobs list --location=europe-west2
-```
-
-**Trigger Manually:**
-```bash
-gcloud scheduler jobs run bidirectional-member-sync --location=europe-west2
-```
+The scheduled job is no longer needed. Sync now happens instantly when:
+- **Django → Firestore**: Django `post_save` signal calls `sync_from_django`
+- **Firestore → Django**: User saves profile, `updatememberprofile` calls Django API
 
 ## 🔐 Secrets & Authentication
 

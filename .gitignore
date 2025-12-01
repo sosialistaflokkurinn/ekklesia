@@ -15,6 +15,9 @@
 .gitignore.local
 !.gitignore.local.example
 
+# --- Generated Metadata ---
+.metadata_store/
+
 # Ignore local environment variables.
 .env
 .env.*

@@ -140,12 +140,12 @@ Created `admin-portal/i18n/values-is/strings.xml` with 50+ strings:
 #### sync-members.js - Cloud Function Integration
 
 **Features:**
-1. **Trigger Sync** - Calls `syncmembers` Cloud Function with Firebase Auth token:
+1. **Trigger Sync** - Calls `syncmembers` Cloud Function (HTTP Trigger) with Firebase Auth token:
    ```javascript
    async function triggerSync() {
      const token = await user.getIdToken();
      const response = await fetch(
-       'https://europe-west2-ekklesia-prod-10-2025.cloudfunctions.net/syncmembers',
+       'https://syncmembers-ymzrguoifa-nw.a.run.app',
        {
          method: 'POST',
          headers: {

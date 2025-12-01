@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Searchable Select Component
  * 
@@ -30,6 +29,7 @@
  */
 
 import { debug } from '../utils/debug.js';
+import { el } from '../utils/dom.js';
 
 export class SearchableSelect {
   /**
@@ -112,22 +112,21 @@ export class SearchableSelect {
    * Build the custom UI
    */
   buildUI() {
-    // Wrapper
-    this.wrapper = document.createElement('div');
-    this.wrapper.className = 'searchable-select';
-    if (this.selectElement.disabled) {
-      this.wrapper.classList.add('searchable-select--disabled');
-    }
-
     // Trigger button
     this.trigger = this.createTrigger();
     
     // Dropdown panel
     this.dropdown = this.createDropdown();
 
-    // Assemble
-    this.wrapper.appendChild(this.trigger);
-    this.wrapper.appendChild(this.dropdown);
+    // Wrapper
+    this.wrapper = el('div', 'searchable-select', {},
+      this.trigger,
+      this.dropdown
+    );
+
+    if (this.selectElement.disabled) {
+      this.wrapper.classList.add('searchable-select--disabled');
+    }
 
     // Replace original select
     this.selectElement.style.display = 'none';
@@ -141,28 +140,22 @@ export class SearchableSelect {
    * Create trigger button
    */
   createTrigger() {
-    const trigger = document.createElement('button');
-    trigger.type = 'button';
-    trigger.className = 'searchable-select__trigger';
-    trigger.setAttribute('aria-haspopup', 'listbox');
-    trigger.setAttribute('aria-expanded', 'false');
-    trigger.disabled = this.selectElement.disabled;
-
-    const label = document.createElement('span');
-    label.className = 'searchable-select__label';
-    label.textContent = this.options.placeholder;
-
-    const icon = document.createElement('span');
-    icon.className = 'searchable-select__icon';
-    icon.setAttribute('aria-hidden', 'true');
+    const label = el('span', 'searchable-select__label', {}, this.options.placeholder);
+    
+    const icon = el('span', 'searchable-select__icon', { 'aria-hidden': 'true' });
     icon.innerHTML = `
       <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
         <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
       </svg>
     `;
 
-    trigger.appendChild(label);
-    trigger.appendChild(icon);
+    const trigger = el('button', 'searchable-select__trigger', {
+      type: 'button',
+      'aria-haspopup': 'listbox',
+      'aria-expanded': 'false'
+    }, label, icon);
+
+    trigger.disabled = this.selectElement.disabled;
 
     this.triggerLabel = label;
     return trigger;
@@ -172,18 +165,7 @@ export class SearchableSelect {
    * Create dropdown panel
    */
   createDropdown() {
-    const dropdown = document.createElement('div');
-    dropdown.className = 'searchable-select__dropdown';
-    dropdown.style.display = 'none';
-    dropdown.setAttribute('role', 'listbox');
-
-    // Search input wrapper
-    const searchWrapper = document.createElement('div');
-    searchWrapper.className = 'searchable-select__search';
-
-    const searchIcon = document.createElement('span');
-    searchIcon.className = 'searchable-select__search-icon';
-    searchIcon.setAttribute('aria-hidden', 'true');
+    const searchIcon = el('span', 'searchable-select__search-icon', { 'aria-hidden': 'true' });
     searchIcon.innerHTML = `
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
         <circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.5"/>
@@ -191,31 +173,33 @@ export class SearchableSelect {
       </svg>
     `;
 
-    this.searchInput = document.createElement('input');
-    this.searchInput.type = 'text';
-    this.searchInput.className = 'searchable-select__input';
-    this.searchInput.placeholder = this.options.searchPlaceholder;
-    this.searchInput.setAttribute('aria-label', 'Search options');
-    this.searchInput.autocomplete = 'off';
+    this.searchInput = el('input', 'searchable-select__input', {
+      type: 'text',
+      placeholder: this.options.searchPlaceholder,
+      'aria-label': 'Search options',
+      autocomplete: 'off'
+    });
 
-    searchWrapper.appendChild(searchIcon);
-    searchWrapper.appendChild(this.searchInput);
+    const searchWrapper = el('div', 'searchable-select__search', {},
+      searchIcon,
+      this.searchInput
+    );
 
     // Options list
-    this.optionsList = document.createElement('ul');
-    this.optionsList.className = 'searchable-select__list';
+    this.optionsList = el('ul', 'searchable-select__list', {
+      role: 'listbox'
+    });
     this.optionsList.style.maxHeight = this.options.maxHeight;
-    this.optionsList.setAttribute('role', 'listbox');
 
     // No results message
-    this.noResults = document.createElement('div');
-    this.noResults.className = 'searchable-select__no-results';
-    this.noResults.textContent = this.options.noResultsText;
+    this.noResults = el('div', 'searchable-select__no-results', {}, this.options.noResultsText);
     this.noResults.style.display = 'none';
 
-    dropdown.appendChild(searchWrapper);
-    dropdown.appendChild(this.optionsList);
-    dropdown.appendChild(this.noResults);
+    const dropdown = el('div', 'searchable-select__dropdown', {
+      role: 'listbox'
+    }, searchWrapper, this.optionsList, this.noResults);
+    
+    dropdown.style.display = 'none';
 
     return dropdown;
   }
@@ -226,17 +210,15 @@ export class SearchableSelect {
   renderOptions() {
     this.optionsList.innerHTML = '';
     this.filteredOptions.forEach((option, index) => {
-      const li = document.createElement('li');
-      li.className = 'searchable-select__option';
-      li.setAttribute('role', 'option');
-      li.setAttribute('data-value', option.value);
-      li.setAttribute('data-index', index);
+      const li = el('li', 'searchable-select__option', {
+        role: 'option',
+        'data-value': option.value,
+        'data-index': index,
+        'aria-selected': option.value === this.selectedValue ? 'true' : 'false'
+      });
 
       if (option.value === this.selectedValue) {
         li.classList.add('searchable-select__option--selected');
-        li.setAttribute('aria-selected', 'true');
-      } else {
-        li.setAttribute('aria-selected', 'false');
       }
 
       if (option.disabled) {
@@ -547,11 +529,11 @@ export class SearchableSelect {
     // Update original select
     this.selectElement.innerHTML = '';
     newOptions.forEach(opt => {
-      const option = document.createElement('option');
-      option.value = opt.value;
-      option.textContent = opt.label;
-      if (opt.selected) option.selected = true;
-      if (opt.disabled) option.disabled = true;
+      const option = el('option', '', {
+        value: opt.value,
+        selected: opt.selected,
+        disabled: opt.disabled
+      }, opt.label);
       this.selectElement.appendChild(option);
     });
 

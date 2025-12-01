@@ -1,3 +1,19 @@
+---
+title: "Voting Flow & Anonymity Analysis"
+created: 2025-11-21
+updated: 2025-11-24
+status: active
+category: security
+tags: [voting, anonymity, privacy, elections, tokens, authentication]
+related:
+  - ./GDPR_VOTING_ANONYMITY_ANALYSIS.md
+  - ../../features/election-voting/EPIC_87_ELECTION_DISCOVERY.md
+  - ../current/FIREBASE_APP_CHECK_RESEARCH.md
+author: Security Team
+reviewers: [privacy-officer, legal-advisor]
+next_review: 2026-05-21
+---
+
 # Voting Flow & Anonymity Analysis
 
 **Date**: 2025-11-11
@@ -58,6 +74,56 @@ The Ekklesia voting system has evolved from a **token-based anonymous voting sys
    ↓
 10. Result: Anonymous ballot stored (no member_uid)
 ```
+
+### Visual Flow Diagram: MVP Token-Based Voting
+
+The following Mermaid diagram shows the complete MVP token-based anonymous voting flow:
+
+```mermaid
+sequenceDiagram
+    participant Member as Member<br/>(Browser)
+    participant Kenni as Kenni.is<br/>(eID)
+    participant Firebase as Firebase Auth
+    participant Events as Events Service<br/>(Token Issuer)
+    participant Elections as Elections Service<br/>(Ballot Storage)
+
+    Note over Member,Elections: Phase 1: Authentication
+    Member->>Kenni: Login with kennitala
+    Kenni->>Firebase: Validate & create user
+    Firebase->>Member: Firebase JWT token
+
+    Note over Member,Elections: Phase 2: Token Request (Authenticated)
+    Member->>Events: POST /api/request-token<br/>Authorization: Bearer <JWT>
+    Events->>Firebase: Verify JWT token
+    Firebase->>Events: Token valid + member_uid
+    Events->>Events: Check member hasn't<br/>requested token already
+    Events->>Events: Check election is active
+    Events->>Events: Generate UUID token<br/>(e.g., "414dbc1d-...")
+    Events->>Events: Hash token<br/>SHA256(token)
+
+    Note over Member,Elections: Phase 3: Token Registration (Server-to-Server)
+    Events->>Elections: POST /api/s2s/register-token<br/>X-API-Key: <service-key><br/>Body: {token_hash: "a1b2c3d4..."}
+    Elections->>Elections: INSERT INTO voting_tokens<br/>(token_hash, used=FALSE)
+    Elections->>Events: Token registered
+    Events->>Member: 200 OK<br/>{token: "414dbc1d-..."}
+
+    Note over Member,Elections: Phase 4: Anonymous Voting (No Authentication)
+    Member->>Elections: POST /api/vote<br/>Body: {token: "414dbc1d-...", answer: "yes"}
+    Elections->>Elections: Hash token<br/>SHA256(token)
+    Elections->>Elections: SELECT * FROM voting_tokens<br/>WHERE token_hash = ?<br/>AND used = FALSE
+    Elections->>Elections: Mark token as used<br/>UPDATE voting_tokens<br/>SET used = TRUE
+    Elections->>Elections: INSERT INTO ballots<br/>(token_hash, answer)<br/>❌ NO member_uid
+    Elections->>Member: Vote recorded
+
+    Note over Member,Elections: Anonymity: Vote cannot be linked to member<br/>without access to Events Service logs
+```
+
+**Key Anonymity Features:**
+- **No member_uid in ballots**: Only `token_hash` is stored
+- **Random UUID tokens**: Unpredictable, cannot be brute-forced
+- **SHA256 hashing**: One-way function, token cannot be reverse-engineered from hash
+- **Separation of concerns**: Token issuance (Events) separate from voting (Elections)
+- **Audit trail separation**: Linking requires access to both services' logs
 
 ### Key Characteristics
 
@@ -124,6 +190,69 @@ uuid-1234   | a1b2c3d4... | yes    | 2025-10-15 19:46:00
    ↓
 6. Result: Ballot stored with member_uid
 ```
+
+### Visual Flow Diagram: Current Member-Based Voting
+
+The following Mermaid diagram shows the current member-based authenticated voting flow:
+
+```mermaid
+sequenceDiagram
+    participant Member as Member<br/>(Browser)
+    participant Kenni as Kenni.is<br/>(eID)
+    participant Firebase as Firebase Auth
+    participant Elections as Elections Service<br/>(Direct Auth)
+    participant DB as PostgreSQL<br/>(Ballots)
+
+    Note over Member,DB: Phase 1: Authentication
+    Member->>Kenni: Login with kennitala
+    Kenni->>Firebase: Validate & create user
+    Firebase->>Member: Firebase JWT token<br/>(includes member_uid)
+
+    Note over Member,DB: Phase 2: View Available Elections
+    Member->>Elections: GET /api/elections<br/>Authorization: Bearer <JWT>
+    Elections->>Firebase: Verify JWT token
+    Firebase->>Elections: Token valid + member_uid
+    Elections->>DB: SELECT * FROM elections<br/>WHERE eligibility matches member
+    DB->>Elections: List of elections
+    Elections->>DB: Check has_voted flag<br/>SELECT COUNT(*) FROM ballots<br/>WHERE election_id = ? AND member_uid = ?
+    DB->>Elections: Voting status per election
+    Elections->>Member: Elections list with has_voted flags
+
+    Note over Member,DB: Phase 3: Cast Vote (Atomic Transaction)
+    Member->>Elections: POST /api/elections/:id/vote<br/>Authorization: Bearer <JWT><br/>Body: {answer_ids: ["answer-1"]}
+    Elections->>Firebase: Verify JWT token
+    Firebase->>Elections: Token valid + member_uid
+    Elections->>DB: BEGIN TRANSACTION
+    Elections->>DB: SELECT * FROM elections<br/>WHERE id = ? FOR UPDATE<br/>(row lock)
+    Elections->>DB: Check duplicate vote<br/>SELECT COUNT(*) FROM ballots<br/>WHERE election_id = ?<br/>AND member_uid = ?
+    alt Already Voted
+        DB->>Elections: Count > 0
+        Elections->>DB: ROLLBACK TRANSACTION
+        Elections->>Member: 409 Conflict<br/>"Already voted"
+    else Not Voted Yet
+        DB->>Elections: Count = 0
+        Elections->>DB: INSERT INTO ballots<br/>(election_id, member_uid, answer_id,<br/>submitted_at = date_trunc('minute', NOW()))<br/>⚠️ member_uid stored
+        DB->>Elections: Ballot inserted
+        Elections->>DB: COMMIT TRANSACTION
+        Elections->>Member: 200 OK<br/>"Vote recorded"
+    end
+
+    Note over Member,DB: Anonymity Concern: member_uid links vote to Firebase account<br/>DB admin can query: "Who voted for what?"
+```
+
+**Key Characteristics:**
+- **Direct authentication**: No intermediate token service required
+- **member_uid stored**: Ballot directly links to Firebase account
+- **Atomic transaction**: Row locking prevents race conditions
+- **Timestamp rounding**: `date_trunc('minute')` prevents timing correlation
+- **Database-enforced deduplication**: `UNIQUE INDEX (election_id, member_uid)`
+
+**Anonymity Trade-offs:**
+- ✅ **Results are anonymous**: Aggregation functions never expose member_uid
+- ⚠️ **Database linkability**: Admin with DB access can link votes to members
+- ⚠️ **Trust model**: Requires trust in database administrators
+- ✅ **Simpler architecture**: No service-to-service token exchange
+- ✅ **Better UX**: No token management, automatic re-authentication
 
 ### Key Characteristics
 

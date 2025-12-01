@@ -72,7 +72,7 @@
       </div>
 
       <!-- Empty State -->
-      <div class="empty-state" id="empty-state" style="display: none;" role="status" aria-live="polite">
+      <div class="empty-state u-hidden" id="empty-state" role="status" aria-live="polite">
         <div class="empty-state__icon">🗳️</div>
         <h2 id="empty-state-title">Loading...</h2>
         <p id="empty-state-description">Loading...</p>
@@ -86,7 +86,7 @@
   
   <!-- Initialize Navigation Component BEFORE main app -->
   <script type="module">
-    import { initNavHeader, NAV_CONFIGS } from '../ui/components/nav-header.js';
+    import { initNavHeader, NAV_CONFIGS } from '../ui/components/navigation-bar.js';
     
     // Initialize navigation with Admin Elections config
     await initNavHeader({
