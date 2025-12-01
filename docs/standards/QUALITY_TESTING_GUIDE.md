@@ -13,15 +13,37 @@ This guide defines quality and testing standards for the Ekklesia project. We pr
 - [Pre-commit quality checks](https://pre-commit.com/)
 - Manual testing checklists
 - Code quality tools ([ESLint](https://eslint.org/), [Prettier](https://prettier.io/))
-- [Load testing](https://k6.io/) for production readiness
+### Pre-commit Hooks
 
-### Core Principles
+Automatically runs before every commit:
+- [ESLint](https://eslint.org/) checks
+- [Prettier](https://prettier.io/) formatting
+- Kennitala/PII detection (Optimized single-pass scan)
+- File size limits
 
-1. **Test Early, Test Often** - Write tests as you code, not after
-2. **Automate What You Can** - Reduce manual testing burden
-3. **Quality Gates** - Code must pass checks before merge
-4. **Fast Feedback** - Tests should run quickly
-5. **Confidence Over Coverage** - Test what matters, not just for 100% coverage
+**Setup**:
+```bash
+# Install pre-commit hooks
+npm install
+# Hooks are automatically installed via package.json
+# Custom optimized hooks are located in git-hooks/
+```
+
+### Code Health Scripts
+
+We provide scripts to audit code quality on demand:
+
+- `scripts/check-code-health.py`: Comprehensive health check (PII, patterns, file sizes)
+- `scripts/check-code-patterns.sh`: Fast grep-based pattern check
+
+**Usage**:
+```bash
+# Run full health check
+python3 scripts/check-code-health.py
+
+# Run fast pattern check
+./scripts/check-code-patterns.sh
+```
 
 ---
 

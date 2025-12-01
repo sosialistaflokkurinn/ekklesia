@@ -1,3 +1,18 @@
+---
+title: "Django Backend System Documentation"
+created: 2025-11-06
+updated: 2025-11-24
+status: active
+category: systems
+tags: [django, backend, api, postgresql, membership, rest-api]
+related:
+  - ../infrastructure/CLOUD_RUN_SERVICES.md
+  - ../integration/DJANGO_API_IMPLEMENTATION.md
+  - ../integration/BIDIRECTIONAL_SYNC.md
+author: Backend Team
+next_review: 2026-02-24
+---
+
 # Django Backend System Documentation
 
 **Document Type**: System Reference
@@ -265,6 +280,142 @@ Columns (partial list):
 - **Real Members**: 2,107 active members as of 2025-10-28
 - **PII Protection**: SSN field contains Icelandic kennitala (personal ID numbers)
 - **Data Integrity**: Foreign key constraints enforce referential integrity
+
+---
+
+## API Flow Diagrams
+
+Visual representations of how the Django backend handles API requests and the database schema structure.
+
+### API Request Flow
+
+This sequence diagram shows the complete flow of an API request from the Members Portal to the Django backend:
+
+```mermaid
+sequenceDiagram
+    participant Portal as Members Portal
+    participant API as Django REST API
+    participant Auth as DRF Token Auth
+    participant View as ComradeFullViewSet
+    participant Serializer as ComradeFullSerializer
+    participant DB as PostgreSQL (socialism)
+
+    Portal->>API: GET /felagar/api/full/<br/>(Authorization: Token xxx)
+    API->>Auth: Verify token
+    Auth->>DB: SELECT * FROM authtoken_token<br/>WHERE key = 'xxx'
+    DB->>Auth: Token valid (user_id)
+    Auth->>View: Request authenticated
+    View->>DB: SELECT * FROM membership_comrade<br/>JOIN membership_contactinfo<br/>WHERE id = user_id
+    DB->>View: Member data + relations
+    View->>Serializer: Serialize queryset
+    Serializer->>Serializer: Transform to JSON<br/>(name, ssn, email, phone, etc.)
+    Serializer->>View: JSON response
+    View->>API: 200 OK (Member data)
+    API->>Portal: JSON response
+```
+
+**Key Steps:**
+1. **Authentication**: Portal sends request with DRF token in Authorization header
+2. **Token Verification**: Django verifies token against `authtoken_token` table
+3. **Database Query**: ComradeFullViewSet queries `membership_comrade` table with JOINs
+4. **Serialization**: ComradeFullSerializer transforms database rows to JSON
+5. **Response**: Django returns JSON response with member data
+
+**Security Notes:**
+- Token is 40-character hex string stored in GCP Secret Manager
+- All requests require valid token (401 Unauthorized if missing/invalid)
+- SSN (kennitala) is PII and should be handled securely
+- Firebase Auth verification happens before Django API call
+
+### Database Schema Overview
+
+This entity-relationship diagram shows the core tables in the `socialism` database:
+
+```mermaid
+erDiagram
+    membership_comrade ||--o{ membership_contactinfo : has
+    membership_comrade ||--o{ membership_newlocaladdress : lives_at
+    membership_comrade ||--o{ membership_foreignaddress : lives_at
+    membership_comrade ||--o{ membership_comradetitle : has_roles
+    membership_comrade }o--o| map_municipality : belongs_to
+    membership_comrade }o--o| groups_group : member_of
+
+    membership_comrade {
+        int id PK
+        string ssn UK "kennitala (PII)"
+        string name
+        string email
+        date birthday
+        string gender
+        datetime date_joined
+        boolean reachable "consent for contact"
+        boolean groupable "consent for grouping"
+        int municipality_id FK
+        string housing_situation
+    }
+
+    membership_contactinfo {
+        int id PK
+        int comrade_id FK
+        string phone
+        string email_secondary
+        string facebook
+        string twitter
+    }
+
+    membership_newlocaladdress {
+        int id PK
+        int comrade_id FK
+        int street_id FK
+        string house_number
+        string apartment
+        int postal_code_id FK
+    }
+
+    membership_foreignaddress {
+        int id PK
+        int comrade_id FK
+        string address_line1
+        string address_line2
+        string city
+        string postal_code
+        int country_id FK
+    }
+
+    membership_comradetitle {
+        int id PK
+        int comrade_id FK
+        string title "role/position"
+        date valid_from
+        date valid_to
+    }
+
+    map_municipality {
+        int id PK
+        string name
+        int region_id FK
+    }
+
+    groups_group {
+        int id PK
+        string name
+        string description
+    }
+```
+
+**Key Relationships:**
+- **membership_comrade**: Central member table (2,107 active members)
+- **membership_contactinfo**: One-to-many contact details (phone, email, social media)
+- **Addresses**: Members can have local (Icelandic) or foreign addresses
+- **Titles**: Members can have multiple roles/positions over time
+- **Geographic Data**: Municipality references for Icelandic members
+- **Groups**: Many-to-many relationship for member groups/cells
+
+**Data Types:**
+- `PK` = Primary Key
+- `FK` = Foreign Key
+- `UK` = Unique Key
+- All PII fields (ssn, email, phone) should be handled according to GDPR/data protection policies
 
 ---
 

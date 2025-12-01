@@ -39,6 +39,8 @@
 
 import { debug } from '../utils/debug.js';
 import { escapeHTML } from '../utils/format.js';
+import { el } from '../utils/dom.js';
+import { R } from '../../i18n/strings-loader.js';
 
 /**
  * Create voting form element
@@ -62,9 +64,9 @@ export function createVotingForm(options = {}) {
     maxSelections = null,
     minSelections = 1,
     onSubmit,
-    questionLabel = 'Spurning',
-    votingTitle = 'Veldu þitt svar',
-    voteButtonText = 'Kjósa'
+    questionLabel = R.string.voting_question_label || 'Spurning',
+    votingTitle = R.string.voting_title || 'Veldu þitt svar',
+    voteButtonText = R.string.voting_button_text || 'Kjósa'
   } = options;
 
   if (!question) {
@@ -82,54 +84,65 @@ export function createVotingForm(options = {}) {
   // Selected answer IDs (array to support both single and multiple)
   let selectedAnswerIds = [];
 
-  // Create container
-  const container = document.createElement('div');
-  container.className = 'voting-form';
-  if (allowMultiple) {
-    container.classList.add('voting-form--multiple');
-  }
+  // Generate unique form ID to avoid conflicts
+  const formId = 'voting-form-' + Math.random().toString(36).substr(2, 9);
 
   // Question section
-  const questionSection = document.createElement('section');
-  questionSection.className = 'voting-form__question';
+  const questionTitle = el('h2', 'voting-form__question-title', {}, questionLabel);
+  const questionText = el('p', 'voting-form__question-text', {}, question);
+  const questionSection = el('section', 'voting-form__question', {}, questionTitle, questionText);
 
-  const questionTitle = document.createElement('h2');
-  questionTitle.className = 'voting-form__question-title';
-  questionTitle.textContent = questionLabel;
-
-  const questionText = document.createElement('p');
-  questionText.className = 'voting-form__question-text';
-  questionText.textContent = question;
-
-  questionSection.appendChild(questionTitle);
-  questionSection.appendChild(questionText);
-
-  // Voting section
-  const votingSection = document.createElement('section');
-  votingSection.className = 'voting-form__voting';
-
-  const votingTitleEl = document.createElement('h3');
-  votingTitleEl.className = 'voting-form__voting-title';
-  votingTitleEl.textContent = votingTitle;
+  // Generate unique IDs for ARIA
+  const helperId = `${formId}-helper`;
 
   // Selection helper text (for multi-select)
   let selectionHelperEl = null;
   if (allowMultiple && maxSelections) {
-    selectionHelperEl = document.createElement('p');
-    selectionHelperEl.className = 'voting-form__selection-helper';
-    selectionHelperEl.textContent = `Veldu allt að ${maxSelections} valkosti`;
+    const helperText = R.string.voting_selection_helper 
+      ? R.format(R.string.voting_selection_helper, maxSelections)
+      : `Veldu allt að ${maxSelections} valkosti`;
+    
+    selectionHelperEl = el('p', 'voting-form__selection-helper', { id: helperId }, helperText);
   }
 
-  // Form
-  const form = document.createElement('form');
-  form.className = 'voting-form__form';
-
   // Answer options container
-  const answerOptions = document.createElement('div');
-  answerOptions.className = 'voting-form__answer-options';
+  const answerOptions = el('div', 'voting-form__answer-options');
 
-  // Generate unique form ID to avoid conflicts
-  const formId = 'voting-form-' + Math.random().toString(36).substr(2, 9);
+  // Fieldset and Legend (Accessibility improvement)
+  const legend = el('legend', 'voting-form__legend', {}, votingTitle);
+  
+  const fieldset = el('fieldset', 'voting-form__fieldset', {
+    'aria-describedby': selectionHelperEl ? helperId : undefined
+  }, legend, selectionHelperEl, answerOptions);
+
+  // Vote button
+  const voteButton = el('button', 'btn btn--primary voting-form__vote-btn', {
+    type: 'submit',
+    disabled: true
+  }, voteButtonText);
+
+  // Form
+  const form = el('form', 'voting-form__form', {
+    onsubmit: (e) => {
+      e.preventDefault();
+      if (selectedAnswerIds.length > 0) {
+        debug.log('Form submitted with answers:', selectedAnswerIds);
+        onSubmit(selectedAnswerIds);
+      }
+    }
+  }, fieldset, voteButton);
+
+  const votingSection = el('section', 'voting-form__voting', {}, 
+    form
+  );
+
+  // Main Container
+  const container = el('div', 
+    ['voting-form', allowMultiple ? 'voting-form--multiple' : ''], 
+    {}, 
+    questionSection, 
+    votingSection
+  );
 
   // Input type based on allowMultiple
   const inputType = allowMultiple ? 'checkbox' : 'radio';
@@ -147,14 +160,17 @@ export function createVotingForm(options = {}) {
       voteButton.disabled = !isValid;
 
       // Update helper text
-      if (selectionHelperEl) {
-        if (maxSelections) {
-          selectionHelperEl.textContent = `Valið ${count} af ${maxSelections} valkostum`;
-          if (count >= maxSelections) {
-            selectionHelperEl.classList.add('voting-form__selection-helper--max');
-          } else {
-            selectionHelperEl.classList.remove('voting-form__selection-helper--max');
-          }
+      if (selectionHelperEl && maxSelections) {
+        const helperText = R.string.voting_selection_count 
+          ? R.format(R.string.voting_selection_count, count, maxSelections)
+          : `Valið ${count} af ${maxSelections} valkostum`;
+        
+        selectionHelperEl.textContent = helperText;
+        
+        if (count >= maxSelections) {
+          selectionHelperEl.classList.add('voting-form__selection-helper--max');
+        } else {
+          selectionHelperEl.classList.remove('voting-form__selection-helper--max');
         }
       }
     } else {
@@ -165,80 +181,48 @@ export function createVotingForm(options = {}) {
 
   // Create answer options
   answers.forEach((answer) => {
-    const optionDiv = document.createElement('div');
-    optionDiv.className = 'voting-form__answer-option';
+    // Support both id and answer_id, or use text/string as fallback
+    const answerId = answer.id || answer.answer_id || (typeof answer === 'string' ? answer : answer.text || answer.answer_text);
+    const answerText = answer.text || answer.answer_text || (typeof answer === 'string' ? answer : '');
+    const inputId = `${formId}-answer-${answerId}`;
+    const inputName = allowMultiple ? `${formId}-answer-${answerId}` : `${formId}-answer`;
 
-    const input = document.createElement('input');
-    input.type = inputType;
-    input.id = `${formId}-answer-${answer.id}`;
-    input.name = allowMultiple ? `${formId}-answer-${answer.id}` : `${formId}-answer`;
-    input.value = answer.id;
-    input.className = inputClassName;
-
-    // Handle selection
-    input.addEventListener('change', () => {
-      if (allowMultiple) {
-        // Checkbox: toggle in array
-        if (input.checked) {
-          // Check max limit
-          if (maxSelections && selectedAnswerIds.length >= maxSelections) {
-            input.checked = false;
-            debug.log('Max selections reached:', maxSelections);
-            return;
+    const input = el('input', inputClassName, {
+      type: inputType,
+      id: inputId,
+      name: inputName,
+      value: answerId,
+      onchange: () => {
+        if (allowMultiple) {
+          // Checkbox: toggle in array
+          if (input.checked) {
+            // Check max limit
+            if (maxSelections && selectedAnswerIds.length >= maxSelections) {
+              input.checked = false;
+              debug.log('Max selections reached:', maxSelections);
+              return;
+            }
+            selectedAnswerIds.push(answerId);
+          } else {
+            selectedAnswerIds = selectedAnswerIds.filter(id => id !== answerId);
           }
-          selectedAnswerIds.push(answer.id);
         } else {
-          selectedAnswerIds = selectedAnswerIds.filter(id => id !== answer.id);
+          // Radio: replace selection
+          selectedAnswerIds = [answerId];
         }
-      } else {
-        // Radio: replace selection
-        selectedAnswerIds = [answer.id];
+  
+        updateButtonState();
+        debug.log('Selected answers:', selectedAnswerIds);
       }
-
-      updateButtonState();
-      debug.log('Selected answers:', selectedAnswerIds);
     });
 
-    const label = document.createElement('label');
-    label.htmlFor = `${formId}-answer-${answer.id}`;
-    label.className = 'voting-form__answer-label';
-    label.textContent = answer.text;
+    const label = el('label', 'voting-form__answer-label', {
+      htmlFor: inputId
+    }, answerText);
 
-    optionDiv.appendChild(input);
-    optionDiv.appendChild(label);
+    const optionDiv = el('div', 'voting-form__answer-option', {}, input, label);
     answerOptions.appendChild(optionDiv);
   });
-
-  // Vote button
-  const voteButton = document.createElement('button');
-  voteButton.type = 'submit';
-  voteButton.className = 'btn btn--primary voting-form__vote-btn';
-  voteButton.disabled = true; // Disabled until selection
-  voteButton.textContent = voteButtonText;
-
-  // Form submission
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-
-    if (selectedAnswerIds.length > 0) {
-      debug.log('Form submitted with answers:', selectedAnswerIds);
-      onSubmit(selectedAnswerIds);
-    }
-  });
-
-  // Assemble form
-  form.appendChild(answerOptions);
-  form.appendChild(voteButton);
-
-  votingSection.appendChild(votingTitleEl);
-  if (selectionHelperEl) {
-    votingSection.appendChild(selectionHelperEl);
-  }
-  votingSection.appendChild(form);
-
-  // Assemble container
-  container.appendChild(questionSection);
-  container.appendChild(votingSection);
 
   /**
    * Get currently selected answer IDs

@@ -64,7 +64,7 @@ router.get('/elections', readLimiter, verifyMemberToken, async (req, res) => {
     const limitNum = Math.min(Math.max(parseInt(limit, 10) || 50, 1), 100);
     const offsetNum = Math.max(parseInt(offset, 10) || 0, 0);
 
-    // Query elections
+    // Query elections with computed fields for frontend compatibility
     const query = `
       SELECT
         e.id,
@@ -78,6 +78,16 @@ router.get('/elections', readLimiter, verifyMemberToken, async (req, res) => {
         e.eligibility,
         e.scheduled_start,
         e.scheduled_end,
+        -- Aliases for frontend compatibility
+        e.scheduled_start as voting_starts_at,
+        e.scheduled_end as voting_ends_at,
+        e.published_at as opened_at,
+        -- Computed duration in minutes
+        CASE
+          WHEN e.scheduled_start IS NOT NULL AND e.scheduled_end IS NOT NULL
+          THEN EXTRACT(EPOCH FROM (e.scheduled_end - e.scheduled_start)) / 60
+          ELSE NULL
+        END as duration_minutes,
         e.created_at,
         e.published_at,
         e.closed_at,
@@ -111,7 +121,7 @@ router.get('/elections', readLimiter, verifyMemberToken, async (req, res) => {
     const total = parseInt(countResult.rows[0].total, 10);
     const duration = Date.now() - startTime;
 
-    logger.info('[Member API] List elections', {
+    (req.logger || logger).info('[Member API] List elections', {
       uid_hash: hashUidForLogging(req.user.uid),
       count: filteredElections.length,
       total,
@@ -129,7 +139,7 @@ router.get('/elections', readLimiter, verifyMemberToken, async (req, res) => {
     });
   } catch (error) {
     const duration = Date.now() - startTime;
-    logger.error('[Member API] List elections error:', error);
+    (req.logger || logger).error('[Member API] List elections error:', { error: error.message, stack: error.stack });
 
     res.status(500).json({
       error: 'Internal Server Error',
@@ -145,7 +155,7 @@ router.get('/elections/:id', readLimiter, verifyMemberToken, async (req, res) =>
   const { id } = req.params;
 
   try {
-    // Query election
+    // Query election with computed fields for frontend compatibility
     const result = await pool.query(
       `SELECT
         e.id,
@@ -159,6 +169,16 @@ router.get('/elections/:id', readLimiter, verifyMemberToken, async (req, res) =>
         e.eligibility,
         e.scheduled_start,
         e.scheduled_end,
+        -- Aliases for frontend compatibility
+        e.scheduled_start as voting_starts_at,
+        e.scheduled_end as voting_ends_at,
+        e.published_at as opened_at,
+        -- Computed duration in minutes
+        CASE
+          WHEN e.scheduled_start IS NOT NULL AND e.scheduled_end IS NOT NULL
+          THEN EXTRACT(EPOCH FROM (e.scheduled_end - e.scheduled_start)) / 60
+          ELSE NULL
+        END as duration_minutes,
         e.created_at,
         e.published_at,
         e.closed_at,
@@ -196,14 +216,14 @@ router.get('/elections/:id', readLimiter, verifyMemberToken, async (req, res) =>
       });
     }
 
-    logger.info('[Member API] Get election details', {
+    (req.logger || logger).info('[Member API] Get election details', {
       uid_hash: hashUidForLogging(req.user.uid),
       election_id: id,
     });
 
     res.json({ election });
   } catch (error) {
-    logger.error('[Member API] Get election error:', error);
+    (req.logger || logger).error('[Member API] Get election error:', { error: error.message, stack: error.stack });
 
     res.status(500).json({
       error: 'Internal Server Error',
@@ -315,8 +335,15 @@ router.post('/elections/:id/vote', voteLimiter, verifyMemberToken, async (req, r
     const ballotIds = [];
     for (const answerId of answer_ids) {
       // Find answer text from election.answers array
-      const answerObj = election.answers.find(a => a.id === answerId);
-      const answerText = answerObj ? answerObj.text : answerId; // Fallback to ID if not found
+      let answerText = answerId;
+      const answerObj = election.answers.find(a => {
+        if (typeof a === 'string') return a === answerId;
+        return (a.id || a.answer_text || a.text) === answerId;
+      });
+      
+      if (answerObj && typeof answerObj === 'object') {
+        answerText = answerObj.text || answerObj.answer_text || answerId;
+      }
 
       const ballotResult = await client.query(
         `INSERT INTO elections.ballots (election_id, member_uid, answer_id, answer, token_hash, submitted_at)
@@ -332,7 +359,7 @@ router.post('/elections/:id/vote', voteLimiter, verifyMemberToken, async (req, r
 
     const duration = Date.now() - startTime;
 
-    logger.info('[Member API] Vote submitted', {
+    (req.logger || logger).info('[Member API] Vote submitted', {
       uid_hash: hashUidForLogging(req.user.uid),
       election_id: id,
       election_title: election.title,
@@ -361,8 +388,8 @@ router.post('/elections/:id/vote', voteLimiter, verifyMemberToken, async (req, r
     }
     const duration = Date.now() - startTime;
 
-    // Enhanced error logging for debugging
-    logger.error('[Member API] Vote submission error:', {
+    // Enhanced error logging for debugging (req.logger includes correlationId)
+    (req.logger || logger).error('[Member API] Vote submission error:', {
       error: error.message,
       stack: error.stack,
       election_id: id,
@@ -474,7 +501,7 @@ router.get('/elections/:id/results', readLimiter, verifyMemberToken, async (req,
       ? results.reduce((max, current) => (current.votes > max.votes ? current : max))
       : null;
 
-    logger.info('[Member API] Get results', {
+    (req.logger || logger).info('[Member API] Get results', {
       uid_hash: hashUidForLogging(req.user.uid),
       election_id: id,
       total_votes: totalVotes,
@@ -490,7 +517,7 @@ router.get('/elections/:id/results', readLimiter, verifyMemberToken, async (req,
       winner: winner && winner.votes > 0 ? winner : null,
     });
   } catch (error) {
-    logger.error('[Member API] Get results error:', error);
+    (req.logger || logger).error('[Member API] Get results error:', { error: error.message, stack: error.stack });
 
     res.status(500).json({
       error: 'Internal Server Error',

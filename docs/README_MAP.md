@@ -69,7 +69,7 @@ This category map provides navigation to all README.md files in the Ekklesia rep
 - [scripts/admin/README.md](../scripts/admin/README.md) - Administrative scripts
 - [scripts/database/README.md](../scripts/database/README.md) - Database management scripts
 - [scripts/deployment/README.md](../scripts/deployment/README.md) - Deployment automation
-- [scripts/git-hooks/README.md](../scripts/git-hooks/README.md) - Git hooks configuration
+- [scripts/setup/install-git-hooks.sh](../scripts/setup/install-git-hooks.sh) - Git hooks installation script
 
 **Archived Scripts:**
 - [archive/scripts/cloudflare/README.md](../archive/scripts/cloudflare/README.md) - 🗄️ Cloudflare scripts (not in use)

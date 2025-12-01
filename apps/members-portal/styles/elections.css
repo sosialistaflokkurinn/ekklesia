@@ -18,43 +18,43 @@
 /* ========================================== */
 
 .elections {
-  padding: 2rem 0;
+  padding: var(--spacing-xl) 0;
 }
 
 .elections__header {
-  margin-bottom: 2rem;
+  margin-bottom: var(--spacing-xl);
   text-align: center;
 }
 
 .elections__header h1 {
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
+  font-size: var(--font-size-2xl);
+  margin-bottom: var(--spacing-sm);
   color: var(--color-gray-800);
 }
 
 .elections__header p {
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   color: var(--color-gray-600);
 }
 
 /* Filter Tabs */
 .elections__filters {
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 2rem;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xl);
   border-bottom: 2px solid var(--color-border-light);
   flex-wrap: wrap;
   overflow-x: auto;
 }
 
 .elections__filter-btn {
-  padding: 0.75rem 1.5rem;
+  padding: var(--spacing-sm) var(--spacing-lg);
   background: none;
   border: none;
   border-bottom: 3px solid transparent;
   color: var(--color-gray-600);
   cursor: pointer;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   transition: all 0.3s;
   white-space: nowrap;
   position: relative;
@@ -74,10 +74,10 @@
   display: inline-block;
   background: var(--color-border-lighter);
   color: var(--color-gray-600);
-  padding: 0.25rem 0.5rem;
+  padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: 12px;
-  font-size: 0.85rem;
-  margin-left: 0.5rem;
+  font-size: var(--font-size-sm);
+  margin-left: var(--spacing-sm);
 }
 
 .elections__filter-btn--active .elections__filter-count {
@@ -89,21 +89,21 @@
 .elections__list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
 }
 
 /* Election Card */
 .elections__card {
   background: var(--color-white);
   border: 1px solid var(--color-border-medium);
-  border-radius: 8px;
-  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--spacing-base);
   box-shadow: var(--shadow-md);
 }
 
@@ -117,25 +117,25 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 1rem;
+  gap: var(--spacing-base);
 }
 
 .elections__card-title {
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-gray-800);
   margin: 0;
   flex: 1;
-  line-height: 1.4;
+  line-height: var(--line-height-snug);
 }
 
 .elections__status-badge {
   padding: 0.4rem 0.8rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--letter-spacing-caps);
   flex-shrink: 0;
   white-space: nowrap;
 }
@@ -157,8 +157,8 @@
 
 .elections__card-question {
   color: var(--color-gray-600);
-  font-size: 0.95rem;
-  line-height: 1.5;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
   margin: 0;
   flex-grow: 1;
 }
@@ -167,9 +167,9 @@
   background: var(--color-success-bg);
   color: var(--color-success-border);
   padding: 0.5rem 0.75rem;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  font-weight: 500;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
 }
 
 .elections__card-footer {
@@ -178,7 +178,7 @@
   align-items: center;
   padding-top: 0.5rem;
   border-top: 1px solid var(--color-border-lighter);
-  font-size: 0.85rem;
+  font-size: var(--font-size-sm);
 }
 
 .elections__card-date {
@@ -187,16 +187,16 @@
 
 .elections__card-cta {
   color: var(--color-primary);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 /* Loading, Error, Empty States */
 .elections__loading,
 .elections__error,
 .elections__empty {
-  padding: 2rem;
+  padding: var(--spacing-xl);
   text-align: center;
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
 }
 
 .elections__loading {
@@ -205,7 +205,7 @@
   align-items: center;
   justify-content: center;
   padding: 3rem 2rem;
-  gap: 1rem;
+  gap: var(--spacing-base);
 }
 
 .spinner {
@@ -224,7 +224,7 @@
 
 .elections__loading p {
   color: var(--color-gray-600);
-  font-size: 1rem;
+  font-size: var(--font-size-base);
 }
 
 .elections__error {
@@ -234,13 +234,13 @@
 
 .elections__error p {
   color: var(--color-primary-dark);
-  margin: 0 0 1rem 0;
-  font-size: 1rem;
+  margin: 0 0 var(--spacing-base) 0;
+  font-size: var(--font-size-base);
 }
 
 .elections__empty {
   color: var(--color-gray-500);
-  font-size: 1.1rem;
+  font-size: var(--font-size-md);
   padding: 3rem 2rem;
 }
 
@@ -249,7 +249,7 @@
 /* ========================================== */
 
 .election-header {
-  margin-bottom: 2rem;
+  margin-bottom: var(--spacing-xl);
 }
 
 .back-button {
@@ -268,42 +268,42 @@
 
 .election-detail {
   background: var(--color-white);
-  border-radius: 8px;
-  padding: 2rem;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
   box-shadow: var(--shadow-md);
 }
 
 .election-detail__header {
-  margin-bottom: 2rem;
+  margin-bottom: var(--spacing-xl);
   border-bottom: 2px solid var(--color-border-lighter);
   padding-bottom: 1.5rem;
 }
 
 .election-detail__header h1 {
-  font-size: 1.8rem;
+  font-size: var(--font-size-2xl);
   color: var(--color-gray-800);
   margin: 0 0 0.5rem 0;
 }
 
 .election-detail__question {
-  font-size: 1.1rem;
+  font-size: var(--font-size-md);
   color: var(--color-gray-600);
-  line-height: 1.6;
-  margin: 0 0 1rem 0;
+  line-height: var(--line-height-relaxed);
+  margin: 0 0 var(--spacing-base) 0;
 }
 
 .election-detail__meta {
   display: flex;
-  gap: 1rem;
+  gap: var(--spacing-base);
   align-items: center;
   flex-wrap: wrap;
 }
 
 .election-detail__status {
   padding: 0.4rem 0.8rem;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  font-weight: 600;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
 }
 
@@ -324,7 +324,7 @@
 
 .election-detail__date {
   color: var(--color-gray-500);
-  font-size: 0.95rem;
+  font-size: var(--font-size-base);
 }
 
 /* ========================================== */
@@ -332,35 +332,35 @@
 /* ========================================== */
 
 .voting {
-  margin: 2rem 0;
+  margin: var(--spacing-xl) 0;
 }
 
 .voting h2 {
-  font-size: 1.3rem;
-  margin-bottom: 1.5rem;
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--spacing-lg);
   color: var(--color-gray-800);
 }
 
 .voting__form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--spacing-base);
 }
 
 .voting__options {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: var(--spacing-base);
+  margin-bottom: var(--spacing-base);
 }
 
 .voting__option {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 1rem;
+  padding: var(--spacing-base);
   border: 2px solid var(--color-border-light);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: all 0.3s;
   background: var(--color-white);
@@ -379,13 +379,13 @@
 }
 
 .voting__option-label {
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   color: var(--color-gray-800);
   flex-grow: 1;
 }
 
 .voting__option input:checked + .voting__option-label {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--color-primary);
 }
 
@@ -393,24 +393,23 @@
 .elections__already-voted {
   background: var(--color-success-bg);
   border: 1px solid var(--color-success);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   padding: 1.5rem;
   text-align: center;
   color: var(--color-success-border);
-  font-size: 1.1rem;
-  margin: 2rem 0;
+  font-size: var(--font-size-md);
 }
 
 /* Upcoming Election Message */
 .elections__upcoming {
   background: var(--color-warning-bg);
   border: 1px solid var(--color-warning-border);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   padding: 1.5rem;
   text-align: center;
   color: var(--color-warning-text);
-  font-size: 1.1rem;
-  margin: 2rem 0;
+  font-size: var(--font-size-lg);
+  margin: var(--spacing-xl) 0;
 }
 
 /* ========================================== */
@@ -418,11 +417,11 @@
 /* ========================================== */
 
 .results {
-  margin: 2rem 0;
+  margin: var(--spacing-xl) 0;
 }
 
 .results h2 {
-  font-size: 1.3rem;
+  font-size: var(--font-size-xl);
   margin-bottom: 1.5rem;
   color: var(--color-gray-800);
 }
@@ -446,19 +445,19 @@
 }
 
 .results__item-label {
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   color: var(--color-gray-800);
 }
 
 .results__item-percentage {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--color-primary);
 }
 
 .results__bar {
   height: 24px;
   background: var(--color-border-lighter);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
 }
 
@@ -469,7 +468,7 @@
 }
 
 .results__votes {
-  font-size: 0.85rem;
+  font-size: var(--font-size-sm);
   color: var(--color-gray-500);
 }
 
@@ -488,13 +487,13 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: 1rem;
+  padding: var(--spacing-base);
 }
 
 .modal__content {
   background: var(--color-white);
-  border-radius: 8px;
-  padding: 2rem;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
   max-width: 400px;
   width: 100%;
   box-shadow: var(--shadow-xl);
@@ -514,19 +513,19 @@
 
 .modal__content h2 {
   font-size: 1.3rem;
-  margin: 0 0 1rem 0;
+  margin: 0 0 var(--spacing-base) 0;
   color: var(--color-gray-800);
 }
 
 .modal__content p {
   color: var(--color-gray-600);
   margin: 0 0 1.5rem 0;
-  line-height: 1.5;
+  line-height: var(--line-height-normal);
 }
 
 .modal__actions {
   display: flex;
-  gap: 1rem;
+  gap: var(--spacing-base);
 }
 
 .modal__actions .btn {
@@ -624,7 +623,7 @@
   }
 
   .elections__card {
-    padding: 1rem;
+    padding: var(--spacing-base);
   }
 
   .elections__card-header {

@@ -5,8 +5,8 @@
  * Uses PhoneManager and AddressManager from profile refactoring.
  */
 
-import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
-import { doc, getDoc, updateDoc, addDoc, collection } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getFirebaseAuth, getFirebaseFirestore, httpsCallable } from '../../firebase/app.js';
+import { doc, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { R } from '../../i18n/strings-loader.js';
 import { showToast } from '../../js/components/toast.js';
 import { showStatus } from '../../js/components/status.js';
@@ -15,7 +15,6 @@ import { debounce } from '../../js/utils/debounce.js';
 import { initSearchableSelects } from '../../js/components/searchable-select.js';
 import { requireAdmin } from '../../js/rbac.js';
 // Note: initNavigation import removed - now handled by nav-header component
-import { firebaseApp } from '../../firebase/app.js';
 import { PhoneManager } from '../../js/profile/phone-manager.js';
 import { AddressManager } from '../../js/profile/address-manager.js';
 import { migrateOldPhoneFields, migrateOldAddressFields } from '../../js/profile/migration.js';
@@ -23,6 +22,9 @@ import { migrateOldPhoneFields, migrateOldAddressFields } from '../../js/profile
 // Initialize Firebase
 const auth = getFirebaseAuth();
 const db = getFirebaseFirestore();
+
+// Cloud Functions
+const updateMemberProfileFunction = httpsCallable('updatememberprofile', 'europe-west2');
 
 // Constants
 const SEARCHABLE_SELECT_INIT_DELAY = 100; // ms to wait for DOM ready before initializing SearchableSelect
@@ -123,6 +125,22 @@ function setI18nStrings() {
 
   const btnAddAddressText = document.getElementById('btn-add-address-text');
   if (btnAddAddressText) btnAddAddressText.textContent = R.string.btn_add_address || '+ Bæta við heimilisfangi';
+
+  // Communication preferences section
+  const sectionCommunication = document.getElementById('section-communication');
+  if (sectionCommunication) sectionCommunication.textContent = R.string.section_communication || 'Samskiptastillingar';
+
+  const labelReachable = document.getElementById('label-reachable');
+  if (labelReachable) labelReachable.textContent = R.string.label_reachable || 'Má hafa samband';
+
+  const labelReachableDescription = document.getElementById('label-reachable-description');
+  if (labelReachableDescription) labelReachableDescription.textContent = R.string.label_reachable_description || 'Leyfir flokknum að hafa samband vegna frétta og atburða';
+
+  const labelGroupable = document.getElementById('label-groupable');
+  if (labelGroupable) labelGroupable.textContent = R.string.label_groupable || 'Má bæta í hópa';
+
+  const labelGroupableDescription = document.getElementById('label-groupable-description');
+  if (labelGroupableDescription) labelGroupableDescription.textContent = R.string.label_groupable_description || 'Leyfir flokknum að bæta þér í vinnuhópa og póstlista';
 
   // Email placeholder
   const inputEmail = document.getElementById('input-email');
@@ -319,6 +337,19 @@ async function renderProfile() {
     await addressManager.save({ silent: true });
   }
 
+  // Communication preferences (reachable/groupable)
+  const reachableInput = document.getElementById('input-reachable');
+  if (reachableInput) {
+    // Default to true if not set
+    reachableInput.checked = profile.reachable !== false;
+  }
+
+  const groupableInput = document.getElementById('input-groupable');
+  if (groupableInput) {
+    // Default to true if not set
+    groupableInput.checked = profile.groupable !== false;
+  }
+
   // Setup field listeners for auto-save
   setupFieldListeners();
 
@@ -413,6 +444,28 @@ function setupFieldListeners() {
       await saveField('gender', newGender, genderStatus);
     }
   });
+
+  // Reachable (immediate save on change)
+  const reachableInput = document.getElementById('input-reachable');
+  const reachableStatus = document.getElementById('status-reachable');
+  if (reachableInput) {
+    reachableInput.addEventListener('change', async (e) => {
+      const newReachable = e.target.checked;
+      await saveField('reachable', newReachable, reachableStatus);
+      showToast(R.string.profile_preferences_saved || 'Stillingar vistaðar', 'success');
+    });
+  }
+
+  // Groupable (immediate save on change)
+  const groupableInput = document.getElementById('input-groupable');
+  const groupableStatus = document.getElementById('status-groupable');
+  if (groupableInput) {
+    groupableInput.addEventListener('change', async (e) => {
+      const newGroupable = e.target.checked;
+      await saveField('groupable', newGroupable, groupableStatus);
+      showToast(R.string.profile_preferences_saved || 'Stillingar vistaðar', 'success');
+    });
+  }
 }
 
 /**
@@ -442,27 +495,35 @@ async function saveField(fieldName, value, statusElement) {
     if (!memberData.profile) memberData.profile = {};
     memberData.profile[fieldName] = value;
 
-    // Add to sync queue for bi-directional sync to Django
+    // Sync to Django via Cloud Function
     try {
-      await addDoc(collection(db, 'sync_queue'), {
-        source: 'firestore',
-        target: 'django',
-        collection: 'members',
-        docId: kennitalaKey,
-        kennitala: currentKennitala,
-        django_id: memberData.metadata?.django_id || null,
-        action: 'update',
-        changes: {
-          [`profile.${fieldName}`]: value
-        },
-        created_at: new Date(),
-        synced_at: null,
-        sync_status: 'pending'
-      });
-      debug.log(`📝 Added to sync queue for field: ${fieldName}`);
+      debug.log(`🔄 Syncing ${fieldName} to Django...`);
+
+      // Map Firestore field names to Django API field names
+      const fieldMapping = {
+        'name': 'name',
+        'email': 'email',
+        'phone': 'phone',
+        'reachable': 'reachable',
+        'groupable': 'groupable',
+        'gender': 'gender',
+        'birthday': 'birthday'
+      };
+
+      const djangoFieldName = fieldMapping[fieldName];
+      if (djangoFieldName) {
+        const updates = { [djangoFieldName]: value };
+        const syncResult = await updateMemberProfileFunction({
+          kennitala: currentKennitala,
+          updates: updates
+        });
+        debug.log(`✅ Django sync result:`, syncResult.data);
+      } else {
+        debug.log(`ℹ️ Field ${fieldName} not mapped for Django sync`);
+      }
     } catch (syncError) {
-      // Log sync queue error but don't fail the save
-      debug.warn(`⚠️ Failed to add to sync queue:`, syncError);
+      // Log sync error but don't fail the save (Firestore was already updated)
+      debug.warn(`⚠️ Failed to sync to Django:`, syncError);
     }
 
     showStatus(statusElement, 'success', { baseClass: 'profile-field__status' });

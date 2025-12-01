@@ -1,3 +1,5 @@
+import { el } from '../utils/dom.js';
+
 /**
  * Card Component
  *
@@ -13,6 +15,8 @@
  * @param {Object} options - Card configuration
  * @param {string} options.title - Card title
  * @param {string|HTMLElement} options.content - Card content (HTML string or element)
+ *   ⚠️  SECURITY: If passing HTML string, content MUST be trusted/sanitized to prevent XSS.
+ *   Prefer HTMLElement or use textContent for user-generated content.
  * @param {string} options.variant - Card variant ('default', 'welcome', 'admin-welcome')
  * @param {Array} options.actions - Action buttons [{text, onClick, primary}]
  * @returns {Object} Component API with {element, setTitle, setContent, destroy}
@@ -25,19 +29,15 @@ export function createCard(options = {}) {
     actions = []
   } = options;
 
-  const card = document.createElement('div');
-  card.className = `card${variant !== 'default' ? ' card--' + variant : ''}`;
+  const card = el('div', `card${variant !== 'default' ? ' card--' + variant : ''}`);
 
   let titleEl = null;
   if (title) {
-    titleEl = document.createElement('h2');
-    titleEl.className = 'card__title';
-    titleEl.textContent = title;
+    titleEl = el('h2', 'card__title', {}, title);
     card.appendChild(titleEl);
   }
 
-  const contentEl = document.createElement('div');
-  contentEl.className = 'card__content';
+  const contentEl = el('div', 'card__content');
 
   if (typeof content === 'string') {
     contentEl.innerHTML = content;
@@ -48,14 +48,12 @@ export function createCard(options = {}) {
   card.appendChild(contentEl);
 
   if (actions.length > 0) {
-    const actionsEl = document.createElement('div');
-    actionsEl.className = 'card__actions';
+    const actionsEl = el('div', 'card__actions');
 
     actions.forEach(action => {
-      const btn = document.createElement('button');
-      btn.className = `btn${action.primary ? ' btn--primary' : ' btn--secondary'}`;
-      btn.textContent = action.text;
-      btn.onclick = action.onClick;
+      const btn = el('button', `btn${action.primary ? ' btn--primary' : ' btn--secondary'}`, {
+        onclick: action.onClick
+      }, action.text);
       actionsEl.appendChild(btn);
     });
 
@@ -67,8 +65,7 @@ export function createCard(options = {}) {
     element: card,
     setTitle: (newTitle) => {
       if (!titleEl) {
-        titleEl = document.createElement('h2');
-        titleEl.className = 'card__title';
+        titleEl = el('h2', 'card__title');
         card.insertBefore(titleEl, card.firstChild);
       }
       titleEl.textContent = newTitle;

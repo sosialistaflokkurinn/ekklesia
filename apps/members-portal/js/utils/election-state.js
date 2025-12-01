@@ -41,16 +41,46 @@ class ElectionState extends EventTarget {
   }
 
   /**
+   * Map API status to internal status
+   * API: 'draft' | 'published' | 'paused' | 'closed' | 'archived'
+   * Internal: 'upcoming' | 'active' | 'closed'
+   * @param {string} apiStatus - Status from API
+   * @returns {string} Internal status
+   */
+  mapStatus(apiStatus) {
+    const statusMap = {
+      'draft': 'upcoming',
+      'published': 'active',
+      'paused': 'active',  // Show as active but voting might be paused
+      'closed': 'closed',
+      'archived': 'closed'
+    };
+    return statusMap[apiStatus] || apiStatus;
+  }
+
+  /**
    * Initialize state with election data
    * @param {Object} election - Election data from API
    */
   initialize(election) {
+    // Determine start time: voting_starts_at > scheduled_start > published_at
+    const startTime = election.voting_starts_at || election.scheduled_start || election.published_at;
+
+    // Determine end time: voting_ends_at > scheduled_end > (start + default duration)
+    let endTime = election.voting_ends_at || election.scheduled_end;
+
+    // If no end time but we have a start time, calculate end based on default duration
+    if (!endTime && startTime) {
+      const startDate = new Date(startTime);
+      endTime = new Date(startDate.getTime() + DEFAULT_DURATION_MINUTES * 60 * 1000).toISOString();
+    }
+
     this.state = {
       id: election.id,
-      status: election.status,
-      voting_starts_at: election.voting_starts_at,
-      voting_ends_at: election.voting_ends_at,
-      duration_minutes: this.calculateDuration(election.voting_starts_at, election.voting_ends_at),
+      status: this.mapStatus(election.status),
+      voting_starts_at: startTime,
+      voting_ends_at: endTime,
+      duration_minutes: this.calculateDuration(startTime, endTime),
       title: election.title,
       question: election.question,
       has_voted: election.has_voted || false
@@ -156,8 +186,8 @@ class ElectionState extends EventTarget {
       duration: durationMinutes
     });
 
-    // TODO: Call API to update election on server
-    // await updateElectionAPI(this.state.id, { status: 'active', ... });
+    // TODO(#283): Call Admin Elections API to persist state to server
+    // await ElectionsAdminAPI.openElection(this.state.id);
 
     this.dispatchEvent(new CustomEvent('started', {
       detail: this.state
@@ -176,8 +206,8 @@ class ElectionState extends EventTarget {
 
     debug.log('Election closed immediately');
 
-    // TODO: Call API to update election on server
-    // await updateElectionAPI(this.state.id, { status: 'closed', ... });
+    // TODO(#283): Call Admin Elections API to persist state to server
+    // await ElectionsAdminAPI.closeElection(this.state.id);
 
     this.dispatchEvent(new CustomEvent('closed', {
       detail: this.state

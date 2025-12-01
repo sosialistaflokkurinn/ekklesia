@@ -9,10 +9,13 @@
 import { R } from '/i18n/strings-loader.js';
 import { debug } from './utils/debug.js';
 import { getCurrentUser, auth, appCheck } from '/js/auth.js';
-import { signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import { getApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js';
-import { getToken as getAppCheckToken } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app-check.js';
+import {
+  signInWithCustomToken,
+  getApp,
+  getFunctions,
+  httpsCallable,
+  getAppCheckTokenValue
+} from '/firebase/app.js';
 
 /**
  * Base64 URL encode a buffer
@@ -78,9 +81,8 @@ function generateState() {
  * Handle OAuth callback from Kenni.is
  *
  * @param {string} authCode - Authorization code from Kenni.is
- * @param {Object} functions - Firebase Functions instance
  */
-async function handleOAuthCallback(authCode, functions) {
+async function handleOAuthCallback(authCode) {
   const statusEl = document.getElementById('status');
   const statusTextEl = document.getElementById('status-text');
   const authButtonsEl = document.getElementById('auth-buttons');
@@ -96,18 +98,17 @@ async function handleOAuthCallback(authCode, functions) {
     }
 
     // Get App Check token for enhanced security
-    let appCheckTokenResponse;
-    try {
-      appCheckTokenResponse = await getAppCheckToken(appCheck, false);
+    const appCheckToken = await getAppCheckTokenValue();
+    if (appCheckToken) {
       debug.log('✅ App Check token obtained for handleKenniAuth');
-    } catch (error) {
-      debug.warn('⚠️ App Check token unavailable, continuing without it:', error);
+    } else {
+      debug.warn('⚠️ App Check token unavailable, continuing without it');
     }
 
     // Call Cloud Function to exchange code for token
     const headers = { 'Content-Type': 'application/json', 'X-Request-ID': generateRequestId() };
-    if (appCheckTokenResponse) {
-      headers['X-Firebase-AppCheck'] = appCheckTokenResponse.token;
+    if (appCheckToken) {
+      headers['X-Firebase-AppCheck'] = appCheckToken;
     }
 
     const response = await fetch(R.string.config_api_handle_auth, {
@@ -152,7 +153,8 @@ async function handleOAuthCallback(authCode, functions) {
     // Automatically verify membership after login
     statusTextEl.textContent = R.string.status_verifying_membership;
     try {
-      const verifyMembership = httpsCallable(functions, 'verifyMembership');
+      // Use the wrapper correctly: httpsCallable(name, region)
+      const verifyMembership = httpsCallable('verifyMembership', R.string.config_firebase_region);
       await verifyMembership();
       debug.log(R.string.log_membership_verified);
     } catch (verifyError) {
@@ -253,9 +255,9 @@ async function init() {
   // Load i18n strings
   await R.load('is');
 
-  // Get Firebase app and functions
+  // Get Firebase app
   const app = getApp();
-  const functions = getFunctions(app, R.string.config_firebase_region);
+  // functions instance is managed internally by firebase/app.js wrappers
 
   // Update UI strings
   updateLoginStrings();
@@ -278,7 +280,7 @@ async function init() {
     }
 
     // Handle OAuth callback
-    await handleOAuthCallback(authCode, functions);
+    await handleOAuthCallback(authCode);
     return;
   }
 

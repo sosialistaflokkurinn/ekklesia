@@ -530,24 +530,24 @@ SELECT used FROM voting_tokens WHERE token_hash = $1 FOR UPDATE NOWAIT;
 - Lifecycle management (open, close, publish results)
 - Soft delete (hide/unhide elections)
 
-### Member Sync Operations (Nov 2025)
+### Member Sync Operations (Updated Nov 2025)
 
-**Services**: Bidirectional sync between Django backend and Firestore
+**Services**: Real-time bidirectional sync between Django backend and Firestore
 
-**Usage Pattern**:
-- **Django → Firestore**: Hourly sync (Cloud Scheduler)
-- **Firestore → Django**: Daily sync at 3:30 AM (Cloud Scheduler)
-- **Real-time tracking**: Change detection on member updates
+**Usage Pattern** (Updated 2025-11-25):
+- **Django → Firestore**: Instant via `sync_from_django` webhook
+- **Firestore → Django**: Instant via `updatememberprofile` function
+- **Manual full sync**: `syncmembers` for disaster recovery only
 
 **Load Characteristics**:
-- Batch operations: 100-500 member updates per sync
-- Off-peak execution: No impact on meeting-day performance
-- Database impact: Minimal (separate from voting tables)
+- Real-time sync: Individual updates on save (< 1 second latency)
+- No scheduled jobs: Instant webhooks replace batch operations
+- Database impact: Minimal (lightweight HTTP calls)
 
 **Infrastructure**:
-- Cloud Functions: `bidirectional_sync`, `sync_members`, `track_member_changes`
-- Firestore: `members` collection, `sync_queue` collection
-- Composite index: `sync_queue` on source+sync_status+target+created_at
+- Cloud Functions: `sync_from_django`, `updatememberprofile`, `syncmembers`
+- Address validation: `search_addresses`, `validate_address`, `validate_postal_code`
+- Firestore: `members` collection (no sync_queue - removed)
 
 ---
 
@@ -558,7 +558,7 @@ SELECT used FROM voting_tokens WHERE token_hash = $1 FOR UPDATE NOWAIT;
 - [OPERATIONAL_PROCEDURES.md](../../../operations/OPERATIONAL_PROCEDURES.md) - Meeting day operations
 - Events Service design (see services/events/) - Events service design
 - Elections Service design (see services/elections/) - Elections service design
-- Member Sync design (see services/members/functions/) - Bidirectional Django ↔ Firestore sync
+- Member Sync design (see services/members/functions/) - Real-time Django ↔ Firestore sync
 
 ---
 

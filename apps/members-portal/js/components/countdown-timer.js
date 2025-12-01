@@ -16,6 +16,7 @@
  */
 
 import { debug } from '../utils/debug.js';
+import { el } from '../utils/dom.js';
 
 /**
  * Create countdown timer element
@@ -45,19 +46,16 @@ export function createCountdownTimer(options = {}) {
   const end = endDate instanceof Date ? endDate : new Date(endDate);
 
   // Create container
-  const container = document.createElement('div');
-  container.className = 'countdown-timer';
+  const container = el('div', 'countdown-timer');
 
   // Stopwatch display
-  const stopwatchEl = document.createElement('div');
-  stopwatchEl.className = 'countdown-timer__stopwatch';
+  const stopwatchEl = el('div', 'countdown-timer__stopwatch');
   if (showStopwatch || showBoth) {
     container.appendChild(stopwatchEl);
   }
 
   // Human-readable display
-  const humanEl = document.createElement('div');
-  humanEl.className = 'countdown-timer__human';
+  const humanEl = el('div', 'countdown-timer__human');
   if (showHumanReadable || showBoth) {
     container.appendChild(humanEl);
   }

@@ -1,6 +1,6 @@
 # Admin Portal Styles
 
-**Last Updated**: 2025-11-05
+**Last Updated**: 2025-11-24
 **Pattern**: Layered CSS (shared foundation + admin-specific)
 
 ---
@@ -142,7 +142,7 @@ These styles are **unique to admin portal**:
 
 ### members-admin.css - Members List
 
-**Purpose**: Members list table, search, pagination
+**Purpose**: Members list table, search, pagination with mobile-responsive card layout
 
 **Key classes**:
 ```css
@@ -151,6 +151,11 @@ These styles are **unique to admin portal**:
 .members-pagination { ... }
 .members-filter { ... }
 ```
+
+**Mobile Responsive** (max-width: 768px):
+- Table rows convert to cards
+- Each cell displays with label
+- Improved readability on mobile devices
 
 **Used by**:
 - `admin/members.html` (members list)

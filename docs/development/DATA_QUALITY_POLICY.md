@@ -240,8 +240,8 @@ if (country === 'IS' && !/^\d{3}$/.test(postalCode)) {
 **Format requirement**: DDMMYY-XXXX (10 digits, hyphen after 6th)
 
 **Auto-correction**:
-- ✅ Auto-format with hyphen on display (999999-9999)
-- ✅ Store without hyphen for querying (9999999999)
+- ✅ Auto-format with hyphen on display (010300-9999)
+- ✅ Store without hyphen for querying (0103009999)
 - ❌ No auto-correction of digits (too risky - these are identity)
 
 **Validation**:
@@ -405,7 +405,7 @@ When adding new validation or auto-correction, ask:
 
 **User intent**: Verify their identity
 **Storage format**: 10 digits
-**Natural format**: "999999-9999" or "9999999999"
+**Natural format**: "010300-9999" or "0103009999" (DDMMYY-XXXX, e.g., Jan 3, 2000)
 **Auto-correct**: ??? (can't fix typos - too risky)
 **Visible**: Yes (but what if we guess wrong?)
 **Reversible**: Yes (but damage already done - wrong person identified)

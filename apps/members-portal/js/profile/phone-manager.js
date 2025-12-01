@@ -15,6 +15,7 @@ import { debug } from '../utils/debug.js';
 import { showToast } from '../components/toast.js';
 import { showStatus, createStatusIcon } from '../components/status.js';
 import { SearchableSelect } from '../components/searchable-select.js';
+import { el } from '../utils/dom.js';
 
 /**
  * Expand collapsible section helper
@@ -105,39 +106,34 @@ export class PhoneManager {
     container.innerHTML = '';
 
     if (this.phoneNumbers.length === 0) {
-      const emptyMessage = document.createElement('p');
-      emptyMessage.textContent = R.string.profile_no_phone_numbers;
-      emptyMessage.style.color = 'var(--color-gray-500)';
-      emptyMessage.style.fontSize = '0.9375rem';
+      const emptyMessage = el('p', '', {
+        style: {
+          color: 'var(--color-gray-500)',
+          fontSize: '0.9375rem'
+        }
+      }, R.string.profile_no_phone_numbers);
+      
       container.appendChild(emptyMessage);
       this.updateSimpleDisplay();
       return;
     }
 
     this.phoneNumbers.forEach((phone, index) => {
-      const phoneItem = document.createElement('div');
-      phoneItem.className = 'phone-number-item';
-      if (phone.is_default) {
-        phoneItem.classList.add('phone-number-item--default');
-      }
+      // Country selector options
+      const countries = getCountriesSorted();
+      const options = countries.map(country => {
+        const callingCode = getCountryCallingCode(country.code);
+        return el('option', '', {
+          value: country.code,
+          'data-search': `${country.nameIs} ${country.nameEn} ${country.code} ${callingCode} ${callingCode.replace('+', '')}`,
+          selected: country.code === phone.country
+        }, `${getCountryFlag(country.code)} ${callingCode}`);
+      });
 
       // Country selector
-      const countrySelector = document.createElement('select');
-      countrySelector.className = 'phone-country-selector';
-      countrySelector.dataset.index = index;
-
-      const countries = getCountriesSorted();
-      countries.forEach(country => {
-        const option = document.createElement('option');
-        option.value = country.code;
-        const callingCode = getCountryCallingCode(country.code);
-        option.textContent = `${getCountryFlag(country.code)} ${callingCode}`;
-        option.setAttribute('data-search', `${country.nameIs} ${country.nameEn} ${country.code} ${callingCode} ${callingCode.replace('+', '')}`);
-        if (country.code === phone.country) {
-          option.selected = true;
-        }
-        countrySelector.appendChild(option);
-      });
+      const countrySelector = el('select', 'phone-country-selector', {
+        'data-index': index
+      }, ...options);
 
       const statusIcon = createStatusIcon();
 
@@ -150,21 +146,29 @@ export class PhoneManager {
           debug.log(`✏️ Country changed, updating...`);
           this.phoneNumbers[index].country = newCountry;
           showStatus(statusIcon, 'loading', { baseClass: 'profile-field__status' });
-          await this.save();
-          showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
-          this.render();
+          try {
+            await this.save();
+            showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
+            this.render();
+          } catch (error) {
+            debug.error('Failed to save phone country:', error);
+            showStatus(statusIcon, 'error', { baseClass: 'profile-field__status' });
+            // Revert change
+            this.phoneNumbers[index].country = phone.country;
+            this.render();
+          }
         } else {
           debug.log('ℹ️ No change, skipping save');
         }
       });
 
       // Phone number input
-      const numberInput = document.createElement('input');
-      numberInput.type = 'tel';
-      numberInput.className = 'phone-number-input';
-      numberInput.value = phone.number;
-      numberInput.placeholder = '7758493';
-      numberInput.dataset.index = index;
+      const numberInput = el('input', 'phone-number-input', {
+        type: 'tel',
+        value: phone.number,
+        placeholder: '7758493',
+        'data-index': index
+      });
 
       // Auto-save on blur
       numberInput.addEventListener('blur', async (e) => {
@@ -175,44 +179,44 @@ export class PhoneManager {
           debug.log(`✏️ Phone number changed, updating...`);
           this.phoneNumbers[index].number = newNumber;
           showStatus(statusIcon, 'loading', { baseClass: 'profile-field__status' });
-          await this.save();
-          showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
+          try {
+            await this.save();
+            showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
+          } catch (error) {
+            debug.error('Failed to save phone number:', error);
+            showStatus(statusIcon, 'error', { baseClass: 'profile-field__status' });
+            // Revert change
+            this.phoneNumbers[index].number = phone.number;
+            e.target.value = phone.number;
+          }
         } else {
           debug.log('ℹ️ No change, skipping save');
         }
       });
 
       // Default star icon
-      const defaultIcon = document.createElement('span');
-      defaultIcon.className = 'phone-default-icon';
-      defaultIcon.textContent = phone.is_default ? '⭐' : '☆';
-      defaultIcon.title = phone.is_default
-        ? (R.string.profile_phone_default_set)
-        : (R.string.profile_phone_set_default);
-      defaultIcon.style.cursor = 'pointer';
-
-      defaultIcon.addEventListener('click', () => {
-        this.setDefault(index);
-      });
+      const defaultIcon = el('span', 'phone-default-icon', {
+        title: phone.is_default ? R.string.profile_phone_default_set : R.string.profile_phone_set_default,
+        style: { cursor: 'pointer' },
+        onclick: () => this.setDefault(index)
+      }, phone.is_default ? '⭐' : '☆');
 
       // Delete button
-      const deleteBtn = document.createElement('button');
-      deleteBtn.type = 'button';
-      deleteBtn.className = 'phone-delete-btn';
-      deleteBtn.textContent = '🗑️';
-      deleteBtn.title = R.string.profile_phone_delete;
-      deleteBtn.disabled = this.phoneNumbers.length === 1;
-
-      deleteBtn.addEventListener('click', () => {
-        this.delete(index);
-      });
+      const deleteBtn = el('button', 'phone-delete-btn', {
+        type: 'button',
+        title: R.string.profile_phone_delete,
+        disabled: this.phoneNumbers.length === 1,
+        onclick: () => this.delete(index)
+      }, '🗑️');
 
       // Assemble
-      phoneItem.appendChild(countrySelector);
-      phoneItem.appendChild(numberInput);
-      phoneItem.appendChild(statusIcon);
-      phoneItem.appendChild(defaultIcon);
-      phoneItem.appendChild(deleteBtn);
+      const phoneItem = el('div', `phone-number-item${phone.is_default ? ' phone-number-item--default' : ''}`, {},
+        countrySelector,
+        numberInput,
+        statusIcon,
+        defaultIcon,
+        deleteBtn
+      );
 
       container.appendChild(phoneItem);
 
@@ -401,6 +405,16 @@ export class PhoneManager {
     const label = document.getElementById('label-phone-numbers');
     if (label) {
       label.addEventListener('click', () => this.toggleSection());
+    }
+
+    // Ensure section starts collapsed (set inline style for toggle logic)
+    const section = document.getElementById('phone-numbers-section');
+    const simpleDisplay = document.getElementById('value-phone-simple');
+    if (section) {
+      section.style.display = 'none';
+    }
+    if (simpleDisplay) {
+      simpleDisplay.style.display = 'block';
     }
   }
 }

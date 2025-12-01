@@ -196,7 +196,21 @@ def handleKenniAuth_handler(req: https_fn.Request) -> https_fn.Response:
         # Get Kenni.is configuration from environment
         issuer_url = os.environ.get("KENNI_IS_ISSUER_URL")
         client_id = os.environ.get("KENNI_IS_CLIENT_ID")
-        client_secret = os.environ.get("KENNI_IS_CLIENT_SECRET")
+        
+        # Try multiple sources for the client secret
+        # 1. Standard env var (KENNI_IS_CLIENT_SECRET)
+        # 2. Firebase/Cloud Run default env var (kenni-client-secret)
+        # 3. File mount (/run/secrets/kenni-client-secret)
+        client_secret = os.environ.get("KENNI_IS_CLIENT_SECRET") or os.environ.get("kenni-client-secret")
+        
+        # Fallback: Try to read secret from file (Firebase Functions / Cloud Run mount)
+        if not client_secret and os.path.exists("/run/secrets/kenni-client-secret"):
+            try:
+                with open("/run/secrets/kenni-client-secret", "r") as f:
+                    client_secret = f.read().strip()
+            except Exception as e:
+                log_json("warning", "Failed to read secret file", error=str(e), correlationId=correlation_id)
+
         redirect_uri = os.environ.get("KENNI_IS_REDIRECT_URI")
 
         missing = [

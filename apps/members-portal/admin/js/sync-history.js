@@ -6,12 +6,13 @@
 
 // Import from member portal public directory (two levels up from /admin/js/)
 import { initSession } from '../../session/init.js';
-import { initNavigation } from '../../js/nav.js';
+import { initNavigation } from '../../js/nav-interactions.js';
 import { debug } from '../../js/utils/debug.js';
 import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
 import { collection, query, orderBy, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { adminStrings } from './i18n/admin-strings-loader.js';
 import { checkAdminAccess, calculateDuration } from './utils/admin-helpers.js';
+import { el } from '../../js/utils/dom.js';
 
 // Initialize Firebase services
 const auth = getFirebaseAuth();
@@ -118,8 +119,6 @@ function renderHistoryTable(logs) {
  * Create a table row for a sync log
  */
 function createHistoryRow(log, strings) {
-  const tr = document.createElement('tr');
-
   // Format timestamp (use created_at from Firestore)
   const timestamp = log.created_at?.toDate?.() || (log.created_at ? new Date(log.created_at) : new Date());
   const formattedDate = timestamp.toLocaleString('is-IS', {
@@ -138,17 +137,17 @@ function createHistoryRow(log, strings) {
   // Calculate duration
   const duration = calculateDuration(stats);
 
-  // Build row HTML
-  tr.innerHTML = `
-    <td>${formattedDate}</td>
-    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-    <td>${stats.total_members || 0}</td>
-    <td>${stats.synced || 0}</td>
-    <td>${stats.failed || 0}</td>
-    <td>${duration}</td>
-  `;
-
-  return tr;
+  // Build row using el() helper
+  return el('tr', '', {},
+    el('td', '', {}, formattedDate),
+    el('td', '', {}, 
+      el('span', `status-badge ${statusClass}`, {}, statusText)
+    ),
+    el('td', '', {}, String(stats.total_members || 0)),
+    el('td', '', {}, String(stats.synced || 0)),
+    el('td', '', {}, String(stats.failed || 0)),
+    el('td', '', {}, duration)
+  );
 }
 
 /**
@@ -176,14 +175,14 @@ function setPageText(strings) {
   // Page title
   document.getElementById('page-title').textContent = strings.history_title;
 
-  // Navigation
-  document.getElementById('nav-brand').textContent = strings.admin_brand;
-  document.getElementById('nav-admin-dashboard').textContent = strings.nav_admin_dashboard;
-  document.getElementById('nav-admin-members').textContent = strings.nav_admin_members;
-  document.getElementById('nav-admin-sync').textContent = strings.nav_admin_sync;
-  document.getElementById('nav-admin-history').textContent = strings.nav_admin_history;
-  document.getElementById('nav-back-to-member').textContent = strings.nav_back_to_member;
-  document.getElementById('nav-logout').textContent = strings.nav_logout;
+  // Navigation - Handled by nav-header.js component
+  // document.getElementById('nav-brand').textContent = strings.admin_brand;
+  // document.getElementById('nav-admin-dashboard').textContent = strings.nav_admin_dashboard;
+  // document.getElementById('nav-admin-members').textContent = strings.nav_admin_members;
+  // document.getElementById('nav-admin-sync').textContent = strings.nav_admin_sync;
+  // document.getElementById('nav-admin-history').textContent = strings.nav_admin_history;
+  // document.getElementById('nav-back-to-member').textContent = strings.nav_back_to_member;
+  // document.getElementById('nav-logout').textContent = strings.nav_logout;
 
   // Page header
   document.getElementById('history-title').textContent = strings.history_title;

@@ -1,6 +1,6 @@
 # Infrastructure Category Map
 
-**Last Updated**: 2025-11-14
+**Last Updated**: 2025-11-24
 **Status**: ✅ Level 2 Category Map
 **Purpose**: Cloud infrastructure, services, deployment pipelines, and documentation maintenance
 
@@ -38,16 +38,24 @@ This category map provides navigation to all infrastructure documentation includ
 - [Cloud SQL Proxy](https://cloud.google.com/sql/docs/postgres/sql-proxy) - Secure database connections
 
 ### Deployment
+- [Setup Documentation Index](setup/INDEX.md) - Setup and deployment docs overview
 - [Deployment Scripts README](../scripts/deployment/README.md) - Deployment automation tools
 - [Firebase CLI](https://firebase.google.com/docs/cli) - Deployment tooling
 - [gcloud CLI](https://cloud.google.com/sdk/gcloud) - Cloud deployment
 
+### Scripts & Automation
+- [Scripts README](../scripts/README.md) - Overview of all automation scripts
+- [Admin Scripts](../scripts/admin/) - Administrative tasks
+- [Maintenance Scripts](../scripts/maintenance/) - Code health and pattern validation
+- [Setup Scripts](../scripts/setup/) - Environment setup and git hooks
+- [Utility Scripts](../scripts/utils/) - Helper tools and context loaders
+
 ### Documentation Maintenance
-- [Admin Scripts README](../scripts/admin/README.md) - Administrative tools overview
 - [Documentation Maintenance Scripts](../scripts/admin/documentation-maintenance/README.md) - Validation and audit tools
   - `validate-all.sh` - Master validation script (runs all checks)
   - `check-docs-freshness.sh` - Monitors documentation freshness
   - `validate-links.py` - Validates markdown links
+  - `audit-docs.py` - Comprehensive documentation audit against codebase
   - `validate_documentation_map.py` - Validates DOCUMENTATION_MAP.md structure
 
 ---

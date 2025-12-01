@@ -3,8 +3,10 @@ firebase-functions==0.5.0
 PyJWT[crypto]==2.10.1
 requests==2.32.5
 google-cloud-storage==3.5.0
-google-cloud-secret-manager==2.25.0
 python-dotenv==1.2.1
+cloudevents==1.10.1
+iceaddr==0.5.6
+setuptools>=65.0.0
 
 # Testing dependencies
 pytest==9.0.0

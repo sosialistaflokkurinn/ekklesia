@@ -330,26 +330,26 @@ class DebugLogger {
       right: 20px;
       z-index: 99999;
       padding: 12px 20px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
+      background: linear-gradient(135deg, var(--color-admin-blue) 0%, var(--color-admin-purple) 100%);
+      color: var(--color-white);
       border: none;
       border-radius: 8px;
       font-size: 14px;
       font-weight: bold;
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+      box-shadow: 0 4px 15px var(--color-admin-blue-alpha-40);
       transition: all 0.3s ease;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     `;
     
     button.onmouseover = () => {
       button.style.transform = 'translateY(-2px)';
-      button.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.6)';
+      button.style.boxShadow = '0 6px 20px var(--color-admin-blue-alpha-60)';
     };
     
     button.onmouseout = () => {
       button.style.transform = 'translateY(0)';
-      button.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
+      button.style.boxShadow = '0 4px 15px var(--color-admin-blue-alpha-40)';
     };
     
     button.onclick = () => this.export();

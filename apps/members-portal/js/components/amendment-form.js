@@ -10,8 +10,9 @@
 import { createButton } from './button.js';
 import { showToast } from './toast.js';
 import { showAlert } from './modal.js';
-import { R } from '/i18n/strings-loader.js';
+import { R } from '../../i18n/strings-loader.js';
 import { submitAmendment } from '../api/elections-api.js';
+import { el } from '../utils/dom.js';
 
 /**
  * Creates an amendment submission form
@@ -55,104 +56,51 @@ export function createAmendmentForm({ sections, sessionId, R, onSubmitSuccess })
     errorSubmission: R.string.amendment_error_submission
   };
 
-  // Create container element
-  const container = document.createElement('div');
-  container.className = 'amendment-form';
-
-  // Create form
-  const form = document.createElement('form');
-  form.className = 'amendment-form__form';
-
-  // Section selector
-  const sectionGroup = document.createElement('div');
-  sectionGroup.className = 'amendment-form__group';
-
-  const sectionLabel = document.createElement('label');
-  sectionLabel.className = 'amendment-form__label';
-  sectionLabel.htmlFor = 'amendment-section-select';
-  sectionLabel.textContent = strings.sectionLabel;
-
-  const sectionSelect = document.createElement('select');
-  sectionSelect.className = 'amendment-form__select';
-  sectionSelect.id = 'amendment-section-select';
-  sectionSelect.required = true;
-
-  // Add placeholder option
-  const placeholderOption = document.createElement('option');
-  placeholderOption.value = '';
-  placeholderOption.textContent = strings.sectionPlaceholder;
-  placeholderOption.disabled = true;
-  placeholderOption.selected = true;
-  sectionSelect.appendChild(placeholderOption);
+  // Create form elements
+  const sectionSelect = el('select', 'amendment-form__select', {
+    id: 'amendment-section-select',
+    required: true
+  }, el('option', '', { value: '', disabled: true, selected: true }, strings.sectionPlaceholder));
 
   // Add section options
   sections.forEach(section => {
-    const option = document.createElement('option');
-    option.value = section.id;
-    option.textContent = section.heading;
-    option.dataset.text = section.text;
-    sectionSelect.appendChild(option);
+    sectionSelect.appendChild(el('option', '', {
+      value: section.id,
+      'data-text': section.text
+    }, section.heading));
   });
 
-  sectionGroup.appendChild(sectionLabel);
-  sectionGroup.appendChild(sectionSelect);
+  const sectionGroup = el('div', 'amendment-form__group', {},
+    el('label', 'amendment-form__label', { htmlFor: 'amendment-section-select' }, strings.sectionLabel),
+    sectionSelect
+  );
 
-  // Original text display (read-only)
-  const originalTextGroup = document.createElement('div');
-  originalTextGroup.className = 'amendment-form__group amendment-form__group--hidden';
+  const originalTextDisplay = el('div', 'amendment-form__original-text', { id: 'amendment-original-text' });
+  const originalTextGroup = el('div', 'amendment-form__group amendment-form__group--hidden', {},
+    el('label', 'amendment-form__label', { htmlFor: 'amendment-original-text' }, strings.originalTextLabel),
+    originalTextDisplay
+  );
 
-  const originalTextLabel = document.createElement('label');
-  originalTextLabel.className = 'amendment-form__label';
-  originalTextLabel.htmlFor = 'amendment-original-text';
-  originalTextLabel.textContent = strings.originalTextLabel;
+  const proposedTextArea = el('textarea', 'amendment-form__textarea', {
+    id: 'amendment-proposed-text',
+    rows: 6,
+    placeholder: strings.proposedTextPlaceholder,
+    required: true
+  });
+  const proposedTextGroup = el('div', 'amendment-form__group amendment-form__group--hidden', {},
+    el('label', 'amendment-form__label', { htmlFor: 'amendment-proposed-text' }, strings.proposedTextLabel),
+    proposedTextArea
+  );
 
-  const originalTextDisplay = document.createElement('div');
-  originalTextDisplay.className = 'amendment-form__original-text';
-  originalTextDisplay.id = 'amendment-original-text';
-
-  originalTextGroup.appendChild(originalTextLabel);
-  originalTextGroup.appendChild(originalTextDisplay);
-
-  // Proposed text input
-  const proposedTextGroup = document.createElement('div');
-  proposedTextGroup.className = 'amendment-form__group amendment-form__group--hidden';
-
-  const proposedTextLabel = document.createElement('label');
-  proposedTextLabel.className = 'amendment-form__label';
-  proposedTextLabel.htmlFor = 'amendment-proposed-text';
-  proposedTextLabel.textContent = strings.proposedTextLabel;
-
-  const proposedTextArea = document.createElement('textarea');
-  proposedTextArea.className = 'amendment-form__textarea';
-  proposedTextArea.id = 'amendment-proposed-text';
-  proposedTextArea.rows = 6;
-  proposedTextArea.placeholder = strings.proposedTextPlaceholder;
-  proposedTextArea.required = true;
-
-  proposedTextGroup.appendChild(proposedTextLabel);
-  proposedTextGroup.appendChild(proposedTextArea);
-
-  // Rationale input (optional)
-  const rationaleGroup = document.createElement('div');
-  rationaleGroup.className = 'amendment-form__group amendment-form__group--hidden';
-
-  const rationaleLabel = document.createElement('label');
-  rationaleLabel.className = 'amendment-form__label';
-  rationaleLabel.htmlFor = 'amendment-rationale';
-  rationaleLabel.textContent = strings.rationaleLabel;
-
-  const rationaleTextArea = document.createElement('textarea');
-  rationaleTextArea.className = 'amendment-form__textarea';
-  rationaleTextArea.id = 'amendment-rationale';
-  rationaleTextArea.rows = 4;
-  rationaleTextArea.placeholder = strings.rationalePlaceholder;
-
-  rationaleGroup.appendChild(rationaleLabel);
-  rationaleGroup.appendChild(rationaleTextArea);
-
-  // Submit button
-  const buttonGroup = document.createElement('div');
-  buttonGroup.className = 'amendment-form__button-group';
+  const rationaleTextArea = el('textarea', 'amendment-form__textarea', {
+    id: 'amendment-rationale',
+    rows: 4,
+    placeholder: strings.rationalePlaceholder
+  });
+  const rationaleGroup = el('div', 'amendment-form__group amendment-form__group--hidden', {},
+    el('label', 'amendment-form__label', { htmlFor: 'amendment-rationale' }, strings.rationaleLabel),
+    rationaleTextArea
+  );
 
   const submitBtn = createButton({
     text: strings.submitButton,
@@ -160,17 +108,17 @@ export function createAmendmentForm({ sections, sessionId, R, onSubmitSuccess })
     size: 'large',
     type: 'submit'
   });
+  const buttonGroup = el('div', 'amendment-form__button-group', {}, submitBtn.element);
 
-  buttonGroup.appendChild(submitBtn.element);
+  const form = el('form', 'amendment-form__form', {},
+    sectionGroup,
+    originalTextGroup,
+    proposedTextGroup,
+    rationaleGroup,
+    buttonGroup
+  );
 
-  // Assemble form
-  form.appendChild(sectionGroup);
-  form.appendChild(originalTextGroup);
-  form.appendChild(proposedTextGroup);
-  form.appendChild(rationaleGroup);
-  form.appendChild(buttonGroup);
-
-  container.appendChild(form);
+  const container = el('div', 'amendment-form', {}, form);
 
   // Section change handler - show/hide text fields
   let selectedSectionText = '';
@@ -243,7 +191,7 @@ export function createAmendmentForm({ sections, sessionId, R, onSubmitSuccess })
       }
 
     } catch (error) {
-      console.error('Amendment submission error:', error);
+      debug.error('Amendment submission error:', error);
       showToast(`${strings.errorSubmission}: ${error.message}`, 'error');
     } finally {
       submitBtn.setLoading(false, strings.submitButton);

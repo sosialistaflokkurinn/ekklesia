@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Modal Dialog Component
  *
@@ -19,6 +18,7 @@
 
 import { debug } from '../utils/debug.js';
 import { R } from '../../i18n/strings-loader.js';
+import { el } from '../utils/dom.js';
 
 /**
  * Active modal instance (only one modal at a time)
@@ -27,17 +27,19 @@ let activeModal = null;
 
 /**
  * Show a modal dialog
- * 
+ *
  * @param {Object} options - Modal configuration
  * @param {string} options.title - Modal title
  * @param {string|HTMLElement} options.content - Modal content (HTML string or element)
+ *   ⚠️  SECURITY: If passing HTML string, content MUST be trusted/sanitized to prevent XSS.
+ *   Prefer HTMLElement or use textContent for user-generated content.
  * @param {Array<Object>} options.buttons - Button configurations
  * @param {boolean} options.closeOnOverlay - Close when clicking overlay (default: true)
  * @param {boolean} options.closeOnEscape - Close on ESC key (default: true)
  * @param {Function} options.onClose - Callback when modal closes
  * @param {string} options.size - Modal size: 'sm', 'md', 'lg', 'xl' (default: 'md')
  * @returns {Object} Modal instance with close() method
- * 
+ *
  * @example
  * const modal = showModal({
  *   title: 'Confirmation',
@@ -64,65 +66,49 @@ export function showModal(options = {}) {
     activeModal.close();
   }
 
-  // Create modal overlay
-  const overlay = document.createElement('div');
-  overlay.className = 'modal-overlay';
-  overlay.setAttribute('role', 'dialog');
-  overlay.setAttribute('aria-modal', 'true');
-  overlay.setAttribute('aria-labelledby', 'modal-title');
-
-  // Create modal container
-  const modal = document.createElement('div');
-  modal.className = `modal modal--${size}`;
+  // Store previously focused element to restore later
+  const previousActiveElement = document.activeElement;
 
   // Create modal header
-  const header = document.createElement('div');
-  header.className = 'modal__header';
+  const titleElement = el('h2', 'modal__title', { id: 'modal-title' }, title);
+  const closeButton = el('button', 'modal__close', {
+    'aria-label': R.string?.modal_close_aria || 'Loka',
+    onclick: () => instance.close()
+  }, '×');
 
-  const titleElement = document.createElement('h2');
-  titleElement.id = 'modal-title';
-  titleElement.className = 'modal__title';
-  titleElement.textContent = title;
-  header.appendChild(titleElement);
-
-  const closeButton = document.createElement('button');
-  closeButton.className = 'modal__close';
-  closeButton.setAttribute('aria-label', R.string?.modal_close_aria || 'Close');
-  closeButton.innerHTML = '×';
-  closeButton.onclick = () => instance.close();
-  header.appendChild(closeButton);
-
-  modal.appendChild(header);
+  const header = el('div', 'modal__header', {}, titleElement, closeButton);
 
   // Create modal body
-  const body = document.createElement('div');
-  body.className = 'modal__body';
-
+  const body = el('div', 'modal__body');
   if (typeof content === 'string') {
     body.innerHTML = content;
   } else if (content instanceof HTMLElement) {
     body.appendChild(content);
   }
 
-  modal.appendChild(body);
+  // Create modal container
+  const modal = el('div', `modal modal--${size}`, {}, header, body);
 
   // Create modal footer (if buttons provided)
   if (buttons.length > 0) {
-    const footer = document.createElement('div');
-    footer.className = 'modal__footer';
-
+    const footer = el('div', 'modal__footer');
     buttons.forEach(buttonConfig => {
-      const button = document.createElement('button');
-      button.className = buttonConfig.primary ? 'btn btn--primary' : 'btn btn--secondary';
-      button.textContent = buttonConfig.text;
-      button.onclick = buttonConfig.onClick;
+      const button = el('button', 
+        buttonConfig.primary ? 'btn btn--primary' : 'btn btn--secondary',
+        { onclick: buttonConfig.onClick },
+        buttonConfig.text
+      );
       footer.appendChild(button);
     });
-
     modal.appendChild(footer);
   }
 
-  overlay.appendChild(modal);
+  // Create modal overlay
+  const overlay = el('div', 'modal-overlay', {
+    role: 'dialog',
+    'aria-modal': 'true',
+    'aria-labelledby': 'modal-title'
+  }, modal);
 
   // Modal instance API
   const instance = {
@@ -138,9 +124,19 @@ export function showModal(options = {}) {
         }
         activeModal = null;
         
+        // Restore focus to previous element
+        if (previousActiveElement && previousActiveElement.focus) {
+          previousActiveElement.focus();
+        }
+        
         // Call onClose callback
         if (onClose) {
           onClose();
+        }
+
+        // Restore focus to previously focused element
+        if (previousActiveElement && typeof previousActiveElement.focus === 'function') {
+          previousActiveElement.focus();
         }
       }, 200);
     }
@@ -165,6 +161,34 @@ export function showModal(options = {}) {
     };
     document.addEventListener('keydown', handleEscape);
   }
+
+  // Focus trap
+  const handleTab = (e) => {
+    if (e.key === 'Tab') {
+      const focusableElements = modal.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      
+      if (focusableElements.length === 0) return;
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement) {
+          e.preventDefault();
+          lastElement.focus();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          e.preventDefault();
+          firstElement.focus();
+        }
+      }
+    }
+  };
+  
+  overlay.addEventListener('keydown', handleTab);
 
   // Add to DOM
   document.body.appendChild(overlay);

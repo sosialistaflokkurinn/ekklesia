@@ -26,7 +26,7 @@ async function verifyFirebaseToken(req, res, next) {
   const authHeader = req.header('Authorization');
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    console.warn('RBAC: Missing or invalid Authorization header', {
+    logger.warn('RBAC: Missing or invalid Authorization header', {
       path: req.path,
       method: req.method,
       ip: req.ip,
@@ -65,7 +65,7 @@ async function verifyFirebaseToken(req, res, next) {
       claims: decodedToken, // Full claims object
     };
 
-    console.info('RBAC: Firebase token verified', {
+    logger.info('RBAC: Firebase token verified', {
       uid: req.user.uid,
       email: req.user.email,
       role: req.user.role,
@@ -112,7 +112,7 @@ function requireElectionManager(req, res, next) {
   const allowedRoles = ['election-manager', 'superadmin'];
 
   if (!allowedRoles.includes(userRole)) {
-    console.warn('RBAC: Permission denied - insufficient role', {
+    logger.warn('RBAC: Permission denied - insufficient role', {
       uid: req.user.uid,
       email: req.user.email,
       userRole,
@@ -130,7 +130,7 @@ function requireElectionManager(req, res, next) {
     });
   }
 
-  console.info('RBAC: Access granted - election-manager or superadmin', {
+  logger.info('RBAC: Access granted - election-manager or superadmin', {
     uid: req.user.uid,
     role: userRole,
     path: req.path,
@@ -160,7 +160,7 @@ function requireSuperadmin(req, res, next) {
   const userRole = req.user.role;
 
   if (userRole !== 'superadmin') {
-    console.warn('RBAC: Permission denied - superadmin required', {
+    logger.warn('RBAC: Permission denied - superadmin required', {
       uid: req.user.uid,
       email: req.user.email,
       userRole,
@@ -178,7 +178,7 @@ function requireSuperadmin(req, res, next) {
     });
   }
 
-  console.info('RBAC: Access granted - superadmin', {
+  logger.info('RBAC: Access granted - superadmin', {
     uid: req.user.uid,
     role: userRole,
     path: req.path,

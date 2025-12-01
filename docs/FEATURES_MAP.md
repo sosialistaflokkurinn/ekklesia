@@ -1,6 +1,6 @@
 # Features Category Map
 
-**Last Updated**: 2025-11-14  
+**Last Updated**: 2025-11-24  
 **Status**: ✅ Level 2 Category Map  
 **Purpose**: Feature-specific documentation and epic implementation guides
 
@@ -36,9 +36,16 @@ This category map provides navigation to all feature documentation including ele
 - [Phase 5 Week 1 Implementation](../docs/features/election-voting/PHASE_5_WEEK_1_IMPLEMENTATION.md)
 - [Phase 5 Week 1 Member UI](../docs/features/election-voting/PHASE_5_WEEK_1_MEMBER_UI.md)
 
+**Design & Status:**
+- [Admin Elections Navigation Design](features/election-voting/ADMIN_ELECTIONS_NAVIGATION_DESIGN.md) - Navigation UX
+- [Development Status](features/election-voting/development-status.md) - Feature status tracking
+
 ### Admin Portal
 - [Epic #116: Member Detail & Edit](../docs/features/admin-portal/EPIC_116_MEMBER_DETAIL_EDIT_PLAN.md)
 - [Django Token Cloud Function](../docs/features/admin-portal/DJANGO_TOKEN_CLOUD_FUNCTION.md)
+
+### Requirements
+- [Django Foreign Address Requirements](requirements/DJANGO_FOREIGN_ADDRESS_REQUIREMENTS.md) - Foreign address handling
 
 ### Components
 - [Searchable Select Component](../docs/features/SEARCHABLE_SELECT_COMPONENT.md)

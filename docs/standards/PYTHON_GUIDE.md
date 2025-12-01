@@ -38,7 +38,6 @@ Python code in Ekklesia follows **modern [Python 3.11+](https://docs.python.org/
   - OAuth authentication (`handlekenniauth`)
   - Membership sync (`syncmembers`)
   - Audit logging (`auditmemberchanges`)
-  - Member management (`updatememberforeignaddress`)
 
 - **Admin Scripts** ([`scripts/admin/`](../../scripts/admin/)) - Development tools
   - Documentation audit (`audit-documentation.py`)
@@ -951,7 +950,7 @@ def test_normalize_kennitala_with_hyphen():
 
 def test_normalize_kennitala_without_hyphen():
     """Should add hyphen if missing."""
-    assert normalize_kennitala('1234567890') == '123456-7890'
+    assert normalize_kennitala('0103009999') == '010300-9999'  # Jan 3, 2000
 
 def test_normalize_kennitala_empty():
     """Should return None for empty input."""
@@ -960,8 +959,8 @@ def test_normalize_kennitala_empty():
 
 def test_validate_kennitala_valid():
     """Should validate correct format."""
-    assert validate_kennitala('123456-7890') is True
-    assert validate_kennitala('1234567890') is True
+    assert validate_kennitala('010300-9999') is True  # Jan 3, 2000
+    assert validate_kennitala('0103009999') is True
 
 def test_validate_kennitala_invalid():
     """Should reject invalid format."""
@@ -970,8 +969,8 @@ def test_validate_kennitala_invalid():
     assert validate_kennitala('') is False
 
 @pytest.mark.parametrize("input,expected", [
-    ('123456-7890', '123456-7890'),
-    ('1234567890', '123456-7890'),
+    ('010300-9999', '010300-9999'),  # Jan 3, 2000
+    ('0103009999', '010300-9999'),
     ('', None),
     (None, None),
 ])

@@ -11,7 +11,8 @@ import { createButton } from './button.js';
 import { createBadge } from './badge.js';
 import { showToast } from './toast.js';
 import { showConfirm } from './modal.js';
-import { R } from '/i18n/strings-loader.js';
+import { R } from '../../i18n/strings-loader.js';
+import { el } from '../utils/dom.js';
 
 /**
  * Create policy item vote card
@@ -67,20 +68,6 @@ export function createPolicyItemVoteCard(options = {}) {
   // Track voted state
   let hasVoted = item.has_voted || false;
 
-  // Create container element
-  const container = document.createElement('div');
-  container.className = 'policy-item-vote-card';
-
-  // Card header
-  const header = document.createElement('div');
-  header.className = 'policy-item-vote-card__header';
-
-  const title = document.createElement('h3');
-  title.className = 'policy-item-vote-card__title';
-  title.textContent = item.heading;
-
-  header.appendChild(title);
-
   // Already voted badge (initially hidden)
   const votedBadge = createBadge(
     `✓ ${strings.alreadyVoted}`,
@@ -89,21 +76,14 @@ export function createPolicyItemVoteCard(options = {}) {
   votedBadge.element.classList.add('policy-item-vote-card__voted-badge');
   votedBadge.element.style.display = hasVoted ? 'inline-block' : 'none';
 
-  header.appendChild(votedBadge.element);
+  const header = el('div', 'policy-item-vote-card__header', {},
+    el('h3', 'policy-item-vote-card__title', {}, item.heading),
+    votedBadge.element
+  );
 
-  // Item text
-  const textContainer = document.createElement('div');
-  textContainer.className = 'policy-item-vote-card__text';
-
-  const textParagraph = document.createElement('p');
-  textParagraph.className = 'policy-item-vote-card__text-content';
-  textParagraph.textContent = item.text;
-
-  textContainer.appendChild(textParagraph);
-
-  // Voting buttons container
-  const votingContainer = document.createElement('div');
-  votingContainer.className = 'policy-item-vote-card__voting';
+  const textContainer = el('div', 'policy-item-vote-card__text', {},
+    el('p', 'policy-item-vote-card__text-content', {}, item.text)
+  );
 
   // Yes button
   const yesButton = createButton({
@@ -125,18 +105,21 @@ export function createPolicyItemVoteCard(options = {}) {
   });
   noButton.element.classList.add('policy-item-vote-card__vote-btn');
 
-  votingContainer.appendChild(yesButton.element);
-  votingContainer.appendChild(noButton.element);
+  const votingContainer = el('div', 'policy-item-vote-card__voting', {},
+    yesButton.element,
+    noButton.element
+  );
 
   // Hide voting buttons if already voted
   if (hasVoted) {
     votingContainer.style.display = 'none';
   }
 
-  // Assemble card
-  container.appendChild(header);
-  container.appendChild(textContainer);
-  container.appendChild(votingContainer);
+  const container = el('div', 'policy-item-vote-card', {},
+    header,
+    textContainer,
+    votingContainer
+  );
 
   /**
    * Handle vote submission
@@ -195,7 +178,7 @@ export function createPolicyItemVoteCard(options = {}) {
   function markAsVoted() {
     hasVoted = true;
     votingContainer.style.display = 'none';
-    votedBadge.style.display = 'inline-block';
+    votedBadge.element.style.display = 'inline-block';
   }
 
   /**

@@ -18,9 +18,10 @@ import { requireAuth, getUserData, signOut, AuthenticationError } from '../sessi
 import { httpsCallable, getFirebaseFirestore } from '../firebase/app.js';
 import { doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { setTextContent, validateElements } from '../ui/dom.js';
+import { el } from './utils/dom.js';
 import { formatPhone, validatePhone, formatInternationalPhone, validateInternationalPhone, validateInternationalPostalCode, formatMembershipDuration } from './utils/format.js';
 import { getCountryName, getCountriesSorted, searchCountries, getCountryFlag, getCountryCallingCode } from './utils/countries.js';
-import { updateMemberProfile, updateMemberForeignAddress } from './api/members-client.js';
+import { updateMemberProfile } from './api/members-client.js';
 import { debug } from './utils/debug.js';
 import { showToast } from './components/toast.js';
 import { showStatus, createStatusIcon } from './components/status.js';
@@ -228,6 +229,13 @@ function updateProfileStrings() {
 
   // Addresses button
   setTextContent('btn-add-address-text', R.string.btn_add_address_text, 'profile page');
+
+  // Communication preferences section
+  setTextContent('section-communication', R.string.section_communication || 'Samskiptastillingar', 'profile page');
+  setTextContent('label-reachable', R.string.label_reachable || 'Má hafa samband', 'profile page');
+  setTextContent('label-reachable-description', R.string.label_reachable_description || 'Leyfir flokknum að hafa samband vegna frétta og atburða', 'profile page');
+  setTextContent('label-groupable', R.string.label_groupable || 'Má bæta í hópa', 'profile page');
+  setTextContent('label-groupable-description', R.string.label_groupable_description || 'Leyfir flokknum að bæta þér í vinnuhópa og póstlista', 'profile page');
 }
 
 /**
@@ -495,15 +503,12 @@ function setupCountryAutocomplete() {
     countryInput.setAttribute('aria-expanded', 'true');
 
     countries.forEach((country, index) => {
-      const li = document.createElement('li');
-      li.className = 'autocomplete-item';
-      li.textContent = country.nameIs;  // Show Icelandic name
-      li.setAttribute('role', 'option');
-      li.setAttribute('data-code', country.code);
-      li.setAttribute('data-name', country.nameIs);
-
-      // Click to select
-      li.addEventListener('click', () => selectCountry(li));
+      const li = el('li', 'autocomplete-item', {
+        role: 'option',
+        'data-code': country.code,
+        'data-name': country.nameIs,
+        onclick: () => selectCountry(li)
+      }, country.nameIs);
 
       dropdown.appendChild(li);
     });
@@ -869,49 +874,7 @@ async function saveChanges() {
     const region = R.string.config_firebase_region;
     await updateMemberProfile(currentUserData.kennitala, updates, originalMemberData, region);
 
-    // If foreign address provided, save it separately
-    if (foreignAddressData) {
-      const originalForeignAddress = originalData.foreign_address || null;
 
-      try {
-        await updateMemberForeignAddress(
-          currentUserData.kennitala,
-          foreignAddressData,
-          originalForeignAddress,
-          region
-        );
-
-        // Update UI to show foreign address
-        const countryValue = document.getElementById('value-country');
-        const foreignAddressValue = document.getElementById('value-foreign-address');
-        const foreignPostalValue = document.getElementById('value-foreign-postal');
-        const foreignMunicipalityValue = document.getElementById('value-foreign-municipality');
-
-        if (countryValue) countryValue.textContent = getCountryName(foreignAddressData.country);
-        if (foreignAddressValue) foreignAddressValue.textContent = foreignAddressData.address;
-        if (foreignPostalValue) foreignPostalValue.textContent = foreignAddressData.postal_code || '-';
-        if (foreignMunicipalityValue) foreignMunicipalityValue.textContent = foreignAddressData.municipality || '-';
-
-      } catch (foreignAddressError) {
-        // Foreign address save failed (Django API not implemented yet)
-        console.warn('Foreign address save failed:', foreignAddressError);
-
-        // Show warning (basic profile was saved successfully)
-        showError(
-          R.string.profile_foreign_address_blocked ||
-          'Grunnupplýsingar vistaðar, en erlent heimilisfang er ekki virkt ennþá. Vinsamlegast reyndu aftur síðar.'
-        );
-
-        // Re-enable buttons so user can try again (if buttons exist)
-        if (editElements.btnSave) editElements.btnSave.disabled = false;
-        if (editElements.btnCancel) editElements.btnCancel.disabled = false;
-        if (saveText) {
-          saveText.textContent = R.string.profile_save_button;
-        }
-
-        return; // Don't exit edit mode, let user try again
-      }
-    }
 
     // Show success message
     showSuccess(R.string.profile_save_success);
@@ -1234,6 +1197,92 @@ function updateSimpleAddressDisplay() {
 }
 
 /**
+ * Initialize communication preferences (reachable/groupable toggles)
+ * Sets initial values and adds change listeners for auto-save
+ */
+function initCommunicationPreferences() {
+  const profile = currentUserData?.profile || {};
+
+  // Reachable toggle
+  const reachableInput = document.getElementById('input-reachable');
+  const reachableStatus = document.getElementById('status-reachable');
+
+  if (reachableInput) {
+    // Default to true if not set
+    reachableInput.checked = profile.reachable !== false;
+
+    reachableInput.addEventListener('change', async (e) => {
+      const newValue = e.target.checked;
+      debug.log(`📞 Reachable changed: ${newValue}`);
+
+      showStatus(reachableStatus, 'loading', { baseClass: 'profile-field__status' });
+      try {
+        const db = getFirebaseFirestore();
+        const kennitalaKey = currentUserData.kennitala.replace(/-/g, '');
+        const memberDocRef = doc(db, 'members', kennitalaKey);
+
+        await updateDoc(memberDocRef, {
+          'profile.reachable': newValue,
+          'profile.updated_at': new Date()
+        });
+
+        // Update local state
+        if (!currentUserData.profile) currentUserData.profile = {};
+        currentUserData.profile.reachable = newValue;
+
+        showStatus(reachableStatus, 'success', { baseClass: 'profile-field__status' });
+        showToast(R.string.profile_preferences_saved || 'Stillingar vistaðar', 'success');
+      } catch (error) {
+        debug.error('Failed to save reachable preference:', error);
+        showStatus(reachableStatus, 'error', { baseClass: 'profile-field__status' });
+        // Revert UI
+        reachableInput.checked = !newValue;
+      }
+    });
+  }
+
+  // Groupable toggle
+  const groupableInput = document.getElementById('input-groupable');
+  const groupableStatus = document.getElementById('status-groupable');
+
+  if (groupableInput) {
+    // Default to true if not set
+    groupableInput.checked = profile.groupable !== false;
+
+    groupableInput.addEventListener('change', async (e) => {
+      const newValue = e.target.checked;
+      debug.log(`👥 Groupable changed: ${newValue}`);
+
+      showStatus(groupableStatus, 'loading', { baseClass: 'profile-field__status' });
+      try {
+        const db = getFirebaseFirestore();
+        const kennitalaKey = currentUserData.kennitala.replace(/-/g, '');
+        const memberDocRef = doc(db, 'members', kennitalaKey);
+
+        await updateDoc(memberDocRef, {
+          'profile.groupable': newValue,
+          'profile.updated_at': new Date()
+        });
+
+        // Update local state
+        if (!currentUserData.profile) currentUserData.profile = {};
+        currentUserData.profile.groupable = newValue;
+
+        showStatus(groupableStatus, 'success', { baseClass: 'profile-field__status' });
+        showToast(R.string.profile_preferences_saved || 'Stillingar vistaðar', 'success');
+      } catch (error) {
+        debug.error('Failed to save groupable preference:', error);
+        showStatus(groupableStatus, 'error', { baseClass: 'profile-field__status' });
+        // Revert UI
+        groupableInput.checked = !newValue;
+      }
+    });
+  }
+
+  debug.log('✅ Communication preferences initialized');
+}
+
+/**
  * Initialize profile page
  *
  * @returns {Promise<void>}
@@ -1326,6 +1375,9 @@ async function init() {
       debug.log('🔄 Migration patched addresses, auto-saving to Firestore...');
       await addressManager.save();
     }
+
+    // Initialize communication preferences (reachable/groupable)
+    initCommunicationPreferences();
 
     // Update profile-specific UI
     updateProfileStrings();

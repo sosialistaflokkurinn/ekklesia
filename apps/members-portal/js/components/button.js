@@ -1,3 +1,5 @@
+import { el } from '../utils/dom.js';
+
 /**
  * Button Component
  *
@@ -80,17 +82,6 @@ export function createButton(options = {}) {
     onClick = null
   } = options;
 
-  // Create button element
-  const button = document.createElement('button');
-  button.type = type;
-  button.textContent = text;
-  button.disabled = disabled;
-
-  // Set ID if provided
-  if (id) {
-    button.id = id;
-  }
-
   // Build BEM classes
   const classes = ['btn'];
 
@@ -111,7 +102,11 @@ export function createButton(options = {}) {
     classes.push(className);
   }
 
-  button.className = classes.join(' ');
+  const attrs = { type };
+  if (disabled) attrs.disabled = true;
+  if (id) attrs.id = id;
+
+  const button = el('button', classes.join(' '), attrs, text);
 
   // Store onClick handler reference for cleanup
   let clickHandler = null;

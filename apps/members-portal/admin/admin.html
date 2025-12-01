@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="/styles/global.css">
   <link rel="stylesheet" href="/styles/components/nav.css">
   <link rel="stylesheet" href="/styles/components/page.css">
+  <link rel="stylesheet" href="/styles/components/button.css?v=20251106">
   <link rel="stylesheet" href="/styles/components/badge.css?v=20251105">
   <link rel="stylesheet" href="/styles/components/toast.css?v=20251105">
   <link rel="stylesheet" href="/styles/components/modal.css?v=20251105">
@@ -36,6 +37,14 @@
     <div class="card">
       <h2 class="card__title" id="admin-actions-title">Loading...</h2>
       <div class="info-grid">
+        <a href="/admin/members.html" class="info-grid__item u-clickable">
+          <div class="info-grid__label" id="quick-action-members-label">Loading...</div>
+          <div class="info-grid__value" id="quick-action-members-desc">Loading...</div>
+        </a>
+        <a href="/admin-elections/" class="info-grid__item u-clickable">
+          <div class="info-grid__label" id="quick-action-elections-label">Loading...</div>
+          <div class="info-grid__value" id="quick-action-elections-desc">Loading...</div>
+        </a>
         <a href="/admin/sync-members.html" class="info-grid__item u-clickable">
           <div class="info-grid__label" id="quick-action-sync-label">Loading...</div>
           <div class="info-grid__value" id="quick-action-sync-desc">Loading...</div>
@@ -56,11 +65,11 @@
     </div>
   </div>
 
-  <script type="module" src="/admin/js/admin.js?v=20251027e"></script>
+  <script type="module" src="/admin/js/admin.js?v=20251121"></script>
 
   <!-- Initialize Navigation Component -->
   <script type="module">
-    import { initNavHeader, NAV_CONFIGS } from '../../ui/components/nav-header.js';
+    import { initNavHeader, NAV_CONFIGS } from '../../ui/components/navigation-bar.js?v=20251121b';
     
     // Initialize navigation with appropriate config
     await initNavHeader(NAV_CONFIGS.admin);

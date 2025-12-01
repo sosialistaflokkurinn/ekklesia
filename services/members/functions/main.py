@@ -30,7 +30,7 @@ def healthz(req: https_fn.Request) -> https_fn.Response:
     """Health check endpoint - delegates to handler"""
     return healthz_handler(req)
 
-@https_fn.on_request()
+@https_fn.on_request(secrets=["kenni-client-secret"])
 def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
     """OAuth authentication endpoint - delegates to handler"""
     return handleKenniAuth_handler(req)
@@ -53,12 +53,12 @@ def verifyMembership(req: https_fn.CallableRequest) -> dict:
     """Verify membership - delegates to handler"""
     return verifyMembership_handler(req)
 
-@https_fn.on_call(timeout_sec=540, memory=512)
-def syncmembers(req: https_fn.CallableRequest):
+@https_fn.on_request(timeout_sec=540, memory=512, secrets=["django-api-token"])
+def syncmembers(req: https_fn.Request) -> https_fn.Response:
     """Sync members from Django - delegates to handler"""
     return syncmembers_handler(req)
 
-@https_fn.on_call(timeout_sec=30, memory=256)
+@https_fn.on_call(timeout_sec=30, memory=256, secrets=["django-api-token"])
 def updatememberprofile(req: https_fn.CallableRequest):
     """Update member profile - delegates to handler"""
     return updatememberprofile_handler(req)
@@ -77,12 +77,21 @@ def cleanupauditlogs(req: https_fn.CallableRequest) -> dict:
 # ==============================================================================
 
 # Import functions from existing modules
-# NOTE: These are already in separate files and work correctly
 from audit_members import auditmemberchanges
 from get_django_token import get_django_token
-from update_member_foreign_address import updatememberforeignaddress
-from bidirectional_sync import bidirectional_sync
-from track_member_changes import track_firestore_changes
+
+# Real-time sync from Django to Firestore (replaces bidirectional_sync and track_member_changes)
+from sync_from_django import sync_from_django
+
+# ==============================================================================
+# ADDRESS VALIDATION FUNCTIONS (iceaddr integration)
+# ==============================================================================
+
+# Import address validation functions
+from validate_address import validate_address, validate_postal_code
+
+# Import address search function (autocomplete)
+from search_addresses import search_addresses
 
 # ==============================================================================
 # EXPORTS
@@ -102,7 +111,10 @@ __all__ = [
     # Audit and sync functions
     'auditmemberchanges',
     'get_django_token',
-    'updatememberforeignaddress',
-    'bidirectional_sync',
-    'track_firestore_changes',
+    'sync_from_django',  # Real-time Django → Firestore sync
+    # Address validation functions
+    'validate_address',
+    'validate_postal_code',
+    # Address search (autocomplete)
+    'search_addresses',
 ]

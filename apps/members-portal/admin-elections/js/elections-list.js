@@ -13,18 +13,10 @@ import { createStatusBadge } from '../../js/components/badge.js';
 import { showModal, showAlert } from '../../js/components/modal.js';
 import { formatDateIcelandic } from '../../js/utils/format.js';
 import { debug } from '../../js/utils/debug.js';
+import { el } from '../../js/utils/dom.js';
+import { fetchElections, openElection, closeElection, hideElection, unhideElection, deleteElection } from './api/elections-admin-api.js';
 
 const auth = getFirebaseAuth();
-
-// API Configuration
-// =====================================================
-// Configuration
-// =====================================================
-
-/**
- * API Configuration
- */
-const ADMIN_API_URL = 'https://elections-service-ymzrguoifa-nw.a.run.app/api/admin/elections';
 
 // ============================================
 // STATE
@@ -143,31 +135,10 @@ async function loadElections() {
   try {
     showLoading(true);
     
-    const user = auth.currentUser;
-    if (!user) {
-      throw new Error(R.string.error_not_authenticated);
-    }
-    
-    const token = await user.getIdToken();
-    
-    debug.log('[Elections List] Fetching elections with token...');
+    debug.log('[Elections List] Fetching elections...');
     
     // Fetch all elections including hidden ones (admin view)
-    const response = await fetch(`${ADMIN_API_URL}?includeHidden=true`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error('[Elections List] API Error:', response.status, errorData);
-      throw new Error(`API ${R.string.error_message}: ${response.status} - ${errorData.error || 'Unknown error'}`);
-    }
-    
-    const data = await response.json();
-    elections = data.elections || [];
+    elections = await fetchElections(true);
     
     debug.log('[Elections List] Loaded elections:', elections.length);
     if (elections.length > 0) {
@@ -207,6 +178,7 @@ function setupFilters() {
       // Get filter value
       currentFilter = btn.dataset.filter;
       filterElections();
+      renderElections();
     });
   });
 }
@@ -273,27 +245,16 @@ function filterElections() {
  * @returns {HTMLElement} - Card element
  */
 function createMobileCard(election) {
-  const card = document.createElement('div');
-  card.className = 'election-card';
-  card.dataset.id = election.id;
-  
-  // Card Header (Title + Status)
-  const header = document.createElement('div');
-  header.className = 'election-card__header';
-  
-  const title = document.createElement('h3');
-  title.className = 'election-card__title';
-  title.textContent = election.title;
-  
   const badge = createStatusBadge(election.status);
   
-  header.appendChild(title);
-  header.appendChild(badge.element);  // Fix: use badge.element, not badge
-  card.appendChild(header);
+  // Card Header (Title + Status)
+  const header = el('div', 'election-card__header', {},
+    el('h3', 'election-card__title', {}, election.title),
+    badge.element
+  );
   
   // Card Info (Details)
-  const info = document.createElement('div');
-  info.className = 'election-card__info';
+  const info = el('div', 'election-card__info');
   
   // Format duration helper
   const formatDuration = (minutes) => {
@@ -306,8 +267,7 @@ function createMobileCard(election) {
   };
   
   // Created date
-  const createdRow = document.createElement('div');
-  createdRow.className = 'election-card__info-row';
+  const createdRow = el('div', 'election-card__info-row');
   createdRow.innerHTML = `
     <span class="election-card__label">${R.string.label_created || 'Created'}</span>
     <span class="election-card__value">${formatDate(election.created_at)}</span>
@@ -316,8 +276,7 @@ function createMobileCard(election) {
   
   // Duration
   if (election.duration_minutes) {
-    const durationRow = document.createElement('div');
-    durationRow.className = 'election-card__info-row';
+    const durationRow = el('div', 'election-card__info-row');
     durationRow.innerHTML = `
       <span class="election-card__label" style="font-weight: 600;">📏 ${R.string.label_duration || 'Lengd'}</span>
       <span class="election-card__value" style="font-weight: 600;">${formatDuration(election.duration_minutes)}</span>
@@ -326,20 +285,19 @@ function createMobileCard(election) {
   }
   
   // Voting window (for published elections)
-  if (election.status === 'published' && election.voting_ends_at) {
-    const closesRow = document.createElement('div');
-    closesRow.className = 'election-card__info-row';
+  const votingEndsAt = election.voting_ends_at || election.scheduled_end;
+  if (election.status === 'published' && votingEndsAt) {
+    const closesRow = el('div', 'election-card__info-row');
     closesRow.innerHTML = `
       <span class="election-card__label" style="color: var(--color-primary); font-weight: 600;">⏰ ${R.string.label_closes_in}</span>
-      <span class="election-card__value" style="color: var(--color-primary); font-weight: 600;">${getTimeRemaining(election.voting_ends_at)}</span>
+      <span class="election-card__value" style="color: var(--color-primary); font-weight: 600;">${getTimeRemaining(votingEndsAt)}</span>
     `;
     info.appendChild(closesRow);
   }
   
   // Opened date
   if (election.opened_at) {
-    const openedRow = document.createElement('div');
-    openedRow.className = 'election-card__info-row';
+    const openedRow = el('div', 'election-card__info-row');
     openedRow.innerHTML = `
       <span class="election-card__label">${R.string.label_opened || 'Opened'}</span>
       <span class="election-card__value">${formatDate(election.opened_at)}</span>
@@ -349,8 +307,7 @@ function createMobileCard(election) {
   
   // Closed date
   if (election.closed_at) {
-    const closedRow = document.createElement('div');
-    closedRow.className = 'election-card__info-row';
+    const closedRow = el('div', 'election-card__info-row');
     closedRow.innerHTML = `
       <span class="election-card__label">${R.string.label_closed || 'Closed'}</span>
       <span class="election-card__value">${formatDate(election.closed_at)}</span>
@@ -359,23 +316,22 @@ function createMobileCard(election) {
   }
   
   // Votes count
-  const votesRow = document.createElement('div');
-  votesRow.className = 'election-card__info-row';
+  const votesRow = el('div', 'election-card__info-row');
   votesRow.innerHTML = `
     <span class="election-card__label">${R.string.label_votes || 'Votes'}</span>
     <span class="election-card__value">${election.vote_count || 0}</span>
   `;
   info.appendChild(votesRow);
   
-  card.appendChild(info);
-  
   // Card Actions (Buttons)
-  const actions = document.createElement('div');
-  actions.className = 'election-card__actions election-actions';
+  const actions = el('div', 'election-card__actions election-actions');
   actions.innerHTML = getActionButtons(election);
-  card.appendChild(actions);
   
-  return card;
+  return el('div', 'election-card', { 'data-id': election.id },
+    header,
+    info,
+    actions
+  );
 }
 
 /**
@@ -414,34 +370,7 @@ function renderElections() {
   
   // Render elections using DOM manipulation for badges
   filteredElections.forEach(election => {
-    const row = document.createElement('tr');
-    row.dataset.electionId = election.id;
-    if (election.hidden) row.classList.add('election-hidden');
-    
-    // Title cell
-    const titleCell = document.createElement('td');
-    titleCell.className = 'election-title';
-    const titleLink = document.createElement('a');
-    titleLink.href = `/admin-elections/election-control.html?id=${election.id}`;
-    titleLink.textContent = election.title;
-    titleCell.appendChild(titleLink);
-    if (election.hidden) {
-      const hiddenIndicator = document.createElement('span');
-      hiddenIndicator.className = 'hidden-indicator';
-      hiddenIndicator.textContent = R.string.label_hidden_indicator;
-      titleCell.appendChild(hiddenIndicator);
-    }
-    row.appendChild(titleCell);
-    
-    // Status cell with badge component
-    const statusCell = document.createElement('td');
     const badge = createStatusBadge(election.status);
-    statusCell.appendChild(badge.element);
-    row.appendChild(statusCell);
-    
-    // Dates cell
-    const datesCell = document.createElement('td');
-    datesCell.className = 'election-dates';
     
     // Format duration minutes into readable text
     const formatDuration = (minutes) => {
@@ -452,27 +381,35 @@ function renderElections() {
       if (remainingMins === 0) return `${hours} klst.`;
       return `${hours} klst. ${remainingMins} mín`;
     };
+
+    // Title cell content
+    const titleContent = [
+      el('a', '', { href: `/admin-elections/election-control.html?id=${election.id}` }, election.title)
+    ];
     
-    datesCell.innerHTML = `
+    if (election.hidden) {
+      titleContent.push(el('span', 'hidden-indicator', {}, R.string.label_hidden_indicator));
+    }
+
+    // Dates cell content (HTML string)
+    const datesHtml = `
       <div class="date-created">${R.string.label_created} ${formatDate(election.created_at)}</div>
       ${election.duration_minutes ? `<div class="date-duration" style="font-weight: 600;">📏 ${R.string.label_duration || 'Lengd'}: ${formatDuration(election.duration_minutes)}</div>` : ''}
-      ${election.status === 'published' && election.voting_ends_at ? `<div class="date-closes" style="color: var(--color-primary); font-weight: 600;">⏰ ${R.string.label_closes_in} ${getTimeRemaining(election.voting_ends_at)}</div>` : ''}
+      ${election.status === 'published' && (election.voting_ends_at || election.scheduled_end) ? `<div class="date-closes" style="color: var(--color-primary); font-weight: 600;">⏰ ${R.string.label_closes_in} ${getTimeRemaining(election.voting_ends_at || election.scheduled_end)}</div>` : ''}
       ${election.opened_at ? `<div class="date-opened">${R.string.label_opened} ${formatDate(election.opened_at)}</div>` : ''}
       ${election.closed_at ? `<div class="date-closed">${R.string.label_closed} ${formatDate(election.closed_at)}</div>` : ''}
     `;
-    row.appendChild(datesCell);
-    
-    // Stats cell
-    const statsCell = document.createElement('td');
-    statsCell.className = 'election-stats';
-    statsCell.textContent = `${election.vote_count || 0} ${R.string.label_votes}`;
-    row.appendChild(statsCell);
-    
-    // Actions cell
-    const actionsCell = document.createElement('td');
-    actionsCell.className = 'election-actions';
-    actionsCell.innerHTML = getActionButtons(election);
-    row.appendChild(actionsCell);
+
+    // Actions cell content (HTML string)
+    const actionsHtml = getActionButtons(election);
+
+    const row = el('tr', election.hidden ? 'election-hidden' : '', { 'data-election-id': election.id },
+      el('td', 'election-title', {}, ...titleContent),
+      el('td', '', {}, badge.element),
+      el('td', 'election-dates', { innerHTML: datesHtml }),
+      el('td', 'election-stats', {}, `${election.vote_count || 0} ${R.string.label_votes}`),
+      el('td', 'election-actions', { innerHTML: actionsHtml })
+    );
     
     tbody.appendChild(row);
   });
@@ -588,95 +525,184 @@ async function handleAction(event) {
       break;
       
     case 'open':
-      await openElection(electionId);
+      await handleOpenElection(electionId);
       break;
       
     case 'close':
-      await closeElection(electionId);
+      await handleCloseElection(electionId);
       break;
       
     case 'hide':
-      await hideElection(electionId);
+      await handleHideElection(electionId);
       break;
       
     case 'unhide':
-      await unhideElection(electionId);
+      await handleUnhideElection(electionId);
       break;
       
     case 'delete':
-      await deleteElection(electionId);
+      await handleDeleteElection(electionId);
       break;
   }
 }
 
 /**
- * Open election with duration selector modal
+ * Open election with full schedule options modal
+ * Includes: start timing, duration options, custom duration, manual end time
  */
-async function openElection(electionId) {
+async function handleOpenElection(electionId) {
   const election = elections.find(e => e.id === electionId);
   if (!election) return;
-  
-  // Create duration selector HTML
-  const durationHTML = `
-    <div style="margin-bottom: 1rem;">
-      <p style="margin-bottom: 0.5rem; font-weight: 600;">${R.string.confirm_open_duration}</p>
-      <select id="duration-select" class="form-control" style="width: 100%; padding: 0.5rem; font-size: 1rem; border: 1px solid var(--color-gray-300); border-radius: 4px;">
-        <option value="1">${R.string.duration_1min}</option>
-        <option value="2" selected>${R.string.duration_2min}</option>
-        <option value="3">${R.string.duration_3min}</option>
-      </select>
+
+  // Get current datetime for min values
+  const now = new Date();
+  const nowStr = now.toISOString().slice(0, 16); // Format: YYYY-MM-DDTHH:mm
+
+  // Create full schedule options HTML
+  const scheduleHTML = `
+    <div class="open-modal-form">
+      <!-- Start Timing -->
+      <div class="form-group" style="margin-bottom: 1.5rem;">
+        <label style="font-weight: 600; display: block; margin-bottom: 0.5rem;">
+          ${R.string.label_start_timing || 'Hvenær á kosning að byrja?'}
+        </label>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+          <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+            <input type="radio" name="start_timing" value="immediate" checked>
+            <span><strong>${R.string.start_immediate || 'Strax'}</strong> - ${R.string.start_immediate_desc || 'Kosningin opnast strax'}</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+            <input type="radio" name="start_timing" value="scheduled">
+            <span><strong>${R.string.start_scheduled || 'Tímasett'}</strong> - ${R.string.start_scheduled_desc || 'Velja upphafstíma'}</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Scheduled Start Time (hidden by default) -->
+      <div id="scheduled-start-group" class="form-group hidden" style="margin-bottom: 1.5rem;">
+        <label style="font-weight: 600; display: block; margin-bottom: 0.5rem;">
+          ${R.string.label_scheduled_start || 'Upphafstími'}
+        </label>
+        <input type="datetime-local" id="modal-scheduled-start" class="form-control"
+               style="width: 100%; padding: 0.5rem;" min="${nowStr}">
+      </div>
+
+      <!-- Duration Options -->
+      <div class="form-group" style="margin-bottom: 1.5rem;">
+        <label style="font-weight: 600; display: block; margin-bottom: 0.5rem;">
+          ${R.string.label_duration || 'Lengd kosningar'}
+        </label>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <button type="button" class="duration-btn" data-minutes="1" style="padding: 0.5rem 1rem; border: 2px solid var(--color-gray-300); background: white; border-radius: 4px; cursor: pointer;">
+            ${R.string.duration_1min || '1 mín'}
+          </button>
+          <button type="button" class="duration-btn active" data-minutes="2" style="padding: 0.5rem 1rem; border: 2px solid var(--color-primary); background: var(--color-primary); color: white; border-radius: 4px; cursor: pointer;">
+            ${R.string.duration_2min || '2 mín'}
+          </button>
+          <button type="button" class="duration-btn" data-minutes="3" style="padding: 0.5rem 1rem; border: 2px solid var(--color-gray-300); background: white; border-radius: 4px; cursor: pointer;">
+            ${R.string.duration_3min || '3 mín'}
+          </button>
+          <button type="button" class="duration-btn" data-minutes="custom" style="padding: 0.5rem 1rem; border: 2px solid var(--color-gray-300); background: white; border-radius: 4px; cursor: pointer;">
+            ${R.string.duration_custom || 'Sérsníða'}
+          </button>
+        </div>
+        <input type="hidden" id="modal-duration-minutes" value="2">
+      </div>
+
+      <!-- Custom Duration (hidden by default) -->
+      <div id="custom-duration-group" class="form-group hidden" style="margin-bottom: 1.5rem;">
+        <label style="font-weight: 600; display: block; margin-bottom: 0.5rem;">
+          ${R.string.label_custom_duration || 'Sérsniðin lengd (mínútur)'}
+        </label>
+        <input type="number" id="modal-custom-duration" class="form-control"
+               style="width: 100%; padding: 0.5rem;" min="1" max="10080" placeholder="${R.string.placeholder_custom_duration || 't.d. 240'}">
+        <small style="color: var(--color-gray-600); font-size: 0.875rem;">
+          ${R.string.help_custom_duration || '1 mínúta til 7 dagar'}
+        </small>
+      </div>
+
+      <!-- Manual End Time Toggle -->
+      <div class="form-group" style="margin-bottom: 1rem;">
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+          <input type="checkbox" id="modal-use-manual-end">
+          <span>${R.string.label_use_manual_end || 'Nota ákveðinn lokatíma frekar en tímalengd'}</span>
+        </label>
+      </div>
+
+      <!-- Manual End Time (hidden by default) -->
+      <div id="manual-end-group" class="form-group hidden" style="margin-bottom: 1rem;">
+        <label style="font-weight: 600; display: block; margin-bottom: 0.5rem;">
+          ${R.string.label_scheduled_end || 'Lokatími'}
+        </label>
+        <input type="datetime-local" id="modal-scheduled-end" class="form-control"
+               style="width: 100%; padding: 0.5rem;" min="${nowStr}">
+      </div>
+
+      <p style="color: var(--color-gray-600); font-size: 0.875rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--color-gray-200);">
+        ${R.string.confirm_open_note || 'Kosningin verður opin fyrir félagsmenn eftir að þú staðfestir.'}
+      </p>
     </div>
-    <p style="color: var(--color-gray-600); font-size: 0.875rem; margin-top: 1rem;">${R.string.confirm_open_note}</p>
   `;
-  
+
   const modal = showModal({
-    title: `${R.string.confirm_open_title} ${election.title}`,
-    content: durationHTML,
+    title: `${R.string.confirm_open_title || 'Opna kosningu:'} ${election.title}`,
+    content: scheduleHTML,
     size: 'md',
     buttons: [
       {
-        text: R.string.btn_cancel,
+        text: R.string.btn_cancel || 'Hætta við',
         onClick: () => modal.close()
       },
       {
-        text: R.string.btn_open,
+        text: R.string.btn_open || '🚀 Opna',
         primary: true,
         onClick: async () => {
-          const durationMinutes = parseInt(document.getElementById('duration-select').value);
+          // Collect schedule data from modal
+          const startTiming = document.querySelector('input[name="start_timing"]:checked')?.value || 'immediate';
+          const scheduledStart = document.getElementById('modal-scheduled-start')?.value;
+          const useManualEnd = document.getElementById('modal-use-manual-end')?.checked;
+          const scheduledEnd = document.getElementById('modal-scheduled-end')?.value;
+          const durationMinutes = parseInt(document.getElementById('modal-duration-minutes')?.value || '2');
+
+          // Validate
+          if (startTiming === 'scheduled' && !scheduledStart) {
+            showError(R.string.validation_scheduled_start || 'Veldu upphafstíma');
+            return;
+          }
+          if (useManualEnd && !scheduledEnd) {
+            showError(R.string.validation_scheduled_end || 'Veldu lokatíma');
+            return;
+          }
+
           modal.close();
-          
+
           try {
-            const user = auth.currentUser;
-            const token = await user.getIdToken();
-            
-            // Calculate end time
-            const now = new Date();
-            const endTime = new Date(now.getTime() + durationMinutes * 60000);
-            
-            const response = await fetch(`${ADMIN_API_URL}/${electionId}/open`, {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                voting_starts_at: now.toISOString(),
-                voting_ends_at: endTime.toISOString()
-              })
-            });
-            
-            if (!response.ok) {
-              const errorData = await response.json().catch(() => ({}));
-              const errorMessage = errorData.error || errorData.message || `HTTP ${response.status}`;
-              throw new Error(errorMessage);
+            // Calculate start and end times
+            let startTime, endTime;
+
+            if (startTiming === 'immediate') {
+              startTime = new Date();
+            } else {
+              startTime = new Date(scheduledStart);
             }
-            
-            debug.log('[Elections List] Election opened:', electionId, 'Duration:', durationMinutes, 'min');
-            showSuccess(R.string.success_opened);
-            
+
+            if (useManualEnd) {
+              endTime = new Date(scheduledEnd);
+            } else {
+              endTime = new Date(startTime.getTime() + durationMinutes * 60000);
+            }
+
+            await openElection(electionId, {
+              voting_starts_at: startTime.toISOString(),
+              voting_ends_at: endTime.toISOString()
+            });
+
+            debug.log('[Elections List] Election opened:', electionId, 'Start:', startTime, 'End:', endTime);
+            showSuccess(R.string.success_opened || 'Kosning opnuð!');
+
             // Reload elections
             await loadElections();
-            
+
           } catch (error) {
             console.error('[Elections List] Error opening election:', error);
             showError(R.format(R.string.error_open_failed, error.message));
@@ -685,12 +711,93 @@ async function openElection(electionId) {
       }
     ]
   });
+
+  // Setup event listeners for the modal form
+  setupOpenModalListeners();
+}
+
+/**
+ * Setup event listeners for the Open modal form elements
+ */
+function setupOpenModalListeners() {
+  // Start timing radio buttons
+  document.querySelectorAll('input[name="start_timing"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      const scheduledGroup = document.getElementById('scheduled-start-group');
+      if (scheduledGroup) {
+        scheduledGroup.classList.toggle('hidden', e.target.value !== 'scheduled');
+      }
+    });
+  });
+
+  // Duration buttons
+  document.querySelectorAll('.open-modal-form .duration-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      // Remove active from all
+      document.querySelectorAll('.open-modal-form .duration-btn').forEach(b => {
+        b.style.border = '2px solid var(--color-gray-300)';
+        b.style.background = 'white';
+        b.style.color = 'inherit';
+        b.classList.remove('active');
+      });
+      // Add active to clicked
+      e.target.style.border = '2px solid var(--color-primary)';
+      e.target.style.background = 'var(--color-primary)';
+      e.target.style.color = 'white';
+      e.target.classList.add('active');
+
+      const minutes = e.target.dataset.minutes;
+      const customGroup = document.getElementById('custom-duration-group');
+      const durationInput = document.getElementById('modal-duration-minutes');
+      const manualEndCheckbox = document.getElementById('modal-use-manual-end');
+
+      if (minutes === 'custom') {
+        customGroup?.classList.remove('hidden');
+        durationInput.value = '';
+      } else {
+        customGroup?.classList.add('hidden');
+        durationInput.value = minutes;
+      }
+
+      // Uncheck manual end
+      if (manualEndCheckbox) {
+        manualEndCheckbox.checked = false;
+        document.getElementById('manual-end-group')?.classList.add('hidden');
+      }
+    });
+  });
+
+  // Custom duration input
+  const customDurationInput = document.getElementById('modal-custom-duration');
+  if (customDurationInput) {
+    customDurationInput.addEventListener('input', (e) => {
+      document.getElementById('modal-duration-minutes').value = e.target.value;
+    });
+  }
+
+  // Manual end time toggle
+  const manualEndCheckbox = document.getElementById('modal-use-manual-end');
+  if (manualEndCheckbox) {
+    manualEndCheckbox.addEventListener('change', (e) => {
+      document.getElementById('manual-end-group')?.classList.toggle('hidden', !e.target.checked);
+      if (e.target.checked) {
+        // Hide custom duration and deselect duration buttons
+        document.getElementById('custom-duration-group')?.classList.add('hidden');
+        document.querySelectorAll('.open-modal-form .duration-btn').forEach(b => {
+          b.style.border = '2px solid var(--color-gray-300)';
+          b.style.background = 'white';
+          b.style.color = 'inherit';
+          b.classList.remove('active');
+        });
+      }
+    });
+  }
 }
 
 /**
  * Close election with confirmation
  */
-async function closeElection(electionId) {
+async function handleCloseElection(electionId) {
   const election = elections.find(e => e.id === electionId);
   if (!election) return;
   
@@ -710,25 +817,9 @@ async function closeElection(electionId) {
           modal.close();
           
           try {
-            const user = auth.currentUser;
-            const token = await user.getIdToken();
-            
-            const response = await fetch(`${ADMIN_API_URL}/${electionId}/close`, {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                voting_ends_at: new Date().toISOString()
-              })
+            await closeElection(electionId, {
+              voting_ends_at: new Date().toISOString()
             });
-            
-            if (!response.ok) {
-              const errorData = await response.json().catch(() => ({}));
-              const errorMessage = errorData.error || errorData.message || `HTTP ${response.status}`;
-              throw new Error(errorMessage);
-            }
             
             debug.log('[Elections List] Election closed:', electionId);
             showSuccess(R.string.success_closed);
@@ -749,7 +840,7 @@ async function closeElection(electionId) {
 /**
  * Hide election (soft delete)
  */
-async function hideElection(electionId) {
+async function handleHideElection(electionId) {
   const election = elections.find(e => e.id === electionId);
   if (!election) return;
   
@@ -758,20 +849,7 @@ async function hideElection(electionId) {
   }
   
   try {
-    const user = auth.currentUser;
-    const token = await user.getIdToken();
-    
-    const response = await fetch(`${ADMIN_API_URL}/${electionId}/hide`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
-    }
+    await hideElection(electionId);
     
     debug.log('[Elections List] Election hidden:', electionId);
     showSuccess(R.string.success_hidden);
@@ -788,7 +866,7 @@ async function hideElection(electionId) {
 /**
  * Unhide election (restore)
  */
-async function unhideElection(electionId) {
+async function handleUnhideElection(electionId) {
   const election = elections.find(e => e.id === electionId);
   if (!election) return;
   
@@ -797,20 +875,7 @@ async function unhideElection(electionId) {
   }
   
   try {
-    const user = auth.currentUser;
-    const token = await user.getIdToken();
-    
-    const response = await fetch(`${ADMIN_API_URL}/${electionId}/unhide`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
-    }
+    await unhideElection(electionId);
     
     debug.log('[Elections List] Election unhidden:', electionId);
     showSuccess(R.string.success_unhidden);
@@ -827,7 +892,7 @@ async function unhideElection(electionId) {
 /**
  * Delete election (hard delete - superadmin only)
  */
-async function deleteElection(electionId) {
+async function handleDeleteElection(electionId) {
   const election = elections.find(e => e.id === electionId);
   if (!election) return;
   
@@ -843,36 +908,14 @@ async function deleteElection(electionId) {
   }
   
   try {
-    const user = auth.currentUser;
-    const token = await user.getIdToken();
-    
-    const response = await fetch(`${ADMIN_API_URL}/${electionId}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      const errorMessage = errorData.error || errorData.message || `HTTP ${response.status}`;
-      console.error('[Elections List] Delete failed:', response.status, errorData);
-      
-      // Provide more helpful error message for common cases
-      if (errorMessage.includes('active election')) {
-        throw new Error(R.string.error_delete_active_election);
-      }
-      
-      throw new Error(errorMessage);
-    }
+    await deleteElection(electionId);
     
     debug.log('[Elections List] Election deleted:', electionId);
     showSuccess(R.string.success_deleted);
     
-    // Reload elections
-    await loadElections();
-    
+    // Refresh list
+    // Refresh list
+    loadElections();
   } catch (error) {
     console.error('[Elections List] Error deleting election:', error);
     showError(R.format(R.string.error_delete_failed, error.message));

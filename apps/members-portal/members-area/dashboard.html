@@ -6,14 +6,15 @@
   <title id="page-title">Loading...</title>
   
   <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2" sizes="any">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico?v=2">
   <link rel="stylesheet" href="/styles/global.css?v=20251027">
   <link rel="stylesheet" href="/styles/components/nav.css?v=20251027">
-  <link rel="stylesheet" href="/styles/components/page.css?v=20251109-6">
+  <link rel="stylesheet" href="/styles/components/page.css?v=20251121-3">
   <link rel="stylesheet" href="/styles/components/button.css?v=20251106">
   <link rel="stylesheet" href="/styles/components/modal.css?v=20251106">
   <link rel="stylesheet" href="/styles/components/toast.css?v=20251106">
+  <link rel="stylesheet" href="/styles/components/badge.css?v=20251201">
 </head>
 <body class="authenticated">
   <!-- Navigation component inserted here -->
@@ -66,7 +67,7 @@
 
   <!-- Initialize Navigation Component -->
   <script type="module">
-    import { initNavHeader, NAV_CONFIGS } from '../../ui/components/nav-header.js';
+    import { initNavHeader, NAV_CONFIGS } from '../../ui/components/navigation-bar.js?v=20251121c';
     
     // Initialize navigation with appropriate config
     await initNavHeader(NAV_CONFIGS.members);

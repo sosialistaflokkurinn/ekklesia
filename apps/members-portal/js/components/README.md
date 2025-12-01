@@ -14,7 +14,7 @@ This directory contains shared JavaScript components that provide consistent UI 
 **Component Quality Metrics** (from Nov 2025 audit):
 - **Total Components**: 18 identified
 - **Documented**: 4 (22%)
-- **Gold Standard**: 1 (nav.js - 100% adoption across 15 pages)
+- **Gold Standard**: 1 (nav-interactions.js - 100% adoption across 15 pages)
 - **Needs Improvement**: 17 (94%)
 - **Estimated Value**: ~375 lines saved, ~10-15% reduction in code duplication
 
@@ -24,7 +24,7 @@ This directory contains shared JavaScript components that provide consistent UI 
 
 | Component | Adoption | Quality | Priority | Status |
 |-----------|----------|---------|----------|--------|
-| nav.js | 100% (15/15 pages) | ⭐⭐⭐⭐⭐ GOLD STANDARD | Critical | ✅ Complete |
+| nav-interactions.js | 100% (15/15 pages) | ⭐⭐⭐⭐⭐ GOLD STANDARD | Critical | ✅ Complete |
 | toast.js | 27% (4/15 pages) | ⭐⭐⭐⭐ Good | High | ⚠️ Needs adoption |
 | modal.js | 27% (4/15 pages) | ⭐⭐⭐ Decent | High | ⚠️ Missing i18n |
 | status.js | 7% (1/15 pages) | ⭐⭐⭐ Decent | Medium | ⚠️ Needs adoption |
@@ -37,11 +37,11 @@ This directory contains shared JavaScript components that provide consistent UI 
 
 ## Components
 
-### ⭐ nav.js - Navigation System (GOLD STANDARD)
+### ⭐ nav-interactions.js - Navigation System (GOLD STANDARD)
 
 **THE GOLD STANDARD** for component quality and adoption across the Ekklesia application.
 
-**File**: `/js/nav.js` (215 lines)
+**File**: `/js/nav-interactions.js` (215 lines)
 **CSS**: `/styles/components/nav.css` (450+ lines)
 **Adoption**: 100% (15/15 authenticated pages)
 **Quality**: ⭐⭐⭐⭐⭐
@@ -58,7 +58,7 @@ This directory contains shared JavaScript components that provide consistent UI 
 
 **Usage**:
 ```javascript
-import { initNavigation } from '../js/nav.js';
+import { initNavigation } from '../js/nav-interactions.js';
 
 // Initialize navigation with hamburger menu
 initNavigation();
@@ -673,7 +673,7 @@ Keep code local when:
 **Estimated Fix Effort**: ~100 hours (2-3 months)
 
 **Key Findings**:
-1. ⭐ **Navigation is PERFECT** - nav.js is the gold standard (100% adoption)
+1. ⭐ **Navigation is PERFECT** - nav-interactions.js is the gold standard (100% adoption)
 2. ⚠️ **i18n is CRITICAL issue** - 3 different initialization patterns
 3. ⚠️ **No form field components** - 10+ forms with inconsistent patterns
 4. ⚠️ **Low modal adoption** - 11 files still use alert()/confirm()
@@ -700,7 +700,7 @@ Keep code local when:
 
 2. ⏳ **Create Component README** (30 minutes) - IN PROGRESS
    - Document all 18 components
-   - Show nav.js as gold standard
+   - Show nav-interactions.js as gold standard
    - Provide usage examples
 
 3. ⏳ **Delete duplicate components** (1 hour) - PENDING

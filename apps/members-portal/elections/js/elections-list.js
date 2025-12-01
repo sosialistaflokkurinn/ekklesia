@@ -15,6 +15,7 @@ import { R } from '../i18n/strings-loader.js';
 import { getElections } from '../../js/api/elections-api.js';
 import { escapeHTML } from '../../js/utils/format.js';
 import { createButton } from '../../js/components/button.js';
+import { setTextContentOptional, showElement, hideElement } from '../../ui/dom.js';
 
 // State
 let currentFilter = 'all';
@@ -42,24 +43,21 @@ async function init() {
     await initAuthenticatedPage();
 
     // Update elections navigation link (page-specific) if it exists
-    const navVoting = document.getElementById('nav-voting');
-    if (navVoting) {
-      navVoting.textContent = R.string.nav_voting;
-    }
+    setTextContentOptional('nav-voting', R.string.nav_voting);
 
-    // Update page titles
+    // Update page titles (using safe helpers)
     document.title = R.string.page_title_elections;
-    document.getElementById('elections-title').textContent = R.string.elections_title;
-    document.getElementById('elections-subtitle').textContent = R.string.elections_subtitle;
-    document.getElementById('loading-message').textContent = R.string.loading_elections;
-    document.getElementById('empty-message').textContent = R.string.empty_no_elections;
-    document.getElementById('error-message').textContent = R.string.error_load_elections;
+    setTextContentOptional('elections-title', R.string.elections_title);
+    setTextContentOptional('elections-subtitle', R.string.elections_subtitle);
+    setTextContentOptional('loading-message', R.string.loading_elections);
+    setTextContentOptional('empty-message', R.string.empty_no_elections);
+    setTextContentOptional('error-message', R.string.error_load_elections);
 
     // Update filter button labels
-    document.getElementById('filter-all-text').textContent = R.string.filter_all;
-    document.getElementById('filter-active-text').textContent = R.string.filter_active;
-    document.getElementById('filter-upcoming-text').textContent = R.string.filter_upcoming;
-    document.getElementById('filter-closed-text').textContent = R.string.filter_closed;
+    setTextContentOptional('filter-all-text', R.string.filter_all);
+    setTextContentOptional('filter-active-text', R.string.filter_active);
+    setTextContentOptional('filter-upcoming-text', R.string.filter_upcoming);
+    setTextContentOptional('filter-closed-text', R.string.filter_closed);
 
     // Setup filter buttons and retry button
     setupFilters();
@@ -118,16 +116,8 @@ async function loadElections() {
   try {
     showLoading();
 
-    // Fetch elections
+    // Fetch elections (API layer normalizes status: published → active)
     allElections = await getElections();
-
-    // Map backend status to frontend status
-    // Backend uses 'published', frontend expects 'active'
-    allElections.forEach(election => {
-      if (election.status === 'published') {
-        election.status = 'active';
-      }
-    });
 
     // Calculate counts by status
     electionCounts = {
@@ -216,7 +206,7 @@ function createElectionCard(election) {
     <p class="elections__card-question">${escapeHTML(election.question)}</p>
     ${votedHTML}
     <div class="elections__card-footer">
-      <span class="elections__card-date">${formatDate(election.voting_starts_at)}</span>
+      <span class="elections__card-date">${formatDate(election.voting_starts_at || election.scheduled_start)}</span>
       <span class="elections__card-cta">${R.string.election_card_cta}</span>
     </div>
   `;

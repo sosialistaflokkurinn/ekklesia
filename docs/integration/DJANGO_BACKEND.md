@@ -1,7 +1,7 @@
 # Django Backend Documentation
 
 **Status**: Production  
-**Last Updated**: November 5, 2025
+**Last Updated**: November 25, 2025
 
 ## 🎯 Overview
 
@@ -134,17 +134,23 @@ class Email(models.Model):
 **ContactInfo** (`membership/models.py`):
 ```python
 class ContactInfo(models.Model):
-    comrade = models.ForeignKey(Comrade, on_delete=models.CASCADE)
-    phone = models.CharField(max_length=20)
+    comrade = models.OneToOneField(Comrade, primary_key=True, on_delete=models.CASCADE)
+    phone = models.CharField(max_length=32, blank=True)
+    email = models.CharField(max_length=124, blank=True)
+    facebook = models.CharField(max_length=255, blank=True)
+    foreign_phone = models.CharField(max_length=32, blank=True)
 ```
 
 **SimpleAddress** (`membership/models.py`):
 ```python
 class SimpleAddress(models.Model):
-    comrade = models.ForeignKey(Comrade, on_delete=models.CASCADE)
-    street_address = models.CharField(max_length=255)
-    postal_code = models.CharField(max_length=10)
-    city = models.CharField(max_length=100)
+    comrade = models.OneToOneField(Comrade, on_delete=models.CASCADE)  # ✅ OneToOne, not ForeignKey
+    street_address = models.CharField(max_length=255, blank=True)
+    postal_code = models.CharField(max_length=10, blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    country = models.CharField(max_length=100, blank=True)
+    raw_address = models.CharField(max_length=500, blank=True)
+    address = models.ForeignKey('map.Address', null=True, blank=True, on_delete=models.SET_NULL)
 ```
 
 ## 🔔 Signal Handlers
@@ -537,6 +543,72 @@ cat signals.py | ~/django-ssh.sh "cat > /home/manager/socialism/membership/signa
 ```bash
 ~/django-ssh.sh "sudo systemctl restart gunicorn"
 ```
+
+## 💻 Local Development Environment
+
+A complete local mirror of the Django production system is available for testing changes before deployment and deep exploration of the legacy system.
+
+### Location
+
+```
+/home/gudro/Development/projects/django/
+```
+
+### Containers
+
+Two Podman containers are used for local development:
+
+| Container | Purpose | Port |
+|-----------|---------|------|
+| `socialism-db` | PostGIS database | 5434 |
+| `django-local` | Django development server | 8000 |
+
+### Quick Start
+
+```bash
+# Start database container
+podman start socialism-db
+
+# Start Django server
+cd /home/gudro/Development/projects/django
+./run_local.sh
+```
+
+### Access Points
+
+- **Admin**: http://localhost:8000/admin/
+- **API**: http://localhost:8000/api/
+
+### Database Refresh
+
+To update local database from production:
+
+```bash
+# Dump from production
+ssh root@172.105.71.207 "PGPASSWORD='Vladimir Ilyich Ulyanov' pg_dump -U socialism -h localhost socialism" > socialism_dump.sql
+
+# Import to local container
+PGPASSWORD='Vladimir Ilyich Ulyanov' psql -h localhost -p 5434 -U socialism -d socialism -f socialism_dump.sql
+```
+
+### Sync Changes to Production
+
+```bash
+rsync -avz --exclude='*.pyc' --exclude='__pycache__' \
+  /home/gudro/Development/projects/django/ \
+  root@172.105.71.207:/home/manager/socialism/
+```
+
+### Important Notes
+
+- **Legacy System**: Django 2.2.3 with Python 3.6 - do NOT upgrade without testing
+- **GIS**: Uses PostGIS for geographic member locations and cell boundaries
+- **Language**: Icelandic UI (Félagar = Members, Sellur = Cells)
+- **Admin Optimization**: ComradeAdmin uses `get_queryset()` with `select_related`/`prefetch_related` to prevent N+1 queries
+
+### Project Documentation
+
+See `.claude/settings.json` and `CLAUDE.md` in the local Django directory for detailed quirks and configuration.
 
 ## 🧪 Testing
 
