@@ -5,7 +5,7 @@ requests==2.32.5
 google-cloud-storage==3.5.0
 python-dotenv==1.2.1
 cloudevents==1.10.1
-iceaddr==0.5.6
+iceaddr==0.6.0
 setuptools>=65.0.0
 
 # Testing dependencies
