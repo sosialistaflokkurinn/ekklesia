@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title" data-i18n="dangerous_page_title">Hættulegar aðgerðir - Kerfisstjórn</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+  <!-- Reuse member portal styles -->
+  <link rel="stylesheet" href="/styles/bundle.css?v=20251202">
+
+  <!-- Superuser-specific styles -->
+  <link rel="stylesheet" href="/superuser/styles/superuser.css?v=20251201d">
+</head>
+<body class="authenticated superuser">
+  <!-- Navigation component inserted here -->
+
+  <!-- Page Content -->
+  <div class="page__container">
+    <!-- Warning Card -->
+    <div class="card dangerous-ops-warning">
+      <div class="dangerous-ops-warning__icon">⚠️</div>
+      <h1 class="card__title" data-i18n="dangerous_ops_title">Hættulegar aðgerðir</h1>
+      <p class="card__description" data-i18n="dangerous_ops_warning">
+        Aðgerðir á þessari síðu eru <strong>óafturkræfar</strong>. Þær geta eyðt gögnum varanlega
+        eða gert það ómögulegt að endurheimta upplýsingar. Vinsamlegast farðu varlega.
+      </p>
+    </div>
+
+    <!-- Hard Delete Member -->
+    <div class="card">
+      <h2 class="card__title" data-i18n="dangerous_delete_title">Eyða félaga varanlega</h2>
+      <p class="card__description" data-i18n="dangerous_delete_desc">
+        Eyðir félaga algjörlega úr kerfinu. Þetta fjarlægir öll gögn úr Firestore, Firebase Auth
+        og tengdar skrár. Ekki er hægt að afturkalla þessa aðgerð.
+      </p>
+
+      <div class="dangerous-ops__form">
+        <div class="form__group">
+          <label class="form__label" for="delete-member-id" data-i18n="dangerous_delete_label">Kennitölu félaga</label>
+          <input type="text" id="delete-member-id" class="form__input"
+                 data-i18n-placeholder="dangerous_delete_placeholder" placeholder="t.d. 1234567890" maxlength="10" pattern="[0-9]{10}">
+          <span class="form__hint" data-i18n="dangerous_delete_hint">Sláðu inn 10 stafa kennitölu félaga sem á að eyða.</span>
+        </div>
+
+        <button type="button" class="btn btn--danger" id="delete-member-btn" disabled data-i18n="dangerous_delete_btn">
+          Eyða félaga
+        </button>
+      </div>
+    </div>    <!-- Anonymize Member -->
+    <div class="card">
+      <h2 class="card__title" data-i18n="dangerous_anon_title">Nafnhreinsa félaga (GDPR)</h2>
+      <p class="card__description" data-i18n="dangerous_anon_desc">
+        Fjarlægir persónugreinanlegar upplýsingar en heldur tölfræðilegum gögnum.
+        Notað fyrir GDPR beiðnir þar sem eyðing er ekki möguleg vegna lagaskyldu.
+      </p>
+
+      <div class="dangerous-ops__form">
+        <div class="form__group">
+          <label class="form__label" for="anonymize-member-id" data-i18n="dangerous_delete_label">Kennitölu félaga</label>
+          <input type="text" id="anonymize-member-id" class="form__input"
+                 data-i18n-placeholder="dangerous_delete_placeholder" placeholder="t.d. 1234567890" maxlength="10" pattern="[0-9]{10}">
+          <span class="form__hint" data-i18n="dangerous_anon_hint">Persónuupplýsingum verður skipt út fyrir gervigögn og kennitölu eyðt.</span>
+        </div>
+
+        <button type="button" class="btn btn--warning" id="anonymize-member-btn" disabled data-i18n="dangerous_anon_btn">
+          Nafnhreinsa félaga
+        </button>
+      </div>
+    </div>    <!-- Purge Soft-Deleted Records -->
+    <div class="card">
+      <h2 class="card__title" data-i18n="dangerous_purge_title">Hreinsa eydd gögn</h2>
+      <p class="card__description" data-i18n="dangerous_purge_desc">
+        Fjarlægir varanlega öll gögn sem hafa verið merkt sem eydd (soft-deleted).
+        Eftir þessa aðgerð er ekki lengur hægt að endurheimta þessi gögn.
+      </p>
+
+      <div class="dangerous-ops__info">
+        <div class="dangerous-ops__stat">
+          <span class="dangerous-ops__stat-label" data-i18n="dangerous_purge_members_label">Eyddir félagar:</span>
+          <span class="dangerous-ops__stat-value" id="deleted-members-count">-</span>
+        </div>
+        <div class="dangerous-ops__stat">
+          <span class="dangerous-ops__stat-label" data-i18n="dangerous_purge_votes_label">Eydd atkvæði:</span>
+          <span class="dangerous-ops__stat-value" id="deleted-votes-count">-</span>
+        </div>
+      </div>
+
+      <button type="button" class="btn btn--danger" id="purge-deleted-btn" disabled data-i18n="dangerous_purge_btn">
+        Hreinsa eytt gögn
+      </button>
+    </div>
+
+    <!-- Audit Trail -->
+    <div class="card">
+      <h2 class="card__title" data-i18n="dangerous_recent_title">Nýlegar hættulegar aðgerðir</h2>
+      <div class="dangerous-ops__audit" id="recent-dangerous-ops">
+        <p class="u-text-muted" data-i18n="dangerous_loading">Hleður...</p>
+      </div>
+    </div>
+  </div>
+
+    <!-- Confirmation Modal -->
+  <div class="modal" id="confirm-modal" aria-hidden="true">
+    <div class="modal__backdrop"></div>
+    <div class="modal__container modal__container--danger">
+      <div class="modal__header">
+        <h2 class="modal__title" id="confirm-modal-title" data-i18n="dangerous_modal_title">Staðfesta aðgerð</h2>
+      </div>
+      <div class="modal__body">
+        <p id="confirm-modal-description"></p>
+
+        <!-- Step 1: Countdown -->
+        <div class="confirm-step" id="confirm-step-1">
+          <p class="confirm-step__instruction" data-i18n="dangerous_modal_step1">Bíððu eftir niðurtalningu:</p>
+          <div class="confirmation-countdown" id="confirm-countdown">5</div>
+        </div>
+
+        <!-- Step 2: Type confirmation -->
+        <div class="confirm-step u-hidden" id="confirm-step-2">
+          <p class="confirm-step__instruction">Sláðu inn "<span id="confirm-phrase"></span>" til að staðfesta:</p>
+          <input type="text" class="confirmation-input" id="confirm-input" autocomplete="off">
+        </div>
+
+        <!-- Step 3: Final confirmation -->
+        <div class="confirm-step u-hidden" id="confirm-step-3">
+          <p class="confirm-step__instruction confirm-step__instruction--final" data-i18n="dangerous_modal_step3">
+            Þetta er síðasta tækifæri til að hætta við. Ertu alveg viss?
+          </p>
+        </div>
+      </div>
+      <div class="modal__footer">
+        <button type="button" class="btn btn--outline" id="confirm-cancel-btn" data-i18n="dangerous_modal_cancel">Hætta við</button>
+        <button type="button" class="btn btn--danger" id="confirm-proceed-btn" disabled data-i18n="dangerous_modal_proceed">Halda áfram</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/superuser/js/dangerous-ops.js?v=20251201"></script>
+
+  <!-- Initialize Navigation Component -->
+  <script type="module">
+    import { initNavHeader, NAV_CONFIGS } from '../ui/components/navigation-bar.js?v=20251201';
+    await initNavHeader(NAV_CONFIGS.superuserDangerousOps);
+  </script>
+
+</body>
+</html>

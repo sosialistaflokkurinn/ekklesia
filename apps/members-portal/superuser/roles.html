@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title" data-i18n="role_management_page_title">Hlutverk - Kerfisstjórn</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+  <!-- Reuse member portal styles -->
+  <link rel="stylesheet" href="/styles/bundle.css?v=20251202">
+
+  <!-- Superuser-specific styles -->
+  <link rel="stylesheet" href="/superuser/styles/superuser.css?v=20251201d">
+</head>
+<body class="authenticated superuser">
+  <!-- Navigation component inserted here -->
+
+  <!-- Page Content -->
+  <div class="page__container">
+    <!-- Search Card -->
+    <div class="card">
+      <h1 class="card__title" data-i18n="role_management_title">Stjórnun hlutverka</h1>
+      <p class="card__description" data-i18n="role_management_desc">Leita að notanda til að breyta hlutverki.</p>
+
+      <div class="user-search">
+        <input
+          type="text"
+          id="user-search-input"
+          class="user-search__input form__input"
+          data-i18n-placeholder="role_search_placeholder"
+          placeholder="Leita að notanda (netfang, kennitala eða nafn)..."
+          autocomplete="off"
+        >
+        <div class="user-search__results u-hidden" id="user-search-results"></div>
+      </div>
+    </div>
+
+    <!-- Selected User Card (hidden by default) -->
+    <div class="card u-hidden" id="selected-user-card">
+      <h2 class="card__title" data-i18n="role_selected_user_title">Notandi</h2>
+
+      <div class="user-info">
+        <div class="user-info__row">
+          <span class="user-info__label" data-i18n="role_label_name">Nafn:</span>
+          <span class="user-info__value" id="selected-user-name">-</span>
+        </div>
+        <div class="user-info__row">
+          <span class="user-info__label" data-i18n="role_label_email">Netfang:</span>
+          <span class="user-info__value" id="selected-user-email">-</span>
+        </div>
+        <div class="user-info__row">
+          <span class="user-info__label" data-i18n="role_label_kennitala">Kennitala:</span>
+          <span class="user-info__value" id="selected-user-kennitala">-</span>
+        </div>
+        <div class="user-info__row">
+          <span class="user-info__label" data-i18n="role_label_firebase_uid">Firebase UID:</span>
+          <span class="user-info__value user-info__value--mono" id="selected-user-uid">-</span>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <h3 class="card__subtitle" data-i18n="role_current_label">Núverandi hlutverk</h3>
+      <div class="current-roles" id="current-roles">
+        <span class="role-badge" data-i18n="role_loading">Hleð...</span>
+      </div>
+
+      <hr class="divider">
+
+      <h3 class="card__subtitle" data-i18n="role_change_section">Breyta hlutverki</h3>
+      <p class="card__description" data-i18n="role_change_desc">Veldu nýtt hlutverk fyrir notandann. Þetta mun yfirskirfa núverandi hlutverk.</p>
+
+      <div class="role-selector" id="role-selector">
+        <button type="button" class="role-option role-option--member" data-role="member">
+          <span class="role-option__name" data-i18n="role_member_name">Félagi</span>
+          <span class="role-option__desc" data-i18n="role_member_desc">Grunnnotandi með kosningaétt</span>
+        </button>
+        <button type="button" class="role-option role-option--admin" data-role="admin">
+          <span class="role-option__name" data-i18n="role_admin_name">Stjórnandi</span>
+          <span class="role-option__desc" data-i18n="role_admin_desc">Umsjá félagaskrár og kosninga</span>
+        </button>
+        <button type="button" class="role-option role-option--superuser" data-role="superuser">
+          <span class="role-option__name" data-i18n="role_superuser_name">Kerfisstjóri</span>
+          <span class="role-option__desc" data-i18n="role_superuser_desc">Fullur aðgangur að kerfisstjórn</span>
+        </button>
+      </div>
+
+      <div class="form__actions">
+        <button type="button" class="btn btn--primary" id="save-role-btn" disabled data-i18n="role_save_btn">
+          Vista breytingu
+        </button>
+        <button type="button" class="btn btn--outline" id="cancel-btn" data-i18n="role_cancel_btn">
+          Hætta við
+        </button>
+      </div>
+    </div>    <!-- Elevated Users List -->
+    <div class="card">
+      <h2 class="card__title" data-i18n="role_elevated_users_title">Notendur með aukin réttindi</h2>
+      <p class="card__description" data-i18n="role_elevated_users_desc">Listi yfir alla stjórnendur og kerfisstjóra.</p>
+
+      <div id="elevated-users-loading" class="loading-placeholder">
+        <span class="loading-spinner"></span> <span data-i18n="role_elevated_loading">Hleð lista...</span>
+      </div>
+
+      <div id="elevated-users-list" class="elevated-users-list u-hidden">
+        <!-- Superusers -->
+        <div class="elevated-group">
+          <h3 class="elevated-group__title">
+            <span class="role-badge role-badge--superuser" data-i18n="role_superusers_label">Kerfisstjórar</span>
+            <span class="elevated-group__count" id="superuser-count">0</span>
+          </h3>
+          <div class="elevated-group__users" id="superuser-list"></div>
+        </div>
+
+        <!-- Admins -->
+        <div class="elevated-group">
+          <h3 class="elevated-group__title">
+            <span class="role-badge role-badge--admin" data-i18n="role_admins_label">Stjórnendur</span>
+            <span class="elevated-group__count" id="admin-count">0</span>
+          </h3>
+          <div class="elevated-group__users" id="admin-list"></div>
+        </div>
+      </div>
+
+      <div id="elevated-users-error" class="u-hidden">
+        <p class="u-text-muted" data-i18n="role_elevated_error">Villa við að sækja lista.</p>
+      </div>
+    </div>
+
+    <!-- Recent Role Changes (placeholder for future) -->
+    <div class="card">
+      <h2 class="card__title" data-i18n="role_recent_changes_title">Nýlegar breytingar</h2>
+      <p class="card__description u-text-muted" data-i18n="role_recent_changes_desc">Saga hlutverkabreytinga kemur síðar.</p>
+    </div>
+  </div>
+
+  <script type="module" src="/superuser/js/roles-management.js?v=20251201d"></script>
+
+  <!-- Initialize Navigation Component -->
+  <script type="module">
+    import { initNavHeader, NAV_CONFIGS } from '../ui/components/navigation-bar.js?v=20251201';
+    await initNavHeader(NAV_CONFIGS.superuserRoles);
+  </script>
+
+</body>
+</html>

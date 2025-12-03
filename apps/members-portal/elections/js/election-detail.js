@@ -11,16 +11,16 @@
  */
 
 import { initAuthenticatedPage } from '../../js/page-init.js';
-import { debug } from '../../js/utils/debug.js';
-import { formatDateIcelandic } from '../../js/utils/format.js';
+import { debug } from '../../js/utils/util-debug.js';
+import { formatDateIcelandic } from '../../js/utils/util-format.js';
 import { R } from '../i18n/strings-loader.js';
-import { getElectionById } from '../../js/api/elections-api.js';
-import { escapeHTML } from '../../js/utils/format.js';
-import { showModal } from '../../js/components/modal.js';
+import { getElectionById } from '../../js/api/api-elections.js';
+import { escapeHTML } from '../../js/utils/util-format.js';
+import { showModal } from '../../js/components/ui-modal.js';
 import { electionState } from '../../js/utils/election-state.js';
-import { createScheduleDisplay } from '../../js/components/schedule-display.js';
-import { createVotingForm } from '../../js/components/voting-form.js';
-import { createButton } from '../../js/components/button.js';
+import { createScheduleDisplay } from '../../js/components/election-schedule-display.js';
+import { createVotingForm } from '../../js/components/election-vote-form.js';
+import { createButton } from '../../js/components/ui-button.js';
 import { setTextContentOptional, showElement, hideElement } from '../../ui/dom.js';
 
 // State
@@ -38,6 +38,9 @@ async function init() {
   try {
     // Load i18n strings
     await R.load('is');
+    
+    // Translate elements with data-i18n attributes
+    R.translatePage();
 
     // Initialize authenticated page (header, navigation, auth check)
     await initAuthenticatedPage();
@@ -223,7 +226,7 @@ async function displayResultsSection(election) {
 
   try {
     // Fetch results from API
-    const { getResults } = await import('../../js/api/elections-api.js');
+    const { getResults } = await import('../../js/api/api-elections.js');
     const results = await getResults(election.id);
 
     // Display total votes
@@ -392,7 +395,7 @@ async function submitVote(answerIds) {
 
   try {
     // Import API function
-    const { submitVote: submitVoteAPI } = await import('../../js/api/elections-api.js');
+    const { submitVote: submitVoteAPI } = await import('../../js/api/api-elections.js');
 
     // Submit vote to backend
     const response = await submitVoteAPI(currentElection.id, answerIds);

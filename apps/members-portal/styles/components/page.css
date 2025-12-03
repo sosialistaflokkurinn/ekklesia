@@ -50,8 +50,8 @@ body.authenticated {
 }
 
 .page__tab--active {
-  color: var(--color-primary);
-  border-bottom-color: var(--color-primary);
+  color: var(--color-burgundy);
+  border-bottom-color: var(--color-burgundy);
   font-weight: var(--font-weight-semibold);
 }
 
@@ -128,15 +128,15 @@ body.authenticated {
   background: var(--color-bg-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  border-left: 4px solid var(--color-accent-gold);
+  border-left: 4px solid var(--color-burgundy);
   transition: all 0.2s ease;
   box-shadow: var(--shadow-sm);
 }
 
 .info-grid__item.u-clickable:hover {
   background: var(--color-bg-card);
-  border-color: var(--color-accent-gold);
-  box-shadow: var(--shadow-gold-glow);
+  border-color: var(--color-burgundy-light);
+  box-shadow: var(--shadow-burgundy-glow);
   transform: translateY(-3px);
 }
 
@@ -156,12 +156,20 @@ body.authenticated {
 
 /* Welcome message */
 .card--welcome {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary) 100%);
-  color: var(--color-cream);
+  background: linear-gradient(135deg, var(--color-burgundy) 0%, var(--color-burgundy-dark) 100%);
+  color: var(--color-white);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), 
+              0 4px 16px var(--color-burgundy-alpha-30);
+}
+
+.card--welcome:hover {
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.25), 
+              0 6px 24px var(--color-burgundy-alpha-50);
+  transform: translateY(-2px);
 }
 
 .card--welcome .card__title {
-  color: var(--color-cream);
+  color: var(--color-white);
 }
 
 .card--welcome .card__content {

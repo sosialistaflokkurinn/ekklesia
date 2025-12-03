@@ -304,4 +304,122 @@ echo "🏴 Checking commit message for political identity..."
 # This check runs in commit-msg hook, but we can prepare for it
 # (commit-msg hook will run after this pre-commit hook)
 
+# --- 6. Check i18n consistency (string loaders) ---
+echo "🌍 Checking i18n string loader consistency..."
+
+I18N_ISSUES=0
+
+# Find JS files that import string loaders but don't call .load()
+for file in $STAGED_FILES; do
+  if [[ "$file" == *.js ]] && [ -f "$file" ]; then
+    # Check if file imports R from strings-loader (excluding comments)
+    if grep -v "^\s*//" "$file" | grep -q "import.*{.*R.*}.*from.*strings-loader" 2>/dev/null; then
+      # Check if file calls R.load() (excluding comments)
+      if ! grep -v "^\s*//" "$file" | grep -q "R\.load\s*(" 2>/dev/null; then
+        echo "⚠️  $file imports R but doesn't call R.load()"
+        ((I18N_ISSUES++))
+      fi
+    fi
+    
+    # Check if file imports superuserStrings (excluding comments)
+    if grep -v "^\s*//" "$file" | grep -q "import.*superuserStrings" 2>/dev/null; then
+      # Check if file calls superuserStrings.load() (excluding comments)
+      if ! grep -v "^\s*//" "$file" | grep -q "superuserStrings\.load\s*(" 2>/dev/null; then
+        echo "⚠️  $file imports superuserStrings but doesn't call .load()"
+        ((I18N_ISSUES++))
+      fi
+    fi
+    
+    # Same check for adminStrings
+    if grep -v "^\s*//" "$file" | grep -q "import.*adminStrings" 2>/dev/null; then
+      if ! grep -v "^\s*//" "$file" | grep -q "adminStrings\.load\s*(" 2>/dev/null; then
+        echo "⚠️  $file imports adminStrings but doesn't call .load()"
+        ((I18N_ISSUES++))
+      fi
+    fi
+    
+    # Same check for electionsStrings
+    if grep -v "^\s*//" "$file" | grep -q "import.*electionsStrings" 2>/dev/null; then
+      if ! grep -v "^\s*//" "$file" | grep -q "electionsStrings\.load\s*(" 2>/dev/null; then
+        echo "⚠️  $file imports electionsStrings but doesn't call .load()"
+        ((I18N_ISSUES++))
+      fi
+    fi
+  fi
+done
+
+if [ "$I18N_ISSUES" -gt 0 ]; then
+  echo ""
+  echo "❌ Found $I18N_ISSUES i18n loader issue(s)"
+  echo ""
+  echo "   💡 Fix: Add 'await [loader].load();' in the init() function"
+  echo "   Example:"
+  echo "     async function init() {"
+  echo "       await R.load('is');"
+  echo "       await superuserStrings.load();  // <-- Add this"
+  echo "       // ... rest of init"
+  echo "     }"
+  echo ""
+  echo "   To bypass (not recommended): git commit --no-verify"
+  exit 1
+fi
+
+echo "✅ i18n consistency check passed"
+
+# --- 7. Check for hardcoded Icelandic text (warning only) ---
+echo "🇮🇸 Checking for hardcoded Icelandic text..."
+
+# Only run if the script exists and there are HTML/JS files staged
+if [ -f "scripts/utils/find-hardcoded-text.py" ]; then
+  # Check if any HTML or JS files are staged
+  if echo "$STAGED_FILES" | grep -qE '\.(html|js)$'; then
+    # Run the check (warning only, don't block commit)
+    HARDCODED_OUTPUT=$(python3 scripts/utils/find-hardcoded-text.py --staged 2>&1) || true
+    HARDCODED_COUNT=$(echo "$HARDCODED_OUTPUT" | grep -o "Total hardcoded strings:.*" | grep -o "[0-9]*" | head -1)
+
+    if [ -n "$HARDCODED_COUNT" ] && [ "$HARDCODED_COUNT" -gt 0 ]; then
+      echo ""
+      echo "⚠️  Warning: Found $HARDCODED_COUNT hardcoded text string(s) in staged files"
+      echo ""
+      echo "   💡 Consider externalizing to XML string files:"
+      echo "   - Run: python3 scripts/utils/find-hardcoded-text.py --staged --verbose"
+      echo "   - See: docs/standards/I18N_ENFORCEMENT.md"
+      echo ""
+      echo "   (This is a warning only - commit will proceed)"
+      echo ""
+    else
+      echo "✅ No hardcoded text detected in staged files"
+    fi
+  fi
+fi
+
+# --- 8. Check naming conventions (warning only) ---
+echo "📝 Checking naming conventions..."
+
+# Only run if the script exists
+if [ -f "scripts/analysis/analyze-naming.py" ]; then
+  # Check if any JS or Python files are staged
+  if echo "$STAGED_FILES" | grep -qE '\.(js|py)$'; then
+    # Run the analyzer on staged files
+    NAMING_OUTPUT=$(python3 scripts/analysis/analyze-naming.py 2>&1) || true
+    NAMING_VIOLATIONS=$(echo "$NAMING_OUTPUT" | grep -c "VIOLATION" || true)
+    NAMING_WARNINGS=$(echo "$NAMING_OUTPUT" | grep -c "⚠️" || true)
+
+    if [ "$NAMING_VIOLATIONS" -gt 0 ]; then
+      echo ""
+      echo "⚠️  Warning: Found $NAMING_VIOLATIONS naming convention violation(s)"
+      echo ""
+      echo "   💡 Run for details: python3 scripts/analysis/analyze-naming.py"
+      echo "   📖 See: docs/standards/NAMING_CONVENTIONS.md"
+      echo ""
+      echo "   (This is a warning only - commit will proceed)"
+      echo ""
+    elif [ "$NAMING_WARNINGS" -gt 0 ]; then
+      echo "⚠️  Found $NAMING_WARNINGS naming convention warning(s) (run analyzer for details)"
+    else
+      echo "✅ Naming conventions check passed"
+    fi
+  fi
+fi
+
 exit 0

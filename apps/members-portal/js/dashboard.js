@@ -14,17 +14,17 @@
  */
 
 import { R } from '../i18n/strings-loader.js';
-import { debug } from './utils/debug.js';
+import { debug } from './utils/util-debug.js';
 import { initAuthenticatedPage } from './page-init.js';
 import { requireAuth, getUserData, signOut, AuthenticationError } from '../session/auth.js';
 import { requireMember } from './rbac.js';
 import { httpsCallable, getFirebaseAuth, getFirebaseFirestore } from '../firebase/app.js';
 import { setTextContent, setInnerHTML, addEventListener, setDisabled, validateElements } from '../ui/dom.js';
-import { formatPhone, normalizePhoneForComparison } from './utils/format.js';
-import { updateMemberProfile } from './api/members-client.js';
-import { createButton } from './components/button.js';
-import { showModal } from './components/modal.js';
-import { showToast } from './components/toast.js';
+import { formatPhone, normalizePhoneForComparison } from './utils/util-format.js';
+import { updateMemberProfile } from './api/api-members.js';
+import { createButton } from './components/ui-button.js';
+import { showModal } from './components/ui-modal.js';
+import { showToast } from './components/ui-toast.js';
 
 /**
  * Required DOM elements for dashboard page
@@ -161,9 +161,9 @@ function renderRoleBadges(roles) {
       return `<a href="/admin/" class="role-badge role-badge--admin role-badge--clickable" title="${R.string.role_badge_title_open_member_admin}">${label}</a>`;
     }
 
-    // Superuser → Elections management dashboard (blue)
+    // Superuser → Superuser console (blue)
     if (role === 'superuser') {
-      return `<a href="/admin-elections/" class="role-badge role-badge--superuser role-badge--clickable" title="${R.string.role_badge_title_open_elections_admin}">${label}</a>`;
+      return `<a href="/superuser/" class="role-badge role-badge--superuser role-badge--clickable" title="${R.string.role_badge_title_open_superuser_console || 'Opna kerfisstjórn'}">${label}</a>`;
     }
 
     return `<span class="role-badge">${label}</span>`;
@@ -518,6 +518,9 @@ async function init() {
 
     // Load i18n strings (note: initAuthenticatedPage also calls R.load, but explicit here)
     await R.load('is');
+    
+    // Translate elements with data-i18n attributes
+    R.translatePage();
 
     // Initialize page: auth check, nav setup, logout handler
     await initAuthenticatedPage();

@@ -381,17 +381,16 @@ Track these metrics weekly:
   - **Effort:** 3-4 days
   - **Blocked by:** Firebase integration (#245)
   - **Owner:** @backend-team
-  - **Related:** See [AUTH_DESIGN.md](../security/AUTH_DESIGN.md)
+  - **Related:** See security/AUTH_DESIGN.md (if exists)
 ```
 
 ---
 
 ## 🔗 Related Documentation
 
-- [Markdown Insights](../../tmp/github-issues/MARKDOWN_INSIGHTS.md) - Full markdown analysis
-- [GitHub Issues Index](../../tmp/github-issues/ISSUES_INDEX.md) - Current open issues
-- [Code Quality Checklist](../development/CODE_QUALITY_CHECKLIST.md) - Example of good TODO tracking (57% completion!)
-- [Development Roadmap](../roadmap/DEVELOPMENT_ROADMAP.md) - Long-term planning
+- [CURRENT_DEVELOPMENT_STATUS.md](../status/CURRENT_DEVELOPMENT_STATUS.md) - System development status
+- [CHECKLIST_SPLITTING_RECOMMENDATIONS.md](./CHECKLIST_SPLITTING_RECOMMENDATIONS.md) - Checklist organization
+- [DOCUMENTATION_MAP.md](../../DOCUMENTATION_MAP.md) - Master documentation index
 
 ---
 

@@ -10,7 +10,7 @@
  * - 'countdown-tick': Fired every second during active election
  */
 
-import { debug } from './debug.js';
+import { debug } from './util-debug.js';
 import { DEFAULT_DURATION_MINUTES } from './election-constants.js';
 
 class ElectionState extends EventTarget {

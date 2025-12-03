@@ -18,14 +18,14 @@ import { requireAuth, getUserData, signOut, AuthenticationError } from '../sessi
 import { httpsCallable, getFirebaseFirestore } from '../firebase/app.js';
 import { doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { setTextContent, validateElements } from '../ui/dom.js';
-import { el } from './utils/dom.js';
-import { formatPhone, validatePhone, formatInternationalPhone, validateInternationalPhone, validateInternationalPostalCode, formatMembershipDuration } from './utils/format.js';
-import { getCountryName, getCountriesSorted, searchCountries, getCountryFlag, getCountryCallingCode } from './utils/countries.js';
-import { updateMemberProfile } from './api/members-client.js';
-import { debug } from './utils/debug.js';
-import { showToast } from './components/toast.js';
-import { showStatus, createStatusIcon } from './components/status.js';
-import { SearchableSelect } from './components/searchable-select.js';
+import { el } from './utils/util-dom.js';
+import { formatPhone, validatePhone, formatInternationalPhone, validateInternationalPhone, validateInternationalPostalCode, formatMembershipDuration } from './utils/util-format.js';
+import { getCountryName, getCountriesSorted, searchCountries, getCountryFlag, getCountryCallingCode } from './utils/util-countries.js';
+import { updateMemberProfile } from './api/api-members.js';
+import { debug } from './utils/util-debug.js';
+import { showToast } from './components/ui-toast.js';
+import { showStatus, createStatusIcon } from './components/ui-status.js';
+import { SearchableSelect } from './components/ui-searchable-select.js';
 import { PhoneManager } from './profile/phone-manager.js';
 import { AddressManager } from './profile/address-manager.js';
 import { migrateOldPhoneFields, migrateOldAddressFields } from './profile/migration.js';
@@ -1297,6 +1297,9 @@ async function init() {
     debug.log('🔍 About to load i18n...');
     // Load i18n strings
     await R.load('is');
+    
+    // Translate elements with data-i18n attributes
+    R.translatePage();
 
     debug.log('🔍 About to test SearchableSelect...');
     // Test SearchableSelect import

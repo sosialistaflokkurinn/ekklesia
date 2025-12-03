@@ -1,17 +1,19 @@
 # Django Database Schema for Epic #43 Member Sync
 
 **Document Type**: Database Schema Reference
-**Last Updated**: 2025-11-24
-**Status**: ✅ Active - Epic #43 Implementation (Updated with SimpleAddress & ContactInfo corrections)
-**Purpose**: Document Django database tables and fields to sync to Firestore
+**Last Updated**: 2025-12-01
+**Status**: ✅ COMPLETE - Epic #43 Real-Time Sync Implementation
+**Purpose**: Document Django database tables and sync architecture with Firestore
 
 ---
 
 ## Overview
 
-This document maps the Django PostgreSQL database schema to the Firestore schema for Epic #43 Member Management System. The Django system (`sfi_felagakerfi_live` on Linode) is the current source of truth with **2,200 active members** (verified 2025-10-26).
+This document maps the Django PostgreSQL database schema to the Firestore schema for Epic #43 Member Management System. The Django system (`sfi_felagakerfi_live` on Linode) is the current source of truth with **2,200+ active members**.
 
-**Goal**: Sync ALL member data from Django → Firestore for read/write operations in Ekklesia admin panel.
+**Architecture**: Real-time bidirectional sync between Django ↔ Firestore:
+- **Django → Firestore**: Django signals trigger `sync_from_django` webhook (immediate)
+- **Firestore → Django**: Profile updates call `/api/sync/address/` via `updatememberprofile`
 
 ---
 
@@ -353,11 +355,23 @@ WHERE c.ssn = '0101012980';
 
 ---
 
-## Django API Endpoints (To Be Created)
+## Django API Endpoints (✅ Implemented)
 
-### Required Endpoint: `/api/members/full/`
+The following sync API endpoints are implemented in `felagar/api_views_sync.py`:
 
-**Purpose**: Return ALL member data in one request (for sync)
+| Endpoint | Method | Purpose | Code Location |
+|----------|--------|---------|---------------|
+| `/api/sync/changes/` | GET | Get pending changes for sync | `api_views_sync.py:30` |
+| `/api/sync/apply/` | POST | Apply changes from Firestore to Django | `api_views_sync.py:96` |
+| `/api/sync/mark-synced/` | POST | Mark changes as synced | `api_views_sync.py:261` |
+| `/api/sync/status/` | GET | Get sync status | `api_views_sync.py:309` |
+| `/api/sync/address/` | POST | Update member address from Firestore | `api_views_sync.py:490` |
+| `/api/sync/member/<ssn>/` | GET | Get single member by SSN | `api_views_sync.py:553` |
+| `/api/members/full/` | GET | Full member data (bulk sync) | See below |
+
+### Bulk Sync Endpoint: `/api/members/full/`
+
+**Purpose**: Return ALL member data in one request (for bulk sync)
 
 **Authentication**: Token authentication (Django REST Framework)
 
@@ -568,34 +582,51 @@ SELECT * FROM membership_comrade WHERE ssn = '0101012980';
 
 ---
 
-## Sync Strategy
+## Sync Architecture (Real-Time)
 
-### Full Sync (Initial + Manual)
+The sync system was upgraded from queue-based to **real-time bidirectional sync** in November 2025.
 
-**Process**:
+### Django → Firestore (Real-Time)
+
+**Mechanism**: Django signals trigger immediate sync via webhook
+
+```
+Django post_save signal → HTTP POST to sync_from_django → Firestore update
+Django post_delete signal → HTTP POST to sync_from_django → Firestore delete
+```
+
+**Cloud Function**: `sync_from_django` (`services/members/functions/sync_from_django.py`)
+- URL: `https://sync-from-django-521240388393.europe-west2.run.app`
+- Triggered by Django `post_save` and `post_delete` signals
+- Validates webhook token from Secret Manager
+- Updates Firestore `/members/{kennitala}` in real-time
+
+### Firestore → Django (Real-Time)
+
+**Mechanism**: Profile updates in Ekklesia call Django API
+
+```
+User updates profile → updatememberprofile → POST /api/sync/address/ → Django update
+```
+
+**Cloud Function**: `updatememberprofile` (`services/members/functions/member_functions.py`)
+- URL: `https://updatememberprofile-521240388393.europe-west2.run.app`
+- Called when user updates their profile (address, phone, etc.)
+- Updates both Firestore and Django via `/api/sync/address/`
+
+### Bulk Sync (Manual/Initial)
+
+**Process** (for initial data load or recovery):
 1. Fetch ALL members from Django: `GET /api/members/full/`
 2. Paginate through results (100 members per page)
 3. For each member:
    - Transform Django → Firestore format
    - Write to Firestore: `members/{kennitala}`
-4. Calculate diff:
-   - Added: New kennitalur in Django
-   - Removed: Kennitalur in Firestore but not in Django
-   - Updated: Existing kennitalur with changed data
-5. Log to `sync_history` collection
+4. Log sync to Cloud Logging
 
-**Estimated Time**: 2,216 members ÷ 100 per batch = 23 batches × 2 sec = **~46 seconds**
-
-### Incremental Sync (Future Enhancement)
-
-**Challenge**: Django doesn't track `last_modified` timestamp
-
-**Solution Options**:
-1. **Add `modified_at` field to Django models** (requires Django migration)
-2. **Full sync every time** (acceptable for 2,216 members)
-3. **Hash comparison** (compute hash of member data, compare)
-
-**MVP Decision**: Use **full sync** (simple, fast enough)
+**Cloud Function**: `syncmembers` (`services/members/functions/sync_functions.py`)
+- URL: `https://syncmembers-521240388393.europe-west2.run.app`
+- Typically used for initial sync or disaster recovery
 
 ---
 
@@ -658,7 +689,7 @@ match /members/{kennitala} {
 
 ---
 
-## Next Steps
+## Implementation Status
 
 ### Phase 1: Schema Verification ✅ COMPLETE
 
@@ -666,53 +697,58 @@ match /members/{kennitala} {
 - [x] SSH to Django server (via `~/django-ssh.sh`)
 - [x] Verify address table schema (`map_address`, `map_street`, etc.)
 - [x] Verify phone number storage (`membership_contactinfo`)
-- [x] Document member count (2,200 members)
+- [x] Document member count (2,200+ members)
 - [x] Create helper scripts for database access
 
-### Phase 2: Django API Development (Week 2)
+### Phase 2: Django API Development ✅ COMPLETE
 
-- [ ] Create `ComradeFullSerializer` (includes SSN)
-- [ ] Create `ComradeFullViewSet` (admin-only)
-- [ ] Add authentication (Token)
-- [ ] Add IP whitelist (Ekklesia Cloud Function only)
-- [ ] Test endpoint locally
+- [x] Create sync API endpoints in `felagar/api_views_sync.py`
+- [x] Add token authentication (Django REST Framework)
+- [x] Add endpoint security (IP validation, rate limiting)
+- [x] Implement `/api/sync/address/` for profile updates
+- [x] Implement `/api/sync/member/<ssn>/` for single member lookup
 
-### Phase 3: Cloud Function Sync (Week 3)
+### Phase 3: Cloud Function Sync ✅ COMPLETE
 
-- [ ] Create `syncMembers` Cloud Function
-- [ ] Fetch from Django API
-- [ ] Transform Django → Firestore
-- [ ] Batch write to Firestore
-- [ ] Calculate diffs (added/removed/updated)
-- [ ] Log to `sync_history`
+- [x] Create `sync_from_django` Cloud Function (real-time Django → Firestore)
+- [x] Create `syncmembers` Cloud Function (bulk sync)
+- [x] Create `updatememberprofile` Cloud Function (Firestore → Django)
+- [x] Django signals integration for real-time sync
+- [x] Audit logging to Cloud Logging
 
-### Phase 4: Admin UI (Week 4)
+### Phase 4: Admin UI ✅ COMPLETE
 
-- [ ] Create admin web UI
-- [ ] Member list view (read from Firestore)
-- [ ] Manual sync trigger button
-- [ ] Sync history view
-- [ ] Edit member data (write to Firestore + Django)
+- [x] Create admin web UI (`/superuser/`)
+- [x] Member list view (read from Firestore)
+- [x] System health dashboard
+- [x] Audit log viewer
+- [x] Role management (superuser, admin)
 
 ---
 
-## Questions for User
+## Resolved Questions
 
-1. **Address Storage**: Where are addresses stored in Django? (Need to verify table name)
-2. **Phone Numbers**: Where are phone numbers stored? (Not in `membership_comrade` model)
-3. **API Token**: Who will create the Django API token for sync? (Need admin access)
-4. **IP Whitelist**: Should we restrict Django API to Ekklesia Cloud Function IP only?
+| Question | Answer |
+|----------|--------|
+| Address Storage | `membership_simpleaddress` (829 records) and `membership_newlocaladdress` (complex system) |
+| Phone Numbers | `membership_contactinfo.phone` |
+| API Token | Stored in Secret Manager: `DJANGO_API_TOKEN` |
+| IP Whitelist | Yes, Cloud Run services only access Django API |
 
 ---
 
 ## Related Documentation
 
 - [EPIC_43_MEMBER_MANAGEMENT_SYSTEM.md](../features/election-voting/EPIC_43_MEMBER_MANAGEMENT_SYSTEM.md) - Main Epic #43 spec
-- DJANGO_LEGACY_SYSTEM.md (archived) - Django system overview
+- [CLOUD_RUN_SERVICES.md](../infrastructure/CLOUD_RUN_SERVICES.md) - Cloud Run services and URLs
 - [REYKJAVIK_ADDRESS_API_RESEARCH.md](REYKJAVIK_ADDRESS_API_RESEARCH.md) - Address lookup research
 
 ---
 
-**Last Updated**: 2025-10-26
-**Status**: ✅ Schema Documented - Ready for API Development
-**Next Action**: Verify address/phone tables on Django server
+## Changelog
+
+| Date | Changes |
+|------|---------|
+| 2025-12-01 | Major update: Documented real-time sync architecture, marked all phases complete, updated API endpoints as implemented |
+| 2025-11-24 | Added SimpleAddress and ContactInfo corrections |
+| 2025-10-26 | Initial schema documentation |

@@ -1,22 +1,22 @@
 ---
 title: "Cloud Run Services Architecture"
 created: 2025-11-06
-updated: 2025-11-25
+updated: 2025-12-01
 status: active
 category: infrastructure
-tags: [cloud-run, microservices, firebase, architecture, gcp, deployment]
+tags: [cloud-run, microservices, firebase, architecture, gcp, deployment, superuser]
 related:
   - ../systems/DJANGO_BACKEND_SYSTEM.md
   - ../integration/ARCHITECTURE.md
   - ./FIRESTORE_SCHEMA.md
 author: Infrastructure Team
-next_review: 2026-02-25
+next_review: 2026-03-01
 ---
 
 # Cloud Run Services Architecture
 
 **Document Type**: Infrastructure Documentation
-**Last Updated**: 2025-11-25
+**Last Updated**: 2025-12-01
 **Status**: ✅ Active - Production Services
 **Project**: ekklesia-prod-10-2025
 **Region**: europe-west2 (London)
@@ -25,7 +25,7 @@ next_review: 2026-02-25
 
 ## Overview
 
-Ekklesia uses [Google Cloud Run](https://cloud.google.com/run) to deploy and manage microservices. The platform consists of **14 independent services** that work together to provide election management, voting, membership, and address validation functionality.
+Ekklesia uses [Google Cloud Run](https://cloud.google.com/run) to deploy and manage microservices. The platform consists of **22 independent services** that work together to provide election management, voting, membership, address validation, and superuser administration functionality.
 
 **Architecture Philosophy**:
 - **Microservices** - Small, single-purpose functions that scale independently
@@ -276,7 +276,7 @@ sequenceDiagram
 #### 3. handlekenniauth
 **Type**: Cloud Function (Python 3.13)
 **Purpose**: Kenni.is OAuth authentication with PKCE
-**URL**: https://handlekenniauth-ymzrguoifa-nw.a.run.app
+**URL**: https://handlekenniauth-521240388393.europe-west2.run.app
 **Authentication**: Public (OAuth callback)
 
 **Key Features**:
@@ -307,10 +307,10 @@ sequenceDiagram
 
 ### Data Synchronization Services
 
-#### 5. sync-from-django ⭐ NEW
+#### 5. sync-from-django
 **Type**: Cloud Function (Python 3.13)
 **Purpose**: Real-time Django → Firestore sync webhook
-**URL**: https://europe-west2-ekklesia-prod-10-2025.cloudfunctions.net/sync_from_django
+**URL**: https://sync-from-django-521240388393.europe-west2.run.app
 **Authentication**: API key (django-api-token)
 **Deployed**: 2025-11-25
 
@@ -351,7 +351,7 @@ sequenceDiagram
 #### 6. updatememberprofile
 **Type**: Cloud Function (Python 3.13)
 **Purpose**: Real-time Firestore → Django sync for profile AND address updates
-**URL**: https://updatememberprofile-ymzrguoifa-nw.a.run.app
+**URL**: https://updatememberprofile-521240388393.europe-west2.run.app
 **Authentication**: Require Firebase Auth (own profile only)
 **Updated**: 2025-11-25
 
@@ -380,7 +380,7 @@ sequenceDiagram
 #### 7. syncmembers
 **Type**: Cloud Function (Python 3.13)
 **Purpose**: Manual full sync (admin-triggered disaster recovery)
-**URL**: https://syncmembers-ymzrguoifa-nw.a.run.app
+**URL**: https://syncmembers-521240388393.europe-west2.run.app
 **Authentication**: Firebase Auth (admin/superuser only)
 
 **Key Features**:
@@ -398,12 +398,12 @@ sequenceDiagram
 
 ---
 
-### Address Validation Services (iceaddr) ⭐ NEW
+### Address Validation Services (iceaddr)
 
 #### 8. search-addresses
 **Type**: Cloud Function (Python 3.13)
 **Purpose**: Icelandic address autocomplete
-**URL**: https://europe-west2-ekklesia-prod-10-2025.cloudfunctions.net/search_addresses
+**URL**: https://search-addresses-521240388393.europe-west2.run.app
 **Authentication**: Allow unauthenticated
 **Deployed**: 2025-11-25
 
@@ -438,7 +438,7 @@ sequenceDiagram
 #### 9. validate-address
 **Type**: Cloud Function (Python 3.13)
 **Purpose**: Full Icelandic address validation
-**URL**: https://europe-west2-ekklesia-prod-10-2025.cloudfunctions.net/validate_address
+**URL**: https://validate-address-521240388393.europe-west2.run.app
 **Authentication**: Allow unauthenticated
 **Deployed**: 2025-11-25
 
@@ -455,7 +455,7 @@ sequenceDiagram
 #### 10. validate-postal-code
 **Type**: Cloud Function (Python 3.13)
 **Purpose**: Quick postal code validation
-**URL**: https://europe-west2-ekklesia-prod-10-2025.cloudfunctions.net/validate_postal_code
+**URL**: https://validate-postal-code-521240388393.europe-west2.run.app
 **Authentication**: Allow unauthenticated
 **Deployed**: 2025-11-25
 
@@ -501,7 +501,7 @@ sequenceDiagram
 #### 13. healthz
 **Type**: Cloud Function (Python 3.13)
 **Purpose**: Health check and configuration sanity
-**URL**: https://healthz-ymzrguoifa-nw.a.run.app
+**URL**: https://healthz-521240388393.europe-west2.run.app
 **Authentication**: Public (GET only)
 
 **Key Features**:
@@ -518,7 +518,7 @@ sequenceDiagram
 #### 14. get-django-token
 **Type**: Cloud Function (Python 3.13)
 **Purpose**: Provide Django API token to authorized admins
-**URL**: https://get-django-token-ymzrguoifa-nw.a.run.app
+**URL**: https://get-django-token-521240388393.europe-west2.run.app
 **Authentication**: Require Firebase Auth (admin/superuser)
 
 **Key Features**:
@@ -528,6 +528,153 @@ sequenceDiagram
 - **Secret**: `django-api-token`
 
 **Code Location**: `services/members/functions/get_django_token.py`
+
+---
+
+### Superuser Console Services
+
+These services power the Superuser Console for system administration, monitoring, and GDPR compliance operations.
+
+#### 15. checksystemhealth
+**Type**: Cloud Function (Python 3.13)
+**Purpose**: System health monitoring API for superuser dashboard
+**URL**: https://checksystemhealth-521240388393.europe-west2.run.app
+**Authentication**: Require Firebase Auth (superuser only)
+**Deployed**: 2025-12-01
+
+**Key Features**:
+- Checks health of all Cloud Run services
+- Monitors Cloud SQL (PostgreSQL) status
+- Monitors Firestore connectivity
+- Checks external services (Django/Linode)
+- Returns comprehensive health summary
+
+**Code Location**: `services/members/functions/superuser_functions.py`
+
+---
+
+#### 16. setuserrole
+**Type**: Cloud Function (Python 3.13)
+**Purpose**: Set Firebase custom claims (role management)
+**URL**: https://setuserrole-521240388393.europe-west2.run.app
+**Authentication**: Require Firebase Auth (superuser only)
+**Deployed**: 2025-12-01
+
+**Key Features**:
+- Set user roles: member, admin, superuser
+- Updates Firebase Auth custom claims
+- Updates Firestore /users/ document
+- Prevents self-demotion
+- Audit logging
+
+**Code Location**: `services/members/functions/superuser_functions.py`
+
+---
+
+#### 17. getuserrole
+**Type**: Cloud Function (Python 3.13)
+**Purpose**: Get Firebase custom claims for a user
+**URL**: https://getuserrole-521240388393.europe-west2.run.app
+**Authentication**: Require Firebase Auth (superuser only)
+**Deployed**: 2025-12-01
+
+**Key Features**:
+- Retrieve user role and claims
+- Return user metadata (email, displayName, disabled status)
+- Return last sign-in timestamp
+
+**Code Location**: `services/members/functions/superuser_functions.py`
+
+---
+
+#### 18. getauditlogs
+**Type**: Cloud Function (Python 3.13)
+**Purpose**: Query Cloud Logging for audit events
+**URL**: https://getauditlogs-521240388393.europe-west2.run.app
+**Authentication**: Require Firebase Auth (superuser only)
+**Deployed**: 2025-12-01
+
+**Key Features**:
+- Query audit events from Cloud Logging
+- Filter by service, severity, time range
+- Filter by correlation ID for request tracing
+- Returns structured log entries
+
+**Code Location**: `services/members/functions/superuser_functions.py`
+
+---
+
+#### 19. getloginaudit
+**Type**: Cloud Function (Python 3.13)
+**Purpose**: Get login history from Firestore
+**URL**: https://getloginaudit-521240388393.europe-west2.run.app
+**Authentication**: Require Firebase Auth (superuser only)
+**Deployed**: 2025-12-01
+
+**Key Features**:
+- Query login history from /users/ collection
+- Filter by success/failed status
+- Filter by user name or email
+- Returns user agent, auth method, timestamps
+- Calculates success/failure statistics
+
+**Code Location**: `services/members/functions/superuser_functions.py`
+
+---
+
+#### 20. harddeletemember
+**Type**: Cloud Function (Python 3.13)
+**Purpose**: Permanently delete member (GDPR compliance)
+**URL**: https://harddeletemember-521240388393.europe-west2.run.app
+**Authentication**: Require Firebase Auth (superuser only)
+**Deployed**: 2025-12-01
+
+**Key Features**:
+- **DANGEROUS OPERATION** - Requires confirmation phrase "EYÐA VARANLEGA"
+- Deletes from Firebase Auth
+- Deletes from Firestore /users/ collection
+- Deletes from Firestore /members/ collection
+- Full audit logging
+
+**Code Location**: `services/members/functions/superuser_functions.py`
+
+---
+
+#### 21. anonymizemember
+**Type**: Cloud Function (Python 3.13)
+**Purpose**: Anonymize member data (GDPR compliance)
+**URL**: https://anonymizemember-521240388393.europe-west2.run.app
+**Authentication**: Require Firebase Auth (superuser only)
+**Deployed**: 2025-12-01
+
+**Key Features**:
+- **DANGEROUS OPERATION** - Requires confirmation phrase "NAFNLAUSA"
+- Replaces PII with anonymous ID (ANON-XXXXXXXX)
+- Preserves statistical data (region, memberSince)
+- Disables Firebase Auth account
+- Full audit logging
+
+**Code Location**: `services/members/functions/superuser_functions.py`
+
+---
+
+### Demo/Experimental Services
+
+Services under development or evaluation, not yet in production use.
+
+#### 22. django-socialism-demo
+**Type**: Container (Docker)
+**Purpose**: Experimental Django backend on GCP Cloud Run
+**URL**: https://django-socialism-demo-521240388393.europe-west2.run.app
+**Authentication**: Allow unauthenticated
+**Status**: Demo/Evaluation
+
+**Key Features**:
+- Potential replacement for Linode-hosted Django
+- Cloud Run deployment of Django backend
+- Under evaluation for production migration
+
+**Code Location**: External container deployment
 
 ---
 
@@ -564,21 +711,57 @@ These services read from Firestore only:
 
 ## Scaling Configuration
 
+### Core Services
+
 | Service | Min | Max | Memory | Timeout |
 |---------|-----|-----|--------|---------|
 | elections-service | 0 | 100 | 512Mi | 60s |
 | events-service | 0 | 100 | 512Mi | 60s |
 | handlekenniauth | 0 | 10 | 256Mi | 30s |
 | verifymembership | 0 | 10 | 256Mi | 30s |
+
+### Data Sync Services
+
+| Service | Min | Max | Memory | Timeout |
+|---------|-----|-----|--------|---------|
 | sync-from-django | 0 | 10 | 256Mi | 30s |
 | updatememberprofile | 0 | 5 | 256Mi | 30s |
 | syncmembers | 0 | 1 | 512Mi | 540s |
+
+### Address Services
+
+| Service | Min | Max | Memory | Timeout |
+|---------|-----|-----|--------|---------|
 | search-addresses | 0 | 10 | 256Mi | 30s |
 | validate-address | 0 | 10 | 256Mi | 30s |
 | validate-postal-code | 0 | 10 | 256Mi | 30s |
+
+### Audit & Monitoring Services
+
+| Service | Min | Max | Memory | Timeout |
+|---------|-----|-----|--------|---------|
 | auditmemberchanges | 0 | 5 | 256Mi | 60s |
-| get-django-token | 0 | 1 | 256Mi | 30s |
+| cleanupauditlogs | 0 | 1 | 256Mi | 60s |
 | healthz | 0 | 1 | 256Mi | 30s |
+| get-django-token | 0 | 1 | 256Mi | 30s |
+
+### Superuser Console Services
+
+| Service | Min | Max | Memory | Timeout |
+|---------|-----|-----|--------|---------|
+| checksystemhealth | 0 | 5 | 256Mi | 30s |
+| setuserrole | 0 | 5 | 256Mi | 30s |
+| getuserrole | 0 | 5 | 256Mi | 30s |
+| getauditlogs | 0 | 5 | 256Mi | 60s |
+| getloginaudit | 0 | 5 | 256Mi | 30s |
+| harddeletemember | 0 | 1 | 256Mi | 60s |
+| anonymizemember | 0 | 1 | 256Mi | 60s |
+
+### Demo Services
+
+| Service | Min | Max | Memory | Timeout |
+|---------|-----|-----|--------|---------|
+| django-socialism-demo | 0 | 10 | 512Mi | 60s |
 
 ---
 
@@ -639,6 +822,13 @@ gcloud functions logs read search_addresses --region=europe-west2 --limit=10
 
 | Date | Change |
 |------|--------|
+| 2025-12-01 | **MAJOR**: Added Superuser Console Services (7 new functions) |
+| 2025-12-01 | Added checksystemhealth, setuserrole, getuserrole |
+| 2025-12-01 | Added getauditlogs, getloginaudit |
+| 2025-12-01 | Added harddeletemember, anonymizemember (GDPR compliance) |
+| 2025-12-01 | Added django-socialism-demo (experimental GCP Django) |
+| 2025-12-01 | Fixed all service URLs (old ymzrguoifa format → 521240388393) |
+| 2025-12-01 | Updated total service count: 14 → 22 |
 | 2025-11-25 | **MAJOR**: Real-time sync architecture (no queues) |
 | 2025-11-25 | Added sync-from-django (Django→Firestore webhook) |
 | 2025-11-25 | Added iceaddr services (search, validate, postal) |
@@ -653,5 +843,5 @@ gcloud functions logs read search_addresses --region=europe-west2 --limit=10
 ---
 
 **Document Status**: ✅ Complete and Verified
-**Last Review**: 2025-11-25
-**Next Review**: 2025-12-25
+**Last Review**: 2025-12-01
+**Next Review**: 2026-03-01

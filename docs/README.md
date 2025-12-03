@@ -21,8 +21,8 @@ Understand how Ekklesia is designed and structured.
 
 ### 🎯 Features
 Detailed information about each major feature and epic.
-- **[Election Discovery](./features/election-voting/EPIC_87_ELECTION_DISCOVERY.md)** - Member election discovery and listing
-- **[Admin Election Lifecycle](./features/election-voting/EPIC_24_ADMIN_LIFECYCLE.md)** - Election management workflow
+- **[Election Discovery](./archive/features/election-voting/EPIC_87_ELECTION_DISCOVERY.md)** ✅ Complete - Member election discovery and listing
+- **[Admin Election Lifecycle](./archive/features/election-voting/EPIC_24_ADMIN_LIFECYCLE.md)** ✅ Complete - Election management workflow
 - **[Membership Sync](./features/election-voting/EPIC_43_MEMBER_MANAGEMENT_SYSTEM.md)** - Django integration and member synchronization
 - **[Member Election Voting](./features/election-voting/)** - Complete voting flow
 
@@ -204,6 +204,6 @@ This documentation is maintained alongside the codebase. When features are added
 
 ---
 
-**Last Updated**: 2025-11-04
+**Last Updated**: 2025-12-01
 **Maintained By**: Ekklesia Development Team
 **Repository**: [github.com/sosialistaflokkurinn/ekklesia](https://github.com/sosialistaflokkurinn/ekklesia)

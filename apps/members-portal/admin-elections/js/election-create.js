@@ -6,11 +6,11 @@
 import { getFirebaseAuth } from '../../firebase/app.js';
 import { getElectionRole, requireAdmin, hasPermission, PERMISSIONS } from '../../js/rbac.js';
 import { R } from '../i18n/strings-loader.js';
-import { debug } from '../../js/utils/debug.js';
-import { getAdminElectionById } from '../../js/api/elections-api.js';
+import { debug } from '../../js/utils/util-debug.js';
+import { getAdminElectionById } from '../../js/api/api-elections.js';
 import { formatDateTime, formatDateOnly, formatTimeInput } from './date-utils.js';
-import { showModal } from '../../js/components/modal.js';
-import { el } from '../../js/utils/dom.js';
+import { showModal } from '../../js/components/ui-modal.js';
+import { el } from '../../js/utils/util-dom.js';
 
 // Refactored modules (Phase 2)
 import { validateBasicInfo, validateAnswerOptions, validateSchedule, validateStep } from './validation/election-validation.js';

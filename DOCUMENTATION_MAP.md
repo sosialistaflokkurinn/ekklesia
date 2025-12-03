@@ -1,7 +1,7 @@
 # 🗺️ Ekklesia Platform - Documentation Map
 
-**Version**: 9.0.0
-**Last Updated**: 2025-11-14
+**Version**: 9.1.0
+**Last Updated**: 2025-12-01
 **Status**: ✅ Level 1 Navigation Hub - Hierarchical Documentation System  
 
 ---
@@ -30,6 +30,7 @@ This is the **Level 1 navigation hub** for all Ekklesia documentation. It provid
 1. [Infrastructure](docs/INFRASTRUCTURE_MAP.md) - Cloud services and deployment
 2. [Operations](docs/OPERATIONS_MAP.md) - Operational procedures
 3. [Security](docs/SECURITY_MAP.md) - Security policies and procedures
+4. [System Health](https://ekklesia-prod-10-2025.web.app/superuser/system-health.html) - Live system monitoring (requires superuser role)
 
 ---
 
@@ -89,11 +90,11 @@ Developer workflows, tools, and implementation guides.
 System design, component architecture, and technical decisions.
 
 **Quick Links**:
-- [Database Schema](docs/integration/DJANGO_DATABASE_SCHEMA.md) - Complete DB schema
-- [Cloud Run Services](docs/infrastructure/CLOUD_RUN_SERVICES.md) - Service architecture (1000+ lines)
-- [Django Backend System](docs/systems/DJANGO_BACKEND_SYSTEM.md) - Backend documentation (1,199 lines)
+- [System Architecture](docs/architecture/SYSTEM_ARCHITECTURE.md) - Complete system overview (NEW - Dec 2025)
+- [Database Schema](docs/integration/DJANGO_DATABASE_SCHEMA.md) - Django DB schema and sync
+- [Cloud Run Services](docs/infrastructure/CLOUD_RUN_SERVICES.md) - 22 services documented
+- [Django Backend System](docs/systems/DJANGO_BACKEND_SYSTEM.md) - Backend documentation
 - [CSS Design System](docs/architecture/CSS_DESIGN_SYSTEM.md) - Component architecture
-- [Usage Context](docs/development/guides/workflows/USAGE_CONTEXT.md) - Capacity planning
 
 ---
 
@@ -198,17 +199,18 @@ Cloud infrastructure, services, and deployment pipelines.
 | Service | Status | URL/Details |
 |---------|--------|-------------|
 | **[Members Portal](https://ekklesia-prod-10-2025.web.app)** | 🟡 Beta | Firebase Hosting + Python Cloud Functions |
-| **[Events Service](services/events/)** | 🟡 Beta | Cloud Run (europe-west2) |
-| **[Elections Service](services/elections/)** | 🟡 Beta | Cloud Run (europe-west2) |
+| **[Events Service](services/svc-events/)** | 🟡 Beta | Cloud Run (europe-west2) |
+| **[Elections Service](services/svc-elections/)** | 🟡 Beta | Cloud Run (europe-west2) |
 | **[Cloud SQL Database](https://console.cloud.google.com/sql)** | 🟡 Beta | PostgreSQL 15 (2 schemas: public, elections) |
 
 **Note**: Services use production-grade infrastructure (GCP production project) but system is under active development and not yet in production use. Real Icelandic eID (Kenni.is) authentication is enabled for testing purposes.
 
-### 🔨 Current Work (November 2025)
+### 🔨 Current Work (December 2025)
 
-- **[Epic #186](https://github.com/sosialistaflokkurinn/ekklesia/issues/186)**: Member Voting Experience improvements
-- **[Epic #251](https://github.com/sosialistaflokkurinn/ekklesia/issues/251)**: Voting System Security & Anonymity Enhancements
-- **Documentation**: Hierarchical documentation system implementation
+- **Superuser Console**: System health monitoring, audit logs, role management (✅ Complete)
+- **Real-time Sync**: Django ↔ Firestore bidirectional sync (✅ Complete)
+- **Documentation Verification**: Audit and update of all system documentation (In Progress)
+- **22 Cloud Run Services**: Full service catalog deployed and documented
 
 **Recent Milestones**: See [Status Documents](docs/status/) for detailed history
 
@@ -283,10 +285,37 @@ ekklesia/
 
 ## 🛠️ Documentation Maintenance
 
+### Validation Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `scripts/admin/documentation-maintenance/validate-all.sh` | Master validation (runs all checks) |
+| `scripts/admin/documentation-maintenance/validate-links.py` | Markdown link validation |
+| `scripts/admin/documentation-maintenance/check-docs-freshness.sh` | Freshness monitoring |
+| `scripts/admin/documentation-maintenance/audit-docs.py` | Documentation audit |
+| `scripts/maintenance/check-code-health.py` | Code health checks |
+
+### Quick Commands
+
+```bash
+# Validate all documentation
+./scripts/admin/documentation-maintenance/validate-all.sh
+
+# Check links only
+python3 scripts/admin/documentation-maintenance/validate-links.py --exclude audits archive
+
+# Check freshness
+./scripts/admin/documentation-maintenance/check-docs-freshness.sh
+```
+
+### Live Monitoring
+
+- [System Health](https://ekklesia-prod-10-2025.web.app/superuser/system-health.html) - Real-time service status
+- [Audit Logs](https://ekklesia-prod-10-2025.web.app/superuser/audit-logs.html) - Change tracking
+
 ### For Contributors
 
 - **Creating new docs**: Start at appropriate level (see [Documentation Philosophy](docs/DOCUMENTATION_PHILOSOPHY.md))
-- **Link validation**: Run `python3 scripts/admin/validate-links.py --exclude audits archive`
 - **Style guide**: Follow [Documentation Guide](docs/standards/DOCUMENTATION_GUIDE.md)
 
 ### Excluded Directories
@@ -332,8 +361,8 @@ The following directories are excluded from documentation hierarchy:
 
 ---
 
-**Document Version**: 9.0.0
-**Major Change**: Hierarchical documentation system - simplified to Level 1 navigation hub
-**Last Reviewed**: 2025-11-14
-**Next Review**: 2026-02-14 (Quarterly)
+**Document Version**: 9.2.0
+**Major Change**: Updated Documentation Maintenance section with correct script paths and live monitoring links
+**Last Reviewed**: 2025-12-01
+**Next Review**: 2026-03-01 (Quarterly)
 **Philosophy**: [Documentation Philosophy](docs/DOCUMENTATION_PHILOSOPHY.md)

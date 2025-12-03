@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title" data-i18n="audit_page_title">Atburðaskrá - Kerfisstjórn</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+  <!-- Reuse member portal styles -->
+  <link rel="stylesheet" href="/styles/bundle.css?v=20251202">
+
+  <!-- Superuser-specific styles -->
+  <link rel="stylesheet" href="/superuser/styles/superuser.css?v=20251201c">
+</head>
+<body class="authenticated superuser">
+  <!-- Navigation component inserted here -->
+
+  <!-- Page Content -->
+  <div class="page__container">
+    <!-- Filters Card -->
+    <div class="card">
+      <h1 class="card__title" data-i18n="audit_title">Aðgerðaskrá kerfis</h1>
+      <p class="card__description" data-i18n="audit_desc">Skoða kerfisatburði og villur úr Cloud Logging.</p>
+
+      <div class="audit-filters">
+        <div class="audit-filters__row">
+          <div class="form__group">
+            <label class="form__label" for="filter-service" data-i18n="audit_filter_service">Þjónusta</label>
+            <select id="filter-service" class="form__select">
+              <option value="all" data-i18n="audit_filter_all_services">Allar þjónustur</option>
+              <option value="elections-service" data-i18n="audit_filter_elections">Kosningar</option>
+              <option value="events-service" data-i18n="audit_filter_events">Viðburðir</option>
+              <option value="syncmembers" data-i18n="audit_filter_sync">Samstilling</option>
+              <option value="sync-from-django" data-i18n="audit_filter_django_webhook">Django Webhook</option>
+              <option value="verifymembership" data-i18n="audit_filter_verify">Staðfesting aðildar</option>
+              <option value="handlekenniauth" data-i18n="audit_filter_kenni_auth">Kenni.is Auth</option>
+            </select>
+          </div>
+
+          <div class="form__group">
+            <label class="form__label" for="filter-level" data-i18n="audit_filter_severity">Alvarleiki</label>
+            <select id="filter-level" class="form__select">
+              <option value="all" data-i18n="audit_filter_all_levels">Allt</option>
+              <option value="ERROR" data-i18n="audit_filter_error">Villa</option>
+              <option value="WARNING" data-i18n="audit_filter_warning">Viðvörun</option>
+              <option value="INFO" data-i18n="audit_filter_info">Upplýsingar</option>
+              <option value="DEBUG" data-i18n="audit_filter_debug">Debug</option>
+            </select>
+          </div>
+
+          <div class="form__group">
+            <label class="form__label" for="filter-hours" data-i18n="audit_filter_period">Tímabil</label>
+            <select id="filter-hours" class="form__select">
+              <option value="1" data-i18n="audit_filter_1h">Síðustu klukkustund</option>
+              <option value="6" data-i18n="audit_filter_6h">Síðustu 6 klukkustundir</option>
+              <option value="24" selected data-i18n="audit_filter_24h">Síðasta sólarhringinn</option>
+              <option value="168" data-i18n="audit_filter_1w">Síðustu viku</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="audit-filters__row">
+          <div class="form__group form__group--wide">
+            <label class="form__label" for="filter-correlation" data-i18n="audit_filter_correlation">Correlation ID</label>
+            <input type="text" id="filter-correlation" class="form__input" data-i18n-placeholder="audit_filter_correlation_placeholder" placeholder="Leita eftir auðkenni (Correlation ID)...">
+          </div>
+
+          <button type="button" class="btn btn--primary" id="search-btn" data-i18n="btn_search">
+            Leita
+          </button>
+        </div>
+      </div>
+    </div>
+
+        <!-- Results Card -->
+    <div class="card">
+      <div class="audit-results__header">
+        <h2 class="card__title" data-i18n="audit_results_title">Niðurstöður</h2>
+        <span class="audit-results__count" id="results-count">-</span>
+      </div>
+
+      <div class="audit-results" id="audit-results">
+        <div class="audit-placeholder">
+          <p data-i18n="audit_placeholder_text">Smelltu á „Leita“ til að sækja aðgerðaskrá.</p>
+          <p class="u-text-muted" data-i18n="audit_placeholder_note">Athugiið: Þetta krefst Cloud Function til að sækja gögn úr Cloud Logging.</p>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="audit-pagination u-hidden" id="pagination">
+        <button type="button" class="btn btn--outline btn--sm" id="prev-btn" disabled data-i18n="audit_prev_btn">
+          ← Fyrri
+        </button>
+        <span class="audit-pagination__info" id="page-info">Síða 1</span>
+        <button type="button" class="btn btn--outline btn--sm" id="next-btn" disabled data-i18n="audit_next_btn">
+          Næsta →
+        </button>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <script type="module" src="/superuser/js/audit-logs.js?v=20251201"></script>
+
+  <!-- Initialize Navigation Component -->
+  <script type="module">
+    import { initNavHeader, NAV_CONFIGS } from '../ui/components/navigation-bar.js?v=20251201';
+    await initNavHeader(NAV_CONFIGS.superuserAuditLogs);
+  </script>
+
+</body>
+</html>

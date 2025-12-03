@@ -1,6 +1,6 @@
 # 🔧 Maintenance & Operations Documentation
 
-**Last Updated**: October 21, 2025  
+**Last Updated**: December 2025
 **Purpose**: Day-to-day operations, maintenance procedures, and changelog
 
 ---
@@ -9,7 +9,8 @@
 
 | Document | Purpose | Status |
 |----------|---------|--------|
-| [OPERATIONAL_PROCEDURES.md](./OPERATIONAL_PROCEDURES.md) | Complete operational procedures and checklists | ✅ Current |
+| [OPERATIONAL_PROCEDURES.md](./OPERATIONAL_PROCEDURES.md) | Meeting day operations, scaling, monitoring | ✅ Updated Dec 2025 |
+| [GITHUB_WORKFLOWS_STATUS.md](./GITHUB_WORKFLOWS_STATUS.md) | CI/CD workflows and GitHub Actions | ✅ Current |
 | [DOCUMENTATION_CHANGELOG.md](./DOCUMENTATION_CHANGELOG.md) | Documentation updates and history | ✅ Current |
 
 ---
@@ -17,11 +18,11 @@
 ## 📋 Operational Checklists
 
 ### Daily Tasks
-- [ ] Check service health status
-- [ ] Review logs for errors
-- [ ] Monitor database performance
-- [ ] Verify backups completed
-- [ ] Check authentication flows
+- [ ] Check service health via [Superuser Console](https://ekklesia-prod-10-2025.web.app/superuser/system-health.html)
+- [ ] Review logs for errors (Cloud Logging or `/superuser/audit-logs.html`)
+- [ ] Monitor database performance (Cloud SQL console)
+- [ ] Verify Django API responding (Linode 172.105.71.207)
+- [ ] Check authentication flows (Kenni.is)
 
 ### Weekly Tasks
 - [ ] Run documentation audit scripts
@@ -46,29 +47,24 @@
 
 ---
 
-## 🛠️ Audit Tools
+## 🛠️ Monitoring Tools
 
-Documentation validation is part of regular maintenance:
-
-| Tool | Purpose | Frequency |
-|------|---------|-----------|
-| audit-documentation.py | Full documentation audit | Weekly |
-| validate_documentation_map.py | Path validation | Weekly |
-| validate-links.py | Link checking | Monthly |
-| fix-documentation.py | Auto-fix issues | As needed |
-
-For details, see Audits & Reviews (see scripts/admin/).
+| Tool | Purpose | Access |
+|------|---------|--------|
+| Superuser Console | System health dashboard | `/superuser/system-health.html` |
+| Audit Logs | Member changes, login events | `/superuser/audit-logs.html` |
+| Cloud Logging | Application logs | GCP Console |
+| Cloud SQL Monitoring | Database metrics | GCP Console |
 
 ---
 
 ## 🔗 Related Documentation
 
-- [Setup](../setup/INDEX.md) - Initial deployment
-- [Architecture](../design/INDEX.md) - System design
-- [Testing](../testing/) - Validation procedures
-- Audits (see scripts/admin/) - Audit tools and reports
-- [Main Hub](../INDEX.md) - Documentation overview
+- [System Architecture](../architecture/SYSTEM_ARCHITECTURE.md) - Complete system overview
+- [Cloud Run Services](../infrastructure/CLOUD_RUN_SERVICES.md) - 22 services documented
+- [Django Database Schema](../integration/DJANGO_DATABASE_SCHEMA.md) - Sync architecture
+- [Members Deployment Guide](../setup/MEMBERS_DEPLOYMENT_GUIDE.md) - Deployment procedures
 
 ---
 
-**Documentation Version**: 2025-10-21
+**Documentation Version**: 2025-12-01

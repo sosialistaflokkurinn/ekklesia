@@ -845,5 +845,5 @@ gcloud scheduler jobs resume bidirectional-member-sync \
 
 ---
 
-**Back**: [INDEX.md](./INDEX.md)  
-**System Status**: [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md)
+**Back**: [INDEX.md](./INDEX.md)
+**System Status**: [CURRENT_DEVELOPMENT_STATUS.md](../status/CURRENT_DEVELOPMENT_STATUS.md)

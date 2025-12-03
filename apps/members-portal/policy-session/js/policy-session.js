@@ -7,14 +7,22 @@
 
 import { initAuthenticatedPage } from '../../js/page-init.js';
 import { R } from '../i18n/strings-loader.js';
-import { debug } from '../../js/utils/debug.js';
+import { debug } from '../../js/utils/util-debug.js';
 import PolicySessionAPI from './api/policy-session-api-mock.js';
-import { createAmendmentForm } from './amendment-form.js';
-import { createAmendmentVoteCard } from './amendment-vote-card.js';
-import { createPolicyItemVoteCard } from './policy-item-vote-card.js';
-import { createVotingForm } from '../../js/components/voting-form.js';
-import { createPolicyResultsDisplay } from './policy-results-display.js';
-import { showToast } from '../../js/components/toast.js';
+// Use shared components with mock API injection
+import { createAmendmentForm } from '../../js/components/policy-amendment-form.js';
+import { createAmendmentVoteCard } from '../../js/components/policy-amendment-card.js';
+import { createPolicyItemVoteCard } from '../../js/components/policy-item-card.js';
+import { createVotingForm } from '../../js/components/election-vote-form.js';
+import { createPolicyResultsDisplay } from '../../js/components/policy-results.js';
+import { showToast } from '../../js/components/ui-toast.js';
+
+// Mock API adapter for shared components
+const mockApi = {
+  submitAmendment: PolicySessionAPI.submitAmendment.bind(PolicySessionAPI),
+  voteOnAmendment: PolicySessionAPI.voteOnAmendment.bind(PolicySessionAPI),
+  getPolicyResults: PolicySessionAPI.getPolicyResults.bind(PolicySessionAPI)
+};
 
 // Get session ID from URL query params
 const urlParams = new URLSearchParams(window.location.search);
@@ -29,6 +37,9 @@ async function init() {
   try {
     // Load i18n strings
     await R.load('is');
+    
+    // Translate elements with data-i18n attributes
+    R.translatePage();
 
     // Initialize authenticated page (requires member role)
     await initAuthenticatedPage();
@@ -186,11 +197,12 @@ function renderBreakPhase() {
   // Clear previous content
   formContainer.innerHTML = '';
 
-  // Create amendment form
+  // Create amendment form (using shared component with mock API)
   const amendmentForm = createAmendmentForm({
     sessionId: sessionId,
     sections: currentSession.policy_draft.sections,
     R: R,
+    api: mockApi,
     onSubmitSuccess: (response) => {
       debug.log('Amendment submitted:', response);
       // Optionally reload session to show new amendment
@@ -244,6 +256,7 @@ function renderVotingPhase() {
         sessionId: sessionId,
         amendment: amendment,
         R: R,
+        api: mockApi,
         onVoteSuccess: (data) => {
           debug.log('Amendment vote recorded:', data);
         }
@@ -295,10 +308,11 @@ function renderResultsPhase() {
   // Clear previous content
   resultsContainer.innerHTML = '';
 
-  // Create results display
+  // Create results display (using shared component with mock API)
   const resultsDisplay = createPolicyResultsDisplay({
     sessionId: sessionId,
     R: R,
+    api: mockApi,
     pollInterval: 3000,
     onError: (error) => {
       console.error('Results polling error:', error);

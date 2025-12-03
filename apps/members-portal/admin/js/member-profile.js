@@ -8,11 +8,11 @@
 import { getFirebaseAuth, getFirebaseFirestore, httpsCallable } from '../../firebase/app.js';
 import { doc, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { R } from '../../i18n/strings-loader.js';
-import { showToast } from '../../js/components/toast.js';
-import { showStatus } from '../../js/components/status.js';
-import { debug } from '../../js/utils/debug.js';
-import { debounce } from '../../js/utils/debounce.js';
-import { initSearchableSelects } from '../../js/components/searchable-select.js';
+import { showToast } from '../../js/components/ui-toast.js';
+import { showStatus } from '../../js/components/ui-status.js';
+import { debug } from '../../js/utils/util-debug.js';
+import { debounce } from '../../js/utils/util-debounce.js';
+import { initSearchableSelects } from '../../js/components/ui-searchable-select.js';
 import { requireAdmin } from '../../js/rbac.js';
 // Note: initNavigation import removed - now handled by nav-header component
 import { PhoneManager } from '../../js/profile/phone-manager.js';
@@ -186,8 +186,14 @@ async function init() {
       return;
     }
 
-    // TODO: Check if user has admin permissions
-    // For now, just check if user is authenticated
+    // Check if user has admin permissions
+    try {
+      await requireAdmin();
+    } catch (error) {
+      debug.error('Access denied:', error);
+      window.location.href = '/';
+      return;
+    }
 
     // Load member data
     await loadMemberData();

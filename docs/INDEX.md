@@ -117,7 +117,7 @@ For full list and details, see Audits & Reviews (see scripts/admin/).
 
 ### 👨‍💻 Developer
 - [Setup Guide](./setup/MEMBERS_DEPLOYMENT_GUIDE.md)
-- [API Documentation](./architecture/ARCHITECTURE_RECOMMENDATIONS.md)
+- [System Architecture](./architecture/SYSTEM_ARCHITECTURE.md)
 
 ### 🔐 DevOps/SRE
 - [Deployment Procedures](./setup/MEMBERS_DEPLOYMENT_GUIDE.md)

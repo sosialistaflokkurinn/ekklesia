@@ -111,18 +111,19 @@
 
 .policy-session__filter-btn:hover {
   background-color: var(--color-bg-subtle);
-  border-color: var(--color-primary-light);
+  border-color: var(--color-burgundy-light);
+  color: var(--color-burgundy);
 }
 
 .policy-session__filter-btn--active {
-  background-color: var(--color-primary);
-  border-color: var(--color-primary);
-  color: var(--color-text-on-primary);
+  background-color: var(--color-burgundy);
+  border-color: var(--color-burgundy);
+  color: var(--color-white);
 }
 
 .policy-session__filter-btn--active:hover {
-  background-color: var(--color-primary-dark);
-  border-color: var(--color-primary-dark);
+  background-color: var(--color-burgundy-dark);
+  border-color: var(--color-burgundy-dark);
 }
 
 .policy-session__filter-btn:disabled {

@@ -83,4 +83,7 @@ export async function initElectionCreateStrings() {
 
   // Loading text
   document.getElementById('loading-text').textContent = R.string.loading_create_election;
+
+  // Translate elements with data-i18n attributes (new declarative approach)
+  R.translatePage();
 }

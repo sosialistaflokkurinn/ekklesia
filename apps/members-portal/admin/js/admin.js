@@ -8,12 +8,12 @@
 // Import from member portal public directory (two levels up from /admin/js/)
 import { initSession } from '../../session/init.js';
 import { initNavigation } from '../../js/nav-interactions.js';
-import { debug } from '../../js/utils/debug.js';
+import { debug } from '../../js/utils/util-debug.js';
 import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
 import { collection, query, orderBy, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { adminStrings } from './i18n/admin-strings-loader.js';
 import { requireAdmin } from '../../js/rbac.js';
-import { showToast, showError } from '../../js/components/toast.js';
+import { showToast, showError } from '../../js/components/ui-toast.js';
 import { R } from '../../i18n/strings-loader.js';
 
 // Initialize Firebase services

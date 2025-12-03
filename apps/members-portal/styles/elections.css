@@ -62,12 +62,12 @@
 }
 
 .elections__filter-btn:hover {
-  color: var(--color-gray-800);
+  color: var(--color-burgundy);
 }
 
 .elections__filter-btn--active {
-  color: var(--color-primary);
-  border-bottom-color: var(--color-primary);
+  color: var(--color-burgundy);
+  border-bottom-color: var(--color-burgundy);
 }
 
 .elections__filter-count {
@@ -81,7 +81,7 @@
 }
 
 .elections__filter-btn--active .elections__filter-count {
-  background: var(--color-primary);
+  background: var(--color-burgundy);
   color: var(--color-white);
 }
 
@@ -108,8 +108,8 @@
 }
 
 .elections__card:hover {
-  box-shadow: var(--shadow-lg);
-  border-color: var(--color-primary);
+  box-shadow: var(--shadow-burgundy-lg);
+  border-color: var(--color-burgundy);
   transform: translateY(-2px);
 }
 
@@ -186,7 +186,7 @@
 }
 
 .elections__card-cta {
-  color: var(--color-primary);
+  color: var(--color-burgundy);
   font-weight: var(--font-weight-semibold);
 }
 

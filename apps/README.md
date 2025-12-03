@@ -37,13 +37,13 @@ members-portal/
 ```
 
 **Deployment**:
-- [Firebase Hosting](https://firebase.google.com/docs/hosting) via `services/members/public` symlink
-- Symlink: `services/members/public → ../../apps/members-portal`
+- [Firebase Hosting](https://firebase.google.com/docs/hosting) via `services/svc-members/public` symlink
+- Symlink: `services/svc-members/public → ../../apps/members-portal`
 - **All files deployed from this single location**
 
 **Developer Note**:
 - ✅ **Edit files here**: `apps/members-portal/`
-- ❌ **Never edit**: `services/members/public/` (it's just a symlink)
+- ❌ **Never edit**: `services/svc-members/public/` (it's just a symlink)
 - 🔍 **VS Code**: Symlink hidden via [`.vscode/settings.json`](../.vscode/settings.json) to reduce confusion
 
 **URLs**:
@@ -57,7 +57,7 @@ members-portal/
 - [BEM CSS methodology](http://getbem.com/) ([CSS Guide](../docs/standards/CSS_BEM_GUIDE.md))
 - [R.string i18n pattern](../docs/standards/I18N_GUIDE.md) (Icelandic)
 
-**Backend**: [Cloud Functions](https://firebase.google.com/docs/functions) in [`services/members/functions/`](../services/members/functions/)
+**Backend**: [Cloud Functions](https://firebase.google.com/docs/functions) in [`services/svc-members/functions/`](../services/svc-members/functions/)
 
 ---
 
@@ -80,10 +80,10 @@ All admin portal files belong in `apps/members-portal/admin/` subdirectory.
 ## Deployment Process
 
 1. **Edit files** in `apps/members-portal/` (member or admin)
-2. **Symlink** at `services/members/public` automatically includes changes
-3. **Deploy** from `services/members/`:
+2. **Symlink** at `services/svc-members/public` automatically includes changes
+3. **Deploy** from `services/svc-members/`:
    ```bash
-   cd services/members
+   cd services/svc-members
    firebase deploy --only hosting
    ```
 

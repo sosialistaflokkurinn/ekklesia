@@ -16,7 +16,7 @@
  */
 
 import { getFirebaseAuth } from '../firebase/app.js';
-import { debug } from './utils/debug.js';
+import { debug } from './utils/util-debug.js';
 import { R } from '../i18n/strings-loader.js';
 
 const auth = getFirebaseAuth();
@@ -169,27 +169,56 @@ const ROLE_PERMISSIONS = {
 // CORE RBAC FUNCTIONS
 // ============================================
 
+// Cache for roles to avoid repeated token refreshes
+let cachedRoles = null;
+let cacheExpiry = 0;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
 /**
  * Get current user's roles from Firebase custom claims
+ * Uses caching to avoid slow token refreshes on every call
+ * @param {boolean} forceRefresh - Force a fresh token fetch
  * @returns {Promise<string[]>} Array of role strings
  */
-export async function getCurrentUserRoles() {
+export async function getCurrentUserRoles(forceRefresh = false) {
   try {
     const user = auth.currentUser;
     if (!user) {
       console.warn('[RBAC] No authenticated user');
+      cachedRoles = null;
       return [];
     }
 
-    const idTokenResult = await user.getIdTokenResult(true); // Force refresh
+    // Return cached roles if valid and not forcing refresh
+    const now = Date.now();
+    if (!forceRefresh && cachedRoles !== null && now < cacheExpiry) {
+      debug.log('[RBAC] Using cached roles:', cachedRoles);
+      return cachedRoles;
+    }
+
+    // Get fresh token (only force refresh if explicitly requested or first load)
+    const idTokenResult = await user.getIdTokenResult(forceRefresh);
     const roles = idTokenResult.claims.roles || [];
+    
+    // Cache the roles
+    cachedRoles = roles;
+    cacheExpiry = now + CACHE_DURATION;
     
     debug.log('[RBAC] User roles from token:', roles);
     return roles;
   } catch (error) {
     console.error('[RBAC] Error getting user roles:', error);
-    return [];
+    return cachedRoles || []; // Return cached if available
   }
+}
+
+/**
+ * Clear the roles cache (call after role changes)
+ */
+export function clearRolesCache() {
+  cachedRoles = null;
+  cacheExpiry = 0;
+  debug.log('[RBAC] Roles cache cleared');
 }
 
 /**
@@ -537,5 +566,6 @@ export default {
   requirePermission,
   toggleElementByPermission,
   toggleElementByRole,
-  displayRoleIndicator
+  displayRoleIndicator,
+  clearRolesCache
 };
