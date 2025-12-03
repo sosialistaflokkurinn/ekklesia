@@ -24,7 +24,7 @@
     "@google-cloud/logging-winston": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
-    "express": "^4.18.2",
+    "express": "^5.2.1",
     "express-rate-limit": "^8.2.1",
     "firebase-admin": "^13.6.0",
     "pg": "^8.11.3",
