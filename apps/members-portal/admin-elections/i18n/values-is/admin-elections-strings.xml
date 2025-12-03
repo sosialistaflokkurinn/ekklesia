@@ -1,9 +1,15 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
+  <!-- Common / Accessibility -->
+  <string name="skip_to_content">Fara beint í efni</string>
+  
+  <!-- Navigation -->
   <string name="admin_elections_brand">Kosningastjórnun</string>
   <string name="nav_elections_list">Kosningar</string>
   <string name="admin_nav_back_to_member">Mín síða</string>
   <string name="admin_nav_logout">Útskrá</string>
+  
+  <!-- Elections List -->
   <string name="admin_elections_title">Kosningar</string>
   <string name="filter_all">Allar</string>
   <string name="filter_draft">Drög</string>
@@ -68,6 +74,7 @@ Til að staðfesta, sláðu inn heiti kosningarinnar hér fyrir neðan:
   <string name="success_opened">✅ Kosning opnuð</string>
   <string name="success_closed">✅ Kosningu lokað</string>
   <string name="success_deleted">✅ Kosningu eytt</string>
+  <string name="error_action_failed">Ekki tókst að framkvæma aðgerð.</string>
   <string name="error_hide_failed">❌ Villa við að fela kosningu: %s</string>
   <string name="error_unhide_failed">❌ Villa við að sýna kosningu: %s</string>
   <string name="error_open_failed">❌ Villa við að opna kosningu: %s</string>
@@ -188,4 +195,15 @@ Til að staðfesta, sláðu inn heiti kosningarinnar hér fyrir neðan:
   <string name="label_closes_in">Lokar eftir</string>
   <string name="modal_ok_btn">Í lagi</string>
   <string name="modal_close_aria">Loka</string>
+  
+  <!-- Election Control Page -->
+  <string name="loading_election">Hleður kosningu...</string>
+  <string name="btn_retry">Reyna aftur</string>
+  <string name="schedule_control_title">Kosningartíðastjórnun</string>
+  <string name="member_preview_title">Forskoðun (þannig sjá félagsmenn þetta)</string>
+  <string name="member_preview_description">Breytingar uppfærast sjálfkrafa í rauntíma fyrir alla félagsmenn</string>
+  
+  <!-- Index Page -->
+  <string name="search_elections_title">Leita að kosningum</string>
+  <string name="search_elections_placeholder">Leita...</string>
 </resources>

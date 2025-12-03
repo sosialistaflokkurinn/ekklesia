@@ -1,0 +1,36 @@
+{
+  "name": "ekklesia-events-service",
+  "version": "1.0.0",
+  "description": "Events service for Ekklesia - Election administration and voting token issuance",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ekklesia",
+    "events",
+    "elections",
+    "voting"
+  ],
+  "author": "Sósíalistaflokkur Íslands (Socialist Party of Iceland)",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@google-cloud/logging-winston": "^6.0.0",
+    "axios": "^1.13.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^4.18.2",
+    "express-rate-limit": "^8.2.1",
+    "firebase-admin": "^13.6.0",
+    "pg": "^8.11.3",
+    "winston": "^3.18.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

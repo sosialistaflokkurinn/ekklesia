@@ -4,7 +4,7 @@
  * Common auth functions used across the member portal.
  */
 
-import { debug } from './utils/debug.js';
+import { debug } from './utils/util-debug.js';
 import {
   getFirebaseAuth,
   getFirebaseAppCheck,

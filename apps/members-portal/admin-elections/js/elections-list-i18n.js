@@ -93,4 +93,7 @@ export async function initElectionsListStrings() {
 
     element.placeholder = stringValue;
   }
+
+  // Translate elements with data-i18n attributes (new declarative approach)
+  R.translatePage();
 }

@@ -1,8 +1,13 @@
 {
-    // Hide symbolic link to avoid confusion in file explorer
-    // services/members/public -> ../../apps/members-portal
-    // The real files are in apps/members-portal/
-    "files.exclude": {
-        "**/services/members/public": true
+    "typescript.tsserver.experimental.enableProjectDiagnostics": false,
+    "typescript.validate.enable": false,
+    "javascript.validate.enable": true,
+    "typescript.suggest.enabled": false,
+    "typescript.autoClosingTags": false,
+    "[typescript]": {
+        "editor.suggest.showSnippets": false
+    },
+    "[typescriptreact]": {
+        "editor.suggest.showSnippets": false
     }
 }

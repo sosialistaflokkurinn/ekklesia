@@ -13,13 +13,13 @@ import { doc, updateDoc, deleteField } from 'https://www.gstatic.com/firebasejs/
 
 // Cloud Function for syncing profile updates to Django
 const updateMemberProfileFunction = httpsCallable('updatememberprofile', 'europe-west2');
-import { getCountriesSorted, getCountryFlag } from '../utils/countries.js';
-import { debug } from '../utils/debug.js';
-import { showToast } from '../components/toast.js';
-import { showStatus, createStatusIcon } from '../components/status.js';
-import { SearchableSelect } from '../components/searchable-select.js';
-import { AddressAutocomplete } from '../components/address-autocomplete.js';
-import { el } from '../utils/dom.js';
+import { getCountriesSorted, getCountryFlag } from '../utils/util-countries.js';
+import { debug } from '../utils/util-debug.js';
+import { showToast } from '../components/ui-toast.js';
+import { showStatus, createStatusIcon } from '../components/ui-status.js';
+import { SearchableSelect } from '../components/ui-searchable-select.js';
+import { AddressAutocomplete } from '../components/member-address-autocomplete.js';
+import { el } from '../utils/util-dom.js';
 
 // Cloud Function for Icelandic address validation (iceaddr)
 const validateAddressFunction = httpsCallable('validate_address', 'europe-west2');

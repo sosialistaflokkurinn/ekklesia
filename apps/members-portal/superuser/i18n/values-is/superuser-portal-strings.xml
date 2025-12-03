@@ -1,0 +1,388 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+  <!-- Page titles -->
+  <string name="superuser_dashboard_title">Kerfisstjórn - Sósíalistaflokkurinn</string>
+  <string name="superuser_brand">Kerfisstjórn</string>
+
+  <!-- Welcome card -->
+  <string name="superuser_welcome_male">Velkomin, kerfisstjóri %s!</string>
+  <string name="superuser_welcome_female">Velkomin, kerfisstjóri %s!</string>
+  <string name="superuser_welcome_neutral">Velkomin, kerfisstjóri %s!</string>
+  <string name="superuser_welcome_subtitle">Stjórnborð fyrir kerfisstjóra. Hér er hægt að stjórna hlutverkum, skoða aðgerðaskrá, og framkvæma kerfisstjórnunaraðgerðir.</string>
+
+  <!-- Quick actions -->
+  <string name="superuser_actions_title">Fljótaðgerðir</string>
+  <string name="quick_action_roles_label">Hlutverk</string>
+  <string name="quick_action_roles_desc">Stjórna hlutverkum notenda</string>
+  <string name="quick_action_audit_logs_label">Aðgerðaskrá</string>
+  <string name="quick_action_audit_logs_desc">Skoða kerfisatburði</string>
+  <string name="quick_action_dangerous_ops_label">Hættulegar aðgerðir</string>
+  <string name="quick_action_dangerous_ops_desc">Eyða og endurstilla gögn</string>
+  <string name="quick_action_system_health_label">Staða kerfis</string>
+  <string name="quick_action_system_health_desc">Stöðu allra þjónusta</string>
+  <string name="quick_action_login_audit_label">Innskráningarsaga</string>
+  <string name="quick_action_login_audit_desc">Skoða innskráningarsögu</string>
+
+  <!-- System status card -->
+  <string name="system_status_title">Kerfisstaða</string>
+  <string name="system_status_healthy">Allar þjónustur virkar</string>
+  <string name="system_status_degraded">Sumar þjónustur í vandræðum</string>
+  <string name="system_status_down">Þjónustur óvirkar</string>
+  <string name="system_status_loading">Athuga stöðu...</string>
+
+  <!-- Role management -->
+  <string name="role_management_title">Stjórnun hlutverka</string>
+  <string name="role_management_page_title">Hlutverk - Kerfisstjórn</string>
+  <string name="role_management_desc">Leita að notanda til að breyta hlutverki.</string>
+  <string name="role_search_placeholder">Leita að notanda (netfang, kennitala, nafn)...</string>
+  <string name="role_selected_user_title">Notandi</string>
+  <string name="role_label_name">Nafn:</string>
+  <string name="role_label_email">Netfang:</string>
+  <string name="role_label_kennitala">Kennitala:</string>
+  <string name="role_label_firebase_uid">Firebase UID:</string>
+  <string name="role_current_label">Núverandi hlutverk</string>
+  <string name="role_loading">Hleð...</string>
+  <string name="role_change_section">Breyta hlutverki</string>
+  <string name="role_change_desc">Veldu nýtt hlutverk fyrir notandann. Þetta mun yfirskrifa núverandi hlutverk.</string>
+  <string name="role_member_name">Félagi</string>
+  <string name="role_member_desc">Grunnnotandi með kosningarétt</string>
+  <string name="role_admin_name">Stjórnandi</string>
+  <string name="role_admin_desc">Umsjá félagaskrár og kosninga</string>
+  <string name="role_superuser_name">Kerfisstjóri</string>
+  <string name="role_superuser_desc">Fullur aðgangur að kerfisstjórn</string>
+  <string name="role_save_btn">Vista breytingu</string>
+  <string name="role_cancel_btn">Hætta við</string>
+  <string name="role_elevated_users_title">Notendur með aukin réttindi</string>
+  <string name="role_elevated_users_desc">Listi yfir alla stjórnendur og kerfisstjóra.</string>
+  <string name="role_elevated_loading">Hleð lista...</string>
+  <string name="role_elevated_error">Villa við að sækja lista.</string>
+  <string name="role_superusers_label">Kerfisstjórar</string>
+  <string name="role_admins_label">Stjórnendur</string>
+  <string name="role_recent_changes_title">Nýlegar breytingar</string>
+  <string name="role_recent_changes_desc">Saga hlutverkabreytinga kemur síðar.</string>
+  <string name="role_new_label">Nýtt hlutverk</string>
+  <string name="role_change_btn">Breyta hlutverki</string>
+  <string name="role_change_confirm">Ertu viss um að þú viljir breyta hlutverki %s úr %s í %s?</string>
+  <string name="role_change_success">Hlutverk hefur verið uppfært!</string>
+  <string name="role_change_error">Villa við að uppfæra hlutverk: %s</string>
+
+  <!-- Dangerous operations -->
+  <!-- Dangerous operations (HTML) -->
+  <string name="dangerous_page_title">Hættulegar aðgerðir - Kerfisstjórn</string>
+  <string name="dangerous_ops_title">Hættulegar aðgerðir</string>
+  <string name="dangerous_ops_warning">Aðgerðir á þessari síðu eru &lt;strong&gt;óafturkræfar&lt;/strong&gt;. Þær geta eytt gögnum varanlega eða gert það ómögulegt að endurheimta upplýsingar. Vinsamlegast farðu varlega.</string>
+  <string name="dangerous_delete_title">Eyða félaga varanlega</string>
+  <string name="dangerous_delete_desc">Eyðir félaga algjörlega úr kerfinu. Þetta fjarlægir öll gögn úr Firestore, Firebase Auth og tengdar skrár. Ekki er hægt að afturkalla þessa aðgerð.</string>
+  <string name="dangerous_delete_label">Kennitala félaga</string>
+  <string name="dangerous_delete_placeholder">t.d. 1234567890</string>
+  <string name="dangerous_delete_hint">Sláðu inn 10 stafa kennitölu félaga sem á að eyða.</string>
+  <string name="dangerous_delete_btn">Eyða félaga</string>
+  <string name="dangerous_anon_title">Nafnhreinsa félaga (GDPR)</string>
+  <string name="dangerous_anon_desc">Fjarlægir persónugreinanlegar upplýsingar en heldur tölfræðilegum gögnum. Notað fyrir GDPR beiðnir þar sem eyðing er ekki möguleg vegna lagaskyldu.</string>
+  <string name="dangerous_anon_hint">Persónuupplýsingum verður skipt út fyrir gervigögn og kennitölu eytt.</string>
+  <string name="dangerous_anon_btn">Nafnhreinsa félaga</string>
+  <string name="dangerous_purge_title">Hreinsa eydd gögn</string>
+  <string name="dangerous_purge_desc">Fjarlægir varanlega öll gögn sem hafa verið merkt sem eydd (soft-deleted). Eftir þessa aðgerð er ekki lengur hægt að endurheimta þessi gögn.</string>
+  <string name="dangerous_purge_members_label">Eyddir félagar:</string>
+  <string name="dangerous_purge_votes_label">Eydd atkvæði:</string>
+  <string name="dangerous_purge_btn">Hreinsa eytt gögn</string>
+  <string name="dangerous_recent_title">Nýlegar hættulegar aðgerðir</string>
+  <string name="dangerous_loading">Hleður...</string>
+  <string name="dangerous_modal_title">Staðfesta aðgerð</string>
+  <string name="dangerous_modal_step1">Bíddu eftir niðurtalningu:</string>
+  <string name="dangerous_modal_step2">Sláðu inn "%s" til að staðfesta:</string>
+  <string name="dangerous_modal_step3">Þetta er síðasta tækifæri til að hætta við. Ertu alveg viss?</string>
+  <string name="dangerous_modal_cancel">Hætta við</string>
+  <string name="dangerous_modal_proceed">Halda áfram</string>
+  <string name="dangerous_op_hard_delete">Eyða kosningu endanlega</string>
+  <string name="dangerous_op_anonymize">Nafnlaus gera atkvæði</string>
+  <string name="dangerous_op_purge_user">Eyða notandagögnum (GDPR)</string>
+  <string name="dangerous_op_reset_election">Endurstilla kosningu</string>
+  <string name="dangerous_confirm_type">Sláðu inn "%s" til að staðfesta:</string>
+  <string name="dangerous_countdown">Aðgerð framkvæmd eftir %s sekúndur...</string>
+  
+  <!-- Dangerous operations (JS) -->
+  <string name="dangerous_delete_member_title">Eyða félaga varanlega</string>
+  <string name="dangerous_delete_member_desc">Þú ert að fara að eyða félaga með kennitölu &lt;strong&gt;%s&lt;/strong&gt; varanlega. Þessi aðgerð er óafturkræf.</string>
+  <string name="dangerous_delete_member_phrase">EYÐA VARANLEGA</string>
+  <string name="dangerous_anonymize_member_title">Nafnhreinsa félaga</string>
+  <string name="dangerous_anonymize_member_desc">Þú ert að fara að fjarlægja persónuupplýsingar félaga með kennitölu &lt;strong&gt;%s&lt;/strong&gt;. Tölfræðileg gögn verða varðveitt.</string>
+  <string name="dangerous_anonymize_member_phrase">NAFNHREINSA</string>
+  <string name="dangerous_purge_deleted_title">Hreinsa eydd gögn</string>
+  <string name="dangerous_purge_deleted_desc">Þú ert að fara að eyða öllum gögnum sem eru merkt sem eydd. Þessi aðgerð er óafturkræf.</string>
+  <string name="dangerous_purge_deleted_phrase">HREINSA ALLT</string>
+  <string name="dangerous_confirm_btn">Já, framkvæma aðgerð</string>
+  <string name="dangerous_executing_btn">Framkvæmi...</string>
+  <string name="dangerous_purge_not_implemented">Hreinsunaraðgerð er ekki útfærð ennþá.</string>
+  <string name="dangerous_unknown_op">Óþekkt aðgerð</string>
+  <string name="dangerous_op_success">Aðgerð tókst</string>
+  <string name="dangerous_op_failed">Aðgerð mistókst</string>
+  <string name="dangerous_op_error">Villa: %s</string>
+  <string name="dangerous_no_ops">Engar hættulegar aðgerðir hafa verið framkvæmdar.</string>
+  <string name="dangerous_logs_info">Allar aðgerðir eru skráðar í Cloud Logging.</string>
+
+  <!-- System Health (JS) -->
+  <string name="service_name_elections">Kosningaþjónusta</string>
+  <string name="service_name_events">Viðburðaþjónusta</string>
+  <string name="service_name_healthz">Kenni.is Health Check</string>
+  <string name="service_name_django_linode">Django Backend (Linode)</string>
+  <string name="service_name_django_demo">Django Backend (GCP Demo)</string>
+  <string name="service_name_handlekenniauth">Kenni.is Auth</string>
+  <string name="service_name_verifymembership">Staðfesting aðildar</string>
+  <string name="service_name_syncmembers">Samstilling félagaskrár</string>
+  <string name="service_name_sync_from_django">Django → Firestore sync</string>
+  <string name="service_name_updatememberprofile">Prófíluppfærsla</string>
+  <string name="service_name_auditmemberchanges">Breytingasaga félagsmanna</string>
+  <string name="service_name_search_addresses">Heimilisfangaleit</string>
+  <string name="service_name_validate_address">Staðfesting heimilisfangs</string>
+  <string name="service_name_validate_postal_code">Staðfesting póstnúmers</string>
+  <string name="service_name_checksystemhealth">Heilsukönnun kerfis</string>
+  <string name="service_name_setuserrole">Setja hlutverk notanda</string>
+  <string name="service_name_getuserrole">Sækja hlutverk notanda</string>
+  <string name="service_name_getauditlogs">Aðgerðaskrár</string>
+  <string name="service_name_getloginaudit">Innskráningarsaga</string>
+  <string name="service_name_harddeletemember">Eyða félagsmanni</string>
+  <string name="service_name_anonymizemember">Nafnleysa félagsmann</string>
+  <string name="service_name_get_django_token">Django API lykill</string>
+  <string name="service_name_cleanupauditlogs">Hreinsun aðgerðaskráa</string>
+  <string name="service_status_no_url">Engin heilsuslóð skilgreind</string>
+  <string name="service_status_active">Virk</string>
+  <string name="service_status_timeout">Tímamörk</string>
+  <string name="service_status_cors">CORS/Network</string>
+  <string name="service_status_ready">Tilbúið</string>
+  <string name="service_status_problem">Vandamál</string>
+  <string name="service_status_inactive">Óvirk</string>
+  <string name="service_status_unknown">Óþekkt</string>
+  <string name="health_summary_down">%s þjónustur óvirkar</string>
+  <string name="health_summary_degraded">%s þjónustur í vandræðum</string>
+  <string name="health_summary_healthy">%s þjónustur virkar</string>
+  <string name="health_summary_unknown">Staða óþekkt</string>
+  <string name="health_summary_unknown_count"> (%s óþekktar)</string>
+  <string name="health_last_updated">Síðast uppfært: %s</string>
+  <string name="btn_check">Athuga...</string>
+  <string name="btn_update">Uppfæra</string>
+  <string name="status_not_checked">Ekki athugað</string>
+  <string name="status_page_loaded">Síða hlaðinn</string>
+  <string name="status_auth_active">Auðkenning virk</string>
+  <string name="status_needs_backend">Þarfnast bakenda</string>
+  <string name="status_fallback_cors">Notar fallback athuganaðferð (CORS takmarkanir)</string>
+
+  <!-- Audit Logs (HTML) -->
+  <string name="audit_page_title">Atburðaskrá - Kerfisstjórn</string>
+  <string name="audit_title">Aðgerðaskrá kerfis</string>
+  <string name="audit_desc">Skoða kerfisatburði og villur úr Cloud Logging.</string>
+  <string name="audit_filter_service">Þjónusta</string>
+  <string name="audit_filter_all_services">Allar þjónustur</string>
+  <string name="audit_filter_elections">Kosningar</string>
+  <string name="audit_filter_events">Viðburðir</string>
+  <string name="audit_filter_sync">Samstilling</string>
+  <string name="audit_filter_django_webhook">Django Webhook</string>
+  <string name="audit_filter_verify">Staðfesting aðildar</string>
+  <string name="audit_filter_kenni_auth">Kenni.is Auth</string>
+  <string name="audit_filter_severity">Alvarleiki</string>
+  <string name="audit_filter_all_levels">Allt</string>
+  <string name="audit_filter_error">Villa</string>
+  <string name="audit_filter_warning">Viðvörun</string>
+  <string name="audit_filter_info">Upplýsingar</string>
+  <string name="audit_filter_debug">Debug</string>
+  <string name="audit_filter_period">Tímabil</string>
+  <string name="audit_filter_1h">Síðustu klukkustund</string>
+  <string name="audit_filter_6h">Síðustu 6 klukkustundir</string>
+  <string name="audit_filter_24h">Síðasta sólarhringinn</string>
+  <string name="audit_filter_1w">Síðustu viku</string>
+  <string name="audit_filter_correlation">Correlation ID</string>
+  <string name="audit_filter_correlation_placeholder">Leita eftir auðkenni (Correlation ID)...</string>
+  <string name="audit_results_title">Niðurstöður</string>
+  <string name="audit_placeholder_text">Smelltu á „Leita" til að sækja aðgerðaskrá.</string>
+  <string name="audit_placeholder_note">Athugið: Þetta krefst Cloud Function til að sækja gögn úr Cloud Logging.</string>
+  <string name="audit_prev_btn">← Fyrri</string>
+  <string name="audit_next_btn">Næsta →</string>
+  <string name="audit_page_info">Síða %s</string>
+
+  <!-- Audit Logs (JS) -->
+  <string name="audit_no_events">Engir atburðir fundust með þessum síum.</string>
+  <string name="audit_count_events">%s atburðir</string>
+  <string name="btn_search_loading">Leita...</string>
+  <string name="btn_search">Leita</string>
+  <string name="audit_fetch_error">Villa við að sækja atburðaskrá. Notar sýnigögn.</string>
+  <string name="audit_label_user">Notandi: %s</string>
+  <string name="audit_label_id">ID: %s</string>
+
+  <!-- Login Audit (HTML) -->
+  <string name="login_page_title">Innskráningarsaga - Kerfisstjórn</string>
+  <string name="login_title">Innskráningarsaga</string>
+  <string name="login_desc">Yfirlit yfir innskráningar og villur.</string>
+  <string name="login_stat_total">Samtals í dag</string>
+  <string name="login_stat_success">Vel heppnaðar</string>
+  <string name="login_stat_failed">Villur</string>
+  <string name="login_filter_title">Síur</string>
+  <string name="login_filter_status">Staða</string>
+  <string name="login_filter_all">Allar</string>
+  <string name="login_filter_success">Vel heppnaðar</string>
+  <string name="login_filter_failed">Villur</string>
+  <string name="login_filter_period">Tímabil</string>
+  <string name="login_filter_user">Notandi</string>
+  <string name="login_filter_user_placeholder">Leita eftir nafni eða netfangi...</string>
+  <string name="login_results_title">Innskráningar</string>
+  <string name="login_results_placeholder">Smelltu á "Leita" til að sækja innskráningar.</string>
+
+  <!-- Login Audit (JS) -->
+  <string name="login_no_events">Engar innskráningar fundust með þessum síum.</string>
+  <string name="login_count_events">%s innskráningar</string>
+  <string name="btn_update_loading">Uppfæri...</string>
+  <string name="login_fetch_error">Villa við að sækja innskráningar. Notar sýnigögn.</string>
+  <string name="login_unknown_user">Óþekktur</string>
+  <string name="time_just_now">Rétt í þessu</string>
+  <string name="time_mins_ago">%s mín síðan</string>
+  <string name="time_hours_ago">%s klst síðan</string>
+  <string name="time_days_ago">%s dögum síðan</string>
+
+  <!-- Superuser (JS) -->
+  <string name="superuser_fallback_name">ofurnotandi</string>
+
+  <!-- Errors -->
+  <string name="error_unauthorized_superuser">Aðeins kerfisstjórar hafa aðgang að þessari síðu.</string>
+  <string name="error_page_load">Villa við að hlaða síðu: %s</string>
+
+  <!-- Architecture diagram page -->
+  <string name="architecture_page_title">Kerfisarkitektúr - Kerfisstjórn</string>
+  <string name="architecture_title">Kerfisarkitektúr</string>
+  <string name="architecture_description">Lifandi yfirlit yfir allar þjónustur og gagnaflæði kerfisins.</string>
+  <string name="architecture_refresh_btn">Uppfæra</string>
+  <string name="architecture_refreshing">Uppfæri...</string>
+  <string name="architecture_last_updated">Síðast uppfært: %s</string>
+  <string name="architecture_click_group">Smelltu á hóp til að sjá nákvæmari upplýsingar</string>
+  <string name="architecture_overview_title">Kerfisyfirlit</string>
+  <string name="architecture_service_info">Þjónustuupplýsingar</string>
+  <string name="architecture_close_btn">✕ Loka</string>
+  <string name="architecture_stats_title">Tölfræði</string>
+  <string name="architecture_services_label">Þjónustur</string>
+
+  <!-- Architecture diagram labels -->
+  <string name="architecture_label_users">Notendur</string>
+  <string name="architecture_label_users_desc">Félagar / Stjórnendur / Kerfisstjórar</string>
+  <string name="architecture_label_firebase_hosting">Firebase Hosting</string>
+  <string name="architecture_label_members_portal">Félagagátt</string>
+  <string name="architecture_label_admin_portal">Stjórnendagátt</string>
+  <string name="architecture_label_superuser_portal">Kerfisstjórn</string>
+  <string name="architecture_label_firestore">Firestore</string>
+  <string name="architecture_label_firestore_desc">Gagnagrunnur</string>
+  <string name="architecture_label_cloud_run">Cloud Run</string>
+  <string name="architecture_label_cloud_run_count">22 þjónustur</string>
+  <string name="architecture_label_cloud_sql">Cloud SQL</string>
+  <string name="architecture_label_postgresql">PostgreSQL</string>
+  <string name="architecture_label_django">Django</string>
+  <string name="architecture_label_linode">Linode</string>
+  <string name="architecture_label_kenni">Kenni.is</string>
+  <string name="architecture_label_oauth">OAuth 2.0</string>
+  <string name="architecture_label_2_services">2 þjónustur</string>
+  <string name="architecture_label_3_services">3 þjónustur</string>
+  <string name="architecture_label_7_services">7 þjónustur</string>
+
+  <!-- Architecture legend data flow -->
+  <string name="architecture_legend_status">Staða:</string>
+  <string name="architecture_legend_data_flow_title">Gagnaflæði:</string>
+  <string name="architecture_flow_django_firestore">Django → Firestore</string>
+  <string name="architecture_flow_firestore_django">Firestore → Django</string>
+  <string name="architecture_flow_sql_queries">SQL fyrirspurnir</string>
+  <string name="architecture_flow_oauth">OAuth</string>
+
+  <!-- Architecture service groups -->
+  <string name="architecture_group_auth">Auðkenning</string>
+  <string name="architecture_group_sync">Samstilling</string>
+  <string name="architecture_group_address">Heimilisföng</string>
+  <string name="architecture_group_voting">Kosningar</string>
+  <string name="architecture_group_audit">Eftirlit</string>
+  <string name="architecture_group_superuser">Kerfisstjórn</string>
+  <string name="architecture_group_infra">Innviðir</string>
+
+  <!-- Architecture stats -->
+  <string name="architecture_stat_total">Samtals</string>
+  <string name="architecture_stat_healthy">Heilbrigðar</string>
+  <string name="architecture_stat_degraded">Hægvirkar</string>
+  <string name="architecture_stat_down">Niðri</string>
+
+  <!-- Architecture legend -->
+  <string name="architecture_legend_title">Skýringar</string>
+  <string name="architecture_legend_healthy">Heilbrigt</string>
+  <string name="architecture_legend_degraded">Hægvirkt</string>
+  <string name="architecture_legend_down">Niðri</string>
+  <string name="architecture_legend_unknown">Óþekkt</string>
+  <string name="architecture_legend_data_flow">Gagnaflæði (lifandi)</string>
+  <string name="architecture_legend_static_conn">Stöðug tenging</string>
+
+  <!-- Architecture service status -->
+  <string name="architecture_status_healthy">Heilbrigt</string>
+  <string name="architecture_status_available">Tiltækt</string>
+  <string name="architecture_status_degraded">Hægvirkt</string>
+  <string name="architecture_status_slow">Hægvirkt</string>
+  <string name="architecture_status_down">Niðri</string>
+  <string name="architecture_status_error">Villa</string>
+  <string name="architecture_status_unknown">Óþekkt</string>
+
+  <!-- Architecture details panel -->
+  <string name="architecture_details_close">Loka</string>
+
+  <!-- System Health Page (HTML) -->
+  <string name="health_page_title">Heilbrigði kerfis - Kerfisstjórn</string>
+  <string name="health_header_title">Staða kerfis</string>
+  <string name="health_header_desc">Rauntímastaða allra þjónusta.</string>
+  <string name="health_refresh_btn">Uppfæra</string>
+  <string name="health_checking">Athuga stöðu...</string>
+
+  <string name="health_section_gcp">GCP þjónustur</string>
+  <string name="health_section_gcp_desc">Google Cloud Run þjónustur með heilsuskoðun.</string>
+  <string name="health_section_external">Ytri þjónustur</string>
+  <string name="health_section_external_desc">Þjónustur hýstar utan GCP (Linode o.fl.)</string>
+  <string name="health_section_demo">Tilraunaþjónustur</string>
+  <string name="health_section_demo_desc">Þjónustur í þróun/prófun – ekki í framleiðslu.</string>
+  <string name="health_section_members">Félagaþjónustur</string>
+  <string name="health_section_members_desc">Þjónustur fyrir félagaskrá, auðkenningu og samstillingu.</string>
+  <string name="health_section_address">Heimilisfangaþjónustur</string>
+  <string name="health_section_address_desc">Þjónustur fyrir heimilisfangaleit og staðfestingu.</string>
+  <string name="health_section_superuser">Kerfisstjóraþjónustur</string>
+  <string name="health_section_superuser_desc">Þjónustur fyrir kerfisstjórnun og eftirlit.</string>
+  <string name="health_section_utility">Hjálparföll</string>
+  <string name="health_section_utility_desc">Bakgrunnsföll og hjálparföll.</string>
+  <string name="health_section_database">Gagnagrunnar</string>
+  <string name="health_section_schema">Gagnagrunna skemu</string>
+  <string name="health_section_schema_desc">Yfirlit yfir gagnaskipan í Firestore og PostgreSQL.</string>
+  <string name="health_section_firebase">Firebase innviðir</string>
+
+  <!-- Schema table headers -->
+  <string name="schema_firestore_title">Firestore Collections</string>
+  <string name="schema_cloudsql_title">Cloud SQL (PostgreSQL) - ekklesia-db</string>
+  <string name="schema_relations_title">Key Relationships</string>
+  <string name="schema_col_collection">Collection</string>
+  <string name="schema_col_table">Table</string>
+  <string name="schema_col_desc">Description</string>
+  <string name="schema_col_key">Primary Key</string>
+
+  <!-- Schema descriptions (Firestore) -->
+  <string name="schema_members_desc">Member profiles (synced from Django)</string>
+  <string name="schema_members_key">kennitala (SSN)</string>
+  <string name="schema_users_desc">Firebase Auth user data, login history</string>
+  <string name="schema_users_key">Firebase UID</string>
+  <string name="schema_elections_desc">Election definitions and metadata</string>
+  <string name="schema_elections_key">Auto-generated ID</string>
+  <string name="schema_events_desc">Event definitions (meetings, assemblies)</string>
+  <string name="schema_events_key">Auto-generated ID</string>
+  <string name="schema_health_desc">Health check document</string>
+  <string name="schema_health_key">Static</string>
+
+  <!-- Schema descriptions (PostgreSQL) -->
+  <string name="schema_comrade_desc">Django member records (source of truth on Linode)</string>
+  <string name="schema_comrade_key">id (auto)</string>
+  <string name="schema_newlocaladdress_desc">Member addresses linked to Iceland address registry</string>
+  <string name="schema_newlocaladdress_key">id (auto)</string>
+  <string name="schema_simpleaddress_desc">Simple address storage (829 records)</string>
+  <string name="schema_simpleaddress_key">comrade_id (FK)</string>
+  <string name="schema_contactinfo_desc">Phone, email, Facebook for each member</string>
+  <string name="schema_contactinfo_key">comrade_id (FK)</string>
+  <string name="schema_election_desc">Election records</string>
+  <string name="schema_election_key">id (auto)</string>
+  <string name="schema_ballot_desc">Anonymous ballot submissions</string>
+  <string name="schema_ballot_key">id (auto)</string>
+  <string name="schema_votingtoken_desc">One-time voting tokens</string>
+  <string name="schema_votingtoken_key">token (UUID)</string>
+</resources>

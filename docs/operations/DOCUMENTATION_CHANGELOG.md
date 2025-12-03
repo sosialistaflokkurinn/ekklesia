@@ -78,7 +78,7 @@ All evolving documentation files should follow semantic versioning: `MAJOR.MINOR
 
 | Document | Version | Last Updated | Status |
 |----------|---------|--------------|--------|
-| [ARCHITECTURE_RECOMMENDATIONS.md](../architecture/ARCHITECTURE_RECOMMENDATIONS.md) | v1.0 | 2025-10-13 | 🔄 Needs Review |
+| [SYSTEM_ARCHITECTURE.md](../architecture/SYSTEM_ARCHITECTURE.md) | v1.0 | 2025-12-01 | ✅ Current |
 
 ---
 

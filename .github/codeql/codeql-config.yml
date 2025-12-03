@@ -23,16 +23,16 @@ query-filters:
   # FALSE POSITIVE #1: Missing Rate Limiting (High)
   # ============================================================================
   # Alert: "This route handler performs [action], but is not rate-limited"
-  # Location: services/events/src/index.js:69
+  # Location: services/svc-events/src/index.js:69
   #
   # Reality: Rate limiting IS implemented at the route level
-  # Evidence: services/events/src/routes/election.js imports and applies:
+  # Evidence: services/svc-events/src/routes/election.js imports and applies:
   #   - readLimiter (for GET /api/election)
   #   - tokenLimiter (for POST /api/request-token)
   #
   # Commits:
   #   - 94b0e69: "security(events): Add comprehensive rate limiting to Events API"
-  #   - See: services/events/src/middleware/rateLimiter.js
+  #   - See: services/svc-events/src/middleware/rateLimiter.js
   #
   # Why false positive:
   #   CodeQL scans middleware (index.js) but doesn't detect route-level limiters.
@@ -42,13 +42,13 @@ query-filters:
   - exclude:
       id: js/missing-rate-limiting
       paths:
-        - services/events/src/index.js
+        - services/svc-events/src/index.js
 
   # ============================================================================
   # FALSE POSITIVE #2: User-Controlled Bypass (High)
   # ============================================================================
   # Alert: "This condition guards a sensitive [action], but a [user input] controls it"
-  # Location: services/events/src/middleware/auth.js:19
+  # Location: services/svc-events/src/middleware/auth.js:19
   #
   # Reality: This is standard HTTP authentication header validation
   # Code: if (!authHeader || !authHeader.startsWith('Bearer ')) { ... }
@@ -73,7 +73,7 @@ query-filters:
   - exclude:
       id: js/user-controlled-bypass
       paths:
-        - services/events/src/middleware/auth.js
+        - services/svc-events/src/middleware/auth.js
 
   # ============================================================================
   # FALSE POSITIVE #3: Client-Side Request Forgery (Medium)

@@ -485,5 +485,5 @@ Developer Machine
 
 ---
 
-**Næsta skjal**: [BIDIRECTIONAL_SYNC.md](./BIDIRECTIONAL_SYNC.md)  
+**Næsta skjal**: [DJANGO_DATABASE_SCHEMA.md](./DJANGO_DATABASE_SCHEMA.md) - Real-time sync architecture
 **Til baka**: [INDEX.md](./INDEX.md)

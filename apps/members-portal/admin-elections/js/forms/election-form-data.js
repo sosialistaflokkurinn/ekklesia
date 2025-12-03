@@ -6,7 +6,7 @@
  */
 
 import { R } from '../../i18n/strings-loader.js';
-import { debug } from '../../../js/utils/debug.js';
+import { debug } from '../../../js/utils/util-debug.js';
 
 /**
  * Get answer options from the form

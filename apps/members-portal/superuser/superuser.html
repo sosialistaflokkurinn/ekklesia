@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Loading...</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+  <!-- Reuse member portal styles -->
+  <link rel="stylesheet" href="/styles/bundle.css?v=20251202">
+
+  <!-- Superuser-specific styles -->
+  <link rel="stylesheet" href="/superuser/styles/superuser.css?v=20251201">
+</head>
+<body class="authenticated superuser">
+  <!-- Navigation component inserted here -->
+
+  <!-- Page Content -->
+  <div class="page__container">
+    <!-- Welcome Card -->
+    <div class="card card--welcome">
+      <h1 class="card__title" id="superuser-welcome-title">Loading...</h1>
+      <p class="u-text-muted" id="superuser-welcome-subtitle">Loading...</p>
+      <div class="role-badges u-hidden" id="role-badges"></div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card">
+      <h2 class="card__title" id="superuser-actions-title">Loading...</h2>
+      <div class="info-grid">
+        <a href="/superuser/roles.html" class="info-grid__item u-clickable superuser-action--roles">
+          <div class="info-grid__label" id="quick-action-roles-label">Loading...</div>
+          <div class="info-grid__value" id="quick-action-roles-desc">Loading...</div>
+        </a>
+        <a href="/superuser/audit-logs.html" class="info-grid__item u-clickable">
+          <div class="info-grid__label" id="quick-action-audit-logs-label">Loading...</div>
+          <div class="info-grid__value" id="quick-action-audit-logs-desc">Loading...</div>
+        </a>
+        <a href="/superuser/dangerous-ops.html" class="info-grid__item u-clickable superuser-action--dangerous">
+          <div class="info-grid__label" id="quick-action-dangerous-ops-label">Loading...</div>
+          <div class="info-grid__value" id="quick-action-dangerous-ops-desc">Loading...</div>
+        </a>
+        <a href="/superuser/system-health.html" class="info-grid__item u-clickable">
+          <div class="info-grid__label" id="quick-action-system-health-label">Loading...</div>
+          <div class="info-grid__value" id="quick-action-system-health-desc">Loading...</div>
+        </a>
+        <a href="/superuser/login-audit.html" class="info-grid__item u-clickable">
+          <div class="info-grid__label" id="quick-action-login-audit-label">Loading...</div>
+          <div class="info-grid__value" id="quick-action-login-audit-desc">Loading...</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- System Status Card -->
+    <div class="card" id="system-status-card">
+      <h2 class="card__title" id="system-status-title">Loading...</h2>
+      <div class="system-status" id="system-status-content">
+        <div class="system-status__indicator system-status__indicator--loading">
+          <span class="system-status__dot"></span>
+          <span class="system-status__text" id="system-status-text">Loading...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/superuser/js/superuser.js?v=20251201"></script>
+
+  <!-- Initialize Navigation Component -->
+  <script type="module">
+    import { initNavHeader, NAV_CONFIGS } from '../ui/components/navigation-bar.js?v=20251201';
+
+    // Initialize navigation with appropriate config
+    await initNavHeader(NAV_CONFIGS.superuser);
+  </script>
+
+</body>
+</html>

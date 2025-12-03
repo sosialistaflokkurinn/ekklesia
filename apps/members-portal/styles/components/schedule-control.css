@@ -180,14 +180,14 @@
 }
 
 .schedule-control__duration-btn:hover {
-  border-color: var(--color-primary);
-  background-color: var(--color-primary-alpha-2);
+  border-color: var(--color-burgundy);
+  background-color: var(--color-burgundy-alpha-10, rgba(114, 47, 55, 0.1));
 }
 
 .schedule-control__duration-btn--active {
-  border-color: var(--color-primary);
-  background-color: var(--color-primary);
-  color: var(--color-text-inverse);
+  border-color: var(--color-burgundy);
+  background-color: var(--color-burgundy);
+  color: var(--color-white);
   font-weight: var(--font-weight-bold);
 }
 

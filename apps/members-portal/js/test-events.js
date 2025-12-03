@@ -13,7 +13,7 @@
  */
 
 import { R } from '../i18n/strings-loader.js';
-import { debug } from './utils/debug.js';
+import { debug } from './utils/util-debug.js';
 import { initAuthenticatedPage } from './page-init.js';
 import { requireAuth, getUserData, signOut, authenticatedFetch, AuthenticationError } from '../session/auth.js';
 import { setTextContent, setDisabled, setInnerHTML, validateElements, getElementByIdSafe } from '../ui/dom.js';

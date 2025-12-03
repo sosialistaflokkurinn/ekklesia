@@ -8,14 +8,9 @@
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2" sizes="any">
   <link rel="icon" type="image/x-icon" href="/favicon.ico?v=2">
-  <link rel="stylesheet" href="/styles/global.css?v=20251102">
-  <link rel="stylesheet" href="/styles/components/nav.css?v=20251102">
-  <link rel="stylesheet" href="/styles/components/page.css?v=20251102">
-  <link rel="stylesheet" href="/styles/components/button.css?v=20251106">
-  <link rel="stylesheet" href="/styles/components/form.css?v=20251105">
+  <link rel="stylesheet" href="/styles/bundle.css?v=20251202">
   <link rel="stylesheet" href="/styles/components/profile-edit.css?v=20251102">
   <link rel="stylesheet" href="/styles/components/address-autocomplete.css?v=20251125">
-  <link rel="stylesheet" href="/styles/components/toast.css?v=20251105">
   <link rel="stylesheet" href="/styles/components/searchable-select.css?v=20251105">
 </head>
 <body class="authenticated">
@@ -67,7 +62,7 @@
               class="profile-field__input"
               id="input-email"
               name="email"
-              placeholder="nafn@example.is"
+              data-i18n-placeholder="placeholder_email"
             />
             <span class="profile-field__status" id="status-email"></span>
             <span class="profile-field__error" id="error-email"></span>
@@ -106,7 +101,7 @@
 
         <!-- Add phone button -->
         <button type="button" id="btn-add-phone" class="btn btn--secondary btn--small">
-          <span id="btn-add-phone-text">+ Bæta við símanúmeri</span>
+          <span id="btn-add-phone-text" data-i18n="btn_add_phone_text">Loading...</span>
         </button>
 
         <span class="profile-field__status" id="status-phone-numbers"></span>
@@ -122,7 +117,7 @@
 
         <!-- Add address button -->
         <button type="button" id="btn-add-address" class="btn btn--secondary btn--small">
-          <span id="btn-add-address-text">+ Bæta við heimilisfangi</span>
+          <span id="btn-add-address-text" data-i18n="btn_add_address_text">Loading...</span>
         </button>
 
         <span class="profile-field__status" id="status-addresses"></span>

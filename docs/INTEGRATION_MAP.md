@@ -1,6 +1,6 @@
 # Integration Category Map
 
-**Last Updated**: 2025-11-24
+**Last Updated**: 2025-12-01
 **Status**: ✅ Level 2 Category Map
 **Purpose**: External system integrations and API documentation
 
@@ -20,7 +20,7 @@ This category map provides navigation to all integration documentation including
 - [Django Address System](../docs/integration/DJANGO_ADDRESS_SYSTEM_DEEP_DIVE.md) - Address architecture
 - [Admin API Reference](../docs/features/election-voting/ADMIN_API_REFERENCE.md) - API endpoints
 - [API Reference](integration/API_REFERENCE.md) - Complete API reference
-- [Bidirectional Sync](integration/BIDIRECTIONAL_SYNC.md) - Sync architecture
+- [Django Database Schema](integration/DJANGO_DATABASE_SCHEMA.md) - Real-time sync architecture
 
 ---
 
@@ -29,7 +29,7 @@ This category map provides navigation to all integration documentation including
 ### Overview & Status
 - [Integration Documentation Index](integration/INDEX.md) - Complete integration index
 - [Architecture Overview](integration/ARCHITECTURE.md) - Integration architecture
-- [Implementation Status](integration/IMPLEMENTATION_STATUS.md) - Current status
+- [Django Database Schema](integration/DJANGO_DATABASE_SCHEMA.md) - Current sync implementation
 - [Audit Report 2025-11-05](integration/AUDIT_REPORT_2025-11-05.md) - Integration audit
 
 ### API Documentation
@@ -48,7 +48,6 @@ This category map provides navigation to all integration documentation including
 ### Cloud Services
 - [Cloud Functions](integration/CLOUD_FUNCTIONS.md) - Cloud Functions integration
 - [Firestore Schema](integration/FIRESTORE_SCHEMA.md) - Firestore data model
-- [Bidirectional Sync](integration/BIDIRECTIONAL_SYNC.md) - Django ↔ Firestore sync
 
 ### Deployment
 - [Deployment Guide](integration/DEPLOYMENT.md) - Integration deployment procedures
