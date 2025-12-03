@@ -1,6 +1,6 @@
 # Features Category Map
 
-**Last Updated**: 2025-11-24  
+**Last Updated**: 2025-12-01  
 **Status**: ✅ Level 2 Category Map  
 **Purpose**: Feature-specific documentation and epic implementation guides
 
@@ -29,12 +29,12 @@ This category map provides navigation to all feature documentation including ele
 - [Voting Anonymity Model](../docs/security/policies/VOTING_ANONYMITY_MODEL.md) - Security analysis and trust model
 
 **Epic Implementation:**
-- [Epic #24: Admin Lifecycle](../docs/features/election-voting/EPIC_24_ADMIN_LIFECYCLE.md)
-- [Epic #43: Member Management](../docs/features/election-voting/EPIC_43_MEMBER_MANAGEMENT_SYSTEM.md)
-- [Epic #43 Phase 2](../docs/features/election-voting/EPIC_43_PHASE_2_IMPLEMENTATION.md)
-- [Epic #87: Election Discovery](../docs/features/election-voting/EPIC_87_ELECTION_DISCOVERY.md)
-- [Phase 5 Week 1 Implementation](../docs/features/election-voting/PHASE_5_WEEK_1_IMPLEMENTATION.md)
-- [Phase 5 Week 1 Member UI](../docs/features/election-voting/PHASE_5_WEEK_1_MEMBER_UI.md)
+- [Epic #24: Admin Lifecycle](./archive/features/election-voting/EPIC_24_ADMIN_LIFECYCLE.md) ✅ Complete (archived)
+- [Epic #43: Member Management](features/election-voting/EPIC_43_MEMBER_MANAGEMENT_SYSTEM.md)
+- [Epic #43 Phase 2](features/election-voting/EPIC_43_PHASE_2_IMPLEMENTATION.md)
+- [Epic #87: Election Discovery](./archive/features/election-voting/EPIC_87_ELECTION_DISCOVERY.md) ✅ Complete (archived)
+- [Phase 5 Week 1 Implementation](features/election-voting/PHASE_5_WEEK_1_IMPLEMENTATION.md)
+- [Phase 5 Week 1 Member UI](features/election-voting/PHASE_5_WEEK_1_MEMBER_UI.md)
 
 **Design & Status:**
 - [Admin Elections Navigation Design](features/election-voting/ADMIN_ELECTIONS_NAVIGATION_DESIGN.md) - Navigation UX

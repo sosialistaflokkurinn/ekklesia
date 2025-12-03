@@ -33,9 +33,9 @@ cat DOCUMENTATION_MAP.md  # System overview
 cat docs/README.md        # Documentation hub
 
 # See service-specific setup
-cat services/members/README.md
-cat services/events/README.md
-cat services/elections/README.md
+cat services/svc-members/README.md
+cat services/svc-events/README.md
+cat services/svc-elections/README.md
 ```
 
 ---

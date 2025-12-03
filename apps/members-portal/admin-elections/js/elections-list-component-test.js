@@ -16,10 +16,10 @@ import { R } from '../i18n/strings-loader.js';
 import { initElectionsListStrings } from './elections-list-i18n.js';
 // REMOVED: import { initNavigation } from '../../js/nav-interactions.js';
 import { formatDate, getTimeRemaining } from './date-utils.js';
-import { createStatusBadge } from '../../js/components/badge.js';
-import { showModal, showAlert } from '../../js/components/modal.js';
-import { formatDateIcelandic } from '../../js/utils/format.js';
-import { debug } from '../../js/utils/debug.js';
+import { createStatusBadge } from '../../js/components/ui-badge.js';
+import { showModal, showAlert } from '../../js/components/ui-modal.js';
+import { formatDateIcelandic } from '../../js/utils/util-format.js';
+import { debug } from '../../js/utils/util-debug.js';
 
 const auth = getFirebaseAuth();
 

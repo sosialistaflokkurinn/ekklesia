@@ -8,13 +8,13 @@
 // Import from member portal public directory (two levels up from /admin/js/)
 import { initSession } from '../../session/init.js';
 import { initNavigation } from '../../js/nav-interactions.js';
-import { debug } from '../../js/utils/debug.js';
+import { debug } from '../../js/utils/util-debug.js';
 import { getFirebaseAuth } from '../../firebase/app.js';
 import { adminStrings } from './i18n/admin-strings-loader.js';
 import { checkAdminAccess, calculateDuration } from './utils/admin-helpers.js';
-import { showToast, showSuccess, showError } from '../../js/components/toast.js';
-import { toggleButtonLoading } from '../../js/components/status.js';
-import { showConfirm } from '../../js/components/modal.js';
+import { showToast, showSuccess, showError } from '../../js/components/ui-toast.js';
+import { toggleButtonLoading } from '../../js/components/ui-status.js';
+import { showConfirm } from '../../js/components/ui-modal.js';
 
 // Initialize Firebase Auth
 const auth = getFirebaseAuth();

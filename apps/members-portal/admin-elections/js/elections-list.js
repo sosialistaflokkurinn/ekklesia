@@ -9,11 +9,12 @@ import { R } from '../i18n/strings-loader.js';
 import { initElectionsListStrings } from './elections-list-i18n.js';
 // Note: initNavigation import removed - now handled by nav-header component
 import { formatDate, getTimeRemaining } from './date-utils.js';
-import { createStatusBadge } from '../../js/components/badge.js';
-import { showModal, showAlert } from '../../js/components/modal.js';
-import { formatDateIcelandic } from '../../js/utils/format.js';
-import { debug } from '../../js/utils/debug.js';
-import { el } from '../../js/utils/dom.js';
+import { createStatusBadge } from '../../js/components/ui-badge.js';
+import { showModal, showAlert } from '../../js/components/ui-modal.js';
+import { showToast } from '../../js/components/ui-toast.js';
+import { formatDateIcelandic } from '../../js/utils/util-format.js';
+import { debug } from '../../js/utils/util-debug.js';
+import { el } from '../../js/utils/util-dom.js';
 import { fetchElections, openElection, closeElection, hideElection, unhideElection, deleteElection } from './api/elections-admin-api.js';
 
 const auth = getFirebaseAuth();
@@ -946,6 +947,6 @@ async function showError(message) {
  * Show success message
  */
 function showSuccess(message) {
-  // TODO: Use toast notification instead of alert
+  showToast(message, 'success');
   debug.log('✅', message);
 }

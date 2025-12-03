@@ -371,10 +371,10 @@ sed -n '/^## Backend/,/^## Frontend/p' original.md > backend-checklist.md
 
 ## Checklists
 
-1. [Backend Implementation](./backend-checklist.md) - ✅ 100% (12/12)
-2. [Frontend Implementation](./frontend-checklist.md) - 🔄 60% (15/25)
-3. [Testing & QA](./testing-checklist.md) - ⏸️ 0% (0/18)
-4. [Deployment](./deployment-checklist.md) - ⏸️ 0% (0/8)
+1. `backend-checklist.md` - ✅ 100% (12/12)
+2. `frontend-checklist.md` - 🔄 60% (15/25)
+3. `testing-checklist.md` - ⏸️ 0% (0/18)
+4. `deployment-checklist.md` - ⏸️ 0% (0/8)
 
 **Next Steps:** Complete frontend implementation, then begin testing.
 ```

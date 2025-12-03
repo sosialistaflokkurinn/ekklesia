@@ -2,40 +2,37 @@
 
 ## Security & Git Rules
 
+### Git Strategy: "Track All, Push Selectively"
+
+All files are tracked locally (so AI assistants can see them), but sensitive files
+are blocked from push by the pre-push hook. See `.git-local-only` for blocked patterns.
+
 1. **NEVER BYPASS GIT HOOKS (--no-verify):**
-   - Pre-commit hooks detect secrets, PII, security issues
+   - **Pre-commit:** Detects secrets, PII, security issues
+   - **Pre-push:** Blocks sensitive files from going to remote
    - If hook fails: INVESTIGATE → UNDERSTAND → FIX
-   - Fixed Nov 7, 2025: Timeouts (5s total, 1s per grep) prevent hanging
-   - Example: Hook detected exposed CF_API_TOKEN (we were removing it - GOOD)
 
-2. **GITIGNORED FILES (see docs/development/LOCAL_ONLY_FILES.md):**
-   - Policy docs: docs/policy/ (meeting notes, draft policies)
-   - PII patterns: *KENNITALA*.md, *kennitala*.md, *DUPLICATE_SSN*.md
-   - Admin scripts: services/members/scripts/check-*.js (queries production with PII)
-   - .claude/ directory (personal workflow config)
+2. **LOCAL-ONLY FILES (blocked from push, see .git-local-only):**
+   - Policy docs: `docs/policy/` (meeting notes with personal info)
+   - PII patterns: `*KENNITALA*.md`, `*DUPLICATE_SSN*.md`
+   - Credentials: `.env`, `*.key.json`, `*client_secret*`
+   - Admin scripts: `services/svc-members/scripts/check-*.js`
+   - Audit logs: `*.audit.json`, `scripts/logs/*.jsonl`
 
-3. **PRE-COMMIT SAFETY CHECK:**
-   ```bash
-   # Before 'git add' or 'git commit', check if file is gitignored
-   git check-ignore -v path/to/file
-
-   # List staged files that match gitignore patterns
-   git diff --cached --name-only | while read f; do
-     git check-ignore -q "$f" && echo "WARNING: $f matches .gitignore"
-   done
+3. **HOW IT WORKS:**
+   ```
+   git add file.md     → File is tracked locally
+   git commit          → File is committed locally
+   git push            → Pre-push hook checks .git-local-only
+                       → If file matches pattern → PUSH BLOCKED
+                       → If no match → Push succeeds
    ```
 
-   IF YOU SEE A MATCH:
-   - STOP immediately
-   - Check LOCAL_ONLY_FILES.md for why it's ignored
-   - Verify: Adding secrets? STOP. Removing secrets? OK.
-   - If unsure, ASK USER
-
 4. **CRITICAL RULES:**
-   - NEVER use 'git add -f' (force add) without user approval
-   - NEVER commit files from docs/policy/
-   - NEVER commit files matching *KENNITALA* or *kennitala*
-   - ALWAYS verify with git check-ignore before committing
+   - Sensitive files ARE committed locally (AI can see them)
+   - Sensitive files are NEVER pushed to remote (hook blocks them)
+   - NEVER use `git push --no-verify` (bypasses security)
+   - If pre-push blocks your push: Remove sensitive files from commits
 
 ---
 
@@ -98,13 +95,17 @@ Key docs loaded at session start:
 
 **SAFE DEPLOYMENT:**
 
-1. Frontend Only (SAFE) - **MUST run from services/members/**:
+1. Frontend Only (SAFE) - **MUST run from services/svc-members/**:
    ```bash
-   cd /home/gudro/Development/projects/ekklesia/services/members
+   cd /home/gudro/Development/projects/ekklesia/services/svc-members
    firebase deploy --only hosting  # Doesn't affect secrets
    ```
 
-   **IMPORTANT:** firebase.json is in services/members/, NOT project root!
+   **IMPORTANT:** firebase.json is in services/svc-members/, NOT project root!
+
+   **NO LOCAL SERVER:** There is NO local development server workflow.
+   Changes are tested by deploying to Firebase Hosting.
+   NEVER suggest `python3 -m http.server` or similar local servers.
 
 2. Backend Services (USE SCRIPTS):
    ```bash

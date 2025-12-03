@@ -17,7 +17,7 @@ updates:
 
   # Python dependencies (Cloud Functions - Members)
   - package-ecosystem: "pip"
-    directory: "/services/members/functions"
+    directory: "/services/svc-members/functions"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -32,7 +32,7 @@ updates:
 
   # Node.js dependencies (Elections Service)
   - package-ecosystem: "npm"
-    directory: "/services/elections"
+    directory: "/services/svc-elections"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -47,7 +47,7 @@ updates:
 
   # Node.js dependencies (Events Service)
   - package-ecosystem: "npm"
-    directory: "/services/events"
+    directory: "/services/svc-events"
     schedule:
       interval: "weekly"
       day: "monday"

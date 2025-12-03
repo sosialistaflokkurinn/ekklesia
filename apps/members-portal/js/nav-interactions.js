@@ -12,7 +12,7 @@
  * @module nav
  */
 
-import { debug } from './utils/debug.js';
+import { debug } from './utils/util-debug.js';
 
 // Module-level variables to store listener references (prevents memory leak)
 let keypressHandler = null;

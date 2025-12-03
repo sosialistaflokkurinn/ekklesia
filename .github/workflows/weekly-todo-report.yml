@@ -67,7 +67,7 @@ jobs:
           echo "grade=$GRADE" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Issue
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const score = '${{ steps.metrics.outputs.score }}';
@@ -164,7 +164,7 @@ See [TODO_CLEANUP_STRATEGY.md](../docs/standards/TODO_CLEANUP_STRATEGY.md) for g
             console.log(`Created TODO health report issue #${issue.data.number}`);
 
       - name: Upload report artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: todo-health-report-${{ github.run_number }}
           path: todo-report.txt
@@ -172,7 +172,7 @@ See [TODO_CLEANUP_STRATEGY.md](../docs/standards/TODO_CLEANUP_STRATEGY.md) for g
 
       - name: Comment on pull requests (if applicable)
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const report = process.env.TODO_REPORT;

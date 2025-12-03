@@ -23,8 +23,8 @@ This phase enables the first full end-to-end voting cycle: create election → m
 
 ### Epic #24: Admin Election Lifecycle Management
 **Branch**: `feature/epic-24-admin-lifecycle`
-**Status**: 🟡 Specification Complete, Ready for Implementation
-**Documentation**: [EPIC_24_ADMIN_LIFECYCLE.md](../features/election-voting/EPIC_24_ADMIN_LIFECYCLE.md)
+**Status**: ✅ Complete (Nov 2025)
+**Documentation**: [EPIC_24_ADMIN_LIFECYCLE.md](../archive/features/election-voting/EPIC_24_ADMIN_LIFECYCLE.md) (archived)
 
 #### Overview
 Administrators can create, configure, schedule, and manage the complete election lifecycle:
@@ -64,7 +64,7 @@ Administrators can create, configure, schedule, and manage the complete election
 ### Epic #87: Member Election Discovery & Voting Interface
 **Branch**: `archive/epic-87-election-discovery-2025-10-22` (archived)
 **Status**: ✅ Complete - Merged to main (2025-10-22)
-**Documentation**: [EPIC_87_ELECTION_DISCOVERY.md](../features/election-voting/EPIC_87_ELECTION_DISCOVERY.md)
+**Documentation**: [EPIC_87_ELECTION_DISCOVERY.md](../archive/features/election-voting/EPIC_87_ELECTION_DISCOVERY.md) (archived)
 
 #### Overview
 Members can discover, view details, and participate in elections:
@@ -442,8 +442,8 @@ Updates:
 ## Documentation & Handoff
 
 ### Epic Documentation
-- ✅ [EPIC_24_ADMIN_LIFECYCLE.md](../features/election-voting/EPIC_24_ADMIN_LIFECYCLE.md)
-- ✅ [EPIC_87_ELECTION_DISCOVERY.md](../features/election-voting/EPIC_87_ELECTION_DISCOVERY.md)
+- ✅ [EPIC_24_ADMIN_LIFECYCLE.md](../archive/features/election-voting/EPIC_24_ADMIN_LIFECYCLE.md) (archived)
+- ✅ [EPIC_87_ELECTION_DISCOVERY.md](../archive/features/election-voting/EPIC_87_ELECTION_DISCOVERY.md) (archived)
 - ✅ [EPIC_43_MEMBER_MANAGEMENT_SYSTEM.md](../features/election-voting/EPIC_43_MEMBER_MANAGEMENT_SYSTEM.md)
 
 ### Developer Guides
@@ -482,6 +482,6 @@ Epic #24 can now leverage Epic #87's infrastructure for admin UI development. Th
 
 ---
 
-**Last Updated**: 2025-10-22
+**Last Updated**: 2025-12-01
 **Author**: Phase 5 Planning (Opus + Haiku + Sonnet)
 **Next Review**: Epic #24 Week 1 completion

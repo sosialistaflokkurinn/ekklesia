@@ -10,13 +10,13 @@
  */
 
 import { initAuthenticatedPage } from '../../js/page-init.js';
-import { debug } from '../../js/utils/debug.js';
+import { debug } from '../../js/utils/util-debug.js';
 import { R } from '../i18n/strings-loader.js';
-import { getAdminElectionById } from '../../js/api/elections-api.js';
+import { getAdminElectionById } from '../../js/api/api-elections.js';
 import { closeElection } from './api/elections-admin-api.js';
 import { electionState } from '../../js/utils/election-state.js';
-import { createScheduleControl } from '../../js/components/schedule-control.js';
-import { createScheduleDisplay } from '../../js/components/schedule-display.js';
+import { createScheduleControl } from '../../js/components/election-schedule-control.js';
+import { createScheduleDisplay } from '../../js/components/election-schedule-display.js';
 
 /**
  * Get election ID from URL query parameter
@@ -125,6 +125,9 @@ async function init() {
   try {
     // Load i18n
     await R.load('is');
+    
+    // Translate elements with data-i18n attributes
+    R.translatePage();
 
     // Initialize authenticated page
     await initAuthenticatedPage();

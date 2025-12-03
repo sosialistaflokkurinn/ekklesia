@@ -83,7 +83,14 @@ h1 {
   --color-cream-light: #fff9f2; /* Lighter shade for cards */
   --color-cream-dark: #e6d0be;  /* Darker shade for borders */
 
-  /* Accent */
+  /* Accent - Burgundy/Wine (Borðóvín) */
+  --color-burgundy: #722f37;
+  --color-burgundy-light: #8b3d47;
+  --color-burgundy-dark: #5a252c;
+  --color-burgundy-alpha-30: rgba(114, 47, 55, 0.3);
+  --color-burgundy-alpha-50: rgba(114, 47, 55, 0.5);
+
+  /* Accent - Gold */
   --color-accent-gold: #f3b41b;
 
   /* Status colors */
@@ -183,6 +190,9 @@ h1 {
   --shadow-2xl: 0 20px 60px rgba(0, 0, 0, 0.3);
   --shadow-primary: 0 4px 12px rgba(249, 26, 29, 0.22);
   --shadow-primary-pressed: 0 3px 10px rgba(249, 26, 29, 0.2);
+  --shadow-burgundy: 0 4px 12px rgba(114, 47, 55, 0.25);
+  --shadow-burgundy-lg: 0 8px 24px rgba(114, 47, 55, 0.3);
+  --shadow-burgundy-glow: 0 0 20px rgba(114, 47, 55, 0.4);
   --shadow-success: 0 2px 4px rgba(76, 175, 80, 0.2);
   --shadow-info: 0 2px 4px rgba(33, 150, 243, 0.2);
 

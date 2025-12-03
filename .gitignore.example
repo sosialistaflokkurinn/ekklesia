@@ -84,7 +84,7 @@ archive/
 audits/
 
 # Symlink created by setup scripts
-services/members/public
+services/svc-members/public
 
 # Admin portal directories (content is built or managed elsewhere)
 public/admin/

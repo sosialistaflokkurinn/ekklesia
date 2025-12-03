@@ -10,12 +10,12 @@
 import { R } from '../../i18n/strings-loader.js';
 import { getFirebaseFirestore } from '../../firebase/app.js';
 import { doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-import { getCountriesSorted, getCountryFlag, getCountryCallingCode } from '../utils/countries.js';
-import { debug } from '../utils/debug.js';
-import { showToast } from '../components/toast.js';
-import { showStatus, createStatusIcon } from '../components/status.js';
-import { SearchableSelect } from '../components/searchable-select.js';
-import { el } from '../utils/dom.js';
+import { getCountriesSorted, getCountryFlag, getCountryCallingCode } from '../utils/util-countries.js';
+import { debug } from '../utils/util-debug.js';
+import { showToast } from '../components/ui-toast.js';
+import { showStatus, createStatusIcon } from '../components/ui-status.js';
+import { SearchableSelect } from '../components/ui-searchable-select.js';
+import { el } from '../utils/util-dom.js';
 
 /**
  * Expand collapsible section helper

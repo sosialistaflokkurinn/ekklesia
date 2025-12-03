@@ -1,5 +1,11 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
+  <!-- Page Loading/Error -->
+  <string name="loading_session">Hleður stefnumótunarfund...</string>
+  <string name="error_load_session">Ekki tókst að sækja stefnumótunarfund</string>
+  <string name="back_to_dashboard">Aftur á félagsvef</string>
+  
+  <!-- Amendment Form -->
   <string name="amendment_submit">Senda inn breytingatillögu</string>
   <string name="amendment_submitting">Sendir inn...</string>
   <string name="amendment_section_label">Veldu kafla til að breyta:</string>

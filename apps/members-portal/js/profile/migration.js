@@ -11,8 +11,8 @@
  * @module profile/migration
  */
 
-import { debug } from '../utils/debug.js';
-import { getCountriesSorted, getCountryCallingCode } from '../utils/countries.js';
+import { debug } from '../utils/util-debug.js';
+import { getCountriesSorted, getCountryCallingCode } from '../utils/util-countries.js';
 
 /**
  * Migrate old phone fields to phone_numbers array

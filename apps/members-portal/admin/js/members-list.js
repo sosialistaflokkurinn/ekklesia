@@ -12,15 +12,15 @@
 // Import from member portal public directory
 import { initSession } from '../../session/init.js';
 import { initNavigation } from '../../js/nav-interactions.js';
-import { debug } from '../../js/utils/debug.js';
+import { debug } from '../../js/utils/util-debug.js';
 import { R } from '../../i18n/strings-loader.js';
 import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
 import MembersAPI from './api/members-api.js';
-import { formatPhone, maskKennitala } from '../../js/utils/format.js';
+import { formatPhone, maskKennitala } from '../../js/utils/util-format.js';
 import { filterMembersByDistrict, getElectoralDistrictName } from './utils/electoral-districts.js';
-import { el } from '../../js/utils/dom.js';
+import { el } from '../../js/utils/util-dom.js';
 import { createListPageStates } from './utils/ui-states.js';
-import { initSearchableSelects } from '../../js/components/searchable-select.js';
+import { initSearchableSelects } from '../../js/components/ui-searchable-select.js';
 
 // Initialize Firebase services
 const auth = getFirebaseAuth();

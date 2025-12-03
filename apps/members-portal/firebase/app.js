@@ -10,22 +10,19 @@
  * - Easier to mock for testing
  * - Centralized Firebase configuration
  * - Explicit service dependencies
+ * - LAZY App Check loading (saves ~1,500ms on initial page load)
  *
  * @module firebase/app
  */
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { debug } from '../js/utils/debug.js';
+import { debug } from '../js/utils/util-debug.js';
 import {
   getAuth,
   onAuthStateChanged,
   signOut as firebaseSignOut
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import {
-  initializeAppCheck,
-  ReCaptchaEnterpriseProvider,
-  getToken as getAppCheckToken
-} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app-check.js';
+// App Check is now loaded lazily - see initAppCheckLazy()
 import {
   getFunctions as firebaseGetFunctions,
   httpsCallable as firebaseHttpsCallable
@@ -50,18 +47,53 @@ const firebaseConfig = {
 // Initialize Firebase (singleton)
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firebase App Check with reCAPTCHA Enterprise
+// App Check - LAZY LOADED for performance
+// reCAPTCHA Enterprise SDK is ~355KB and takes ~1,500ms to initialize
+// We only load it when actually needed (first Cloud Function call)
 // Site Key: 6LfDgOgrAAAAAIKly84yNibZNZsEGD31PnFQLYpM
 // See: docs/security/FIREBASE_APP_CHECK_SETUP.md
 let appCheck = null;
-try {
-  appCheck = initializeAppCheck(app, {
-    provider: new ReCaptchaEnterpriseProvider('6LfDgOgrAAAAAIKly84yNibZNZsEGD31PnFQLYpM'),
-    isTokenAutoRefreshEnabled: true
-  });
-  debug.log('✅ Firebase App Check initialized (reCAPTCHA Enterprise)');
-} catch (error) {
-  debug.warn('⚠️ Firebase App Check initialization failed (will degrade gracefully):', error);
+let appCheckInitPromise = null;
+let appCheckModule = null;
+
+/**
+ * Lazily initialize App Check
+ * Only loads reCAPTCHA SDK when first token is needed
+ * 
+ * @returns {Promise<Object|null>} App Check instance
+ */
+async function initAppCheckLazy() {
+  // Already initialized
+  if (appCheck) return appCheck;
+  
+  // Initialization in progress - wait for it
+  if (appCheckInitPromise) return appCheckInitPromise;
+  
+  // Start lazy initialization
+  appCheckInitPromise = (async () => {
+    try {
+      debug.log('🔄 Lazy loading App Check (reCAPTCHA Enterprise)...');
+      const startTime = performance.now();
+      
+      // Dynamically import App Check module
+      appCheckModule = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-check.js');
+      
+      appCheck = appCheckModule.initializeAppCheck(app, {
+        provider: new appCheckModule.ReCaptchaEnterpriseProvider('6LfDgOgrAAAAAIKly84yNibZNZsEGD31PnFQLYpM'),
+        isTokenAutoRefreshEnabled: true
+      });
+      
+      const elapsed = performance.now() - startTime;
+      debug.log(`✅ Firebase App Check initialized (${elapsed.toFixed(0)}ms)`);
+      return appCheck;
+    } catch (error) {
+      debug.warn('⚠️ Firebase App Check initialization failed (will degrade gracefully):', error);
+      appCheckInitPromise = null; // Allow retry
+      return null;
+    }
+  })();
+  
+  return appCheckInitPromise;
 }
 
 /**
@@ -118,27 +150,32 @@ export function httpsCallable(name, region) {
 
 /**
  * Get Firebase App Check instance
+ * Now lazily initializes App Check if not already done
  *
- * @returns {Object|null} App Check instance or null if not initialized
+ * @returns {Promise<Object|null>} App Check instance or null if not initialized
  */
-export function getFirebaseAppCheck() {
-  return appCheck;
+export async function getFirebaseAppCheck() {
+  return await initAppCheckLazy();
 }
 
 /**
  * Get App Check token
+ * Lazily initializes App Check on first call
  *
  * @param {boolean} forceRefresh - Force token refresh
  * @returns {Promise<string|null>} App Check token or null if unavailable
  */
 export async function getAppCheckTokenValue(forceRefresh = false) {
-  if (!appCheck) {
+  // Lazily initialize App Check
+  const appCheckInstance = await initAppCheckLazy();
+  
+  if (!appCheckInstance || !appCheckModule) {
     debug.warn('App Check not initialized, requests will not include App Check token');
     return null;
   }
 
   try {
-    const tokenResponse = await getAppCheckToken(appCheck, forceRefresh);
+    const tokenResponse = await appCheckModule.getToken(appCheckInstance, forceRefresh);
     return tokenResponse.token;
   } catch (error) {
     debug.error('Failed to get App Check token:', error);

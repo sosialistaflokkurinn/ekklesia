@@ -18,7 +18,7 @@
  */
 
 import { getFirebaseAuth } from '../../firebase/app.js';
-import { debug } from '../utils/debug.js';
+import { debug } from '../utils/util-debug.js';
 
 /**
  * Custom error for API request failures

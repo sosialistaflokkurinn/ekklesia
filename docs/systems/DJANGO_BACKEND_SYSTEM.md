@@ -1,23 +1,23 @@
 ---
 title: "Django Backend System Documentation"
 created: 2025-11-06
-updated: 2025-11-24
+updated: 2025-12-01
 status: active
 category: systems
 tags: [django, backend, api, postgresql, membership, rest-api]
 related:
   - ../infrastructure/CLOUD_RUN_SERVICES.md
   - ../integration/DJANGO_API_IMPLEMENTATION.md
-  - ../integration/BIDIRECTIONAL_SYNC.md
+  - ../integration/DJANGO_DATABASE_SCHEMA.md
 author: Backend Team
-next_review: 2026-02-24
+next_review: 2026-03-01
 ---
 
 # Django Backend System Documentation
 
 **Document Type**: System Reference
-**Last Updated**: 2025-10-28
-**Status**: ✅ Active - Deployed System (Beta)
+**Last Updated**: 2025-12-01
+**Status**: ✅ Active - Deployed System
 **Purpose**: Complete documentation of the Django membership management backend
 
 ---
@@ -32,7 +32,7 @@ The Django backend system is the **source of truth** for Sósíalistaflokkur Ís
 - **Domain**: https://starf.sosialistaflokkurinn.is
 - **Database**: [PostgreSQL](https://www.postgresql.org/) (database name: `socialism`)
 - **Web Server**: [Nginx](https://nginx.org/) + [Gunicorn](https://gunicorn.org/) (Unix socket)
-- **Current Members**: 2,107 active members (as of 2025-10-28)
+- **Current Members**: 2,113 active members (as of December 2025)
 
 ---
 

@@ -7,7 +7,7 @@
  */
 
 import { R } from '/i18n/strings-loader.js';
-import { debug } from './utils/debug.js';
+import { debug } from './utils/util-debug.js';
 import { getCurrentUser, auth, appCheck } from '/js/auth.js';
 import {
   signInWithCustomToken,

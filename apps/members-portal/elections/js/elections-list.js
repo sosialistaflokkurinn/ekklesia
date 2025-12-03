@@ -10,11 +10,11 @@
  */
 
 import { initAuthenticatedPage } from '../../js/page-init.js';
-import { debug } from '../../js/utils/debug.js';
+import { debug } from '../../js/utils/util-debug.js';
 import { R } from '../i18n/strings-loader.js';
-import { getElections } from '../../js/api/elections-api.js';
-import { escapeHTML } from '../../js/utils/format.js';
-import { createButton } from '../../js/components/button.js';
+import { getElections } from '../../js/api/api-elections.js';
+import { escapeHTML } from '../../js/utils/util-format.js';
+import { createButton } from '../../js/components/ui-button.js';
 import { setTextContentOptional, showElement, hideElement } from '../../ui/dom.js';
 
 // State
@@ -37,6 +37,9 @@ async function init() {
   try {
     // Load i18n strings
     await R.load('is');
+    
+    // Translate elements with data-i18n attributes
+    R.translatePage();
 
     // Initialize authenticated page (header, navigation, auth check)
     // Note: This updates nav-brand, nav-dashboard, nav-profile, and nav-logout

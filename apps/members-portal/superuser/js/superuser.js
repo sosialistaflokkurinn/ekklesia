@@ -1,0 +1,254 @@
+/**
+ * Superuser Dashboard - Phase 1 Foundation
+ *
+ * Main superuser console page with role-based access control.
+ * Only users with 'superuser' role can access this console.
+ */
+
+// Import from member portal public directory
+import { initSession } from '../../session/init.js';
+import { debug } from '../../js/utils/util-debug.js';
+import { getFirebaseAuth, getFunctions } from '../../firebase/app.js';
+import { superuserStrings } from './i18n/superuser-strings-loader.js';
+import { requireSuperuser } from '../../js/rbac.js';
+import { R } from '../../i18n/strings-loader.js';
+import { httpsCallable } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js';
+
+// Initialize Firebase services
+const auth = getFirebaseAuth();
+
+/**
+ * Escape HTML to prevent XSS
+ */
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+/**
+ * Build welcome message with proper Icelandic grammar
+ */
+function buildWelcomeMessage(displayName, strings) {
+  const fallbackName = superuserStrings.get('superuser_fallback_name');
+  const rawName = (displayName || fallbackName).trim();
+  const parts = rawName.split(/\s+/);
+  const lastPart = parts.length ? parts[parts.length - 1] : '';
+  const normalizedLast = lastPart
+    ? lastPart.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()
+    : '';
+
+  let template = strings.superuser_welcome_neutral;
+  if (normalizedLast.endsWith('son')) {
+    template = strings.superuser_welcome_male;
+  } else if (normalizedLast.endsWith('dottir')) {
+    template = strings.superuser_welcome_female;
+  }
+
+  return template.replace('%s', rawName);
+}
+
+/**
+ * Render role badges HTML
+ */
+function renderRoleBadges(roles) {
+  const normalizedRoles = Array.isArray(roles) ? roles.filter(Boolean) : [];
+  if (normalizedRoles.length === 0) {
+    return '';
+  }
+
+  const badges = normalizedRoles.map((role) => {
+    const key = `role_badge_${role}`;
+    const label = R.string[key] || role;
+
+    // Create a class modifier for each role type
+    let roleClass = 'role-badge--member';
+    if (role === 'superuser') {
+      roleClass = 'role-badge--superuser';
+    } else if (role === 'admin') {
+      roleClass = 'role-badge--admin';
+    }
+    return `<span class="role-badge ${roleClass}">${escapeHtml(label)}</span>`;
+  }).join('');
+
+  return badges;
+}
+
+/**
+ * Update role badges display
+ */
+function updateRoleBadges(roles) {
+  const container = document.getElementById('role-badges');
+  if (!container) {
+    return;
+  }
+
+  const html = renderRoleBadges(roles);
+  if (!html) {
+    container.innerHTML = '';
+    container.classList.add('u-hidden');
+    return;
+  }
+
+  container.innerHTML = html;
+  container.classList.remove('u-hidden');
+}
+
+/**
+ * Update system status display
+ */
+function updateSystemStatus(status, strings) {
+  const indicator = document.querySelector('.system-status__indicator');
+  const text = document.getElementById('system-status-text');
+
+  if (!indicator || !text) return;
+
+  // Remove all status classes
+  indicator.classList.remove(
+    'system-status__indicator--loading',
+    'system-status__indicator--healthy',
+    'system-status__indicator--degraded',
+    'system-status__indicator--down'
+  );
+
+  switch (status) {
+    case 'healthy':
+      indicator.classList.add('system-status__indicator--healthy');
+      text.textContent = strings.system_status_healthy;
+      break;
+    case 'degraded':
+      indicator.classList.add('system-status__indicator--degraded');
+      text.textContent = strings.system_status_degraded;
+      break;
+    case 'down':
+      indicator.classList.add('system-status__indicator--down');
+      text.textContent = strings.system_status_down;
+      break;
+    default:
+      indicator.classList.add('system-status__indicator--loading');
+      text.textContent = strings.system_status_loading;
+  }
+}
+
+/**
+ * Set page text from superuser strings
+ */
+function setPageText(strings, userData) {
+  // Page title
+  document.getElementById('page-title').textContent = strings.superuser_dashboard_title;
+
+  // Welcome card - with personalized greeting
+  debug.log('Building welcome message for:', userData.displayName);
+  const welcomeMessage = buildWelcomeMessage(userData.displayName, strings);
+  debug.log('Welcome message result:', welcomeMessage);
+  document.getElementById('superuser-welcome-title').textContent = welcomeMessage;
+  document.getElementById('superuser-welcome-subtitle').textContent = strings.superuser_welcome_subtitle;
+
+  // Role badges
+  updateRoleBadges(userData.roles);
+
+  // Quick actions
+  document.getElementById('superuser-actions-title').textContent = strings.superuser_actions_title;
+  document.getElementById('quick-action-roles-label').textContent = strings.quick_action_roles_label;
+  document.getElementById('quick-action-roles-desc').textContent = strings.quick_action_roles_desc;
+  document.getElementById('quick-action-audit-logs-label').textContent = strings.quick_action_audit_logs_label;
+  document.getElementById('quick-action-audit-logs-desc').textContent = strings.quick_action_audit_logs_desc;
+  document.getElementById('quick-action-dangerous-ops-label').textContent = strings.quick_action_dangerous_ops_label;
+  document.getElementById('quick-action-dangerous-ops-desc').textContent = strings.quick_action_dangerous_ops_desc;
+  document.getElementById('quick-action-system-health-label').textContent = strings.quick_action_system_health_label;
+  document.getElementById('quick-action-system-health-desc').textContent = strings.quick_action_system_health_desc;
+  document.getElementById('quick-action-login-audit-label').textContent = strings.quick_action_login_audit_label;
+  document.getElementById('quick-action-login-audit-desc').textContent = strings.quick_action_login_audit_desc;
+
+  // System status
+  document.getElementById('system-status-title').textContent = strings.system_status_title;
+
+  // Set initial status to loading (will be updated by actual health check)
+  updateSystemStatus('loading', strings);
+}
+
+/**
+ * Check system health using Cloud Function
+ */
+async function checkSystemHealthQuick(strings) {
+  try {
+    const functions = getFunctions('europe-west2');
+    const checkSystemHealth = httpsCallable(functions, 'checkSystemHealth');
+
+    const result = await checkSystemHealth();
+    const healthData = result.data;
+
+    debug.log('Quick health check result:', healthData);
+
+    // Determine overall status from summary
+    const summary = healthData.summary || {};
+    let overallStatus = 'healthy';
+
+    if (summary.down > 0) {
+      overallStatus = 'down';
+    } else if (summary.degraded > 0) {
+      overallStatus = 'degraded';
+    }
+
+    updateSystemStatus(overallStatus, strings);
+
+  } catch (error) {
+    debug.error('Error checking system health:', error);
+    // On error, show degraded status
+    updateSystemStatus('degraded', strings);
+  }
+}
+
+/**
+ * Initialize superuser dashboard
+ */
+async function init() {
+  try {
+    // 1. Load superuser strings
+    const strings = await superuserStrings.load();
+
+    // 2. Init session (loads member portal strings + authenticates)
+    const { user, userData } = await initSession();
+
+    debug.log('userData from initSession:', userData);
+    debug.log('userData.roles:', userData.roles);
+
+    // 3. Check superuser access using unified RBAC (requires superuser only)
+    await requireSuperuser();
+
+    // 4. Set page text (with personalized greeting)
+    setPageText(strings, userData);
+
+    // 5. Check system health in background (don't block page load)
+    checkSystemHealthQuick(strings);
+
+    debug.log('Superuser dashboard initialized');
+
+  } catch (error) {
+    debug.error('Failed to initialize superuser dashboard:', error);
+
+    // Check if unauthorized (requireSuperuser already redirects, but handle edge cases)
+    if (error.message.includes('Unauthorized') || error.message.includes('Superuser role required')) {
+      alert(superuserStrings.get('error_unauthorized_superuser'));
+      window.location.href = '/members-area/';
+      return;
+    }
+
+    // Check if not authenticated
+    if (error.message.includes('Not authenticated')) {
+      window.location.href = '/';
+      return;
+    }
+
+    // Other errors
+    debug.error('Error loading superuser dashboard:', error);
+    alert(superuserStrings.get('error_page_load').replace('%s', error.message));
+  }
+}
+
+// Run on page load
+init();

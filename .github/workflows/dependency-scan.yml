@@ -35,10 +35,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '20'
           cache: 'npm'
@@ -70,7 +70,7 @@ jobs:
 
       - name: Upload audit results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: npm-audit-${{ matrix.service }}
           path: services/${{ matrix.service }}/npm-audit.json
@@ -83,14 +83,14 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
-          cache-dependency-path: 'services/members/functions/requirements.txt'
+          cache-dependency-path: 'services/svc-members/functions/requirements.txt'
 
       - name: Install pip-audit
         run: |
@@ -101,7 +101,7 @@ jobs:
         run: |
           echo "🔍 Running pip-audit for members service..."
           pip-audit --desc --requirement requirements.txt --format json > pip-audit.json || true
-        working-directory: ./services/members/functions
+        working-directory: ./services/svc-members/functions
         continue-on-error: true
 
       - name: Check for vulnerabilities
@@ -115,12 +115,12 @@ jobs:
               echo "✅ No vulnerabilities found in Python dependencies"
             fi
           fi
-        working-directory: ./services/members/functions
+        working-directory: ./services/svc-members/functions
 
       - name: Upload audit results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: pip-audit-results
-          path: services/members/functions/pip-audit.json
+          path: services/svc-members/functions/pip-audit.json
           retention-days: 30

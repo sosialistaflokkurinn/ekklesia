@@ -1,7 +1,7 @@
 # Ekklesia Operational Procedures - Meeting Day
 
 **Document Type**: Operations Manual
-**Last Updated**: 2025-11-09
+**Last Updated**: 2025-12-01
 **Status**: ✅ Active - Required for Meeting Operations
 **Purpose**: Step-by-step procedures for preparing, running, and shutting down the system for meetings
 
@@ -17,35 +17,38 @@ The Ekklesia system is designed for **infrequent, high-load events** (monthly me
 
 **Philosophy**: It's **completely justified** to manually prepare the system before meetings and scale down afterward. Monthly meetings don't require 24/7 high availability.
 
-## System Status (Nov 10, 2025)
+## System Status (December 2025)
 
-✅ **Phase 5 Core Features Complete**:
-- ✅ Admin Elections API - 10 endpoints with RBAC (election-manager, superadmin)
+✅ **Infrastructure Complete**:
+- ✅ **22 Cloud Run services** deployed (see [CLOUD_RUN_SERVICES.md](../infrastructure/CLOUD_RUN_SERVICES.md))
+- ✅ **Real-time sync** - Django ↔ Firestore bidirectional (immediate, not hourly)
+- ✅ **Superuser Console** - System health, audit logs, role management
+- ✅ **GDPR Compliance** - Hard delete and anonymize member functions
+- ✅ Admin Elections API - 10 endpoints with RBAC
 - ✅ Member Voting Interface - Complete voting experience
-- ✅ Bidirectional Sync - Django ↔ Firestore member synchronization
-- ✅ Policy Session - Immigration policy voting with amendments
-- ✅ Project Reorganization - Area-based architecture (/elections/, /events/, /policy-session/)
-- ✅ Documentation Automation - 3-layer maintenance system
-- ✅ Secret Manager Standardization - Unified secret management across all 13 Cloud Run services
-- ✅ Navigation & Accessibility - Logout redirect and WCAG compliance fixes
+- ✅ Kenni.is SSO Authentication - National eID integration
 
-✅ **End-to-end voting flow validated** (Oct 15, 2025):
+✅ **End-to-end voting flow validated**:
 - All services working together
 - Complete voting flow (authentication → token → vote → results)
 - Anonymous voting verified
 - One-time token enforcement working
 - Performance excellent (<500ms response times)
 
-**Recent Updates (Nov 2025)**:
-- Admin API deployed with 10 endpoints
-- Member sync infrastructure operational (hourly Django → Firestore, daily Firestore → Django)
-- Critical sync bugs fixed (composite index, queue marking)
-- Firestore composite index created for sync_queue
-- Secret Manager unified across all Cloud Functions (environment variable injection)
-- Navigation UX improvements (logout redirect, aria-hidden accessibility fix)
-- Infrastructure documentation updated (13 Cloud Run services documented)
+**System Monitoring**:
+- **Superuser Console**: https://ekklesia-prod-10-2025.web.app/superuser/system-health.html
+- Shows all 22 Cloud Run services status in real-time
+- Firestore, Cloud SQL, and Django connectivity checks
 
-**Remaining**: Load testing (300 votes/sec spike), Integration testing, Production security review
+**Key Services**:
+| Service | Purpose | URL Format |
+|---------|---------|------------|
+| elections-service | Voting and ballot management | `*-521240388393.europe-west2.run.app` |
+| events-service | Event/meeting management | `*-521240388393.europe-west2.run.app` |
+| sync-from-django | Real-time Django → Firestore | `*-521240388393.europe-west2.run.app` |
+| checksystemhealth | System health API | `*-521240388393.europe-west2.run.app` |
+
+**Remaining**: Load testing (300 votes/sec spike), Production security review
 
 ---
 
@@ -117,14 +120,20 @@ gcloud sql operations list \
 
 #### Step 3: Verify Services Are Healthy
 
+**Option A: Use Superuser Console (Recommended)**
+1. Open https://ekklesia-prod-10-2025.web.app/superuser/system-health.html
+2. Click "Uppfæra" (Refresh)
+3. Verify all services show green status
+
+**Option B: Manual Health Checks**
 ```bash
 # Check Events service
-curl -s https://events-service-ymzrguoifa-nw.a.run.app/health | jq
+curl -s https://events-service-521240388393.europe-west2.run.app/health | jq
 
 # Check Elections service
-curl -s https://elections-service-ymzrguoifa-nw.a.run.app/health | jq
+curl -s https://elections-service-521240388393.europe-west2.run.app/health | jq
 
-# Check Members service
+# Check Members portal
 curl -s https://ekklesia-prod-10-2025.web.app/
 ```
 
@@ -223,12 +232,12 @@ gcloud sql instances describe ekklesia-db \
 
 **Emergency Recovery**:
 ```bash
-# Redeploy Elections service (if deployed)
-cd /home/gudro/Development/projects/ekklesia/elections
+# Redeploy Elections service
+cd /home/gudro/Development/projects/ekklesia/services/elections
 ./deploy.sh
 
 # Or redeploy Events service
-cd /home/gudro/Development/projects/ekklesia/events
+cd /home/gudro/Development/projects/ekklesia/services/events
 ./deploy.sh
 ```
 
@@ -674,6 +683,6 @@ gcloud alpha monitoring policies create \
 
 ---
 
-**Last Updated**: 2025-11-09
+**Last Updated**: 2025-12-01
 **Status**: ✅ Active - Required for all meetings
-**Next Review**: After first 3 meetings (validate assumptions)
+**Next Review**: 2026-03-01 (Quarterly)

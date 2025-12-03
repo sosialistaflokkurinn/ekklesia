@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title" data-i18n="login_page_title">Innskráningarsaga - Kerfisstjórn</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+  <!-- Reuse member portal styles -->
+  <link rel="stylesheet" href="/styles/bundle.css?v=20251202">
+
+  <!-- Superuser-specific styles -->
+  <link rel="stylesheet" href="/superuser/styles/superuser.css?v=20251201d">
+</head>
+<body class="authenticated superuser">
+  <!-- Navigation component inserted here -->
+
+  <!-- Page Content -->
+  <div class="page__container">
+    <!-- Header Card -->
+    <div class="card">
+      <div class="health-header">
+        <div>
+          <h1 class="card__title" data-i18n="login_title">Innskráningarsaga</h1>
+          <p class="card__description" data-i18n="login_desc">Yfirlit yfir innskráningar og villur.</p>
+        </div>
+        <button type="button" class="btn btn--outline" id="refresh-btn" data-i18n="btn_update">
+          Uppfæra
+        </button>
+      </div>
+
+      <!-- Summary Stats -->
+      <div class="login-audit-stats" id="login-stats">
+        <div class="login-audit-stat">
+          <span class="login-audit-stat__value" id="stat-total">-</span>
+          <span class="login-audit-stat__label" data-i18n="login_stat_total">Samtals í dag</span>
+        </div>
+        <div class="login-audit-stat">
+          <span class="login-audit-stat__value login-audit-stat__value--success" id="stat-success">-</span>
+          <span class="login-audit-stat__label" data-i18n="login_stat_success">Vel heppnaðar</span>
+        </div>
+        <div class="login-audit-stat">
+          <span class="login-audit-stat__value login-audit-stat__value--failed" id="stat-failed">-</span>
+          <span class="login-audit-stat__label" data-i18n="login_stat_failed">Villur</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters Card -->
+    <div class="card">
+      <h2 class="card__title" data-i18n="login_filter_title">Síur</h2>
+
+      <div class="login-audit-filters">
+        <div class="form__group">
+          <label class="form__label" for="filter-status" data-i18n="login_filter_status">Staða</label>
+          <select id="filter-status" class="form__select">
+            <option value="all" data-i18n="login_filter_all">Allar</option>
+            <option value="success" data-i18n="login_filter_success">Vel heppnaðar</option>
+            <option value="failed" data-i18n="login_filter_failed">Villur</option>
+          </select>
+        </div>
+
+        <div class="form__group">
+          <label class="form__label" for="filter-hours" data-i18n="audit_filter_period">Tímabil</label>
+          <select id="filter-hours" class="form__select">
+            <option value="1" data-i18n="audit_filter_1h">Síðustu klukkustund</option>
+            <option value="6" data-i18n="audit_filter_6h">Síðustu 6 klukkustundir</option>
+            <option value="24" selected data-i18n="audit_filter_24h">Síðasta sólarhringinn</option>
+            <option value="168" data-i18n="audit_filter_1w">Síðustu viku</option>
+          </select>
+        </div>
+
+        <div class="form__group form__group--wide">
+          <label class="form__label" for="filter-user" data-i18n="login_filter_user">Notandi</label>
+          <input type="text" id="filter-user" class="form__input" data-i18n-placeholder="login_filter_user_placeholder" placeholder="Leita eftir nafni eða netfangi...">
+        </div>
+
+        <button type="button" class="btn btn--primary" id="search-btn" data-i18n="btn_search">
+          Leita
+        </button>
+      </div>
+    </div>
+
+    <!-- Results Card -->
+    <div class="card">
+      <div class="audit-results__header">
+        <h2 class="card__title" data-i18n="login_results_title">Innskráningar</h2>
+        <span class="audit-results__count" id="results-count">-</span>
+      </div>
+
+      <div class="login-audit-results" id="login-results">
+        <div class="audit-placeholder">
+          <p data-i18n="login_results_placeholder">Smelltu á "Leita" til að sækja innskráningar.</p>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="audit-pagination u-hidden" id="pagination">
+        <button type="button" class="btn btn--outline btn--sm" id="prev-btn" disabled data-i18n="audit_prev_btn">
+          ← Fyrri
+        </button>
+        <span class="audit-pagination__info" id="page-info">Síða 1</span>
+        <button type="button" class="btn btn--outline btn--sm" id="next-btn" disabled data-i18n="audit_next_btn">
+          Næsta →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/superuser/js/login-audit.js?v=20251201"></script>
+
+  <!-- Initialize Navigation Component -->
+  <script type="module">
+    import { initNavHeader, NAV_CONFIGS } from '../ui/components/navigation-bar.js?v=20251201';
+    await initNavHeader(NAV_CONFIGS.superuserLoginAudit);
+  </script>
+
+</body>
+</html>

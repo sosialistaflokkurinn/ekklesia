@@ -496,5 +496,157 @@ export const NAV_CONFIGS = {
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
+  },
+
+  // ==========================================
+  // SUPERUSER AREA CONFIGURATIONS
+  // ==========================================
+
+  /**
+   * Superuser Console Dashboard
+   * Shows "Kerfisstjórn" for context
+   * Requires superuser role (custom claim)
+   */
+  superuser: {
+    brand: {
+      href: '/superuser/',
+      textKey: 'nav_superuser'  // "Kerfisstjórn"
+    },
+    links: [
+      { href: '/superuser/', textKey: 'nav_superuser_overview' },
+      { href: '/superuser/roles.html', textKey: 'nav_superuser_roles' },
+      { href: '/superuser/audit-logs.html', textKey: 'nav_superuser_audit_logs' },
+      { href: '/superuser/dangerous-ops.html', textKey: 'nav_superuser_dangerous_ops' },
+      { href: '/superuser/system-health.html', textKey: 'nav_superuser_system_health' },
+      { href: '/superuser/architecture.html', textKey: 'nav_superuser_architecture' },
+      { href: '/superuser/login-audit.html', textKey: 'nav_superuser_login_audit' },
+      { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
+    ]
+  },
+
+  /**
+   * Superuser Role Management
+   * Shows "Hlutverk" for context
+   */
+  superuserRoles: {
+    brand: {
+      href: '/superuser/',
+      textKey: 'nav_superuser_roles'  // "Hlutverk"
+    },
+    links: [
+      { href: '/superuser/', textKey: 'nav_superuser_overview' },
+      { href: '/superuser/roles.html', textKey: 'nav_superuser_roles' },
+      { href: '/superuser/audit-logs.html', textKey: 'nav_superuser_audit_logs' },
+      { href: '/superuser/dangerous-ops.html', textKey: 'nav_superuser_dangerous_ops' },
+      { href: '/superuser/system-health.html', textKey: 'nav_superuser_system_health' },
+      { href: '/superuser/architecture.html', textKey: 'nav_superuser_architecture' },
+      { href: '/superuser/login-audit.html', textKey: 'nav_superuser_login_audit' },
+      { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
+    ]
+  },
+
+  /**
+   * Superuser Audit Logs
+   * Shows "Atburðaskrá" for context
+   */
+  superuserAuditLogs: {
+    brand: {
+      href: '/superuser/',
+      textKey: 'nav_superuser_audit_logs'  // "Atburðaskrá"
+    },
+    links: [
+      { href: '/superuser/', textKey: 'nav_superuser_overview' },
+      { href: '/superuser/roles.html', textKey: 'nav_superuser_roles' },
+      { href: '/superuser/audit-logs.html', textKey: 'nav_superuser_audit_logs' },
+      { href: '/superuser/dangerous-ops.html', textKey: 'nav_superuser_dangerous_ops' },
+      { href: '/superuser/system-health.html', textKey: 'nav_superuser_system_health' },
+      { href: '/superuser/architecture.html', textKey: 'nav_superuser_architecture' },
+      { href: '/superuser/login-audit.html', textKey: 'nav_superuser_login_audit' },
+      { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
+    ]
+  },
+
+  /**
+   * Superuser Dangerous Operations
+   * Shows "Varasamar aðgerðir" for context
+   */
+  superuserDangerousOps: {
+    brand: {
+      href: '/superuser/',
+      textKey: 'nav_superuser_dangerous_ops'  // "Varasamar aðgerðir"
+    },
+    links: [
+      { href: '/superuser/', textKey: 'nav_superuser_overview' },
+      { href: '/superuser/roles.html', textKey: 'nav_superuser_roles' },
+      { href: '/superuser/audit-logs.html', textKey: 'nav_superuser_audit_logs' },
+      { href: '/superuser/dangerous-ops.html', textKey: 'nav_superuser_dangerous_ops' },
+      { href: '/superuser/system-health.html', textKey: 'nav_superuser_system_health' },
+      { href: '/superuser/architecture.html', textKey: 'nav_superuser_architecture' },
+      { href: '/superuser/login-audit.html', textKey: 'nav_superuser_login_audit' },
+      { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
+    ]
+  },
+
+  /**
+   * Superuser System Health
+   * Shows "Heilbrigði kerfis" for context
+   */
+  superuserSystemHealth: {
+    brand: {
+      href: '/superuser/',
+      textKey: 'nav_superuser_system_health'  // "Heilbrigði kerfis"
+    },
+    links: [
+      { href: '/superuser/', textKey: 'nav_superuser_overview' },
+      { href: '/superuser/roles.html', textKey: 'nav_superuser_roles' },
+      { href: '/superuser/audit-logs.html', textKey: 'nav_superuser_audit_logs' },
+      { href: '/superuser/dangerous-ops.html', textKey: 'nav_superuser_dangerous_ops' },
+      { href: '/superuser/system-health.html', textKey: 'nav_superuser_system_health' },
+      { href: '/superuser/architecture.html', textKey: 'nav_superuser_architecture' },
+      { href: '/superuser/login-audit.html', textKey: 'nav_superuser_login_audit' },
+      { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
+    ]
+  },
+
+  /**
+   * Superuser Login Audit
+   * Shows "Innskráningarsaga" for context
+   */
+  superuserLoginAudit: {
+    brand: {
+      href: '/superuser/',
+      textKey: 'nav_superuser_login_audit'  // "Innskráningarsaga"
+    },
+    links: [
+      { href: '/superuser/', textKey: 'nav_superuser_overview' },
+      { href: '/superuser/roles.html', textKey: 'nav_superuser_roles' },
+      { href: '/superuser/audit-logs.html', textKey: 'nav_superuser_audit_logs' },
+      { href: '/superuser/dangerous-ops.html', textKey: 'nav_superuser_dangerous_ops' },
+      { href: '/superuser/system-health.html', textKey: 'nav_superuser_system_health' },
+      { href: '/superuser/architecture.html', textKey: 'nav_superuser_architecture' },
+      { href: '/superuser/login-audit.html', textKey: 'nav_superuser_login_audit' },
+      { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
+    ]
+  },
+
+  /**
+   * Superuser Architecture Diagram
+   * Shows "Kerfisarkitektúr" for context
+   */
+  superuserArchitecture: {
+    brand: {
+      href: '/superuser/',
+      textKey: 'nav_superuser_architecture'  // "Kerfisarkitektúr"
+    },
+    links: [
+      { href: '/superuser/', textKey: 'nav_superuser_overview' },
+      { href: '/superuser/roles.html', textKey: 'nav_superuser_roles' },
+      { href: '/superuser/audit-logs.html', textKey: 'nav_superuser_audit_logs' },
+      { href: '/superuser/dangerous-ops.html', textKey: 'nav_superuser_dangerous_ops' },
+      { href: '/superuser/system-health.html', textKey: 'nav_superuser_system_health' },
+      { href: '/superuser/architecture.html', textKey: 'nav_superuser_architecture' },
+      { href: '/superuser/login-audit.html', textKey: 'nav_superuser_login_audit' },
+      { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
+    ]
   }
 };

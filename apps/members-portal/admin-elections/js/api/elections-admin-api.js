@@ -6,8 +6,8 @@
  */
 
 import { R } from '../../i18n/strings-loader.js';
-import { debug } from '../../../js/utils/debug.js';
-import { showModal } from '../../../js/components/modal.js';
+import { debug } from '../../../js/utils/util-debug.js';
+import { showModal } from '../../../js/components/ui-modal.js';
 import { getFirebaseAuth } from '../../../firebase/app.js';
 
 const auth = getFirebaseAuth();
@@ -101,9 +101,9 @@ async function handleErrorResponse(response, defaultMessage) {
   // Show user-friendly error modal
   const errorMessage = errorData.message || errorData.error || defaultMessage;
   await showModal({
-    title: '❌ Villa',
-    message: `<p><strong>Ekki tókst að framkvæma aðgerð.</strong></p><p>${errorMessage}</p>`,
-    confirmText: 'Loka',
+    title: `❌ ${R.string.error_message || 'Villa'}`,
+    message: `<p><strong>${R.string.error_action_failed || 'Ekki tókst að framkvæma aðgerð.'}</strong></p><p>${errorMessage}</p>`,
+    confirmText: R.string.modal_close_aria || 'Loka',
     showCancel: false
   });
   
