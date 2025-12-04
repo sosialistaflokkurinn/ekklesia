@@ -21,6 +21,39 @@ import { normalizeElectionStatus, normalizeElectionsStatus } from '../utils/util
 // Backend is live at https://elections-service-521240388393.europe-west2.run.app
 const USE_MOCK_API = false;
 
+/**
+ * Create detailed API error from response
+ * Extracts error message from response body if available
+ *
+ * @param {Response} response - Fetch response object
+ * @param {string} operation - Description of the failed operation
+ * @returns {Promise<Error>} Error with detailed message
+ */
+async function createApiError(response, operation) {
+  let errorMessage = `${operation}: ${response.status} ${response.statusText}`;
+
+  try {
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      const errorBody = await response.json();
+      if (errorBody.message) {
+        errorMessage = `${operation}: ${errorBody.message}`;
+      } else if (errorBody.error) {
+        errorMessage = `${operation}: ${errorBody.error}`;
+      } else if (errorBody.detail) {
+        errorMessage = `${operation}: ${errorBody.detail}`;
+      }
+    }
+  } catch {
+    // If we can't parse the body, use the status message
+  }
+
+  const error = new Error(errorMessage);
+  error.status = response.status;
+  error.statusText = response.statusText;
+  return error;
+}
+
 // Production Elections Service URL
 /**
  * Elections API Base URL
@@ -64,7 +97,7 @@ export async function getElections(filters = {}) {
     const response = await authenticatedFetch(url.toString());
 
     if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
+      throw await createApiError(response, 'Failed to fetch elections');
     }
 
     const data = await response.json();
@@ -93,7 +126,7 @@ export async function getElectionById(electionId) {
     const response = await authenticatedFetch(url);
 
     if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
+      throw await createApiError(response, `Failed to fetch election ${electionId}`);
     }
 
     const data = await response.json();
@@ -119,7 +152,7 @@ export async function getAdminElectionById(electionId) {
     const response = await authenticatedFetch(url);
 
     if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
+      throw await createApiError(response, `Failed to fetch admin election ${electionId}`);
     }
 
     const data = await response.json();
@@ -167,8 +200,7 @@ export async function submitVote(electionId, answerId) {
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || `Vote submission failed: ${response.status}`);
+      throw await createApiError(response, 'Vote submission failed');
     }
 
     return await response.json();
@@ -212,7 +244,7 @@ export async function getResults(electionId) {
     const response = await authenticatedFetch(url);
 
     if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
+      throw await createApiError(response, `Failed to fetch results for election ${electionId}`);
     }
 
     return await response.json();
@@ -239,7 +271,7 @@ export async function getPolicySession(sessionId) {
     const response = await authenticatedFetch(url);
 
     if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
+      throw await createApiError(response, `Failed to fetch policy session ${sessionId}`);
     }
 
     return await response.json();
@@ -271,7 +303,7 @@ export async function submitAmendment(sessionId, amendmentData) {
     });
 
     if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
+      throw await createApiError(response, 'Failed to submit amendment');
     }
 
     return await response.json();
@@ -304,7 +336,7 @@ export async function voteOnAmendment(sessionId, amendmentId, vote) {
     });
 
     if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
+      throw await createApiError(response, 'Failed to vote on amendment');
     }
 
     return await response.json();
@@ -337,7 +369,7 @@ export async function voteOnPolicyItem(sessionId, itemId, vote) {
     });
 
     if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
+      throw await createApiError(response, 'Failed to vote on policy item');
     }
 
     return await response.json();
@@ -369,7 +401,7 @@ export async function voteOnFinalPolicy(sessionId, vote) {
     });
 
     if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
+      throw await createApiError(response, 'Failed to vote on final policy');
     }
 
     return await response.json();
@@ -396,7 +428,7 @@ export async function getPolicyResults(sessionId) {
     const response = await authenticatedFetch(url);
 
     if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
+      throw await createApiError(response, `Failed to fetch policy session results ${sessionId}`);
     }
 
     return await response.json();
