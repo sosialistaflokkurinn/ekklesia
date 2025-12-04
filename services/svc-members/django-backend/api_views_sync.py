@@ -23,8 +23,30 @@ from membership.models_sync import MemberSyncQueue
 from datetime import datetime
 import json
 import logging
+import hashlib
 
 logger = logging.getLogger(__name__)
+
+
+def mask_ssn(ssn):
+    """
+    Mask SSN for logging to prevent PII exposure.
+    Returns only last 4 digits with prefix masked.
+    Example: "0101701234" -> "******1234"
+    """
+    if not ssn or len(ssn) < 4:
+        return "****"
+    return f"******{ssn[-4:]}"
+
+
+def hash_ssn_for_log(ssn):
+    """
+    Create a short hash of SSN for log correlation without exposing PII.
+    Returns first 8 chars of SHA256 hash.
+    """
+    if not ssn:
+        return "unknown"
+    return hashlib.sha256(ssn.encode()).hexdigest()[:8]
 
 
 @api_view(['GET'])
@@ -235,7 +257,9 @@ def apply_firestore_changes(request):
 
                     simple_addr.save()
 
-                    logger.info(f'{"Created" if created else "Updated"} SimpleAddress for {kennitala}')
+                    logger.info('SimpleAddress %s for member %s',
+                               'created' if created else 'updated',
+                               mask_ssn(kennitala))
                 
                 results.append({
                     'ssn': kennitala,
@@ -244,8 +268,9 @@ def apply_firestore_changes(request):
                 })
         
         except Exception as e:
-            # Log actual error server-side for debugging
-            logger.error(f'Member sync failed for kennitala: {str(e)}')
+            # Log actual error server-side for debugging (no PII in message)
+            logger.error('Member sync failed for member %s: %s',
+                        mask_ssn(kennitala), type(e).__name__)
 
             results.append({
                 'ssn': kennitala,
@@ -360,13 +385,13 @@ def find_map_address(street_name, house_number, postal_code, house_letter=''):
         postal_code_int = int(str(postal_code).strip()) if postal_code else None
 
         if not postal_code_int:
-            logger.warning(f'No postal code provided for address lookup')
+            logger.warning('No postal code provided for address lookup')
             return None
 
         # Find postal code record
         postal_code_obj = MapPostalCode.objects.filter(code=postal_code_int).first()
         if not postal_code_obj:
-            logger.warning(f'Postal code {postal_code_int} not found in map_postalcode')
+            logger.warning('Postal code %d not found in map_postalcode', postal_code_int)
             return None
 
         # Find street by name and postal code
@@ -376,7 +401,7 @@ def find_map_address(street_name, house_number, postal_code, house_letter=''):
         ).first()
 
         if not street:
-            logger.warning(f'Street "{street_name}" not found in postal code {postal_code_int}')
+            logger.warning('Street not found in postal code %d', postal_code_int)
             return None
 
         # Find address by street and house number
@@ -394,14 +419,14 @@ def find_map_address(street_name, house_number, postal_code, house_letter=''):
         address = address_query.first()
 
         if address:
-            logger.info(f'Found map_address {address.id} for {street_name} {house_number}{house_letter}, {postal_code_int}')
+            logger.info('Found map_address %d in postal code %d', address.id, postal_code_int)
         else:
-            logger.warning(f'Address {street_name} {house_number}{house_letter} not found in street {street.id}')
+            logger.warning('Address not found in street %d', street.id)
 
         return address
 
     except Exception as e:
-        logger.error(f'Error finding map_address: {str(e)}')
+        logger.error('Error finding map_address: %s', type(e).__name__)
         return None
 
 
@@ -430,7 +455,8 @@ def update_member_local_address(member, address_data):
 
         # Only use map_address lookup for Iceland addresses
         if country != 'IS':
-            logger.info(f'Non-Iceland address for {member.ssn}, skipping map_address lookup')
+            logger.info('Non-Iceland address for member %s, skipping map_address lookup',
+                       mask_ssn(member.ssn))
             return None, False, 'Foreign address - use NewForeignAddress'
 
         street_name = address_data.get('street', '')
@@ -466,7 +492,9 @@ def update_member_local_address(member, address_data):
                     'country_id': 109,  # Iceland
                 }
             )
-            logger.info(f'{"Created" if created else "Updated"} NewLocalAddress for {member.ssn} → map_address {map_address.id}')
+            logger.info('NewLocalAddress %s for member %s -> map_address %d',
+                       'created' if created else 'updated',
+                       mask_ssn(member.ssn), map_address.id)
             return local_addr, created, 'Success - address linked to registry'
         else:
             # Create unlocated address (address not found in registry)
@@ -479,12 +507,15 @@ def update_member_local_address(member, address_data):
                     'country_id': 109,  # Iceland
                 }
             )
-            logger.info(f'{"Created" if created else "Updated"} unlocated NewLocalAddress for {member.ssn}')
+            logger.info('Unlocated NewLocalAddress %s for member %s',
+                       'created' if created else 'updated',
+                       mask_ssn(member.ssn))
             return local_addr, created, 'Created but address not found in registry'
 
     except Exception as e:
-        logger.error(f'Error updating NewLocalAddress for {member.ssn}: {str(e)}')
-        return None, False, f'Error: {str(e)}'
+        logger.error('Error updating NewLocalAddress for member %s: %s',
+                    mask_ssn(member.ssn), type(e).__name__)
+        return None, False, 'Error updating address'
 
 
 @api_view(['POST'])
@@ -546,8 +577,8 @@ def update_member_address(request):
         })
 
     except Exception as e:
-        logger.error(f'Error in update_member_address: {str(e)}')
-        return Response({'error': str(e)}, status=500)
+        logger.error('Error in update_member_address: %s', type(e).__name__)
+        return Response({'error': 'An internal error occurred'}, status=500)
 
 
 @api_view(['GET'])
