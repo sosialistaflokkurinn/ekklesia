@@ -455,4 +455,49 @@ if [ -f "scripts/analysis/analyze-naming.py" ]; then
   fi
 fi
 
+# --- 9. Check if CSS bundle needs rebuilding ---
+echo "🎨 Checking CSS bundle..."
+
+# CSS files that are bundled (relative to repo root)
+BUNDLED_CSS_FILES=(
+  "apps/members-portal/styles/global.css"
+  "apps/members-portal/styles/components/nav.css"
+  "apps/members-portal/styles/components/page.css"
+  "apps/members-portal/styles/components/button.css"
+  "apps/members-portal/styles/components/badge.css"
+  "apps/members-portal/styles/components/modal.css"
+  "apps/members-portal/styles/components/toast.css"
+  "apps/members-portal/styles/components/form.css"
+)
+
+CSS_CHANGED=false
+for css_file in "${BUNDLED_CSS_FILES[@]}"; do
+  if echo "$STAGED_FILES" | grep -q "^$css_file$"; then
+    CSS_CHANGED=true
+    break
+  fi
+done
+
+if [ "$CSS_CHANGED" = true ]; then
+  # Check if bundle.css is also staged
+  if echo "$STAGED_FILES" | grep -q "apps/members-portal/styles/bundle.css"; then
+    echo "✅ CSS bundle is included in commit"
+  else
+    echo ""
+    echo "⚠️  CSS source files changed but bundle.css is NOT staged!"
+    echo ""
+    echo "   You modified bundled CSS files but forgot to rebuild bundle.css."
+    echo ""
+    echo "   💡 Run: ./scripts/build-css-bundle.sh"
+    echo "   Then: git add apps/members-portal/styles/bundle.css"
+    echo ""
+    echo "   To skip this check (not recommended):"
+    echo "   git commit --no-verify"
+    echo ""
+    exit 1
+  fi
+else
+  echo "✅ No bundled CSS files changed"
+fi
+
 exit 0
