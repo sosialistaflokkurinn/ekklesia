@@ -359,9 +359,9 @@ def main():
     # Parse args
     verbose = '--verbose' in sys.argv or '-v' in sys.argv
     
-    # Find project root
+    # Find project root (scripts/maintenance/ -> scripts/ -> project root)
     script_dir = Path(__file__).parent
-    project_root = script_dir.parent
+    project_root = script_dir.parent.parent
     
     # Run checks
     checker = CodeHealthChecker(project_root, verbose=verbose)
