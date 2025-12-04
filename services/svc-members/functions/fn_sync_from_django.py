@@ -15,7 +15,7 @@ from firebase_functions import https_fn, options
 from google.cloud.firestore import SERVER_TIMESTAMP
 
 from util_logging import log_json
-from sync_members import transform_django_member_to_firestore, normalize_kennitala
+from fn_sync_members import transform_django_member_to_firestore, normalize_kennitala
 
 
 def get_sync_api_key() -> str:

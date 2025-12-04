@@ -381,12 +381,13 @@ def handleKenniAuth_handler(req: https_fn.Request) -> https_fn.Response:
                      error=str(e), kennitala=f"{normalized_kennitala[:6]}****",
                      correlationId=correlation_id)
 
-        # Step 5: Read roles from Firestore /users/ collection (set by Django sync)
-        # Epic #116: Roles are synced from Django User model (is_staff → admin, is_superuser → superuser)
+        # Step 5: Read roles from Firestore /users/ collection
+        # Roles are managed via Firebase Admin Panel (NOT synced from Django)
+        # New users get ['member'] by default. See: tmp/RFC_RBAC_CLEANUP.md
         user_doc_ref = db.collection('users').document(auth_uid)
         user_doc = user_doc_ref.get()
 
-        roles = ['member']  # Default role for all members
+        roles = ['member']  # Default role for all new members
         if user_doc.exists:
             user_data = user_doc.to_dict()
             roles = user_data.get('roles', ['member'])
@@ -399,7 +400,7 @@ def handleKenniAuth_handler(req: https_fn.Request) -> https_fn.Response:
         # Step 6: Create Firebase custom token with claims
         custom_claims = {
             'kennitala': normalized_kennitala,
-            'roles': roles  # Roles from Firestore (synced from Django)
+            'roles': roles  # Roles from Firestore /users/ collection
         }
         if email:
             custom_claims['email'] = email

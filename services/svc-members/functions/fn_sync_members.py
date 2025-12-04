@@ -191,9 +191,9 @@ def transform_django_member_to_firestore(django_member: Dict[str, Any]) -> Dict[
             'is_default': fa.get('current', False) and not local_address.get('street')
         })
 
-    # Extract Django User model role flags
-    is_staff = django_member.get('is_staff', False)
-    is_superuser = django_member.get('is_superuser', False)
+    # NOTE: Django role flags (is_staff, is_superuser) are NOT synced to Firebase.
+    # Roles are managed separately via Firebase Admin Panel.
+    # See: tmp/RFC_RBAC_CLEANUP.md
 
     # Create Firestore document
     firestore_doc = {
@@ -217,10 +217,7 @@ def transform_django_member_to_firestore(django_member: Dict[str, Any]) -> Dict[
             'unions': unions,
             'titles': titles
         },
-        'django_roles': {
-            'is_staff': is_staff,
-            'is_superuser': is_superuser
-        },
+        # NOTE: django_roles removed - roles managed in Firebase only
         'metadata': {
             'synced_at': firestore.SERVER_TIMESTAMP,
             'django_id': django_member.get('id'),
@@ -231,15 +228,19 @@ def transform_django_member_to_firestore(django_member: Dict[str, Any]) -> Dict[
     return firestore_doc
 
 
-def update_user_roles_from_django(db: firestore.Client, django_member: Dict[str, Any]) -> bool:
+def ensure_user_has_member_role(db: firestore.Client, django_member: Dict[str, Any]) -> bool:
     """
-    Update /users/{uid} with roles from Django member data.
+    Ensure /users/{uid} has at least 'member' role. Does NOT override existing roles.
 
-    Epic #116: Sync roles from Django User model to Firestore /users/ collection.
+    RBAC Simplification (Dec 2025):
+    - Django flags (is_staff, is_superuser) are NO LONGER synced to Firebase
+    - Roles are managed via Firebase Admin Panel only
+    - This function only ensures users have 'member' role if they have no roles
+    - See: tmp/RFC_RBAC_CLEANUP.md
 
     Args:
         db: Firestore client
-        django_member: Django API member object with is_admin, is_superuser fields
+        django_member: Django API member object
 
     Returns:
         True if successful, False otherwise
@@ -259,70 +260,68 @@ def update_user_roles_from_django(db: firestore.Client, django_member: Dict[str,
     if not existing_users:
         # User hasn't logged in yet - skip (roles will be set on first login)
         log_json('DEBUG', 'No Firebase user found for kennitala',
-                 event='update_user_roles_skipped_no_firebase_user',
+                 event='ensure_member_role_skipped_no_firebase_user',
                  kennitala=f"{kennitala[:6]}****",
                  django_id=django_member.get('id'))
         return False
 
-    uid = existing_users[0].id  # Firebase UID
+    user_doc = existing_users[0]
+    uid = user_doc.id  # Firebase UID
+    user_data = user_doc.to_dict()
 
-    # Determine roles from Django User model flags
-    # Direct mapping from Django to Ekklesia:
-    # - is_superuser → superuser (full system access)
-    # - is_staff → admin (administrative access)
-    # - all members → member (default)
-    roles = ['member']  # Default role for all members
+    # Check existing roles - DO NOT override if already set
+    existing_roles = user_data.get('roles', [])
 
-    is_staff = django_member.get('is_staff', False)
-    is_superuser = django_member.get('is_superuser', False)
-
-    if is_superuser:
-        roles.append('superuser')  # Full system access
-
-    if is_staff:
-        roles.append('admin')  # Administrative access
-
-    # Update /users/{uid} with roles
-    try:
-        users_ref.document(uid).update({
-            'roles': roles,
-            'django_id': django_member.get('id'),
-            'lastRoleSync': firestore.SERVER_TIMESTAMP
-        })
-
-        log_json('INFO', 'Updated user roles',
-                 event='user_roles_updated',
+    if existing_roles and 'member' in existing_roles:
+        # User already has roles, don't change them
+        log_json('DEBUG', 'User already has roles',
+                 event='ensure_member_role_skipped_has_roles',
                  uid=uid,
                  kennitala=f"{kennitala[:6]}****",
-                 roles=roles,
-                 django_id=django_member.get('id'))
+                 existing_roles=existing_roles)
+    else:
+        # User has no roles or missing 'member' - set default
+        new_roles = existing_roles if existing_roles else []
+        if 'member' not in new_roles:
+            new_roles.append('member')
 
-        # Also update member document with firebase_uid for bidirectional linking
         try:
-            db.collection('members').document(kennitala_normalized).update({
-                'metadata.firebase_uid': uid,
-                'metadata.firebase_uid_linked_at': firestore.SERVER_TIMESTAMP
+            users_ref.document(uid).update({
+                'roles': new_roles,
+                'django_id': django_member.get('id'),
             })
-            log_json('DEBUG', 'Linked member to Firebase UID',
-                     event='member_firebase_uid_linked',
+            log_json('INFO', 'Set default member role',
+                     event='user_member_role_set',
+                     uid=uid,
                      kennitala=f"{kennitala[:6]}****",
-                     uid=uid)
-        except Exception as link_error:
-            # Non-fatal - log and continue
-            log_json('WARN', 'Failed to link member to Firebase UID',
-                     event='member_firebase_uid_link_error',
-                     kennitala=f"{kennitala[:6]}****",
-                     error=str(link_error))
+                     roles=new_roles)
+        except Exception as e:
+            log_json('ERROR', 'Failed to set member role',
+                     event='ensure_member_role_error',
+                     uid=uid,
+                     error=str(e))
+            return False
 
-        return True
-
-    except Exception as e:
-        log_json('ERROR', 'Failed to update user roles',
-                 event='update_user_roles_error',
-                 uid=uid,
+    # Link member document to Firebase UID (bidirectional linking)
+    try:
+        db.collection('members').document(kennitala_normalized).update({
+            'metadata.firebase_uid': uid,
+            'metadata.firebase_uid_linked_at': firestore.SERVER_TIMESTAMP
+        })
+    except Exception as link_error:
+        # Non-fatal - log and continue
+        log_json('WARN', 'Failed to link member to Firebase UID',
+                 event='member_firebase_uid_link_error',
                  kennitala=f"{kennitala[:6]}****",
-                 error=str(e))
-        return False
+                 error=str(link_error))
+
+    return True
+
+
+# Backwards compatibility alias
+def update_user_roles_from_django(db: firestore.Client, django_member: Dict[str, Any]) -> bool:
+    """DEPRECATED: Use ensure_user_has_member_role instead. Django roles are no longer synced."""
+    return ensure_user_has_member_role(db, django_member)
 
 
 def sync_member_to_firestore(db: firestore.Client, django_member: Dict[str, Any]) -> bool:

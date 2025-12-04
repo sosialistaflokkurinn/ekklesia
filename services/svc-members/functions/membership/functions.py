@@ -13,8 +13,8 @@ from firebase_admin import auth, firestore
 from firebase_functions import https_fn, options
 from util_logging import log_json
 from shared.validators import normalize_kennitala, normalize_phone
-from sync_members import sync_all_members, create_sync_log, update_django_member, update_django_address
-from cleanup_audit_logs import cleanup_old_audit_logs
+from fn_sync_members import sync_all_members, create_sync_log, update_django_member, update_django_address
+from fn_cleanup_audit_logs import cleanup_old_audit_logs
 
 
 def verifyMembership_handler(req: https_fn.CallableRequest) -> dict:

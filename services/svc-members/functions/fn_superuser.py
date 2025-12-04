@@ -204,10 +204,20 @@ def set_user_role_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
         # Get target user info
         target_user = auth.get_user(target_uid)
         old_claims = target_user.custom_claims or {}
-        old_role = old_claims.get("role", "member")
+        old_roles = old_claims.get("roles", ["member"])
+        old_role = old_claims.get("role", "member")  # Legacy field
 
-        # Set new custom claims
-        auth.set_custom_user_claims(target_uid, {"role": new_role})
+        # Build new roles array - everyone keeps 'member' base role
+        # Roles hierarchy: member (base), admin, superuser
+        new_roles = ["member"]
+        if new_role == "admin":
+            new_roles.append("admin")
+        elif new_role == "superuser":
+            new_roles.append("superuser")
+        # If new_role == "member", just ['member']
+
+        # Set new custom claims (using 'roles' array as primary)
+        auth.set_custom_user_claims(target_uid, {"roles": new_roles})
 
         # Log the action
         log_json("info", "User role updated",
@@ -215,14 +225,14 @@ def set_user_role_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
                  caller_uid=caller_uid,
                  target_uid=target_uid,
                  target_email=target_user.email,
-                 old_role=old_role,
-                 new_role=new_role)
+                 old_roles=old_roles,
+                 new_roles=new_roles)
 
-        # Update Firestore user document
+        # Update Firestore user document (roles array only, no 'role' string)
         db = firestore.client()
         user_ref = db.collection("users").document(target_uid)
         user_ref.set({
-            "role": new_role,
+            "roles": new_roles,
             "roleUpdatedAt": firestore.SERVER_TIMESTAMP,
             "roleUpdatedBy": caller_uid
         }, merge=True)
@@ -230,8 +240,10 @@ def set_user_role_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
         return {
             "success": True,
             "target_uid": target_uid,
-            "old_role": old_role,
-            "new_role": new_role,
+            "old_role": old_role,  # Keep for backwards compat
+            "new_role": new_role,  # Keep for backwards compat
+            "old_roles": old_roles,
+            "new_roles": new_roles,
             "message": f"Role updated from {old_role} to {new_role}"
         }
 
@@ -810,7 +822,7 @@ def list_elevated_users_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
         # Track by UID or kennitala to avoid duplicates
         superusers_map = {}  # keyed by uid
         admins_map = {}      # keyed by uid
-        django_elevated = {} # keyed by kennitala (for users without Firebase account)
+        # NOTE: django_elevated removed - roles come from Firebase only
 
         # 1. Query /users/ collection for explicit role field
         superuser_docs = db.collection("users").where("role", "==", "superuser").stream()
@@ -880,111 +892,17 @@ def list_elevated_users_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
             log_json("warning", "Failed to list Firebase Auth users", error=str(e))
             # Continue with what we have from /users/ collection
 
-        # 3. Check /members/ collection for Django elevated flags
-        # This catches users with Django staff/admin roles who haven't logged into Ekklesia
-        # Field is "django_roles" with is_staff and is_superuser booleans
-        try:
-            # Get existing kennitölur to avoid duplicates
-            existing_kts = set()
-            for u in list(superusers_map.values()) + list(admins_map.values()):
-                if u.get("kennitala"):
-                    existing_kts.add(u["kennitala"])
-            
-            # Query members with is_superuser=true
-            superuser_members = db.collection("members").where(
-                "django_roles.is_superuser", "==", True
-            ).stream()
-            for doc in superuser_members:
-                kt = doc.id
-                if kt in existing_kts:
-                    continue
-                data = doc.to_dict()
-                profile = data.get("profile", {})
-                metadata = data.get("metadata", {})
-                firebase_uid = metadata.get("firebase_uid")
-                
-                # Skip if already in map by UID
-                if firebase_uid and firebase_uid in superusers_map:
-                    continue
-                
-                entry = {
-                    "uid": firebase_uid,
-                    "kennitala": kt,
-                    "displayName": profile.get("name") or "Nafnlaus",
-                    "email": profile.get("email") or "-",
-                    "roleUpdatedAt": None,
-                    "source": "django_members",
-                    "hasLoggedIn": firebase_uid is not None,
-                    "djangoFlags": {"is_superuser": True}
-                }
-                
-                if firebase_uid:
-                    superusers_map[firebase_uid] = entry
-                else:
-                    django_elevated[f"kt:{kt}:superuser"] = entry
-                existing_kts.add(kt)
-            
-            # Query members with is_staff=true (admins)
-            staff_members = db.collection("members").where(
-                "django_roles.is_staff", "==", True
-            ).stream()
-            for doc in staff_members:
-                kt = doc.id
-                if kt in existing_kts:
-                    continue
-                data = doc.to_dict()
-                profile = data.get("profile", {})
-                metadata = data.get("metadata", {})
-                django_roles = data.get("django_roles", {})
-                firebase_uid = metadata.get("firebase_uid")
-                
-                # Skip superusers
-                if django_roles.get("is_superuser"):
-                    continue
-                
-                # Skip if already in map by UID
-                if firebase_uid and (firebase_uid in superusers_map or firebase_uid in admins_map):
-                    continue
-                
-                entry = {
-                    "uid": firebase_uid,
-                    "kennitala": kt,
-                    "displayName": profile.get("name") or "Nafnlaus",
-                    "email": profile.get("email") or "-",
-                    "roleUpdatedAt": None,
-                    "source": "django_members",
-                    "hasLoggedIn": firebase_uid is not None,
-                    "djangoFlags": {
-                        "is_staff": True,
-                        "is_admin": django_roles.get("is_admin", False)
-                    }
-                }
-                
-                if firebase_uid:
-                    admins_map[firebase_uid] = entry
-                else:
-                    django_elevated[f"kt:{kt}:admin"] = entry
-                existing_kts.add(kt)
-                
-        except Exception as e:
-            log_json("warning", "Failed to check /members/ for Django elevated users", error=str(e))
-            # Continue with what we have
+        # NOTE: Django roles (is_staff, is_superuser) are NO LONGER queried.
+        # Elevated users come ONLY from Firebase (/users/ collection).
+        # See: tmp/RFC_RBAC_CLEANUP.md
 
-        # Convert to sorted lists (include Django-only users)
-        all_superusers = list(superusers_map.values()) + [
-            v for k, v in django_elevated.items() if ":superuser" in k
-        ]
-        all_admins = list(admins_map.values()) + [
-            v for k, v in django_elevated.items() if ":admin" in k
-        ]
-        
-        superusers = sorted(all_superusers, key=lambda x: (x["displayName"] or "").lower())
-        admins = sorted(all_admins, key=lambda x: (x["displayName"] or "").lower())
+        # Convert to sorted lists
+        superusers = sorted(list(superusers_map.values()), key=lambda x: (x["displayName"] or "").lower())
+        admins = sorted(list(admins_map.values()), key=lambda x: (x["displayName"] or "").lower())
 
         log_json("info", "Listed elevated users",
                 superuser_count=len(superusers),
-                admin_count=len(admins),
-                django_only_count=len(django_elevated))
+                admin_count=len(admins))
 
         return {
             "superusers": superusers,
