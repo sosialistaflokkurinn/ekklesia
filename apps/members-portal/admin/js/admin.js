@@ -14,7 +14,7 @@ import { collection, query, orderBy, limit, getDocs } from 'https://www.gstatic.
 import { adminStrings } from './i18n/admin-strings-loader.js';
 import { requireAdmin } from '../../js/rbac.js';
 import { showToast, showError } from '../../js/components/ui-toast.js';
-import { R } from '../../i18n/strings-loader.js';
+// Note: R import removed - was only used for role badges in welcome card which was removed
 
 // Initialize Firebase services
 const auth = getFirebaseAuth();
@@ -170,46 +170,7 @@ function buildWelcomeMessage(displayName, strings) {
   return template.replace('%s', rawName);
 }
 
-/**
- * Render role badges HTML
- */
-function renderRoleBadges(roles) {
-  const normalizedRoles = Array.isArray(roles) ? roles.filter(Boolean) : [];
-  if (normalizedRoles.length === 0) {
-    return '';
-  }
-
-  const badges = normalizedRoles.map((role) => {
-    const key = `role_badge_${role}`;
-    const label = R.string[key] || role;
-    
-    // Create a class modifier for each role type
-    const roleClass = role === 'superuser' ? 'role-badge--developer' : 'role-badge--admin';
-    return `<span class="role-badge ${roleClass}">${label}</span>`;
-  }).join('');
-
-  return badges;
-}
-
-/**
- * Update role badges display
- */
-function updateRoleBadges(roles) {
-  const container = document.getElementById('role-badges');
-  if (!container) {
-    return;
-  }
-
-  const html = renderRoleBadges(roles);
-  if (!html) {
-    container.innerHTML = '';
-    container.classList.add('u-hidden');
-    return;
-  }
-
-  container.innerHTML = html;
-  container.classList.remove('u-hidden');
-}
+// Note: renderRoleBadges and updateRoleBadges removed - welcome card was removed
 
 /**
  * Set page text from admin strings
@@ -228,15 +189,7 @@ function setPageText(strings, userData) {
   // document.getElementById('nav-back-to-member').textContent = strings.nav_back_to_member;
   // document.getElementById('nav-logout').textContent = strings.nav_logout;
 
-  // Welcome card - with personalized greeting
-  debug.log('Building welcome message for:', userData.displayName);
-  const welcomeMessage = buildWelcomeMessage(userData.displayName, strings);
-  debug.log('Welcome message result:', welcomeMessage);
-  document.getElementById('admin-welcome-title').textContent = welcomeMessage;
-  document.getElementById('admin-welcome-subtitle').textContent = strings.admin_welcome_subtitle;
-
-  // Role badges
-  updateRoleBadges(userData.roles);
+  // Note: Welcome card removed - user info shown on member dashboard
 
   // Quick actions
   document.getElementById('admin-actions-title').textContent = strings.admin_actions_title;

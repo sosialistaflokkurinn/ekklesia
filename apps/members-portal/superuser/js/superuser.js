@@ -11,7 +11,7 @@ import { debug } from '../../js/utils/util-debug.js';
 import { getFirebaseAuth, getFunctions } from '../../firebase/app.js';
 import { superuserStrings } from './i18n/superuser-strings-loader.js';
 import { requireSuperuser } from '../../js/rbac.js';
-import { R } from '../../i18n/strings-loader.js';
+// Note: R import removed - was only used for role badges in welcome card which was removed
 import { httpsCallable } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js';
 
 // Initialize Firebase services
@@ -52,51 +52,7 @@ function buildWelcomeMessage(displayName, strings) {
   return template.replace('%s', rawName);
 }
 
-/**
- * Render role badges HTML
- */
-function renderRoleBadges(roles) {
-  const normalizedRoles = Array.isArray(roles) ? roles.filter(Boolean) : [];
-  if (normalizedRoles.length === 0) {
-    return '';
-  }
-
-  const badges = normalizedRoles.map((role) => {
-    const key = `role_badge_${role}`;
-    const label = R.string[key] || role;
-
-    // Create a class modifier for each role type
-    let roleClass = 'role-badge--member';
-    if (role === 'superuser') {
-      roleClass = 'role-badge--superuser';
-    } else if (role === 'admin') {
-      roleClass = 'role-badge--admin';
-    }
-    return `<span class="role-badge ${roleClass}">${escapeHtml(label)}</span>`;
-  }).join('');
-
-  return badges;
-}
-
-/**
- * Update role badges display
- */
-function updateRoleBadges(roles) {
-  const container = document.getElementById('role-badges');
-  if (!container) {
-    return;
-  }
-
-  const html = renderRoleBadges(roles);
-  if (!html) {
-    container.innerHTML = '';
-    container.classList.add('u-hidden');
-    return;
-  }
-
-  container.innerHTML = html;
-  container.classList.remove('u-hidden');
-}
+// Note: renderRoleBadges and updateRoleBadges removed - welcome card was removed
 
 /**
  * Update system status display
@@ -141,15 +97,7 @@ function setPageText(strings, userData) {
   // Page title
   document.getElementById('page-title').textContent = strings.superuser_dashboard_title;
 
-  // Welcome card - with personalized greeting
-  debug.log('Building welcome message for:', userData.displayName);
-  const welcomeMessage = buildWelcomeMessage(userData.displayName, strings);
-  debug.log('Welcome message result:', welcomeMessage);
-  document.getElementById('superuser-welcome-title').textContent = welcomeMessage;
-  document.getElementById('superuser-welcome-subtitle').textContent = strings.superuser_welcome_subtitle;
-
-  // Role badges
-  updateRoleBadges(userData.roles);
+  // Note: Welcome card removed - user info shown on member dashboard
 
   // Quick actions
   document.getElementById('superuser-actions-title').textContent = strings.superuser_actions_title;
