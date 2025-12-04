@@ -32,7 +32,7 @@ let tabPastButton = null;
  */
 function updateEventsStrings() {
   document.title = R.string.page_title_events || 'Viðburðir';
-  setTextContent('events-title', R.string.events_title || 'Viðburðir', 'events page');
+  // Note: events-title removed from HTML - nav brand shows "Viðburðir"
   setTextContent('events-subtitle', R.string.events_subtitle || 'Fundir og viðburðir flokksins', 'events page');
 
   // Loading message

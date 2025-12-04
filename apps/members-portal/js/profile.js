@@ -128,7 +128,7 @@ function showStatusFeedback(statusElement, state, clearDelayMs = 2000) {
  * Required DOM elements for profile page (always-on edit mode)
  */
 const PROFILE_ELEMENTS = [
-  'profile-title',
+  // Note: profile-title removed from HTML - nav brand shows "Mínar upplýsingar"
   'section-personal-info',
   'membership-title',
   'label-name',
@@ -190,7 +190,7 @@ function validateProfilePage() {
  */
 function updateProfileStrings() {
   document.title = R.string.page_title_profile;
-  setTextContent('profile-title', R.string.profile_title, 'profile page');
+  // Note: profile-title removed from HTML - nav brand shows "Mínar upplýsingar"
   setTextContent('section-personal-info', R.string.section_personal_info, 'profile page');
   setTextContent('membership-title', R.string.membership_title, 'profile page');
   setTextContent('membership-status', R.string.membership_loading, 'profile page');
