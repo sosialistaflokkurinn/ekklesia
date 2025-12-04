@@ -42,6 +42,14 @@ export function initNavigation() {
   // Get all focusable elements in drawer for tabindex management
   const drawerFocusables = drawer.querySelectorAll('button, a, input, select, textarea');
 
+  // SAFETY: Ensure drawer starts in closed state (fixes any stale state from caching)
+  drawer.classList.remove('is-open');
+  overlay.classList.remove('is-visible');
+  hamburger.classList.remove('is-active');
+  hamburger.setAttribute('aria-expanded', 'false');
+  drawer.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('nav-open');
+
   /**
    * Set tabindex on drawer focusable elements
    * When drawer is hidden (aria-hidden="true"), focusables should have tabindex="-1"
