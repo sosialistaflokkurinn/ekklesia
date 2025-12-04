@@ -1,7 +1,10 @@
 # Ekklesia Development Context
 
-**Auto-loaded by:** GitHub Copilot (VS Code & Terminal)  
+**Auto-loaded by:** GitHub Copilot (VS Code & Terminal)
 **Manual reference for:** Claude, Gemini, other AI assistants
+
+> **Quick Reference:** See `/CLAUDE.md` for critical rules and deployment warnings.
+> This file contains detailed technical patterns and conventions.
 
 ---
 
