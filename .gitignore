@@ -1,13 +1,7 @@
 # =============================================================================
 # Ekklesia .gitignore
 # =============================================================================
-# STRATEGY: "Track All, Push Selectively" with credential exception
-#
-# - Generated/build files: gitignored (not tracked)
-# - Credential files (.env): gitignored (NEVER tracked - security)
-# - PII/sensitive docs: tracked locally, blocked from push by pre-push hook
-#
-# See .git-local-only for patterns blocked from push.
+# Simple strategy: Gitignore everything that shouldn't be tracked
 # =============================================================================
 
 # === Generated / Build Artifacts ===
@@ -49,7 +43,7 @@ Thumbs.db
 .firebase/
 cloud-sql-proxy*
 
-# === Logs (runtime logs, not audit logs) ===
+# === Logs (runtime logs) ===
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -63,18 +57,6 @@ yarn-error.log*
 # === Generated Metadata ===
 .eslintcache
 
-# === Environment Files with Secrets ===
-# NEVER track .env files - they contain database passwords and API keys
-**/.env
-.env
-.env.local
-.env.development
-.env.production
-.env.staging
-# ALLOW templates (no secrets):
-!**/.env.example
-!**/.env.yaml
-
 # === Playwright MCP ===
 .playwright-mcp/
 
@@ -86,7 +68,70 @@ services/members/public
 public/admin/
 
 # =============================================================================
-# IMPORTANT:
-# - Credentials (.env files): gitignored above - NEVER tracked
-# - PII documents: tracked locally but blocked from push (see .git-local-only)
+# CREDENTIALS & SECRETS (NEVER TRACK)
 # =============================================================================
+**/.env
+.env
+.env.local
+.env.development
+.env.production
+.env.staging
+# ALLOW templates (no secrets):
+!**/.env.example
+!**/.env.yaml
+
+# GCP/Firebase credentials
+*.key.json
+*client_secret*
+*serviceAccount*.json
+firebase-adminsdk-*.json
+
+# =============================================================================
+# PII PROTECTION (Personal Data)
+# =============================================================================
+# Policy documents (meeting notes with personal information)
+docs/policy/
+
+# Files with real PII
+*_REAL_PII*.md
+*MEMBER_LIST*.md
+*EXPORT_*KENNITALA*.md
+
+# Audit logs with user data
+*.audit.json
+*-audit-*.jsonl
+scripts/logs/*.jsonl
+*role-changes*.jsonl
+*user-export*.json
+*user-export*.csv
+
+# Admin script outputs (contain PII from queries)
+services/svc-members/scripts/*-output.json
+services/svc-members/scripts/*-export.csv
+services/members/scripts/*-output.json
+services/members/scripts/*-export.csv
+
+# Screenshots from admin portal (may show PII)
+apps/members-portal/admin/*.png
+apps/members-portal/admin/*.jpg
+apps/members-portal/admin/*.jpeg
+
+# =============================================================================
+# WORKING DIRECTORIES (Local only)
+# =============================================================================
+# AI assistant config/cache
+.claude/
+.gemini/
+.metadata_store/
+
+# Temporary working files
+tmp/
+
+# Archive folders (historical, local reference only)
+archive-code/
+archive-i18n/
+docs/archive/
+docs/audits/
+
+# Local git config
+.gitignore.local
