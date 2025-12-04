@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const { query } = require('../config/config-database');
-const { isElectionActive } = require('./electionService');
-const { registerToken: registerWithElections } = require('./electionsClient');
+const { isElectionActive } = require('./service-election');
+const { registerToken: registerWithElections } = require('./service-elections-client');
 const logger = require('../utils/util-logger');
 
 /**

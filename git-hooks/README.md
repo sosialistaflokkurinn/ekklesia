@@ -50,11 +50,8 @@ API_KEY = get_secret('api-key')
 ### Option 1: Automatic Installation (Recommended)
 
 ```bash
-# Make installation script executable
-chmod +x git-hooks/install-hooks.sh
-
 # Install hooks
-./git-hooks/install-hooks.sh
+./scripts/setup/install-git-hooks.sh
 ```
 
 ### Option 2: Manual Installation
@@ -247,7 +244,7 @@ git commit --no-verify -m "emergency: hotfix"
 ## Related
 
 - **Issue #48:** Database password exposure incident (root cause for this hook)
-- **Security Review:** `docs/security/ISSUES_41-50_CRITICAL_REVIEW.md`
+- **Security Documentation:** `docs/SECURITY.md`
 - **Guidelines:** `.github/GITHUB_AUTOMATION_GUIDE.md`
 
 ---
@@ -261,7 +258,7 @@ git commit --no-verify -m "emergency: hotfix"
 git pull origin main
 
 # Reinstall hooks
-./git-hooks/install-hooks.sh
+./scripts/setup/install-git-hooks.sh
 ```
 
 ### Check Hook Version
@@ -285,6 +282,6 @@ cat .git/hooks/pre-commit
 
 ---
 
-**Last Updated:** October 17, 2025  
-**Related Incident:** Issue #48 (Database password exposure)  
+**Last Updated:** December 4, 2025
+**Related Incident:** Issue #48 (Database password exposure)
 **Status:** Active

@@ -29,7 +29,7 @@ if [[ "$IS_SIGNIFICANT" == "false" ]]; then
 fi
 
 # Check if any docs were already updated in this commit
-DOCS_UPDATED=$(git diff-tree --no-commit-id --name-only -r HEAD | grep -E "(CURRENT_DEVELOPMENT_STATUS|USAGE_CONTEXT|OPERATIONAL_PROCEDURES|SESSION_START_REMINDER)\.md" || true)
+DOCS_UPDATED=$(git diff-tree --no-commit-id --name-only -r HEAD | grep -E "(CURRENT_DEVELOPMENT_STATUS|USAGE_CONTEXT|OPERATIONAL_PROCEDURES|CLAUDE)\.md" || true)
 
 if [[ -n "$DOCS_UPDATED" ]]; then
     # Docs were already updated, no reminder needed
@@ -50,7 +50,7 @@ echo "Consider updating (if needed):"
 echo ""
 echo "  ✓ CURRENT_DEVELOPMENT_STATUS.md - Infrastructure/deployments"
 echo "  ✓ OPERATIONAL_PROCEDURES.md     - New procedures/workflows"
-echo "  ✓ SESSION_START_REMINDER.md     - Security rules/gitignore"
+echo "  ✓ CLAUDE.md                     - AI guidelines/security rules"
 echo "  ✓ USAGE_CONTEXT.md              - System usage patterns"
 echo ""
 echo "Check freshness: ./scripts/admin/documentation-maintenance/check-docs-freshness.sh"

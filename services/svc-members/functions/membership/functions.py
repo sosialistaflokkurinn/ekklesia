@@ -193,10 +193,10 @@ def syncmembers_handler(req: https_fn.Request) -> https_fn.Response:
             content_type='application/json'
         )
     except Exception as e:
-        log_json("error", "Member sync failed", error=str(e))
+        log_json("error", "Member sync failed", error_type=type(e).__name__)
         return https_fn.Response(
             status=500,
-            response=json.dumps({'error': f"Sync failed: {str(e)}"}),
+            response=json.dumps({'error': 'An internal error occurred during sync'}),
             headers=headers,
             content_type='application/json'
         )

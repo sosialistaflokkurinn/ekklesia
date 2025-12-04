@@ -31,7 +31,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        service: [elections, events]
+        service: [svc-elections, svc-events]
 
     steps:
       - name: Checkout repository

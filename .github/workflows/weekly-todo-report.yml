@@ -35,6 +35,14 @@ jobs:
       - name: Run TODO health check
         id: todo_check
         run: |
+          # Check if metadata inventory exists (generated locally, not in repo)
+          if [ ! -f ".metadata_store/md_inventory.json" ]; then
+            echo "⚠️ Skipping TODO health check - metadata inventory not found" > todo-report.txt
+            echo "The .metadata_store/ directory is gitignored and must be generated locally." >> todo-report.txt
+            echo "Run: python3 scripts/maintenance/generate_metadata.py" >> todo-report.txt
+            echo "report_generated=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
           python3 scripts/maintenance/check-todo-health.py > todo-report.txt 2>&1
           echo "report_generated=true" >> $GITHUB_OUTPUT
         continue-on-error: true # Don't fail if TODO health is bad
