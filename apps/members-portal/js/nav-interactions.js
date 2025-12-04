@@ -39,6 +39,27 @@ export function initNavigation() {
     return;
   }
 
+  // Get all focusable elements in drawer for tabindex management
+  const drawerFocusables = drawer.querySelectorAll('button, a, input, select, textarea');
+
+  /**
+   * Set tabindex on drawer focusable elements
+   * When drawer is hidden (aria-hidden="true"), focusables should have tabindex="-1"
+   * This prevents aria-hidden-focus accessibility issue
+   */
+  function setDrawerTabindex(hidden) {
+    drawerFocusables.forEach(el => {
+      if (hidden) {
+        el.setAttribute('tabindex', '-1');
+      } else {
+        el.removeAttribute('tabindex');
+      }
+    });
+  }
+
+  // Initialize: drawer starts closed, so set tabindex="-1" on all focusables
+  setDrawerTabindex(true);
+
   // FIX #1: Clean up old listeners before adding new ones (prevents memory leak)
   if (keypressHandler) {
     document.removeEventListener('keydown', keypressHandler);
@@ -59,6 +80,9 @@ export function initNavigation() {
 
     // FIX #4: Set aria-hidden="false" when drawer opens
     drawer.setAttribute('aria-hidden', 'false');
+
+    // FIX #6: Make focusables tabbable when drawer is open
+    setDrawerTabindex(false);
 
     // FIX #5: Update ARIA label to "Close menu" when drawer is open
     const closeLabel = hamburger.getAttribute('data-close-label') || 'Loka valmynd';
@@ -99,6 +123,9 @@ export function initNavigation() {
 
     // FIX #4: Set aria-hidden="true" AFTER focus has been moved
     drawer.setAttribute('aria-hidden', 'true');
+
+    // FIX #6: Make focusables non-tabbable when drawer is hidden
+    setDrawerTabindex(true);
 
     // FIX #5: Update ARIA label to "Open menu" when drawer is closed
     const openLabel = hamburger.getAttribute('data-open-label') || 'Opna valmynd';

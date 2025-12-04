@@ -24,6 +24,7 @@
     "express": "^5.2.1",
     "express-rate-limit": "^8.2.1",
     "firebase-admin": "^13.6.0",
+    "google-auth-library": "^10.5.0",
     "pg": "^8.11.3",
     "winston": "^3.18.0"
   },

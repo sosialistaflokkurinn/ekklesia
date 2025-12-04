@@ -499,6 +499,86 @@ async function updateProfileData(userData, discrepancies, memberData = {}) {
   await updateMemberProfile(kennitala, updates, memberData);
 }
 
+// Events API configuration
+const EVENTS_API_BASE = 'https://events-service-521240388393.europe-west2.run.app';
+
+/**
+ * Load and display featured event on dashboard
+ *
+ * Priority:
+ * 1. Admin-selected featured event (from /api/external-events/featured)
+ * 2. Next upcoming event (fallback)
+ *
+ * Non-blocking - if it fails, dashboard still works
+ */
+async function loadFeaturedEvent() {
+  try {
+    let event = null;
+
+    // Try to get admin-selected featured event first
+    const featuredResponse = await fetch(`${EVENTS_API_BASE}/api/external-events/featured`);
+    if (featuredResponse.ok) {
+      const data = await featuredResponse.json();
+      if (data.featured) {
+        event = data.featured;
+        debug.log('Using admin-selected featured event:', event.title);
+      }
+    }
+
+    // Fallback to next upcoming event if no featured event
+    if (!event) {
+      const upcomingResponse = await fetch(`${EVENTS_API_BASE}/api/external-events?upcoming=true&limit=1`);
+      if (upcomingResponse.ok) {
+        const events = await upcomingResponse.json();
+        if (events && events.length > 0) {
+          event = events[0];
+          debug.log('Using next upcoming event:', event.title);
+        }
+      }
+    }
+
+    if (!event) return;
+
+    const startDate = new Date(event.startTime);
+
+    // Format date
+    const dateStr = startDate.toLocaleDateString('is-IS', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long'
+    });
+    const timeStr = startDate.toLocaleTimeString('is-IS', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    // Get location
+    const location = event.location?.display || event.location?.name || '';
+
+    // Build content
+    const card = document.getElementById('featured-event-card');
+    const content = document.getElementById('featured-event-content');
+
+    if (!card || !content) return;
+
+    content.innerHTML = `
+      <a href="/events/" style="text-decoration: none; color: inherit;">
+        <div style="font-weight: 600; font-size: 1rem; margin-bottom: 0.25rem;">${event.title}</div>
+        <div style="color: var(--color-text-secondary); font-size: 0.875rem;">
+          ${dateStr}, kl. ${timeStr}
+        </div>
+        ${location ? `<div style="color: var(--color-text-secondary); font-size: 0.875rem;">📍 ${location}</div>` : ''}
+      </a>
+    `;
+
+    card.style.display = 'block';
+    debug.log('Featured event displayed:', event.title);
+  } catch (error) {
+    debug.warn('Failed to load featured event:', error.message);
+    // Non-blocking - dashboard still works without featured event
+  }
+}
+
 /**
  * Initialize dashboard page
  *
@@ -553,6 +633,9 @@ async function init() {
 
     // Show role badges for elevated users
     updateRoleBadges(userData.roles);
+
+    // Load featured event (non-blocking)
+    loadFeaturedEvent();
 
     // Check for profile data discrepancies between Kenni.is and Firestore
     await checkProfileDiscrepancies(userData);

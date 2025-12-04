@@ -8,10 +8,10 @@
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2" sizes="any">
   <link rel="icon" type="image/x-icon" href="/favicon.ico?v=2">
-  <link rel="stylesheet" href="/styles/bundle.css?v=20251202">
-  <link rel="stylesheet" href="/styles/components/profile-edit.css?v=20251102">
-  <link rel="stylesheet" href="/styles/components/address-autocomplete.css?v=20251125">
-  <link rel="stylesheet" href="/styles/components/searchable-select.css?v=20251105">
+  <link rel="stylesheet" href="/styles/bundle.css?v=20251204m">
+  <link rel="stylesheet" href="/styles/components/profile-edit.css?v=20251204m">
+  <link rel="stylesheet" href="/styles/components/address-autocomplete.css?v=20251204m">
+  <link rel="stylesheet" href="/styles/components/searchable-select.css?v=20251204m">
 </head>
 <body class="authenticated">
   <!-- Navigation component inserted here -->
@@ -31,7 +31,7 @@
           <div class="info-grid__label" id="label-name">Loading...</div>
 
           <!-- Always-on edit mode -->
-          <div class="profile-field">
+          <div class="profile-field profile-field--with-save">
             <input
               type="text"
               class="profile-field__input"
@@ -41,6 +41,7 @@
               maxlength="100"
             />
             <span class="profile-field__status" id="status-name"></span>
+            <button type="button" class="item-save-btn" id="save-name" title="Vista">💾</button>
             <span class="profile-field__error" id="error-name"></span>
           </div>
         </div>
@@ -56,7 +57,7 @@
           <div class="info-grid__label" id="label-email">Loading...</div>
 
           <!-- Always-on edit mode -->
-          <div class="profile-field">
+          <div class="profile-field profile-field--with-save">
             <input
               type="email"
               class="profile-field__input"
@@ -65,6 +66,7 @@
               data-i18n-placeholder="placeholder_email"
             />
             <span class="profile-field__status" id="status-email"></span>
+            <button type="button" class="item-save-btn" id="save-email" title="Vista">💾</button>
             <span class="profile-field__error" id="error-email"></span>
           </div>
         </div>
@@ -198,7 +200,7 @@
     </div>
   </div>
 
-  <script type="module" src="/js/profile.js?v=20251109-10"></script>
+  <script type="module" src="/js/profile.js?v=20251204m"></script>
 
   <!-- Initialize Navigation Component -->
   <script type="module">

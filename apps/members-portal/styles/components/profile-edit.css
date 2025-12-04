@@ -82,6 +82,25 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+/* Profile field with save button */
+.profile-field--with-save {
+  flex-wrap: nowrap;
+}
+
+.profile-field--with-save .profile-field__input {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-field--with-save .item-save-btn {
+  flex-shrink: 0;
+}
+
+.profile-field--with-save .profile-field__error {
+  flex: 1 1 100%;
 }
 
 .profile-field__input {
@@ -498,7 +517,7 @@ body.profile-editing .profile-edit__input-wrapper {
 .phone-delete-btn,
 .item-delete-btn {
   padding: var(--spacing-2xs) var(--spacing-xs);
-  background-color: transparent;
+  background-color: var(--color-white);
   border: 1px solid var(--color-gray-300);
   border-radius: 4px;
   color: var(--color-error);
@@ -515,8 +534,42 @@ body.profile-editing .profile-edit__input-wrapper {
 
 .phone-delete-btn:disabled,
 .item-delete-btn:disabled {
-  opacity: 0.4;
+  opacity: 0.5;
   cursor: not-allowed;
+  background-color: var(--color-white);
+}
+
+/* Save button for address items */
+.item-save-btn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 0.25rem;
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity 0.2s ease, transform 0.1s ease;
+  margin-left: 0.5rem;
+}
+
+.item-save-btn:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.item-save-btn:active {
+  transform: scale(0.95);
+}
+
+/* Default star icon spacing */
+.item-default-icon {
+  margin-left: 0.25rem;
+}
+
+/* Delete button spacing */
+.item-delete-btn {
+  margin-left: 0.25rem;
 }
 
 /* ===========================
@@ -546,11 +599,19 @@ body.profile-editing .profile-edit__input-wrapper {
   width: 100%;
 }
 
-.address-item__row--controls {
+/* Street address row - group street/number/letter visually as one field */
+/* Address row - single line with all controls */
+.address-item__row {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  justify-content: flex-start;
+  flex-wrap: nowrap;
+}
+
+/* Override searchable-select width in address row */
+.address-item__row .searchable-select {
+  width: auto;
+  flex-shrink: 0;
 }
 
 .address-input {
@@ -575,12 +636,15 @@ body.profile-editing .profile-edit__input-wrapper {
   border-color: var(--color-gray-400);
 }
 
-.address-input--postal {
-  max-width: 120px;
+/* Unified address input - single field for full address */
+.address-input--unified-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 0; /* Allow shrinking */
 }
 
-.address-input--city {
-  flex: 2;
+.address-input--unified {
+  width: 100%;
 }
 
 /* ===========================
@@ -643,35 +707,38 @@ body.profile-editing .profile-edit__input-wrapper {
   }
 
   .address-item__row {
-    width: 100%;
     flex-wrap: wrap;
+    width: 100%;
   }
 
-  /* Stack address inputs vertically on mobile */
-  .address-input {
+  /* Unified address input - full width on mobile, on second row */
+  .address-input--unified-wrapper {
     flex: 1 1 100%;
-    min-width: 100%;
+    order: 10; /* Put address input on second row */
+    margin-top: 0.5rem;
   }
 
-  .address-input--street {
-    flex: 1 1 100%;
+  /* First row controls - country selector on left */
+  .address-item__row .searchable-select {
+    order: 1;
+    flex: 1;
   }
 
-  .address-input--number,
-  .address-input--letter {
-    flex: 1 1 calc(50% - 0.25rem);
-    min-width: 0;
+  /* Action buttons on right side of first row */
+  .address-item__row .profile-field__status {
+    order: 2;
   }
 
-  .address-input--postal {
-    flex: 1 1 calc(40% - 0.25rem);
-    max-width: none;
-    min-width: 0;
+  .address-item__row .item-save-btn {
+    order: 3;
   }
 
-  .address-input--city {
-    flex: 1 1 calc(60% - 0.25rem);
-    min-width: 0;
+  .address-item__row .item-default-icon {
+    order: 4;
+  }
+
+  .address-item__row .item-delete-btn {
+    order: 5;
   }
 }
 

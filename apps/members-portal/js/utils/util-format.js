@@ -523,3 +523,177 @@ export function normalizeElectionsStatus(elections) {
   if (!Array.isArray(elections)) return elections;
   return elections.map(normalizeElectionStatus);
 }
+
+// =============================================================================
+// Rich Text Formatting Utilities
+// =============================================================================
+
+/**
+ * Video conference URL patterns
+ * Matches common platforms: Zoom, Google Meet, Teams, etc.
+ */
+const VIDEO_URL_PATTERN = /https?:\/\/(?:[\w-]+\.)?(?:zoom\.us|meet\.google\.com|teams\.microsoft\.com|whereby\.com|webex\.com|gotomeeting\.com|bluejeans\.com)\/[^\s)>\]]+/gi;
+
+/**
+ * Extract video conference links from text
+ * @param {string} text - Text containing URLs
+ * @returns {{ links: string[], cleanedText: string }} Extracted links and cleaned text
+ *
+ * Extracts URLs from:
+ * - zoom.us
+ * - meet.google.com
+ * - teams.microsoft.com
+ * - whereby.com
+ * - webex.com
+ * - gotomeeting.com
+ * - bluejeans.com
+ *
+ * Example:
+ * Input: "Join us at https://us06web.zoom.us/j/123 for the meeting"
+ * Output: { links: ["https://us06web.zoom.us/j/123"], cleanedText: "Join us at for the meeting" }
+ */
+export function extractVideoLinks(text) {
+  if (!text) return { links: [], cleanedText: '' };
+
+  const links = [];
+  let cleanedText = text;
+
+  // Find all video links
+  const matches = text.match(VIDEO_URL_PATTERN);
+  if (matches) {
+    matches.forEach(url => {
+      if (!links.includes(url)) {
+        links.push(url);
+      }
+      // Remove the URL from text (and any surrounding whitespace/newlines)
+      cleanedText = cleanedText.replace(new RegExp(url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*', 'g'), '');
+    });
+  }
+
+  // Clean up extra blank lines
+  cleanedText = cleanedText.replace(/\n{3,}/g, '\n\n').trim();
+
+  return { links, cleanedText };
+}
+
+/**
+ * Format rich text with proper HTML formatting
+ * @param {string} text - Plain text to format
+ * @returns {string} HTML-formatted text
+ *
+ * Formatting applied:
+ * 1. Emails → clickable mailto links
+ * 2. Bank accounts (Banki: XXXX-XX-XXXXXX) → monospace highlighted
+ * 3. Kennitala (Kt: XXXXXX-XXXX) → monospace highlighted
+ * 4. Dates with time (13. desember kl. 17:30) → bold
+ * 5. Time schedules (16:30: ...) → formatted schedule box
+ * 6. Numbered lists (1. item) → HTML ordered list
+ * 7. Headers ending with colon → bold
+ *
+ * Example:
+ * Input: "Dagskrá:\n16:30: Opnun\n17:00: Fundur\nHafið samband: test@test.is"
+ * Output: "<strong>Dagskrá:</strong>\n<div class='schedule'>...</div>\nHafið samband: <a href='mailto:test@test.is'>test@test.is</a>"
+ */
+export function formatRichText(text) {
+  if (!text) return '';
+
+  let formatted = text;
+
+  // Make emails clickable
+  formatted = formatted.replace(
+    /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g,
+    '<a href="mailto:$1" class="u-text-link">$1</a>'
+  );
+
+  // Format bank account numbers (Banki: XXXX-XX-XXXXXX)
+  formatted = formatted.replace(
+    /(Banki:?\s*)(\d{4}[-–]\d{2}[-–]\d{6})/gi,
+    '$1<span style="font-family: monospace; background: var(--color-surface-secondary, #f0f0f0); padding: 0.125rem 0.375rem; border-radius: 0.25rem;">$2</span>'
+  );
+
+  // Format kennitala (Kt: XXXXXX-XXXX or Kennitala: XXXXXX-XXXX)
+  formatted = formatted.replace(
+    /(Kt\.?:?\s*|Kennitala:?\s*)(\d{6}[-–]\d{4})/gi,
+    '$1<span style="font-family: monospace; background: var(--color-surface-secondary, #f0f0f0); padding: 0.125rem 0.375rem; border-radius: 0.25rem;">$2</span>'
+  );
+
+  // Format inline dates with time (13. desember kl. 17:30)
+  formatted = formatted.replace(
+    /(\d{1,2})\.\s*(janúar|febrúar|mars|apríl|maí|júní|júlí|ágúst|september|október|nóvember|desember)\s+(kl\.?\s*\d{1,2}[.:]\d{2})/gi,
+    '<strong>$1. $2 $3</strong>'
+  );
+
+  // Split into lines for processing schedules and lists
+  const lines = formatted.split('\n');
+  const result = [];
+  let inSchedule = false;
+  let inNumberedList = false;
+  let scheduleItems = [];
+  let listItems = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+
+    // Check for time schedule pattern (HH:MM: or HH:MM -)
+    const timeMatch = line.match(/^(\d{1,2}[:.]\d{2})\s*[-:]?\s*(.+)$/);
+    if (timeMatch) {
+      if (!inSchedule) {
+        // Close any open numbered list
+        if (inNumberedList && listItems.length > 0) {
+          result.push('<ol style="margin: 0.5rem 0; padding-left: 1.5rem;">' + listItems.join('') + '</ol>');
+          listItems = [];
+          inNumberedList = false;
+        }
+        inSchedule = true;
+      }
+      const time = timeMatch[1].replace('.', ':');
+      scheduleItems.push(`<div style="display: flex; gap: 0.75rem; margin-bottom: 0.25rem;"><strong style="min-width: 3rem;">${time}</strong><span>${timeMatch[2]}</span></div>`);
+      continue;
+    }
+
+    // Check for numbered list pattern (1. or 1 followed by text)
+    const numberedMatch = line.match(/^(\d+)[.)\s]+(.+)$/);
+    if (numberedMatch && parseInt(numberedMatch[1]) <= 20) {
+      if (!inNumberedList) {
+        // Close any open schedule
+        if (inSchedule && scheduleItems.length > 0) {
+          result.push('<div style="background: var(--color-surface-secondary, #f5f5f5); padding: 0.75rem; border-radius: 0.5rem; margin: 0.5rem 0;">' + scheduleItems.join('') + '</div>');
+          scheduleItems = [];
+          inSchedule = false;
+        }
+        inNumberedList = true;
+      }
+      listItems.push(`<li>${numberedMatch[2]}</li>`);
+      continue;
+    }
+
+    // Regular line - close any open structures
+    if (inSchedule && scheduleItems.length > 0) {
+      result.push('<div style="background: var(--color-surface-secondary, #f5f5f5); padding: 0.75rem; border-radius: 0.5rem; margin: 0.5rem 0;">' + scheduleItems.join('') + '</div>');
+      scheduleItems = [];
+      inSchedule = false;
+    }
+    if (inNumberedList && listItems.length > 0) {
+      result.push('<ol style="margin: 0.5rem 0; padding-left: 1.5rem;">' + listItems.join('') + '</ol>');
+      listItems = [];
+      inNumberedList = false;
+    }
+
+    // Check for header-like lines (ending with :)
+    if (line.endsWith(':') && line.length < 50 && !line.includes(' ')) {
+      result.push(`<strong>${line}</strong>`);
+    } else {
+      result.push(line);
+    }
+  }
+
+  // Close any remaining open structures
+  if (scheduleItems.length > 0) {
+    result.push('<div style="background: var(--color-surface-secondary, #f5f5f5); padding: 0.75rem; border-radius: 0.5rem; margin: 0.5rem 0;">' + scheduleItems.join('') + '</div>');
+  }
+  if (listItems.length > 0) {
+    result.push('<ol style="margin: 0.5rem 0; padding-left: 1.5rem;">' + listItems.join('') + '</ol>');
+  }
+
+  return result.join('\n');
+}
