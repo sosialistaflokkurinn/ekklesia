@@ -12,6 +12,7 @@
 
 import { debug } from './util-debug.js';
 import { DEFAULT_DURATION_MINUTES } from './election-constants.js';
+import { openElection, closeElection } from '../../admin-elections/js/api/elections-admin-api.js';
 
 class ElectionState extends EventTarget {
   constructor() {
@@ -186,8 +187,22 @@ class ElectionState extends EventTarget {
       duration: durationMinutes
     });
 
-    // TODO(#283): Call Admin Elections API to persist state to server
-    // await ElectionsAdminAPI.openElection(this.state.id);
+    // Persist to server via Admin Elections API
+    if (this.state.id) {
+      try {
+        await openElection(this.state.id, {
+          voting_starts_at: this.state.voting_starts_at,
+          voting_ends_at: this.state.voting_ends_at,
+          duration_minutes: durationMinutes
+        });
+        debug.log('✅ Election opened on server');
+      } catch (error) {
+        debug.error('❌ Failed to open election on server:', error);
+        // Revert local state on failure
+        this.updateStatus('upcoming');
+        throw error;
+      }
+    }
 
     this.dispatchEvent(new CustomEvent('started', {
       detail: this.state
@@ -206,8 +221,20 @@ class ElectionState extends EventTarget {
 
     debug.log('Election closed immediately');
 
-    // TODO(#283): Call Admin Elections API to persist state to server
-    // await ElectionsAdminAPI.closeElection(this.state.id);
+    // Persist to server via Admin Elections API
+    if (this.state.id) {
+      try {
+        await closeElection(this.state.id, {
+          voting_ends_at: this.state.voting_ends_at
+        });
+        debug.log('✅ Election closed on server');
+      } catch (error) {
+        debug.error('❌ Failed to close election on server:', error);
+        // Revert local state on failure
+        this.updateStatus('active');
+        throw error;
+      }
+    }
 
     this.dispatchEvent(new CustomEvent('closed', {
       detail: this.state
