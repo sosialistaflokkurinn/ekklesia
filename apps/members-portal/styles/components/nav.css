@@ -189,9 +189,9 @@
     transform: translateX(0);
   }
 
-  /* Close button inside drawer */
+  /* Close button - only visible when drawer is open */
   .nav__close {
-    display: block;
+    display: none;  /* Hidden by default */
     position: absolute;
     top: var(--spacing-md);
     right: var(--spacing-md);
@@ -204,9 +204,13 @@
     line-height: 1;
     width: 44px;
     height: 44px;
-    display: flex;
     align-items: center;
     justify-content: center;
+  }
+
+  /* Show close button only when drawer is open */
+  .nav__drawer.is-open .nav__close {
+    display: flex;
   }
 
   .nav__close:hover {
