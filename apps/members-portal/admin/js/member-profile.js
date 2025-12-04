@@ -48,9 +48,7 @@ function setI18nStrings() {
   const backToMembersText = document.getElementById('back-to-members-text');
   if (backToMembersText) backToMembersText.textContent = R.string.back_to_members || 'Til baka til félaga';
 
-  // Page header
-  const pageHeaderTitle = document.getElementById('page-header-title');
-  if (pageHeaderTitle) pageHeaderTitle.textContent = R.string.member_profile_title || 'Félagsupplýsingar';
+  // Note: Page header removed - nav brand shows context
 
   // Loading state
   const memberLoadingText = document.getElementById('member-loading-text');

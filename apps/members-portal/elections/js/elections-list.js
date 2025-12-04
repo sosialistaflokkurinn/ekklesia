@@ -50,8 +50,7 @@ async function init() {
 
     // Update page titles (using safe helpers)
     document.title = R.string.page_title_elections;
-    // Note: elections-title removed from HTML - nav brand shows "Kosningar"
-    setTextContentOptional('elections-subtitle', R.string.elections_subtitle);
+    // Note: elections-title and elections-subtitle removed from HTML - nav brand shows "Kosningar" and buttons communicate context
     setTextContentOptional('loading-message', R.string.loading_elections);
     setTextContentOptional('empty-message', R.string.empty_no_elections);
     setTextContentOptional('error-message', R.string.error_load_elections);

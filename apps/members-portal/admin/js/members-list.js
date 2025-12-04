@@ -13,7 +13,6 @@
 import { initSession } from '../../session/init.js';
 import { initNavigation } from '../../js/nav-interactions.js';
 import { debug } from '../../js/utils/util-debug.js';
-import { R } from '../../i18n/strings-loader.js';
 import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
 import MembersAPI from './api/members-api.js';
 import { formatPhone, maskKennitala } from '../../js/utils/util-format.js';
@@ -197,12 +196,7 @@ const adminStrings = new Map();
     // const navLogout = document.getElementById('nav-logout');
     // if (navLogout) navLogout.textContent = R.string.nav_logout || 'Útskrá';
 
-    // Page header
-    const pageTitle = document.getElementById('page-header-title');
-    if (pageTitle) pageTitle.textContent = R.string.members_list_title || 'Félagar';
-
-    const pageSubtitle = document.getElementById('page-header-subtitle');
-    if (pageSubtitle) pageSubtitle.textContent = R.string.members_list_subtitle || 'Skoða og breyta félagaskrá';
+    // Note: Page header removed - nav brand shows "Félagaskrá"
 
     // Table headers
     const headerName = document.getElementById('header-name');
