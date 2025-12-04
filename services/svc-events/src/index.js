@@ -6,6 +6,7 @@ const electionRoutes = require('./routes/route-election');
 const adminRouter = require('./routes/route-admin');
 const externalEventsRouter = require('./routes/route-external-events');
 const { verifyAppCheckOptional } = require('./middleware/middleware-app-check');
+const { readLimiter, adminLimiter } = require('./middleware/middleware-rate-limiter');
 const logger = require('./utils/util-logger');
 
 /**
@@ -68,6 +69,10 @@ app.get('/health', (req, res) => {
 // After 1-2 days of monitoring, switch to verifyAppCheck for enforcement
 // See: docs/security/FIREBASE_APP_CHECK_IMPLEMENTATION.md Phase 5
 app.use('/api', verifyAppCheckOptional);
+
+// Rate limiting for API routes
+app.use('/api', readLimiter);
+app.use('/api/admin', adminLimiter);
 
 // API routes
 app.use('/api', electionRoutes);

@@ -64,16 +64,18 @@ function openConfirmModal(operation) {
   const phrase = document.getElementById('confirm-phrase');
 
   // Set modal content based on operation
+  // Note: Using textContent for security - kennitala is user input
+  // Even though validated as digits-only, we avoid innerHTML with user data
   switch (operation.type) {
     case 'delete-member':
       title.textContent = superuserStrings.get('dangerous_delete_member_title');
-      description.innerHTML = superuserStrings.get('dangerous_delete_member_desc').replace('%s', operation.kennitala);
+      description.textContent = superuserStrings.get('dangerous_delete_member_desc').replace('%s', operation.kennitala);
       phrase.textContent = superuserStrings.get('dangerous_delete_member_phrase');
       break;
 
     case 'anonymize-member':
       title.textContent = superuserStrings.get('dangerous_anonymize_member_title');
-      description.innerHTML = superuserStrings.get('dangerous_anonymize_member_desc').replace('%s', operation.kennitala);
+      description.textContent = superuserStrings.get('dangerous_anonymize_member_desc').replace('%s', operation.kennitala);
       phrase.textContent = superuserStrings.get('dangerous_anonymize_member_phrase');
       break;
 
