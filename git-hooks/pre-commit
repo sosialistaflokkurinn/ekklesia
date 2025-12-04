@@ -309,21 +309,47 @@ echo "🌍 Checking i18n string loader consistency..."
 
 I18N_ISSUES=0
 
-# Find JS files that import string loaders but don't call .load()
-# Files in subdirectories like profile/, components/ are typically modules
-# that are imported by entry-point files which call R.load()
+# i18n Architecture:
+# - Entry points (HTML loads directly): MUST call R.load() or delegate to initAuthenticatedPage()
+# - Modules (imported by entry points): MAY use R.string without calling R.load()
+#
+# Entry point detection:
+# - Files in apps/*/js/*.js are potential entry points
+# - Files that call initAuthenticatedPage() or initI18n() are covered
+# - Files in subdirectories (api/, components/, profile/, utils/) are modules
+# - Library files (rbac.js, auth.js) in js/ root are also modules
+#
+# This check only validates entry points, not modules.
+
+# Library modules in js/ root that are NOT entry points (imported by others)
+JS_LIBRARY_MODULES="rbac.js|auth.js|page-init.js|nav-interactions.js"
+
 for file in $STAGED_FILES; do
   if [[ "$file" == *.js ]] && [ -f "$file" ]; then
-    # Skip module files (in subdirectories) - they're imported by entry points that call R.load()
-    if [[ "$file" == */profile/* ]] || [[ "$file" == */components/* ]] || [[ "$file" == */utils/* ]]; then
+    # Skip module files - they're imported by entry points that handle R.load()
+    # Module directories: api/, components/, profile/, utils/, services/
+    if [[ "$file" == */api/* ]] || \
+       [[ "$file" == */components/* ]] || \
+       [[ "$file" == */profile/* ]] || \
+       [[ "$file" == */utils/* ]] || \
+       [[ "$file" == */services/* ]]; then
+      continue
+    fi
+    
+    # Skip library modules in js/ root (they're imported, not entry points)
+    filename=$(basename "$file")
+    if echo "$filename" | grep -qE "^($JS_LIBRARY_MODULES)$"; then
       continue
     fi
     
     # Check if file imports R from strings-loader (excluding comments)
     if grep -v "^\s*//" "$file" | grep -q "import.*{.*R.*}.*from.*strings-loader" 2>/dev/null; then
-      # Check if file calls R.load() (excluding comments)
-      if ! grep -v "^\s*//" "$file" | grep -q "R\.load\s*(" 2>/dev/null; then
-        echo "⚠️  $file imports R but doesn't call R.load()"
+      # Entry point must either:
+      # 1. Call R.load() directly, OR
+      # 2. Call initAuthenticatedPage() which handles i18n, OR
+      # 3. Call initI18n() which handles i18n
+      if ! grep -v "^\s*//" "$file" | grep -qE "(R\.load\s*\(|initAuthenticatedPage\s*\(|initI18n\s*\()" 2>/dev/null; then
+        echo "⚠️  $file imports R but doesn't initialize i18n (R.load/initAuthenticatedPage/initI18n)"
         ((I18N_ISSUES++))
       fi
     fi
