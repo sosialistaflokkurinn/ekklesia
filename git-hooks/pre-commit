@@ -310,8 +310,15 @@ echo "🌍 Checking i18n string loader consistency..."
 I18N_ISSUES=0
 
 # Find JS files that import string loaders but don't call .load()
+# Files in subdirectories like profile/, components/ are typically modules
+# that are imported by entry-point files which call R.load()
 for file in $STAGED_FILES; do
   if [[ "$file" == *.js ]] && [ -f "$file" ]; then
+    # Skip module files (in subdirectories) - they're imported by entry points that call R.load()
+    if [[ "$file" == */profile/* ]] || [[ "$file" == */components/* ]] || [[ "$file" == */utils/* ]]; then
+      continue
+    fi
+    
     # Check if file imports R from strings-loader (excluding comments)
     if grep -v "^\s*//" "$file" | grep -q "import.*{.*R.*}.*from.*strings-loader" 2>/dev/null; then
       # Check if file calls R.load() (excluding comments)

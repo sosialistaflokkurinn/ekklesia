@@ -124,6 +124,9 @@
   <string name="profile_address_saved">Heimilisfang uppfært</string>
   <string name="profile_address_save_error">Villa við vistun heimilisfangs</string>
   <string name="profile_address_validated">Heimilisfang staðfest</string>
+  <string name="profile_address_not_found_title">Heimilisfang finnst ekki</string>
+  <string name="profile_address_not_found_message">Heimilisfangið fannst ekki í Staðfangaskrá Þjóðskrár. Viltu nota þetta heimilisfang samt?</string>
+  <string name="profile_address_not_validated">Heimilisfang ekki staðfest</string>
   <string name="btn_add_address_text">+ Bæta við heimilisfangi</string>
   <string name="section_communication">Samskiptastillingar</string>
   <string name="label_reachable">Má hafa samband</string>
@@ -223,6 +226,7 @@
   <string name="btn_retry">Reyna aftur</string>
   <string name="btn_vote">Kjósa</string>
   <string name="btn_cancel">Hætta við</string>
+  <string name="btn_save_anyway">Vista samt</string>
   <string name="btn_confirm">Staðfesta</string>
   <string name="results_title">Niðurstöður</string>
   <string name="back_to_elections">Til baka í kosningayfirlit</string>
