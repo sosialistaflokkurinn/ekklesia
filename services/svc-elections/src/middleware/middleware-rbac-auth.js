@@ -47,7 +47,15 @@ async function verifyFirebaseToken(req, res, next) {
 
     // Extract role - support both 'role' claim and 'roles' array
     let userRole = decodedToken.role || null;
-    
+
+    // Map member portal roles to elections roles
+    // superuser -> superadmin, admin -> election-manager
+    if (userRole === 'superuser') {
+      userRole = 'superadmin';
+    } else if (userRole === 'admin') {
+      userRole = 'election-manager';
+    }
+
     // If no single 'role' claim, check 'roles' array for admin/superuser
     if (!userRole && decodedToken.roles) {
       if (decodedToken.roles.includes('superuser')) {
