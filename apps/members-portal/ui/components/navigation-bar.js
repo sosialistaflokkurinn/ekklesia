@@ -130,10 +130,7 @@ export function createNavHeader(options = {}) {
 
       <!-- Navigation Drawer -->
       <div class="nav__drawer" id="nav-drawer" aria-hidden="true">
-        <!-- Close button (mobile only) -->
-        <button class="nav__close" id="nav-close" aria-label="${R.string.nav_close || 'Loka'}">
-          <span class="nav__close-icon">✕</span>
-        </button>
+        <!-- Note: Close button removed - hamburger serves as close button when drawer is open -->
 
         ${tabs.length > 0 ? `
           <!-- Sub-navigation tabs (mobile only) -->
