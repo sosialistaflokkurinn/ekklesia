@@ -273,12 +273,21 @@ async function loadRecentOperations() {
   const container = document.getElementById('recent-dangerous-ops');
 
   // MOCK: Placeholder - should call getAuditLogs with dangerous ops filter
-  container.innerHTML = `
-    <div class="audit-placeholder">
-      <p>${superuserStrings.get('dangerous_no_ops')}</p>
-      <p class="u-text-muted">${superuserStrings.get('dangerous_logs_info')}</p>
-    </div>
-  `;
+  // Use DOM APIs instead of innerHTML to prevent XSS
+  container.textContent = '';
+  const placeholder = document.createElement('div');
+  placeholder.className = 'audit-placeholder';
+
+  const noOpsMsg = document.createElement('p');
+  noOpsMsg.textContent = superuserStrings.get('dangerous_no_ops');
+  placeholder.appendChild(noOpsMsg);
+
+  const logsInfo = document.createElement('p');
+  logsInfo.className = 'u-text-muted';
+  logsInfo.textContent = superuserStrings.get('dangerous_logs_info');
+  placeholder.appendChild(logsInfo);
+
+  container.appendChild(placeholder);
 }
 
 /**
