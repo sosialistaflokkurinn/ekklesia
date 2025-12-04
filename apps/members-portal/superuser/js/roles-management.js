@@ -275,6 +275,7 @@ function resetRoleSelector() {
  * Handle role option click
  */
 function handleRoleSelect(role) {
+  debug.log('handleRoleSelect called with role:', role, 'type:', typeof role);
   selectedRole = role;
 
   // Update UI
@@ -303,7 +304,20 @@ function getHighestRole(roles) {
  * Save role change
  */
 async function saveRoleChange() {
-  if (!selectedMember || !selectedRole) return;
+  debug.log('saveRoleChange called, selectedRole:', selectedRole, 'selectedMember:', selectedMember?.firebaseUid);
+
+  if (!selectedMember || !selectedRole) {
+    debug.warn('saveRoleChange: Missing member or role', { selectedMember: !!selectedMember, selectedRole });
+    return;
+  }
+
+  // Validate role before sending (match backend validation)
+  const VALID_ROLES = ['member', 'admin', 'superuser'];
+  if (typeof selectedRole !== 'string' || !VALID_ROLES.includes(selectedRole)) {
+    debug.error('Invalid role selected:', selectedRole, 'type:', typeof selectedRole);
+    showToast(`Villa: Ógilt hlutverk "${selectedRole}"`, 'error');
+    return;
+  }
 
   const currentHighest = getHighestRole(selectedMember.currentRoles || []);
 
@@ -331,10 +345,13 @@ async function saveRoleChange() {
     const functions = getFunctions('europe-west2');
     const setUserRole = httpsCallable(functions, 'setUserRole');
 
-    const result = await setUserRole({
+    const payload = {
       target_uid: selectedMember.firebaseUid,
       role: selectedRole
-    });
+    };
+    debug.log('Calling setUserRole with payload:', payload);
+
+    const result = await setUserRole(payload);
 
     debug.log('Role change result:', result.data);
 
