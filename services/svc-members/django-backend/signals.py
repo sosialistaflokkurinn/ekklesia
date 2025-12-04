@@ -14,6 +14,17 @@ from membership.models import Comrade
 
 logger = logging.getLogger(__name__)
 
+
+def mask_ssn(ssn):
+    """
+    Mask SSN for logging to prevent PII exposure.
+    Returns only last 4 digits with prefix masked.
+    Example: "0101701234" -> "******1234"
+    """
+    if not ssn or len(ssn) < 4:
+        return "****"
+    return f"******{ssn[-4:]}"
+
 # Cloud Function URL - set in Django settings or environment
 SYNC_CLOUD_FUNCTION_URL = os.environ.get(
     'SYNC_CLOUD_FUNCTION_URL',
@@ -155,17 +166,20 @@ def sync_to_firestore(kennitala, action, data=None):
         )
 
         if response.status_code == 200:
-            logger.info(f'[FIRESTORE SYNC] {action} for {kennitala[:6]}**** succeeded')
+            logger.info('[FIRESTORE SYNC] %s for member %s succeeded',
+                       action, mask_ssn(kennitala))
             return True
         else:
-            logger.error(f'[FIRESTORE SYNC] {action} for {kennitala[:6]}**** failed: {response.status_code} - {response.text}')
+            logger.error('[FIRESTORE SYNC] %s for member %s failed: %d',
+                        action, mask_ssn(kennitala), response.status_code)
             return False
 
     except requests.exceptions.Timeout:
-        logger.error(f'[FIRESTORE SYNC] Timeout syncing {kennitala[:6]}****')
+        logger.error('[FIRESTORE SYNC] Timeout syncing member %s', mask_ssn(kennitala))
         return False
     except Exception as e:
-        logger.error(f'[FIRESTORE SYNC] Error syncing {kennitala[:6]}****: {e}')
+        logger.error('[FIRESTORE SYNC] Error syncing member %s: %s',
+                    mask_ssn(kennitala), type(e).__name__)
         return False
 
 

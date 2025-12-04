@@ -195,14 +195,26 @@ export class PhoneManager {
       });
 
       // Default star icon
-      const defaultIcon = el('span', 'phone-default-icon', {
+      const defaultIcon = el('span', 'phone-default-icon item-default-icon', {
         title: phone.is_default ? R.string.profile_phone_default_set : R.string.profile_phone_set_default,
         style: { cursor: 'pointer' },
         onclick: () => this.setDefault(index)
       }, phone.is_default ? '⭐' : '☆');
 
+      // Save button (cosmetic - actual save happens on blur)
+      const saveBtn = el('button', 'item-save-btn', {
+        title: R.string.btn_save || 'Vista',
+        type: 'button',
+        onclick: async () => {
+          // Trigger blur on number input to save
+          numberInput.blur();
+          // Show brief feedback
+          showStatus(statusIcon, 'success', { baseClass: 'profile-field__status' });
+        }
+      }, '💾');
+
       // Delete button
-      const deleteBtn = el('button', 'phone-delete-btn', {
+      const deleteBtn = el('button', 'phone-delete-btn item-delete-btn', {
         type: 'button',
         title: R.string.profile_phone_delete,
         disabled: this.phoneNumbers.length === 1,
@@ -214,6 +226,7 @@ export class PhoneManager {
         countrySelector,
         numberInput,
         statusIcon,
+        saveBtn,
         defaultIcon,
         deleteBtn
       );

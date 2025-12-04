@@ -1127,6 +1127,7 @@ function setupAutoSaveListeners() {
 
   fields.forEach(fieldName => {
     const inputEl = document.getElementById(`input-${fieldName}`);
+    const saveBtn = document.getElementById(`save-${fieldName}`);
     if (!inputEl) return;
 
     // On blur: Auto-save
@@ -1139,6 +1140,15 @@ function setupAutoSaveListeners() {
     inputEl.addEventListener('focus', () => {
       showFieldStatus(fieldName, '');
     });
+
+    // Save button click: Trigger blur to save
+    if (saveBtn) {
+      saveBtn.addEventListener('click', () => {
+        inputEl.blur();
+        // Show brief success feedback
+        showFieldStatus(fieldName, 'success');
+      });
+    }
   });
 }
 

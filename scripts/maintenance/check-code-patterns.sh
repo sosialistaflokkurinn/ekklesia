@@ -194,6 +194,40 @@ else
 fi
 echo ""
 
+# Pattern 10: Hardcoded hex colors in CSS (should use CSS variables)
+echo -e "${BLUE}🔟 Checking for hardcoded hex colors in CSS...${NC}"
+CSS_PATH="apps/members-portal/"
+if [ -d "$CSS_PATH" ]; then
+  # Find hex colors that are NOT:
+  # - In var() fallbacks: var(--something, #hex)
+  # - CSS variable declarations: --color-xxx: #hex
+  # - Common safe values: #fff, #000, transparent
+  # - In comments
+  HARDCODED_COLORS=$(grep -rn --include="*.css" -E ":\s*#[0-9a-fA-F]{3,8}\b" "$CSS_PATH" 2>/dev/null | \
+    grep -v "var(--" | \
+    grep -v -- "--color" | \
+    grep -v -- "--[a-z].*:" | \
+    grep -v "#fff\|#000\|#ffffff\|#000000" | \
+    grep -v "/\*" | \
+    grep -v "check-code-patterns.sh" | \
+    head -10 || true)
+
+  if [ -n "$HARDCODED_COLORS" ]; then
+    echo "$HARDCODED_COLORS"
+    echo -e "   ${YELLOW}⚠️  Found hardcoded hex colors in CSS${NC}"
+    echo -e "   ${YELLOW}💡 Use CSS variables instead:${NC}"
+    echo -e "   ${YELLOW}   color: var(--color-warning-dark);${NC}"
+    echo -e "   ${YELLOW}   Or with fallback:${NC}"
+    echo -e "   ${YELLOW}   color: var(--color-warning-dark, #856404);${NC}"
+    WARNINGS=$((WARNINGS + 1))
+  else
+    echo -e "   ${GREEN}✅ No hardcoded hex colors found${NC}"
+  fi
+else
+  echo -e "   ${BLUE}ℹ️  No CSS directory found, skipping check${NC}"
+fi
+echo ""
+
 # Summary
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 if [ $FOUND_ISSUES -eq 0 ] && [ $WARNINGS -eq 0 ]; then

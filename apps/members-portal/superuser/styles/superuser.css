@@ -187,7 +187,7 @@ body.superuser {
 
 .log-level--warning {
   background: rgba(245, 158, 11, 0.1);
-  color: var(--color-warning, #f59e0b);
+  color: var(--color-warning-dark, #856404);
 }
 
 .log-level--error {
@@ -314,7 +314,7 @@ body.superuser {
 }
 
 .role-option--member .role-option__name {
-  color: var(--color-gold, #f59e0b);
+  color: var(--color-warning-dark, #856404);
 }
 
 .role-option--admin .role-option__name {
@@ -335,7 +335,7 @@ body.superuser {
 /* Warning badge for users not in Firebase */
 .role-badge--warning {
   background: rgba(245, 158, 11, 0.2);
-  color: #92400e;
+  color: var(--color-warning-dark, #856404);
 }
 
 /* ============================================
@@ -656,7 +656,7 @@ body.superuser {
 }
 
 .service-card--degraded .service-card__status {
-  color: var(--color-warning, #f59e0b);
+  color: var(--color-warning-dark, #856404);
 }
 
 .service-card--down .service-card__dot {

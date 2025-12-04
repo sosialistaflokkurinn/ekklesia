@@ -12,6 +12,7 @@ import { debug } from './utils/util-debug.js';
 import { initAuthenticatedPage } from './page-init.js';
 import { setTextContent, setInnerHTML } from '../ui/dom.js';
 import { createButton } from './components/ui-button.js';
+import { extractVideoLinks, formatRichText } from './utils/util-format.js';
 
 // API Configuration
 const EVENTS_API_BASE = 'https://events-service-521240388393.europe-west2.run.app';
@@ -96,18 +97,58 @@ function renderEventsList(events) {
     return '';
   }
 
-  return events.map(event => `
-    <div class="card">
-      ${event.imageUrl ? `<div class="card__image" style="background-image: url('${event.imageUrl}'); height: 200px; background-size: cover; background-position: center;"></div>` : ''}
-      <div class="card__content">
-        <h3 class="card__title">${event.title}</h3>
-        <p class="u-text-muted">${event.date}</p>
-        <p class="u-text-muted">📍 ${event.location}</p>
-        <p style="white-space: pre-line;">${event.description}</p>
-        ${event.facebookUrl ? `<div style="margin-top: 1rem;"><a href="${event.facebookUrl}" target="_blank" rel="noopener noreferrer" class="btn btn--secondary btn--small">Skoða á Facebook</a></div>` : ''}
+  return events.map(event => {
+    // Extract video conference links from description
+    const { links: videoLinks, cleanedText: cleanDescription } = extractVideoLinks(event.description);
+
+    // Build location section with map links
+    let locationHtml = '';
+    if (event.isOnline) {
+      locationHtml = '<p class="u-text-muted">💻 Netviðburður</p>';
+    } else if (event.mapUrls) {
+      locationHtml = `
+        <p class="u-text-muted" style="margin-bottom: 0.25rem;">📍 ${event.location}</p>
+        <p style="margin-top: 0; margin-bottom: 0.5rem;">
+          <a href="${event.mapUrls.googleMaps}" target="_blank" rel="noopener noreferrer" class="u-text-link" style="font-size: 0.875rem; margin-right: 1rem;">
+            🗺️ Google Maps
+          </a>
+          <a href="${event.mapUrls.openStreetMap}" target="_blank" rel="noopener noreferrer" class="u-text-link" style="font-size: 0.875rem;">
+            🌍 OpenStreetMap
+          </a>
+        </p>
+      `;
+    } else {
+      locationHtml = `<p class="u-text-muted">📍 ${event.location}</p>`;
+    }
+
+    // Build video conference links section
+    let videoLinksHtml = '';
+    if (videoLinks.length > 0) {
+      videoLinksHtml = `
+        <p style="margin-top: 0; margin-bottom: 0.5rem;">
+          ${videoLinks.map(url => `
+            <a href="${url}" target="_blank" rel="noopener noreferrer" class="u-text-link" style="font-size: 0.875rem; margin-right: 1rem;">
+              📹 Fjarfundarhlekk
+            </a>
+          `).join('')}
+        </p>
+      `;
+    }
+
+    return `
+      <div class="card">
+        ${event.imageUrl ? `<img src="${event.imageUrl}" alt="${event.title}" width="600" height="315" style="width: 100%; height: auto; display: block; border-radius: 0.5rem 0.5rem 0 0;">` : ''}
+        <div class="card__content">
+          <h2 class="card__title">${event.title}</h2>
+          <p class="u-text-muted">${event.date}</p>
+          ${locationHtml}
+          ${videoLinksHtml}
+          <div style="white-space: pre-line;">${formatRichText(cleanDescription)}</div>
+          ${event.facebookUrl ? `<div style="margin-top: 1rem;"><a href="${event.facebookUrl}" target="_blank" rel="noopener noreferrer" class="btn btn--secondary btn--small">Skoða á Facebook</a></div>` : ''}
+        </div>
       </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 /**
@@ -164,11 +205,18 @@ async function loadEvents(filter = 'upcoming') {
         }
       }
 
+      // Extract location info
+      const loc = event.location || {};
+      const locationDisplay = loc.display || loc.name || 'Staðsetning óþekkt';
+      const mapUrls = loc.mapUrls || null;
+
       return {
         title: event.title,
         date: formattedDate,
         description: event.description,
-        location: event.location,
+        location: locationDisplay,
+        mapUrls: mapUrls,
+        isOnline: event.isOnline,
         status: status,
         facebookUrl: event.facebookUrl,
         imageUrl: event.imageUrl,
@@ -229,7 +277,8 @@ function setupFilters() {
   // Create "Upcoming" tab button (default active - no secondary class)
   tabUpcomingButton = createButton({
     text: R.string.events_tab_upcoming || 'Framundan',
-    variant: 'primary', // This gives us .btn (no extra class needed)
+    variant: 'primary',
+    size: 'small',
     onClick: () => {
       if (currentFilter !== 'upcoming') {
         setActiveTab('upcoming');
@@ -241,7 +290,8 @@ function setupFilters() {
   // Create "Past" tab button (inactive - secondary class)
   tabPastButton = createButton({
     text: R.string.events_tab_past || 'Liðnir viðburðir',
-    variant: 'secondary', // This gives us .btn .btn--secondary
+    variant: 'secondary',
+    size: 'small',
     onClick: () => {
       if (currentFilter !== 'past') {
         setActiveTab('past');

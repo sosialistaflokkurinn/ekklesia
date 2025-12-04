@@ -40,6 +40,7 @@
   <string name="nav_admin_elections">Kosningastjórnun</string>
   <string name="nav_admin_elections_create">Ný kosning</string>
   <string name="nav_admin_elections_control">Stjórnborð kosninga</string>
+  <string name="nav_admin_events">Viðburðastjórnun</string>
   <string name="nav_superuser">Kerfisstjórn</string>
   <string name="nav_superuser_overview">Yfirlit</string>
   <string name="nav_superuser_roles">Hlutverk</string>
@@ -108,6 +109,8 @@
   <string name="profile_phone_save_error">Villa við vistun símanúmers</string>
   <string name="btn_add_phone_text">+ Bæta við símanúmeri</string>
   <string name="label_addresses">Heimilisföng</string>
+  <string name="label_full_address">Heimilisfang (t.d. Gullengi 37, 112 Reykjavík)</string>
+  <string name="address_suggestions_aria">Tillögur að heimilisföngum</string>
   <string name="label_street">Götuheiti</string>
   <string name="label_house_number">Húsnúmer</string>
   <string name="label_house_letter">Húsbókstafur</string>

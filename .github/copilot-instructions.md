@@ -1,38 +1,38 @@
 # Ekklesia Development Context
 
-**Auto-loaded by:** GitHub Copilot (VS Code & Terminal)  
+**Auto-loaded by:** GitHub Copilot (VS Code & Terminal)
 **Manual reference for:** Claude, Gemini, other AI assistants
+
+> **Quick Reference:** See `/CLAUDE.md` for critical rules and deployment warnings.
+> This file contains detailed technical patterns and conventions.
 
 ---
 
 ## 🔒 Security Rules (CRITICAL)
 
-### Git Strategy: "Track All, Push Selectively"
-All files are **tracked locally** (AI can see everything), but sensitive files are
-**blocked from push** by the pre-push hook. See `.git-local-only` for blocked patterns.
+### Git Security: .gitignore Protection
+Sensitive files are protected by `.gitignore` - they are **never tracked or committed**.
 
-### How It Works
-```
-git commit → Files committed locally (AI can read them)
-git push   → Pre-push hook checks .git-local-only
-           → Sensitive files? PUSH BLOCKED
-           → Safe files? Push succeeds
-```
-
-### Local-Only Files (blocked from push)
+### Protected Files (in .gitignore)
 ```bash
-docs/policy/**                              # Meeting notes with personal info
-*KENNITALA*.md, *DUPLICATE_SSN*.md          # PII files
-.env, *.key.json, *client_secret*           # Credentials
-services/svc-members/scripts/check-*.js     # Admin scripts with PII
-*.audit.json, scripts/logs/*.jsonl          # Audit logs
+# Credentials (NEVER tracked)
+.env, *.key.json, *client_secret*           # Environment & secrets
+*serviceAccount*.json                        # GCP service accounts
+
+# PII Protection (NEVER tracked)
+docs/policy/                                 # Meeting notes with personal info
+*KENNITALA*.md                               # SSN-related files
+*.audit.json, scripts/logs/*.jsonl           # Audit logs
+
+# Working directories (local only)
+tmp/, archive-code/, docs/archive/           # Temporary/archived files
+.claude/                                     # AI assistant config
 ```
 
 ### Critical Rules
-- **NEVER** use `git push --no-verify` (bypasses security)
-- Sensitive files ARE committed locally (AI visibility)
-- Sensitive files NEVER go to remote (hook blocks them)
-- If push blocked: Remove sensitive files from commits being pushed
+- **NEVER** commit `.env` files or credentials
+- Check before commit: `git status` should not show sensitive files
+- If unsure: `git check-ignore -v FILENAME`
 
 ---
 

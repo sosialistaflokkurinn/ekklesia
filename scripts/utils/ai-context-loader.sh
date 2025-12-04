@@ -16,9 +16,9 @@ echo ""
 
 # Essential docs to load
 DOCS=(
-    "docs/SESSION_START_REMINDER.md"
+    "CLAUDE.md"
     "docs/status/CURRENT_DEVELOPMENT_STATUS.md"
-    "docs/infrastructure/CLOUD_RUN_SERVICES.md"
+    "docs/operations/CLOUD_RUN_SERVICES.md"
     "docs/operations/OPERATIONAL_PROCEDURES.md"
 )
 
