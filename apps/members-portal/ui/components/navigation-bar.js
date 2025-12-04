@@ -306,12 +306,8 @@ export const NAV_CONFIGS = {
       { href: '/elections/', textKey: 'nav_elections' },
       { href: '/events/', textKey: 'nav_events' },
       { href: '/policy-session/', textKey: 'nav_policy_session' }
-    ],
-    tabs: [
-      { href: '/elections/?type=general', textKey: 'election_type_general' },
-      { href: '/elections/?type=board', textKey: 'election_type_board' },
-      { href: '/elections/?type=policy', textKey: 'election_type_policy' }
     ]
+    // Note: Tabs removed - filter buttons on page provide better UX
   },
 
   /**
