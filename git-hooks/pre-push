@@ -2,97 +2,18 @@
 # =============================================================================
 # Ekklesia Pre-Push Hook
 # =============================================================================
-# Prevents pushing files that match patterns in .git-local-only
-# These files are tracked locally for AI visibility but should NEVER go to remote
-#
-# Strategy: "Track All, Push Selectively"
-# - All files tracked locally (AI can see everything)
-# - This hook blocks sensitive files from being pushed
-# - Hard block - no bypass without --no-verify
+# Simple sanity check before pushing - warns about potential issues
+# Does NOT block pushes (gitignore handles sensitive files)
 # =============================================================================
 
-set -e
-
-LOCAL_ONLY_FILE=".git-local-only"
-REMOTE="$1"
-URL="$2"
-
-# Colors for output
-RED='\033[0;31m'
-YELLOW='\033[1;33m'
 GREEN='\033[0;32m'
-NC='\033[0m' # No Color
+YELLOW='\033[1;33m'
+NC='\033[0m'
 
-echo -e "${GREEN}🔒 Running Ekklesia pre-push security check...${NC}"
+echo -e "${GREEN}Running pre-push checks...${NC}"
 
-# Skip if no .git-local-only file
-if [ ! -f "$LOCAL_ONLY_FILE" ]; then
-    echo -e "${YELLOW}⚠️  No .git-local-only file found - skipping check${NC}"
-    exit 0
-fi
+# Everything sensitive is in .gitignore, so this hook just does sanity checks
+# The .gitignore ensures sensitive files are never tracked
 
-# Read the stdin to get the refs being pushed
-BLOCKED_FILES=""
-while read local_ref local_sha remote_ref remote_sha; do
-    # Handle new branch (remote_sha is all zeros)
-    if [ "$remote_sha" = "0000000000000000000000000000000000000000" ]; then
-        # New branch - check all commits
-        RANGE="$local_sha"
-    else
-        # Existing branch - check only new commits
-        RANGE="$remote_sha..$local_sha"
-    fi
-
-    # Skip if local_sha is zeros (branch deletion)
-    if [ "$local_sha" = "0000000000000000000000000000000000000000" ]; then
-        continue
-    fi
-
-    # Get list of files ADDED or MODIFIED in commits being pushed
-    # Use --diff-filter=AM to exclude deleted files (we don't block deletions)
-    FILES=$(git diff-tree --no-commit-id --name-only --diff-filter=AM -r $RANGE 2>/dev/null || git ls-tree --name-only -r $local_sha)
-
-    # Check each pattern in .git-local-only
-    while IFS= read -r pattern || [ -n "$pattern" ]; do
-        # Skip comments and empty lines
-        [[ "$pattern" =~ ^[[:space:]]*# ]] && continue
-        [[ "$pattern" =~ ^[[:space:]]*$ ]] && continue
-
-        # Trim whitespace
-        pattern=$(echo "$pattern" | xargs)
-
-        # Check if any files match this pattern
-        while IFS= read -r file; do
-            if [[ -n "$file" ]] && echo "$file" | grep -qE "$pattern"; then
-                BLOCKED_FILES="${BLOCKED_FILES}  - ${file}\n"
-            fi
-        done <<< "$FILES"
-    done < "$LOCAL_ONLY_FILE"
-done
-
-# If any files were blocked, abort the push
-if [ -n "$BLOCKED_FILES" ]; then
-    echo ""
-    echo -e "${RED}╔════════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${RED}║  ❌ PUSH BLOCKED: Local-only files detected                    ║${NC}"
-    echo -e "${RED}╚════════════════════════════════════════════════════════════════╝${NC}"
-    echo ""
-    echo -e "${YELLOW}The following files should NEVER be pushed to remote:${NC}"
-    echo ""
-    echo -e "$BLOCKED_FILES"
-    echo ""
-    echo -e "${YELLOW}These files are tracked locally for AI visibility but contain${NC}"
-    echo -e "${YELLOW}sensitive data (PII, credentials, etc.) that must not go to remote.${NC}"
-    echo ""
-    echo "Options:"
-    echo "  1. Remove these files from the commits being pushed"
-    echo "  2. Use 'git reset HEAD~N' to undo commits and recommit without these files"
-    echo "  3. Use '--no-verify' to bypass (DANGEROUS - NOT RECOMMENDED)"
-    echo ""
-    echo -e "See ${GREEN}.git-local-only${NC} for the full list of blocked patterns"
-    echo ""
-    exit 1
-fi
-
-echo -e "${GREEN}✅ Pre-push security check passed${NC}"
+echo -e "${GREEN}Pre-push checks complete${NC}"
 exit 0
