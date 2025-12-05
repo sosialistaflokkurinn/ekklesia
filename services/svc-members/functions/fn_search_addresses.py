@@ -81,9 +81,11 @@ def search_addresses(req: https_fn.CallableRequest) -> dict[str, Any]:
     try:
         logger.info(f"Searching addresses for: '{street_query}' (number={number_filter}, letter={letter_filter})")
 
-        # Use iceaddr to search by street name only
-        # iceaddr_lookup returns list of dicts with address info
-        results = iceaddr_lookup(street_query)
+        # Use iceaddr to search by street name
+        # When user specifies a house number, we need more results to find it
+        # Long streets like Laugavegur have 150+ addresses
+        iceaddr_limit = 500 if number_filter else 100
+        results = iceaddr_lookup(street_query, limit=iceaddr_limit)
 
         # Filter by number if provided - use PREFIX matching for autocomplete
         # "Gullengi 3" should match 3, 31, 33, 35, 37, etc.

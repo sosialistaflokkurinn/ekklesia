@@ -151,6 +151,20 @@ def listElevatedUsers(req: https_fn.CallableRequest) -> dict:
     return list_elevated_users_handler(req)
 
 # ==============================================================================
+# LOOKUP FUNCTIONS (skraning-static registration form)
+# ==============================================================================
+
+# Import lookup functions for registration form dropdowns
+from fn_list_unions import list_unions
+from fn_list_job_titles import list_job_titles
+from fn_list_countries import list_countries
+from fn_list_postal_codes import list_postal_codes
+from fn_cells_by_postal_code import get_cells_by_postal_code
+
+# Import registration function
+from fn_register_member import register_member
+
+# ==============================================================================
 # EXPORTS
 # ==============================================================================
 
@@ -183,4 +197,12 @@ __all__ = [
     'anonymizeMember',
     'getLoginAudit',
     'listElevatedUsers',
+    # Lookup functions (skraning-static)
+    'list_unions',
+    'list_job_titles',
+    'list_countries',
+    'list_postal_codes',
+    'get_cells_by_postal_code',
+    # Registration function
+    'register_member',
 ]
