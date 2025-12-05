@@ -14,7 +14,8 @@ from util_logging import log_json
 from shared.validators import normalize_kennitala as normalize_kennitala_shared, normalize_phone as normalize_phone_shared
 
 # Django API Base URL
-DJANGO_API_BASE_URL = "https://starf.sosialistaflokkurinn.is/felagar"
+# 2025-12-05: Switched from Linode to GCP Cloud Run
+DJANGO_API_BASE_URL = "https://django-socialism-521240388393.europe-west2.run.app/felagar"
 
 
 def normalize_kennitala(kennitala: str) -> str:
@@ -84,7 +85,7 @@ def fetch_members_from_django(page: int = 1) -> Dict[str, Any]:
         Dict with keys: count, next, previous, results
     """
     token = get_django_api_token()
-    url = "https://starf.sosialistaflokkurinn.is/felagar/api/full/"
+    url = f"{DJANGO_API_BASE_URL}/api/full/"
 
     headers = {
         'Authorization': f'Token {token}',

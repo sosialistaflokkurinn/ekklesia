@@ -56,22 +56,18 @@ CLOUD_RUN_SERVICES = [
     },
 ]
 
-# External services (Linode, etc.)
+# External services (GCP Cloud Run)
 EXTERNAL_SERVICES = [
     {
-        "id": "django-linode",
-        "name": "Django Backend (Linode)",
-        "url": "https://starf.sosialistaflokkurinn.is/felagar/api/"
+        "id": "django-socialism",
+        "name": "Django Backend (GCP)",
+        "url": "https://django-socialism-521240388393.europe-west2.run.app/felagar/api/"
     },
 ]
 
 # Demo/Test services (not in production yet)
 DEMO_SERVICES = [
-    {
-        "id": "django-socialism-demo",
-        "name": "Django Backend (GCP Demo)",
-        "url": "https://django-socialism-demo-521240388393.europe-west2.run.app/felagar/api/"
-    },
+    # django-socialism-demo deleted 2025-12-05 - promoted to production as django-socialism
 ]
 
 # Firebase Functions - Member Operations (Cloud Run backed, no /health endpoint)
@@ -942,8 +938,8 @@ def _fetch_django_elevated_users() -> Dict[str, list]:
         'Accept': 'application/json'
     }
 
-    # Django API endpoint for all members
-    url = "https://starf.sosialistaflokkurinn.is/felagar/api/full/"
+    # Django API endpoint for all members (GCP Cloud Run)
+    url = "https://django-socialism-521240388393.europe-west2.run.app/felagar/api/full/"
 
     superusers = []
     admins = []
