@@ -5,10 +5,13 @@
 | What | Where |
 |------|-------|
 | Frontend | `apps/members-portal/` → Firebase Hosting |
-| Backend | `services/svc-*/` → Cloud Run |
+| Cloud Functions | `services/svc-members/functions/` → Firebase Functions |
+| Elections/Events | `services/svc-elections/`, `svc-events/` → Cloud Run |
 | Database | Cloud SQL PostgreSQL (europe-west2) |
+| Django | `services/svc-members/django-backend/` → Linode |
 | Deploy frontend | `cd services/svc-members && firebase deploy --only hosting` |
-| Deploy backend | `cd services/svc-[name] && ./deploy.sh` |
+| Deploy function | `cd services/svc-members && firebase deploy --only functions:NAME` |
+| Deploy Cloud Run | `cd services/svc-elections && ./deploy.sh` |
 
 **Detailed docs:** [docs/README.md](docs/README.md)
 
@@ -89,13 +92,30 @@ ekklesia/
 4. Verify in browser console
 
 ### Deploy
+
 ```bash
-# Frontend
+# Frontend (HTML/JS/CSS)
 cd services/svc-members && firebase deploy --only hosting
 
-# Backend
+# Cloud Functions - single function (preferred)
+cd services/svc-members && firebase deploy --only functions:FUNCTION_NAME
+
+# Cloud Functions - all (note: large upload ~130MB)
+cd services/svc-members && firebase deploy --only functions
+
+# Elections service (Cloud Run)
 cd services/svc-elections && ./deploy.sh
+
+# Events service (Cloud Run)
+cd services/svc-events && ./deploy.sh
 ```
+
+**Important deploy notes:**
+- `svc-members` uses Firebase Functions (Python) - deploy via `firebase deploy`
+- `svc-elections` and `svc-events` use Cloud Run - deploy via `./deploy.sh`
+- Never use `firebase deploy --only functions` without specifying function name (slow + risky)
+- Single function deploy: `firebase deploy --only functions:sync_from_django`
+- Django backend (Linode): push to GitHub triggers CI/CD, or SSH manually
 
 ---
 
