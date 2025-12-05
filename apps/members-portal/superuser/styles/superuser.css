@@ -598,6 +598,35 @@ body.superuser {
   color: var(--color-text-muted, #4a5568);
 }
 
+/* Health breakdown - service category counts */
+.health-breakdown {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border, #e5e7eb);
+}
+
+.health-breakdown__item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  background: var(--color-surface, #f9fafb);
+  border-radius: var(--radius-sm, 0.25rem);
+  font-size: 0.875rem;
+}
+
+.health-breakdown__label {
+  color: var(--color-text-muted, #4a5568);
+}
+
+.health-breakdown__count {
+  font-weight: 600;
+  color: var(--color-text, #1a202c);
+}
+
 .service-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));

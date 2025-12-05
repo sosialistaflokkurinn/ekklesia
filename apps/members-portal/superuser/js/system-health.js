@@ -50,6 +50,20 @@ const ADDRESS_FUNCTIONS = [
   { id: 'validate-postal-code', nameKey: 'service_name_validate_postal_code' },
 ];
 
+// Firebase Functions - Lookup Data (skraning-static)
+const LOOKUP_FUNCTIONS = [
+  { id: 'list-unions', nameKey: 'service_name_list_unions' },
+  { id: 'list-job-titles', nameKey: 'service_name_list_job_titles' },
+  { id: 'list-countries', nameKey: 'service_name_list_countries' },
+  { id: 'list-postal-codes', nameKey: 'service_name_list_postal_codes' },
+  { id: 'get-cells-by-postal-code', nameKey: 'service_name_get_cells_by_postal_code' },
+];
+
+// Firebase Functions - Registration (skraning-static)
+const REGISTRATION_FUNCTIONS = [
+  { id: 'register-member', nameKey: 'service_name_register_member' },
+];
+
 // Firebase Functions - Superuser Operations
 const SUPERUSER_FUNCTIONS = [
   { id: 'checksystemhealth', nameKey: 'service_name_checksystemhealth' },
@@ -59,6 +73,7 @@ const SUPERUSER_FUNCTIONS = [
   { id: 'getloginaudit', nameKey: 'service_name_getloginaudit' },
   { id: 'harddeletemember', nameKey: 'service_name_harddeletemember' },
   { id: 'anonymizemember', nameKey: 'service_name_anonymizemember' },
+  { id: 'listelevatedusers', nameKey: 'service_name_listelevatedusers' },
 ];
 
 // Firebase Functions - Utility/Background
@@ -68,7 +83,7 @@ const UTILITY_FUNCTIONS = [
 ];
 
 // Combined for backward compatibility
-const FIREBASE_FUNCTIONS = [...MEMBER_FUNCTIONS, ...ADDRESS_FUNCTIONS, ...SUPERUSER_FUNCTIONS, ...UTILITY_FUNCTIONS];
+const FIREBASE_FUNCTIONS = [...MEMBER_FUNCTIONS, ...ADDRESS_FUNCTIONS, ...LOOKUP_FUNCTIONS, ...REGISTRATION_FUNCTIONS, ...SUPERUSER_FUNCTIONS, ...UTILITY_FUNCTIONS];
 
 const DATABASE_SERVICES = [
   { id: 'firestore', name: 'Firestore', status: 'unknown' },
@@ -196,6 +211,17 @@ function updateHealthSummary(allServices) {
 }
 
 /**
+ * Update breakdown counts display
+ */
+function updateBreakdownCounts(counts) {
+  document.getElementById('count-gcp').textContent = counts.gcp;
+  document.getElementById('count-external').textContent = counts.external;
+  document.getElementById('count-functions').textContent = counts.functions;
+  document.getElementById('count-database').textContent = counts.database;
+  document.getElementById('count-firebase').textContent = counts.firebase;
+}
+
+/**
  * Check all services using Cloud Function (avoids CORS)
  */
 async function checkAllServices() {
@@ -254,6 +280,8 @@ async function checkAllServices() {
 
     renderServicesGrid('member-functions', mapFunctions(MEMBER_FUNCTIONS));
     renderServicesGrid('address-functions', mapFunctions(ADDRESS_FUNCTIONS));
+    renderServicesGrid('lookup-functions', mapFunctions(LOOKUP_FUNCTIONS));
+    renderServicesGrid('registration-functions', mapFunctions(REGISTRATION_FUNCTIONS));
     renderServicesGrid('superuser-functions', mapFunctions(SUPERUSER_FUNCTIONS));
     renderServicesGrid('utility-functions', mapFunctions(UTILITY_FUNCTIONS));
 
@@ -282,6 +310,16 @@ async function checkAllServices() {
     // Update overall summary (only count services with health checks)
     const allHealthCheckedServices = [...coreResults, ...externalResults, ...dbResults, ...firebaseResults];
     updateHealthSummary(allHealthCheckedServices);
+
+    // Update breakdown counts
+    const allFunctions = [...MEMBER_FUNCTIONS, ...ADDRESS_FUNCTIONS, ...LOOKUP_FUNCTIONS, ...REGISTRATION_FUNCTIONS, ...SUPERUSER_FUNCTIONS, ...UTILITY_FUNCTIONS];
+    updateBreakdownCounts({
+      gcp: coreResults.length,
+      external: externalResults.length,
+      functions: allFunctions.length,
+      database: dbResults.length,
+      firebase: firebaseResults.length
+    });
 
   } catch (error) {
     debug.error('Error checking services:', error);
@@ -333,6 +371,8 @@ async function checkAllServicesClientSide() {
 
     renderServicesGrid('member-functions', mapFallback(MEMBER_FUNCTIONS));
     renderServicesGrid('address-functions', mapFallback(ADDRESS_FUNCTIONS));
+    renderServicesGrid('lookup-functions', mapFallback(LOOKUP_FUNCTIONS));
+    renderServicesGrid('registration-functions', mapFallback(REGISTRATION_FUNCTIONS));
     renderServicesGrid('superuser-functions', mapFallback(SUPERUSER_FUNCTIONS));
     renderServicesGrid('utility-functions', mapFallback(UTILITY_FUNCTIONS));
 
@@ -356,6 +396,16 @@ async function checkAllServicesClientSide() {
 
     const allServices = [...coreResults, ...externalResults, ...dbResults, ...firebaseResults];
     updateHealthSummary(allServices);
+
+    // Update breakdown counts
+    const allFunctions = [...MEMBER_FUNCTIONS, ...ADDRESS_FUNCTIONS, ...LOOKUP_FUNCTIONS, ...REGISTRATION_FUNCTIONS, ...SUPERUSER_FUNCTIONS, ...UTILITY_FUNCTIONS];
+    updateBreakdownCounts({
+      gcp: coreResults.length,
+      external: externalResults.length,
+      functions: allFunctions.length,
+      database: dbResults.length,
+      firebase: firebaseResults.length
+    });
 
     showToast(superuserStrings.get('status_fallback_cors'), 'info', { duration: 3000 });
   } catch (error) {

@@ -19,28 +19,48 @@ import { httpsCallable } from 'https://www.gstatic.com/firebasejs/10.7.1/firebas
 // Service group definitions
 const SERVICE_GROUPS = {
   auth: {
-    nameKey: 'group_auth',
+    nameKey: 'architecture_group_auth',
     services: ['handlekenniauth', 'verifymembership']
   },
+  firestore: {
+    nameKey: 'architecture_group_firestore',
+    services: ['firestore-database']
+  },
+  cloudrun: {
+    nameKey: 'architecture_group_cloudrun',
+    services: ['elections-service', 'events-service']
+  },
   sync: {
-    nameKey: 'group_sync',
+    nameKey: 'architecture_group_sync',
     services: ['sync-from-django', 'updatememberprofile', 'syncmembers']
   },
   address: {
-    nameKey: 'group_address',
+    nameKey: 'architecture_group_address',
     services: ['search-addresses', 'validate-address', 'validate-postal-code']
   },
-  voting: {
-    nameKey: 'group_voting',
-    services: ['elections-service', 'events-service']
-  },
   audit: {
-    nameKey: 'group_audit',
+    nameKey: 'architecture_group_audit',
     services: ['auditmemberchanges', 'cleanupauditlogs', 'healthz']
   },
   superuser: {
-    nameKey: 'group_superuser',
-    services: ['checksystemhealth', 'setuserrole', 'getuserrole', 'getauditlogs', 'getloginaudit', 'harddeletemember', 'anonymizemember']
+    nameKey: 'architecture_group_superuser',
+    services: ['checksystemhealth', 'setuserrole', 'getuserrole', 'getauditlogs', 'getloginaudit', 'harddeletemember', 'anonymizemember', 'listelevatedusers']
+  },
+  lookup: {
+    nameKey: 'architecture_group_lookup',
+    services: ['list-unions', 'list-job-titles', 'list-countries', 'list-postal-codes', 'get-cells-by-postal-code']
+  },
+  registration: {
+    nameKey: 'architecture_group_registration',
+    services: ['register-member']
+  },
+  demo: {
+    nameKey: 'architecture_group_demo',
+    services: ['django-socialism-demo']
+  },
+  utility: {
+    nameKey: 'architecture_group_utility',
+    services: ['get-django-token']
   }
 };
 
@@ -56,6 +76,7 @@ const SERVICE_NAMES = {
   'validate-postal-code': 'service_validate_postal_code',
   'elections-service': 'service_elections_service',
   'events-service': 'service_events_service',
+  'members-service': 'service_members_service',
   'auditmemberchanges': 'service_auditmemberchanges',
   'cleanupauditlogs': 'service_cleanupauditlogs',
   'healthz': 'service_healthz',
@@ -65,7 +86,17 @@ const SERVICE_NAMES = {
   'getauditlogs': 'service_getauditlogs',
   'getloginaudit': 'service_getloginaudit',
   'harddeletemember': 'service_harddeletemember',
-  'anonymizemember': 'service_anonymizemember'
+  'anonymizemember': 'service_anonymizemember',
+  'listelevatedusers': 'service_listelevatedusers',
+  'firestore-database': 'service_firestore_database',
+  'list-unions': 'service_list_unions',
+  'list-job-titles': 'service_list_job_titles',
+  'list-countries': 'service_list_countries',
+  'list-postal-codes': 'service_list_postal_codes',
+  'get-cells-by-postal-code': 'service_get_cells_by_postal_code',
+  'register-member': 'service_register_member',
+  'django-socialism-demo': 'service_django_socialism_demo',
+  'get-django-token': 'service_get_django_token'
 };
 
 // State

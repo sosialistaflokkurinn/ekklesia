@@ -145,6 +145,13 @@
   <string name="service_name_anonymizemember">Nafnleysa félagsmann</string>
   <string name="service_name_get_django_token">Django API lykill</string>
   <string name="service_name_cleanupauditlogs">Hreinsun aðgerðaskráa</string>
+  <string name="service_name_listelevatedusers">Listi yfir stjórnendur</string>
+  <string name="service_name_list_unions">Stéttarfélög</string>
+  <string name="service_name_list_job_titles">Starfsheiti</string>
+  <string name="service_name_list_countries">Lönd</string>
+  <string name="service_name_list_postal_codes">Póstnúmer</string>
+  <string name="service_name_get_cells_by_postal_code">Sellur eftir póstnúmeri</string>
+  <string name="service_name_register_member">Skráning félaga</string>
   <string name="service_status_no_url">Engin heilsuslóð skilgreind</string>
   <string name="service_status_active">Virk</string>
   <string name="service_status_timeout">Tímamörk</string>
@@ -289,12 +296,50 @@
 
   <!-- Architecture service groups -->
   <string name="architecture_group_auth">Auðkenning</string>
+  <string name="architecture_group_firestore">Firestore</string>
+  <string name="architecture_group_cloudrun">Cloud Run</string>
   <string name="architecture_group_sync">Samstilling</string>
   <string name="architecture_group_address">Heimilisföng</string>
-  <string name="architecture_group_voting">Kosningar</string>
   <string name="architecture_group_audit">Eftirlit</string>
   <string name="architecture_group_superuser">Kerfisstjórn</string>
+  <string name="architecture_group_lookup">Uppflettingar</string>
+  <string name="architecture_group_registration">Skráning</string>
+  <string name="architecture_group_demo">Tilraunaþjónustur</string>
+  <string name="architecture_group_utility">Hjálparföll</string>
   <string name="architecture_group_infra">Innviðir</string>
+
+  <!-- Architecture service names -->
+  <string name="service_handlekenniauth">Kenni.is Auth</string>
+  <string name="service_verifymembership">Staðfesting aðildar</string>
+  <string name="service_sync_from_django">Django → Firestore sync</string>
+  <string name="service_updatememberprofile">Prófíluppfærsla</string>
+  <string name="service_syncmembers">Samstilling félagaskrár</string>
+  <string name="service_search_addresses">Heimilisfangaleit</string>
+  <string name="service_validate_address">Staðfesting heimilisfangs</string>
+  <string name="service_validate_postal_code">Staðfesting póstnúmers</string>
+  <string name="service_elections_service">Kosningaþjónusta</string>
+  <string name="service_events_service">Viðburðaþjónusta</string>
+  <string name="service_members_service">Félagaþjónusta</string>
+  <string name="service_auditmemberchanges">Breytingasaga félagsmanna</string>
+  <string name="service_cleanupauditlogs">Hreinsun aðgerðaskráa</string>
+  <string name="service_healthz">Heilsukönnun</string>
+  <string name="service_checksystemhealth">Heilsukönnun kerfis</string>
+  <string name="service_setuserrole">Setja hlutverk notanda</string>
+  <string name="service_getuserrole">Sækja hlutverk notanda</string>
+  <string name="service_getauditlogs">Aðgerðaskrár</string>
+  <string name="service_getloginaudit">Innskráningarsaga</string>
+  <string name="service_harddeletemember">Eyða félagsmanni</string>
+  <string name="service_anonymizemember">Nafnleysa félagsmann</string>
+  <string name="service_listelevatedusers">Listi yfir stjórnendur</string>
+  <string name="service_firestore_database">Firestore gagnagrunnur</string>
+  <string name="service_list_unions">Stéttarfélög</string>
+  <string name="service_list_job_titles">Starfsheiti</string>
+  <string name="service_list_countries">Lönd</string>
+  <string name="service_list_postal_codes">Póstnúmer</string>
+  <string name="service_get_cells_by_postal_code">Sellur eftir póstnúmeri</string>
+  <string name="service_register_member">Skráning félaga</string>
+  <string name="service_django_socialism_demo">Django tilraunaþjónusta</string>
+  <string name="service_get_django_token">Django aðgangslykill</string>
 
   <!-- Architecture stats -->
   <string name="architecture_stat_total">Samtals</string>
@@ -330,6 +375,13 @@
   <string name="health_refresh_btn">Uppfæra</string>
   <string name="health_checking">Athuga stöðu...</string>
 
+  <!-- Breakdown labels -->
+  <string name="breakdown_gcp">GCP</string>
+  <string name="breakdown_external">Ytri</string>
+  <string name="breakdown_functions">Functions</string>
+  <string name="breakdown_database">DB</string>
+  <string name="breakdown_firebase">Firebase</string>
+
   <string name="health_section_gcp">GCP þjónustur</string>
   <string name="health_section_gcp_desc">Google Cloud Run þjónustur með heilsuskoðun.</string>
   <string name="health_section_external">Ytri þjónustur</string>
@@ -344,6 +396,10 @@
   <string name="health_section_superuser_desc">Þjónustur fyrir kerfisstjórnun og eftirlit.</string>
   <string name="health_section_utility">Hjálparföll</string>
   <string name="health_section_utility_desc">Bakgrunnsföll og hjálparföll.</string>
+  <string name="health_section_lookup">Uppflettingar</string>
+  <string name="health_section_lookup_desc">Gögn fyrir skráningarform (stéttarfélög, starfsheiti, lönd, póstnúmer).</string>
+  <string name="health_section_registration">Skráningarþjónustur</string>
+  <string name="health_section_registration_desc">Þjónustur fyrir skráningu nýrra félaga.</string>
   <string name="health_section_database">Gagnagrunnar</string>
   <string name="health_section_schema">Gagnagrunna skemu</string>
   <string name="health_section_schema_desc">Yfirlit yfir gagnaskipan í Firestore og PostgreSQL.</string>
