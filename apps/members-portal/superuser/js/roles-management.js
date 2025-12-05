@@ -139,8 +139,8 @@ async function getFirebaseUserInfo(firebaseUid) {
     return {
       uid: userData.uid,
       email: userData.email || '',
-      roles: userData.role ? [userData.role] : ['member'],  // Convert single role to array
-      role: userData.role || 'member',
+      roles: userData.roles || (userData.role ? [userData.role] : ['member']),  // Prefer roles array
+      role: userData.role || 'member',  // Legacy fallback
       lastLogin: userData.lastSignIn || null
     };
   } catch (error) {

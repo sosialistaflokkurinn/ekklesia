@@ -228,11 +228,12 @@ def set_user_role_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
                  old_roles=old_roles,
                  new_roles=new_roles)
 
-        # Update Firestore user document (roles array only, no 'role' string)
+        # Update Firestore user document (roles array only, delete legacy 'role' string)
         db = firestore.client()
         user_ref = db.collection("users").document(target_uid)
         user_ref.set({
             "roles": new_roles,
+            "role": firestore.DELETE_FIELD,  # Remove legacy field
             "roleUpdatedAt": firestore.SERVER_TIMESTAMP,
             "roleUpdatedBy": caller_uid
         }, merge=True)
@@ -291,11 +292,15 @@ def get_user_role_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
         target_user = auth.get_user(target_uid)
         claims = target_user.custom_claims or {}
 
+        # Get roles from array (new format) with fallback
+        roles = claims.get("roles", ["member"])
+
         return {
             "uid": target_uid,
             "email": target_user.email,
             "displayName": target_user.display_name,
-            "role": claims.get("role", "member"),
+            "roles": roles,  # Array format
+            "role": roles[-1] if roles else "member",  # Legacy: highest role for backwards compat
             "disabled": target_user.disabled,
             "lastSignIn": target_user.user_metadata.last_sign_in_timestamp
         }
