@@ -194,6 +194,11 @@ def sync_member_on_save(sender, instance, created, **kwargs):
     """
     Sync member to Firestore immediately when created or updated.
     """
+    # Skip 9999 prefix (duplicate/placeholder entries - should not be in Firestore)
+    if instance.ssn and instance.ssn.startswith('9999'):
+        logger.debug('[FIRESTORE SYNC] Skipping 9999 prefix member: %s', mask_ssn(instance.ssn))
+        return
+
     action = 'create' if created else 'update'
     data = serialize_member(instance)
     sync_to_firestore(instance.ssn, action, data)
@@ -205,4 +210,10 @@ def sync_member_on_delete(sender, instance, **kwargs):
     Sync member deletion to Firestore immediately.
     """
     ssn = _member_ssn_before_delete.pop(instance.pk, instance.ssn)
+
+    # Skip 9999 prefix (duplicate/placeholder entries - not in Firestore anyway)
+    if ssn and ssn.startswith('9999'):
+        logger.debug('[FIRESTORE SYNC] Skipping delete for 9999 prefix member: %s', mask_ssn(ssn))
+        return
+
     sync_to_firestore(ssn, 'delete')

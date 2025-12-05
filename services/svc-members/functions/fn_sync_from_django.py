@@ -118,6 +118,17 @@ def sync_from_django(req: https_fn.Request) -> https_fn.Response:
                 headers=headers
             )
 
+        # Skip 9999 prefix (duplicate/placeholder entries - should not be in Firestore)
+        if kennitala.startswith('9999'):
+            log_json('DEBUG', 'Skipping 9999 prefix in real-time sync',
+                     event='realtime_sync_skipped_9999',
+                     kennitala=f"{kennitala[:4]}******")
+            return https_fn.Response(
+                json.dumps({'status': 'skipped', 'reason': '9999_prefix'}),
+                status=200,  # 200 so Django doesn't think it failed
+                headers=headers
+            )
+
         log_json('INFO', 'Sync from Django received',
                  kennitala=f"{kennitala[:6]}****",
                  action=action)
