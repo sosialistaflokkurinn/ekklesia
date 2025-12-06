@@ -15,7 +15,33 @@
 
 ---
 
-## System Diagram
+## System Overview
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    SYSTEM ARCHITECTURE                       │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  Ekklesia (THIS PROJECT - Future source of truth)           │
+│  ├── Firestore database (canonical member data)             │
+│  ├── Firebase Hosting (members-portal)                       │
+│  ├── Firebase Functions (svc-members)                        │
+│  ├── Cloud Run (svc-elections, svc-events)                  │
+│  └── Postmark email (planned - #323)                        │
+│                                                              │
+│  Django GCP (INTERIM admin interface)                       │
+│  ├── Cloud Run: django-socialism                            │
+│  ├── Cloud SQL PostgreSQL                                    │
+│  └── SendGrid email (temporary)                             │
+│                                                              │
+│  Linode (LEGACY - being retired)                            │
+│  ├── Django 2.2.3 / Python 3.6                              │
+│  └── Will be decommissioned after DNS migration             │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Data Flow Diagram
 
 ```
                               ┌─────────────┐
@@ -49,19 +75,26 @@
          │  └──────────────┬───────────────┘          │
          └─────────────────┼───────────────────────────┘
                            │
-                           ▼
-                  ┌─────────────────┐
-                  │   Cloud SQL     │
-                  │  PostgreSQL 15  │
-                  └─────────────────┘
-                           │
-                           │ sync
-                           ▼
-                  ┌─────────────────┐
-                  │  Django/Linode  │
-                  │   (Legacy)      │
-                  └─────────────────┘
+              ┌────────────┼────────────┐
+              │            │            │
+              ▼            ▼            ▼
+     ┌─────────────┐ ┌──────────┐ ┌─────────────┐
+     │  Firestore  │ │Cloud SQL │ │   Django    │
+     │  (SOURCE OF │ │PostgreSQL│ │   (GCP)     │
+     │   TRUTH)    │ │          │ │  (INTERIM)  │
+     └─────────────┘ └──────────┘ └─────────────┘
 ```
+
+## Data Sources (Priority Order)
+
+| Priority | Source | Purpose | Status |
+|----------|--------|---------|--------|
+| 1 | **Firestore** | Canonical member data | Active |
+| 2 | Cloud SQL PostgreSQL | Elections, events, legacy sync | Active |
+| 3 | Django GCP (Cloud Run) | Admin interface | Interim |
+| 4 | Django Linode | Legacy admin | Being retired |
+
+**Related issues:** #323 (Postmark email), #324 (Email migration)
 
 ---
 
@@ -196,9 +229,25 @@ User → Kenni.is (PKCE) → Firebase Auth → ID Token → API Request
 
 ### Member Sync
 ```
-Django (Linode) ──webhook──▶ fn_sync_from_django.py ──▶ PostgreSQL
-                                                              │
-                                                        Firebase sync
+                    ┌─────────────────┐
+                    │   Firestore     │ ◄── SOURCE OF TRUTH
+                    │ (canonical data)│
+                    └────────┬────────┘
+                             │
+              ┌──────────────┴──────────────┐
+              │                             │
+              ▼                             ▼
+     ┌─────────────────┐          ┌─────────────────┐
+     │  Django GCP     │          │  PostgreSQL     │
+     │  (admin UI)     │          │  (elections)    │
+     └─────────────────┘          └─────────────────┘
+              │
+              │ (legacy sync - being phased out)
+              ▼
+     ┌─────────────────┐
+     │  Django Linode  │
+     │  (RETIRING)     │
+     └─────────────────┘
 ```
 
 ---
