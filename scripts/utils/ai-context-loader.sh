@@ -17,9 +17,9 @@ echo ""
 # Essential docs to load
 DOCS=(
     "CLAUDE.md"
-    "docs/status/CURRENT_DEVELOPMENT_STATUS.md"
-    "docs/operations/CLOUD_RUN_SERVICES.md"
-    "docs/operations/OPERATIONAL_PROCEDURES.md"
+    "docs/ARCHITECTURE.md"
+    "docs/PATTERNS.md"
+    "docs/SECURITY.md"
 )
 
 for doc in "${DOCS[@]}"; do

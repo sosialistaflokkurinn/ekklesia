@@ -472,45 +472,78 @@ export function formatDateOnlyIcelandic(dateInput) {
 }
 
 /**
- * Election Status Mapping
+ * Dynamically compute election status based on current time and schedule.
+ * This overrides backend's 'published' status if election has ended/not started.
  *
- * Backend uses different status names than frontend expects.
- * This provides a centralized mapping.
- *
- * Backend → Frontend:
- * - 'published' → 'active'
- * - 'paused' → 'paused'
- * - 'closed' → 'closed'
- * - 'archived' → 'closed'
- * - 'draft' → 'draft'
+ * @param {string} rawStatus - Raw status from backend (e.g., 'published', 'draft', 'closed')
+ * @param {string} scheduledStart - ISO string for scheduled start time
+ * @param {string|null} scheduledEnd - ISO string for scheduled end time (or null if not set)
+ * @returns {string} Computed status: 'upcoming', 'active', 'closed', 'draft', 'paused', 'archived'
  */
-const ELECTION_STATUS_MAP = {
-  'published': 'active',
-  'paused': 'paused',
-  'closed': 'closed',
-  'archived': 'closed',
-  'draft': 'draft'
-};
+export function computeElectionStatus(rawStatus, scheduledStart, scheduledEnd) {
+  const now = new Date();
+  const start = new Date(scheduledStart);
+  const end = scheduledEnd ? new Date(scheduledEnd) : null;
+
+  // Handle non-dynamic statuses first (draft, paused, archived, closed by backend)
+  if (rawStatus === 'draft') return 'draft';
+  if (rawStatus === 'paused') return 'paused';
+  if (rawStatus === 'closed') return 'closed'; // Explicitly closed by backend
+  if (rawStatus === 'archived') return 'closed'; // Archived is functionally closed
+
+  // For 'published' status, dynamically compute based on dates
+  if (rawStatus === 'published') {
+    if (now < start) {
+      return 'upcoming';
+    }
+    if (end && now > end) {
+      return 'closed';
+    }
+    return 'active'; // Between start and end, or no end date
+  }
+
+  // Fallback for any other unexpected status
+  return rawStatus;
+}
 
 /**
  * Map backend election status to frontend status
+ * This is now mostly a passthrough or fallback, as computeElectionStatus is primary.
  * @param {string} backendStatus - Status from backend API
  * @returns {string} Frontend-compatible status
  */
 export function mapElectionStatus(backendStatus) {
+  // This function is kept for backward compatibility and to map explicit backend statuses
+  // For 'published' elections, computeElectionStatus should be used to consider dates.
+  const ELECTION_STATUS_MAP = {
+    'draft': 'draft',
+    'paused': 'paused',
+    'closed': 'closed',
+    'archived': 'closed',
+    // 'published' is handled dynamically by computeElectionStatus
+    // Any other status will pass through (e.g., 'active' if backend ever sends it)
+  };
   return ELECTION_STATUS_MAP[backendStatus] || backendStatus;
 }
 
 /**
  * Normalize election object status from backend to frontend format
+ * This function now uses computeElectionStatus for dynamic status evaluation.
  * @param {Object} election - Election object from API
  * @returns {Object} Election with normalized status
  */
 export function normalizeElectionStatus(election) {
   if (!election) return election;
+
+  const computedStatus = computeElectionStatus(
+    election.status, 
+    election.scheduled_start, 
+    election.scheduled_end
+  );
+
   return {
     ...election,
-    status: mapElectionStatus(election.status)
+    status: computedStatus
   };
 }
 
@@ -532,7 +565,7 @@ export function normalizeElectionsStatus(elections) {
  * Video conference URL patterns
  * Matches common platforms: Zoom, Google Meet, Teams, etc.
  */
-const VIDEO_URL_PATTERN = /https?:\/\/(?:[\w-]+\.)?(?:zoom\.us|meet\.google\.com|teams\.microsoft\.com|whereby\.com|webex\.com|gotomeeting\.com|bluejeans\.com)\/[^\s)>\]]+/gi;
+const VIDEO_URL_PATTERN = /https?:\/\/(?:[\w-]+\.)?(?:zoom\.us|meet\.google\.com|teams\.microsoft\.com|whereby\.com|webex\.com|gotomeeting\.com|bluejeans\.com)\/[^\s)>\\\]]+/gi;
 
 /**
  * Extract video conference links from text
@@ -566,7 +599,7 @@ export function extractVideoLinks(text) {
         links.push(url);
       }
       // Remove the URL from text (and any surrounding whitespace/newlines)
-      cleanedText = cleanedText.replace(new RegExp(url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*', 'g'), '');
+      cleanedText = cleanedText.replace(new RegExp(url.replace(/[.*+?^${}()|[\\]/g, '\\$&') + '\s*', 'g'), '');
     });
   }
 

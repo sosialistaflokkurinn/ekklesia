@@ -66,6 +66,12 @@ async function init() {
     await loadElection(electionId);
 
   } catch (error) {
+    // Handle auth redirect
+    if (error.name === 'AuthenticationError') {
+      window.location.href = error.redirectTo || '/';
+      return;
+    }
+
     debug.error('Error initializing election detail page:', error);
     showError(R.string.error_load_election);
   }

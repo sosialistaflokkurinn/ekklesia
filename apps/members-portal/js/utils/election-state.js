@@ -13,6 +13,7 @@
 import { debug } from './util-debug.js';
 import { DEFAULT_DURATION_MINUTES } from './election-constants.js';
 import { openElection, closeElection } from '../../admin-elections/js/api/elections-admin-api.js';
+import { computeElectionStatus } from './util-format.js';
 
 class ElectionState extends EventTarget {
   constructor() {
@@ -42,24 +43,6 @@ class ElectionState extends EventTarget {
   }
 
   /**
-   * Map API status to internal status
-   * API: 'draft' | 'published' | 'paused' | 'closed' | 'archived'
-   * Internal: 'upcoming' | 'active' | 'closed'
-   * @param {string} apiStatus - Status from API
-   * @returns {string} Internal status
-   */
-  mapStatus(apiStatus) {
-    const statusMap = {
-      'draft': 'upcoming',
-      'published': 'active',
-      'paused': 'active',  // Show as active but voting might be paused
-      'closed': 'closed',
-      'archived': 'closed'
-    };
-    return statusMap[apiStatus] || apiStatus;
-  }
-
-  /**
    * Initialize state with election data
    * @param {Object} election - Election data from API
    */
@@ -78,7 +61,7 @@ class ElectionState extends EventTarget {
 
     this.state = {
       id: election.id,
-      status: this.mapStatus(election.status),
+      status: computeElectionStatus(election.status, startTime, endTime),
       voting_starts_at: startTime,
       voting_ends_at: endTime,
       duration_minutes: this.calculateDuration(startTime, endTime),

@@ -52,12 +52,13 @@
 
 ### Never
 ```
-firebase deploy --only functions     # Wipes secrets
+firebase deploy --only functions     # Wipes secrets (unless selective)
 python3 -m http.server               # No local server
 git push --no-verify                 # Bypasses hooks
 Hardcode Icelandic text              # Use i18n
 Commit .env or credentials           # Use Secret Manager
 Create duplicate code                # Reuse existing
+Mix annotation/env secrets           # Use valueFrom in YAML
 ```
 
 ### Always
@@ -66,6 +67,7 @@ Search existing code first           # js/components/, js/utils/
 Follow naming conventions            # See docs/PATTERNS.md
 Run ./scripts/build-css-bundle.sh    # After CSS changes
 Verify secrets after deploy          # gcloud run services describe
+Use --gcloud-auth for proxy          # cloud-sql-proxy auth fix
 ```
 
 ---

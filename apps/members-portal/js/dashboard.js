@@ -39,14 +39,8 @@ const DASHBOARD_ELEMENTS = [
   'quick-link-voting-desc',
   'quick-link-policy-label',
   'quick-link-policy-desc',
-  'membership-title',
-  'membership-status',
-  'verify-button-container',
   'role-badges'
 ];
-
-// Global button instance
-let verifyMembershipButton = null;
 
 /**
  * Validate dashboard DOM structure
@@ -76,9 +70,7 @@ function updateDashboardStrings() {
   setTextContent('quick-link-policy-label', R.string.quick_links_policy_label, 'dashboard');
   setTextContent('quick-link-policy-desc', R.string.quick_links_policy_desc, 'dashboard');
 
-  // Update membership card
-  setTextContent('membership-title', R.string.membership_title, 'dashboard');
-  setTextContent('membership-status', R.string.membership_loading, 'dashboard');
+  // Update role badges
   setInnerHTML('role-badges', '', 'dashboard');
 }
 
@@ -99,51 +91,6 @@ function buildWelcomeMessage(displayName) {
   }
 
   return R.format(template, rawName);
-}
-
-/**
- * Format membership status HTML
- *
- * Pure function - returns HTML string based on state.
- * Separated for testing.
- *
- * @param {boolean} isMember - Whether user is a verified member
- * @returns {string} HTML string for membership status
- */
-export function formatMembershipStatus(isMember) {
-  if (isMember) {
-    return `
-      <div style="color: var(--color-success-text); font-weight: 500;">
-        ✓ ${R.string.membership_active}
-      </div>
-    `;
-  } else {
-    return `
-      <div style="color: var(--color-gray-600);">
-        ${R.string.membership_not_verified}
-      </div>
-    `;
-  }
-}
-
-/**
- * Update membership status UI based on verification state
- *
- * @param {boolean} isMember - Whether user is a verified member
- */
-function updateMembershipUI(isMember) {
-  const html = formatMembershipStatus(isMember);
-  setInnerHTML('membership-status', html, 'dashboard');
-
-  const verifyButtonContainer = document.getElementById('verify-button-container');
-  verifyButtonContainer.style.display = 'block';
-
-  // Update button text using button API
-  if (verifyMembershipButton) {
-    const buttonLabel = isMember ? R.string.btn_verify_membership_again : R.string.btn_verify_membership;
-    verifyMembershipButton.setText(buttonLabel);
-    verifyMembershipButton.enable();
-  }
 }
 
 function renderRoleBadges(roles) {
@@ -190,115 +137,6 @@ function updateRoleBadges(roles) {
 
   container.innerHTML = html;
   container.classList.remove('u-hidden');
-}
-
-/**
- * Handle membership verification
- *
- * Separated from setup for testing.
- *
- * @param {Object} user - Firebase user object
- * @returns {Promise<boolean>} Whether verification succeeded
- */
-async function verifyMembership(user) {
-  const region = R.string.config_firebase_region;
-  const verifyMembershipFn = httpsCallable('verifyMembership', region);
-
-  // Use button API for loading state
-  if (verifyMembershipButton) {
-    verifyMembershipButton.setLoading(true, R.string.membership_verifying);
-  }
-
-  try {
-    const result = await verifyMembershipFn();
-
-    if (result.data.isMember) {
-      const html = `
-        <div style="color: var(--color-success-text); font-weight: 500;">
-          ✓ ${R.string.membership_active}
-        </div>
-      `;
-      setInnerHTML('membership-status', html, 'dashboard');
-
-      // Refresh user data to get updated claims and update role badges
-      const refreshed = await user.getIdTokenResult(true);
-      updateRoleBadges(refreshed.claims.roles);
-
-      // Update button to "Verify Again" state
-      if (verifyMembershipButton) {
-        verifyMembershipButton.setLoading(false);
-        verifyMembershipButton.setText(R.string.btn_verify_membership_again);
-      }
-
-      return true;
-    } else {
-      const html = `
-        <div style="color: var(--color-error-text);">
-          ${R.string.membership_inactive}
-        </div>
-      `;
-      setInnerHTML('membership-status', html, 'dashboard');
-
-      // Update button back to normal state
-      if (verifyMembershipButton) {
-        verifyMembershipButton.setLoading(false);
-        verifyMembershipButton.setText(R.string.btn_verify_membership);
-      }
-
-      // Refresh token to ensure any downgraded claims propagate
-      const refreshed = await user.getIdTokenResult(true);
-      updateRoleBadges(refreshed.claims.roles);
-
-      return false;
-    }
-  } catch (error) {
-    debug.error('Membership verification error:', error);
-
-    const html = `
-      <div style="color: var(--color-error-text);">
-        ${R.string.membership_verification_failed}: ${error.message}
-      </div>
-    `;
-    setInnerHTML('membership-status', html, 'dashboard');
-
-    // Update button back to normal state
-    if (verifyMembershipButton) {
-      verifyMembershipButton.setLoading(false);
-      verifyMembershipButton.setText(R.string.btn_verify_membership);
-    }
-
-    // Ensure claims stay in sync even after error
-    try {
-      const refreshed = await user.getIdTokenResult(true);
-      updateRoleBadges(refreshed.claims.roles);
-    } catch (refreshError) {
-      debug.warn('Failed to refresh claims after verification error', refreshError);
-    }
-
-    throw error;
-  }
-}
-
-/**
- * Setup membership verification button handler
- *
- * @param {Object} user - Firebase user object
- */
-function setupMembershipVerification(user) {
-  // Create button instance
-  verifyMembershipButton = createButton({
-    text: R.string.btn_verify_membership,
-    variant: 'outline',
-    onClick: async () => {
-      await verifyMembership(user);
-    }
-  });
-
-  // Append to container
-  const container = document.getElementById('verify-button-container');
-  if (container) {
-    container.appendChild(verifyMembershipButton.element);
-  }
 }
 
 /**
@@ -628,9 +466,6 @@ async function init() {
     const welcomeText = buildWelcomeMessage(userData.displayName);
     setTextContent('welcome-title', welcomeText, 'dashboard');
 
-    // Update membership status UI
-    updateMembershipUI(userData.isMember);
-
     // Show role badges for elevated users
     updateRoleBadges(userData.roles);
 
@@ -640,8 +475,6 @@ async function init() {
     // Check for profile data discrepancies between Kenni.is and Firestore
     await checkProfileDiscrepancies(userData);
 
-    // Setup membership verification handler
-    setupMembershipVerification(currentUser);
   } catch (error) {
     // Handle authentication error (redirect to login)
     if (error instanceof AuthenticationError) {

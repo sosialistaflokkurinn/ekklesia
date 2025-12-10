@@ -335,6 +335,12 @@ async function init() {
     debug.log('✓ Events page initialized');
 
   } catch (error) {
+    // Handle auth redirect
+    if (error.name === 'AuthenticationError') {
+      window.location.href = error.redirectTo || '/';
+      return;
+    }
+
     debug.error('Failed to initialize events page:', error);
     showError(error.message);
   }

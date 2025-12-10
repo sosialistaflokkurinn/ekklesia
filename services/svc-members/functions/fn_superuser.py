@@ -17,6 +17,7 @@ from util_logging import log_json
 import requests
 import time
 import os
+import ast
 
 # Import Cloud Logging lazily to avoid import issues in local dev
 _logging_client = None
@@ -54,16 +55,15 @@ CLOUD_RUN_SERVICES = [
         "name": "Kenni.is Health Check",
         "url": "https://healthz-521240388393.europe-west2.run.app/"
     },
-]
-
-# External services (GCP Cloud Run)
-EXTERNAL_SERVICES = [
     {
         "id": "django-socialism",
-        "name": "Django Backend (GCP)",
+        "name": "Django Admin (GCP)",
         "url": "https://django-socialism-521240388393.europe-west2.run.app/felagar/api/"
     },
 ]
+
+# External services (Linode, etc.)
+EXTERNAL_SERVICES = []
 
 # Demo/Test services (not in production yet)
 DEMO_SERVICES = [
@@ -545,18 +545,60 @@ def get_audit_logs_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
 
         filter_str = " AND ".join(filters)
 
+# ... inside get_audit_logs_handler ...
+
         # Query logs
         entries = []
         for entry in client.list_entries(filter_=filter_str, max_results=limit):
+            # entry.payload is usually a dict (or OrderedDict) for JSON payloads
             payload = entry.payload if isinstance(entry.payload, dict) else {"message": str(entry.payload)}
+            
+            # Default values
+            message = payload.get("message") or payload.get("msg")
+            action = None
+            resource = None
+            status = None
+            user = payload.get("user") or payload.get("uid")
+
+            # DETECT STRUCTURED AUDIT LOG (GCP Audit Log)
+            # Check for keys present in the raw OrderedDict output seen in logs
+            if not message and "authenticationInfo" in payload and "methodName" in payload:
+                try:
+                    auth_info = payload.get("authenticationInfo", {})
+                    # request_meta = payload.get("requestMetadata", {}) # Not used currently
+                    authz_info_list = payload.get("authorizationInfo", [])
+                    authz_info = authz_info_list[0] if authz_info_list else {}
+                    
+                    user_email = auth_info.get("principalEmail")
+                    method = payload.get("methodName", "").split(".")[-1] # Shorten: google...UpdateFunction -> UpdateFunction
+                    res_name = payload.get("resourceName", "").split("/")[-1] # Shorten resource
+                    
+                    # Set structured fields
+                    user = user_email
+                    action = method
+                    resource = res_name
+                    status = "Granted" if authz_info.get("granted") else "Denied"
+                    
+                    # Format human-readable message
+                    message = f"{user_email} performed {method} on {res_name}"
+                    
+                except Exception as parse_error:
+                    log_json("warning", "Failed to parse structured audit log", error=str(parse_error))
+            
+            # Fallback if message is still empty
+            if not message:
+                message = str(payload)
 
             entries.append({
                 "timestamp": entry.timestamp.isoformat() if entry.timestamp else None,
                 "severity": entry.severity,
                 "service": entry.resource.labels.get("function_name") if entry.resource else None,
-                "message": payload.get("message") or payload.get("msg") or str(payload),
+                "message": message,
                 "correlationId": payload.get("correlationId") or payload.get("correlation_id"),
-                "user": payload.get("user") or payload.get("uid"),
+                "user": user,
+                "action": action,
+                "resource": resource,
+                "status": status,
                 "error": payload.get("error")
             })
 

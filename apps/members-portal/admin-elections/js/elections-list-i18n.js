@@ -35,7 +35,6 @@ export async function initElectionsListStrings() {
       // 'nav-logout': 'admin_nav_logout',
 
       // Filter buttons
-      'filter-all': 'filter_all',
       'filter-draft': 'filter_draft',
       'filter-published': 'filter_published',
       'filter-closed': 'filter_closed',

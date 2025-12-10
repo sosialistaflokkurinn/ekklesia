@@ -267,15 +267,20 @@ psql -h localhost -p 5433 -U postgres -d ekklesia
 
 ### Secrets (GCP Secret Manager)
 
-| Secret | Used By |
-|--------|---------|
-| `DJANGO_API_TOKEN` | sync functions |
-| `KENNI_IS_CLIENT_SECRET` | auth |
-| `DB_PASSWORD` | all services |
+| Secret Name (GCP) | Env Var (App) | Used By |
+|-------------------|---------------|---------|
+| `django-api-token` | `django-api-token` / `DJANGO_API_TOKEN` | sync functions |
+| `kenni-client-secret` | `KENNI_IS_CLIENT_SECRET` | auth |
+| `django-socialism-db-password` | `DB_PASSWORD` | all services |
+
+**Note on Naming:**
+- **Secret Name:** The name in Secret Manager (usually lowercase with hyphens).
+- **Env Var:** The environment variable injected into the container.
+- **Best Practice:** Match the secret name (lowercase) for Firebase Functions, use uppercase for legacy/Docker services.
 
 ```bash
 # Read secret
-gcloud secrets versions access latest --secret="DJANGO_API_TOKEN"
+gcloud secrets versions access latest --secret="django-api-token"
 
 # Verify service secrets
 gcloud run services describe svc-elections \

@@ -154,6 +154,14 @@ router.get('/elections', readLimiter, verifyMemberToken, async (req, res) => {
 router.get('/elections/:id', readLimiter, verifyMemberToken, async (req, res) => {
   const { id } = req.params;
 
+  // Validate UUID format
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+    return res.status(400).json({
+      error: 'Bad Request',
+      message: 'Invalid election ID format',
+    });
+  }
+
   try {
     // Query election with computed fields for frontend compatibility
     const result = await pool.query(
@@ -465,8 +473,16 @@ router.get('/elections/:id/results', readLimiter, verifyMemberToken, async (req,
       });
     }
 
-    // Only show results for closed/archived elections
-    if (election.status !== 'closed' && election.status !== 'archived') {
+    // Dynamically check if election is closed based on timestamps
+    const now = new Date();
+    const closedAt = election.closed_at ? new Date(election.closed_at) : null;
+    const scheduledEnd = election.scheduled_end ? new Date(election.scheduled_end) : null;
+
+    const isDynamicallyClosed = (election.status === 'closed' || election.status === 'archived') || // Already explicitly closed
+                               (scheduledEnd && now > scheduledEnd) ||                             // Past scheduled end
+                               (closedAt && now > closedAt);                                       // Past explicit closed_at
+
+    if (!isDynamicallyClosed) {
       return res.status(403).json({
         error: 'Forbidden',
         message: 'Results are only available for closed elections',

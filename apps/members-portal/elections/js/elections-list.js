@@ -18,10 +18,9 @@ import { createButton } from '../../js/components/ui-button.js';
 import { setTextContentOptional, showElement, hideElement } from '../../ui/dom.js';
 
 // State
-let currentFilter = 'all';
+let currentFilter = 'active';
 let allElections = [];
 let electionCounts = {
-  all: 0,
   active: 0,
   upcoming: 0,
   closed: 0
@@ -56,7 +55,6 @@ async function init() {
     setTextContentOptional('error-message', R.string.error_load_elections);
 
     // Update filter button labels
-    setTextContentOptional('filter-all-text', R.string.filter_all);
     setTextContentOptional('filter-active-text', R.string.filter_active);
     setTextContentOptional('filter-upcoming-text', R.string.filter_upcoming);
     setTextContentOptional('filter-closed-text', R.string.filter_closed);
@@ -68,6 +66,12 @@ async function init() {
     await loadElections();
 
   } catch (error) {
+    // Handle auth redirect
+    if (error.name === 'AuthenticationError') {
+      window.location.href = error.redirectTo || '/';
+      return;
+    }
+
     debug.error('Error initializing elections page:', error);
     showError(R.string.error_load_elections);
   }
@@ -123,14 +127,12 @@ async function loadElections() {
 
     // Calculate counts by status
     electionCounts = {
-      all: allElections.length,
       active: allElections.filter(e => e.status === 'active').length,
       upcoming: allElections.filter(e => e.status === 'upcoming').length,
       closed: allElections.filter(e => e.status === 'closed').length
     };
 
     // Update filter count badges
-    document.getElementById('count-all').textContent = electionCounts.all;
     document.getElementById('count-active').textContent = electionCounts.active;
     document.getElementById('count-upcoming').textContent = electionCounts.upcoming;
     document.getElementById('count-closed').textContent = electionCounts.closed;

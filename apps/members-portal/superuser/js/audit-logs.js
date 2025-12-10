@@ -12,7 +12,7 @@ import { getFunctions } from '../../firebase/app.js';
 import { requireSuperuser } from '../../js/rbac.js';
 import { showToast } from '../../js/components/ui-toast.js';
 import { R } from '../../i18n/strings-loader.js';
-import { superuserStrings } from '../i18n/superuser-strings-loader.js';
+import { superuserStrings } from './i18n/superuser-strings-loader.js';
 import { httpsCallable } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js';
 
 // Mock data for demonstration (until Cloud Function is implemented)
@@ -172,7 +172,7 @@ function filterLogs(logs) {
 async function searchLogs() {
   const searchBtn = document.getElementById('search-btn');
   searchBtn.disabled = true;
-  searchBtn.textContent = superuserStrings.get('audit_searching');
+  searchBtn.textContent = superuserStrings.get('btn_search_loading');
 
   try {
     // Get filter values
@@ -208,7 +208,7 @@ async function searchLogs() {
     showToast(superuserStrings.get('audit_fetch_error'), 'warning', { duration: 3000 });
   } finally {
     searchBtn.disabled = false;
-    searchBtn.textContent = superuserStrings.get('audit_search_btn');
+    searchBtn.textContent = superuserStrings.get('btn_search');
   }
 }
 

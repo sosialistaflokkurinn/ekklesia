@@ -9,6 +9,61 @@
 
 ---
 
+## Secrets Management
+
+### Secret Mounting
+When injecting secrets into Cloud Run or Cloud Functions:
+1.  **Use `valueFrom.secretKeyRef`**: Always reference the secret by key.
+2.  **Use `latest` version**: Unless pinning is required, use `latest`.
+3.  **Avoid Conflicting Annotations**: Do not use `run.googleapis.com/secrets` annotation if using `valueFrom` in `env`.
+
+**Correct (YAML):**
+```yaml
+containers:
+  - env:
+      - name: django-api-token  # Lowercase to match secret name
+        valueFrom:
+          secretKeyRef:
+            name: django-api-token
+            key: latest
+```
+
+**Incorrect (Do not mix):**
+```yaml
+metadata:
+  annotations:
+    run.googleapis.com/secrets: secret-name:project/secrets/secret-name  # CONFLICT
+containers:
+  - env:
+      - name: MY_SECRET
+        valueFrom: ...
+```
+
+### Environment Variable Naming
+- **Cloud Run/Functions**: Match the secret name exactly (usually lowercase with hyphens) if using Firebase SDK.
+- **Legacy/CLI**: `gcloud run deploy --set-secrets` often creates UPPERCASE variables.
+- **Pattern**: Prefer lowercase matching the secret name: `os.environ.get('django-api-token')`.
+
+---
+
+## Database Connectivity
+
+### Local Development Proxy
+Always use `--gcloud-auth` when running `cloud-sql-proxy` locally. This ensures it uses your personal gcloud credentials rather than searching for Application Default Credentials (ADC) which may be missing or stale.
+
+**Correct Command:**
+```bash
+cloud-sql-proxy PROJECT:REGION:INSTANCE --port 5433 --gcloud-auth
+```
+
+**Incorrect:**
+```bash
+# Missing auth flag - will fail if ADC is not set
+cloud-sql-proxy PROJECT:REGION:INSTANCE --port 5433
+```
+
+---
+
 ## Reusable Components
 
 ### UI Components (js/components/)

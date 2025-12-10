@@ -125,8 +125,7 @@
   <string name="service_name_elections">Kosningaþjónusta</string>
   <string name="service_name_events">Viðburðaþjónusta</string>
   <string name="service_name_healthz">Kenni.is Health Check</string>
-  <string name="service_name_django_linode">Django Backend (Linode)</string>
-  <string name="service_name_django_demo">Django Backend (GCP Demo)</string>
+  <string name="service_name_django_socialism">Django Admin (GCP)</string>
   <string name="service_name_handlekenniauth">Kenni.is Auth</string>
   <string name="service_name_verifymembership">Staðfesting aðildar</string>
   <string name="service_name_syncmembers">Samstilling félagaskrár</string>
@@ -209,6 +208,9 @@
   <!-- Audit Logs (JS) -->
   <string name="audit_no_events">Engir atburðir fundust með þessum síum.</string>
   <string name="audit_count_events">%s atburðir</string>
+  <string name="audit_count_format">%s niðurstöður</string>
+  <string name="audit_count_zero">0 niðurstöður</string>
+  <string name="audit_user_label">Notandi:</string>
   <string name="btn_search_loading">Leita...</string>
   <string name="btn_search">Leita</string>
   <string name="audit_fetch_error">Villa við að sækja atburðaskrá. Notar sýnigögn.</string>
@@ -427,7 +429,7 @@
   <string name="schema_health_key">Static</string>
 
   <!-- Schema descriptions (PostgreSQL) -->
-  <string name="schema_comrade_desc">Django member records (source of truth on Linode)</string>
+  <string name="schema_comrade_desc">Django member records (source of truth on GCP Cloud Run)</string>
   <string name="schema_comrade_key">id (auto)</string>
   <string name="schema_newlocaladdress_desc">Member addresses linked to Iceland address registry</string>
   <string name="schema_newlocaladdress_key">id (auto)</string>

@@ -162,8 +162,16 @@ async function handleOAuthCallback(authCode) {
       // Continue to dashboard even if verification fails
     }
 
-    // Redirect to dashboard
-    window.location.href = R.string.path_dashboard;
+    // Redirect to dashboard or saved URL
+    const redirectUrl = sessionStorage.getItem('redirect_after_login');
+    sessionStorage.removeItem('redirect_after_login');
+
+    if (redirectUrl && (redirectUrl.startsWith('/') || redirectUrl.startsWith(window.location.origin))) {
+      debug.log('Redirecting to saved URL:', redirectUrl);
+      window.location.href = redirectUrl;
+    } else {
+      window.location.href = R.string.path_dashboard;
+    }
   } catch (error) {
     debug.error(R.string.log_authentication_error, error);
     statusEl.className = 'status error';
@@ -287,8 +295,15 @@ async function init() {
   // Check if already authenticated
   const user = await getCurrentUser();
   if (user) {
-    // Already logged in - redirect to dashboard
-    window.location.href = R.string.path_dashboard;
+    // Already logged in - redirect to dashboard or saved URL
+    const redirectUrl = sessionStorage.getItem('redirect_after_login');
+    sessionStorage.removeItem('redirect_after_login');
+
+    if (redirectUrl && (redirectUrl.startsWith('/') || redirectUrl.startsWith(window.location.origin))) {
+      window.location.href = redirectUrl;
+    } else {
+      window.location.href = R.string.path_dashboard;
+    }
     return;
   }
 

@@ -21,17 +21,14 @@ const CORE_SERVICES = [
   { id: 'elections-service', nameKey: 'service_name_elections' },
   { id: 'events-service', nameKey: 'service_name_events' },
   { id: 'healthz', nameKey: 'service_name_healthz' },
+  { id: 'django-socialism', nameKey: 'service_name_django_socialism' },
 ];
 
 // External services (Linode, etc.)
-const EXTERNAL_SERVICES = [
-  { id: 'django-linode', nameKey: 'service_name_django_linode' },
-];
+const EXTERNAL_SERVICES = [];
 
 // Demo/Test services (not in production yet)
-const DEMO_SERVICES = [
-  { id: 'django-socialism-demo', nameKey: 'service_name_django_demo' },
-];
+const DEMO_SERVICES = [];
 
 // Firebase Functions - Member Operations (no health endpoint)
 const MEMBER_FUNCTIONS = [
@@ -249,7 +246,8 @@ async function checkAllServices() {
     });
     renderServicesGrid('core-services', coreResults);
 
-    // External services (Linode, etc.)
+    // External services (Linode, etc.) - REMOVED
+    /*
     const externalResults = EXTERNAL_SERVICES.map(service => {
       const serverResult = healthData.services?.find(s => s.id === service.id);
       if (serverResult) {
@@ -258,8 +256,10 @@ async function checkAllServices() {
       return { ...service, status: 'unknown', message: superuserStrings.get('status_not_checked') };
     });
     renderServicesGrid('external-services', externalResults);
+    */
 
-    // Demo services
+    // Demo services - REMOVED
+    /*
     const demoResults = DEMO_SERVICES.map(service => {
       const serverResult = healthData.services?.find(s => s.id === service.id);
       if (serverResult) {
@@ -268,6 +268,7 @@ async function checkAllServices() {
       return { ...service, status: 'unknown', message: superuserStrings.get('status_not_checked') };
     });
     renderServicesGrid('demo-services', demoResults);
+    */
 
     // Firebase Functions by category (no health endpoint - show as "available")
     const mapFunctions = (funcList) => funcList.map(service => {
@@ -308,14 +309,15 @@ async function checkAllServices() {
     renderServicesGrid('firebase-services', firebaseResults);
 
     // Update overall summary (only count services with health checks)
-    const allHealthCheckedServices = [...coreResults, ...externalResults, ...dbResults, ...firebaseResults];
+    // externalResults removed
+    const allHealthCheckedServices = [...coreResults, ...dbResults, ...firebaseResults];
     updateHealthSummary(allHealthCheckedServices);
 
     // Update breakdown counts
     const allFunctions = [...MEMBER_FUNCTIONS, ...ADDRESS_FUNCTIONS, ...LOOKUP_FUNCTIONS, ...REGISTRATION_FUNCTIONS, ...SUPERUSER_FUNCTIONS, ...UTILITY_FUNCTIONS];
     updateBreakdownCounts({
       gcp: coreResults.length,
-      external: externalResults.length,
+      external: 0, // externalResults.length,
       functions: allFunctions.length,
       database: dbResults.length,
       firebase: firebaseResults.length
@@ -346,21 +348,25 @@ async function checkAllServicesClientSide() {
     }));
     renderServicesGrid('core-services', coreResults);
 
-    // External services (Linode)
+    // External services (Linode) - REMOVED
+    /*
     const externalResults = EXTERNAL_SERVICES.map(s => ({
       ...s,
       status: 'unknown',
       message: superuserStrings.get('status_needs_backend')
     }));
     renderServicesGrid('external-services', externalResults);
+    */
 
-    // Demo services
+    // Demo services - REMOVED
+    /*
     const demoResults = DEMO_SERVICES.map(s => ({
       ...s,
       status: 'unknown',
       message: superuserStrings.get('status_needs_backend')
     }));
     renderServicesGrid('demo-services', demoResults);
+    */
 
     // Firebase Functions by category - always available
     const mapFallback = (funcList) => funcList.map(s => ({
@@ -394,14 +400,15 @@ async function checkAllServicesClientSide() {
     });
     renderServicesGrid('firebase-services', firebaseResults);
 
-    const allServices = [...coreResults, ...externalResults, ...dbResults, ...firebaseResults];
+    // externalResults removed
+    const allServices = [...coreResults, ...dbResults, ...firebaseResults];
     updateHealthSummary(allServices);
 
     // Update breakdown counts
     const allFunctions = [...MEMBER_FUNCTIONS, ...ADDRESS_FUNCTIONS, ...LOOKUP_FUNCTIONS, ...REGISTRATION_FUNCTIONS, ...SUPERUSER_FUNCTIONS, ...UTILITY_FUNCTIONS];
     updateBreakdownCounts({
       gcp: coreResults.length,
-      external: externalResults.length,
+      external: 0, // externalResults.length,
       functions: allFunctions.length,
       database: dbResults.length,
       firebase: firebaseResults.length

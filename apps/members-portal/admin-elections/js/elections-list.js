@@ -25,7 +25,7 @@ const auth = getFirebaseAuth();
 
 let elections = [];
 let filteredElections = [];
-let currentFilter = 'all';
+let currentFilter = 'published';
 let searchQuery = '';
 let currentUserRole = null; // Store user role for RBAC checks
 
@@ -43,7 +43,7 @@ let userPermissions = {
 document.addEventListener('DOMContentLoaded', async () => {
   try {
     // Load and initialize i18n strings FIRST
-    await initElectionsListStrings();
+    await initElectionsListStrings(); /* initI18n() */
     debug.log('[Elections List] i18n strings initialized');
     
     // Wait for auth to be ready
@@ -555,9 +555,49 @@ async function handleOpenElection(electionId) {
   const election = elections.find(e => e.id === electionId);
   if (!election) return;
 
-  // Get current datetime for min values
+  // Get current datetime for min values (and default if needed)
   const now = new Date();
   const nowStr = now.toISOString().slice(0, 16); // Format: YYYY-MM-DDTHH:mm
+
+  // Helper to format ISO string for datetime-local input
+  const formatForDateTimeLocal = (isoString) => {
+    if (!isoString) return '';
+    try {
+      return new Date(isoString).toISOString().slice(0, 16);
+    } catch (e) {
+      debug.warn('Invalid ISO date for datetime-local input:', isoString, e);
+      return '';
+    }
+  };
+
+  // Pre-fill values from existing election schedule
+  const electionStart = election.scheduled_start ? new Date(election.scheduled_start) : null;
+  const electionEnd = election.scheduled_end ? new Date(election.scheduled_end) : null;
+
+  debug.log('[Elections List] handleOpenElection - Election data:', election);
+  debug.log('[Elections List] handleOpenElection - Parsed electionStart:', electionStart);
+  debug.log('[Elections List] handleOpenElection - Parsed electionEnd:', electionEnd);
+
+  const isScheduledStart = electionStart && electionStart > now;
+  const isManualEnd = !!electionEnd;
+
+  let initialDurationMinutes = 0;
+  if (electionStart && electionEnd) {
+    initialDurationMinutes = Math.round((electionEnd.getTime() - electionStart.getTime()) / 60000);
+  } else if (election.duration_minutes) {
+    initialDurationMinutes = election.duration_minutes;
+  }
+
+  debug.log('[Elections List] handleOpenElection - Calculated initialDurationMinutes:', initialDurationMinutes);
+  // Pre-select logic for radio buttons and inputs
+  const startImmediateChecked = !isScheduledStart ? 'checked' : '';
+  const startScheduledChecked = isScheduledStart ? 'checked' : '';
+  const scheduledStartHidden = !isScheduledStart ? 'hidden' : '';
+  const scheduledStartValue = formatForDateTimeLocal(election.scheduled_start);
+
+  const useManualEndChecked = isManualEnd ? 'checked' : '';
+  const manualEndHidden = !isManualEnd ? 'hidden' : '';
+  const scheduledEndValue = formatForDateTimeLocal(election.scheduled_end);
 
   // Create full schedule options HTML
   const scheduleHTML = `
@@ -569,23 +609,23 @@ async function handleOpenElection(electionId) {
         </label>
         <div style="display: flex; flex-direction: column; gap: 0.5rem;">
           <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-            <input type="radio" name="start_timing" value="immediate" checked>
-            <span><strong>${R.string.start_immediate || 'Strax'}</strong> - ${R.string.start_immediate_desc || 'Kosningin opnast strax'}</span>
+            <input type="radio" name="start_timing" value="immediate" ${startImmediateChecked}>
+            <span><strong>${R.string.start_immediate || 'Handvirkt (opna sjálf/ur)'}</strong> - ${R.string.start_immediate_desc || 'Þú opnar kosninguna handvirkt þegar þú vilt'}</span>
           </label>
           <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-            <input type="radio" name="start_timing" value="scheduled">
-            <span><strong>${R.string.start_scheduled || 'Tímasett'}</strong> - ${R.string.start_scheduled_desc || 'Velja upphafstíma'}</span>
+            <input type="radio" name="start_timing" value="scheduled" ${startScheduledChecked}>
+            <span><strong>${R.string.start_scheduled || 'Sjálfvirkt (tímasett)'}</strong> - ${R.string.start_scheduled_desc || 'Kosningin opnast sjálfkrafa á ákveðnum tíma'}</span>
           </label>
         </div>
       </div>
 
       <!-- Scheduled Start Time (hidden by default) -->
-      <div id="scheduled-start-group" class="form-group hidden" style="margin-bottom: 1.5rem;">
+      <div id="scheduled-start-group" class="form-group ${scheduledStartHidden}" style="margin-bottom: 1.5rem;">
         <label style="font-weight: 600; display: block; margin-bottom: 0.5rem;">
           ${R.string.label_scheduled_start || 'Upphafstími'}
         </label>
         <input type="datetime-local" id="modal-scheduled-start" class="form-control"
-               style="width: 100%; padding: 0.5rem;" min="${nowStr}">
+               style="width: 100%; padding: 0.5rem;" min="${nowStr}" value="${scheduledStartValue}">
       </div>
 
       <!-- Duration Options -->
@@ -594,53 +634,53 @@ async function handleOpenElection(electionId) {
           ${R.string.label_duration || 'Lengd kosningar'}
         </label>
         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-          <button type="button" class="duration-btn" data-minutes="1" style="padding: 0.5rem 1rem; border: 2px solid var(--color-gray-300); background: white; border-radius: 4px; cursor: pointer;">
+          <button type="button" class="duration-btn" data-minutes="1" ${initialDurationMinutes === 1 && !isManualEnd ? 'class="active"' : ''} style="padding: 0.5rem 1rem; border: 2px solid var(--color-gray-300); background: white; border-radius: 4px; cursor: pointer;">
             ${R.string.duration_1min || '1 mín'}
           </button>
-          <button type="button" class="duration-btn active" data-minutes="2" style="padding: 0.5rem 1rem; border: 2px solid var(--color-primary); background: var(--color-primary); color: white; border-radius: 4px; cursor: pointer;">
+          <button type="button" class="duration-btn" data-minutes="2" ${initialDurationMinutes === 2 && !isManualEnd ? 'class="active"' : ''} style="padding: 0.5rem 1rem; border: 2px solid var(--color-gray-300); background: white; border-radius: 4px; cursor: pointer;">
             ${R.string.duration_2min || '2 mín'}
           </button>
-          <button type="button" class="duration-btn" data-minutes="3" style="padding: 0.5rem 1rem; border: 2px solid var(--color-gray-300); background: white; border-radius: 4px; cursor: pointer;">
+          <button type="button" class="duration-btn" data-minutes="3" ${initialDurationMinutes === 3 && !isManualEnd ? 'class="active"' : ''} style="padding: 0.5rem 1rem; border: 2px solid var(--color-gray-300); background: white; border-radius: 4px; cursor: pointer;">
             ${R.string.duration_3min || '3 mín'}
           </button>
-          <button type="button" class="duration-btn" data-minutes="custom" style="padding: 0.5rem 1rem; border: 2px solid var(--color-gray-300); background: white; border-radius: 4px; cursor: pointer;">
-            ${R.string.duration_custom || 'Sérsníða'}
+          <button type="button" class="duration-btn" data-minutes="custom" ${![1,2,3].includes(initialDurationMinutes) && !isManualEnd ? 'class="active"' : ''} style="padding: 0.5rem 1rem; border: 2px solid var(--color-gray-300); background: white; border-radius: 4px; cursor: pointer;">
+            ${R.string.duration_custom || 'Sérsníða (mínútur)'}
           </button>
         </div>
-        <input type="hidden" id="modal-duration-minutes" value="2">
+        <input type="hidden" id="modal-duration-minutes" value="${initialDurationMinutes || '2'}">
       </div>
 
       <!-- Custom Duration (hidden by default) -->
-      <div id="custom-duration-group" class="form-group hidden" style="margin-bottom: 1.5rem;">
+      <div id="custom-duration-group" class="form-group ${![1,2,3].includes(initialDurationMinutes) && !isManualEnd ? '' : 'hidden'}" style="margin-bottom: 1.5rem;">
         <label style="font-weight: 600; display: block; margin-bottom: 0.5rem;">
           ${R.string.label_custom_duration || 'Sérsniðin lengd (mínútur)'}
         </label>
         <input type="number" id="modal-custom-duration" class="form-control"
-               style="width: 100%; padding: 0.5rem;" min="1" max="10080" placeholder="${R.string.placeholder_custom_duration || 't.d. 240'}">
+               style="width: 100%; padding: 0.5rem;" min="1" max="10080" placeholder="${R.string.placeholder_custom_duration || 't.d. 240'}" value="${![1,2,3].includes(initialDurationMinutes) && !isManualEnd ? (initialDurationMinutes || '') : ''}">
         <small style="color: var(--color-gray-600); font-size: 0.875rem;">
-          ${R.string.help_custom_duration || '1 mínúta til 7 dagar'}
+          ${R.string.help_custom_duration || '1 mínúta til 7 dagar (10,080 mínútur)'}
         </small>
       </div>
 
       <!-- Manual End Time Toggle -->
       <div class="form-group" style="margin-bottom: 1rem;">
         <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-          <input type="checkbox" id="modal-use-manual-end">
-          <span>${R.string.label_use_manual_end || 'Nota ákveðinn lokatíma frekar en tímalengd'}</span>
+          <input type="checkbox" id="modal-use-manual-end" ${useManualEndChecked}>
+          <span>${R.string.label_use_manual_end || 'Nota ákveðinn lokatíma frekar en tímalengd.'}</span>
         </label>
       </div>
 
       <!-- Manual End Time (hidden by default) -->
-      <div id="manual-end-group" class="form-group hidden" style="margin-bottom: 1rem;">
+      <div id="manual-end-group" class="form-group ${manualEndHidden}" style="margin-bottom: 1rem;">
         <label style="font-weight: 600; display: block; margin-bottom: 0.5rem;">
           ${R.string.label_scheduled_end || 'Lokatími'}
         </label>
         <input type="datetime-local" id="modal-scheduled-end" class="form-control"
-               style="width: 100%; padding: 0.5rem;" min="${nowStr}">
+               style="width: 100%; padding: 0.5rem;" min="${nowStr}" value="${scheduledEndValue}">
       </div>
 
       <p style="color: var(--color-gray-600); font-size: 0.875rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--color-gray-200);">
-        ${R.string.confirm_open_note || 'Kosningin verður opin fyrir félagsmenn eftir að þú staðfestir.'}
+        ${R.string.confirm_open_note || 'Kosningin verður virk strax og félagsmenn geta byrjað að kjósa.'}
       </p>
     </div>
   `;
