@@ -16,6 +16,7 @@ import { formatDateIcelandic } from '../../js/utils/util-format.js';
 import { debug } from '../../js/utils/util-debug.js';
 import { el } from '../../js/utils/util-dom.js';
 import { fetchElections, openElection, closeElection, hideElection, unhideElection, deleteElection } from './api/elections-admin-api.js';
+import { showElectionShareModal } from '../../js/components/election-share-qr.js';
 
 const auth = getFirebaseAuth();
 
@@ -435,13 +436,22 @@ function renderElections() {
  */
 function getActionButtons(election) {
   const buttons = [];
-  
+
   // View button (always shown)
   buttons.push(`
     <button class="btn btn-sm btn-view" data-action="view" data-id="${election.id}">
       ${R.string.btn_view}
     </button>
   `);
+
+  // Share QR button (always shown for published elections)
+  if (election.status === 'published' || election.status === 'closed') {
+    buttons.push(`
+      <button class="btn btn-sm btn-share" data-action="share" data-id="${election.id}" data-title="${election.title.replace(/"/g, '&quot;')}" title="Deila með QR kóða">
+        📱
+      </button>
+    `);
+  }
   
   // Edit button (always shown, but will be limited for published/closed)
   if (!election.hidden) {
@@ -513,14 +523,21 @@ async function handleAction(event) {
   const button = event.currentTarget;
   const action = button.dataset.action;
   const electionId = button.dataset.id;
-  
+
   debug.log('[Elections List] Action:', action, 'Election:', electionId);
-  
+
   switch (action) {
     case 'view':
       window.location.href = `/admin-elections/election-control.html?id=${electionId}`;
       break;
-      
+
+    case 'share':
+      showElectionShareModal({
+        electionId: electionId,
+        electionTitle: button.dataset.title || ''
+      });
+      break;
+
     case 'edit':
       window.location.href = `/admin-elections/create.html?id=${electionId}`;
       break;

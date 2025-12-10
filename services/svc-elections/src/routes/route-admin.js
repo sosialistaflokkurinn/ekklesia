@@ -211,8 +211,9 @@ router.get('/elections', requireElectionManager, async (req, res) => {
 //   description: string (optional),
 //   question: string (required),
 //   answers: string[] (required, min 2 items),
-//   voting_type: 'single-choice' | 'multi-choice' (default: 'single-choice'),
+//   voting_type: 'single-choice' | 'multi-choice' | 'ranked-choice' (default: 'single-choice'),
 //   max_selections: number (required if multi-choice, default: 1),
+//   seats_to_fill: number (required if ranked-choice, default: 1),
 //   eligibility: 'members' | 'admins' | 'all' (default: 'members'),
 //   scheduled_start: ISO timestamp (optional),
 //   scheduled_end: ISO timestamp (optional)
@@ -227,6 +228,7 @@ router.post('/elections', requireElectionManager, async (req, res) => {
     answers,
     voting_type = 'single-choice',
     max_selections = 1,
+    seats_to_fill = 1,
     eligibility = 'members',
     scheduled_start,
     scheduled_end,
@@ -255,14 +257,14 @@ router.post('/elections', requireElectionManager, async (req, res) => {
   }
 
   // Validate voting_type
-  if (!['single-choice', 'multi-choice'].includes(voting_type)) {
+  if (!['single-choice', 'multi-choice', 'ranked-choice'].includes(voting_type)) {
     return res.status(400).json({
       error: 'Bad Request',
-      message: 'voting_type must be single-choice or multi-choice',
+      message: 'voting_type must be single-choice, multi-choice, or ranked-choice',
     });
   }
 
-  // Validate max_selections
+  // Validate max_selections for single-choice
   if (voting_type === 'single-choice' && max_selections !== 1) {
     return res.status(400).json({
       error: 'Bad Request',
@@ -270,11 +272,29 @@ router.post('/elections', requireElectionManager, async (req, res) => {
     });
   }
 
+  // Validate max_selections for multi-choice
   if (voting_type === 'multi-choice' && (max_selections < 1 || max_selections > answers.length)) {
     return res.status(400).json({
       error: 'Bad Request',
       message: `max_selections must be between 1 and ${answers.length} for multi-choice elections`,
     });
+  }
+
+  // Validate seats_to_fill for ranked-choice (STV)
+  if (voting_type === 'ranked-choice') {
+    if (seats_to_fill < 1 || seats_to_fill >= answers.length) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: `seats_to_fill must be between 1 and ${answers.length - 1} for ranked-choice elections (less than number of candidates)`,
+      });
+    }
+    // Require at least 3 candidates for meaningful STV
+    if (answers.length < 3) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Ranked-choice (STV) elections require at least 3 candidates',
+      });
+    }
   }
 
   // Validate eligibility
@@ -283,6 +303,19 @@ router.post('/elections', requireElectionManager, async (req, res) => {
       error: 'Bad Request',
       message: 'eligibility must be members, admins, or all',
     });
+  }
+
+  // Determine effective max_selections and seats_to_fill based on voting type
+  let effectiveMaxSelections = max_selections;
+  let effectiveSeatsToFill = seats_to_fill;
+
+  if (voting_type === 'single-choice') {
+    effectiveMaxSelections = 1;
+    effectiveSeatsToFill = 1;
+  } else if (voting_type === 'multi-choice') {
+    effectiveSeatsToFill = max_selections; // For multi-choice, seats = max selections
+  } else if (voting_type === 'ranked-choice') {
+    effectiveMaxSelections = answers.length; // Can rank all candidates
   }
 
   try {
@@ -296,12 +329,13 @@ router.post('/elections', requireElectionManager, async (req, res) => {
         answers,
         voting_type,
         max_selections,
+        seats_to_fill,
         eligibility,
         scheduled_start,
         scheduled_end,
         created_by,
         status
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'draft')
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'draft')
       RETURNING *
     `,
       [
@@ -310,7 +344,8 @@ router.post('/elections', requireElectionManager, async (req, res) => {
         question.trim(),
         JSON.stringify(answers),
         voting_type,
-        max_selections,
+        effectiveMaxSelections,
+        effectiveSeatsToFill,
         eligibility,
         scheduled_start || null,
         scheduled_end || null,
@@ -327,6 +362,7 @@ router.post('/elections', requireElectionManager, async (req, res) => {
       election_id: election.id,
       title: election.title,
       voting_type,
+      seats_to_fill: effectiveSeatsToFill,
       duration_ms: duration,
     });
 

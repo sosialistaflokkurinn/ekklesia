@@ -17,6 +17,7 @@ import { closeElection } from './api/elections-admin-api.js';
 import { electionState } from '../../js/utils/election-state.js';
 import { createScheduleControl } from '../../js/components/election-schedule-control.js';
 import { createScheduleDisplay } from '../../js/components/election-schedule-display.js';
+import { createShareButton } from '../../js/components/election-share-qr.js';
 
 /**
  * Get election ID from URL query parameter
@@ -59,6 +60,19 @@ function displayElectionControl(election) {
   // Update header
   document.getElementById('election-title').textContent = election.title;
   document.getElementById('election-question').textContent = election.question;
+
+  // Add share button to header
+  const headerElement = document.querySelector('.card__title#election-title');
+  if (headerElement) {
+    const shareBtn = createShareButton({
+      electionId: election.id,
+      electionTitle: election.title,
+      buttonText: '📱 QR kóði',
+      buttonClass: 'btn btn--secondary btn--sm'
+    });
+    shareBtn.style.marginLeft = '1rem';
+    headerElement.parentNode.insertBefore(shareBtn, headerElement.nextSibling);
+  }
 
   // Initialize election state
   electionState.initialize(election);

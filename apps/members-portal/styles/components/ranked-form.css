@@ -1,0 +1,337 @@
+/**
+ * Ranked Voting Form Styles (STV/Forgangsröðun)
+ *
+ * Drag-and-drop interface for ranked-choice voting.
+ * Optimized for both mobile touch and desktop mouse interactions.
+ */
+
+/* ===========================================
+   Container
+   =========================================== */
+.ranked-form {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.ranked-form--disabled {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* ===========================================
+   Question Section
+   =========================================== */
+.ranked-form__question {
+  margin-bottom: 1.5rem;
+}
+
+.ranked-form__question-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-secondary, #666);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.ranked-form__question-text {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #1a1a1a);
+  line-height: 1.4;
+}
+
+/* ===========================================
+   Fieldset & Legend
+   =========================================== */
+.ranked-form__fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ranked-form__legend {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #1a1a1a);
+  margin-bottom: 0.75rem;
+}
+
+/* ===========================================
+   Info & Helper Text
+   =========================================== */
+.ranked-form__seats-info {
+  font-size: 0.875rem;
+  color: var(--color-primary, #0066cc);
+  background: var(--color-primary-light, #e6f0ff);
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  margin-bottom: 0.75rem;
+  display: inline-block;
+}
+
+.ranked-form__helper {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary, #666);
+  margin-bottom: 1rem;
+  padding-left: 0.25rem;
+}
+
+/* ===========================================
+   Candidate List
+   =========================================== */
+.ranked-form__candidate-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem 0;
+  border: 1px solid var(--color-border, #ddd);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.ranked-form__candidate-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--color-background, #fff);
+  border-bottom: 1px solid var(--color-border-light, #eee);
+  cursor: grab;
+  user-select: none;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+
+  /* Touch-friendly: minimum 48px height */
+  min-height: 56px;
+  touch-action: manipulation;
+}
+
+.ranked-form__candidate-item:last-child {
+  border-bottom: none;
+}
+
+.ranked-form__candidate-item:hover {
+  background: var(--color-cream-light, #faf8f5);
+}
+
+.ranked-form__candidate-item:focus {
+  outline: 2px solid var(--color-primary, #0066cc);
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+/* ===========================================
+   Drag Handle
+   =========================================== */
+.ranked-form__drag-handle {
+  font-size: 1.25rem;
+  color: var(--color-text-tertiary, #999);
+  cursor: grab;
+  padding: 0.5rem;
+  margin: -0.5rem 0;
+  line-height: 1;
+  letter-spacing: 0.1em;
+}
+
+.ranked-form__drag-handle:active {
+  cursor: grabbing;
+}
+
+/* ===========================================
+   Rank Badge
+   =========================================== */
+.ranked-form__rank-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-background, #fff);
+  background: var(--color-primary, #0066cc);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* First 3 ranks get special colors */
+.ranked-form__candidate-item:nth-child(1) .ranked-form__rank-badge {
+  background: var(--color-gold, #d4a700);
+}
+
+.ranked-form__candidate-item:nth-child(2) .ranked-form__rank-badge {
+  background: var(--color-silver, #888);
+}
+
+.ranked-form__candidate-item:nth-child(3) .ranked-form__rank-badge {
+  background: var(--color-bronze, #cd7f32);
+}
+
+/* ===========================================
+   Candidate Name
+   =========================================== */
+.ranked-form__candidate-name {
+  flex: 1;
+  font-size: 1rem;
+  color: var(--color-text-primary, #1a1a1a);
+}
+
+/* ===========================================
+   Sortable States (SortableJS classes)
+   =========================================== */
+
+/* Ghost element (placeholder showing where item will be dropped) */
+.ranked-form__candidate-item--ghost {
+  opacity: 0.4;
+  background: var(--color-primary-light, #e6f0ff) !important;
+}
+
+/* Chosen element (being dragged) */
+.ranked-form__candidate-item--chosen {
+  background: var(--color-cream, #f5f2ee) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  cursor: grabbing;
+}
+
+/* Dragging class */
+.ranked-form__candidate-item--drag {
+  opacity: 1;
+}
+
+/* ===========================================
+   Buttons
+   =========================================== */
+.ranked-form__buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.ranked-form__reset-btn {
+  flex: 1;
+  min-width: 140px;
+}
+
+.ranked-form__vote-btn {
+  flex: 2;
+  min-width: 200px;
+}
+
+.ranked-form__vote-btn--loading {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+/* ===========================================
+   Mobile Responsive
+   =========================================== */
+@media (max-width: 480px) {
+  .ranked-form__candidate-item {
+    padding: 0.875rem 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .ranked-form__drag-handle {
+    font-size: 1.5rem;
+    padding: 0.75rem 0.5rem;
+    margin: -0.75rem 0;
+  }
+
+  .ranked-form__rank-badge {
+    width: 24px;
+    height: 24px;
+    font-size: 0.75rem;
+  }
+
+  .ranked-form__candidate-name {
+    font-size: 0.9375rem;
+  }
+
+  .ranked-form__buttons {
+    flex-direction: column;
+  }
+
+  .ranked-form__reset-btn,
+  .ranked-form__vote-btn {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .ranked-form__helper {
+    font-size: 0.8125rem;
+  }
+}
+
+/* ===========================================
+   Touch Device Optimizations
+   =========================================== */
+@media (hover: none) and (pointer: coarse) {
+  .ranked-form__candidate-item {
+    /* Larger touch targets */
+    min-height: 64px;
+    padding: 1rem;
+  }
+
+  .ranked-form__drag-handle {
+    font-size: 1.5rem;
+    padding: 1rem 0.75rem;
+    margin: -1rem 0;
+  }
+
+  /* Remove hover effects on touch */
+  .ranked-form__candidate-item:hover {
+    background: var(--color-background, #fff);
+  }
+}
+
+/* ===========================================
+   Dark Mode Support (if CSS variables support it)
+   =========================================== */
+@media (prefers-color-scheme: dark) {
+  .ranked-form__candidate-item {
+    background: var(--color-background-dark, #2a2a2a);
+    border-color: var(--color-border-dark, #444);
+  }
+
+  .ranked-form__candidate-item:hover {
+    background: var(--color-background-hover-dark, #333);
+  }
+
+  .ranked-form__candidate-item--chosen {
+    background: var(--color-background-chosen-dark, #3a3a3a) !important;
+  }
+}
+
+/* ===========================================
+   Animation for reordering
+   =========================================== */
+.ranked-form__candidate-list {
+  /* SortableJS handles animation via the animation option */
+}
+
+/* Optional: entrance animation */
+@keyframes ranked-item-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ranked-form__candidate-item {
+  animation: ranked-item-enter 0.2s ease-out;
+  animation-fill-mode: both;
+}
+
+.ranked-form__candidate-item:nth-child(1) { animation-delay: 0s; }
+.ranked-form__candidate-item:nth-child(2) { animation-delay: 0.05s; }
+.ranked-form__candidate-item:nth-child(3) { animation-delay: 0.1s; }
+.ranked-form__candidate-item:nth-child(4) { animation-delay: 0.15s; }
+.ranked-form__candidate-item:nth-child(5) { animation-delay: 0.2s; }
+.ranked-form__candidate-item:nth-child(6) { animation-delay: 0.25s; }
+.ranked-form__candidate-item:nth-child(7) { animation-delay: 0.3s; }
+.ranked-form__candidate-item:nth-child(8) { animation-delay: 0.35s; }
+.ranked-form__candidate-item:nth-child(9) { animation-delay: 0.4s; }
+.ranked-form__candidate-item:nth-child(10) { animation-delay: 0.45s; }

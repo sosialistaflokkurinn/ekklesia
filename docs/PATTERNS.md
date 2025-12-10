@@ -383,3 +383,235 @@ const el = document.getElementById('el');
 if (!el) return;
 el.textContent = data?.value ?? '';
 ```
+
+---
+
+## CDN Library Loading (Dynamic Import)
+
+When loading external libraries from CDN (e.g., SortableJS, Chart.js):
+
+```javascript
+/**
+ * Singleton promise to avoid multiple loads
+ */
+let loadPromise = null;
+
+/**
+ * Load library from CDN with singleton pattern
+ * @returns {Promise<Library>} The loaded library
+ */
+async function loadLibrary() {
+  // Check if already loaded globally
+  if (window.MyLibrary) {
+    return window.MyLibrary;
+  }
+
+  // Singleton: return existing promise if loading
+  if (loadPromise) {
+    return loadPromise;
+  }
+
+  loadPromise = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/library@version/dist/library.min.js';
+    script.onload = () => {
+      debug('module', 'Library loaded successfully');
+      resolve(window.MyLibrary);
+    };
+    script.onerror = () => reject(new Error('Failed to load library'));
+    document.head.appendChild(script);
+  });
+
+  return loadPromise;
+}
+```
+
+**Key points:**
+- Use singleton pattern to prevent duplicate script tags
+- Check `window.LibraryName` first (may already be loaded)
+- Pin specific version in URL (`@1.15.2` not `@latest`)
+- Add debug logging for load success
+
+---
+
+## Multi-Type Component Pattern
+
+When a component needs to handle multiple variants (e.g., voting forms):
+
+```javascript
+/**
+ * Display section based on type
+ */
+async function displaySection(container, data) {
+  const { type } = data;
+
+  // Clear previous content
+  container.innerHTML = '';
+
+  // Branch by type - use separate components
+  if (type === 'ranked-choice') {
+    const { createRankedForm } = await import('./ranked-form.js');
+    const form = await createRankedForm({
+      items: data.items,
+      onSubmit: handleRankedSubmit
+    });
+    container.appendChild(form.element);
+  } else {
+    // Default: single/multi-choice
+    const { createStandardForm } = await import('./standard-form.js');
+    const form = createStandardForm({
+      items: data.items,
+      maxSelections: data.max_selections,
+      onSubmit: handleStandardSubmit
+    });
+    container.appendChild(form.element);
+  }
+}
+```
+
+**Pattern:**
+- Detect type from API response (`voting_type`, `content_type`, etc.)
+- Use dynamic `import()` to load only needed component
+- Keep separate components for each variant (avoid giant switch statements)
+- Each component returns `{ element, methods... }` object
+
+---
+
+## Database Migration Pattern (Voting Types)
+
+When adding new constrained values (e.g., new voting_type):
+
+```sql
+-- 1. Drop existing constraint
+ALTER TABLE tablename DROP CONSTRAINT IF EXISTS constraint_name;
+
+-- 2. Add new constraint with extended values
+ALTER TABLE tablename
+ADD CONSTRAINT constraint_name CHECK (
+    column_name IN ('existing-value', 'new-value')
+);
+
+-- 3. Add supporting columns (with safe defaults)
+ALTER TABLE tablename
+ADD COLUMN IF NOT EXISTS new_column TYPE DEFAULT safe_value;
+
+-- 4. Make existing NOT NULL columns nullable if new type doesn't use them
+ALTER TABLE tablename ALTER COLUMN old_column DROP NOT NULL;
+
+-- 5. Update validation constraint to allow either old OR new pattern
+ALTER TABLE tablename DROP CONSTRAINT IF EXISTS data_validation;
+ALTER TABLE tablename
+ADD CONSTRAINT data_validation CHECK (
+    (old_column IS NOT NULL) OR
+    (new_column IS NOT NULL AND jsonb_typeof(new_column) = 'array')
+);
+```
+
+**Key lesson:** If adding a new type that doesn't use existing required columns, remember to make those columns nullable!
+
+---
+
+## Backend Vote Validation Pattern
+
+Multi-type validation in route handlers:
+
+```javascript
+router.post('/:id/vote', authenticate, async (req, res) => {
+  const { answer_ids, ranked_answers } = req.body;
+  const { voting_type } = election;
+
+  // Branch validation by type
+  if (voting_type === 'ranked-choice') {
+    if (!ranked_answers) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'ranked_answers required for ranked-choice'
+      });
+    }
+    const check = validateRankedAnswers(ranked_answers, election);
+    if (!check.valid) {
+      return res.status(400).json({ error: 'Bad Request', message: check.error });
+    }
+  } else {
+    // single-choice or multi-choice
+    const check = validateAnswers(answer_ids, election);
+    if (!check.valid) {
+      return res.status(400).json({ error: 'Bad Request', message: check.error });
+    }
+  }
+
+  // Insert based on type
+  if (voting_type === 'ranked-choice') {
+    // Single row with JSONB array
+    await client.query(
+      `INSERT INTO ballots (election_id, member_uid, ranked_answers, ...)
+       VALUES ($1, $2, $3, ...)`,
+      [id, uid, JSON.stringify(ranked_answers)]
+    );
+  } else {
+    // Multiple rows (one per selection)
+    for (const answerId of answer_ids) {
+      await client.query(
+        `INSERT INTO ballots (election_id, member_uid, answer_id, ...)
+         VALUES ($1, $2, $3, ...)`,
+        [id, uid, answerId]
+      );
+    }
+  }
+});
+```
+
+**Key points:**
+- Extract ALL possible body params at top
+- Check `voting_type` from election record (not from request!)
+- Use separate validation functions per type
+- Different storage patterns: ranked = single JSONB row, multi = multiple rows
+
+---
+
+## API Response Field Requirements
+
+When frontend needs data to determine UI variant, backend MUST include it:
+
+```javascript
+// WRONG - frontend can't detect type
+const result = await client.query(
+  `SELECT id, title, question, answers FROM elections WHERE id = $1`,
+  [id]
+);
+
+// RIGHT - include type fields
+const result = await client.query(
+  `SELECT id, title, question, answers, voting_type, seats_to_fill, max_selections
+   FROM elections WHERE id = $1`,
+  [id]
+);
+```
+
+**Checklist when adding new voting/content types:**
+1. ✅ Add type field to GET single item endpoint
+2. ✅ Add type field to GET list endpoint
+3. ✅ Add any type-specific fields (e.g., `seats_to_fill` for STV)
+4. ✅ Update POST/PUT to accept and validate type-specific fields
+5. ✅ Add type to results/summary endpoints
+
+---
+
+## Cache Busting Pattern
+
+When deploying frontend changes, update version query params:
+
+```html
+<!-- In HTML imports -->
+<link rel="stylesheet" href="/styles/component.css?v=20251210">
+<script type="module" src="/js/page.js?v=20251210"></script>
+```
+
+**Format:** `?v=YYYYMMDD` (date of deploy)
+
+**When to update:**
+- Any JS/CSS file change that's deployed
+- Use `replace_all` in editor to update all occurrences
+- Deploy frontend AFTER updating version tags
+
+**Note:** Even with Firebase deploy, browsers may cache old JS. Hard refresh (Ctrl+Shift+R) or incognito may be needed for testing.

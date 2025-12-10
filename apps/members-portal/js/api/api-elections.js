@@ -212,6 +212,53 @@ export async function submitVote(electionId, answerId) {
 }
 
 /**
+ * Submit a ranked-choice (STV) vote in an election
+ *
+ * @param {string} electionId - Election ID
+ * @param {Array<string>} rankedAnswerIds - Ordered array of candidate IDs (1st preference first)
+ * @returns {Promise<Object>} Vote confirmation response
+ *
+ * Response:
+ * {
+ *   success: true,
+ *   message: 'Forgangsröðun skráð',
+ *   ballot_ids: string[]
+ * }
+ */
+export async function submitRankedVote(electionId, rankedAnswerIds) {
+  if (USE_MOCK_API) {
+    // Mock API doesn't support ranked voting yet
+    return { success: true, message: 'Mock ranked vote recorded', ballot_ids: ['mock-ballot-id'] };
+  }
+
+  try {
+    const url = `${ELECTIONS_API_BASE}/api/elections/${electionId}/vote`;
+    // Backend expects ranked_answers as ordered array for ranked-choice elections
+    const payload = {
+      ranked_answers: rankedAnswerIds
+    };
+
+    const response = await authenticatedFetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      throw await createApiError(response, 'Ranked vote submission failed');
+    }
+
+    return await response.json();
+
+  } catch (error) {
+    debug.error(`Error submitting ranked vote for election ${electionId}:`, error);
+    throw error;
+  }
+}
+
+/**
  * Get election results
  *
  * Only available after election closes.

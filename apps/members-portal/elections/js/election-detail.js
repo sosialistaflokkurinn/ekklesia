@@ -20,6 +20,7 @@ import { showModal } from '../../js/components/ui-modal.js';
 import { electionState } from '../../js/utils/election-state.js';
 import { createScheduleDisplay } from '../../js/components/election-schedule-display.js';
 import { createVotingForm } from '../../js/components/election-vote-form.js';
+import { createRankedVotingForm } from '../../js/components/election-ranked-vote-form.js';
 import { createButton } from '../../js/components/ui-button.js';
 import { setTextContentOptional, showElement, hideElement } from '../../ui/dom.js';
 
@@ -192,8 +193,9 @@ function displayElection(election) {
 
 /**
  * Display voting section with answer options
+ * Supports single-choice, multi-choice, and ranked-choice (STV) elections
  */
-function displayVotingSection(election) {
+async function displayVotingSection(election) {
   const container = document.getElementById('voting-form-container');
 
   // Clear previous form if it exists
@@ -202,7 +204,31 @@ function displayVotingSection(election) {
     votingForm = null;
   }
 
-  // Create voting form
+  // Check if ranked-choice (STV) election
+  if (election.voting_type === 'ranked-choice') {
+    try {
+      // Create ranked voting form (async because it loads SortableJS)
+      votingForm = await createRankedVotingForm({
+        question: election.question,
+        candidates: election.answers,
+        seatsToFill: election.seats_to_fill || 1,
+
+        // Handle ranked vote submission
+        onSubmit: (rankedIds) => {
+          showRankedConfirmationModal(rankedIds);
+        }
+      });
+
+      // Add to page
+      container.appendChild(votingForm.element);
+    } catch (error) {
+      debug.error('Error creating ranked voting form:', error);
+      container.innerHTML = '<p class="error">Villa við að hlaða röðunarviðmót.</p>';
+    }
+    return;
+  }
+
+  // Standard single-choice or multi-choice voting form
   votingForm = createVotingForm({
     question: election.question,
     answers: election.answers,
@@ -421,6 +447,106 @@ async function submitVote(answerIds) {
       alert(R.string.error_already_voted || 'Þú hefur þegar kosið í þessari kosningu.');
     } else {
       alert(R.string.error_submit_vote || 'Villa kom upp við að skila inn atkvæði. Vinsamlegast reyndu aftur.');
+    }
+  }
+}
+
+/**
+ * Show confirmation modal for ranked-choice vote
+ * @param {Array<string>} rankedIds - Ordered array of candidate IDs
+ */
+function showRankedConfirmationModal(rankedIds) {
+  if (!rankedIds || rankedIds.length === 0) {
+    return;
+  }
+
+  // Get ranked candidate objects
+  const rankedCandidates = rankedIds.map(id =>
+    currentElection.answers.find(a => {
+      const aId = a.id || (typeof a === 'string' ? a : a.text);
+      return aId === id;
+    })
+  ).filter(Boolean);
+
+  if (rankedCandidates.length === 0) {
+    return;
+  }
+
+  // Create ranked list display
+  const rankingList = rankedCandidates.map((c, index) => {
+    const text = c.text || c.answer_text || c.id || '';
+    return `<li><strong>${index + 1}. val:</strong> ${escapeHTML(text)}</li>`;
+  }).join('');
+
+  const content = `
+    <p>Þú ert að fara að skila eftirfarandi forgangsröðun:</p>
+    <ol class="modal__ranking-list" style="margin: 1rem 0; padding-left: 1.5rem;">
+      ${rankingList}
+    </ol>
+    <p><em>Athugið: Ekki er hægt að breyta atkvæði eftir að það hefur verið skilað.</em></p>
+  `;
+
+  const modal = showModal({
+    title: 'Staðfesta forgangsröðun',
+    content: content,
+    buttons: [
+      {
+        text: R.string.btn_cancel || 'Hætta við',
+        onClick: () => modal.close(),
+        primary: false
+      },
+      {
+        text: 'Skila forgangsröðun',
+        onClick: () => {
+          modal.close();
+          submitRankedVote(rankedIds);
+        },
+        primary: true
+      }
+    ],
+    size: 'md'
+  });
+}
+
+/**
+ * Submit ranked vote to backend API
+ * @param {Array<string>} rankedIds - Ordered array of candidate IDs (1st preference first)
+ */
+async function submitRankedVote(rankedIds) {
+  debug.log('Submitting ranked vote: Election ' + currentElection.id + ', Ranking: ' + rankedIds.join(' > '));
+
+  try {
+    // Import API function
+    const { submitRankedVote: submitRankedVoteAPI } = await import('../../js/api/api-elections.js');
+
+    // Show loading state on form
+    if (votingForm && votingForm.showLoading) {
+      votingForm.showLoading();
+    }
+
+    // Submit ranked vote to backend
+    const response = await submitRankedVoteAPI(currentElection.id, rankedIds);
+
+    // Show success message
+    alert(R.string.ranked_vote_success || 'Forgangsröðun þín hefur verið skráð!');
+
+    // Update local state
+    currentElection.has_voted = true;
+    displayElection(currentElection);
+
+  } catch (error) {
+    debug.error('Ranked vote submission failed:', error);
+
+    // Hide loading state
+    if (votingForm && votingForm.hideLoading) {
+      votingForm.hideLoading();
+    }
+
+    // Check if it's a duplicate vote error
+    if (error.message && error.message.includes('already voted')) {
+      alert(R.string.error_already_voted || 'Þú hefur þegar kosið í þessari kosningu.');
+    } else {
+      alert(R.string.error_submit_vote || 'Villa kom upp við að skila inn forgangsröðun. Vinsamlegast reyndu aftur.');
     }
   }
 }

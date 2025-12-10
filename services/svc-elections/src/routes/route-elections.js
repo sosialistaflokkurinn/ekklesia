@@ -12,6 +12,7 @@ const {
   filterElectionsByEligibility,
   validateVotingWindow,
   validateAnswers,
+  validateRankedAnswers,
   isEligible,
 } = require('../middleware/middleware-member-auth');
 const { readLimiter, voteLimiter, writeLimiter } = require('../middleware/middleware-rate-limiter');
@@ -75,6 +76,7 @@ router.get('/elections', readLimiter, verifyMemberToken, async (req, res) => {
         e.status,
         e.voting_type,
         e.max_selections,
+        e.seats_to_fill,
         e.eligibility,
         e.scheduled_start,
         e.scheduled_end,
@@ -174,6 +176,7 @@ router.get('/elections/:id', readLimiter, verifyMemberToken, async (req, res) =>
         e.status,
         e.voting_type,
         e.max_selections,
+        e.seats_to_fill,
         e.eligibility,
         e.scheduled_start,
         e.scheduled_end,
@@ -243,10 +246,14 @@ router.get('/elections/:id', readLimiter, verifyMemberToken, async (req, res) =>
 // =====================================================
 // POST /api/elections/:id/vote - Submit Vote
 // =====================================================
+// Supports three voting types:
+// - single-choice: { answer_ids: ["id"] } - exactly 1 selection
+// - multi-choice: { answer_ids: ["id1", "id2"] } - up to max_selections
+// - ranked-choice (STV): { ranked_answers: ["id1", "id2", "id3"] } - ordered preferences
 router.post('/elections/:id/vote', voteLimiter, verifyMemberToken, async (req, res) => {
   const startTime = Date.now();
   const { id } = req.params;
-  const { answer_ids } = req.body;
+  const { answer_ids, ranked_answers } = req.body;
 
   let client;
   try {
@@ -263,6 +270,7 @@ router.post('/elections/:id/vote', voteLimiter, verifyMemberToken, async (req, r
         e.status,
         e.voting_type,
         e.max_selections,
+        e.seats_to_fill,
         e.eligibility,
         e.scheduled_start,
         e.scheduled_end,
@@ -311,14 +319,36 @@ router.post('/elections/:id/vote', voteLimiter, verifyMemberToken, async (req, r
       });
     }
 
-    // Validate answers
-    const answerCheck = validateAnswers(answer_ids, election);
-    if (!answerCheck.valid) {
-      await client.query('ROLLBACK');
-      return res.status(400).json({
-        error: 'Bad Request',
-        message: answerCheck.error,
-      });
+    // Validate based on voting type
+    const isRankedChoice = election.voting_type === 'ranked-choice';
+
+    if (isRankedChoice) {
+      // Ranked-choice (STV) validation
+      if (!ranked_answers) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          error: 'Bad Request',
+          message: 'Forgangsröðun (ranked_answers) vantar í beiðni',
+        });
+      }
+      const rankCheck = validateRankedAnswers(ranked_answers, election);
+      if (!rankCheck.valid) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          error: 'Bad Request',
+          message: rankCheck.error,
+        });
+      }
+    } else {
+      // Single-choice or multi-choice validation
+      const answerCheck = validateAnswers(answer_ids, election);
+      if (!answerCheck.valid) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          error: 'Bad Request',
+          message: answerCheck.error,
+        });
+      }
     }
 
     // Check if already voted (using SECURITY DEFINER function)
@@ -335,43 +365,56 @@ router.post('/elections/:id/vote', voteLimiter, verifyMemberToken, async (req, r
       });
     }
 
-    // Insert ballots (one per selected answer for multi-choice)
+    // Insert ballots based on voting type
     // Note: token_hash uses sentinel value for Firebase-authenticated votes
     // Sentinel token: 64 zeros (exists in voting_tokens table)
-    // Note: answer field must be populated with answer text from election.answers
     const MEMBER_VOTE_TOKEN = '0000000000000000000000000000000000000000000000000000000000000000';
     const ballotIds = [];
-    for (const answerId of answer_ids) {
-      // Find answer text from election.answers array
-      let answerText = answerId;
-      const answerObj = election.answers.find(a => {
-        if (typeof a === 'string') return a === answerId;
-        return (a.id || a.answer_text || a.text) === answerId;
-      });
-      
-      if (answerObj && typeof answerObj === 'object') {
-        answerText = answerObj.text || answerObj.answer_text || answerId;
-      }
 
+    if (isRankedChoice) {
+      // Ranked-choice (STV): Insert single ballot with ranked_answers JSONB
       const ballotResult = await client.query(
-        `INSERT INTO elections.ballots (election_id, member_uid, answer_id, answer, token_hash, submitted_at)
-         VALUES ($1, $2, $3, $4, $5, date_trunc('minute', NOW()))
+        `INSERT INTO elections.ballots (election_id, member_uid, ranked_answers, token_hash, submitted_at)
+         VALUES ($1, $2, $3, $4, date_trunc('minute', NOW()))
          RETURNING id`,
-        [id, req.user.uid, answerId, answerText, MEMBER_VOTE_TOKEN]
+        [id, req.user.uid, JSON.stringify(ranked_answers), MEMBER_VOTE_TOKEN]
       );
-
       ballotIds.push(ballotResult.rows[0].id);
+    } else {
+      // Single-choice or multi-choice: Insert one ballot per selected answer
+      for (const answerId of answer_ids) {
+        // Find answer text from election.answers array
+        let answerText = answerId;
+        const answerObj = election.answers.find(a => {
+          if (typeof a === 'string') return a === answerId;
+          return (a.id || a.answer_text || a.text) === answerId;
+        });
+
+        if (answerObj && typeof answerObj === 'object') {
+          answerText = answerObj.text || answerObj.answer_text || answerId;
+        }
+
+        const ballotResult = await client.query(
+          `INSERT INTO elections.ballots (election_id, member_uid, answer_id, answer, token_hash, submitted_at)
+           VALUES ($1, $2, $3, $4, $5, date_trunc('minute', NOW()))
+           RETURNING id`,
+          [id, req.user.uid, answerId, answerText, MEMBER_VOTE_TOKEN]
+        );
+
+        ballotIds.push(ballotResult.rows[0].id);
+      }
     }
 
     await client.query('COMMIT');
 
     const duration = Date.now() - startTime;
+    const voteCount = isRankedChoice ? ranked_answers.length : answer_ids.length;
 
     (req.logger || logger).info('[Member API] Vote submitted', {
       uid_hash: hashUidForLogging(req.user.uid),
       election_id: id,
       election_title: election.title,
-      answer_count: answer_ids.length,
+      answer_count: voteCount,
       ballot_ids: ballotIds,
       voting_type: election.voting_type,
       duration_ms: duration,
@@ -380,7 +423,7 @@ router.post('/elections/:id/vote', voteLimiter, verifyMemberToken, async (req, r
     logAudit('submit_vote', true, {
       uid_hash: hashUidForLogging(req.user.uid),
       election_id: id,
-      answer_count: answer_ids.length,
+      answer_count: voteCount,
       ballot_ids: ballotIds,
       duration_ms: duration,
     });
@@ -388,7 +431,7 @@ router.post('/elections/:id/vote', voteLimiter, verifyMemberToken, async (req, r
     res.status(201).json({
       success: true,
       ballot_ids: ballotIds,
-      message: 'Vote recorded successfully',
+      message: isRankedChoice ? 'Forgangsröðun skráð' : 'Vote recorded successfully',
     });
   } catch (error) {
     if (client) {
@@ -403,6 +446,7 @@ router.post('/elections/:id/vote', voteLimiter, verifyMemberToken, async (req, r
       election_id: id,
       uid: req.user?.uid,
       answer_ids,
+      ranked_answers,
     });
 
     logAudit('submit_vote', false, {
@@ -428,6 +472,8 @@ router.post('/elections/:id/vote', voteLimiter, verifyMemberToken, async (req, r
 // =====================================================
 // GET /api/elections/:id/results - Get Election Results
 // =====================================================
+// Returns results for closed elections
+// For ranked-choice (STV): Uses STV algorithm to calculate winners
 router.get('/elections/:id/results', readLimiter, verifyMemberToken, async (req, res) => {
   const { id } = req.params;
 
@@ -440,7 +486,10 @@ router.get('/elections/:id/results', readLimiter, verifyMemberToken, async (req,
         e.question,
         e.answers,
         e.status,
+        e.voting_type,
+        e.seats_to_fill,
         e.closed_at,
+        e.scheduled_end,
         e.hidden,
         e.eligibility
       FROM elections.elections e
@@ -489,7 +538,32 @@ router.get('/elections/:id/results', readLimiter, verifyMemberToken, async (req,
       });
     }
 
-    // Get results using helper function
+    // Check if ranked-choice (STV)
+    const isRankedChoice = election.voting_type === 'ranked-choice';
+
+    if (isRankedChoice) {
+      // STV Results calculation
+      const stvResults = await calculateSTVResults(id, election, req.logger || logger);
+
+      (req.logger || logger).info('[Member API] Get STV results', {
+        uid_hash: hashUidForLogging(req.user.uid),
+        election_id: id,
+        total_ballots: stvResults.total_ballots,
+        winners_count: stvResults.winners.length,
+      });
+
+      return res.json({
+        election_id: id,
+        title: election.title,
+        question: election.question,
+        status: election.status,
+        voting_type: 'ranked-choice',
+        seats_to_fill: election.seats_to_fill,
+        ...stvResults,
+      });
+    }
+
+    // Standard results for single-choice / multi-choice
     const resultsData = await pool.query(
       'SELECT * FROM get_election_results($1)',
       [id]
@@ -528,6 +602,7 @@ router.get('/elections/:id/results', readLimiter, verifyMemberToken, async (req,
       title: election.title,
       question: election.question,
       status: election.status,
+      voting_type: election.voting_type || 'single-choice',
       total_votes: totalVotes,
       results,
       winner: winner && winner.votes > 0 ? winner : null,
@@ -541,6 +616,133 @@ router.get('/elections/:id/results', readLimiter, verifyMemberToken, async (req,
     });
   }
 });
+
+// =====================================================
+// STV Results Calculation Helper
+// =====================================================
+// Uses custom STV implementation (Scottish STV rules)
+async function calculateSTVResults(electionId, election, log) {
+  // Import local STV utility
+  const { stv } = require('../utils/util-stv');
+
+  // Get candidate IDs from election answers
+  const candidates = election.answers.map(a => a.id || a.text);
+  const candidateMap = new Map(election.answers.map(a => [a.id || a.text, a.text || a.id]));
+
+  // Get ranked ballots from database
+  const ballotsResult = await pool.query(
+    `SELECT ranked_answers
+     FROM elections.ballots
+     WHERE election_id = $1 AND ranked_answers IS NOT NULL`,
+    [electionId]
+  );
+
+  const totalBallots = ballotsResult.rows.length;
+
+  // If no ballots, return empty results
+  if (totalBallots === 0) {
+    return {
+      total_ballots: 0,
+      seats_to_fill: election.seats_to_fill || 1,
+      quota: 0,
+      winners: [],
+      eliminated: [],
+      rounds: [],
+      first_preference_counts: candidates.map(c => ({
+        candidate_id: c,
+        text: candidateMap.get(c),
+        votes: 0,
+        percentage: 0,
+      })),
+    };
+  }
+
+  // Convert ballots to STV format
+  // stv expects: { weight: 1, preferences: ["candidate1", "candidate2", ...] }
+  const votes = ballotsResult.rows.map(row => ({
+    weight: 1,
+    preferences: row.ranked_answers, // Already an array from JSONB
+  }));
+
+  // Collect round-by-round report
+  const rounds = [];
+  let roundNumber = 0;
+
+  // Run STV algorithm
+  const stvResult = stv({
+    seatsToFill: election.seats_to_fill || 1,
+    candidates: candidates,
+    votes: votes,
+    report: (message) => {
+      // Parse round messages for detailed reporting
+      if (message.includes('Round')) {
+        roundNumber++;
+      }
+      rounds.push({
+        round: roundNumber,
+        message: message,
+      });
+    },
+  });
+
+  // Calculate Droop quota for reference
+  const droopQuota = Math.floor(totalBallots / (election.seats_to_fill + 1)) + 1;
+
+  // Count first preference votes
+  const firstPreferenceCounts = new Map();
+  candidates.forEach(c => firstPreferenceCounts.set(c, 0));
+
+  votes.forEach(vote => {
+    if (vote.preferences && vote.preferences.length > 0) {
+      const firstChoice = vote.preferences[0];
+      if (firstPreferenceCounts.has(firstChoice)) {
+        firstPreferenceCounts.set(firstChoice, firstPreferenceCounts.get(firstChoice) + 1);
+      }
+    }
+  });
+
+  // Build first preference results
+  const firstPreferenceResults = candidates.map(c => ({
+    candidate_id: c,
+    text: candidateMap.get(c),
+    votes: firstPreferenceCounts.get(c) || 0,
+    percentage: totalBallots > 0
+      ? parseFloat(((firstPreferenceCounts.get(c) || 0) / totalBallots * 100).toFixed(2))
+      : 0,
+  })).sort((a, b) => b.votes - a.votes);
+
+  // Build winners list with candidate text
+  const winners = stvResult.winners.map(winnerId => ({
+    candidate_id: winnerId,
+    text: candidateMap.get(winnerId),
+  }));
+
+  // Eliminated candidates (all non-winners)
+  const eliminated = candidates
+    .filter(c => !stvResult.winners.includes(c))
+    .map(c => ({
+      candidate_id: c,
+      text: candidateMap.get(c),
+    }));
+
+  log.info('[STV] Calculation complete', {
+    election_id: electionId,
+    total_ballots: totalBallots,
+    seats: election.seats_to_fill,
+    quota: droopQuota,
+    winners: winners.map(w => w.candidate_id),
+    rounds_count: roundNumber,
+  });
+
+  return {
+    total_ballots: totalBallots,
+    quota: droopQuota,
+    winners: winners,
+    eliminated: eliminated,
+    rounds: rounds,
+    first_preference_counts: firstPreferenceResults,
+  };
+}
 
 // =====================================================
 // S2S ENDPOINTS (Legacy single-election system)
