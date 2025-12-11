@@ -31,7 +31,9 @@ Usage:
 """
 
 import logging
+import os
 import re
+import requests
 from datetime import datetime, timezone
 from typing import Any
 
@@ -48,6 +50,74 @@ logger = logging.getLogger(__name__)
 
 # Iceland country ID
 ICELAND_COUNTRY_ID = 109
+
+# Django API for creating members
+DJANGO_API_BASE_URL = os.environ.get(
+    'DJANGO_API_BASE_URL',
+    'https://django-socialism-521240388393.europe-west2.run.app/felagar'
+)
+
+
+def get_django_api_token() -> str:
+    """Get Django API token from environment variable."""
+    token = os.environ.get('django-api-token') or os.environ.get('DJANGO_API_TOKEN')
+    if not token:
+        raise ValueError("Django API token not found")
+    return token
+
+
+def sync_member_to_django(member_data: dict) -> dict | None:
+    """
+    Create member in Django via API.
+
+    Args:
+        member_data: Dict with member data to sync
+
+    Returns:
+        Dict with django_id if successful, None if failed
+    """
+    try:
+        token = get_django_api_token()
+
+        response = requests.post(
+            f"{DJANGO_API_BASE_URL}/api/sync/create-member/",
+            json=member_data,
+            headers={
+                'Authorization': f'Token {token}',
+                'Content-Type': 'application/json'
+            },
+            timeout=15
+        )
+
+        if response.status_code == 200:
+            result = response.json()
+            if result.get('success'):
+                log_json('INFO', 'Member synced to Django',
+                         event='django_sync_success',
+                         django_id=result.get('django_id'),
+                         already_existed=result.get('already_existed', False))
+                return result
+            else:
+                log_json('ERROR', 'Django sync failed',
+                         event='django_sync_failed',
+                         error=result.get('error'))
+                return None
+        else:
+            log_json('ERROR', 'Django API error',
+                     event='django_api_error',
+                     status_code=response.status_code,
+                     response=response.text[:200])
+            return None
+
+    except requests.exceptions.Timeout:
+        log_json('ERROR', 'Django API timeout',
+                 event='django_sync_timeout')
+        return None
+    except Exception as e:
+        log_json('ERROR', 'Django sync exception',
+                 event='django_sync_exception',
+                 error=str(e))
+        return None
 
 
 def validate_email(email: str) -> bool:
@@ -320,21 +390,102 @@ def register_member(req: https_fn.CallableRequest) -> dict[str, Any]:
                 'created_at': firestore.SERVER_TIMESTAMP,
                 'last_modified': datetime.now(timezone.utc),
                 'source': 'skraning-static',
-                'django_id': None  # Not synced to Django
+                'django_id': None  # Will be set after Django sync
             }
         }
 
-        # Save to Firestore
+        # Save to Firestore first
         db.collection('members').document(normalized_kennitala).set(member_doc)
+
+        log_json('INFO', 'Member saved to Firestore',
+                 event='register_member_firestore_saved',
+                 comrade_id=comrade_id,
+                 kennitala=f"{normalized_kennitala[:6]}****")
+
+        # Sync to Django to get django_id
+        django_id = None
+        try:
+            # Build address data for Django
+            address_for_django = {}
+            if addresses:
+                addr = addresses[0]
+                if addr.get('country') == 'IS':
+                    if addr.get('hnitnum'):
+                        address_for_django = {
+                            'type': 'iceland',
+                            'street': addr.get('street', ''),
+                            'number': addr.get('number', ''),
+                            'letter': addr.get('letter', ''),
+                            'postal_code': addr.get('postal_code', ''),
+                            'city': addr.get('city', ''),
+                            'country': 'IS',
+                            'hnitnum': addr.get('hnitnum')
+                        }
+                    else:
+                        address_for_django = {
+                            'type': 'unlocated',
+                            'cell_id': cell.get('id') if cell else None
+                        }
+                else:
+                    address_for_django = {
+                        'type': 'foreign',
+                        'street': addr.get('street', ''),
+                        'postal_code': addr.get('postal_code', ''),
+                        'city': addr.get('city', ''),
+                        'country': addr.get('country', ''),
+                        'country_id': country_id
+                    }
+            elif cell:
+                # No address but has cell (unlocated)
+                address_for_django = {
+                    'type': 'unlocated',
+                    'cell_id': cell.get('id')
+                }
+
+            django_data = {
+                'kennitala': normalized_kennitala,
+                'name': name,
+                'email': email.lower(),
+                'phone': normalized_phone,
+                'birthday': birthday,
+                'housing_situation': int(housing_situation) if housing_situation else None,
+                'reachable': reachable,
+                'groupable': groupable,
+                'address': address_for_django,
+                'union_name': union_name,
+                'title_name': title_name
+            }
+
+            django_result = sync_member_to_django(django_data)
+            if django_result and django_result.get('django_id'):
+                django_id = django_result['django_id']
+
+                # Update Firestore with django_id
+                db.collection('members').document(normalized_kennitala).update({
+                    'metadata.django_id': django_id
+                })
+
+                log_json('INFO', 'Updated Firestore with django_id',
+                         event='register_member_django_id_updated',
+                         django_id=django_id,
+                         kennitala=f"{normalized_kennitala[:6]}****")
+
+        except Exception as django_err:
+            # Log but don't fail registration - Django sync can happen later
+            log_json('WARN', 'Django sync failed but Firestore registration succeeded',
+                     event='register_member_django_sync_failed',
+                     error=str(django_err),
+                     kennitala=f"{normalized_kennitala[:6]}****")
 
         log_json('INFO', 'Member registered successfully',
                  event='register_member_success',
                  comrade_id=comrade_id,
+                 django_id=django_id,
                  kennitala=f"{normalized_kennitala[:6]}****",
                  has_address=len(addresses) > 0,
                  has_cell=cell is not None)
 
-        return {'comrade_id': comrade_id, 'error': None}
+        return {'comrade_id': comrade_id, 'django_id': django_id, 'error': None}
 
     except Exception as e:
         logger.error(f"Registration failed: {e}")
