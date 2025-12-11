@@ -119,27 +119,35 @@ class CodeHealthChecker:
     def check_missing_imports(self):
         """Check for usage without imports"""
         print(f"{BLUE}📦 Checking for missing imports...{NC}")
-        
+
         checks = [
             ('debug', r'debug\.(log|warn|error|info)', r'import.*debug.*from'),
             ('showToast', r'showToast\(', r'import.*showToast.*from'),
             ('R.string', r'R\.string\.', r'import.*\bR\b.*from.*i18n'),
             ('showStatus', r'showStatus\(', r'import.*showStatus.*from'),
         ]
-        
+
         for js_file in self.js_files:
             content = js_file.read_text(encoding='utf-8')
             lines = content.split('\n')
-            
+
             for name, usage_pattern, import_pattern in checks:
                 # Skip if this is the definition file itself
                 if name in str(js_file):
                     continue
-                    
+
                 # Check if used but not imported
                 uses = re.search(usage_pattern, content)
                 has_import = re.search(import_pattern, content)
-                
+
+                # Special case for R.string: also check for local R definition
+                # (e.g., "const R = { string: {} }" or "function applyStrings(R)")
+                if name == 'R.string' and uses and not has_import:
+                    # Check for local R definition as variable or parameter
+                    local_r_def = re.search(r'(const|let|var)\s+R\s*=|function\s+\w+\s*\([^)]*\bR\b[^)]*\)', content)
+                    if local_r_def:
+                        continue  # R is defined locally, not an error
+
                 if uses and not has_import:
                     # Find line number
                     for i, line in enumerate(lines, 1):

@@ -6,6 +6,7 @@ const logger = require('./utils/util-logger');
 
 const electionsRouter = require('./routes/route-elections');
 const adminRouter = require('./routes/route-admin'); // Admin CRUD routes (Issue #192)
+const nominationRouter = require('./routes/route-nomination'); // Nomination committee routes
 const correlationIdMiddleware = require('./middleware/middleware-correlation-id');
 
 const app = express();
@@ -63,6 +64,9 @@ app.use('/api', electionsRouter);
 // Admin API routes
 app.use('/api/admin', adminRouter);
 
+// Nomination committee routes
+app.use('/api/nomination', nominationRouter);
+
 // 404 handler
 app.use((req, res) => {
   const response = {
@@ -87,7 +91,12 @@ app.use((req, res) => {
       'POST /api/admin/elections/:id/hide (Admin)',
       'POST /api/admin/elections/:id/unhide (Admin)',
       'DELETE /api/admin/elections/:id (Superadmin)',
-      'GET /api/admin/elections/:id/results (Admin)'
+      'GET /api/admin/elections/:id/results (Admin)',
+      // Nomination Committee endpoints
+      'GET /api/nomination/elections (Committee)',
+      'GET /api/nomination/elections/:id (Committee)',
+      'POST /api/nomination/elections/:id/vote (Committee)',
+      'GET /api/nomination/elections/:id/results (Committee)'
     ];
   }
 

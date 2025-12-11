@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Raðval - Uppstillingarnefnd</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2" sizes="any">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico?v=2">
+  <link rel="stylesheet" href="/styles/bundle.css?v=20251210">
+  <link rel="stylesheet" href="/styles/components/ranked-form.css?v=20251211">
+  <link rel="stylesheet" href="styles/uppstilling.css?v=20251211">
+</head>
+<body class="authenticated">
+  <!-- Navigation component inserted here -->
+
+  <!-- Page Content -->
+  <div class="page__container">
+    <!-- Header -->
+    <div class="card card--welcome">
+      <a href="index.html" class="back-link">&larr; Til baka</a>
+      <h1 class="card__title" id="election-title">Hleður...</h1>
+      <p class="card__subtitle" id="election-info"></p>
+    </div>
+
+    <!-- Loading State -->
+    <div class="card" id="loading-card">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">Hleð kosningu...</p>
+    </div>
+
+    <!-- Error State -->
+    <div class="card card--error" id="error-card" style="display: none;">
+      <h3 class="card__title">Villa</h3>
+      <p id="error-message"></p>
+      <button class="btn btn--primary" onclick="location.reload()">Reyna aftur</button>
+    </div>
+
+    <!-- Already Voted State -->
+    <div class="card" id="already-voted-card" style="display: none;">
+      <h3 class="card__title">Þú hefur þegar kosið</h3>
+      <p>Þú hefur þegar skilað atkvæði í þessari umferð.</p>
+      <div id="previous-vote-display">
+        <!-- Shows previous vote -->
+      </div>
+      <a href="results.html" class="btn btn--primary" id="view-results-btn">Skoða niðurstöður</a>
+    </div>
+
+    <!-- Voting Form Container -->
+    <div id="voting-container" style="display: none;">
+      <!-- Step Indicator -->
+      <div class="card step-indicator">
+        <div class="step-indicator__steps">
+          <div class="step-indicator__step step-indicator__step--active" id="step1-indicator">
+            <span class="step-indicator__number">1</span>
+            <span class="step-indicator__label">Forgangsröðun</span>
+          </div>
+          <div class="step-indicator__divider"></div>
+          <div class="step-indicator__step" id="step2-indicator">
+            <span class="step-indicator__number">2</span>
+            <span class="step-indicator__label">Rökstuðningur</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 1: Ranking -->
+      <div class="card" id="step1-card">
+        <h3 class="card__title">Skref 1: Raðaðu frambjóðendum</h3>
+        <p class="card__description">Dragðu frambjóðendur til að raða þeim í forgangsröð. Nr. 1 er þitt fyrsta val.</p>
+        <div id="ranking-form-container">
+          <!-- Ranking form inserted by JS -->
+        </div>
+        <div class="form-actions">
+          <button class="btn btn--primary" id="next-step-btn" disabled>Næsta: Rökstuðningur &rarr;</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Justifications -->
+      <div class="card" id="step2-card" style="display: none;">
+        <h3 class="card__title">Skref 2: Rökstyðjið val ykkar</h3>
+        <p class="card__description">Skrifið rökstuðning fyrir efstu 3 sætum.</p>
+
+        <div id="justifications-container">
+          <!-- Justification fields inserted by JS -->
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn--secondary" id="prev-step-btn">&larr; Til baka</button>
+          <button class="btn btn--primary" id="submit-vote-btn">Skrá atkvæði</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success State -->
+    <div class="card card--success" id="success-card" style="display: none;">
+      <h3 class="card__title">Atkvæði skráð!</h3>
+      <p>Atkvæði þitt hefur verið skráð.</p>
+      <div class="form-actions">
+        <a href="results.html" class="btn btn--primary" id="success-results-btn">Skoða niðurstöður</a>
+        <a href="index.html" class="btn btn--secondary">Til baka</a>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/uppstilling-vote.js?v=20251210"></script>
+
+  <!-- Initialize Navigation Component -->
+  <script type="module">
+    import { initNavHeader, NAV_CONFIGS } from '../../ui/components/navigation-bar.js?v=20251121c';
+    await initNavHeader(NAV_CONFIGS.members);
+  </script>
+</body>
+</html>

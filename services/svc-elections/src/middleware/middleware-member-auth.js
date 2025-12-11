@@ -80,7 +80,7 @@ async function verifyMemberToken(req, res, next) {
  * @returns {boolean} - True if member is eligible
  */
 function isEligible(election, req) {
-  const { isAdmin, isMember } = req.user;
+  const { isAdmin, isMember, uid } = req.user;
 
   // Check election eligibility setting
   if (election.eligibility === 'all') {
@@ -93,6 +93,14 @@ function isEligible(election, req) {
 
   if (election.eligibility === 'members') {
     return isMember || isAdmin; // Members and admins
+  }
+
+  // Committee eligibility: only specific UIDs can participate
+  if (election.eligibility === 'committee') {
+    const committeeUids = Array.isArray(election.committee_member_uids)
+      ? election.committee_member_uids
+      : [];
+    return committeeUids.includes(uid);
   }
 
   return false; // Default: not eligible

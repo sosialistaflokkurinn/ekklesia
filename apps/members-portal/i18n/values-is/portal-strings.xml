@@ -356,4 +356,15 @@
   <string name="voting_selection_helper">Veldu allt að %s valkosti</string>
   <string name="voting_selection_count">Valið %s af %s</string>
   <string name="toast_close_aria">Loka tilkynningu</string>
+
+  <!-- Ranked voting (STV) strings -->
+  <string name="voting_question_label">Spurning</string>
+  <string name="ranked_voting_title">Raðaðu í forgangsröð</string>
+  <string name="ranked_vote_button">Skila forgangsröðun</string>
+  <string name="ranked_helper_text">Dragðu frambjóðendur til að raða þeim. Nr. 1 er þitt fyrsta val.</string>
+  <string name="ranked_helper_touch">Haltu fingri á frambjóðanda og dragðu til að færa.</string>
+  <string name="ranked_rank_label">{0}. val</string>
+  <string name="ranked_seats_info">Fjöldi sæta: {0}</string>
+  <string name="ranked_loading_text">Sendir forgangsröðun...</string>
+  <string name="ranked_reset_button">Núllstilla röðun</string>
 </resources>

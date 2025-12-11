@@ -62,7 +62,8 @@
    =========================================== */
 .ranked-form__seats-info {
   font-size: 0.875rem;
-  color: var(--color-primary, #0066cc);
+  /* Very dark blue (#1a365d) for WCAG AA contrast (7:1) on light blue background */
+  color: #1a365d;
   background: var(--color-primary-light, #e6f0ff);
   padding: 0.5rem 0.75rem;
   border-radius: 4px;
