@@ -7,10 +7,10 @@ Detailed instructions for code health checker scripts.
 
 ```bash
 # Basic check
-python3 scripts/maintenance/check-code-health.py
+python3 scripts/maintenance/check_code_health.py
 
 # Detailed output (shows all INFO items)
-python3 scripts/maintenance/check-code-health.py --verbose
+python3 scripts/maintenance/check_code_health.py --verbose
 
 # Run bash version (faster but less thorough)
 ./scripts/maintenance/check-code-health.sh
@@ -220,10 +220,10 @@ document.getElementById('btn').addEventListener('click', handleClick, {
 
 ```bash
 # All files with R.string but no import
-python3 scripts/check-code-health.py 2>&1 | grep "R.string" | cut -d: -f1 | sort -u
+python3 scripts/check_code_health.py 2>&1 | grep "R.string" | cut -d: -f1 | sort -u
 
 # All files with console.log
-python3 scripts/check-code-health.py 2>&1 | grep "console.log" | cut -d: -f1 | sort -u
+python3 scripts/check_code_health.py 2>&1 | grep "console.log" | cut -d: -f1 | sort -u
 ```
 
 ### Fix pattern across multiple files
@@ -271,7 +271,7 @@ Found 14 errors, 24 warnings, 31 info
 # .git/hooks/pre-commit
 
 echo "Running code health check..."
-python3 scripts/check-code-health.py
+python3 scripts/check_code_health.py
 
 if [ $? -ne 0 ]; then
   echo ""
@@ -305,7 +305,7 @@ jobs:
           python-version: '3.x'
       
       - name: Run code health check
-        run: python3 scripts/check-code-health.py
+        run: python3 scripts/check_code_health.py
 ```
 
 ### VS Code Task
@@ -318,7 +318,7 @@ jobs:
     {
       "label": "Code Health Check",
       "type": "shell",
-      "command": "python3 scripts/check-code-health.py",
+      "command": "python3 scripts/check_code_health.py",
       "group": {
         "kind": "test",
         "isDefault": true
@@ -348,7 +348,7 @@ This script is also a teaching tool! It shows developers:
 **For new developers:**
 ```bash
 # See all patterns in use
-python3 scripts/check-code-health.py --verbose > code-review.txt
+python3 scripts/check_code_health.py --verbose > code-review.txt
 
 # Review with mentor
 less code-review.txt
@@ -362,14 +362,14 @@ less code-review.txt
 
 ```bash
 # Modify script temporarily or use grep
-python3 scripts/check-code-health.py 2>&1 | grep "admin-elections"
+python3 scripts/check_code_health.py 2>&1 | grep "admin-elections"
 ```
 
 ### Export results for tracking
 
 ```bash
 # Create issue tracking file
-python3 scripts/check-code-health.py > /tmp/code-health-$(date +%Y-%m-%d).txt
+python3 scripts/check_code_health.py > /tmp/code-health-$(date +%Y-%m-%d).txt
 
 # Compare with previous run
 diff /tmp/code-health-2025-11-10.txt /tmp/code-health-2025-11-17.txt
@@ -378,13 +378,13 @@ diff /tmp/code-health-2025-11-10.txt /tmp/code-health-2025-11-17.txt
 ### Focus on errors only
 
 ```bash
-python3 scripts/check-code-health.py 2>&1 | grep "❌"
+python3 scripts/check_code_health.py 2>&1 | grep "❌"
 ```
 
 ### Count issues by type
 
 ```bash
-python3 scripts/check-code-health.py 2>&1 | grep -oP '(R\.string|debug|showToast|console\.log)' | sort | uniq -c
+python3 scripts/check_code_health.py 2>&1 | grep -oP '(R\.string|debug|showToast|console\.log)' | sort | uniq -c
 ```
 
 ---
@@ -602,7 +602,7 @@ Strategic documents for improving documentation quality based on markdown metada
 **Quick Start:**
 ```bash
 # Run baseline analysis
-python3 scripts/maintenance/check-todo-health.py --verbose > tmp/analysis/baseline-$(date +%Y-%m-%d).txt
+python3 scripts/maintenance/check_todo_health.py --verbose > tmp/analysis/baseline-$(date +%Y-%m-%d).txt
 
 # Start Week 1 work
 # See implementation plan for detailed daily tasks
@@ -722,7 +722,7 @@ cat .metadata_store/md_inventory.json | \
 
 #### TODO Health Check Script (Planned)
 
-**File:** `scripts/maintenance/check-todo-health.py` (to be created)
+**File:** `scripts/maintenance/check_todo_health.py` (to be created)
 
 **Purpose:** Monitor TODO health across markdown files
 
@@ -744,7 +744,7 @@ def check_todo_health():
 **Usage:**
 ```bash
 # Run health check
-python3 scripts/maintenance/check-todo-health.py
+python3 scripts/maintenance/check_todo_health.py
 
 # Output:
 # Stale TODO files: 25

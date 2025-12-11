@@ -113,7 +113,7 @@ python3 validate_documentation_map.py --ignore archive audits
 
 ---
 
-#### `validate-links.py`
+#### `validate_links.py`
 Validates internal cross-references in markdown files.
 
 **Purpose:**
@@ -124,8 +124,8 @@ Validates internal cross-references in markdown files.
 
 **Usage:**
 ```bash
-python3 validate-links.py
-python3 validate-links.py --exclude audits archive
+python3 validate_links.py
+python3 validate_links.py --exclude audits archive
 ```
 
 **Last Updated:** Nov 9, 2025 (added default exclusions)
@@ -167,7 +167,7 @@ cd /home/gudro/Development/projects/ekklesia
 python3 scripts/admin/documentation-maintenance/validate_documentation_map.py
 
 # Validate links only
-python3 scripts/admin/documentation-maintenance/validate-links.py
+python3 scripts/admin/documentation-maintenance/validate_links.py
 ```
 
 ---
@@ -201,7 +201,7 @@ Several documentation maintenance scripts have been archived to `/archive/old-do
 - `audit-documentation.py` - Too slow, high false positive rate, needs refactoring
 - `audit-documentation-detailed.py` - Times out, not practical for regular use
 - `fix_documentation_map_links.py` - Hardcoded for October 2025 reorganization
-- `fix-documentation.py` - Generic patterns, outdated
+- `fix_documentation.py` - Generic patterns, outdated
 - `remove_dead_links.py` - Too dangerous (automatic removal)
 - `remediation-summary.py` - Tied to specific October 2025 audit
 

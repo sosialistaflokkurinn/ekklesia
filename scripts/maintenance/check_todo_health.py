@@ -6,9 +6,9 @@ Monitors TODO health across markdown files using md_inventory.json metadata.
 Reports completion rates, stale files, and actionable recommendations.
 
 Usage:
-    python3 scripts/maintenance/check-todo-health.py
-    python3 scripts/maintenance/check-todo-health.py --verbose
-    python3 scripts/maintenance/check-todo-health.py --category docs/development
+    python3 scripts/maintenance/check_todo_health.py
+    python3 scripts/maintenance/check_todo_health.py --verbose
+    python3 scripts/maintenance/check_todo_health.py --category docs/development
 """
 
 import json
@@ -280,9 +280,9 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python3 scripts/maintenance/check-todo-health.py
-  python3 scripts/maintenance/check-todo-health.py --verbose
-  python3 scripts/maintenance/check-todo-health.py --category docs/development
+  python3 scripts/maintenance/check_todo_health.py
+  python3 scripts/maintenance/check_todo_health.py --verbose
+  python3 scripts/maintenance/check_todo_health.py --category docs/development
         """
     )
 

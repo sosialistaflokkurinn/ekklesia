@@ -225,10 +225,10 @@ async function init() {
 ### Enforcement Tools
 ```bash
 # Analyze i18n usage (find unused/missing strings)
-python3 scripts/utils/analyze-i18n.py --verbose
+python3 scripts/utils/analyze_i18n.py --verbose
 
 # Find hardcoded Icelandic text
-python3 scripts/utils/find-hardcoded-text.py
+python3 scripts/utils/find_hardcoded_text.py
 
 # Pre-commit hook automatically checks:
 # - String loader imports have matching .load() calls

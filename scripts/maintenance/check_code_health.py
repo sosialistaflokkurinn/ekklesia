@@ -11,9 +11,9 @@ Finds common issues in the codebase:
 - Event listener memory leaks
 
 Usage:
-    python3 scripts/check-code-health.py
-    python3 scripts/check-code-health.py --verbose
-    python3 scripts/check-code-health.py --check=navigation
+    python3 scripts/check_code_health.py
+    python3 scripts/check_code_health.py --verbose
+    python3 scripts/check_code_health.py --check=navigation
 """
 
 import os

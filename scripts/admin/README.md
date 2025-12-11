@@ -16,7 +16,7 @@ This directory contains administrative scripts for managing the Ekklesia project
 ```
 /scripts/admin/
 ├── documentation-maintenance/   ← Documentation validation & audit scripts
-├── validate-i18n-usage.py      ← i18n validation
+├── validate_i18n_usage.py      ← i18n validation
 ├── replace-fake-data.sh         ← PII data management
 └── README.md                    ← This file
 ```
@@ -31,11 +31,11 @@ All documentation-related scripts have been organized into a dedicated subdirect
 
 **See**: [documentation-maintenance/README.md](./documentation-maintenance/README.md) for complete documentation on:
 - `validate_documentation_map.py` - Validate DOCUMENTATION_MAP.md structure
-- `validate-links.py` - Validate markdown links (internal & external)
+- `validate_links.py` - Validate markdown links (internal & external)
 - `audit-documentation.py` - Audit documentation quality
 - `audit-documentation-detailed.py` - Enhanced audit with categorization
 - `fix_documentation_map_links.py` - Fix broken links in documentation map
-- `fix-documentation.py` - General documentation fix utility
+- `fix_documentation.py` - General documentation fix utility
 - `remove_dead_links.py` - Remove dead links from documentation
 - `remediation-summary.py` - Generate summary of documentation fixes
 
@@ -48,7 +48,7 @@ All documentation-related scripts have been organized into a dedicated subdirect
 
 ## i18n Validation
 
-### `validate-i18n-usage.py`
+### `validate_i18n_usage.py`
 **Purpose**: Validate i18n string usage across all 3 systems
 
 **Features**:
@@ -61,7 +61,7 @@ All documentation-related scripts have been organized into a dedicated subdirect
 
 **Usage**:
 ```bash
-python3 scripts/admin/validate-i18n-usage.py
+python3 scripts/admin/validate_i18n_usage.py
 ```
 
 **Recent Results** (2025-11-07):
@@ -109,7 +109,7 @@ cd /home/gudro/Development/projects/ekklesia
 
 # Run comprehensive validation
 python3 scripts/admin/documentation-maintenance/validate_documentation_map.py
-python3 scripts/admin/documentation-maintenance/validate-links.py
+python3 scripts/admin/documentation-maintenance/validate_links.py
 
 # Audit quality
 python3 scripts/admin/documentation-maintenance/audit-documentation.py
@@ -119,7 +119,7 @@ python3 scripts/admin/documentation-maintenance/audit-documentation.py
 
 ```bash
 # Validate i18n usage
-python3 scripts/admin/validate-i18n-usage.py
+python3 scripts/admin/validate_i18n_usage.py
 
 # Review results and clean up unused strings
 # See output for specific recommendations

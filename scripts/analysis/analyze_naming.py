@@ -6,12 +6,12 @@ Scans the codebase for naming convention violations based on
 docs/standards/NAMING_CONVENTIONS.md.
 
 Usage:
-    python3 scripts/analysis/analyze-naming.py [--path PATH] [--strict] [--verbose]
+    python3 scripts/analysis/analyze_naming.py [--path PATH] [--strict] [--verbose]
 
 Examples:
-    python3 scripts/analysis/analyze-naming.py
-    python3 scripts/analysis/analyze-naming.py --path apps/members-portal/js/
-    python3 scripts/analysis/analyze-naming.py --strict  # Exit code 1 on violations
+    python3 scripts/analysis/analyze_naming.py
+    python3 scripts/analysis/analyze_naming.py --path apps/members-portal/js/
+    python3 scripts/analysis/analyze_naming.py --strict  # Exit code 1 on violations
 """
 
 import os

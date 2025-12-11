@@ -15,7 +15,7 @@ Enhanced to detect:
 - Function parameters
 
 Usage:
-    python3 scripts/admin/validate-i18n-usage.py
+    python3 scripts/admin/validate_i18n_usage.py
 """
 
 import os

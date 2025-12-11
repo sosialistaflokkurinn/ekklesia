@@ -10,8 +10,8 @@ Checks for:
 4. Anchor references
 
 Usage: 
-    python3 validate-links.py
-    python3 validate-links.py --exclude audits archive
+    python3 validate_links.py
+    python3 validate_links.py --exclude audits archive
 """
 
 import argparse
@@ -191,13 +191,13 @@ if __name__ == '__main__':
         epilog='''
 Examples:
   # Validate all documentation
-  python3 validate-links.py
+  python3 validate_links.py
   
   # Exclude specific directories
-  python3 validate-links.py --exclude audits archive
+  python3 validate_links.py --exclude audits archive
   
   # Exclude historical and archived docs
-  python3 validate-links.py --exclude audits/historical archive
+  python3 validate_links.py --exclude audits/historical archive
         '''
     )
     parser.add_argument(

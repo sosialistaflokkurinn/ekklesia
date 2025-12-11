@@ -6,8 +6,8 @@ Scans HTML files for text that should be externalized to i18n XML files.
 Detects Icelandic text, English text, and potential untranslated strings.
 
 Usage:
-    python3 scripts/utils/find-hardcoded-text.py [--fix] [--verbose]
-    python3 scripts/utils/find-hardcoded-text.py --staged  # Only check staged files
+    python3 scripts/utils/find_hardcoded_text.py [--fix] [--verbose]
+    python3 scripts/utils/find_hardcoded_text.py --staged  # Only check staged files
 
 Options:
     --fix       Generate suggested XML entries for missing strings
