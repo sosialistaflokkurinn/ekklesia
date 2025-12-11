@@ -248,6 +248,7 @@ def get_postal_code_id_from_code(db: firestore.Client, postal_code: str) -> int 
     region="europe-west2",
     memory=options.MemoryOption.MB_512,
     timeout_sec=60,
+    secrets=["django-api-token"],
 )
 def register_member(req: https_fn.CallableRequest) -> dict[str, Any]:
     """
