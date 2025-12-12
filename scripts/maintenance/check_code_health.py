@@ -50,15 +50,24 @@ class CodeHealthChecker:
         self.project_root = Path(project_root)
         self.verbose = verbose
         self.issues: List[Issue] = []
-        # Optimization: Cache JS files list excluding node_modules
+        # Optimization: Cache file lists excluding node_modules
         self.js_files = self._get_js_files()
-        
+        self.py_files = self._get_py_files()
+
     def _get_js_files(self) -> List[Path]:
         """Get all JS files excluding node_modules"""
         files = []
         # Use glob but filter out node_modules
         for path in self.project_root.glob('apps/members-portal/**/*.js'):
             if 'node_modules' not in str(path):
+                files.append(path)
+        return files
+
+    def _get_py_files(self) -> List[Path]:
+        """Get all Python files in services"""
+        files = []
+        for path in self.project_root.glob('services/**/*.py'):
+            if 'node_modules' not in str(path) and '__pycache__' not in str(path):
                 files.append(path)
         return files
 
@@ -87,6 +96,15 @@ class CodeHealthChecker:
         self.check_authenticated_fetch()
         self.check_document_create_element()
         self.check_double_submit()
+        # New pattern checks
+        self.check_async_foreach()
+        self.check_await_in_loop()
+        self.check_interval_cleanup()
+        self.check_json_parse_safety()
+        self.check_eval_usage()
+        self.check_hardcoded_api_urls()
+        self.check_python_list_users()
+        self.check_mixed_async_patterns()
 
         self.print_summary()
         
@@ -726,6 +744,322 @@ class CodeHealthChecker:
 
         if not any(i.category == 'double-submit' for i in self.issues):
             print(f"  {GREEN}✅ Form handlers have double-submit prevention{NC}")
+        print()
+
+    def check_async_foreach(self):
+        """Check for async functions in forEach (doesn't work as expected)"""
+        print(f"{BLUE}🔄 Checking for async forEach anti-pattern...{NC}")
+
+        pattern = r'\.forEach\s*\(\s*async'
+
+        for js_file in self.js_files:
+            content = js_file.read_text(encoding='utf-8')
+            lines = content.split('\n')
+
+            for i, line in enumerate(lines, 1):
+                if re.search(pattern, line):
+                    self.issues.append(Issue(
+                        severity='error',
+                        category='async-foreach',
+                        file_path=str(js_file.relative_to(self.project_root)),
+                        line_num=i,
+                        message="async forEach doesn't await - use for...of or Promise.all(arr.map(async...))"
+                    ))
+
+        if not any(i.category == 'async-foreach' for i in self.issues):
+            print(f"  {GREEN}✅ No async forEach found{NC}")
+        print()
+
+    def check_await_in_loop(self):
+        """Check for await inside for/while loops (should use Promise.all)"""
+        print(f"{BLUE}⏳ Checking for sequential awaits in loops...{NC}")
+
+        for js_file in self.js_files:
+            content = js_file.read_text(encoding='utf-8')
+            lines = content.split('\n')
+
+            in_loop = False
+            loop_start_line = 0
+            brace_count = 0
+            await_in_loop = []
+
+            for i, line in enumerate(lines, 1):
+                stripped = line.strip()
+
+                # Skip comments
+                if stripped.startswith('//'):
+                    continue
+
+                # Detect loop start
+                if re.search(r'\b(for|while)\s*\(', line) and '{' in line:
+                    in_loop = True
+                    loop_start_line = i
+                    brace_count = line.count('{') - line.count('}')
+                    continue
+
+                if in_loop:
+                    brace_count += line.count('{') - line.count('}')
+
+                    # Check for await
+                    if 'await ' in line:
+                        await_in_loop.append(i)
+
+                    # Loop ended
+                    if brace_count <= 0:
+                        if len(await_in_loop) >= 2:
+                            self.issues.append(Issue(
+                                severity='warning',
+                                category='sequential-await',
+                                file_path=str(js_file.relative_to(self.project_root)),
+                                line_num=loop_start_line,
+                                message=f"{len(await_in_loop)} sequential awaits in loop - consider Promise.all() for parallelism"
+                            ))
+                        in_loop = False
+                        await_in_loop = []
+
+        if not any(i.category == 'sequential-await' for i in self.issues):
+            print(f"  {GREEN}✅ No problematic sequential awaits found{NC}")
+        print()
+
+    def check_interval_cleanup(self):
+        """Check for setInterval without cleanup"""
+        print(f"{BLUE}⏰ Checking for setInterval without cleanup...{NC}")
+
+        for js_file in self.js_files:
+            content = js_file.read_text(encoding='utf-8')
+
+            # Check if file uses setInterval
+            if 'setInterval(' in content:
+                # Check if there's clearInterval
+                has_clear = 'clearInterval(' in content
+
+                if not has_clear:
+                    lines = content.split('\n')
+                    for i, line in enumerate(lines, 1):
+                        if 'setInterval(' in line:
+                            self.issues.append(Issue(
+                                severity='warning',
+                                category='interval-leak',
+                                file_path=str(js_file.relative_to(self.project_root)),
+                                line_num=i,
+                                message="setInterval without clearInterval - potential memory leak"
+                            ))
+                            break
+
+        if not any(i.category == 'interval-leak' for i in self.issues):
+            print(f"  {GREEN}✅ Intervals have proper cleanup{NC}")
+        print()
+
+    def check_json_parse_safety(self):
+        """Check for JSON.parse without try/catch"""
+        print(f"{BLUE}📋 Checking for unsafe JSON.parse...{NC}")
+
+        for js_file in self.js_files:
+            content = js_file.read_text(encoding='utf-8')
+            lines = content.split('\n')
+
+            in_try_block = False
+            brace_count = 0
+
+            for i, line in enumerate(lines, 1):
+                stripped = line.strip()
+
+                # Track try blocks
+                if stripped.startswith('try') and '{' in line:
+                    in_try_block = True
+                    brace_count = line.count('{') - line.count('}')
+                    continue
+
+                if in_try_block:
+                    brace_count += line.count('{') - line.count('}')
+                    if brace_count <= 0:
+                        in_try_block = False
+
+                # Check for JSON.parse outside try block
+                if 'JSON.parse(' in line and not in_try_block:
+                    # Skip if it's in a comment
+                    if stripped.startswith('//'):
+                        continue
+                    # Skip if optional chaining or nullish coalescing suggests safety
+                    if '?.' in line or '??' in line:
+                        continue
+
+                    self.issues.append(Issue(
+                        severity='warning',
+                        category='unsafe-json',
+                        file_path=str(js_file.relative_to(self.project_root)),
+                        line_num=i,
+                        message="JSON.parse without try/catch - can crash on invalid JSON"
+                    ))
+
+        if not any(i.category == 'unsafe-json' for i in self.issues):
+            print(f"  {GREEN}✅ JSON.parse calls are safe{NC}")
+        print()
+
+    def check_eval_usage(self):
+        """Check for eval() or new Function() - security risks"""
+        print(f"{BLUE}🔒 Checking for eval/Function security risks...{NC}")
+
+        dangerous_patterns = [
+            (r'\beval\s*\(', 'eval()'),
+            (r'new\s+Function\s*\(', 'new Function()'),
+            (r'document\.write\s*\(', 'document.write()'),
+        ]
+
+        for js_file in self.js_files:
+            content = js_file.read_text(encoding='utf-8')
+            lines = content.split('\n')
+
+            for i, line in enumerate(lines, 1):
+                # Skip comments
+                if line.strip().startswith('//'):
+                    continue
+
+                for pattern, name in dangerous_patterns:
+                    if re.search(pattern, line):
+                        self.issues.append(Issue(
+                            severity='error',
+                            category='security-eval',
+                            file_path=str(js_file.relative_to(self.project_root)),
+                            line_num=i,
+                            message=f"{name} is a security risk - avoid dynamic code execution"
+                        ))
+
+        if not any(i.category == 'security-eval' for i in self.issues):
+            print(f"  {GREEN}✅ No eval/Function security risks found{NC}")
+        print()
+
+    def check_hardcoded_api_urls(self):
+        """Check for hardcoded API URLs (should use config)"""
+        print(f"{BLUE}🔗 Checking for hardcoded API URLs...{NC}")
+
+        # Patterns for hardcoded URLs that should be in config
+        url_patterns = [
+            r'https://.*\.run\.app',  # Cloud Run URLs
+            r'https://.*\.cloudfunctions\.net',  # Cloud Functions
+            r'https://europe-west\d',  # Regional URLs
+        ]
+
+        for js_file in self.js_files:
+            # Skip config files
+            if 'config' in str(js_file).lower() or 'firebase/app' in str(js_file):
+                continue
+
+            content = js_file.read_text(encoding='utf-8')
+            lines = content.split('\n')
+
+            for i, line in enumerate(lines, 1):
+                # Skip comments and imports
+                stripped = line.strip()
+                if stripped.startswith('//') or stripped.startswith('import'):
+                    continue
+
+                for pattern in url_patterns:
+                    if re.search(pattern, line):
+                        # Skip if it's clearly a comment or doc
+                        if '*' in line[:20]:
+                            continue
+
+                        self.issues.append(Issue(
+                            severity='info',
+                            category='hardcoded-api-url',
+                            file_path=str(js_file.relative_to(self.project_root)),
+                            line_num=i,
+                            message=f"Hardcoded API URL - consider using config\n      {line.strip()[:50]}"
+                        ))
+                        break
+
+        if not any(i.category == 'hardcoded-api-url' for i in self.issues):
+            print(f"  {GREEN}✅ No hardcoded API URLs found{NC}")
+        print()
+
+    def check_python_list_users(self):
+        """Check for auth.list_users() in Python - very slow"""
+        print(f"{BLUE}🐍 Checking for slow auth.list_users() in Python...{NC}")
+
+        for py_file in self.py_files:
+            content = py_file.read_text(encoding='utf-8')
+            lines = content.split('\n')
+
+            in_docstring = False
+            for i, line in enumerate(lines, 1):
+                stripped = line.strip()
+
+                # Track docstrings
+                if '"""' in line or "'''" in line:
+                    # Toggle docstring state (simple heuristic)
+                    quote_count = line.count('"""') + line.count("'''")
+                    if quote_count == 1:
+                        in_docstring = not in_docstring
+                    continue
+
+                if in_docstring:
+                    continue
+
+                if 'auth.list_users()' in line or 'list_users()' in line:
+                    # Skip if commented
+                    if stripped.startswith('#'):
+                        continue
+
+                    self.issues.append(Issue(
+                        severity='error',
+                        category='slow-list-users',
+                        file_path=str(py_file.relative_to(self.project_root)),
+                        line_num=i,
+                        message="auth.list_users() iterates ALL users - very slow! Use Firestore queries instead"
+                    ))
+
+        if not any(i.category == 'slow-list-users' for i in self.issues):
+            print(f"  {GREEN}✅ No slow auth.list_users() found{NC}")
+        print()
+
+    def check_mixed_async_patterns(self):
+        """Check for mixing .then() with await in same function"""
+        print(f"{BLUE}🔀 Checking for mixed async patterns...{NC}")
+
+        for js_file in self.js_files:
+            content = js_file.read_text(encoding='utf-8')
+
+            # Find async functions
+            func_pattern = r'async\s+function\s+(\w+)|(\w+)\s*=\s*async'
+            matches = list(re.finditer(func_pattern, content))
+
+            for match in matches:
+                # Get function body (rough approximation)
+                start = match.end()
+                brace_count = 0
+                func_start = content.find('{', start)
+                if func_start == -1:
+                    continue
+
+                func_end = func_start
+                for j in range(func_start, min(func_start + 5000, len(content))):
+                    if content[j] == '{':
+                        brace_count += 1
+                    elif content[j] == '}':
+                        brace_count -= 1
+                        if brace_count == 0:
+                            func_end = j
+                            break
+
+                func_body = content[func_start:func_end]
+
+                # Check for both await and .then() in same function
+                has_await = 'await ' in func_body
+                has_then = '.then(' in func_body
+
+                if has_await and has_then:
+                    line_num = content[:match.start()].count('\n') + 1
+                    self.issues.append(Issue(
+                        severity='info',
+                        category='mixed-async',
+                        file_path=str(js_file.relative_to(self.project_root)),
+                        line_num=line_num,
+                        message="Mixing await and .then() - consider using consistent async/await pattern"
+                    ))
+
+        if not any(i.category == 'mixed-async' for i in self.issues):
+            print(f"  {GREEN}✅ Async patterns are consistent{NC}")
         print()
 
     def print_summary(self):
