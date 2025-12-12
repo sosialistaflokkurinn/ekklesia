@@ -4,6 +4,7 @@
  */
 
 import { getFirebaseAuth } from '../../../firebase/app.js';
+import { requireAuth } from '../../../js/auth.js';
 import { getNominationElections, checkNominationAccess } from '../../../js/api/api-nomination.js';
 import { debug } from '../../../js/utils/util-debug.js';
 
@@ -23,18 +24,8 @@ const errorMessage = document.getElementById('error-message');
  */
 async function init() {
   try {
-    // Wait for auth state
-    const auth = getFirebaseAuth();
-    await new Promise((resolve, reject) => {
-      const unsubscribe = auth.onAuthStateChanged(user => {
-        unsubscribe();
-        if (user) {
-          resolve(user);
-        } else {
-          reject(new Error('Notandi er ekki innskráður'));
-        }
-      });
-    });
+    // Wait for auth - redirects to login if not authenticated
+    await requireAuth();
 
     // Load elections
     await loadElections();

@@ -309,6 +309,47 @@ async function fetchData() {
 
 ---
 
+## Firestore-only Member Pattern (Python)
+
+When a Cloud Function needs to update member data, handle both Django-synced and Firestore-only members:
+
+```python
+def update_member_profile(req):
+    # Get django_id from Firestore member document
+    django_id = member_data.get('django_id')
+
+    # Note: django_id may be None for Firestore-only members
+    if not django_id:
+        log_json("info", "Member has no Django ID - Firestore-only update")
+
+    # Update Firestore first (always succeeds)
+    firestore_update_success = update_firestore(member_ref, profile_data)
+
+    # Skip Django sync if no django_id
+    if not django_id:
+        log_json("info", "Skipping Django sync - Firestore-only member")
+        return {"success": True, "firestore_only": True}
+
+    # Try Django sync, handle 404 gracefully
+    try:
+        sync_to_django(django_id, profile_data)
+    except Exception as e:
+        if '404' in str(e) or 'No Comrade matches' in str(e):
+            log_json("warn", "Member not found in Django - Firestore-only update")
+            # Continue - Firestore update already succeeded
+        else:
+            raise  # Re-raise other errors
+
+    return {"success": True}
+```
+
+**Key points:**
+- Always check for `django_id` before attempting Django sync
+- Handle 404 from Django gracefully (member may exist in Firestore but not Cloud SQL)
+- Log clearly whether update was Firestore-only or synced to both
+
+---
+
 ## Prevent Double Submit
 
 ```javascript

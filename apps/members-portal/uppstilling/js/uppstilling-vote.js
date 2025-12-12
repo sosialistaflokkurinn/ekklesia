@@ -5,6 +5,7 @@
  */
 
 import { getFirebaseAuth } from '../../../firebase/app.js';
+import { requireAuth } from '../../../js/auth.js';
 import { getNominationElection, submitNominationVote } from '../../../js/api/api-nomination.js';
 import { createRankedVotingForm } from '../../../js/components/election-ranked-vote-form.js';
 import { debug } from '../../../js/utils/util-debug.js';
@@ -95,9 +96,9 @@ function saveDraft() {
 
   try {
     localStorage.setItem(getStorageKey(), JSON.stringify(draft));
-    debug(MODULE, 'Draft saved');
+    debug.log(`[${MODULE}]`, 'Draft saved');
   } catch (e) {
-    debug(MODULE, 'Could not save draft:', e);
+    debug.warn(`[${MODULE}]`, 'Could not save draft:', e);
   }
 }
 
@@ -112,12 +113,12 @@ function loadDraft() {
       const draft = JSON.parse(data);
       // Only use drafts less than 24 hours old
       if (draft.savedAt && (Date.now() - draft.savedAt) < DRAFT_MAX_AGE_MS) {
-        debug(MODULE, 'Draft loaded');
+        debug.log(`[${MODULE}]`, 'Draft loaded');
         return draft;
       }
     }
   } catch (e) {
-    debug(MODULE, 'Could not load draft:', e);
+    debug.warn(`[${MODULE}]`, 'Could not load draft:', e);
   }
   return null;
 }
@@ -128,9 +129,9 @@ function loadDraft() {
 function clearDraft() {
   try {
     localStorage.removeItem(getStorageKey());
-    debug(MODULE, 'Draft cleared');
+    debug.log(`[${MODULE}]`, 'Draft cleared');
   } catch (e) {
-    debug(MODULE, 'Could not clear draft:', e);
+    debug.warn(`[${MODULE}]`, 'Could not clear draft:', e);
   }
 }
 
@@ -152,18 +153,8 @@ async function init() {
       return;
     }
 
-    // Wait for auth
-    const auth = getFirebaseAuth();
-    await new Promise((resolve, reject) => {
-      const unsubscribe = auth.onAuthStateChanged(user => {
-        unsubscribe();
-        if (user) {
-          resolve(user);
-        } else {
-          reject(new Error('Notandi er ekki innskráður'));
-        }
-      });
-    });
+    // Wait for auth - redirects to login if not authenticated
+    await requireAuth();
 
     // Load election
     await loadElection(electionId);
@@ -171,7 +162,7 @@ async function init() {
     // Setup event listeners
     setupEventListeners();
   } catch (error) {
-    debug(MODULE, 'Init error:', error);
+    debug.error(`[${MODULE}]`, 'Init error:', error);
     showError(error.message || 'Villa kom upp');
   }
 }
@@ -212,7 +203,7 @@ async function loadElection(electionId) {
 
     votingContainer.style.display = 'block';
   } catch (error) {
-    debug(MODULE, 'Load election error:', error);
+    debug.error(`[${MODULE}]`, 'Load election error:', error);
     showError(error.message || 'Villa við að sækja kosningu');
   }
 }
@@ -231,7 +222,7 @@ async function setupVotingForm() {
 
   if (draft && draft.ranking && draft.ranking.length > 0) {
     // Use saved ranking order
-    debug(MODULE, 'Restoring ranking from draft');
+    debug.log(`[${MODULE}]`, 'Restoring ranking from draft');
     candidates = draft.ranking.map(id => {
       const answer = election.answers.find(a => (a.id || a.text) === id);
       return {
@@ -267,7 +258,7 @@ async function setupVotingForm() {
     rankingFormContainer.appendChild(rankedForm.element);
     nextStepBtn.disabled = false;
   } catch (error) {
-    debug(MODULE, 'Setup form error:', error);
+    debug.error(`[${MODULE}]`, 'Setup form error:', error);
     showError('Villa við að setja upp atkvæðagreiðsluform');
   }
 }
@@ -442,9 +433,9 @@ async function submitVote() {
     votingContainer.style.display = 'none';
     showSuccessCard();
 
-    debug(MODULE, 'Vote submitted successfully');
+    debug.log(`[${MODULE}]`, 'Vote submitted successfully');
   } catch (error) {
-    debug(MODULE, 'Submit error:', error);
+    debug.error(`[${MODULE}]`, 'Submit error:', error);
 
     submitVoteBtn.disabled = false;
     submitVoteBtn.textContent = 'Skrá atkvæði';
@@ -467,7 +458,7 @@ function showSuccessCard() {
   const votesCast = (parseInt(election.votes_cast) || 0) + 1;
   const allVoted = votesCast >= committeeSize;
 
-  debug(MODULE, 'Success card', { committeeSize, votesCast, allVoted });
+  debug.log(`[${MODULE}]`, 'Success card', { committeeSize, votesCast, allVoted });
 
   const successCardContent = successCard.querySelector('p');
   const formActions = successCard.querySelector('.form-actions');

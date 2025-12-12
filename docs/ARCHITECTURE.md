@@ -96,6 +96,18 @@
 
 **Related issues:** #323 (Postmark email), #324 (Email migration)
 
+### Member Data Model
+
+Members can exist in two states:
+1. **Firestore + Django**: Members registered via Django have `django_id` in Firestore
+2. **Firestore-only**: Members registered via Ekklesia portal have no `django_id`
+
+The `updatememberprofile` function handles both cases:
+- With `django_id`: Updates sync to both Firestore and Django/Cloud SQL
+- Without `django_id`: Updates only in Firestore (Firestore-only members)
+
+**Note:** Some members may have a `django_id` in Firestore but not exist in Cloud SQL (sync gap). The function handles this gracefully by continuing with Firestore-only updates.
+
 ---
 
 ## Frontend Structure
@@ -297,4 +309,52 @@ gcloud run services describe svc-elections \
 | Frontend | `cd services/svc-members && firebase deploy --only hosting` |
 | Elections | `cd services/svc-elections && ./deploy.sh` |
 | Events | `cd services/svc-events && ./deploy.sh` |
-| Functions | Automatic on `firebase deploy` (but avoid `--only functions`) |
+| Functions | `firebase deploy --only functions:FUNCTION_NAME` (specify function!) |
+| Django | `cd ~/Development/projects/django && gcloud builds submit --config cloudbuild.yaml` |
+
+---
+
+## Troubleshooting
+
+### Django Admin 500 Errors
+
+If Django admin returns 500 errors, check the user preferences table:
+
+```bash
+# Connect to Cloud SQL
+PGPASSWORD='...' psql -h localhost -p 5433 -U postgres -d ekklesia
+
+# Check preferences
+SELECT * FROM preferences_adminpreference;
+
+# Common fix: Invalid sort_field
+UPDATE preferences_adminpreference
+SET sort_field = '-date_joined'
+WHERE sort_field NOT LIKE '%date%' AND sort_field NOT LIKE '%name%';
+```
+
+**Root cause:** The `PreferencesMixin` in Django admin uses `sort_field` from user preferences. Invalid values (e.g., `'3'`) cause `FieldError: Cannot resolve keyword`.
+
+### Cloud Function Errors
+
+Check function logs:
+```bash
+gcloud functions logs read updatememberprofile --region=europe-west2 --limit=50
+```
+
+### Member Sync Issues
+
+Compare members between Firestore and Cloud SQL:
+```bash
+# Firestore: Query via REST API or Firebase Console
+# Cloud SQL:
+SELECT id, first_name, last_name, kennitala
+FROM membership_comrade
+ORDER BY id DESC
+LIMIT 10;
+```
+
+Members may exist in Firestore but not Cloud SQL if:
+- Registered via Ekklesia portal (Firestore-only)
+- Sync failed during Django registration
+- Member deleted from Django but not Firestore

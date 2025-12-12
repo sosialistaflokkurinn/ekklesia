@@ -302,14 +302,12 @@ def updatememberprofile_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
         member_data = member_doc.to_dict()
         django_id = member_data.get('metadata', {}).get('django_id')
 
+        # Note: django_id may be None for Firestore-only members (registered via Ekklesia, not Django)
+        # We still allow profile updates - they just won't sync to Django
         if not django_id:
-            log_json("error", "Django ID missing from Firestore member",
+            log_json("info", "Member has no Django ID - Firestore-only update",
                      uid=req.auth.uid,
                      kennitala=f"{kennitala_no_hyphen[:6]}****")
-            raise https_fn.HttpsError(
-                code=https_fn.FunctionsErrorCode.INTERNAL,
-                message="Member data incomplete - please contact admin"
-            )
 
         log_json("debug", "Found member in Firestore",
                  uid=req.auth.uid,
@@ -368,14 +366,23 @@ def updatememberprofile_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
             address_sync_needed = default_iceland_address is not None
 
         # Determine if profile PATCH is needed (skip if only address changes)
-        profile_patch_needed = bool(django_updates)
-        
+        # Also skip Django sync if member has no django_id (Firestore-only member)
+        profile_patch_needed = bool(django_updates) and django_id is not None
+
         # OPTIMIZATION: Run Django API calls in parallel using ThreadPoolExecutor
         # This saves ~2 seconds by not waiting for address sync before profile update
         profile_sync_success = False
         profile_sync_error = None
         updated_member = None
-        
+
+        # Skip Django sync entirely if no django_id
+        if not django_id:
+            log_json("info", "Skipping Django sync - Firestore-only member",
+                     uid=req.auth.uid,
+                     kennitala=f"{kennitala_no_hyphen[:6]}****")
+            address_sync_needed = False  # Also skip address sync
+            profile_sync_success = True  # Mark as success since there's nothing to sync
+
         def do_address_sync():
             """Worker function for address sync"""
             return update_django_address(
@@ -389,59 +396,69 @@ def updatememberprofile_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
                     'country': 'IS'
                 }
             )
-        
+
         def do_profile_update():
             """Worker function for profile PATCH"""
             return update_django_member(django_id, django_updates)
-        
-        # Execute Django calls in parallel
-        with ThreadPoolExecutor(max_workers=2) as executor:
-            futures = {}
-            
-            if address_sync_needed:
-                futures['address'] = executor.submit(do_address_sync)
-            
-            if profile_patch_needed:
-                futures['profile'] = executor.submit(do_profile_update)
-            
-            # Wait for all futures to complete
-            for future_name, future in futures.items():
-                try:
-                    result = future.result(timeout=35)  # Slightly longer than individual timeouts
-                    
-                    if future_name == 'address':
-                        address_sync_result = result
-                        log_json("info", "Address synced to Django NewLocalAddress",
-                                 uid=req.auth.uid,
-                                 street=default_iceland_address.get('street', ''),
-                                 postal=default_iceland_address.get('postal_code', ''),
-                                 map_address_id=address_sync_result.get('map_address_id'),
-                                 address_linked=address_sync_result.get('address_linked'))
-                    
-                    elif future_name == 'profile':
-                        updated_member = result
-                        profile_sync_success = True
-                        log_json("info", "Profile updated successfully in Django",
-                                 uid=req.auth.uid,
-                                 django_id=django_id,
-                                 kennitala=f"{kennitala[:6]}****")
-                
-                except Exception as e:
-                    if future_name == 'address':
-                        # Address sync failures are non-fatal
-                        log_json("warn", "Django address sync failed",
-                                 uid=req.auth.uid,
-                                 error=str(e))
-                        address_sync_result = {'success': False, 'error': str(e)}
-                    else:
-                        # Profile sync failures are fatal
-                        profile_sync_error = str(e)
-                        log_json("error", "Django profile update failed",
-                                 uid=req.auth.uid,
-                                 django_id=django_id,
-                                 error=profile_sync_error)
-        
-        # If profile update was needed but failed, raise error
+
+        # Execute Django calls in parallel (only if django_id exists)
+        if django_id:
+            with ThreadPoolExecutor(max_workers=2) as executor:
+                futures = {}
+
+                if address_sync_needed:
+                    futures['address'] = executor.submit(do_address_sync)
+
+                if profile_patch_needed:
+                    futures['profile'] = executor.submit(do_profile_update)
+
+                # Wait for all futures to complete
+                for future_name, future in futures.items():
+                    try:
+                        result = future.result(timeout=35)  # Slightly longer than individual timeouts
+
+                        if future_name == 'address':
+                            address_sync_result = result
+                            log_json("info", "Address synced to Django NewLocalAddress",
+                                     uid=req.auth.uid,
+                                     street=default_iceland_address.get('street', ''),
+                                     postal=default_iceland_address.get('postal_code', ''),
+                                     map_address_id=address_sync_result.get('map_address_id'),
+                                     address_linked=address_sync_result.get('address_linked'))
+
+                        elif future_name == 'profile':
+                            updated_member = result
+                            profile_sync_success = True
+                            log_json("info", "Profile updated successfully in Django",
+                                     uid=req.auth.uid,
+                                     django_id=django_id,
+                                     kennitala=f"{kennitala[:6]}****")
+
+                    except Exception as e:
+                        error_str = str(e)
+                        if future_name == 'address':
+                            # Address sync failures are non-fatal
+                            log_json("warn", "Django address sync failed",
+                                     uid=req.auth.uid,
+                                     error=error_str)
+                            address_sync_result = {'success': False, 'error': error_str}
+                        else:
+                            # Check if this is a 404 (member doesn't exist in Django)
+                            if '404' in error_str or 'No Comrade matches' in error_str:
+                                log_json("warn", "Member not found in Django - continuing with Firestore-only update",
+                                         uid=req.auth.uid,
+                                         django_id=django_id,
+                                         error=error_str)
+                                profile_sync_success = True  # Allow Firestore update to proceed
+                            else:
+                                # Other profile sync failures are fatal
+                                profile_sync_error = error_str
+                                log_json("error", "Django profile update failed",
+                                         uid=req.auth.uid,
+                                         django_id=django_id,
+                                         error=profile_sync_error)
+
+        # If profile update was needed but failed (and not a 404), raise error
         if profile_patch_needed and not profile_sync_success:
             raise Exception(profile_sync_error or "Profile update failed")
 
