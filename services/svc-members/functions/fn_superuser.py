@@ -895,45 +895,11 @@ def list_elevated_users_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
                     "hasLoggedIn": True
                 }
 
-        # 2. Check Firebase Auth custom claims (batch operation)
-        # This catches users with roles set via claims but not in /users/ collection
-        try:
-            page = auth.list_users()
-            while page:
-                for user in page.users:
-                    claims = user.custom_claims or {}
-                    role = claims.get("role")
-                    roles = claims.get("roles", [])
-                    
-                    is_superuser = role == "superuser" or "superuser" in roles
-                    is_admin = role == "admin" or "admin" in roles
-                    
-                    if is_superuser and user.uid not in superusers_map:
-                        superusers_map[user.uid] = {
-                            "uid": user.uid,
-                            "kennitala": None,
-                            "displayName": user.display_name or user.email or "Nafnlaus",
-                            "email": user.email or "-",
-                            "roleUpdatedAt": None,
-                            "source": "firebase_claims",
-                            "hasLoggedIn": True
-                        }
-                    elif is_admin and user.uid not in superusers_map and user.uid not in admins_map:
-                        admins_map[user.uid] = {
-                            "uid": user.uid,
-                            "kennitala": None,
-                            "displayName": user.display_name or user.email or "Nafnlaus",
-                            "email": user.email or "-",
-                            "roleUpdatedAt": None,
-                            "source": "firebase_claims",
-                            "hasLoggedIn": True
-                        }
-                
-                # Get next page
-                page = page.get_next_page()
-        except Exception as e:
-            log_json("warning", "Failed to list Firebase Auth users", error=str(e))
-            # Continue with what we have from /users/ collection
+        # 2. Skip Firebase Auth list_users() - it's too slow (iterates ALL users)
+        # The /users/ collection query above is sufficient since:
+        # - All elevated users should have a /users/ document
+        # - setUserRole() creates/updates /users/ document when setting role
+        # - Edge case of claims-only user is rare and acceptable to miss
 
         # NOTE: Django roles (is_staff, is_superuser) are NO LONGER queried.
         # Elevated users come ONLY from Firebase (/users/ collection).
