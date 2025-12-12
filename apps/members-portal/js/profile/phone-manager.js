@@ -8,8 +8,7 @@
  */
 
 import { R } from '../../i18n/strings-loader.js';
-import { getFirebaseFirestore } from '../../firebase/app.js';
-import { doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getFirebaseFirestore, doc, updateDoc } from '../../firebase/app.js';
 import { getCountriesSorted, getCountryFlag, getCountryCallingCode } from '../utils/util-countries.js';
 import { debug } from '../utils/util-debug.js';
 import { showToast } from '../components/ui-toast.js';

@@ -12,13 +12,10 @@
 
 import { initSession } from '../../session/init.js';
 import { debug } from '../../js/utils/util-debug.js';
-import { getFirebaseFirestore, getFunctions } from '../../firebase/app.js';
-import { requireSuperuser, ROLES } from '../../js/rbac.js';
-import { showToast } from '../../js/components/ui-toast.js';
-import { showModal } from '../../js/components/ui-modal.js';
-import { R } from '../../i18n/strings-loader.js';
-import { superuserStrings } from '../../i18n/superuser-strings.js';
 import {
+  getFirebaseFirestore,
+  getFunctions,
+  httpsCallable,
   collection,
   query,
   where,
@@ -27,8 +24,12 @@ import {
   getDocs,
   doc,
   getDoc
-} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-import { httpsCallable } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js';
+} from '../../firebase/app.js';
+import { requireSuperuser, ROLES } from '../../js/rbac.js';
+import { showToast } from '../../js/components/ui-toast.js';
+import { showModal } from '../../js/components/ui-modal.js';
+import { R } from '../../i18n/strings-loader.js';
+import { superuserStrings } from '../../i18n/superuser-strings.js';
 
 const db = getFirebaseFirestore();
 

@@ -6,10 +6,8 @@
  */
 
 // Import Firestore from member portal
-import { getFirebaseFirestore } from '../../../firebase/app.js';
-import { debug } from '../../../js/utils/util-debug.js';
-// Import Firestore v9 modular functions
 import {
+  getFirebaseFirestore,
   collection,
   query,
   where,
@@ -20,7 +18,8 @@ import {
   getDoc,
   doc,
   getCountFromServer
-} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+} from '../../../firebase/app.js';
+import { debug } from '../../../js/utils/util-debug.js';
 
 // Get Firestore instance
 const db = getFirebaseFirestore();

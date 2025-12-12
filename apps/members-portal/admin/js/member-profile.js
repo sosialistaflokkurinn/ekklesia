@@ -5,8 +5,7 @@
  * Uses PhoneManager and AddressManager from profile refactoring.
  */
 
-import { getFirebaseAuth, getFirebaseFirestore, httpsCallable } from '../../firebase/app.js';
-import { doc, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getFirebaseAuth, getFirebaseFirestore, httpsCallable, doc, getDoc, updateDoc } from '../../firebase/app.js';
 import { R } from '../../i18n/strings-loader.js';
 import { showToast } from '../../js/components/ui-toast.js';
 import { showStatus } from '../../js/components/ui-status.js';

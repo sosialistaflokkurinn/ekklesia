@@ -15,8 +15,7 @@
 import { R } from '../i18n/strings-loader.js';
 import { initAuthenticatedPage } from './page-init.js';
 import { requireAuth, getUserData, signOut, AuthenticationError } from '../session/auth.js';
-import { httpsCallable, getFirebaseFirestore } from '../firebase/app.js';
-import { doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { httpsCallable, getFirebaseFirestore, doc, updateDoc } from '../firebase/app.js';
 import { setTextContent, validateElements } from '../ui/dom.js';
 import { el } from './utils/util-dom.js';
 import { formatPhone, validatePhone, formatInternationalPhone, validateInternationalPhone, validateInternationalPostalCode, formatMembershipDuration } from './utils/util-format.js';

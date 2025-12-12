@@ -8,11 +8,9 @@
 // Import from member portal public directory
 import { initSession } from '../../session/init.js';
 import { debug } from '../../js/utils/util-debug.js';
-import { getFirebaseAuth, getFunctions } from '../../firebase/app.js';
+import { getFirebaseAuth, getFunctions, httpsCallable } from '../../firebase/app.js';
 import { superuserStrings } from './i18n/superuser-strings-loader.js';
 import { requireSuperuser } from '../../js/rbac.js';
-// Note: R import removed - was only used for role badges in welcome card which was removed
-import { httpsCallable } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js';
 
 // Initialize Firebase services
 const auth = getFirebaseAuth();

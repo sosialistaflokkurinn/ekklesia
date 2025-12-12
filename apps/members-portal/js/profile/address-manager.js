@@ -8,8 +8,7 @@
  */
 
 import { R } from '../../i18n/strings-loader.js';
-import { getFirebaseFirestore, httpsCallable } from '../../firebase/app.js';
-import { doc, updateDoc, deleteField } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getFirebaseFirestore, httpsCallable, doc, updateDoc, deleteField } from '../../firebase/app.js';
 
 // Cloud Function for syncing profile updates to Django
 const updateMemberProfileFunction = httpsCallable('updatememberprofile', 'europe-west2');

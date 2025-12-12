@@ -8,8 +8,7 @@
 import { initSession } from '../../session/init.js';
 import { initNavigation } from '../../js/nav-interactions.js';
 import { debug } from '../../js/utils/util-debug.js';
-import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
-import { collection, query, orderBy, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getFirebaseAuth, getFirebaseFirestore, collection, query, orderBy, limit, getDocs } from '../../firebase/app.js';
 import { adminStrings } from './i18n/admin-strings-loader.js';
 import { checkAdminAccess, calculateDuration } from './utils/admin-helpers.js';
 import { el } from '../../js/utils/util-dom.js';
