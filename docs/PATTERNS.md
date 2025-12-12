@@ -84,7 +84,18 @@ cloud-sql-proxy PROJECT:REGION:INSTANCE --port 5433
 | DOM helper | `import { el } from '/js/utils/util-dom.js'` | `el('div', 'class', {attr: val}, children)` |
 | Formatting | `import { formatDate } from '/js/utils/util-format.js'` | `formatDate(date)` |
 | Debounce | `import { debounce } from '/js/utils/util-debounce.js'` | `debounce(fn, 300)` |
-| Debug | `import { debug } from '/js/utils/util-debug.js'` | `debug('module', 'message')` |
+| Debug | `import { debug } from '/js/utils/util-debug.js'` | `debug.log('module', 'msg')` |
+
+**Debug utility note:** `debug` is an object with methods, not a function:
+```javascript
+// CORRECT
+debug.log('MyModule', 'Loading data...');
+debug.warn('MyModule', 'Deprecated feature used');
+debug.error('MyModule', 'Failed to load:', error);
+
+// WRONG - debug is not a function!
+debug('MyModule', 'message');  // TypeError: debug is not a function
+```
 
 ### API Clients (js/api/)
 
@@ -284,6 +295,50 @@ const result = await verify({ memberId: '123' });
 // NEVER import directly
 // import { ... } from 'https://www.gstatic.com/...';  // WRONG
 ```
+
+---
+
+## Auth Guard Pattern (requireAuth)
+
+**Critical:** Use `requireAuth()` on protected pages instead of custom auth checks.
+
+```javascript
+// CORRECT - Use requireAuth() from auth.js
+import { requireAuth } from '/js/auth.js';
+
+async function init() {
+  // Redirects to login if not authenticated
+  const user = await requireAuth();
+
+  // User is guaranteed to be authenticated here
+  await loadPageData(user.uid);
+}
+
+// WRONG - Don't write custom auth checks that throw errors
+async function init() {
+  const auth = getFirebaseAuth();
+  await new Promise((resolve, reject) => {
+    auth.onAuthStateChanged(user => {
+      if (user) resolve(user);
+      else reject(new Error('Not logged in'));  // BAD: shows error instead of redirect
+    });
+  });
+}
+```
+
+**Why this matters:**
+- Token expiry at midnight causes "Not logged in" errors if you throw
+- `requireAuth()` redirects to `/` (login page) instead of showing error
+- Consistent UX across all protected pages
+
+**Available auth functions (js/auth.js):**
+| Function | Purpose |
+|----------|---------|
+| `requireAuth()` | Auth guard - redirects if not logged in |
+| `getCurrentUser()` | Get user or null (no redirect) |
+| `getUserData(user)` | Get claims (kennitala, roles, etc.) |
+| `authenticatedFetch(url, options)` | Fetch with ID token + App Check |
+| `signOut()` | Sign out and redirect to login |
 
 ---
 
