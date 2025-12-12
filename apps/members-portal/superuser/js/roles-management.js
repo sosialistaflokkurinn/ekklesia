@@ -14,7 +14,6 @@ import { initSession } from '../../session/init.js';
 import { debug } from '../../js/utils/util-debug.js';
 import {
   getFirebaseFirestore,
-  getFunctions,
   httpsCallable,
   collection,
   query,
@@ -129,8 +128,7 @@ async function getFirebaseUserInfo(firebaseUid) {
 
   try {
     // Use Cloud Function to get user role (avoids Firestore permission issues)
-    const functions = getFunctions('europe-west2');
-    const getUserRole = httpsCallable(functions, 'getUserRole');
+    const getUserRole = httpsCallable('getUserRole', 'europe-west2');
 
     const result = await getUserRole({ target_uid: firebaseUid });
     const userData = result.data;
@@ -343,8 +341,7 @@ async function saveRoleChange() {
 
   try {
     // Call Cloud Function to change role
-    const functions = getFunctions('europe-west2');
-    const setUserRole = httpsCallable(functions, 'setUserRole');
+    const setUserRole = httpsCallable('setUserRole', 'europe-west2');
 
     const payload = {
       target_uid: selectedMember.firebaseUid,
@@ -500,8 +497,7 @@ async function loadElevatedUsers() {
 
   try {
     // Call Cloud Function to get elevated users
-    const functions = getFunctions('europe-west2');
-    const listElevatedUsers = httpsCallable(functions, 'listElevatedUsers');
+    const listElevatedUsers = httpsCallable('listElevatedUsers', 'europe-west2');
     const result = await listElevatedUsers();
 
     const { superusers, admins, counts } = result.data;

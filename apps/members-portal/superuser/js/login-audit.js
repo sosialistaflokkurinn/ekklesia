@@ -9,7 +9,7 @@
 
 import { initSession } from '../../session/init.js';
 import { debug } from '../../js/utils/util-debug.js';
-import { getFunctions, httpsCallable } from '../../firebase/app.js';
+import { httpsCallable } from '../../firebase/app.js';
 import { requireSuperuser } from '../../js/rbac.js';
 import { showToast } from '../../js/components/ui-toast.js';
 import { R } from '../../i18n/strings-loader.js';
@@ -250,8 +250,7 @@ async function searchLogins() {
     const userFilter = document.getElementById('filter-user').value.trim();
 
     // Call Cloud Function
-    const functions = getFunctions('europe-west2');
-    const getLoginAudit = httpsCallable(functions, 'getLoginAudit');
+    const getLoginAudit = httpsCallable('getLoginAudit', 'europe-west2');
 
     const result = await getLoginAudit({
       status: status !== 'all' ? status : null,

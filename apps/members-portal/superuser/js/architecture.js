@@ -10,7 +10,7 @@
 
 import { initSession } from '../../session/init.js';
 import { debug } from '../../js/utils/util-debug.js';
-import { getFunctions, httpsCallable } from '../../firebase/app.js';
+import { httpsCallable } from '../../firebase/app.js';
 import { requireSuperuser } from '../../js/rbac.js';
 import { showToast } from '../../js/components/ui-toast.js';
 import { superuserStrings } from './i18n/superuser-strings-loader.js';
@@ -156,8 +156,7 @@ async function checkHealth() {
   try {
     updateSummaryStatus('loading', superuserStrings.get('status_checking'));
 
-    const functions = getFunctions('europe-west2');
-    const checkSystemHealth = httpsCallable(functions, 'checkSystemHealth');
+    const checkSystemHealth = httpsCallable('checkSystemHealth', 'europe-west2');
     const result = await checkSystemHealth();
 
     healthData = result.data;

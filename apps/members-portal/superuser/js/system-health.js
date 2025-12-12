@@ -7,7 +7,7 @@
 
 import { initSession } from '../../session/init.js';
 import { debug } from '../../js/utils/util-debug.js';
-import { getFunctions, httpsCallable } from '../../firebase/app.js';
+import { httpsCallable } from '../../firebase/app.js';
 import { requireSuperuser } from '../../js/rbac.js';
 import { showToast } from '../../js/components/ui-toast.js';
 import { R } from '../../i18n/strings-loader.js';
@@ -227,8 +227,7 @@ async function checkAllServices() {
 
   try {
     // Call Cloud Function to check health (avoids CORS issues)
-    const functions = getFunctions('europe-west2');
-    const checkSystemHealth = httpsCallable(functions, 'checkSystemHealth');
+    const checkSystemHealth = httpsCallable('checkSystemHealth', 'europe-west2');
 
     const result = await checkSystemHealth();
     const healthData = result.data;

@@ -14,7 +14,7 @@
 
 import { initSession } from '../../session/init.js';
 import { debug } from '../../js/utils/util-debug.js';
-import { getFunctions, httpsCallable } from '../../firebase/app.js';
+import { httpsCallable } from '../../firebase/app.js';
 import { requireSuperuser } from '../../js/rbac.js';
 import { showToast } from '../../js/components/ui-toast.js';
 import { R } from '../../i18n/strings-loader.js';
@@ -186,12 +186,11 @@ async function executeOperation() {
   proceedBtn.textContent = superuserStrings.get('dangerous_executing_btn');
 
   try {
-    const functions = getFunctions('europe-west2');
     let result;
 
     switch (currentOperation.type) {
       case 'delete-member': {
-        const hardDeleteMember = httpsCallable(functions, 'hardDeleteMember');
+        const hardDeleteMember = httpsCallable('hardDeleteMember', 'europe-west2');
         result = await hardDeleteMember({
           kennitala: currentOperation.kennitala,
           confirmation: 'EYÐA VARANLEGA'
@@ -200,7 +199,7 @@ async function executeOperation() {
       }
 
       case 'anonymize-member': {
-        const anonymizeMember = httpsCallable(functions, 'anonymizeMember');
+        const anonymizeMember = httpsCallable('anonymizeMember', 'europe-west2');
         result = await anonymizeMember({
           kennitala: currentOperation.kennitala,
           confirmation: 'NAFNLAUSA'
@@ -209,7 +208,7 @@ async function executeOperation() {
       }
 
       case 'purge-deleted': {
-        const purgeDeleted = httpsCallable(functions, 'purgedeleted');
+        const purgeDeleted = httpsCallable('purgedeleted', 'europe-west2');
         result = await purgeDeleted();
         break;
       }

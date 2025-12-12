@@ -8,7 +8,7 @@
 // Import from member portal public directory
 import { initSession } from '../../session/init.js';
 import { debug } from '../../js/utils/util-debug.js';
-import { getFirebaseAuth, getFunctions, httpsCallable } from '../../firebase/app.js';
+import { getFirebaseAuth, httpsCallable } from '../../firebase/app.js';
 import { superuserStrings } from './i18n/superuser-strings-loader.js';
 import { requireSuperuser } from '../../js/rbac.js';
 
@@ -90,28 +90,34 @@ function updateSystemStatus(status, strings) {
 
 /**
  * Set page text from superuser strings
+ * @param {Object} strings - Superuser i18n strings
+ * @param {Object} userData - User data from session
  */
 function setPageText(strings, userData) {
-  // Page title
-  document.getElementById('page-title').textContent = strings.superuser_dashboard_title;
+  // Helper to safely set text content
+  const setText = (id, text) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text;
+  };
 
-  // Note: Welcome card removed - user info shown on member dashboard
+  // Page title
+  setText('page-title', strings.superuser_dashboard_title);
 
   // Quick actions
-  document.getElementById('superuser-actions-title').textContent = strings.superuser_actions_title;
-  document.getElementById('quick-action-roles-label').textContent = strings.quick_action_roles_label;
-  document.getElementById('quick-action-roles-desc').textContent = strings.quick_action_roles_desc;
-  document.getElementById('quick-action-audit-logs-label').textContent = strings.quick_action_audit_logs_label;
-  document.getElementById('quick-action-audit-logs-desc').textContent = strings.quick_action_audit_logs_desc;
-  document.getElementById('quick-action-dangerous-ops-label').textContent = strings.quick_action_dangerous_ops_label;
-  document.getElementById('quick-action-dangerous-ops-desc').textContent = strings.quick_action_dangerous_ops_desc;
-  document.getElementById('quick-action-system-health-label').textContent = strings.quick_action_system_health_label;
-  document.getElementById('quick-action-system-health-desc').textContent = strings.quick_action_system_health_desc;
-  document.getElementById('quick-action-login-audit-label').textContent = strings.quick_action_login_audit_label;
-  document.getElementById('quick-action-login-audit-desc').textContent = strings.quick_action_login_audit_desc;
+  setText('superuser-actions-title', strings.superuser_actions_title);
+  setText('quick-action-roles-label', strings.quick_action_roles_label);
+  setText('quick-action-roles-desc', strings.quick_action_roles_desc);
+  setText('quick-action-audit-logs-label', strings.quick_action_audit_logs_label);
+  setText('quick-action-audit-logs-desc', strings.quick_action_audit_logs_desc);
+  setText('quick-action-dangerous-ops-label', strings.quick_action_dangerous_ops_label);
+  setText('quick-action-dangerous-ops-desc', strings.quick_action_dangerous_ops_desc);
+  setText('quick-action-system-health-label', strings.quick_action_system_health_label);
+  setText('quick-action-system-health-desc', strings.quick_action_system_health_desc);
+  setText('quick-action-login-audit-label', strings.quick_action_login_audit_label);
+  setText('quick-action-login-audit-desc', strings.quick_action_login_audit_desc);
 
   // System status
-  document.getElementById('system-status-title').textContent = strings.system_status_title;
+  setText('system-status-title', strings.system_status_title);
 
   // Set initial status to loading (will be updated by actual health check)
   updateSystemStatus('loading', strings);
@@ -122,8 +128,7 @@ function setPageText(strings, userData) {
  */
 async function checkSystemHealthQuick(strings) {
   try {
-    const functions = getFunctions('europe-west2');
-    const checkSystemHealth = httpsCallable(functions, 'checkSystemHealth');
+    const checkSystemHealth = httpsCallable('checkSystemHealth', 'europe-west2');
 
     const result = await checkSystemHealth();
     const healthData = result.data;
