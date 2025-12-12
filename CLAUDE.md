@@ -22,9 +22,8 @@
 │  └── SendGrid email (temporary)                             │
 │  └── See: ~/Development/projects/django/                    │
 │                                                              │
-│  Linode (LEGACY - being retired)                            │
-│  ├── Django 2.2.3 / Python 3.6                              │
-│  └── Will be decommissioned after DNS migration             │
+│  Linode (DECOMMISSIONED 2025-12-11)                         │
+│  └── Backup: ~/Development/projects/django/backups/         │
 │                                                              │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -165,12 +164,10 @@ gcloud builds submit --config cloudbuild.yaml \
 ### Source of Truth Hierarchy
 1. **Firestore** - Future canonical source (Ekklesia)
 2. **Cloud SQL** - Current operational database (Django GCP)
-3. **Linode PostgreSQL** - Legacy (being retired)
 
 ### Sync Status
 - Members sync from Firestore → Cloud SQL (planned)
 - Django admin reads/writes to Cloud SQL
-- Legacy Linode being phased out
 
 ---
 

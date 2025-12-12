@@ -34,9 +34,8 @@
 │  ├── Cloud SQL PostgreSQL                                    │
 │  └── SendGrid email (temporary)                             │
 │                                                              │
-│  Linode (LEGACY - being retired)                            │
-│  ├── Django 2.2.3 / Python 3.6                              │
-│  └── Will be decommissioned after DNS migration             │
+│  Linode (DECOMMISSIONED 2025-12-11)                         │
+│  └── Backup: ~/Development/projects/django/backups/         │
 │                                                              │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -90,11 +89,10 @@
 | Priority | Source | Purpose | Status |
 |----------|--------|---------|--------|
 | 1 | **Firestore** | Canonical member data | Active |
-| 2 | Cloud SQL PostgreSQL | Elections, events, legacy sync | Active |
+| 2 | Cloud SQL PostgreSQL | Elections, events | Active |
 | 3 | Django GCP (Cloud Run) | Admin interface | Interim |
-| 4 | Django Linode | Legacy admin | Being retired |
 
-**Related issues:** #323 (Postmark email), #324 (Email migration)
+**Related issues:** #323 (Postmark email)
 
 ### Member Data Model
 
@@ -253,13 +251,6 @@ User → Kenni.is (PKCE) → Firebase Auth → ID Token → API Request
      │  Django GCP     │          │  PostgreSQL     │
      │  (admin UI)     │          │  (elections)    │
      └─────────────────┘          └─────────────────┘
-              │
-              │ (legacy sync - being phased out)
-              ▼
-     ┌─────────────────┐
-     │  Django Linode  │
-     │  (RETIRING)     │
-     └─────────────────┘
 ```
 
 ---
