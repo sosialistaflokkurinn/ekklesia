@@ -712,6 +712,52 @@ body.superuser {
   color: var(--color-info, #3b82f6);
 }
 
+.service-card__time {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #6b7280);
+  font-weight: 500;
+}
+
+.service-card__time--slow {
+  color: var(--color-warning, #f59e0b);
+}
+
+.service-card__usage {
+  font-size: 0.7rem;
+  color: var(--color-text-muted, #6b7280);
+  font-style: italic;
+  margin-bottom: 0.25rem;
+}
+
+.service-card--with-usage {
+  min-height: 5.5rem;
+}
+
+/* Highlight card for registration site */
+.card--highlight {
+  border: 2px solid var(--color-primary, #dc2626);
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.02) 0%, transparent 100%);
+}
+
+.card--highlight .card__title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.card__link {
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--color-primary, #dc2626);
+  text-decoration: none;
+}
+
+.card__link:hover {
+  text-decoration: underline;
+}
+
 /* ============================================
    DANGEROUS OPERATIONS
    ============================================ */

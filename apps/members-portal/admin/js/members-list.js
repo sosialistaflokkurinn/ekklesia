@@ -459,10 +459,10 @@ const adminStrings = new Map();
         el('td', 'members-table__cell', {
           dataset: { label: adminStrings.get('members_table_header_kennitala') }
         }, maskKennitala(member.kennitala)),
-        // Actions
+        // Actions - Use django_id in URL for security (kennitala is sensitive)
         el('td', 'members-table__cell members-table__cell--actions', {},
           el('a', 'members-table__action', {
-            href: `/admin/member-profile.html?id=${member.kennitala}`
+            href: `/admin/member-profile.html?id=${member.metadata?.django_id || member.kennitala}`
           }, adminStrings.get('members_btn_view'))
         )
       );

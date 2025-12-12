@@ -7,10 +7,15 @@ Data is stored in Firestore collection 'lookup_unions'.
 Usage:
     listUnions({})
     Returns: { results: [...], error: null }
+
+Caching:
+    Uses in-memory cache with 1 hour TTL.
+    Cache persists across invocations on the same container instance.
 """
 
 import logging
-from typing import Any
+import time
+from typing import Any, Optional, List
 
 from firebase_functions import https_fn, options
 from firebase_admin import firestore
@@ -18,6 +23,11 @@ from firebase_admin import firestore
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# In-memory cache (persists across invocations on same container)
+_unions_cache: Optional[List[dict]] = None
+_unions_cache_time: float = 0
+CACHE_TTL_SECONDS = 3600  # 1 hour
 
 
 @https_fn.on_call(
@@ -42,8 +52,16 @@ def list_unions(req: https_fn.CallableRequest) -> dict[str, Any]:
     Note:
         Results are sorted by name for consistent display.
         Format matches Django /kort/stettarfelog/ endpoint.
+        Uses in-memory cache with 1 hour TTL.
     """
+    global _unions_cache, _unions_cache_time
+
     try:
+        # Return cached data if valid
+        if _unions_cache and (time.time() - _unions_cache_time) < CACHE_TTL_SECONDS:
+            logger.info(f"Returning {len(_unions_cache)} unions from cache")
+            return _unions_cache
+
         logger.info("Fetching unions from Firestore")
 
         db = firestore.client()
@@ -63,7 +81,11 @@ def list_unions(req: https_fn.CallableRequest) -> dict[str, Any]:
                 'logo': data.get('logo'),
             })
 
-        logger.info(f"Returning {len(results)} unions")
+        # Update cache
+        _unions_cache = results
+        _unions_cache_time = time.time()
+
+        logger.info(f"Returning {len(results)} unions (cached)")
         return results
 
     except Exception as e:

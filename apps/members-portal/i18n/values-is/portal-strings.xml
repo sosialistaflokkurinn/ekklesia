@@ -46,8 +46,7 @@
   <string name="nav_superuser_roles">Hlutverk</string>
   <string name="nav_superuser_audit_logs">Aðgerðaskrá</string>
   <string name="nav_superuser_dangerous_ops">Varasamar aðgerðir</string>
-  <string name="nav_superuser_system_health">Staða kerfis</string>
-  <string name="nav_superuser_architecture">Kerfisarkitektúr</string>
+  <string name="nav_superuser_system_overview">Kerfisyfirlit</string>
   <string name="nav_superuser_login_audit">Innskráningarsaga</string>
   <string name="nav_policy_session">Stefnumótun</string>
   <string name="nav_back_to_member">Mín síða</string>

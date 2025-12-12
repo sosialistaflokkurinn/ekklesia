@@ -5,7 +5,7 @@
  * Uses PhoneManager and AddressManager from profile refactoring.
  */
 
-import { getFirebaseAuth, getFirebaseFirestore, httpsCallable, doc, getDoc, updateDoc } from '../../firebase/app.js';
+import { getFirebaseAuth, getFirebaseFirestore, httpsCallable, doc, getDoc, updateDoc, collection, query, where, getDocs } from '../../firebase/app.js';
 import { R } from '../../i18n/strings-loader.js';
 import { showToast } from '../../js/components/ui-toast.js';
 import { showStatus } from '../../js/components/ui-status.js';
@@ -32,6 +32,7 @@ const AUTO_SAVE_ERROR_DURATION = 3000; // ms to show error status
 
 // State
 let currentKennitala = null;
+let currentDjangoId = null;  // For URL security - lookup by django_id instead of kennitala
 let memberData = null;
 let phoneManager = null;
 let addressManager = null;
@@ -158,22 +159,35 @@ async function init() {
   // Set all i18n strings
   setI18nStrings();
 
-  // Get kennitala from URL
+  // Get ID from URL - can be django_id (preferred for security) or kennitala (legacy)
   const urlParams = new URLSearchParams(window.location.search);
-  currentKennitala = urlParams.get('id');
+  const idParam = urlParams.get('id');
 
-  debug.log(`📋 URL parameter 'id':`, currentKennitala);
+  debug.log(`📋 URL parameter 'id':`, idParam);
 
-  if (!currentKennitala) {
-    showError('Engin kennitala í URL');
+  if (!idParam) {
+    showError('Ekkert ID í URL');
     return;
   }
 
-  // Handle both formats: with dash (999999-9999) or without (9999999999)
-  if (currentKennitala && !currentKennitala.includes('-') && currentKennitala.length === 10) {
-    // Add dash if missing
-    currentKennitala = `${currentKennitala.slice(0, 6)}-${currentKennitala.slice(6)}`;
-    debug.log(`   Formatted kennitala:`, currentKennitala);
+  // Detect if ID is kennitala (10 digits) or django_id (smaller number)
+  // Kennitala format: DDMMYYNNNN (10 digits) or DDMMYY-NNNN (with dash)
+  const isKennitala = idParam.length === 10 || (idParam.length === 11 && idParam.includes('-'));
+
+  if (isKennitala) {
+    // Legacy: kennitala in URL (less secure but backwards compatible)
+    currentKennitala = idParam;
+    debug.log(`🔑 Detected kennitala format (legacy)`);
+
+    // Handle both formats: with dash (999999-9999) or without (9999999999)
+    if (currentKennitala && !currentKennitala.includes('-') && currentKennitala.length === 10) {
+      currentKennitala = `${currentKennitala.slice(0, 6)}-${currentKennitala.slice(6)}`;
+      debug.log(`   Formatted kennitala:`, currentKennitala);
+    }
+  } else {
+    // New: django_id in URL (more secure - kennitala not exposed)
+    currentDjangoId = parseInt(idParam, 10);
+    debug.log(`🔐 Detected django_id format (secure):`, currentDjangoId);
   }
 
   // Check authentication
@@ -205,36 +219,67 @@ async function init() {
 
 /**
  * Load member data from Firestore
- * Try multiple document ID formats to handle different data structures
- * 
+ * Supports two lookup methods:
+ * 1. By kennitala (document ID) - legacy, less secure
+ * 2. By django_id (query) - new, more secure
+ *
  * @returns {Promise<void>}
  */
 async function loadMemberData() {
   try {
     showLoading();
 
-    // Try multiple key formats
-    const kennitalaWithoutDash = currentKennitala.replace(/-/g, '');
-    const kennitalaWithDash = currentKennitala;
-    
-    debug.log(`🔍 Loading member with kennitala: ${currentKennitala}`);
-    debug.log(`   Trying keys: ["${kennitalaWithoutDash}", "${kennitalaWithDash}"]`);
-    
-    // Try without dash first (most common format)
-    let memberDocRef = doc(db, 'members', kennitalaWithoutDash);
-    let memberDoc = await getDoc(memberDocRef);
+    let memberDoc = null;
 
-    // If not found, try with dash
-    if (!memberDoc.exists()) {
-      debug.log(`   ℹ️ Not found with key: ${kennitalaWithoutDash}, trying with dash...`);
-      memberDocRef = doc(db, 'members', kennitalaWithDash);
+    if (currentDjangoId) {
+      // NEW: Lookup by django_id (more secure - kennitala not in URL)
+      debug.log(`🔍 Loading member by django_id: ${currentDjangoId}`);
+
+      const membersRef = collection(db, 'members');
+      const q = query(membersRef, where('metadata.django_id', '==', currentDjangoId));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        debug.warn(`⚠️ Member not found with django_id: ${currentDjangoId}`);
+        showNotFound();
+        return;
+      }
+
+      memberDoc = querySnapshot.docs[0];
+      // Set kennitala from document ID for save operations
+      currentKennitala = memberDoc.id;
+      if (currentKennitala.length === 10 && !currentKennitala.includes('-')) {
+        currentKennitala = `${currentKennitala.slice(0, 6)}-${currentKennitala.slice(6)}`;
+      }
+      debug.log(`   Found kennitala: ${currentKennitala.slice(0, 6)}****`);
+
+    } else if (currentKennitala) {
+      // LEGACY: Lookup by kennitala (document ID)
+      const kennitalaWithoutDash = currentKennitala.replace(/-/g, '');
+      const kennitalaWithDash = currentKennitala;
+
+      debug.log(`🔍 Loading member with kennitala: ${currentKennitala}`);
+      debug.log(`   Trying keys: ["${kennitalaWithoutDash}", "${kennitalaWithDash}"]`);
+
+      // Try without dash first (most common format)
+      let memberDocRef = doc(db, 'members', kennitalaWithoutDash);
       memberDoc = await getDoc(memberDocRef);
-    }
 
-    if (!memberDoc.exists()) {
-      debug.warn(`⚠️ Member not found with either key format`);
-      debug.warn(`   Tried: ${kennitalaWithoutDash}, ${kennitalaWithDash}`);
-      showNotFound();
+      // If not found, try with dash
+      if (!memberDoc.exists()) {
+        debug.log(`   ℹ️ Not found with key: ${kennitalaWithoutDash}, trying with dash...`);
+        memberDocRef = doc(db, 'members', kennitalaWithDash);
+        memberDoc = await getDoc(memberDocRef);
+      }
+
+      if (!memberDoc.exists()) {
+        debug.warn(`⚠️ Member not found with either key format`);
+        debug.warn(`   Tried: ${kennitalaWithoutDash}, ${kennitalaWithDash}`);
+        showNotFound();
+        return;
+      }
+    } else {
+      showError('Ekkert ID til að leita að');
       return;
     }
 
@@ -252,7 +297,7 @@ async function loadMemberData() {
 
   } catch (error) {
     debug.error('❌ Error loading member:', error);
-    debug.error('   Kennitala:', currentKennitala);
+    debug.error('   ID:', currentDjangoId || currentKennitala);
     debug.error('   Error details:', error.message);
     showError(R.string.error_loading);
   }

@@ -529,8 +529,7 @@ export const NAV_CONFIGS = {
       { href: '/superuser/roles.html', textKey: 'nav_superuser_roles' },
       { href: '/superuser/audit-logs.html', textKey: 'nav_superuser_audit_logs' },
       { href: '/superuser/dangerous-ops.html', textKey: 'nav_superuser_dangerous_ops' },
-      { href: '/superuser/system-health.html', textKey: 'nav_superuser_system_health' },
-      { href: '/superuser/architecture.html', textKey: 'nav_superuser_architecture' },
+      { href: '/superuser/system-overview.html', textKey: 'nav_superuser_system_overview' },
       { href: '/superuser/login-audit.html', textKey: 'nav_superuser_login_audit' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
@@ -550,8 +549,7 @@ export const NAV_CONFIGS = {
       { href: '/superuser/roles.html', textKey: 'nav_superuser_roles' },
       { href: '/superuser/audit-logs.html', textKey: 'nav_superuser_audit_logs' },
       { href: '/superuser/dangerous-ops.html', textKey: 'nav_superuser_dangerous_ops' },
-      { href: '/superuser/system-health.html', textKey: 'nav_superuser_system_health' },
-      { href: '/superuser/architecture.html', textKey: 'nav_superuser_architecture' },
+      { href: '/superuser/system-overview.html', textKey: 'nav_superuser_system_overview' },
       { href: '/superuser/login-audit.html', textKey: 'nav_superuser_login_audit' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
@@ -571,8 +569,7 @@ export const NAV_CONFIGS = {
       { href: '/superuser/roles.html', textKey: 'nav_superuser_roles' },
       { href: '/superuser/audit-logs.html', textKey: 'nav_superuser_audit_logs' },
       { href: '/superuser/dangerous-ops.html', textKey: 'nav_superuser_dangerous_ops' },
-      { href: '/superuser/system-health.html', textKey: 'nav_superuser_system_health' },
-      { href: '/superuser/architecture.html', textKey: 'nav_superuser_architecture' },
+      { href: '/superuser/system-overview.html', textKey: 'nav_superuser_system_overview' },
       { href: '/superuser/login-audit.html', textKey: 'nav_superuser_login_audit' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
@@ -592,29 +589,27 @@ export const NAV_CONFIGS = {
       { href: '/superuser/roles.html', textKey: 'nav_superuser_roles' },
       { href: '/superuser/audit-logs.html', textKey: 'nav_superuser_audit_logs' },
       { href: '/superuser/dangerous-ops.html', textKey: 'nav_superuser_dangerous_ops' },
-      { href: '/superuser/system-health.html', textKey: 'nav_superuser_system_health' },
-      { href: '/superuser/architecture.html', textKey: 'nav_superuser_architecture' },
+      { href: '/superuser/system-overview.html', textKey: 'nav_superuser_system_overview' },
       { href: '/superuser/login-audit.html', textKey: 'nav_superuser_login_audit' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
   },
 
   /**
-   * Superuser System Health
-   * Shows "Heilbrigði kerfis" for context
+   * Superuser System Overview
+   * Shows "Kerfisyfirlit" for context
    */
-  superuserSystemHealth: {
+  superuserSystemOverview: {
     brand: {
       href: '/superuser/',
-      textKey: 'nav_superuser_system_health'  // "Heilbrigði kerfis"
+      textKey: 'nav_superuser_system_overview'  // "Kerfisyfirlit"
     },
     links: [
       { href: '/superuser/', textKey: 'nav_superuser_overview' },
       { href: '/superuser/roles.html', textKey: 'nav_superuser_roles' },
       { href: '/superuser/audit-logs.html', textKey: 'nav_superuser_audit_logs' },
       { href: '/superuser/dangerous-ops.html', textKey: 'nav_superuser_dangerous_ops' },
-      { href: '/superuser/system-health.html', textKey: 'nav_superuser_system_health' },
-      { href: '/superuser/architecture.html', textKey: 'nav_superuser_architecture' },
+      { href: '/superuser/system-overview.html', textKey: 'nav_superuser_system_overview' },
       { href: '/superuser/login-audit.html', textKey: 'nav_superuser_login_audit' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
@@ -634,29 +629,7 @@ export const NAV_CONFIGS = {
       { href: '/superuser/roles.html', textKey: 'nav_superuser_roles' },
       { href: '/superuser/audit-logs.html', textKey: 'nav_superuser_audit_logs' },
       { href: '/superuser/dangerous-ops.html', textKey: 'nav_superuser_dangerous_ops' },
-      { href: '/superuser/system-health.html', textKey: 'nav_superuser_system_health' },
-      { href: '/superuser/architecture.html', textKey: 'nav_superuser_architecture' },
-      { href: '/superuser/login-audit.html', textKey: 'nav_superuser_login_audit' },
-      { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
-    ]
-  },
-
-  /**
-   * Superuser Architecture Diagram
-   * Shows "Kerfisarkitektúr" for context
-   */
-  superuserArchitecture: {
-    brand: {
-      href: '/superuser/',
-      textKey: 'nav_superuser_architecture'  // "Kerfisarkitektúr"
-    },
-    links: [
-      { href: '/superuser/', textKey: 'nav_superuser_overview' },
-      { href: '/superuser/roles.html', textKey: 'nav_superuser_roles' },
-      { href: '/superuser/audit-logs.html', textKey: 'nav_superuser_audit_logs' },
-      { href: '/superuser/dangerous-ops.html', textKey: 'nav_superuser_dangerous_ops' },
-      { href: '/superuser/system-health.html', textKey: 'nav_superuser_system_health' },
-      { href: '/superuser/architecture.html', textKey: 'nav_superuser_architecture' },
+      { href: '/superuser/system-overview.html', textKey: 'nav_superuser_system_overview' },
       { href: '/superuser/login-audit.html', textKey: 'nav_superuser_login_audit' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]

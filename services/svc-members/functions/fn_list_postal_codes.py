@@ -7,10 +7,15 @@ Data is stored in Firestore collection 'lookup_postal_codes'.
 Usage:
     listPostalCodes({})
     Returns: { results: [...], error: null }
+
+Caching:
+    Uses in-memory cache with 1 hour TTL.
+    Cache persists across invocations on the same container instance.
 """
 
 import logging
-from typing import Any
+import time
+from typing import Any, Optional, List
 
 from firebase_functions import https_fn, options
 from firebase_admin import firestore
@@ -18,6 +23,11 @@ from firebase_admin import firestore
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# In-memory cache (persists across invocations on same container)
+_postal_codes_cache: Optional[List[dict]] = None
+_postal_codes_cache_time: float = 0
+CACHE_TTL_SECONDS = 3600  # 1 hour
 
 
 @https_fn.on_call(
@@ -46,8 +56,16 @@ def list_postal_codes(req: https_fn.CallableRequest) -> dict[str, Any]:
     Note:
         Results are sorted by code for consistent display.
         Format matches Django /kort/pnr/ endpoint.
+        Uses in-memory cache with 1 hour TTL.
     """
+    global _postal_codes_cache, _postal_codes_cache_time
+
     try:
+        # Return cached data if valid
+        if _postal_codes_cache and (time.time() - _postal_codes_cache_time) < CACHE_TTL_SECONDS:
+            logger.info(f"Returning {len(_postal_codes_cache)} postal codes from cache")
+            return _postal_codes_cache
+
         logger.info("Fetching postal codes from Firestore")
 
         db = firestore.client()
@@ -73,7 +91,11 @@ def list_postal_codes(req: https_fn.CallableRequest) -> dict[str, Any]:
                 'region': region,
             })
 
-        logger.info(f"Returning {len(results)} postal codes")
+        # Update cache
+        _postal_codes_cache = results
+        _postal_codes_cache_time = time.time()
+
+        logger.info(f"Returning {len(results)} postal codes (cached)")
         return results
 
     except Exception as e:

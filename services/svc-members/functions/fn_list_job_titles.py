@@ -7,10 +7,15 @@ Data is stored in Firestore collection 'lookup_job_titles'.
 Usage:
     listJobTitles({})
     Returns: { results: [...], error: null }
+
+Caching:
+    Uses in-memory cache with 1 hour TTL.
+    Cache persists across invocations on the same container instance.
 """
 
 import logging
-from typing import Any
+import time
+from typing import Any, Optional, List
 
 from firebase_functions import https_fn, options
 from firebase_admin import firestore
@@ -18,6 +23,11 @@ from firebase_admin import firestore
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# In-memory cache (persists across invocations on same container)
+_job_titles_cache: Optional[List[dict]] = None
+_job_titles_cache_time: float = 0
+CACHE_TTL_SECONDS = 3600  # 1 hour
 
 
 @https_fn.on_call(
@@ -42,8 +52,16 @@ def list_job_titles(req: https_fn.CallableRequest) -> dict[str, Any]:
     Note:
         Results are sorted by name for consistent display.
         Format matches Django /kort/starfsheiti/ endpoint.
+        Uses in-memory cache with 1 hour TTL.
     """
+    global _job_titles_cache, _job_titles_cache_time
+
     try:
+        # Return cached data if valid
+        if _job_titles_cache and (time.time() - _job_titles_cache_time) < CACHE_TTL_SECONDS:
+            logger.info(f"Returning {len(_job_titles_cache)} job titles from cache")
+            return _job_titles_cache
+
         logger.info("Fetching job titles from Firestore")
 
         db = firestore.client()
@@ -61,7 +79,11 @@ def list_job_titles(req: https_fn.CallableRequest) -> dict[str, Any]:
                 'name': data.get('name'),
             })
 
-        logger.info(f"Returning {len(results)} job titles")
+        # Update cache
+        _job_titles_cache = results
+        _job_titles_cache_time = time.time()
+
+        logger.info(f"Returning {len(results)} job titles (cached)")
         return results
 
     except Exception as e:

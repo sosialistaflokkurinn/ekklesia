@@ -111,8 +111,8 @@ function setPageText(strings, userData) {
   setText('quick-action-audit-logs-desc', strings.quick_action_audit_logs_desc);
   setText('quick-action-dangerous-ops-label', strings.quick_action_dangerous_ops_label);
   setText('quick-action-dangerous-ops-desc', strings.quick_action_dangerous_ops_desc);
-  setText('quick-action-system-health-label', strings.quick_action_system_health_label);
-  setText('quick-action-system-health-desc', strings.quick_action_system_health_desc);
+  setText('quick-action-system-overview-label', strings.quick_action_system_overview_label);
+  setText('quick-action-system-overview-desc', strings.quick_action_system_overview_desc);
   setText('quick-action-login-audit-label', strings.quick_action_login_audit_label);
   setText('quick-action-login-audit-desc', strings.quick_action_login_audit_desc);
 

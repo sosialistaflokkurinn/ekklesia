@@ -498,7 +498,10 @@ async function loadElevatedUsers() {
   try {
     // Call Cloud Function to get elevated users
     const listElevatedUsers = httpsCallable('listElevatedUsers', 'europe-west2');
+    const startTime = performance.now();
     const result = await listElevatedUsers();
+    const elapsed = Math.round(performance.now() - startTime);
+    debug.log(`listElevatedUsers API call took ${elapsed}ms`);
 
     const { superusers, admins, counts } = result.data;
 

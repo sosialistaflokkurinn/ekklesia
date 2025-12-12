@@ -806,3 +806,72 @@ When deploying frontend changes, update version query params:
 - Deploy frontend AFTER updating version tags
 
 **Note:** Even with Firebase deploy, browsers may cache old JS. Hard refresh (Ctrl+Shift+R) or incognito may be needed for testing.
+
+---
+
+## In-Memory Cache Pattern (Python Cloud Functions)
+
+For lookup data that changes rarely (countries, postal codes, job titles), use module-level cache to avoid Firestore queries on every invocation:
+
+```python
+import time
+from typing import Optional, List
+
+# In-memory cache (persists across invocations on same container)
+_cache: Optional[List[dict]] = None
+_cache_time: float = 0
+CACHE_TTL_SECONDS = 3600  # 1 hour
+
+def list_items(req):
+    global _cache, _cache_time
+
+    # Return cached data if valid
+    if _cache and (time.time() - _cache_time) < CACHE_TTL_SECONDS:
+        logger.info(f"Returning {len(_cache)} items from cache")
+        return _cache
+
+    # Fetch from Firestore
+    db = firestore.client()
+    docs = db.collection('lookup_items').order_by('name').stream()
+
+    results = [{'id': d.get('id'), 'name': d.get('name')} for d in docs]
+
+    # Update cache
+    _cache = results
+    _cache_time = time.time()
+
+    logger.info(f"Returning {len(results)} items (cached)")
+    return results
+```
+
+**For keyed data** (e.g., cells by postal code):
+
+```python
+from typing import Dict, Tuple
+
+# Keyed cache: {key: (data, cache_time)}
+_cache: Dict[int, Tuple[List[dict], float]] = {}
+CACHE_TTL_SECONDS = 3600
+
+def get_items_by_key(req):
+    global _cache
+    key = req.data.get('key_id')
+
+    # Check cache
+    if key in _cache:
+        data, cache_time = _cache[key]
+        if (time.time() - cache_time) < CACHE_TTL_SECONDS:
+            return data
+
+    # Fetch and cache
+    result = fetch_from_firestore(key)
+    _cache[key] = (result, time.time())
+    return result
+```
+
+**Key points:**
+- Module-level globals persist across invocations on same container instance
+- Use 1 hour TTL for lookup data (adjust based on change frequency)
+- Cache empty results too (prevents repeated queries for missing data)
+- Log cache hits for monitoring
+- Cold starts still query Firestore (first request after deploy or scale-up)

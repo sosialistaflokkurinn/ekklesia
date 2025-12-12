@@ -106,7 +106,8 @@ from fn_superuser import (
     hard_delete_member_handler,
     anonymize_member_handler,
     list_elevated_users_handler,
-    get_login_audit_handler
+    get_login_audit_handler,
+    purgedeleted  # Decorated function - import directly
 )
 
 # Define decorated functions for superuser operations
@@ -197,6 +198,7 @@ __all__ = [
     'anonymizeMember',
     'getLoginAudit',
     'listElevatedUsers',
+    'purgedeleted',
     # Lookup functions (skraning-static)
     'list_unions',
     'list_job_titles',

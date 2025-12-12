@@ -43,6 +43,14 @@
 | Deploy Cloud Run | `cd services/svc-elections && ./deploy.sh` |
 | Deploy Django | See Django CLAUDE.md for `gcloud builds submit` |
 
+## Live URLs
+
+| Environment | URL |
+|-------------|-----|
+| Production (Firebase) | https://ekklesia-prod-10-2025.web.app |
+| Production (alt) | https://ekklesia-prod-10-2025.firebaseapp.com |
+| Custom domain | felagakerfi.sosialistaflokkurinn.is (DNS pending - hosted at 1984 ehf) |
+
 **Detailed docs:** [docs/README.md](docs/README.md)
 
 ---

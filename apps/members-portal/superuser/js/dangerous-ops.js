@@ -5,9 +5,9 @@
  * All operations are logged to Cloud Logging for audit trail.
  *
  * Backend Status:
- * ✅ hardDeleteMember - IMPLEMENTED (superuser_functions.py)
- * ✅ anonymizeMember - IMPLEMENTED (superuser_functions.py)
- * ❌ purgeDeleted - Permanently delete soft-deleted records
+ * ✅ hardDeleteMember - IMPLEMENTED (fn_superuser.py)
+ * ✅ anonymizeMember - IMPLEMENTED (fn_superuser.py)
+ * ✅ purgeDeleted - IMPLEMENTED (fn_superuser.py) - Purges soft-deleted records
  * ❌ loadDeletedCounts() - MOCK: Returns hardcoded 0
  * ❌ loadRecentOperations() - MOCK: Shows placeholder text
  */

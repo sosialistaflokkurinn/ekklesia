@@ -70,6 +70,9 @@ DEMO_SERVICES = [
     # django-socialism-demo deleted 2025-12-05 - promoted to production as django-socialism
 ]
 
+# Base URL for Firebase Callable Functions
+FUNCTIONS_BASE_URL = "https://europe-west2-ekklesia-prod-10-2025.cloudfunctions.net"
+
 # Firebase Functions - Member Operations (Cloud Run backed, no /health endpoint)
 MEMBER_FUNCTIONS = [
     {"id": "handlekenniauth", "name": "Kenni.is Auth"},
@@ -87,6 +90,20 @@ ADDRESS_FUNCTIONS = [
     {"id": "validate-postal-code", "name": "Staðfesting póstnúmers"},
 ]
 
+# Firebase Functions - Lookup (safe to ping - return static data)
+LOOKUP_FUNCTIONS = [
+    {"id": "list-unions", "name": "Stéttarfélög", "function_name": "list_unions"},
+    {"id": "list-job-titles", "name": "Starfsheiti", "function_name": "list_job_titles"},
+    {"id": "list-countries", "name": "Lönd", "function_name": "list_countries"},
+    {"id": "list-postal-codes", "name": "Póstnúmer", "function_name": "list_postal_codes"},
+    {"id": "get-cells-by-postal-code", "name": "Sellur eftir póstnúmeri", "function_name": "get_cells_by_postal_code"},
+]
+
+# Firebase Functions - Registration
+REGISTRATION_FUNCTIONS = [
+    {"id": "register-member", "name": "Skráning félaga"},
+]
+
 # Firebase Functions - Superuser Operations
 SUPERUSER_FUNCTIONS = [
     {"id": "checksystemhealth", "name": "Staða kerfis"},
@@ -96,7 +113,8 @@ SUPERUSER_FUNCTIONS = [
     {"id": "getloginaudit", "name": "Innskráningarsaga"},
     {"id": "harddeletemember", "name": "Eyða félaga"},
     {"id": "anonymizemember", "name": "Nafnhreinsa félaga"},
-    {"id": "purgedeleted", "name": "Eyða merktum félögum"},  # New function
+    {"id": "listelevatedusers", "name": "Listi yfir stjórnendur"},
+    {"id": "purgedeleted", "name": "Eyða merktum félögum"},
 ]
 
 # Firebase Functions - Utility/Background
@@ -379,20 +397,87 @@ def check_system_health_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
         result["category"] = "demo"
         results.append(result)
 
-    # Add Firebase Functions by category (no health endpoint - shown as "available")
-    def add_functions(func_list, category):
-        for service in func_list:
-            results.append({
+    # Check Firebase Callable Functions by pinging them
+    def check_callable_function(service, category):
+        """Check health of a Firebase Callable Function by making HTTP POST."""
+        func_name = service.get("function_name")
+        if not func_name:
+            # No function_name means we can't ping it safely
+            return {
                 "id": service["id"],
                 "name": service["name"],
                 "status": "available",
                 "message": "Tilbúið",
                 "responseTime": None,
                 "category": category
-            })
+            }
 
+        url = f"{FUNCTIONS_BASE_URL}/{func_name}"
+        try:
+            start_time = time.time()
+            # Callable functions expect POST with JSON body {"data": {...}}
+            response = requests.post(
+                url,
+                json={"data": {}},
+                timeout=10,
+                headers={
+                    "Content-Type": "application/json",
+                    "User-Agent": "Ekklesia-HealthCheck/1.0"
+                }
+            )
+            response_time = int((time.time() - start_time) * 1000)
+
+            # 200 = success, 401/403 = auth required but function is running
+            if response.status_code in [200, 401, 403]:
+                return {
+                    "id": service["id"],
+                    "name": service["name"],
+                    "status": "healthy",
+                    "message": f"OK ({response_time}ms)",
+                    "responseTime": response_time,
+                    "category": category
+                }
+            else:
+                return {
+                    "id": service["id"],
+                    "name": service["name"],
+                    "status": "degraded",
+                    "message": f"HTTP {response.status_code} ({response_time}ms)",
+                    "responseTime": response_time,
+                    "category": category
+                }
+
+        except requests.Timeout:
+            return {
+                "id": service["id"],
+                "name": service["name"],
+                "status": "degraded",
+                "message": "Timeout (>10s)",
+                "responseTime": None,
+                "category": category
+            }
+        except requests.RequestException as e:
+            return {
+                "id": service["id"],
+                "name": service["name"],
+                "status": "down",
+                "message": str(e)[:50],
+                "responseTime": None,
+                "category": category
+            }
+
+    # Add Firebase Functions by category
+    def add_functions(func_list, category):
+        for service in func_list:
+            results.append(check_callable_function(service, category))
+
+    # Ping lookup functions (safe - return static data, no auth required)
+    add_functions(LOOKUP_FUNCTIONS, "lookup")
+
+    # Other functions without function_name get "available" status
     add_functions(MEMBER_FUNCTIONS, "member")
     add_functions(ADDRESS_FUNCTIONS, "address")
+    add_functions(REGISTRATION_FUNCTIONS, "registration")
     add_functions(SUPERUSER_FUNCTIONS, "superuser")
     add_functions(UTILITY_FUNCTIONS, "utility")
 
@@ -475,8 +560,8 @@ def check_system_health_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
             "message": str(e)[:50]
         })
 
-    # Summary
-    healthy_count = sum(1 for r in results if r["status"] == "healthy")
+    # Summary - count "available" as healthy (Firebase Functions without health endpoint)
+    healthy_count = sum(1 for r in results if r["status"] in ("healthy", "available"))
     degraded_count = sum(1 for r in results if r["status"] == "degraded")
     down_count = sum(1 for r in results if r["status"] == "down")
 
@@ -867,8 +952,9 @@ def list_elevated_users_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
         admins_map = {}      # keyed by uid
         # NOTE: django_elevated removed - roles come from Firebase only
 
-        # 1. Query /users/ collection for explicit role field
-        superuser_docs = db.collection("users").where("role", "==", "superuser").stream()
+        # 1. Query /users/ collection for 'roles' array field
+        # Note: setUserRole() stores roles as array: ["member", "superuser"]
+        superuser_docs = db.collection("users").where("roles", "array_contains", "superuser").stream()
         for doc in superuser_docs:
             data = doc.to_dict()
             superusers_map[doc.id] = {
@@ -881,7 +967,7 @@ def list_elevated_users_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
                 "hasLoggedIn": True
             }
 
-        admin_docs = db.collection("users").where("role", "==", "admin").stream()
+        admin_docs = db.collection("users").where("roles", "array_contains", "admin").stream()
         for doc in admin_docs:
             data = doc.to_dict()
             if doc.id not in superusers_map:  # Don't downgrade superusers

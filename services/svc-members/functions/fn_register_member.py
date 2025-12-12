@@ -195,26 +195,45 @@ def get_lookup_name(db: firestore.Client, collection: str, item_id: int) -> str 
     return None
 
 
-def get_address_from_iceaddr(address_id: int) -> dict | None:
+def get_address_from_iceaddr(hnitnum: int) -> dict | None:
     """
     Get address details from iceaddr by hnitnum.
 
-    Uses the iceaddr library to look up address.
+    Uses direct SQL query to iceaddr SQLite database since
+    iceaddr_lookup() doesn't support hnitnum parameter.
+
+    Args:
+        hnitnum: The unique address ID from Icelandic address registry
+
+    Returns:
+        Address dict or None if not found
     """
     try:
-        from iceaddr import iceaddr_lookup
+        from iceaddr.db import shared_db
+        from iceaddr import postcode_lookup
 
-        results = iceaddr_lookup(hnitnum=address_id)
-        if results:
-            addr = results[0]
+        conn = shared_db.connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM stadfong WHERE hnitnum = ?', (hnitnum,))
+        row = cursor.fetchone()
+
+        if row:
+            # Get city name from postal code
+            postnr = row['postnr']
+            city = ''
+            if postnr:
+                pc_info = postcode_lookup(postnr)
+                if pc_info:
+                    city = pc_info.get('stadur_nf', '')
+
             return {
-                'street': addr.get('heiti_nf', ''),
-                'number': str(addr.get('husnr', '')) if addr.get('husnr') else '',
-                'letter': addr.get('bokst', '') or '',
-                'postal_code': str(addr.get('postnr', '')),
-                'city': addr.get('stadur_nf', ''),
+                'street': row['heiti_nf'] or '',
+                'number': str(row['husnr']) if row['husnr'] else '',
+                'letter': row['bokst'] or '',
+                'postal_code': str(postnr) if postnr else '',
+                'city': city,
                 'country': 'IS',
-                'hnitnum': address_id,
+                'hnitnum': hnitnum,
                 'is_default': True
             }
     except Exception as e:
@@ -237,10 +256,23 @@ def get_cell_for_postal_code(db: firestore.Client, postal_code_id: int) -> dict 
 
 
 def get_postal_code_id_from_code(db: firestore.Client, postal_code: str) -> int | None:
-    """Look up postal code ID from code (e.g., "101" -> 1)."""
-    docs = db.collection('lookup_postal_codes').where('code', '==', postal_code).limit(1).stream()
-    for doc in docs:
-        return doc.to_dict().get('id')
+    """Look up postal code ID from code (e.g., "101" -> 81).
+
+    Args:
+        db: Firestore client
+        postal_code: Postal code as string (e.g., "101")
+
+    Returns:
+        Postal code ID (for postal_code_cells lookup) or None
+    """
+    try:
+        # Convert to int for Firestore query (code is stored as integer)
+        code_int = int(postal_code)
+        docs = db.collection('lookup_postal_codes').where('code', '==', code_int).limit(1).stream()
+        for doc in docs:
+            return doc.to_dict().get('id')
+    except (ValueError, TypeError) as e:
+        logger.warning(f"Invalid postal code format: {postal_code} - {e}")
     return None
 
 
