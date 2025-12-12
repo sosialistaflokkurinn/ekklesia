@@ -67,7 +67,7 @@ class CodeHealthChecker:
         print(f"{BLUE}🔍 Ekklesia Code Health Check{NC}")
         print("=" * 50)
         print()
-        
+
         self.check_navigation_init()
         self.check_missing_imports()
         self.check_console_logs()
@@ -75,7 +75,12 @@ class CodeHealthChecker:
         self.check_error_handling()
         self.check_event_listeners()
         self.check_todos()
-        
+        # New PATTERNS.md compliance checks
+        self.check_debug_usage()
+        self.check_auth_pattern()
+        self.check_duplicate_escapehtml()
+        self.check_innerhtml_xss()
+
         self.print_summary()
         
     def check_navigation_init(self):
@@ -168,20 +173,30 @@ class CodeHealthChecker:
     def check_console_logs(self):
         """Check for console.log (should use debug)"""
         print(f"{BLUE}🚫 Checking for console.log usage...{NC}")
-        
+
         for js_file in self.js_files:
-            # Skip debug.js itself
-            if 'debug.js' in str(js_file):
+            # Skip debug.js itself and debug-logger (it's a debug tool)
+            if 'debug.js' in str(js_file) or 'debug-logger' in str(js_file):
                 continue
-                
+
             content = js_file.read_text(encoding='utf-8')
             lines = content.split('\n')
-            
+
+            in_jsdoc = False
             for i, line in enumerate(lines, 1):
-                # Skip commented lines
-                if line.strip().startswith('//'):
+                stripped = line.strip()
+
+                # Track JSDoc blocks
+                if '/**' in stripped:
+                    in_jsdoc = True
+                if '*/' in stripped:
+                    in_jsdoc = False
                     continue
-                    
+
+                # Skip JSDoc and regular comments
+                if in_jsdoc or stripped.startswith('//') or stripped.startswith('*'):
+                    continue
+
                 if 'console.log(' in line:
                     self.issues.append(Issue(
                         severity='warning',
@@ -295,7 +310,139 @@ class CodeHealthChecker:
         else:
             print(f"  {BLUE}ℹ️  {todo_count} TODOs found (not an issue, just FYI){NC}")
         print()
-        
+
+    def check_debug_usage(self):
+        """Check for incorrect debug() usage - should be debug.log(), debug.error(), etc."""
+        print(f"{BLUE}🐛 Checking debug utility usage (PATTERNS.md)...{NC}")
+
+        # Pattern: debug( but NOT debug.log( or debug.warn( or debug.error(
+        # This catches: debug('module', 'message') which is WRONG
+        wrong_pattern = r'\bdebug\s*\([^)]*[\'"][^)]*[\'"]\s*,'
+
+        for js_file in self.js_files:
+            # Skip debug utility itself
+            if 'util-debug' in str(js_file):
+                continue
+
+            content = js_file.read_text(encoding='utf-8')
+            lines = content.split('\n')
+
+            for i, line in enumerate(lines, 1):
+                # Skip comments
+                if line.strip().startswith('//'):
+                    continue
+
+                # Check for wrong pattern: debug('module', ...)
+                if re.search(wrong_pattern, line):
+                    # Make sure it's not debug.log, debug.warn, etc.
+                    if not re.search(r'debug\.(log|warn|error|info)\s*\(', line):
+                        self.issues.append(Issue(
+                            severity='error',
+                            category='debug-usage',
+                            file_path=str(js_file.relative_to(self.project_root)),
+                            line_num=i,
+                            message=f"Wrong debug usage. Use debug.log() not debug()\n      {line.strip()}"
+                        ))
+
+        if not any(i.category == 'debug-usage' for i in self.issues):
+            print(f"  {GREEN}✅ Debug utility used correctly{NC}")
+        print()
+
+    def check_auth_pattern(self):
+        """Check for custom auth checks that should use requireAuth()"""
+        print(f"{BLUE}🔐 Checking auth pattern (PATTERNS.md)...{NC}")
+
+        # Pattern: reject(new Error(...innskráður...)) or throw new Error(...login...)
+        bad_patterns = [
+            (r'reject\s*\(\s*new\s+Error\s*\([^)]*innskráður', 'Throwing error instead of redirect'),
+            (r'throw\s+new\s+Error\s*\([^)]*innskráður', 'Throwing error instead of redirect'),
+            (r'reject\s*\(\s*new\s+Error\s*\([^)]*[Nn]ot\s*logged', 'Throwing error instead of redirect'),
+        ]
+
+        for js_file in self.js_files:
+            # Skip auth.js itself and API clients (throw is OK in API clients for defense-in-depth)
+            if 'auth.js' in str(js_file):
+                continue
+            if '/api/' in str(js_file) or 'api-' in str(js_file):
+                continue
+
+            content = js_file.read_text(encoding='utf-8')
+            lines = content.split('\n')
+
+            for pattern, msg in bad_patterns:
+                for i, line in enumerate(lines, 1):
+                    if re.search(pattern, line, re.IGNORECASE):
+                        self.issues.append(Issue(
+                            severity='warning',
+                            category='auth-pattern',
+                            file_path=str(js_file.relative_to(self.project_root)),
+                            line_num=i,
+                            message=f"{msg}. Use requireAuth() from js/auth.js\n      {line.strip()}"
+                        ))
+
+        if not any(i.category == 'auth-pattern' for i in self.issues):
+            print(f"  {GREEN}✅ Auth patterns look correct{NC}")
+        print()
+
+    def check_duplicate_escapehtml(self):
+        """Check for local escapeHTML definitions (should use shared utility)"""
+        print(f"{BLUE}🛡️  Checking for duplicate escapeHTML (PATTERNS.md)...{NC}")
+
+        for js_file in self.js_files:
+            # Skip the utility file itself
+            if 'util-format' in str(js_file):
+                continue
+
+            content = js_file.read_text(encoding='utf-8')
+            lines = content.split('\n')
+
+            for i, line in enumerate(lines, 1):
+                if re.search(r'function\s+escapeHTML\s*\(', line):
+                    self.issues.append(Issue(
+                        severity='warning',
+                        category='duplicate-utility',
+                        file_path=str(js_file.relative_to(self.project_root)),
+                        line_num=i,
+                        message="Local escapeHTML definition. Import from js/utils/util-format.js instead"
+                    ))
+
+        if not any(i.category == 'duplicate-utility' for i in self.issues):
+            print(f"  {GREEN}✅ No duplicate escapeHTML found{NC}")
+        print()
+
+    def check_innerhtml_xss(self):
+        """Check for innerHTML with unescaped variables (potential XSS)"""
+        print(f"{BLUE}⚠️  Checking innerHTML for XSS risks (PATTERNS.md)...{NC}")
+
+        # Pattern: innerHTML = `...${variable}...` without escapeHTML
+        # This is a heuristic - not perfect but catches common cases
+        innerhtml_pattern = r'\.innerHTML\s*=\s*`[^`]*\$\{(?!escapeHTML)[^}]+\}'
+
+        for js_file in self.js_files:
+            content = js_file.read_text(encoding='utf-8')
+            lines = content.split('\n')
+
+            # Track multi-line template literals
+            in_template = False
+            template_start_line = 0
+
+            for i, line in enumerate(lines, 1):
+                # Simple single-line check
+                if re.search(innerhtml_pattern, line):
+                    # Check if escapeHTML is used somewhere in the line
+                    if 'escapeHTML' not in line:
+                        self.issues.append(Issue(
+                            severity='info',
+                            category='xss-risk',
+                            file_path=str(js_file.relative_to(self.project_root)),
+                            line_num=i,
+                            message=f"innerHTML with variable - verify XSS safety\n      {line.strip()[:80]}"
+                        ))
+
+        if not any(i.category == 'xss-risk' for i in self.issues):
+            print(f"  {GREEN}✅ No obvious XSS risks in innerHTML{NC}")
+        print()
+
     def print_summary(self):
         """Print summary of all issues"""
         print("=" * 50)
