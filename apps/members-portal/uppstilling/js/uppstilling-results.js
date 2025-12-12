@@ -7,6 +7,7 @@ import { getFirebaseAuth } from '../../../firebase/app.js';
 import { requireAuth } from '../../../js/auth.js';
 import { getNominationResults } from '../../../js/api/api-nomination.js';
 import { debug } from '../../../js/utils/util-debug.js';
+import { escapeHTML } from '../../../js/utils/util-format.js';
 
 // DOM Elements
 const electionTitle = document.getElementById('election-title');
@@ -243,18 +244,6 @@ function showError(message) {
   hideLoading();
   errorMessage.textContent = message;
   errorCard.style.display = 'block';
-}
-
-/**
- * Escape HTML to prevent XSS
- * @param {string} str - String to escape
- * @returns {string} Escaped string
- */
-function escapeHTML(str) {
-  if (!str) return '';
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
 }
 
 // Initialize on load

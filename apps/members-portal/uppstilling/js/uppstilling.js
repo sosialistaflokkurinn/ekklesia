@@ -7,6 +7,7 @@ import { getFirebaseAuth } from '../../../firebase/app.js';
 import { requireAuth } from '../../../js/auth.js';
 import { getNominationElections, checkNominationAccess } from '../../../js/api/api-nomination.js';
 import { debug } from '../../../js/utils/util-debug.js';
+import { escapeHTML } from '../../../js/utils/util-format.js';
 
 // DOM Elements
 const loadingCard = document.getElementById('loading-card');
@@ -135,17 +136,6 @@ function getStatusText(status) {
     'archived': 'Geymd',
   };
   return statusMap[status] || status;
-}
-
-/**
- * Escape HTML to prevent XSS
- * @param {string} str - String to escape
- * @returns {string} Escaped string
- */
-function escapeHTML(str) {
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
 }
 
 /**

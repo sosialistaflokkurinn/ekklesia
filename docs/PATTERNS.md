@@ -405,6 +405,35 @@ def update_member_profile(req):
 
 ---
 
+## Structured Logging (Python)
+
+Use `log_json()` for consistent, searchable logs in Cloud Functions:
+
+```python
+from util_logging import log_json
+
+# Standard log levels
+log_json('INFO', 'Member registered', event='register_success', comrade_id=1234)
+log_json('WARN', 'Django sync failed', event='django_sync_failed', error='timeout')
+log_json('ERROR', 'Registration failed', event='register_error', error=str(e))
+
+# Always include:
+# - event: Machine-readable event name (snake_case)
+# - Relevant IDs (but mask PII like kennitala)
+
+# Masking PII
+log_json('INFO', 'Processing member',
+         kennitala=f"{kennitala[:6]}****",  # Show first 6, mask last 4
+         email=f"{email.split('@')[0][:3]}***@{email.split('@')[1]}")
+```
+
+**Log levels:**
+- `INFO`: Normal operations (registration, sync success)
+- `WARN`: Recoverable issues (Django sync failed but Firestore succeeded)
+- `ERROR`: Failures that need attention
+
+---
+
 ## Prevent Double Submit
 
 ```javascript
@@ -479,6 +508,72 @@ const el = document.getElementById('el');
 if (!el) return;
 el.textContent = data?.value ?? '';
 ```
+
+---
+
+## XSS Prevention (escapeHTML)
+
+When inserting user-provided text into HTML, always escape it:
+
+```javascript
+/**
+ * Escape HTML to prevent XSS attacks
+ * @param {string} str - Untrusted string
+ * @returns {string} Safe HTML-escaped string
+ */
+function escapeHTML(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// Usage in innerHTML
+item.innerHTML = `
+  <div class="title">${escapeHTML(user.name)}</div>
+  <div class="desc">${escapeHTML(user.bio)}</div>
+`;
+
+// Alternative: Use textContent when possible (auto-escapes)
+element.textContent = user.name;  // Safe - no escaping needed
+```
+
+**When to use:**
+- `innerHTML` with user data → Always escape
+- `textContent` → No escaping needed (browser handles it)
+- Template literals in innerHTML → Escape all variables
+
+---
+
+## API Timeout Pattern
+
+For API calls that may take longer, use AbortController:
+
+```javascript
+async function fetchWithTimeout(url, options = {}, timeoutMs = 30000) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error.name === 'AbortError') {
+      throw new Error('Request timed out');
+    }
+    throw error;
+  }
+}
+```
+
+**Default timeouts:**
+- Regular API calls: 10-15 seconds
+- File uploads: 60 seconds
+- Long-running operations: 30+ seconds
 
 ---
 
