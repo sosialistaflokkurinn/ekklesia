@@ -7,6 +7,7 @@
 
 import { getFirebaseAuth, getFirebaseFirestore, httpsCallable, doc, getDoc, updateDoc, collection, query, where, getDocs } from '../../firebase/app.js';
 import { R } from '../../i18n/strings-loader.js';
+import { adminStrings } from './i18n/admin-strings-loader.js';
 import { showToast } from '../../js/components/ui-toast.js';
 import { showStatus } from '../../js/components/ui-status.js';
 import { debug } from '../../js/utils/util-debug.js';
@@ -157,6 +158,7 @@ async function init() {
 
   // Load i18n strings first
   await R.load('is');
+  await adminStrings.load();
 
   // Set all i18n strings
   setI18nStrings();
@@ -348,16 +350,16 @@ async function renderProfile() {
   } else {
     switch (membershipStatus) {
       case 'active':
-        statusBadge.textContent = 'Virkur';
+        statusBadge.textContent = adminStrings.get('membership_status_active') || 'Virkur';
         statusBadge.className = 'admin-badge admin-badge--success';
         break;
       case 'unpaid':
-        statusBadge.textContent = 'Ógreitt';
+        statusBadge.textContent = adminStrings.get('membership_status_unpaid') || 'Ógreitt';
         statusBadge.className = 'admin-badge admin-badge--warning';
         break;
       case 'inactive':
       default:
-        statusBadge.textContent = 'Óvirkur';
+        statusBadge.textContent = adminStrings.get('membership_status_inactive') || 'Óvirkur';
         statusBadge.className = 'admin-badge admin-badge--inactive';
         break;
     }
@@ -469,7 +471,7 @@ async function renderMembershipDetails() {
     try {
       const unions = await getUnions();
       // Clear and repopulate
-      unionSelect.innerHTML = '<option value="">Veldu stéttarfélag...</option>';
+      unionSelect.innerHTML = `<option value="">${adminStrings.get('select_union_placeholder') || 'Veldu stéttarfélag...'}</option>`;
       unions.forEach(union => {
         const option = document.createElement('option');
         option.value = union.id;
@@ -495,7 +497,7 @@ async function renderMembershipDetails() {
     try {
       const titles = await getJobTitles();
       // Clear and repopulate
-      titleSelect.innerHTML = '<option value="">Veldu starfsheiti...</option>';
+      titleSelect.innerHTML = `<option value="">${adminStrings.get('select_job_title_placeholder') || 'Veldu starfsheiti...'}</option>`;
       titles.forEach(title => {
         const option = document.createElement('option');
         option.value = title.id;

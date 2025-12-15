@@ -157,4 +157,11 @@
   <string name="queue_process_success">Biðröð afgreidd</string>
   <string name="queue_process_error">Villa við að afgreiða biðröð</string>
   <string name="queue_processing">Afgreiði biðröð...</string>
+
+  <!-- Membership status badges -->
+  <string name="membership_status_unpaid">Ógreitt</string>
+  <string name="membership_status_inactive">Óvirkur</string>
+  <string name="membership_status_active">Virkur</string>
+  <string name="select_union_placeholder">Veldu stéttarfélag...</string>
+  <string name="select_job_title_placeholder">Veldu starfsheiti...</string>
 </resources>

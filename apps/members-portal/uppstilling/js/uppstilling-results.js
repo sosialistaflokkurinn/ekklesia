@@ -8,6 +8,7 @@ import { requireAuth } from '../../../js/auth.js';
 import { getNominationResults } from '../../../js/api/api-nomination.js';
 import { debug } from '../../../js/utils/util-debug.js';
 import { escapeHTML } from '../../../js/utils/util-format.js';
+import { R } from '../../../i18n/strings-loader.js';
 
 // DOM Elements
 const electionTitle = document.getElementById('election-title');
@@ -36,12 +37,15 @@ let results = null;
  */
 async function init() {
   try {
+    // Load i18n strings
+    await R.load('is');
+
     // Get election ID from URL
     const urlParams = new URLSearchParams(window.location.search);
     const electionId = urlParams.get('id');
 
     if (!electionId) {
-      showError('Kosningar ID vantar í slóð');
+      showError(R.string.uppstilling_error_missing_id);
       return;
     }
 
@@ -52,7 +56,7 @@ async function init() {
     await loadResults(electionId);
   } catch (error) {
     debug.error('[Results] Init error:', error);
-    showError(error.message || 'Villa kom upp');
+    showError(error.message || R.string.uppstilling_error_generic);
   }
 }
 
@@ -83,7 +87,7 @@ async function loadResults(electionId) {
     resultsContainer.style.display = 'block';
   } catch (error) {
     debug.error('[Results] Load results error:', error);
-    showError(error.message || 'Villa við að sækja niðurstöður');
+    showError(error.message || R.string.uppstilling_error_load_results);
   }
 }
 
@@ -92,7 +96,7 @@ async function loadResults(electionId) {
  */
 function renderAverageRankings() {
   if (!results.average_rankings || results.average_rankings.length === 0) {
-    averageRankingsEl.innerHTML = '<p class="empty-state">Engin atkvæði skráð</p>';
+    averageRankingsEl.innerHTML = `<p class="empty-state">${R.string.uppstilling_no_votes}</p>`;
     return;
   }
 
@@ -136,7 +140,7 @@ function renderSTVWinners() {
  */
 function renderIndividualVotes() {
   if (!results.votes || results.votes.length === 0) {
-    individualVotesEl.innerHTML = '<p class="empty-state">Engin atkvæði skráð</p>';
+    individualVotesEl.innerHTML = `<p class="empty-state">${R.string.uppstilling_no_votes}</p>`;
     return;
   }
 
@@ -201,11 +205,11 @@ function renderIndividualVotes() {
  */
 function getStatusText(status) {
   const statusMap = {
-    'draft': 'Drög',
-    'published': 'Opin',
-    'paused': 'Í bið',
-    'closed': 'Lokað',
-    'archived': 'Geymd',
+    'draft': R.string.uppstilling_status_draft,
+    'published': R.string.uppstilling_status_published,
+    'paused': R.string.uppstilling_status_paused,
+    'closed': R.string.uppstilling_status_closed,
+    'archived': R.string.uppstilling_status_archived,
   };
   return statusMap[status] || status;
 }

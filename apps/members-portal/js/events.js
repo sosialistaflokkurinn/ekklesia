@@ -500,7 +500,7 @@ window.copyEventLink = function(eventId) {
     const btn = document.querySelector(`#${eventId} button[onclick*="copyEventLink"]`);
     if (btn) {
       const originalText = btn.innerHTML;
-      btn.innerHTML = '✓ Afritað!';
+      btn.innerHTML = `✓ ${R.string.events_link_copied}`;
       btn.disabled = true;
       setTimeout(() => {
         btn.innerHTML = originalText;

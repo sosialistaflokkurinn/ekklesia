@@ -148,7 +148,7 @@ async function handleOAuthCallback(authCode) {
     // Check if account needs reactivation (soft-deleted)
     if (data.requiresReactivation) {
       debug.log('Account requires reactivation');
-      statusTextEl.textContent = 'Aðgangur þinn er óvirkur...';
+      statusTextEl.textContent = R.string.login_status_inactive;
 
       // Show reactivation confirmation modal
       const shouldReactivate = await showReactivationModal();
@@ -156,7 +156,7 @@ async function handleOAuthCallback(authCode) {
       if (shouldReactivate) {
         // Show loading state
         statusEl.className = 'status authenticating';
-        statusTextEl.innerHTML = '<span class="spinner"></span> Endurvekur aðgang...';
+        statusTextEl.innerHTML = `<span class="spinner"></span> ${R.string.login_status_reactivating}`;
         try {
           // Call reactivateSelf directly - NO second auth needed!
           const reactivateSelf = httpsCallable('reactivateSelf', R.string.config_firebase_region);
@@ -175,14 +175,14 @@ async function handleOAuthCallback(authCode) {
         } catch (reactivateError) {
           debug.error('Reactivation failed:', reactivateError);
           statusEl.className = 'status error';
-          statusTextEl.textContent = `Villa við endurvöknun: ${reactivateError.message}`;
+          statusTextEl.textContent = R.string.login_status_reactivate_error.replace('%s', reactivateError.message);
           authButtonsEl.style.display = 'block';
           return;
         }
       } else {
         // User declined reactivation
         statusEl.className = 'status not-authenticated';
-        statusTextEl.textContent = 'Innskráning hætt við';
+        statusTextEl.textContent = R.string.login_status_cancelled;
         authButtonsEl.style.display = 'block';
         sessionStorage.removeItem('pkce_code_verifier');
         return;

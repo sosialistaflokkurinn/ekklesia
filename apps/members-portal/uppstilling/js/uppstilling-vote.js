@@ -11,6 +11,7 @@ import { createRankedVotingForm } from '../../../js/components/election-ranked-v
 import { debug } from '../../../js/utils/util-debug.js';
 import { el } from '../../../js/utils/util-dom.js';
 import { escapeHTML } from '../../../js/utils/util-format.js';
+import { R } from '../../../i18n/strings-loader.js';
 
 // =====================================================
 // Constants
@@ -144,12 +145,15 @@ function clearDraft() {
  */
 async function init() {
   try {
+    // Load i18n strings first
+    await R.load('is');
+
     // Get election ID from URL
     const urlParams = new URLSearchParams(window.location.search);
     const electionId = urlParams.get('id');
 
     if (!electionId) {
-      showError('Kosningar ID vantar í slóð');
+      showError(R.string.uppstilling_error_missing_id);
       return;
     }
 
@@ -163,7 +167,7 @@ async function init() {
     setupEventListeners();
   } catch (error) {
     debug.error(`[${MODULE}]`, 'Init error:', error);
-    showError(error.message || 'Villa kom upp');
+    showError(error.message || R.string.uppstilling_error_generic);
   }
 }
 
@@ -193,7 +197,7 @@ async function loadElection(electionId) {
 
     // Check if election is open for voting
     if (election.status !== 'published') {
-      showError('Þessi kosning er ekki opin fyrir atkvæðagreiðslu');
+      showError(R.string.uppstilling_error_not_open);
       return;
     }
 
@@ -204,7 +208,7 @@ async function loadElection(electionId) {
     votingContainer.style.display = 'block';
   } catch (error) {
     debug.error(`[${MODULE}]`, 'Load election error:', error);
-    showError(error.message || 'Villa við að sækja kosningu');
+    showError(error.message || R.string.uppstilling_error_load_elections);
   }
 }
 
@@ -259,7 +263,7 @@ async function setupVotingForm() {
     nextStepBtn.disabled = false;
   } catch (error) {
     debug.error(`[${MODULE}]`, 'Setup form error:', error);
-    showError('Villa við að setja upp atkvæðagreiðsluform');
+    showError(R.string.uppstilling_error_setup_form);
   }
 }
 
@@ -301,7 +305,7 @@ function goToStep2() {
   currentRanking = rankedForm.getRanking();
 
   if (currentRanking.length === 0) {
-    alert('Þú verður að raða frambjóðendum áður en þú heldur áfram');
+    alert(R.string.uppstilling_error_must_rank);
     return;
   }
 
@@ -420,7 +424,7 @@ async function submitVote() {
 
   // Prevent double submit
   submitVoteBtn.disabled = true;
-  submitVoteBtn.textContent = 'Sendir...';
+  submitVoteBtn.textContent = R.string.uppstilling_btn_submitting;
 
   try {
     await submitNominationVote(election.id, {
@@ -438,9 +442,9 @@ async function submitVote() {
     debug.error(`[${MODULE}]`, 'Submit error:', error);
 
     submitVoteBtn.disabled = false;
-    submitVoteBtn.textContent = 'Skrá atkvæði';
+    submitVoteBtn.textContent = R.string.uppstilling_btn_submit;
 
-    alert(error.message || 'Villa við að skrá atkvæði');
+    alert(error.message || R.string.uppstilling_error_submit_vote);
   }
 }
 
@@ -464,13 +468,13 @@ function showSuccessCard() {
   const formActions = successCard.querySelector('.form-actions');
 
   if (allVoted) {
-    successCardContent.textContent = 'Atkvæði þitt hefur verið skráð. Allir nefndarmenn hafa nú kosið.';
+    successCardContent.textContent = R.string.uppstilling_success_all_voted;
     formActions.innerHTML = '';
     formActions.appendChild(
-      el('a', 'btn btn--primary', { href: `results.html?id=${election.id}` }, 'Skoða niðurstöður')
+      el('a', 'btn btn--primary', { href: `results.html?id=${election.id}` }, R.string.uppstilling_btn_view_results)
     );
     formActions.appendChild(
-      el('a', 'btn btn--secondary', { href: 'index.html' }, 'Til baka')
+      el('a', 'btn btn--secondary', { href: 'index.html' }, R.string.uppstilling_btn_back)
     );
   } else {
     const remaining = committeeSize - votesCast;
@@ -478,7 +482,7 @@ function showSuccessCard() {
     successCardContent.textContent = `Atkvæði þitt hefur verið skráð. ${remaining} nefndarma${suffix} á eftir að kjósa.`;
     formActions.innerHTML = '';
     formActions.appendChild(
-      el('a', 'btn btn--primary', { href: 'index.html' }, 'Til baka')
+      el('a', 'btn btn--primary', { href: 'index.html' }, R.string.uppstilling_btn_back)
     );
   }
 

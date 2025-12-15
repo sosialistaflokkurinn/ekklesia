@@ -673,14 +673,14 @@ function updateMembershipStatus(membershipStatus) {
   // Normal status with badge
   switch (membershipStatus) {
     case 'active':
-      membershipElement.innerHTML = '<span class="admin-badge admin-badge--success">Virk félagsaðild</span>';
+      membershipElement.innerHTML = `<span class="admin-badge admin-badge--success">${R.string.membership_badge_active}</span>`;
       break;
     case 'unpaid':
-      membershipElement.innerHTML = '<span class="admin-badge admin-badge--warning">Ógreitt</span>';
+      membershipElement.innerHTML = `<span class="admin-badge admin-badge--warning">${R.string.membership_badge_unpaid}</span>`;
       break;
     case 'inactive':
     default:
-      membershipElement.innerHTML = '<span class="admin-badge admin-badge--inactive">Óvirk félagsaðild</span>';
+      membershipElement.innerHTML = `<span class="admin-badge admin-badge--inactive">${R.string.membership_badge_inactive}</span>`;
       break;
   }
 }
@@ -956,7 +956,7 @@ async function saveChanges() {
   } catch (error) {
     debug.error('Save failed:', error);
 
-    showError('Villa við vistun í Django. Breytingar voru ekki vistaðar. Reyndu aftur.');
+    showError(R.string.profile_django_save_error);
   } finally {
     // Re-enable buttons (if they exist)
     if (editElements.btnSave) editElements.btnSave.disabled = false;
@@ -1416,7 +1416,7 @@ async function initMembershipDetails() {
   if (unionSelect) {
     try {
       const unions = await getUnions();
-      unionSelect.innerHTML = '<option value="">Veldu stéttarfélag...</option>';
+      unionSelect.innerHTML = `<option value="">${R.string.profile_select_union_placeholder}</option>`;
       unions.forEach(union => {
         const option = document.createElement('option');
         option.value = union.id;
@@ -1449,7 +1449,7 @@ async function initMembershipDetails() {
   if (titleSelect) {
     try {
       const titles = await getJobTitles();
-      titleSelect.innerHTML = '<option value="">Veldu starfsheiti...</option>';
+      titleSelect.innerHTML = `<option value="">${R.string.uppstilling_select_job_title}</option>`;
       titles.forEach(title => {
         const option = document.createElement('option');
         option.value = title.id;
@@ -1664,7 +1664,7 @@ async function handleDeleteAccount(modal) {
     // Show loading state
     if (confirmBtn) {
       confirmBtn.disabled = true;
-      confirmBtn.innerHTML = '<span class="spinner spinner--small"></span> Eyði aðgangi...';
+      confirmBtn.innerHTML = `<span class="spinner spinner--small"></span> ${R.string.profile_deleting_account}`;
     }
     if (cancelBtn) {
       cancelBtn.disabled = true;
@@ -1681,7 +1681,7 @@ async function handleDeleteAccount(modal) {
 
     // Show success in modal
     if (confirmBtn) {
-      confirmBtn.innerHTML = '✅ Aðgangi eytt!';
+      confirmBtn.innerHTML = `✅ ${R.string.profile_account_deleted}`;
       confirmBtn.classList.remove('btn--danger');
       confirmBtn.classList.add('btn--success');
     }
@@ -1710,7 +1710,7 @@ async function handleDeleteAccount(modal) {
       confirmInput.disabled = false;
     }
 
-    showToast(error.message || 'Villa við að eyða aðgangi', 'error');
+    showToast(error.message || R.string.profile_delete_error, 'error');
   }
 }
 

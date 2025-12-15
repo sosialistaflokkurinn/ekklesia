@@ -13,6 +13,7 @@ import { escapeHTML, formatDateShortIcelandic } from '../../../js/utils/util-for
 import { el } from '../../../js/utils/util-dom.js';
 import { showModal } from '../../../js/components/ui-modal.js';
 import { showToast } from '../../../js/components/ui-toast.js';
+import { R } from '../../../i18n/strings-loader.js';
 
 // =============================================================================
 // LOCAL STORAGE CACHE - Instant load on repeat visits
@@ -81,6 +82,9 @@ const candidatesError = document.getElementById('candidates-error');
  */
 async function init() {
   try {
+    // Load i18n strings first
+    await R.load('is');
+
     // Show cached data immediately (before auth completes)
     const cachedElections = getCache(CACHE_KEYS.ELECTIONS);
     const cachedCandidates = getCache(CACHE_KEYS.CANDIDATES);
@@ -114,7 +118,7 @@ async function init() {
     }
   } catch (error) {
     debug.error('[Uppstilling] Init error:', error);
-    showError(error.message || 'Villa kom upp');
+    showError(error.message || R.string.uppstilling_error_generic);
   }
 }
 
@@ -178,7 +182,7 @@ async function loadElections(isBackground = false) {
         hideLoading();
         showNoAccess();
       } else {
-        showError(error.message || 'Villa við að sækja kosningar');
+        showError(error.message || R.string.uppstilling_error_load_elections);
       }
     }
   }
@@ -227,11 +231,11 @@ function renderElections(elections, container) {
  */
 function getStatusText(status) {
   const statusMap = {
-    'draft': 'Drög',
-    'published': 'Opin',
-    'paused': 'Í bið',
-    'closed': 'Lokað',
-    'archived': 'Geymd',
+    'draft': R.string.uppstilling_status_draft,
+    'published': R.string.uppstilling_status_published,
+    'paused': R.string.uppstilling_status_paused,
+    'closed': R.string.uppstilling_status_closed,
+    'archived': R.string.uppstilling_status_archived,
   };
   return statusMap[status] || status;
 }
@@ -273,7 +277,7 @@ function displayCandidates(candidates) {
   candidatesLoading.style.display = 'none';
 
   if (!candidates || candidates.length === 0) {
-    candidatesError.textContent = 'Engir frambjóðendur fundust.';
+    candidatesError.textContent = R.string.uppstilling_no_candidates;
     candidatesError.style.display = 'block';
     return;
   }
@@ -328,7 +332,7 @@ function renderCandidates(candidates) {
 function createCandidateCard(candidate) {
   const bioPreview = candidate.bio
     ? candidate.bio.substring(0, 100) + (candidate.bio.length > 100 ? '...' : '')
-    : 'Engar upplýsingar enn.';
+    : R.string.uppstilling_no_info;
 
   const lastEdited = candidate.last_edited_by
     ? `Síðast breytt af ${escapeHTML(candidate.last_edited_by.user_name)}`
@@ -358,7 +362,7 @@ function openCandidateModal(candidate) {
     size: 'lg',
     buttons: [
       {
-        text: 'Loka',
+        text: R.string.uppstilling_btn_close,
         onClick: () => {}
       }
     ]
@@ -378,7 +382,7 @@ function createContactInfoSection(memberInfo) {
     items.push(
       el('a', 'contact-item contact-item--email', {
         href: `mailto:${memberInfo.email}`,
-        title: 'Senda tölvupóst'
+        title: R.string.uppstilling_title_email
       },
         el('span', 'contact-item__icon', {}, '✉️'),
         el('span', 'contact-item__value', {}, memberInfo.email)
@@ -391,7 +395,7 @@ function createContactInfoSection(memberInfo) {
     items.push(
       el('a', 'contact-item contact-item--phone', {
         href: `tel:+354${memberInfo.phone}`,
-        title: 'Hringja'
+        title: R.string.uppstilling_title_phone
       },
         el('span', 'contact-item__icon', {}, '📞'),
         el('span', 'contact-item__value', {}, memberInfo.phone)
@@ -403,9 +407,9 @@ function createContactInfoSection(memberInfo) {
   if (memberInfo.django_id) {
     items.push(
       el('span', 'contact-item contact-item--id', {
-        title: 'Django ID'
+        title: R.string.uppstilling_title_django_id
       },
-        el('span', 'contact-item__label', {}, 'Félagi #'),
+        el('span', 'contact-item__label', {}, R.string.uppstilling_label_member_id),
         el('span', 'contact-item__value', {}, String(memberInfo.django_id))
       )
     );
@@ -417,9 +421,9 @@ function createContactInfoSection(memberInfo) {
     const maskedKt = kt.substring(0, 6) + '-****';
     items.push(
       el('span', 'contact-item contact-item--kt', {
-        title: 'Kennitala'
+        title: R.string.uppstilling_title_kennitala
       },
-        el('span', 'contact-item__label', {}, 'Kt.'),
+        el('span', 'contact-item__label', {}, R.string.uppstilling_label_kt),
         el('span', 'contact-item__value', {}, maskedKt)
       )
     );
@@ -443,14 +447,14 @@ function createCandidateModalContent(candidate) {
   }
 
   const fields = [
-    { key: 'bio', label: 'Æviágrip', type: 'textarea' },
-    { key: 'education', label: 'Menntun', type: 'textarea' },
-    { key: 'experience', label: 'Reynsla', type: 'textarea' },
-    { key: 'party_roles', label: 'Trúnaðarstörf í flokknum', type: 'textarea' },
-    { key: 'focus_areas', label: 'Áherslumál', type: 'textarea', isArray: true },
-    { key: 'personal', label: 'Persónulegt', type: 'textarea' },
-    { key: 'requested_seat', label: 'Óskað eftir sæti', type: 'text' },
-    { key: 'notes', label: 'Annað', type: 'textarea' }
+    { key: 'bio', label: R.string.uppstilling_field_bio, type: 'textarea' },
+    { key: 'education', label: R.string.uppstilling_field_education, type: 'textarea' },
+    { key: 'experience', label: R.string.uppstilling_field_experience, type: 'textarea' },
+    { key: 'party_roles', label: R.string.uppstilling_field_party_roles, type: 'textarea' },
+    { key: 'focus_areas', label: R.string.uppstilling_field_focus_areas, type: 'textarea', isArray: true },
+    { key: 'personal', label: R.string.uppstilling_field_personal, type: 'textarea' },
+    { key: 'requested_seat', label: R.string.uppstilling_field_requested_seat, type: 'text' },
+    { key: 'notes', label: R.string.uppstilling_field_notes, type: 'textarea' }
   ];
 
   fields.forEach(field => {
@@ -467,7 +471,7 @@ function createCandidateModalContent(candidate) {
   if (candidate.links && candidate.links.length > 0) {
     const linksSection = el('div', 'candidate-modal__section',
       {},
-      el('h4', 'candidate-modal__section-title', {}, 'Tenglar'),
+      el('h4', 'candidate-modal__section-title', {}, R.string.uppstilling_section_links),
       el('ul', 'candidate-modal__links',
         {},
         ...candidate.links.map(link =>
@@ -509,10 +513,10 @@ function createEditableField(candidate, field, value) {
         e.stopPropagation();
         enableFieldEdit(container, candidate, field, value);
       }
-    }, 'Breyta')
+    }, R.string.uppstilling_btn_edit)
   );
 
-  const display = el('div', 'candidate-field__value', {}, value || 'Engar upplýsingar');
+  const display = el('div', 'candidate-field__value', {}, value || R.string.uppstilling_no_info_short);
 
   container.appendChild(header);
   container.appendChild(display);
@@ -551,13 +555,13 @@ function enableFieldEdit(container, candidate, field, currentValue) {
         const newValue = input.value.trim();
         await saveFieldEdit(container, candidate, field, newValue, display, editBtn, actions, input);
       }
-    }, 'Vista'),
+    }, R.string.uppstilling_btn_save),
     el('button', 'btn btn--secondary btn--sm', {
       type: 'button',
       onclick: () => {
         cancelFieldEdit(container, display, editBtn, actions, input);
       }
-    }, 'Hætta við')
+    }, R.string.uppstilling_btn_cancel)
   );
 
   // Hide display and edit button, show input and actions
@@ -586,19 +590,19 @@ async function saveFieldEdit(container, candidate, field, newValue, display, edi
     await updateCandidate(candidate.id, { [field.key]: valueToSave });
 
     // Update display
-    display.textContent = newValue || 'Engar upplýsingar';
+    display.textContent = newValue || R.string.uppstilling_no_info_short;
     display.style.display = 'block';
     editBtn.style.display = 'inline-block';
     input.remove();
     actions.remove();
 
-    showToast('Vistað!', 'success');
+    showToast(R.string.uppstilling_saved, 'success');
 
     // Refresh candidates list to show updated data
     loadCandidates();
   } catch (error) {
     debug.error('[Uppstilling] Save field error:', error);
-    showToast('Villa við að vista', 'error');
+    showToast(R.string.uppstilling_error_save, 'error');
 
     // Re-enable buttons
     const buttons = actions.querySelectorAll('button');
@@ -626,14 +630,14 @@ function createEditHistorySection(history) {
   const recentHistory = [...history].reverse().slice(0, 5);
 
   const fieldLabels = {
-    'bio': 'Æviágrip',
-    'education': 'Menntun',
-    'experience': 'Reynsla',
-    'party_roles': 'Trúnaðarstörf',
-    'focus_areas': 'Áherslumál',
-    'personal': 'Persónulegt',
-    'requested_seat': 'Óskað eftir sæti',
-    'notes': 'Annað'
+    'bio': R.string.uppstilling_field_bio,
+    'education': R.string.uppstilling_field_education,
+    'experience': R.string.uppstilling_field_experience,
+    'party_roles': R.string.uppstilling_field_party_roles_short,
+    'focus_areas': R.string.uppstilling_field_focus_areas,
+    'personal': R.string.uppstilling_field_personal,
+    'requested_seat': R.string.uppstilling_field_requested_seat,
+    'notes': R.string.uppstilling_field_notes
   };
 
   const historyItems = recentHistory.map(entry => {
@@ -651,7 +655,7 @@ function createEditHistorySection(history) {
 
   return el('div', 'candidate-modal__section candidate-history',
     {},
-    el('h4', 'candidate-modal__section-title', {}, 'Breytingasaga'),
+    el('h4', 'candidate-modal__section-title', {}, R.string.uppstilling_section_history),
     el('ul', 'candidate-history__list', {}, ...historyItems)
   );
 }
