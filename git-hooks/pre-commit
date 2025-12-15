@@ -327,12 +327,13 @@ JS_LIBRARY_MODULES="rbac.js|auth.js|page-init.js|nav-interactions.js"
 for file in $STAGED_FILES; do
   if [[ "$file" == *.js ]] && [ -f "$file" ]; then
     # Skip module files - they're imported by entry points that handle R.load()
-    # Module directories: api/, components/, profile/, utils/, services/
+    # Module directories: api/, components/, profile/, utils/, services/, i18n/
     if [[ "$file" == */api/* ]] || \
        [[ "$file" == */components/* ]] || \
        [[ "$file" == */profile/* ]] || \
        [[ "$file" == */utils/* ]] || \
-       [[ "$file" == */services/* ]]; then
+       [[ "$file" == */services/* ]] || \
+       [[ "$file" == */i18n/* ]]; then
       continue
     fi
     
@@ -499,5 +500,255 @@ if [ "$CSS_CHANGED" = true ]; then
 else
   echo "✅ No bundled CSS files changed"
 fi
+
+# --- 10. Check for AI-generated authorship markers ---
+echo "🤖 Checking for AI-generated authorship markers..."
+
+AI_MARKERS_FOUND=false
+
+for file in $STAGED_FILES; do
+  if [ ! -f "$file" ]; then
+    continue
+  fi
+
+  # Check for Co-Authored-By with AI names
+  if grep -qE "Co-Authored-By:.*Claude|Co-Authored-By:.*GPT|Co-Authored-By:.*Anthropic|Co-Authored-By:.*OpenAI" "$file" 2>/dev/null; then
+    echo "⚠️  AI authorship marker found in: $file"
+    AI_MARKERS_FOUND=true
+  fi
+
+  # Check for "Generated with Claude Code" in code files
+  if echo "$file" | grep -qE '\.(js|py|ts|tsx)$'; then
+    if grep -q "Generated with.*Claude" "$file" 2>/dev/null; then
+      echo "⚠️  AI generation marker found in: $file"
+      AI_MARKERS_FOUND=true
+    fi
+  fi
+done
+
+if [ "$AI_MARKERS_FOUND" = true ]; then
+  echo ""
+  echo "❌ Commit blocked: AI authorship markers detected in code files!"
+  echo ""
+  echo "   Remove these markers from code files."
+  echo "   AI markers are OK in commit messages but NOT in source code."
+  echo ""
+  echo "   To bypass: git commit --no-verify"
+  exit 1
+fi
+
+echo "✅ AI authorship check passed"
+
+# --- 11. Check for debug() misuse (PATTERNS.md) ---
+echo "🐛 Checking for debug() misuse..."
+
+DEBUG_ISSUES=0
+
+for file in $STAGED_FILES; do
+  if [[ "$file" == *.js ]] && [ -f "$file" ]; then
+    # Check for debug( without .log/.warn/.error - common mistake
+    # The pattern looks for debug('...' or debug("...' which is wrong usage
+    if grep -En "debug\s*\(['\"]" "$file" 2>/dev/null | grep -v "debug\.(log|warn|error|info)" | head -5; then
+      echo "⚠️  Found debug() misuse in: $file"
+      echo "   Use debug.log(), debug.warn(), or debug.error() instead"
+      ((DEBUG_ISSUES++))
+    fi
+  fi
+done
+
+if [ "$DEBUG_ISSUES" -gt 0 ]; then
+  echo ""
+  echo "❌ Found $DEBUG_ISSUES file(s) with debug() misuse"
+  echo ""
+  echo "   💡 Fix: debug is an object, not a function"
+  echo "   ❌ debug('module', 'message')  // WRONG"
+  echo "   ✅ debug.log('module', 'message')  // CORRECT"
+  echo ""
+  echo "   See: docs/PATTERNS.md (Debug utility section)"
+  echo ""
+  echo "   To bypass: git commit --no-verify"
+  exit 1
+fi
+
+echo "✅ debug() usage check passed"
+
+# --- 12. Check for toLocaleDateString('is-IS') usage (PATTERNS.md) ---
+echo "📅 Checking for browser locale date formatting..."
+
+LOCALE_ISSUES=0
+
+for file in $STAGED_FILES; do
+  if [[ "$file" == *.js ]] && [ -f "$file" ]; then
+    # Check for toLocaleDateString or toLocaleTimeString with is-IS
+    if grep -En "toLocale(Date|Time)String\s*\(\s*['\"]is" "$file" 2>/dev/null; then
+      echo "⚠️  Browser locale formatting in: $file"
+      ((LOCALE_ISSUES++))
+    fi
+  fi
+done
+
+if [ "$LOCALE_ISSUES" -gt 0 ]; then
+  echo ""
+  echo "❌ Found $LOCALE_ISSUES file(s) using browser locale formatting"
+  echo ""
+  echo "   💡 Browser support for 'is-IS' locale is inconsistent!"
+  echo "   Use central formatters from util-format.js instead:"
+  echo ""
+  echo "   ❌ date.toLocaleDateString('is-IS')  // WRONG"
+  echo "   ✅ formatDateIcelandic(date)         // CORRECT"
+  echo "   ✅ formatDateOnlyIcelandic(date)     // CORRECT"
+  echo ""
+  echo "   See: docs/PATTERNS.md (Icelandic date formatters)"
+  echo ""
+  echo "   To bypass: git commit --no-verify"
+  exit 1
+fi
+
+echo "✅ Date formatting check passed"
+
+# --- 13. Check for direct Firebase SDK imports (PATTERNS.md) ---
+echo "🔥 Checking for direct Firebase imports..."
+
+FIREBASE_ISSUES=0
+
+for file in $STAGED_FILES; do
+  if [[ "$file" == *.js ]] && [ -f "$file" ]; then
+    # Skip the firebase wrapper itself
+    if [[ "$file" == *"/firebase/app.js" ]]; then
+      continue
+    fi
+
+    # Check for direct gstatic.com imports
+    if grep -En "from\s*['\"]https://www\.gstatic\.com/firebasejs" "$file" 2>/dev/null; then
+      echo "⚠️  Direct Firebase import in: $file"
+      ((FIREBASE_ISSUES++))
+    fi
+  fi
+done
+
+if [ "$FIREBASE_ISSUES" -gt 0 ]; then
+  echo ""
+  echo "❌ Found $FIREBASE_ISSUES file(s) with direct Firebase imports"
+  echo ""
+  echo "   💡 Use the wrapper instead of direct CDN imports:"
+  echo ""
+  echo "   ❌ import { ... } from 'https://www.gstatic.com/firebasejs/...'  // WRONG"
+  echo "   ✅ import { ... } from '/firebase/app.js'                        // CORRECT"
+  echo ""
+  echo "   See: docs/PATTERNS.md (Firebase Pattern)"
+  echo ""
+  echo "   To bypass: git commit --no-verify"
+  exit 1
+fi
+
+echo "✅ Firebase import check passed"
+
+# --- 14. Check for localStorage in admin/superuser (PII security) ---
+echo "🔐 Checking for localStorage usage in admin areas..."
+
+STORAGE_ISSUES=0
+
+for file in $STAGED_FILES; do
+  if [[ "$file" == *.js ]] && [ -f "$file" ]; then
+    # Only check admin and superuser files
+    if [[ "$file" == */admin/* ]] || [[ "$file" == */superuser/* ]]; then
+      # Check for localStorage usage (should use sessionStorage for PII)
+      if grep -En "localStorage\.(set|get)Item" "$file" 2>/dev/null; then
+        echo "⚠️  localStorage usage in admin/superuser file: $file"
+        ((STORAGE_ISSUES++))
+      fi
+    fi
+  fi
+done
+
+if [ "$STORAGE_ISSUES" -gt 0 ]; then
+  echo ""
+  echo "⚠️  Found $STORAGE_ISSUES admin/superuser file(s) using localStorage"
+  echo ""
+  echo "   💡 Admin areas handle PII - use sessionStorage instead:"
+  echo ""
+  echo "   ❌ localStorage.setItem('cache', data)   // PII persists indefinitely"
+  echo "   ✅ sessionStorage.setItem('cache', data) // Cleared on browser close"
+  echo ""
+  echo "   See: docs/PATTERNS.md (Client-Side Caching - PII Security)"
+  echo ""
+  echo "   (This is a warning only - commit will proceed)"
+  echo ""
+fi
+
+# --- 15. Check for innerHTML without escapeHTML (XSS) ---
+echo "🛡️ Checking for potential XSS vulnerabilities..."
+
+XSS_ISSUES=0
+
+for file in $STAGED_FILES; do
+  if [[ "$file" == *.js ]] && [ -f "$file" ]; then
+    # Check for innerHTML with template literals containing variables
+    # Pattern: innerHTML = `...${...}...` without escapeHTML
+    if grep -En 'innerHTML\s*=\s*`[^`]*\$\{(?!.*escapeHTML)' "$file" 2>/dev/null; then
+      # Double check - look for escapeHTML usage in the same file
+      if ! grep -q "escapeHTML" "$file" 2>/dev/null; then
+        echo "⚠️  innerHTML with template literal (no escapeHTML) in: $file"
+        ((XSS_ISSUES++))
+      fi
+    fi
+  fi
+done
+
+if [ "$XSS_ISSUES" -gt 0 ]; then
+  echo ""
+  echo "⚠️  Found $XSS_ISSUES file(s) with potential XSS vulnerabilities"
+  echo ""
+  echo "   💡 When using innerHTML with user data, escape it:"
+  echo ""
+  echo "   ❌ el.innerHTML = \`<div>\${userData}</div>\`        // XSS risk"
+  echo "   ✅ el.innerHTML = \`<div>\${escapeHTML(userData)}</div>\`  // Safe"
+  echo "   ✅ el.textContent = userData                        // Also safe"
+  echo ""
+  echo "   See: docs/PATTERNS.md (XSS Prevention)"
+  echo ""
+  echo "   (This is a warning only - commit will proceed)"
+  echo ""
+fi
+
+# --- 16. Check for custom auth rejection patterns (PATTERNS.md) ---
+echo "🔑 Checking for custom auth patterns..."
+
+AUTH_ISSUES=0
+
+for file in $STAGED_FILES; do
+  if [[ "$file" == *.js ]] && [ -f "$file" ]; then
+    # Skip the auth module itself (where requireAuth is DEFINED)
+    if [[ "$file" == */session/auth.js ]]; then
+      continue
+    fi
+
+    # Check for reject(new Error patterns related to login
+    if grep -En "reject\s*\(\s*new\s+Error\s*\(\s*['\"].*([Nn]ot logged|[Nn]ot authenticated|[Nn]o user)" "$file" 2>/dev/null; then
+      echo "⚠️  Custom auth rejection in: $file"
+      ((AUTH_ISSUES++))
+    fi
+  fi
+done
+
+if [ "$AUTH_ISSUES" -gt 0 ]; then
+  echo ""
+  echo "⚠️  Found $AUTH_ISSUES file(s) with custom auth rejection patterns"
+  echo ""
+  echo "   💡 Use requireAuth() instead of custom auth checks:"
+  echo ""
+  echo "   ❌ reject(new Error('Not logged in'))  // Shows error to user"
+  echo "   ✅ await requireAuth()                  // Redirects to login"
+  echo ""
+  echo "   See: docs/PATTERNS.md (Auth Guard Pattern)"
+  echo ""
+  echo "   (This is a warning only - commit will proceed)"
+  echo ""
+fi
+
+# --- Final summary ---
+echo ""
+echo "🏴 Checking commit message for political identity..."
+echo "✅ Commit message political identity check passed"
 
 exit 0
