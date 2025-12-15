@@ -116,6 +116,21 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // Nomination candidates metadata collection
+    // Contains biographical information about candidates for nomination committee voting
+    // Access is controlled at application level (only committee members can see uppstilling page)
+    match /nomination-candidates/{candidateId} {
+      // Read: All authenticated users (page-level access control in frontend)
+      allow read: if isAuthenticated();
+
+      // Update: All authenticated users can edit candidate info
+      // Edit history is tracked in the document itself
+      allow update: if isAuthenticated();
+
+      // Create/Delete: Only via Admin SDK (Cloud Functions or scripts)
+      allow create, delete: if false;
+    }
+
     // Default: Deny all other access
     match /{document=**} {
       allow read, write: if false;

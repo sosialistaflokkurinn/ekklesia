@@ -31,8 +31,9 @@ app.use(cors({
 }));
 
 // Body parser with size limit (prevent DoS attacks)
+// 50kb allows nomination votes with justifications for ~10 candidates
 app.use(express.json({
-  limit: '5kb',
+  limit: '50kb',
   strict: true
 }));
 
@@ -109,7 +110,7 @@ app.use((err, req, res, next) => {
   if (err.type === 'entity.too.large') {
     return res.status(413).json({
       error: 'Payload Too Large',
-      message: 'Request body must be under 5kb'
+      message: 'Request body must be under 50kb'
     });
   }
 

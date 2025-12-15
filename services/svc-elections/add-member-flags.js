@@ -7,7 +7,7 @@
  * - dataFlags.invalidKennitala: true if kennitala is not 10 digits
  * - dataFlags.emptyAddress: true if no street, city, or postal_code
  * - dataFlags.duplicateEntry: true if kennitala starts with 9999
- * - dataFlags.inactive: true if membership.status !== 'active'
+ * - dataFlags.inactive: true if membership.status is not 'active' or 'unpaid'
  *
  * Usage: node add-member-flags.js [--dry-run]
  */
@@ -76,8 +76,9 @@ async function addFlags() {
       flagCounts.duplicateEntry++;
     }
 
-    // 5. Inactive membership
-    if (data.membership?.status !== 'active') {
+    // 5. Inactive membership (both 'active' and 'unpaid' are valid members)
+    const memberStatus = data.membership?.status;
+    if (memberStatus !== 'active' && memberStatus !== 'unpaid') {
       flags.inactive = true;
       flagCounts.inactive++;
     }

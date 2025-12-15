@@ -73,6 +73,11 @@ const MembersAPI = {
           continue;
         }
 
+        // Skip soft-deleted members (those with membership.deleted_at set)
+        if (data.membership?.deleted_at) {
+          continue;
+        }
+
         // Flatten nested structure from Django sync
         members.push({
           id: docSnap.id,
@@ -130,12 +135,13 @@ const MembersAPI = {
       const q = query(membersCol, ...constraints);
       const snapshot = await getDocs(q);
 
-      // Count members, excluding test accounts with 9999 prefix
+      // Count members, excluding test accounts with 9999 prefix and soft-deleted
       let count = 0;
       snapshot.forEach(doc => {
         const data = doc.data();
         const kennitala = data.profile?.kennitala || doc.id;
-        if (!kennitala.startsWith('9999')) {
+        // Skip test accounts and soft-deleted members
+        if (!kennitala.startsWith('9999') && !data.membership?.deleted_at) {
           count++;
         }
       });

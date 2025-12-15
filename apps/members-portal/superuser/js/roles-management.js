@@ -32,6 +32,51 @@ import { superuserStrings } from '../../i18n/superuser-strings.js';
 
 const db = getFirebaseFirestore();
 
+// ============================================================================
+// SESSION STORAGE CACHE - Cleared on browser close for security
+// ============================================================================
+const CACHE_KEY = 'superuser_elevated_users_cache';
+const CACHE_MAX_AGE_MS = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * Get cached elevated users from sessionStorage
+ * Uses sessionStorage for security - PII data cleared when browser closes.
+ * @returns {Object|null} { data, isStale } or null if no cache
+ */
+function getCache() {
+  try {
+    const cached = sessionStorage.getItem(CACHE_KEY);
+    if (!cached) return null;
+
+    const { data, timestamp } = JSON.parse(cached);
+    const age = Date.now() - timestamp;
+
+    return {
+      data,
+      isStale: age > CACHE_MAX_AGE_MS
+    };
+  } catch (e) {
+    debug.warn('[Cache] Failed to read cache:', e);
+    return null;
+  }
+}
+
+/**
+ * Save elevated users to sessionStorage cache
+ * @param {Object} data - Elevated users data to cache
+ */
+function setCache(data) {
+  try {
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify({
+      data,
+      timestamp: Date.now()
+    }));
+    debug.log('[Cache] Elevated users cached');
+  } catch (e) {
+    debug.warn('[Cache] Failed to write cache:', e);
+  }
+}
+
 // State
 let selectedMember = null;
 let selectedRole = null;
@@ -71,8 +116,9 @@ async function searchMembers(searchTerm) {
 
     // Load all active members for client-side search (same approach as admin/members.html)
     // For ~2,100 members this is acceptable (~500KB)
+    // Include both 'active' (fees paid) and 'unpaid' (fees not paid) - both are valid members
     const constraints = [
-      where('membership.status', '==', 'active'),
+      where('membership.status', 'in', ['active', 'unpaid']),
       orderBy('metadata.django_id', 'desc'),
       limit(5000)  // Load all for client-side filtering
     ];
@@ -355,10 +401,16 @@ async function saveRoleChange() {
 
     showToast(superuserStrings.get('role_changed_success', { role: selectedRole }), 'success');
 
+    // Invalidate cache since roles changed
+    sessionStorage.removeItem(CACHE_KEY);
+
     // Update local state
     selectedMember.currentRoles = [selectedRole];
     renderCurrentRoles([selectedRole]);
     resetRoleSelector();
+
+    // Refresh elevated users list
+    loadElevatedUsers(true);
 
   } catch (error) {
     debug.error('Error changing role:', error);
@@ -487,15 +539,60 @@ function initRoleSelector() {
 }
 
 /**
+ * Render elevated users data to the page
+ * @param {Object} data - { superusers, admins, counts }
+ */
+function renderElevatedUsersData(data) {
+  const loadingEl = document.getElementById('elevated-users-loading');
+  const listEl = document.getElementById('elevated-users-list');
+
+  const { superusers, admins, counts } = data;
+
+  // Update counts
+  document.getElementById('superuser-count').textContent = counts.superusers;
+  document.getElementById('admin-count').textContent = counts.admins;
+
+  // Render superusers
+  const superuserList = document.getElementById('superuser-list');
+  if (superusers.length > 0) {
+    superuserList.innerHTML = superusers.map(u => renderElevatedUser(u)).join('');
+  } else {
+    superuserList.innerHTML = `<div class="elevated-group--empty">${superuserStrings.get('no_superusers')}</div>`;
+  }
+
+  // Render admins
+  const adminList = document.getElementById('admin-list');
+  if (admins.length > 0) {
+    adminList.innerHTML = admins.map(u => renderElevatedUser(u)).join('');
+  } else {
+    adminList.innerHTML = `<div class="elevated-group--empty">${superuserStrings.get('no_admins')}</div>`;
+  }
+
+  // Add click handlers for elevated users
+  setupElevatedUserClickHandlers();
+
+  // Show list, hide loading
+  loadingEl.classList.add('u-hidden');
+  listEl.classList.remove('u-hidden');
+}
+
+/**
  * Load and display users with elevated privileges (admin, superuser)
  * Uses Cloud Function to bypass Firestore permission restrictions
+ * @param {boolean} backgroundRefresh - If true, don't show loading spinner
  */
-async function loadElevatedUsers() {
+async function loadElevatedUsers(backgroundRefresh = false) {
   const loadingEl = document.getElementById('elevated-users-loading');
   const listEl = document.getElementById('elevated-users-list');
   const errorEl = document.getElementById('elevated-users-error');
 
   try {
+    if (!backgroundRefresh) {
+      // Show loading state only on initial load
+      loadingEl.classList.remove('u-hidden');
+      listEl.classList.add('u-hidden');
+    }
+
     // Call Cloud Function to get elevated users
     const listElevatedUsers = httpsCallable('listElevatedUsers', 'europe-west2');
     const startTime = performance.now();
@@ -503,41 +600,20 @@ async function loadElevatedUsers() {
     const elapsed = Math.round(performance.now() - startTime);
     debug.log(`listElevatedUsers API call took ${elapsed}ms`);
 
-    const { superusers, admins, counts } = result.data;
+    // Cache the result
+    setCache(result.data);
 
-    // Update counts
-    document.getElementById('superuser-count').textContent = counts.superusers;
-    document.getElementById('admin-count').textContent = counts.admins;
+    // Render the data
+    renderElevatedUsersData(result.data);
 
-    // Render superusers
-    const superuserList = document.getElementById('superuser-list');
-    if (superusers.length > 0) {
-      superuserList.innerHTML = superusers.map(u => renderElevatedUser(u)).join('');
-    } else {
-      superuserList.innerHTML = `<div class="elevated-group--empty">${superuserStrings.get('no_superusers')}</div>`;
-    }
-
-    // Render admins
-    const adminList = document.getElementById('admin-list');
-    if (admins.length > 0) {
-      adminList.innerHTML = admins.map(u => renderElevatedUser(u)).join('');
-    } else {
-      adminList.innerHTML = `<div class="elevated-group--empty">${superuserStrings.get('no_admins')}</div>`;
-    }
-
-    // Add click handlers for elevated users
-    setupElevatedUserClickHandlers();
-
-    // Show list, hide loading
-    loadingEl.classList.add('u-hidden');
-    listEl.classList.remove('u-hidden');
-
-    debug.log(`Loaded elevated users: ${counts.superusers} superusers, ${counts.admins} admins`);
+    debug.log(`Loaded elevated users: ${result.data.counts.superusers} superusers, ${result.data.counts.admins} admins`);
 
   } catch (error) {
     debug.error('Failed to load elevated users:', error);
-    loadingEl.classList.add('u-hidden');
-    errorEl.classList.remove('u-hidden');
+    if (!backgroundRefresh) {
+      loadingEl.classList.add('u-hidden');
+      errorEl.classList.remove('u-hidden');
+    }
   }
 }
 
@@ -676,6 +752,13 @@ function formatDateString(isoString) {
  */
 async function init() {
   try {
+    // Check for cached data first - show immediately for instant load
+    const cached = getCache();
+    if (cached?.data) {
+      debug.log('[Cache] Showing cached elevated users immediately');
+      renderElevatedUsersData(cached.data);
+    }
+
     // Load i18n
     await R.load('is');
     await superuserStrings.load();
@@ -691,8 +774,18 @@ async function init() {
     initSearch();
     initRoleSelector();
 
-    // Load elevated users list
-    loadElevatedUsers();
+    // Load elevated users list (background refresh if we have cached data)
+    if (cached?.data) {
+      if (cached.isStale) {
+        debug.log('[Cache] Cache is stale, refreshing in background');
+        loadElevatedUsers(true).catch(err => {
+          debug.warn('[Cache] Background refresh failed:', err);
+        });
+      }
+    } else {
+      // No cache - load normally with loading spinner
+      loadElevatedUsers();
+    }
 
     debug.log('Role management page initialized');
 

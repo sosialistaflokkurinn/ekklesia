@@ -834,3 +834,37 @@ body.profile-editing .profile-edit__input-wrapper {
 .info-grid__item--full {
   grid-column: 1 / -1;
 }
+
+/* ===========================
+   Status Badges
+   Shared between members and admin profiles
+   =========================== */
+
+.admin-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.admin-badge--success {
+  background-color: var(--color-success-bg, #d4edda);
+  color: var(--color-success-text, #155724);
+}
+
+.admin-badge--warning {
+  background-color: var(--color-warning-bg, #fff3cd);
+  color: var(--color-warning-text, #856404);
+}
+
+.admin-badge--error {
+  background-color: var(--color-error-bg, #f8d7da);
+  color: var(--color-error-text, #721c24);
+}
+
+.admin-badge--inactive {
+  background-color: var(--color-gray-200, #e2e3e5);
+  color: var(--color-gray-700, #383d41);
+}

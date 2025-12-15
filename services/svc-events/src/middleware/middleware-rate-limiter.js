@@ -29,7 +29,9 @@ const readLimiter = rateLimit({
   keyGenerator: (req) => {
     // Use X-Forwarded-For if behind proxy (Cloud Run), otherwise use req.ip
     return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip;
-  }
+  },
+  // Disable validation - Cloud Run handles IPv6 via load balancer
+  validate: false
 });
 
 /**
@@ -50,7 +52,8 @@ const writeLimiter = rateLimit({
   legacyHeaders: false,
   keyGenerator: (req) => {
     return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip;
-  }
+  },
+  validate: false
 });
 
 /**
@@ -72,6 +75,7 @@ const tokenLimiter = rateLimit({
   keyGenerator: (req) => {
     return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip;
   },
+  validate: false,
   // Skip rate limiting for successful token issuance (to avoid penalizing legitimate users)
   skip: (req, res) => {
     // Only apply rate limit to failed attempts
@@ -98,7 +102,8 @@ const adminLimiter = rateLimit({
   legacyHeaders: false,
   keyGenerator: (req) => {
     return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip;
-  }
+  },
+  validate: false
 });
 
 module.exports = {

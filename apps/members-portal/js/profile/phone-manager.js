@@ -131,6 +131,9 @@ export class PhoneManager {
 
       // Country selector
       const countrySelector = el('select', 'phone-country-selector', {
+        id: `phone-country-${index}`,
+        name: `phone_country_${index}`,
+        autocomplete: 'tel-country-code',
         'data-index': index
       }, ...options);
 
@@ -164,6 +167,9 @@ export class PhoneManager {
       // Phone number input
       const numberInput = el('input', 'phone-number-input', {
         type: 'tel',
+        id: `phone-number-${index}`,
+        name: `phone_number_${index}`,
+        autocomplete: 'tel-national',
         value: phone.number,
         placeholder: '7758493',
         'data-index': index

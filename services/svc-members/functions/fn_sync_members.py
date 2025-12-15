@@ -196,6 +196,31 @@ def transform_django_member_to_firestore(django_member: Dict[str, Any]) -> Dict[
     # Roles are managed separately via Firebase Admin Panel.
     # See: tmp/RFC_RBAC_CLEANUP.md
 
+    # Parse deleted_at (soft delete timestamp)
+    deleted_at_str = django_member.get('deleted_at')
+    deleted_at = None
+    if deleted_at_str:
+        try:
+            deleted_at = datetime.fromisoformat(deleted_at_str.replace('Z', '+00:00'))
+        except ValueError:
+            log_json('WARNING', 'Date parse error for deleted_at',
+                     event='date_parse_error',
+                     deleted_at=deleted_at_str,
+                     member_id=django_member.get('id'))
+
+    # Get cell (svæði) name
+    cell_name = django_member.get('cell')
+
+    # Determine membership status based on fees ONLY
+    # deleted_at is now a separate field - UI handles display logic
+    # 'active' = fees paid for current year, 'unpaid' = fees not paid
+    fees_paid = django_member.get('fees_paid_current_year', False)
+    fee_year = django_member.get('fee_year')
+    if fees_paid:
+        membership_status = 'active'
+    else:
+        membership_status = 'unpaid'
+
     # Create Firestore document
     firestore_doc = {
         'profile': {
@@ -214,9 +239,13 @@ def transform_django_member_to_firestore(django_member: Dict[str, Any]) -> Dict[
         },
         'membership': {
             'date_joined': date_joined,
-            'status': 'active',  # Default, will be enhanced with actual status
+            'status': membership_status,
+            'fees_paid': fees_paid,
+            'fee_year': fee_year,
             'unions': unions,
-            'titles': titles
+            'titles': titles,
+            'deleted_at': deleted_at,
+            'cell': cell_name  # Svæði
         },
         # NOTE: django_roles removed - roles managed in Firebase only
         'metadata': {

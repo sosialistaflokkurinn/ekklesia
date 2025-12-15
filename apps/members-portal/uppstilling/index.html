@@ -8,8 +8,8 @@
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2" sizes="any">
   <link rel="icon" type="image/x-icon" href="/favicon.ico?v=2">
-  <link rel="stylesheet" href="/styles/bundle.css?v=20251210">
-  <link rel="stylesheet" href="styles/uppstilling.css?v=20251210c">
+  <link rel="stylesheet" href="/styles/bundle.css?v=20251215k">
+  <link rel="stylesheet" href="styles/uppstilling.css?v=20251212e">
 </head>
 <body class="authenticated">
   <!-- Navigation component inserted here -->
@@ -65,10 +65,26 @@
           <p>Engar fyrri umferðir.</p>
         </div>
       </div>
+
+      <!-- Candidates Section -->
+      <div class="card" id="candidates-card">
+        <h3 class="card__title">Frambjóðendur</h3>
+        <p class="card__description">Smelltu á frambjóðanda til að skoða upplýsingar og breyta.</p>
+        <div id="candidates-list" class="candidates-grid">
+          <!-- Filled by JS -->
+        </div>
+        <div id="candidates-loading" class="loading-state">
+          <div class="loading-spinner loading-spinner--small"></div>
+          <span>Hleð frambjóðendum...</span>
+        </div>
+        <div id="candidates-error" class="empty-state" style="display: none;">
+          <p>Villa við að sækja frambjóðendur.</p>
+        </div>
+      </div>
     </div>
   </div>
 
-  <script type="module" src="js/uppstilling.js?v=20251212"></script>
+  <script type="module" src="js/uppstilling.js?v=20251212d"></script>
 
   <!-- Initialize Navigation Component -->
   <script type="module">

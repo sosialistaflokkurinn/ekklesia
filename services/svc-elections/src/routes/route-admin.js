@@ -232,6 +232,9 @@ router.post('/elections', requireElectionManager, async (req, res) => {
     eligibility = 'members',
     scheduled_start,
     scheduled_end,
+    // New ranked-choice options
+    ranked_method = 'stv',  // 'stv' or 'simple'
+    quota_type = 'droop',   // 'droop', 'hare', or 'none'
   } = req.body;
 
   // Validate required fields
@@ -295,6 +298,27 @@ router.post('/elections', requireElectionManager, async (req, res) => {
         message: 'Ranked-choice (STV) elections require at least 3 candidates',
       });
     }
+    // Validate ranked_method
+    if (!['stv', 'simple'].includes(ranked_method)) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'ranked_method must be stv or simple',
+      });
+    }
+    // Validate quota_type
+    if (!['droop', 'hare', 'none'].includes(quota_type)) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'quota_type must be droop, hare, or none',
+      });
+    }
+    // Simple method should use quota_type 'none'
+    if (ranked_method === 'simple' && quota_type !== 'none') {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Simple ranked method should use quota_type: none',
+      });
+    }
   }
 
   // Validate eligibility
@@ -318,6 +342,10 @@ router.post('/elections', requireElectionManager, async (req, res) => {
     effectiveMaxSelections = answers.length; // Can rank all candidates
   }
 
+  // Determine effective ranked options
+  const effectiveRankedMethod = voting_type === 'ranked-choice' ? ranked_method : null;
+  const effectiveQuotaType = voting_type === 'ranked-choice' ? quota_type : null;
+
   try {
     // Insert election
     const result = await pool.query(
@@ -333,9 +361,11 @@ router.post('/elections', requireElectionManager, async (req, res) => {
         eligibility,
         scheduled_start,
         scheduled_end,
+        ranked_method,
+        quota_type,
         created_by,
         status
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'draft')
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'draft')
       RETURNING *
     `,
       [
@@ -349,6 +379,8 @@ router.post('/elections', requireElectionManager, async (req, res) => {
         eligibility,
         scheduled_start || null,
         scheduled_end || null,
+        effectiveRankedMethod,
+        effectiveQuotaType,
         req.user.uid,
       ]
     );
@@ -696,13 +728,14 @@ router.post('/elections/:id/open', requireElectionManager, async (req, res) => {
     const startDateTime = voting_starts_at || scheduled_start || null;
     const endDateTime = voting_ends_at || scheduled_end || null;
 
-    // Update status to published, set published_at, and optionally set schedule
+    // Update status to published, set published_at, and set schedule
+    // If no start date provided, use NOW() so the schedule display shows when election was opened
     const result = await pool.query(
       `
       UPDATE elections.elections
       SET status = 'published',
           published_at = NOW(),
-          scheduled_start = COALESCE($3, scheduled_start),
+          scheduled_start = COALESCE($3, scheduled_start, NOW()),
           scheduled_end = COALESCE($4, scheduled_end),
           updated_by = $1
       WHERE id = $2
@@ -778,11 +811,15 @@ router.post('/elections/:id/close', requireElectionManager, async (req, res) => 
       });
     }
 
-    // Update status to closed and set closed_at
+    // Update status to closed, set closed_at, and set scheduled_end if not already set
+    // This ensures the schedule display shows when the election was actually closed
     const result = await pool.query(
       `
       UPDATE elections.elections
-      SET status = 'closed', closed_at = NOW(), updated_by = $1
+      SET status = 'closed',
+          closed_at = NOW(),
+          scheduled_end = COALESCE(scheduled_end, NOW()),
+          updated_by = $1
       WHERE id = $2
       RETURNING *
     `,

@@ -13,9 +13,54 @@ import { initAuthenticatedPage } from '../../js/page-init.js';
 import { debug } from '../../js/utils/util-debug.js';
 import { R } from '../i18n/strings-loader.js';
 import { getElections } from '../../js/api/api-elections.js';
-import { escapeHTML } from '../../js/utils/util-format.js';
+import { escapeHTML, formatDateIcelandic } from '../../js/utils/util-format.js';
 import { createButton } from '../../js/components/ui-button.js';
 import { setTextContentOptional, showElement, hideElement } from '../../ui/dom.js';
+
+// ============================================================================
+// LOCAL STORAGE CACHE - Persistent (no PII - election metadata only)
+// ============================================================================
+const CACHE_KEY = 'elections_list_cache';
+const CACHE_MAX_AGE_MS = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * Get cached elections from localStorage
+ * Safe to use localStorage - only election names/dates, no voter PII.
+ * @returns {Object|null} { data, isStale } or null if no cache
+ */
+function getCache() {
+  try {
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (!cached) return null;
+
+    const { data, timestamp } = JSON.parse(cached);
+    const age = Date.now() - timestamp;
+
+    return {
+      data,
+      isStale: age > CACHE_MAX_AGE_MS
+    };
+  } catch (e) {
+    debug.warn('[Cache] Failed to read cache:', e);
+    return null;
+  }
+}
+
+/**
+ * Save elections to localStorage cache
+ * @param {Array} data - Elections array to cache
+ */
+function setCache(data) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({
+      data,
+      timestamp: Date.now()
+    }));
+    debug.log('[Cache] Elections cached:', data.length);
+  } catch (e) {
+    debug.warn('[Cache] Failed to write cache:', e);
+  }
+}
 
 // State
 let currentFilter = 'active';
@@ -31,12 +76,23 @@ let retryButton = null;
 
 /**
  * Initialize elections list page
+ * Uses localStorage cache for instant display on repeat visits
  */
 async function init() {
   try {
+    // Check for cached data first - show immediately
+    const cached = getCache();
+
+    if (cached?.data) {
+      debug.log('[Cache] Showing cached elections immediately');
+      allElections = cached.data;
+      updateElectionCounts(allElections);
+      displayElections(allElections);
+    }
+
     // Load i18n strings
     await R.load('is');
-    
+
     // Translate elements with data-i18n attributes
     R.translatePage();
 
@@ -62,8 +118,18 @@ async function init() {
     // Setup filter buttons and retry button
     setupFilters();
 
-    // Load elections
-    await loadElections();
+    // If we have cached data, decide whether to refresh
+    if (cached?.data) {
+      if (cached.isStale) {
+        debug.log('[Cache] Cache is stale, refreshing in background');
+        loadElections(true).catch(err => {
+          debug.warn('[Cache] Background refresh failed:', err);
+        });
+      }
+    } else {
+      // No cache - load normally with loading spinner
+      await loadElections();
+    }
 
   } catch (error) {
     // Handle auth redirect
@@ -116,35 +182,49 @@ function setupFilters() {
 }
 
 /**
- * Load elections from API (or mock)
+ * Update election counts in filter badges
+ * @param {Array} elections - Elections array
  */
-async function loadElections() {
+function updateElectionCounts(elections) {
+  electionCounts = {
+    active: elections.filter(e => e.status === 'active').length,
+    upcoming: elections.filter(e => e.status === 'upcoming').length,
+    closed: elections.filter(e => e.status === 'closed').length
+  };
+
+  // Update filter count badges
+  document.getElementById('count-active').textContent = electionCounts.active;
+  document.getElementById('count-upcoming').textContent = electionCounts.upcoming;
+  document.getElementById('count-closed').textContent = electionCounts.closed;
+}
+
+/**
+ * Load elections from API (or mock)
+ * @param {boolean} backgroundRefresh - If true, don't show loading spinner
+ */
+async function loadElections(backgroundRefresh = false) {
   try {
-    showLoading();
+    if (!backgroundRefresh) {
+      showLoading();
+    }
 
     // Fetch elections (API layer normalizes status: published → active)
     allElections = await getElections();
 
-    // Calculate counts by status
-    electionCounts = {
-      active: allElections.filter(e => e.status === 'active').length,
-      upcoming: allElections.filter(e => e.status === 'upcoming').length,
-      closed: allElections.filter(e => e.status === 'closed').length
-    };
+    // Cache the elections for future visits
+    setCache(allElections);
 
-    // Update filter count badges
-    document.getElementById('count-active').textContent = electionCounts.active;
-    document.getElementById('count-upcoming').textContent = electionCounts.upcoming;
-    document.getElementById('count-closed').textContent = electionCounts.closed;
-
-    // Display elections
+    // Update counts and display
+    updateElectionCounts(allElections);
     displayElections(allElections);
 
     hideLoading();
 
   } catch (error) {
     debug.error('Error loading elections:', error);
-    showError(R.string.error_load_elections);
+    if (!backgroundRefresh) {
+      showError(R.string.error_load_elections);
+    }
   }
 }
 
@@ -210,7 +290,7 @@ function createElectionCard(election) {
     <p class="elections__card-question">${escapeHTML(election.question)}</p>
     ${votedHTML}
     <div class="elections__card-footer">
-      <span class="elections__card-date">${formatDate(election.voting_starts_at || election.scheduled_start)}</span>
+      <span class="elections__card-date">${formatDateIcelandic(election.voting_starts_at || election.scheduled_start)}</span>
       <span class="elections__card-cta">${R.string.election_card_cta}</span>
     </div>
   `;
@@ -265,21 +345,6 @@ function showEmpty() {
  */
 function hideEmpty() {
   document.getElementById('elections-empty').classList.add('u-hidden');
-}
-
-/**
- * Utility: Format date for display
- */
-function formatDate(dateString) {
-  if (!dateString) return '';
-  const date = new Date(dateString);
-  return date.toLocaleDateString('is-IS', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
 }
 
 // Initialize when DOM is ready

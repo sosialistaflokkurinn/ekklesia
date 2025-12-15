@@ -68,6 +68,7 @@
   <string name="membership_title">Félagastaða</string>
   <string name="membership_loading">Hleð inn...</string>
   <string name="membership_active">✓ Virk félagsaðild</string>
+  <string name="membership_unpaid">⚠ Ógreidd félagsgjöld</string>
   <string name="membership_inactive">✗ Óvirk félagsaðild</string>
   <string name="membership_not_verified">Óstaðfest</string>
   <string name="membership_verifying">Kannar félagsaðild...</string>
@@ -133,6 +134,12 @@
   <string name="label_groupable">Má bæta í hópa</string>
   <string name="label_groupable_description">Leyfir flokknum að bæta þér í vinnuhópa og póstlista</string>
   <string name="profile_preferences_saved">Stillingar vistaðar</string>
+  <string name="section_additional_info">Aðrar upplýsingar</string>
+  <string name="section_membership_details">Félagsupplýsingar</string>
+  <string name="label_cell">Svæði</string>
+  <string name="label_union">Stéttarfélag</string>
+  <string name="label_title">Starfsheiti</string>
+  <string name="label_housing">Húsnæðisaðstæður</string>
   <string name="events_title">Viðburðir</string>
   <string name="events_subtitle">Fundir og viðburðir flokksins</string>
   <string name="events_tab_upcoming">Framundan</string>

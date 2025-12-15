@@ -630,3 +630,173 @@ docs = db.collection('lookup_postal_codes').where('code', '==', 101).stream()
 3. Get postal_code_id from `lookup_postal_codes`
 4. Get cells from `get_cells_by_postal_code`
 5. Update Firestore with PATCH (see Update Document section)
+
+---
+
+## Node.js Firebase Admin Scripts
+
+For complex queries and batch operations, use Node.js scripts with Firebase Admin SDK.
+
+### Setup Script Template
+```javascript
+// tmp/my-script.js
+import admin from "firebase-admin";
+
+admin.initializeApp({ projectId: "ekklesia-prod-10-2025" });
+const db = admin.firestore();
+
+async function main() {
+  // Your code here
+}
+
+main()
+  .then(() => process.exit(0))
+  .catch(err => { console.error(err); process.exit(1); });
+```
+
+### Run Script
+```bash
+cd /home/gudro/Development/projects/ekklesia/tmp && node my-script.js
+```
+
+### Search Members by Name
+```javascript
+const snapshot = await db.collection("members").get();
+
+const nameLower = "jón jónsson".toLowerCase();
+const parts = nameLower.split(" ");
+const firstName = parts[0];
+const lastName = parts[parts.length - 1];
+
+snapshot.forEach(doc => {
+  const data = doc.data();
+  const memberName = (data.profile?.name || "").toLowerCase();
+
+  if (memberName.includes(firstName) && memberName.includes(lastName)) {
+    console.log("Nafn:", data.profile?.name);
+    console.log("Kennitala:", doc.id);
+    console.log("Django ID:", data.metadata?.django_id);
+    console.log("Email:", data.profile?.email);
+    console.log("Sími:", data.profile?.phone);
+  }
+});
+```
+
+### Update Document
+```javascript
+const docRef = db.collection("nomination-candidates").doc("jon-jonsson");
+
+await docRef.update({
+  member_info: {
+    django_id: 1234,
+    kennitala: "0101011234",
+    phone: "1234567",
+    email: "jon@example.com"
+  },
+  updated_at: admin.firestore.FieldValue.serverTimestamp()
+});
+```
+
+### Batch Updates
+```javascript
+const updates = [
+  { docId: "jon-jonsson", member_info: { django_id: 1234, ... } },
+  { docId: "anna-sigurdardottir", member_info: { django_id: 5678, ... } }
+];
+
+for (const update of updates) {
+  const docRef = db.collection("nomination-candidates").doc(update.docId);
+  await docRef.update({
+    member_info: update.member_info,
+    updated_at: admin.firestore.FieldValue.serverTimestamp()
+  });
+}
+```
+
+---
+
+## Nomination Candidates Collection
+
+### Schema
+```
+nomination-candidates/{slug}
+├── name                    # Full name
+├── bio                     # Biography text
+├── experience              # Work/political experience
+├── focus_areas[]           # Array of focus areas
+├── other                   # Additional notes
+├── photo_url               # Profile photo URL
+├── member_info
+│   ├── django_id           # Django member ID
+│   ├── kennitala           # SSN (document key)
+│   ├── email               # Contact email
+│   ├── phone               # Contact phone
+│   └── firebase_uid        # Firebase Auth UID (if logged in)
+├── edit_history[]          # Array of {field, old_value, new_value, edited_by, timestamp}
+├── created_at              # Timestamp
+└── updated_at              # Timestamp
+```
+
+### Document IDs
+Document IDs are URL-safe slugs, not kennitala:
+- `jon-jonsson`
+- `anna-sigurdardottir`
+- `olafur-olafsson`
+- `gudrun-magnusdottir`
+
+### List All Candidates
+```javascript
+const snapshot = await db.collection("nomination-candidates").get();
+
+snapshot.forEach(doc => {
+  const data = doc.data();
+  console.log("ID:", doc.id);
+  console.log("Nafn:", data.name);
+  console.log("member_info:", JSON.stringify(data.member_info || "ekki til"));
+});
+```
+
+### Security Rules
+```
+match /nomination-candidates/{candidateId} {
+  allow read: if isAuthenticated();
+  allow update: if isAuthenticated();
+  allow create, delete: if false;
+}
+```
+
+### Link Candidate to Member
+To find a candidate's member record and link them:
+
+```javascript
+// 1. Search for candidate in members collection
+const snapshot = await db.collection("members").get();
+const candidateName = "Jón Jónsson";
+const nameLower = candidateName.toLowerCase();
+const parts = nameLower.split(" ");
+const firstName = parts[0];
+const lastName = parts[parts.length - 1];
+
+let memberInfo = null;
+snapshot.forEach(doc => {
+  const data = doc.data();
+  const memberName = (data.profile?.name || "").toLowerCase();
+
+  if (memberName.includes(firstName) && memberName.includes(lastName)) {
+    memberInfo = {
+      django_id: data.metadata?.django_id,
+      kennitala: doc.id,
+      email: data.profile?.email || "",
+      phone: data.profile?.phone || ""
+    };
+  }
+});
+
+// 2. Update candidate with member_info
+if (memberInfo) {
+  await db.collection("nomination-candidates").doc("jon-jonsson").update({
+    member_info: memberInfo,
+    updated_at: admin.firestore.FieldValue.serverTimestamp()
+  });
+}
+```

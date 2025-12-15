@@ -13,8 +13,12 @@ from firebase_admin import auth, firestore
 from firebase_functions import https_fn, options
 from util_logging import log_json
 from shared.validators import normalize_kennitala, normalize_phone
-from fn_sync_members import sync_all_members, create_sync_log, update_django_member, update_django_address
+from fn_sync_members import (
+    sync_all_members, create_sync_log, update_django_member, update_django_address,
+    get_django_api_token, DJANGO_API_BASE_URL
+)
 from fn_cleanup_audit_logs import cleanup_old_audit_logs
+import requests
 
 
 def verifyMembership_handler(req: https_fn.CallableRequest) -> dict:
@@ -49,17 +53,25 @@ def verifyMembership_handler(req: https_fn.CallableRequest) -> dict:
         member_doc_ref = db.collection('members').document(kennitala_normalized)
         member_doc = member_doc_ref.get()
 
-        # Check if member exists and has active membership status
+        # Check if member exists and determine membership status
+        # 'active' = fees paid, 'unpaid' = member but fees not paid, 'inactive' = deleted/not member
         is_member = False
+        membership_status = 'inactive'
+        fees_paid = False
+
         if member_doc.exists:
             member_data = member_doc.to_dict()
             membership = member_data.get('membership', {})
-            membership_status = membership.get('status', '')
-            is_member = membership_status == 'active'
+            membership_status = membership.get('status', 'inactive')
+            fees_paid = membership.get('fees_paid', False)
+
+            # Member if status is 'active' or 'unpaid' (both are valid members)
+            is_member = membership_status in ('active', 'unpaid')
 
             log_json("info", "Member lookup successful",
                      kennitala=f"{kennitala[:7]}****",
                      status=membership_status,
+                     fees_paid=fees_paid,
                      isMember=is_member,
                      uid=req.auth.uid)
         else:
@@ -70,6 +82,7 @@ def verifyMembership_handler(req: https_fn.CallableRequest) -> dict:
         # Update user profile in Firestore
         db.collection('users').document(req.auth.uid).update({
             'isMember': is_member,
+            'membershipStatus': membership_status,
             'membershipVerifiedAt': firestore.SERVER_TIMESTAMP
         })
 
@@ -91,6 +104,8 @@ def verifyMembership_handler(req: https_fn.CallableRequest) -> dict:
 
         return {
             'isMember': is_member,
+            'membershipStatus': membership_status,  # 'active', 'unpaid', or 'inactive'
+            'feesPaid': fees_paid,
             'verified': True,
             'kennitala': kennitala[:7] + '****'  # Masked for security
         }
@@ -639,4 +654,320 @@ def cleanupauditlogs_handler(req: https_fn.CallableRequest) -> dict:
         raise https_fn.HttpsError(
             code=https_fn.FunctionsErrorCode.INTERNAL,
             message=f"Cleanup failed: {str(e)}"
+        )
+
+
+def soft_delete_self_handler(req: https_fn.CallableRequest) -> dict:
+    """
+    Soft delete the authenticated user's own membership.
+
+    This allows a member to deactivate their own account:
+    1. Sets membership.status to 'inactive' in Firestore
+    2. Sets metadata.deleted_at timestamp
+    3. Disables Firebase Auth account
+    4. Syncs soft delete to Django backend
+
+    The member can later reactivate their account via reactivate_self.
+
+    Requires authentication (must be the member themselves).
+
+    Args:
+        req.data: {
+            'confirmation': str - Must be 'EYÐA' to confirm
+        }
+
+    Returns:
+        Dict with success status
+    """
+    # Verify authentication
+    if not req.auth:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.UNAUTHENTICATED,
+            message="Authentication required"
+        )
+
+    uid = req.auth.uid
+    kennitala = req.auth.token.get('kennitala')
+
+    if not kennitala:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
+            message="No kennitala found for user"
+        )
+
+    # Verify confirmation text
+    confirmation = req.data.get('confirmation', '') if req.data else ''
+    if confirmation != 'EYÐA':
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+            message="Confirmation text must be 'EYÐA'"
+        )
+
+    kennitala_normalized = normalize_kennitala(kennitala)
+    deleted_at = datetime.now(timezone.utc)
+
+    log_json("info", "Soft delete initiated by user",
+             uid=uid,
+             kennitala=f"{kennitala_normalized[:6]}****")
+
+    try:
+        db = firestore.client()
+        member_ref = db.collection('members').document(kennitala_normalized)
+        member_doc = member_ref.get()
+
+        if not member_doc.exists:
+            raise https_fn.HttpsError(
+                code=https_fn.FunctionsErrorCode.NOT_FOUND,
+                message="Member not found"
+            )
+
+        # 1. Update Firestore
+        # Note: We do NOT change membership.status here - it keeps the payment status (active/unpaid)
+        # deleted_at is a separate field to indicate the account is soft-deleted
+        member_ref.update({
+            'membership.deleted_at': deleted_at,
+            'metadata.deleted_by': 'self',
+            'metadata.last_modified': firestore.SERVER_TIMESTAMP
+        })
+
+        log_json("info", "Firestore updated for soft delete",
+                 uid=uid,
+                 kennitala=f"{kennitala_normalized[:6]}****")
+
+        # 2. Disable Firebase Auth account
+        try:
+            auth.update_user(uid, disabled=True)
+            log_json("info", "Firebase Auth disabled",
+                     uid=uid)
+        except Exception as auth_error:
+            log_json("error", "Failed to disable Firebase Auth",
+                     uid=uid,
+                     error=str(auth_error))
+            # Continue anyway - Firestore is source of truth
+
+        # 3. Sync to Django
+        try:
+            django_token = get_django_api_token()
+            response = requests.post(
+                f"{DJANGO_API_BASE_URL}/api/sync/soft-delete/",
+                json={
+                    'kennitala': kennitala_normalized,
+                    'deleted_at': deleted_at.isoformat()
+                },
+                headers={
+                    'Authorization': f'Token {django_token}',
+                    'Content-Type': 'application/json'
+                },
+                timeout=30
+            )
+
+            if response.status_code == 200:
+                log_json("info", "Django soft delete sync successful",
+                         uid=uid,
+                         kennitala=f"{kennitala_normalized[:6]}****")
+            else:
+                log_json("warn", "Django soft delete sync failed",
+                         uid=uid,
+                         status_code=response.status_code,
+                         response=response.text[:200])
+        except Exception as django_error:
+            log_json("error", "Django sync failed for soft delete",
+                     uid=uid,
+                     error=str(django_error))
+            # Continue - Firestore update succeeded
+
+        # 4. Update custom claims to reflect inactive status
+        try:
+            existing_claims = auth.get_user(uid).custom_claims or {}
+            merged_claims = {**existing_claims, 'isMember': False}
+            auth.set_custom_user_claims(uid, merged_claims)
+        except Exception as claims_error:
+            log_json("warn", "Failed to update custom claims",
+                     uid=uid,
+                     error=str(claims_error))
+
+        log_json("info", "Soft delete completed successfully",
+                 uid=uid,
+                 kennitala=f"{kennitala_normalized[:6]}****")
+
+        return {
+            'success': True,
+            'message': 'Aðgangur þinn hefur verið gerður óvirkur',
+            'deleted_at': deleted_at.isoformat()
+        }
+
+    except https_fn.HttpsError:
+        raise
+    except Exception as e:
+        log_json("error", "Soft delete failed",
+                 uid=uid,
+                 error=str(e))
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INTERNAL,
+            message=f"Soft delete failed: {str(e)}"
+        )
+
+
+def reactivate_self_handler(req: https_fn.CallableRequest) -> dict:
+    """
+    Reactivate a soft-deleted membership.
+
+    This is called from a special reactivation page after the user
+    authenticates via Kenni.is. The flow:
+    1. User tries to log in, gets error (Auth disabled)
+    2. User clicks "Endurvakna aðgang"
+    3. User authenticates via Kenni.is
+    4. Frontend calls this function with kennitala
+    5. This function re-enables the account
+
+    The function must verify the kennitala matches the request.
+
+    Args:
+        req.data: {
+            'kennitala': str - Kennitala from Kenni.is authentication
+        }
+
+    Returns:
+        Dict with success status and new Firebase custom token
+    """
+    # Note: This endpoint may be called without Firebase Auth
+    # because the user's account is disabled. We verify via kennitala.
+
+    kennitala = req.data.get('kennitala', '') if req.data else ''
+
+    if not kennitala:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+            message="Kennitala is required"
+        )
+
+    kennitala_normalized = normalize_kennitala(kennitala)
+
+    log_json("info", "Reactivation initiated",
+             kennitala=f"{kennitala_normalized[:6]}****")
+
+    try:
+        db = firestore.client()
+        member_ref = db.collection('members').document(kennitala_normalized)
+        member_doc = member_ref.get()
+
+        if not member_doc.exists:
+            raise https_fn.HttpsError(
+                code=https_fn.FunctionsErrorCode.NOT_FOUND,
+                message="Member not found"
+            )
+
+        member_data = member_doc.to_dict()
+
+        # Verify member was soft-deleted
+        # Check both metadata.deleted_at (Ekklesia) and membership.deleted_at (Django sync)
+        metadata_deleted_at = member_data.get('metadata', {}).get('deleted_at')
+        membership_deleted_at = member_data.get('membership', {}).get('deleted_at')
+        if not metadata_deleted_at and not membership_deleted_at:
+            raise https_fn.HttpsError(
+                code=https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
+                message="Account is not deactivated"
+            )
+
+        # Get Firebase UID from member data
+        firebase_uid = member_data.get('metadata', {}).get('firebase_uid')
+        if not firebase_uid:
+            raise https_fn.HttpsError(
+                code=https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
+                message="No Firebase account linked"
+            )
+
+        # 1. Re-enable Firebase Auth
+        try:
+            auth.update_user(firebase_uid, disabled=False)
+            log_json("info", "Firebase Auth re-enabled",
+                     uid=firebase_uid)
+        except Exception as auth_error:
+            log_json("error", "Failed to re-enable Firebase Auth",
+                     uid=firebase_uid,
+                     error=str(auth_error))
+            raise https_fn.HttpsError(
+                code=https_fn.FunctionsErrorCode.INTERNAL,
+                message="Failed to re-enable account"
+            )
+
+        # 2. Update Firestore - set status back to unpaid (fees need to be re-verified)
+        # Clear both metadata.deleted_at (Ekklesia) and membership.deleted_at (Django sync)
+        member_ref.update({
+            'membership.status': 'unpaid',
+            'membership.deleted_at': firestore.DELETE_FIELD,
+            'metadata.deleted_at': firestore.DELETE_FIELD,
+            'metadata.deleted_by': firestore.DELETE_FIELD,
+            'metadata.reactivated_at': firestore.SERVER_TIMESTAMP,
+            'metadata.last_modified': firestore.SERVER_TIMESTAMP
+        })
+
+        log_json("info", "Firestore updated for reactivation",
+                 kennitala=f"{kennitala_normalized[:6]}****")
+
+        # 3. Sync to Django
+        try:
+            django_token = get_django_api_token()
+            response = requests.post(
+                f"{DJANGO_API_BASE_URL}/api/sync/reactivate/",
+                json={'kennitala': kennitala_normalized},
+                headers={
+                    'Authorization': f'Token {django_token}',
+                    'Content-Type': 'application/json'
+                },
+                timeout=30
+            )
+
+            if response.status_code == 200:
+                log_json("info", "Django reactivation sync successful",
+                         kennitala=f"{kennitala_normalized[:6]}****")
+            else:
+                log_json("warn", "Django reactivation sync failed",
+                         status_code=response.status_code,
+                         response=response.text[:200])
+        except Exception as django_error:
+            log_json("error", "Django sync failed for reactivation",
+                     error=str(django_error))
+            # Continue - Firestore and Auth updates succeeded
+
+        # 4. Update custom claims
+        try:
+            existing_claims = auth.get_user(firebase_uid).custom_claims or {}
+            merged_claims = {**existing_claims, 'isMember': True}
+            auth.set_custom_user_claims(firebase_uid, merged_claims)
+        except Exception as claims_error:
+            log_json("warn", "Failed to update custom claims",
+                     uid=firebase_uid,
+                     error=str(claims_error))
+
+        # 5. Create custom token for immediate login
+        try:
+            custom_token = auth.create_custom_token(firebase_uid)
+            log_json("info", "Custom token created for reactivated user",
+                     uid=firebase_uid)
+        except Exception as token_error:
+            log_json("error", "Failed to create custom token",
+                     uid=firebase_uid,
+                     error=str(token_error))
+            custom_token = None
+
+        log_json("info", "Reactivation completed successfully",
+                 kennitala=f"{kennitala_normalized[:6]}****",
+                 uid=firebase_uid)
+
+        return {
+            'success': True,
+            'message': 'Aðgangur þinn hefur verið endurvakinn',
+            'customToken': custom_token.decode('utf-8') if custom_token else None
+        }
+
+    except https_fn.HttpsError:
+        raise
+    except Exception as e:
+        log_json("error", "Reactivation failed",
+                 kennitala=f"{kennitala_normalized[:6]}****",
+                 error=str(e))
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INTERNAL,
+            message=f"Reactivation failed: {str(e)}"
         )

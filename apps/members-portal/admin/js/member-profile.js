@@ -17,6 +17,8 @@ import { requireAdmin } from '../../js/rbac.js';
 import { PhoneManager } from '../../js/profile/phone-manager.js';
 import { AddressManager } from '../../js/profile/address-manager.js';
 import { migrateOldPhoneFields, migrateOldAddressFields } from '../../js/profile/migration.js';
+import { getUnions, getJobTitles, getHousingSituationLabel } from '../../js/api/api-lookups.js';
+import { formatDateOnlyIcelandic, formatDateIcelandic, formatMembershipDuration } from '../../js/utils/util-format.js';
 
 // Initialize Firebase
 const auth = getFirebaseAuth();
@@ -325,32 +327,54 @@ async function renderProfile() {
   // Membership info (readonly)
   const membership = memberData.membership || {};
   const statusBadge = document.getElementById('status-badge');
-  
-  // Check both is_active (boolean) and status (string "active"/"inactive")
-  let isActive = false;
-  if (membership.is_active !== undefined) {
-    isActive = membership.is_active;
-  } else if (membership.status !== undefined) {
-    isActive = membership.status === 'active';
+
+  // Get membership status: 'active', 'unpaid', or 'inactive'
+  let membershipStatus = 'inactive';
+  if (membership.status !== undefined) {
+    membershipStatus = membership.status;
+  } else if (membership.is_active !== undefined) {
+    membershipStatus = membership.is_active ? 'active' : 'inactive';
   } else if (memberData.active !== undefined) {
-    isActive = memberData.active;
+    membershipStatus = memberData.active ? 'active' : 'inactive';
   }
-  
-  if (isActive) {
-    statusBadge.textContent = 'Virkur';
-    statusBadge.className = 'admin-badge admin-badge--success';
+
+  // Display status with appropriate styling
+  // Check for soft-delete first - takes priority over other statuses
+  if (membership.deleted_at) {
+    const deletedDate = membership.deleted_at.toDate ? membership.deleted_at.toDate() : new Date(membership.deleted_at);
+    const formattedDate = formatDateOnlyIcelandic(deletedDate);
+    statusBadge.textContent = `Eytt ${formattedDate}`;
+    statusBadge.className = 'admin-badge admin-badge--error';
   } else {
-    statusBadge.textContent = 'Óvirkur';
-    statusBadge.className = 'admin-badge admin-badge--inactive';
+    switch (membershipStatus) {
+      case 'active':
+        statusBadge.textContent = 'Virkur';
+        statusBadge.className = 'admin-badge admin-badge--success';
+        break;
+      case 'unpaid':
+        statusBadge.textContent = 'Ógreitt';
+        statusBadge.className = 'admin-badge admin-badge--warning';
+        break;
+      case 'inactive':
+      default:
+        statusBadge.textContent = 'Óvirkur';
+        statusBadge.className = 'admin-badge admin-badge--inactive';
+        break;
+    }
   }
 
   // Format joined date
   const joinedDate = membership.date_joined || membership.joined_date || memberData.joined_date;
   if (joinedDate) {
     const joined = joinedDate.toDate ? joinedDate.toDate() : new Date(joinedDate);
-    document.getElementById('value-joined').textContent = joined.toLocaleDateString('is-IS');
+    document.getElementById('value-joined').textContent = formatDateOnlyIcelandic(joined);
+
+    // Calculate membership duration
+    const durationText = formatMembershipDuration(joined);
+    document.getElementById('value-member-since').textContent = durationText;
   } else {
     document.getElementById('value-joined').textContent = '-';
+    document.getElementById('value-member-since').textContent = '-';
   }
   
   const metadata = memberData.metadata || {};
@@ -359,7 +383,7 @@ async function renderProfile() {
   if (metadata.synced_at || memberData.synced_at) {
     const syncedAt = metadata.synced_at || memberData.synced_at;
     const syncDate = syncedAt.toDate ? syncedAt.toDate() : new Date(syncedAt);
-    document.getElementById('value-synced-at').textContent = syncDate.toLocaleString('is-IS');
+    document.getElementById('value-synced-at').textContent = formatDateIcelandic(syncDate);
   } else {
     document.getElementById('value-synced-at').textContent = '-';
   }
@@ -398,6 +422,9 @@ async function renderProfile() {
     groupableInput.checked = profile.groupable !== false;
   }
 
+  // Membership details: cell, union, title, housing
+  await renderMembershipDetails();
+
   // Setup field listeners for auto-save
   setupFieldListeners();
 
@@ -407,7 +434,7 @@ async function renderProfile() {
       searchPlaceholder: R.string.search_country,
       noResultsText: R.string.no_results
     });
-    
+
     // Set gender value after SearchableSelect has initialized
     if (genderValue !== '') {
       const genderSelect = document.getElementById('input-gender');
@@ -416,6 +443,85 @@ async function renderProfile() {
       genderSelect.dispatchEvent(new Event('change', { bubbles: true }));
     }
   }, SEARCHABLE_SELECT_INIT_DELAY);
+}
+
+/**
+ * Render membership details: cell, union, job title, housing situation
+ */
+async function renderMembershipDetails() {
+  const profile = memberData.profile || {};
+  const membership = memberData.membership || {};
+
+  // Cell/Svæði (readonly display)
+  const cellValue = document.getElementById('value-cell');
+  if (cellValue) {
+    // Cell is stored as a string (svæði name) in Firestore
+    if (membership.cell) {
+      cellValue.textContent = membership.cell;
+    } else {
+      cellValue.textContent = '-';
+    }
+  }
+
+  // Union dropdown - populate and select current value
+  const unionSelect = document.getElementById('input-union');
+  if (unionSelect) {
+    try {
+      const unions = await getUnions();
+      // Clear and repopulate
+      unionSelect.innerHTML = '<option value="">Veldu stéttarfélag...</option>';
+      unions.forEach(union => {
+        const option = document.createElement('option');
+        option.value = union.id;
+        option.textContent = union.name;
+        unionSelect.appendChild(option);
+      });
+
+      // Select current union if set
+      const currentUnions = membership.unions || [];
+      if (currentUnions.length > 0) {
+        // Use first union (most members have one)
+        const firstUnion = currentUnions[0];
+        unionSelect.value = firstUnion.id || firstUnion;
+      }
+    } catch (error) {
+      debug.error('Failed to load unions:', error);
+    }
+  }
+
+  // Job Title dropdown - populate and select current value
+  const titleSelect = document.getElementById('input-title');
+  if (titleSelect) {
+    try {
+      const titles = await getJobTitles();
+      // Clear and repopulate
+      titleSelect.innerHTML = '<option value="">Veldu starfsheiti...</option>';
+      titles.forEach(title => {
+        const option = document.createElement('option');
+        option.value = title.id;
+        option.textContent = title.name;
+        titleSelect.appendChild(option);
+      });
+
+      // Select current title if set
+      const currentTitles = membership.titles || [];
+      if (currentTitles.length > 0) {
+        // Use first title
+        const firstTitle = currentTitles[0];
+        titleSelect.value = firstTitle.id || firstTitle;
+      }
+    } catch (error) {
+      debug.error('Failed to load job titles:', error);
+    }
+  }
+
+  // Housing situation - select current value
+  const housingSelect = document.getElementById('input-housing');
+  if (housingSelect && profile.housing_situation !== undefined) {
+    housingSelect.value = profile.housing_situation;
+  }
+
+  debug.log('✅ Membership details rendered');
 }
 
 /**
@@ -514,6 +620,40 @@ function setupFieldListeners() {
       showToast(R.string.profile_preferences_saved || 'Stillingar vistaðar', 'success');
     });
   }
+
+  // Union (immediate save on change)
+  const unionInput = document.getElementById('input-union');
+  const unionStatus = document.getElementById('status-union');
+  if (unionInput) {
+    unionInput.addEventListener('change', async (e) => {
+      const unionId = e.target.value ? parseInt(e.target.value) : null;
+      const unionName = e.target.selectedOptions[0]?.textContent || '';
+      const unionValue = unionId ? [{ id: unionId, name: unionName }] : [];
+      await saveMembershipField('unions', unionValue, unionStatus);
+    });
+  }
+
+  // Job Title (immediate save on change)
+  const titleInput = document.getElementById('input-title');
+  const titleStatus = document.getElementById('status-title');
+  if (titleInput) {
+    titleInput.addEventListener('change', async (e) => {
+      const titleId = e.target.value ? parseInt(e.target.value) : null;
+      const titleName = e.target.selectedOptions[0]?.textContent || '';
+      const titleValue = titleId ? [{ id: titleId, name: titleName }] : [];
+      await saveMembershipField('titles', titleValue, titleStatus);
+    });
+  }
+
+  // Housing Situation (immediate save on change)
+  const housingInput = document.getElementById('input-housing');
+  const housingStatus = document.getElementById('status-housing');
+  if (housingInput) {
+    housingInput.addEventListener('change', async (e) => {
+      const housingValue = e.target.value !== '' ? parseInt(e.target.value) : null;
+      await saveField('housing_situation', housingValue, housingStatus);
+    });
+  }
 }
 
 /**
@@ -583,6 +723,45 @@ async function saveField(fieldName, value, statusElement) {
     debug.error(`❌ Error saving ${fieldName}:`, error);
     showStatus(statusElement, 'error', { baseClass: 'profile-field__status' });
     showToast(R.string.save_error, 'error');
+  }
+}
+
+/**
+ * Save a membership field to Firestore (membership.* path)
+ *
+ * @param {string} fieldName - Field name to save (e.g., 'unions', 'titles', 'cell')
+ * @param {any} value - Value to save
+ * @param {HTMLElement} statusElement - Status indicator element
+ * @returns {Promise<void>}
+ */
+async function saveMembershipField(fieldName, value, statusElement) {
+  try {
+    debug.log(`💾 Saving membership.${fieldName}:`, value);
+
+    showStatus(statusElement, 'loading', { baseClass: 'profile-field__status' });
+
+    const kennitalaKey = currentKennitala.replace(/-/g, '');
+    const memberDocRef = doc(db, 'members', kennitalaKey);
+
+    // Save to membership.* path in Firestore
+    await updateDoc(memberDocRef, {
+      [`membership.${fieldName}`]: value,
+      updated_at: new Date()
+    });
+
+    // Update local state
+    if (!memberData.membership) memberData.membership = {};
+    memberData.membership[fieldName] = value;
+
+    showStatus(statusElement, 'success', { baseClass: 'profile-field__status' });
+    showToast(R.string.saved || 'Vistað', 'success');
+
+    debug.log(`✅ membership.${fieldName} saved`);
+
+  } catch (error) {
+    debug.error(`❌ Error saving membership.${fieldName}:`, error);
+    showStatus(statusElement, 'error', { baseClass: 'profile-field__status' });
+    showToast(R.string.save_error || 'Villa við vistun', 'error');
   }
 }
 

@@ -9,15 +9,158 @@
 import { initSession } from '../../session/init.js';
 import { initNavigation } from '../../js/nav-interactions.js';
 import { debug } from '../../js/utils/util-debug.js';
-import { getFirebaseAuth } from '../../firebase/app.js';
+import { getFirebaseAuth, getFirebaseFirestore, collection, query, orderBy, limit, getDocs } from '../../firebase/app.js';
 import { adminStrings } from './i18n/admin-strings-loader.js';
 import { checkAdminAccess, calculateDuration } from './utils/admin-helpers.js';
 import { showToast, showSuccess, showError } from '../../js/components/ui-toast.js';
 import { toggleButtonLoading } from '../../js/components/ui-status.js';
 import { showConfirm } from '../../js/components/ui-modal.js';
+import { el } from '../../js/utils/util-dom.js';
 
-// Initialize Firebase Auth
+// Initialize Firebase
 const auth = getFirebaseAuth();
+const db = getFirebaseFirestore();
+
+// ============================================================================
+// SYNC HISTORY FUNCTIONS
+// ============================================================================
+
+/**
+ * Fetch sync logs from Firestore
+ */
+async function fetchSyncLogs() {
+  const syncLogsRef = collection(db, 'sync_logs');
+  const q = query(syncLogsRef, orderBy('created_at', 'desc'), limit(10));
+  const querySnapshot = await getDocs(q);
+
+  const logs = [];
+  querySnapshot.forEach(doc => {
+    logs.push({
+      id: doc.id,
+      ...doc.data()
+    });
+  });
+
+  return logs;
+}
+
+/**
+ * Show history loading state
+ */
+function showHistoryLoading() {
+  document.getElementById('history-loading').classList.remove('u-hidden');
+  document.getElementById('history-error').classList.add('u-hidden');
+  document.getElementById('history-empty').classList.add('u-hidden');
+  document.getElementById('history-content').classList.add('u-hidden');
+}
+
+/**
+ * Show history error state
+ */
+function showHistoryError(error) {
+  const strings = adminStrings.strings;
+  document.getElementById('history-loading').classList.add('u-hidden');
+  document.getElementById('history-content').classList.add('u-hidden');
+  document.getElementById('history-empty').classList.add('u-hidden');
+  document.getElementById('history-error').classList.remove('u-hidden');
+  document.getElementById('history-error-message').textContent =
+    (strings.error_load_history || 'Villa við að sækja sögu: %s').replace('%s', error.message);
+}
+
+/**
+ * Show history empty state
+ */
+function showHistoryEmpty() {
+  const strings = adminStrings.strings;
+  document.getElementById('history-loading').classList.add('u-hidden');
+  document.getElementById('history-error').classList.add('u-hidden');
+  document.getElementById('history-content').classList.add('u-hidden');
+  document.getElementById('history-empty').classList.remove('u-hidden');
+  document.getElementById('history-empty-message').textContent = strings.history_empty || 'Engin samstillingarsaga';
+}
+
+/**
+ * Show history content
+ */
+function showHistoryContent() {
+  document.getElementById('history-loading').classList.add('u-hidden');
+  document.getElementById('history-error').classList.add('u-hidden');
+  document.getElementById('history-empty').classList.add('u-hidden');
+  document.getElementById('history-content').classList.remove('u-hidden');
+}
+
+/**
+ * Create a table row for a sync log
+ */
+function createHistoryRow(log) {
+  const strings = adminStrings.strings;
+
+  // Format timestamp
+  const timestamp = log.created_at?.toDate?.() || (log.created_at ? new Date(log.created_at) : new Date());
+  const formattedDate = timestamp.toLocaleString('is-IS', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+
+  // Determine status
+  const stats = log.stats || {};
+  const statusText = stats.failed > 0 ? (strings.history_status_failed || 'Mistókst') : (strings.history_status_success || 'Tókst');
+  const statusClass = stats.failed > 0 ? 'status-failed' : 'status-success';
+
+  // Calculate duration
+  const duration = calculateDuration(stats);
+
+  return el('tr', '', {},
+    el('td', '', {}, formattedDate),
+    el('td', '', {}, el('span', `status-badge ${statusClass}`, {}, statusText)),
+    el('td', '', {}, String(stats.total_members || 0)),
+    el('td', '', {}, String(stats.synced || 0)),
+    el('td', '', {}, String(stats.failed || 0)),
+    el('td', '', {}, duration)
+  );
+}
+
+/**
+ * Render sync logs table
+ */
+function renderHistoryTable(logs) {
+  const tbody = document.getElementById('history-tbody');
+  tbody.innerHTML = '';
+
+  if (logs.length === 0) {
+    showHistoryEmpty();
+    return;
+  }
+
+  logs.forEach(log => {
+    const row = createHistoryRow(log);
+    tbody.appendChild(row);
+  });
+
+  showHistoryContent();
+}
+
+/**
+ * Load and display sync history
+ */
+async function loadHistory() {
+  try {
+    showHistoryLoading();
+    const logs = await fetchSyncLogs();
+    renderHistoryTable(logs);
+    debug.log(`✓ Loaded ${logs.length} sync logs`);
+  } catch (error) {
+    debug.error('Failed to load sync history:', error);
+    showHistoryError(error);
+  }
+}
+
+// ============================================================================
+// SYNC TRIGGER FUNCTIONS
+// ============================================================================
 
 /**
  * Call syncmembers Cloud Function
@@ -160,10 +303,7 @@ function showSyncSuccess(result) {
       debug.log('Actions shown');
     }
 
-    const viewHistoryBtn = document.getElementById('view-history-btn');
     const backDashboardBtn = document.getElementById('back-dashboard-btn');
-
-    if (viewHistoryBtn) viewHistoryBtn.textContent = strings.btn_view_history || 'Skoða keyrslusögu';
     if (backDashboardBtn) backDashboardBtn.textContent = strings.btn_back_to_dashboard || 'Aftur í yfirlit';
 
     debug.log('✓ showSyncSuccess completed successfully');
@@ -265,13 +405,25 @@ function setPageText(strings) {
   document.getElementById('stat-failed-label').textContent = strings.stat_failed_label;
   document.getElementById('stat-duration-label').textContent = strings.stat_duration_label;
 
-  // Action buttons
-  document.getElementById('view-history-btn').textContent = strings.btn_view_history;
+  // Action buttons (view history button removed - history is now on same page)
   document.getElementById('back-dashboard-btn').textContent = strings.btn_back_to_dashboard;
 
   // Error card
   document.getElementById('sync-error-title').textContent = strings.sync_failed_title;
   document.getElementById('sync-retry-btn').textContent = strings.btn_retry;
+
+  // History section
+  document.getElementById('history-title').textContent = strings.history_title || 'Keyrslusaga';
+  document.getElementById('history-loading-message').textContent = strings.loading_sync_logs || 'Sæki sögu...';
+  document.getElementById('history-retry-btn').textContent = strings.btn_retry;
+
+  // History table headers
+  document.getElementById('th-date').textContent = strings.history_table_date || 'Dagsetning';
+  document.getElementById('th-status').textContent = strings.history_table_status || 'Staða';
+  document.getElementById('th-total').textContent = strings.history_table_total || 'Samtals';
+  document.getElementById('th-synced').textContent = strings.history_table_synced || 'Samstillt';
+  document.getElementById('th-failed').textContent = strings.history_table_failed || 'Mistókust';
+  document.getElementById('th-duration').textContent = strings.history_table_duration || 'Tímalengd';
 }
 
 /**
@@ -286,15 +438,13 @@ function setupEventListeners() {
     showTriggerCard();
   });
 
-  // View history button
-  document.getElementById('view-history-btn').addEventListener('click', () => {
-    window.location.href = '/admin/sync-history.html';
-  });
-
   // Back to dashboard button
   document.getElementById('back-dashboard-btn').addEventListener('click', () => {
     window.location.href = '/admin/admin.html';
   });
+
+  // History retry button
+  document.getElementById('history-retry-btn').addEventListener('click', loadHistory);
 }
 
 /**
@@ -318,6 +468,9 @@ async function init() {
 
     // 6. Setup event listeners
     setupEventListeners();
+
+    // 7. Load sync history
+    await loadHistory();
 
     debug.log('✓ Sync members page initialized');
 

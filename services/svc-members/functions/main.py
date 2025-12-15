@@ -44,7 +44,9 @@ from membership.functions import (
     verifyMembership_handler,
     syncmembers_handler,
     updatememberprofile_handler,
-    cleanupauditlogs_handler
+    cleanupauditlogs_handler,
+    soft_delete_self_handler,
+    reactivate_self_handler
 )
 
 # Define decorated functions in main.py (required by Firebase Functions SDK)
@@ -72,6 +74,16 @@ def cleanupauditlogs(req: https_fn.CallableRequest) -> dict:
     """Cleanup audit logs - delegates to handler"""
     return cleanupauditlogs_handler(req)
 
+@https_fn.on_call(timeout_sec=30, memory=256, secrets=["django-api-token"])
+def softDeleteSelf(req: https_fn.CallableRequest) -> dict:
+    """User soft-deletes their own membership - delegates to handler"""
+    return soft_delete_self_handler(req)
+
+@https_fn.on_call(timeout_sec=30, memory=256, secrets=["django-api-token"])
+def reactivateSelf(req: https_fn.CallableRequest) -> dict:
+    """User reactivates their soft-deleted membership - delegates to handler"""
+    return reactivate_self_handler(req)
+
 # ==============================================================================
 # AUDIT AND SYNC FUNCTIONS (Epic #116, Epic #159)
 # ==============================================================================
@@ -82,6 +94,9 @@ from fn_get_django_token import get_django_token
 
 # Real-time sync from Django to Firestore (replaces bidirectional_sync and track_member_changes)
 from fn_sync_from_django import sync_from_django
+
+# Sync banned kennitalas from Django to Firestore (shadow ban feature)
+from fn_sync_banned_kennitala import sync_banned_kennitala
 
 # ==============================================================================
 # ADDRESS VALIDATION FUNCTIONS (iceaddr integration)
@@ -180,10 +195,13 @@ __all__ = [
     'syncmembers',
     'updatememberprofile',
     'cleanupauditlogs',
+    'softDeleteSelf',
+    'reactivateSelf',
     # Audit and sync functions
     'auditmemberchanges',
     'get_django_token',
     'sync_from_django',  # Real-time Django → Firestore sync
+    'sync_banned_kennitala',  # Django → Firestore banned kennitalas sync
     # Address validation functions
     'validate_address',
     'validate_postal_code',

@@ -165,6 +165,7 @@ router.get('/status', async (req, res) => {
       database: {
         eventsCount: dbStatus.eventsCount,
         upcomingCount: dbStatus.upcomingCount,
+        ongoingCount: dbStatus.ongoingCount,
         lastSync: dbStatus.lastSync,
         stale: dataStale
       },

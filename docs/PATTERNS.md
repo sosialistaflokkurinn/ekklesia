@@ -82,9 +82,20 @@ cloud-sql-proxy PROJECT:REGION:INSTANCE --port 5433
 | Utility | Import | Usage |
 |---------|--------|-------|
 | DOM helper | `import { el } from '/js/utils/util-dom.js'` | `el('div', 'class', {attr: val}, children)` |
-| Formatting | `import { formatDate } from '/js/utils/util-format.js'` | `formatDate(date)` |
+| Date formatting | `import { formatDateIcelandic } from '/js/utils/util-format.js'` | `formatDateIcelandic(date)` |
 | Debounce | `import { debounce } from '/js/utils/util-debounce.js'` | `debounce(fn, 300)` |
 | Debug | `import { debug } from '/js/utils/util-debug.js'` | `debug.log('module', 'msg')` |
+
+**Icelandic date formatters** (from `util-format.js`):
+| Function | Output Example | Usage |
+|----------|----------------|-------|
+| `formatDateIcelandic` | "6. nóvember 2025 kl. 13:30" | Full date + time |
+| `formatDateOnlyIcelandic` | "6. nóvember 2025" | Date only |
+| `formatDateWithDayIcelandic` | "sunnudaginn 12. október, kl. 10:00" | Day name + date + time |
+| `formatDateShortIcelandic` | "12. des, kl. 14:30" | Compact (for lists) |
+| `formatTimeIcelandic` | "14:30:45" | Time only |
+
+**IMPORTANT:** Do NOT use `toLocaleDateString('is-IS')` or `toLocaleTimeString('is-IS')` - browser support for Icelandic locale is inconsistent. Always use the central formatters above.
 
 **Debug utility note:** `debug` is an object with methods, not a function:
 ```javascript
@@ -759,7 +770,6 @@ router.post('/:id/vote', authenticate, async (req, res) => {
 - Different storage patterns: ranked = single JSONB row, multi = multiple rows
 
 ---
-
 ## API Response Field Requirements
 
 When frontend needs data to determine UI variant, backend MUST include it:
@@ -788,6 +798,80 @@ const result = await client.query(
 
 ---
 
+## Client-Side Caching (PII Security)
+
+When caching data in the browser, use the correct storage based on data sensitivity:
+
+### localStorage vs sessionStorage
+
+| Storage | Use For | Cleared |
+|---------|---------|---------|
+| `localStorage` | Non-PII data (events, elections, public lookups) | Never (manual clear only) |
+| `sessionStorage` | PII data (members list, sync history, user details) | On browser close |
+
+**Why this matters:**
+- localStorage persists indefinitely - PII exposed if browser compromised
+- sessionStorage cleared on browser close - limits exposure window
+- Both vulnerable to XSS, but sessionStorage reduces risk
+
+### Implementation Pattern
+
+```javascript
+// NON-PII (localStorage) - events, elections, public data
+const CACHE_KEY = 'elections_list_cache';
+function getCache() {
+  const cached = localStorage.getItem(CACHE_KEY);
+  // ...
+}
+function setCache(data) {
+  localStorage.setItem(CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
+}
+
+// PII (sessionStorage) - names, kennitala, emails, phones, addresses
+const CACHE_KEY = 'admin_members_list_cache';
+function getCache() {
+  const cached = sessionStorage.getItem(CACHE_KEY);
+  // ...
+}
+function setCache(data) {
+  sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
+}
+```
+
+### Logout Cleanup
+
+Always clear PII caches on logout (in `session/auth.js`):
+
+```javascript
+export async function signOut() {
+  // Clear sessionStorage (PII caches)
+  sessionStorage.clear();
+
+  // Clear any legacy localStorage PII keys
+  const piiCacheKeys = [
+    'admin_members_list_cache',
+    'admin_sync_history_cache',
+    'superuser_elevated_users_cache'
+  ];
+  piiCacheKeys.forEach(key => localStorage.removeItem(key));
+
+  await firebaseSignOut(auth);
+}
+```
+
+### Data Classification
+
+| Data Type | Contains PII? | Storage |
+|-----------|--------------|---------|
+| Elections list | No | localStorage |
+| Events list | No | localStorage |
+| Unions/Job titles | No | localStorage |
+| Members list | Yes (names, kennitala, emails) | sessionStorage |
+| Sync history | Yes (kennitala references) | sessionStorage |
+| Elevated users | Yes (names, kennitala) | sessionStorage |
+
+---
+
 ## Cache Busting Pattern
 
 When deploying frontend changes, update version query params:
@@ -808,7 +892,6 @@ When deploying frontend changes, update version query params:
 **Note:** Even with Firebase deploy, browsers may cache old JS. Hard refresh (Ctrl+Shift+R) or incognito may be needed for testing.
 
 ---
-
 ## In-Memory Cache Pattern (Python Cloud Functions)
 
 For lookup data that changes rarely (countries, postal codes, job titles), use module-level cache to avoid Firestore queries on every invocation:

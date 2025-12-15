@@ -66,12 +66,12 @@
 
 .btn--secondary {
   background: var(--color-white, #ffffff);
-  color: var(--color-burgundy);
-  border: 2px solid var(--color-burgundy);
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
 }
 
 .btn--secondary:hover {
-  background: var(--color-burgundy);
+  background: var(--color-primary);
   color: var(--color-white, #ffffff);
 }
 
@@ -85,31 +85,59 @@
   filter: brightness(0.6);
 }
 
+/* Text-only button (no background) */
+.btn--text {
+  background: transparent;
+  color: var(--color-text-muted);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: none;
+}
+
+.btn--text:hover {
+  background: var(--color-bg-subtle);
+  color: var(--color-text);
+}
+
+/* Text button with danger styling - uses burgundy to match theme */
+.btn--text.btn--danger {
+  background: var(--color-primary-alpha-10, rgba(114, 47, 55, 0.1));
+  color: var(--color-primary-dark);
+  border: 1px solid var(--color-primary-dark);
+  filter: none;
+}
+
+.btn--text.btn--danger:hover {
+  background: var(--color-primary);
+  color: var(--color-white);
+  border-color: var(--color-primary-dark);
+  filter: none;
+}
+
 .btn--outline {
   position: relative;
   background: var(--color-cream);  /* Cream background - matches page */
-  color: var(--color-burgundy);  /* Burgundy text */
-  border: 2px solid var(--color-burgundy);  /* Burgundy border */
+  color: var(--color-primary);  /* Burgundy text */
+  border: 2px solid var(--color-primary);  /* Burgundy border */
   box-shadow: var(--shadow-sm);  /* Subtle shadow for depth */
 }
 
 .btn--outline:hover:not(:disabled) {
-  background: var(--color-burgundy);  /* Fill with burgundy on hover */
-  border-color: var(--color-burgundy-dark);
+  background: var(--color-primary);  /* Fill with burgundy on hover */
+  border-color: var(--color-primary-dark);
   color: var(--color-white);
   box-shadow: var(--shadow-burgundy);
   transform: translateY(-1px);
 }
 
 .btn--outline:focus-visible {
-  outline: 2px solid var(--color-burgundy);
+  outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
 
 .btn--outline:active:not(:disabled) {
   transform: translateY(0);
   box-shadow: var(--shadow-burgundy);
-  background: var(--color-burgundy-dark);
+  background: var(--color-primary-dark);
 }
 
 /* Gold Back Button - Special navigation button with gold gradient and red glow */

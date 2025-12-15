@@ -72,10 +72,12 @@
   <string name="members_error_loading">Villa kom upp við að hlaða félagaskrá</string>
   <string name="members_btn_view">Skoða</string>
   <string name="members_status_active">Virkur</string>
+  <string name="members_status_unpaid">Ógreitt</string>
   <string name="members_status_inactive">Óvirkur</string>
   <string name="members_status_unknown">Óþekkt</string>
   <string name="members_status_all_plural">allir</string>
   <string name="members_status_active_plural">virkir</string>
+  <string name="members_status_unpaid_plural">ógreiddir</string>
   <string name="members_status_inactive_plural">óvirkir</string>
   <string name="error_unauthorized_admin">Þú hefur ekki aðgang að stjórnkerfi. Aðeins notendur með 'admin' eða 'superuser' hlutverk hafa aðgang.</string>
   <string name="error_sync_trigger">Gat ekki hafið samstillingu: %s</string>
@@ -92,6 +94,7 @@
   <string name="sync_trigger_confirm_btn">Keyra samstillingu</string>
   <string name="filter_status_all">Allir</string>
   <string name="filter_status_active">Virkir</string>
+  <string name="filter_status_unpaid">Ógreitt</string>
   <string name="filter_status_inactive">Óvirkir</string>
   <string name="district_all">Öll kjördæmi</string>
   <string name="district_reykjavik">Reykjavíkurkjördæmi</string>

@@ -145,12 +145,29 @@ export function createScheduleDisplay(options = {}) {
    * @param {Object} state - Election state
    */
   function updateSchedule(state) {
+    const notSpecifiedText = 'Ekki tilgreint';
+
     if (state.voting_starts_at) {
       startValue.textContent = formatDateIcelandic(state.voting_starts_at);
+      startValue.classList.remove('election-detail__schedule-value--empty');
+    } else {
+      startValue.textContent = notSpecifiedText;
+      startValue.classList.add('election-detail__schedule-value--empty');
     }
 
     if (state.voting_ends_at) {
       endValue.textContent = formatDateIcelandic(state.voting_ends_at);
+      endValue.classList.remove('election-detail__schedule-value--empty');
+    } else {
+      // Show "Opin kosning" for active elections without end time (admin closes manually)
+      const currentState = electionState.getState();
+      if (currentState.status === 'active') {
+        endValue.textContent = 'Opin kosning';
+        endValue.classList.remove('election-detail__schedule-value--empty');
+      } else {
+        endValue.textContent = notSpecifiedText;
+        endValue.classList.add('election-detail__schedule-value--empty');
+      }
     }
 
     debug.log('Schedule display times updated');
@@ -162,6 +179,12 @@ export function createScheduleDisplay(options = {}) {
    */
   function showCountdownTimer(endDate) {
     if (!showCountdown) return;
+
+    // Don't show countdown if no end date (election stays open until admin closes)
+    if (!endDate) {
+      debug.log('No end date - skipping countdown timer (open election)');
+      return;
+    }
 
     // Remove existing timer
     if (countdownTimer) {

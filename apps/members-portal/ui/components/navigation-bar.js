@@ -294,8 +294,8 @@ export const NAV_CONFIGS = {
    */
   elections: {
     brand: {
-      href: '/elections/',
-      textKey: 'nav_elections'  // "Kosningar"
+      href: '/members-area/dashboard.html',
+      textKey: 'app_name'  // Brand → Dashboard
     },
     links: [
       { href: '/members-area/dashboard.html', textKey: 'nav_dashboard' },
@@ -313,8 +313,8 @@ export const NAV_CONFIGS = {
    */
   events: {
     brand: {
-      href: '/events/',
-      textKey: 'nav_events'  // "Viðburðir"
+      href: '/members-area/dashboard.html',
+      textKey: 'app_name'  // Brand → Dashboard
     },
     links: [
       { href: '/members-area/dashboard.html', textKey: 'nav_dashboard' },
@@ -331,8 +331,8 @@ export const NAV_CONFIGS = {
    */
   policySession: {
     brand: {
-      href: '/policy-session/',
-      textKey: 'nav_policy_session'  // "Stefnumótun"
+      href: '/members-area/dashboard.html',
+      textKey: 'app_name'  // Brand → Dashboard
     },
     links: [
       { href: '/members-area/dashboard.html', textKey: 'nav_dashboard' },
@@ -372,8 +372,8 @@ export const NAV_CONFIGS = {
    */
   adminMembers: {
     brand: {
-      href: '/admin/members.html',
-      textKey: 'nav_admin_members'  // "Félagaskrá"
+      href: '/admin/',
+      textKey: 'nav_admin'  // Brand → Admin Dashboard
     },
     links: [
       { href: '/admin/', textKey: 'nav_dashboard' },
@@ -391,8 +391,8 @@ export const NAV_CONFIGS = {
    */
   adminMemberProfile: {
     brand: {
-      href: '/admin/members.html',
-      textKey: 'nav_admin_member_profile'  // "Upplýsingar félaga"
+      href: '/admin/',
+      textKey: 'nav_admin'  // Brand → Admin Dashboard
     },
     links: [
       { href: '/admin/', textKey: 'nav_dashboard' },
@@ -410,8 +410,8 @@ export const NAV_CONFIGS = {
    */
   adminEvents: {
     brand: {
-      href: '/admin/events.html',
-      textKey: 'nav_admin_events'  // "Viðburðastjórnun"
+      href: '/admin/',
+      textKey: 'nav_admin'  // Brand → Admin Dashboard
     },
     links: [
       { href: '/admin/', textKey: 'nav_dashboard' },
@@ -429,8 +429,8 @@ export const NAV_CONFIGS = {
    */
   adminSyncMembers: {
     brand: {
-      href: '/admin/sync-members.html',
-      textKey: 'nav_admin_sync'  // "Samstilling félagaskrár"
+      href: '/admin/',
+      textKey: 'nav_admin'  // Brand → Admin Dashboard
     },
     links: [
       { href: '/admin/', textKey: 'nav_dashboard' },
@@ -448,8 +448,8 @@ export const NAV_CONFIGS = {
    */
   adminSyncHistory: {
     brand: {
-      href: '/admin/sync-history.html',
-      textKey: 'nav_admin_sync_history'  // "Samstillingarsaga"
+      href: '/admin/',
+      textKey: 'nav_admin'  // Brand → Admin Dashboard
     },
     links: [
       { href: '/admin/', textKey: 'nav_dashboard' },
@@ -471,8 +471,8 @@ export const NAV_CONFIGS = {
    */
   adminElections: {
     brand: {
-      href: '/admin-elections/',
-      textKey: 'nav_admin_elections'  // "Kosningastjórnun"
+      href: '/admin/',
+      textKey: 'nav_admin'  // Brand → Admin Dashboard
     },
     links: [
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
@@ -486,8 +486,8 @@ export const NAV_CONFIGS = {
    */
   adminElectionsCreate: {
     brand: {
-      href: '/admin-elections/',
-      textKey: 'nav_admin_elections_create'  // "Ný kosning"
+      href: '/admin/',
+      textKey: 'nav_admin'  // Brand → Admin Dashboard
     },
     links: [
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
@@ -501,8 +501,8 @@ export const NAV_CONFIGS = {
    */
   adminElectionsControl: {
     brand: {
-      href: '/admin-elections/',
-      textKey: 'nav_admin_elections_control'  // "Stjórnborð kosninga"
+      href: '/admin/',
+      textKey: 'nav_admin'  // Brand → Admin Dashboard
     },
     links: [
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },

@@ -11,7 +11,7 @@
 /* ========================================== */
 
 .nav {
-  background: var(--color-primary);
+  background: var(--color-socialist-red);
   padding: var(--spacing-md) var(--spacing-xl);
   box-shadow: var(--shadow-sm);
 }
@@ -122,32 +122,32 @@
 }
 
 .nav__link:hover {
-  background: var(--color-burgundy);
-  box-shadow: 0 2px 8px rgba(114, 47, 55, 0.4);
+  background: var(--color-primary);
+  box-shadow: 0 2px 8px var(--color-primary-alpha-40);
 }
 
 .nav__link.nav__link--active {
   background: var(--color-cream);
-  color: var(--color-burgundy);
+  color: var(--color-primary);
   font-weight: var(--font-weight-bold);
-  border: 2px solid var(--color-burgundy);
-  box-shadow: 0 2px 8px rgba(114, 47, 55, 0.3);
+  border: 2px solid var(--color-primary);
+  box-shadow: 0 2px 8px var(--color-primary-alpha-30);
 }
 
 .nav__link.nav__link--active:hover {
   background: var(--color-cream);
-  color: var(--color-burgundy);
+  color: var(--color-primary);
   transform: none;
 }
 
 .nav__link--logout {
-  background: var(--color-burgundy);
-  border: 2px solid var(--color-burgundy-light);
+  background: var(--color-primary);
+  border: 2px solid var(--color-primary-light);
 }
 
 .nav__link--logout:hover {
-  background: var(--color-burgundy-dark);
-  box-shadow: 0 2px 8px rgba(114, 47, 55, 0.5);
+  background: var(--color-primary-dark);
+  box-shadow: 0 2px 8px var(--color-primary-alpha-50);
 }
 
 /* ========================================== */
@@ -217,7 +217,7 @@
   .nav__tab--active {
     color: var(--color-primary);
     border-left-color: var(--color-primary);
-    background: var(--color-primary-lighter);
+    background: var(--color-cream);
     font-weight: var(--font-weight-semibold);
   }
 
@@ -247,9 +247,10 @@
   }
 
   .nav__link.nav__link--active {
-    background: var(--color-primary);
-    color: white;
+    background: var(--color-cream);
+    color: var(--color-primary);
     font-weight: var(--font-weight-semibold);
+    border-left: 3px solid var(--color-primary);
   }
 
   .nav__link--logout {
@@ -262,8 +263,8 @@
   }
 
   .nav__link--logout:hover {
-    background: var(--color-primary);
-    color: white;
+    background: var(--color-cream);
+    color: var(--color-primary);
   }
 }
 

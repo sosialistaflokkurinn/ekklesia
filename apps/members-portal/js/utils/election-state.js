@@ -50,14 +50,9 @@ class ElectionState extends EventTarget {
     // Determine start time: voting_starts_at > scheduled_start > published_at
     const startTime = election.voting_starts_at || election.scheduled_start || election.published_at;
 
-    // Determine end time: voting_ends_at > scheduled_end > (start + default duration)
-    let endTime = election.voting_ends_at || election.scheduled_end;
-
-    // If no end time but we have a start time, calculate end based on default duration
-    if (!endTime && startTime) {
-      const startDate = new Date(startTime);
-      endTime = new Date(startDate.getTime() + DEFAULT_DURATION_MINUTES * 60 * 1000).toISOString();
-    }
+    // Backend is authoritative - trust the end time from API
+    // If null, election has no automatic end (admin must close manually)
+    let endTime = election.voting_ends_at || election.scheduled_end || null;
 
     this.state = {
       id: election.id,

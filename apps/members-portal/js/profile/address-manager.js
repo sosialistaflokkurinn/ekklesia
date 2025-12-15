@@ -320,7 +320,11 @@ export class AddressManager {
       });
 
       // Country selector
-      const countrySelector = el('select', 'item-country-selector', {}, ...options);
+      const countrySelector = el('select', 'item-country-selector', {
+        id: `address-country-${index}`,
+        name: `address_country_${index}`,
+        autocomplete: 'country'
+      }, ...options);
 
       // Country change listener
       countrySelector.addEventListener('change', async (e) => {
@@ -375,6 +379,9 @@ export class AddressManager {
       const addressWrapper = el('div', 'address-input--unified-wrapper', {});
       const addressInput = el('input', 'address-input address-input--unified', {
         type: 'text',
+        id: `address-input-${index}`,
+        name: `address_${index}`,
+        autocomplete: 'street-address',
         value: this.formatAddressString(address),
         placeholder: R.string.label_full_address || 'Heimilisfang (t.d. Gullengi 37, 112 Reykjavík)'
       });

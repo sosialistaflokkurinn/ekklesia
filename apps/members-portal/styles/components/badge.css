@@ -423,6 +423,37 @@
   background: var(--color-admin-blue-dark);
 }
 
+/* Button-style role badges (larger, more prominent) */
+.role-badge--button {
+  padding: 0.5rem 1rem;
+  font-size: var(--font-size-sm);
+  text-transform: none;
+  letter-spacing: normal;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.role-badge--button:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.role-badge--button:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+.role-badge--admin.role-badge--button:hover {
+  background: var(--color-primary-dark);
+}
+
+.role-badge--superuser.role-badge--button:hover {
+  background: var(--color-admin-blue-dark);
+}
+
 /* Elections badge aliases */
 .elections__status-badge {
   display: inline-block;

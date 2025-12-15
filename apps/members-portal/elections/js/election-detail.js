@@ -154,6 +154,18 @@ function displayElection(election) {
   // Initialize election state
   electionState.initialize(election);
 
+  // Listen for status changes to disable voting form when admin closes election
+  electionState.addEventListener('status-changed', (event) => {
+    if (event.detail.newStatus === 'closed' && votingForm) {
+      votingForm.disable();
+      // Replace voting section with closed message
+      const container = document.getElementById('voting-form-container');
+      container.innerHTML = `<div class="election-detail__closed-message">
+        <p>${R.string.election_closed_message || 'Kosningu er lokað.'}</p>
+      </div>`;
+    }
+  });
+
   // Create schedule display component
   if (!scheduleDisplay) {
     scheduleDisplay = createScheduleDisplay({
@@ -250,6 +262,7 @@ async function displayVotingSection(election) {
 
 /**
  * Display results section (for closed elections)
+ * Supports both standard (single/multi-choice) and STV (ranked-choice) elections
  */
 async function displayResultsSection(election) {
   const resultsSection = document.getElementById('results-section');
@@ -261,13 +274,21 @@ async function displayResultsSection(election) {
     const { getResults } = await import('../../js/api/api-elections.js');
     const results = await getResults(election.id);
 
+    // Clear previous results
+    resultsList.innerHTML = '';
+
+    // Check if this is STV/ranked-choice results
+    if (results.voting_type === 'ranked-choice' || results.winners) {
+      displaySTVResults(results, resultsList, totalVotesEl);
+      resultsSection.classList.remove('u-hidden');
+      return;
+    }
+
+    // Standard election results
     // Display total votes
     if (totalVotesEl && results.total_votes !== undefined) {
       totalVotesEl.textContent = results.total_votes;
     }
-
-    // Clear previous results
-    resultsList.innerHTML = '';
 
     // Check if we have results
     if (!results.results || results.results.length === 0) {
@@ -327,6 +348,98 @@ async function displayResultsSection(election) {
     resultsList.innerHTML = `<p class="election-results__error">${R.string.results_error}</p>`;
     resultsSection.classList.remove('u-hidden');
   }
+}
+
+/**
+ * Display STV/ranked-choice election results
+ * Simple list showing winners with methodology explanation
+ */
+function displaySTVResults(results, resultsList, totalVotesEl) {
+  // Update total votes
+  if (totalVotesEl) {
+    totalVotesEl.textContent = results.total_ballots || 0;
+  }
+
+  const totalVotesLabel = document.getElementById('results-total-votes-label');
+  if (totalVotesLabel) {
+    totalVotesLabel.textContent = 'Atkvæðaseðlar:';
+  }
+
+  // Build results HTML based on method
+  const rankedMethod = results.ranked_method || 'stv';
+  const quotaType = results.quota_type || 'droop';
+  const quota = results.quota;
+  const seats = results.winners?.length || 1;
+
+  let methodText = '';
+
+  if (rankedMethod === 'simple') {
+    // Simple ranking - just count first preferences
+    methodText = 'Röðun byggir á fyrsta vali kjósenda.';
+  } else if (rankedMethod === 'stv') {
+    // Full STV with vote transfers
+    methodText = 'Röðun byggir á fyrsta vali kjósenda.';
+    if (quota && quotaType !== 'none') {
+      const quotaName = quotaType === 'droop' ? 'Droop' : 'Hare';
+      methodText += ` Kjörþröskuldur (${quotaName}): ${quota} atkvæði. Ef frambjóðandi nær kjörþröskuldi, færast umframatkvæði á næsta val kjósenda.`;
+    }
+  } else {
+    methodText = 'Röðun byggir á fyrsta vali kjósenda.';
+  }
+
+  let html = `
+    <div class="stv-results">
+      <p class="stv-results__method">
+        ${methodText}
+      </p>
+  `;
+
+  // Results list
+  if (results.first_preference_counts && results.first_preference_counts.length > 0) {
+    const maxVotes = Math.max(...results.first_preference_counts.map(c => c.votes));
+
+    html += `<div class="stv-results__list">`;
+
+    results.first_preference_counts.forEach((c, index) => {
+      const isWinner = results.winners?.some(w => w.candidate_id === c.candidate_id);
+      const barWidth = maxVotes > 0 ? (c.votes / maxVotes * 100) : 0;
+
+      html += `
+        <div class="stv-results__row">
+          <span class="stv-results__rank">${index + 1}.</span>
+          <span class="stv-results__name">${escapeHTML(c.text || c.candidate_id)}</span>
+          <span class="stv-results__votes">${c.votes} (${c.percentage.toFixed(1)}%)</span>
+          <div class="stv-results__bar-bg">
+            <div class="stv-results__bar-fill" style="width: ${barWidth}%"></div>
+          </div>
+        </div>
+      `;
+    });
+
+    html += `</div>`;
+  }
+
+  // Show calculation
+  if (results.first_preference_counts && results.first_preference_counts.length > 0 && results.total_ballots) {
+    html += `
+      <div class="stv-results__calc">
+        <div class="stv-results__calc-header">Útreikningur</div>
+        <div class="stv-results__calc-content">
+    `;
+
+    results.first_preference_counts.forEach((c, index) => {
+      const pct = c.percentage.toFixed(1);
+      html += `<div class="stv-results__calc-line">${index + 1}. sæti: ${escapeHTML(c.text || c.candidate_id)} = ${c.votes}/${results.total_ballots} = ${pct}%</div>`;
+    });
+
+    html += `
+        </div>
+      </div>
+    `;
+  }
+
+  html += `</div>`;
+  resultsList.innerHTML = html;
 }
 
 /**

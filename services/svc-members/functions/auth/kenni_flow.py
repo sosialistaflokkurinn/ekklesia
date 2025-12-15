@@ -418,10 +418,38 @@ def handleKenniAuth_handler(req: https_fn.Request) -> https_fn.Response:
         log_json("debug", "Creating custom token with claims", uid=auth_uid, claims=sanitize_fields(custom_claims))
         custom_token = auth.create_custom_token(auth_uid, developer_claims=custom_claims)
 
-        # Step 7: Return custom token to frontend
+        # Step 7: Check if account is disabled (soft-deleted)
+        # Check both Firebase Auth disabled status AND Firestore membership.deleted_at
+        account_disabled = False
+        try:
+            firebase_user = auth.get_user(auth_uid)
+            if firebase_user.disabled:
+                account_disabled = True
+                log_json("info", "User account is disabled in Firebase Auth",
+                         uid=auth_uid, kennitala=f"{normalized_kennitala[:6]}****")
+        except Exception as e:
+            log_json("warn", "Could not check Firebase Auth disabled status", error=str(e), uid=auth_uid)
+
+        # Also check Firestore membership.deleted_at (Django soft-delete)
+        if not account_disabled:
+            try:
+                member_doc = firestore.client().collection('members').document(normalized_kennitala).get()
+                if member_doc.exists:
+                    member_data = member_doc.to_dict()
+                    deleted_at = member_data.get('membership', {}).get('deleted_at')
+                    if deleted_at:
+                        account_disabled = True
+                        log_json("info", "User account is soft-deleted in Firestore (membership.deleted_at)",
+                                 uid=auth_uid, kennitala=f"{normalized_kennitala[:6]}****")
+            except Exception as e:
+                log_json("warn", "Could not check Firestore deleted_at status", error=str(e), uid=auth_uid)
+
+        # Step 8: Return custom token to frontend
         response_data = {
             "customToken": custom_token.decode("utf-8"),
-            "uid": auth_uid
+            "uid": auth_uid,
+            "requiresReactivation": account_disabled,
+            "kennitala": normalized_kennitala if account_disabled else None
         }
 
         log_json("info", "Created custom token", uid=auth_uid, correlationId=correlation_id)

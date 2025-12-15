@@ -18,16 +18,18 @@ import { requireAuth, getUserData, signOut, AuthenticationError } from '../sessi
 import { httpsCallable, getFirebaseFirestore, doc, updateDoc } from '../firebase/app.js';
 import { setTextContent, validateElements } from '../ui/dom.js';
 import { el } from './utils/util-dom.js';
-import { formatPhone, validatePhone, formatInternationalPhone, validateInternationalPhone, validateInternationalPostalCode, formatMembershipDuration } from './utils/util-format.js';
+import { formatPhone, validatePhone, formatInternationalPhone, validateInternationalPhone, validateInternationalPostalCode, formatMembershipDuration, formatDateOnlyIcelandic } from './utils/util-format.js';
 import { getCountryName, getCountriesSorted, searchCountries, getCountryFlag, getCountryCallingCode } from './utils/util-countries.js';
 import { updateMemberProfile } from './api/api-members.js';
 import { debug } from './utils/util-debug.js';
 import { showToast } from './components/ui-toast.js';
 import { showStatus, createStatusIcon } from './components/ui-status.js';
+import { showModal } from './components/ui-modal.js';
 import { SearchableSelect } from './components/ui-searchable-select.js';
 import { PhoneManager } from './profile/phone-manager.js';
 import { AddressManager } from './profile/address-manager.js';
 import { migrateOldPhoneFields, migrateOldAddressFields } from './profile/migration.js';
+import { getUnions, getJobTitles } from './api/api-lookups.js';
 
 /**
  * Constants
@@ -253,22 +255,29 @@ export function formatFieldValue(value, placeholder) {
 /**
  * Format membership status text
  *
- * Pure function - returns status text and color.
+ * Pure function - returns status text and color based on membership status.
  *
- * @param {boolean} isMember - Whether user is a verified member
+ * @param {string} status - Membership status: 'active', 'unpaid', or 'inactive'
  * @returns {{text: string, color: string}} Status text and color
  */
-export function formatMembershipStatus(isMember) {
-  if (isMember) {
-    return {
-      text: R.string.membership_active,
-      color: 'var(--color-success-text)'
-    };
-  } else {
-    return {
-      text: R.string.membership_inactive,
-      color: 'var(--color-gray-600)'
-    };
+export function formatMembershipStatus(status) {
+  switch (status) {
+    case 'active':
+      return {
+        text: R.string.membership_active,
+        color: 'var(--color-success-text)'
+      };
+    case 'unpaid':
+      return {
+        text: R.string.membership_unpaid,
+        color: 'var(--color-warning-text, #b45309)'
+      };
+    case 'inactive':
+    default:
+      return {
+        text: R.string.membership_inactive,
+        color: 'var(--color-burgundy)'
+      };
   }
 }
 
@@ -295,11 +304,7 @@ function updateUserInfo(userData, memberData = null) {
   const dateJoined = memberData?.membership?.date_joined;
   if (dateJoined && dateJoined.toDate) {
     const joinedDate = dateJoined.toDate();
-    const formattedDate = joinedDate.toLocaleDateString('is-IS', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    const formattedDate = formatDateOnlyIcelandic(joinedDate);
     setTextContent('value-date-joined', formattedDate, 'profile page');
 
     // Format membership duration using utility function
@@ -311,6 +316,16 @@ function updateUserInfo(userData, memberData = null) {
   }
 
   setTextContent('value-uid', formatFieldValue(userData.uid, placeholder), 'profile page');
+
+  // Synced at (from Django sync)
+  const syncedAt = memberData?.metadata?.synced_at;
+  if (syncedAt) {
+    const syncDate = syncedAt.toDate ? syncedAt.toDate() : new Date(syncedAt);
+    const formattedSync = formatDateOnlyIcelandic(syncDate);
+    setTextContent('value-synced-at', formattedSync, 'profile page');
+  } else {
+    setTextContent('value-synced-at', placeholder, 'profile page');
+  }
 }
 
 /**
@@ -635,22 +650,45 @@ function setupLivingStatusListeners() {
 }
 
 /**
- * Update membership status display
+ * Update membership status display with badge styling
  *
- * @param {boolean} isMember - Whether user is a verified member
+ * @param {string} membershipStatus - Status: 'active', 'unpaid', or 'inactive'
  */
-function updateMembershipStatus(isMember) {
-  const status = formatMembershipStatus(isMember);
+function updateMembershipStatus(membershipStatus) {
   const membershipElement = document.getElementById('membership-status');
+  if (!membershipElement) return;
 
-  membershipElement.textContent = status.text;
-  membershipElement.style.color = status.color;
+  // Clear any inline styles from loading state
+  membershipElement.style.color = '';
+
+  // Check for soft-delete first (takes priority)
+  const membership = currentUserData?.membership || {};
+  if (membership.deleted_at) {
+    const deletedDate = membership.deleted_at.toDate ? membership.deleted_at.toDate() : new Date(membership.deleted_at);
+    const formattedDate = formatDateOnlyIcelandic(deletedDate);
+    membershipElement.innerHTML = `<span class="admin-badge admin-badge--error">Eytt ${formattedDate}</span>`;
+    return;
+  }
+
+  // Normal status with badge
+  switch (membershipStatus) {
+    case 'active':
+      membershipElement.innerHTML = '<span class="admin-badge admin-badge--success">Virk félagsaðild</span>';
+      break;
+    case 'unpaid':
+      membershipElement.innerHTML = '<span class="admin-badge admin-badge--warning">Ógreitt</span>';
+      break;
+    case 'inactive':
+    default:
+      membershipElement.innerHTML = '<span class="admin-badge admin-badge--inactive">Óvirk félagsaðild</span>';
+      break;
+  }
 }
 
 /**
  * Verify membership status by calling Cloud Function
  *
- * @returns {Promise<boolean>} Whether user is a member
+ * @returns {Promise<string>} Membership status: 'active', 'unpaid', or 'inactive'
  */
 async function verifyMembership() {
   const region = R.string.config_firebase_region;
@@ -658,11 +696,12 @@ async function verifyMembership() {
 
   try {
     const result = await verifyMembershipFn();
-    return result.data.isMember;
+    // Return the actual status string (active, unpaid, inactive)
+    return result.data.membershipStatus || (result.data.isMember ? 'active' : 'inactive');
   } catch (error) {
     debug.error('Failed to verify membership:', error);
-    // Return false on error (conservative approach)
-    return false;
+    // Return 'inactive' on error (conservative approach)
+    return 'inactive';
   }
 }
 
@@ -703,6 +742,27 @@ function populateInputFields() {
   // Populate input fields with current values
   editElements.inputName.value = originalData.name !== '-' ? originalData.name : '';
   editElements.inputEmail.value = originalData.email !== '-' ? originalData.email : '';
+
+  // Birthday - format as YYYY-MM-DD for date input
+  const birthdayInput = document.getElementById('input-birthday');
+  if (birthdayInput && currentUserData?.profile?.birthday) {
+    const birthday = currentUserData.profile.birthday;
+    // Handle Firestore Timestamp or ISO string
+    let dateStr = '';
+    if (birthday.toDate) {
+      dateStr = birthday.toDate().toISOString().split('T')[0];
+    } else if (typeof birthday === 'string') {
+      // Already ISO format or need to parse
+      dateStr = birthday.split('T')[0];
+    }
+    birthdayInput.value = dateStr;
+  }
+
+  // Gender - select the right option
+  const genderInput = document.getElementById('input-gender');
+  if (genderInput && currentUserData?.profile?.gender !== undefined) {
+    genderInput.value = currentUserData.profile.gender.toString();
+  }
 
   // Populate foreign address fields if available
   if (originalData.foreign_address) {
@@ -1149,6 +1209,46 @@ function setupAutoSaveListeners() {
       });
     }
   });
+
+  // Birthday field (date input)
+  const birthdayInput = document.getElementById('input-birthday');
+  const birthdayStatus = document.getElementById('status-birthday');
+  const birthdaySaveBtn = document.getElementById('save-birthday');
+  if (birthdayInput) {
+    birthdayInput.addEventListener('change', async (e) => {
+      const dateValue = e.target.value; // YYYY-MM-DD format
+      if (dateValue) {
+        await saveProfileField('birthday', dateValue, birthdayStatus);
+      }
+    });
+
+    if (birthdaySaveBtn) {
+      birthdaySaveBtn.addEventListener('click', () => {
+        const dateValue = birthdayInput.value;
+        if (dateValue) {
+          saveProfileField('birthday', dateValue, birthdayStatus);
+        }
+      });
+    }
+  }
+
+  // Gender field (select dropdown)
+  const genderInput = document.getElementById('input-gender');
+  const genderStatus = document.getElementById('status-gender');
+  const genderSaveBtn = document.getElementById('save-gender');
+  if (genderInput) {
+    genderInput.addEventListener('change', async (e) => {
+      const genderValue = e.target.value !== '' ? parseInt(e.target.value) : null;
+      await saveProfileField('gender', genderValue, genderStatus);
+    });
+
+    if (genderSaveBtn) {
+      genderSaveBtn.addEventListener('click', () => {
+        const genderValue = genderInput.value !== '' ? parseInt(genderInput.value) : null;
+        saveProfileField('gender', genderValue, genderStatus);
+      });
+    }
+  }
 }
 
 /**
@@ -1292,6 +1392,329 @@ function initCommunicationPreferences() {
 }
 
 /**
+ * Initialize membership details (cell, union, job title, housing)
+ * Renders dropdowns and sets up auto-save handlers
+ */
+async function initMembershipDetails() {
+  const profile = currentUserData?.profile || {};
+  const membership = currentUserData?.membership || {};
+
+  // Cell/Svæði (readonly display)
+  const cellValue = document.getElementById('value-cell');
+  if (cellValue) {
+    // Cell is stored as a string (svæði name) in Firestore
+    if (membership.cell) {
+      cellValue.textContent = membership.cell;
+    } else {
+      cellValue.textContent = '-';
+    }
+  }
+
+  // Union dropdown - populate and select current value
+  const unionSelect = document.getElementById('input-union');
+  const unionStatus = document.getElementById('status-union');
+  if (unionSelect) {
+    try {
+      const unions = await getUnions();
+      unionSelect.innerHTML = '<option value="">Veldu stéttarfélag...</option>';
+      unions.forEach(union => {
+        const option = document.createElement('option');
+        option.value = union.id;
+        option.textContent = union.name;
+        unionSelect.appendChild(option);
+      });
+
+      // Select current union
+      const currentUnions = membership.unions || [];
+      if (currentUnions.length > 0) {
+        const firstUnion = currentUnions[0];
+        unionSelect.value = firstUnion.id || firstUnion;
+      }
+
+      // Auto-save on change
+      unionSelect.addEventListener('change', async (e) => {
+        const unionId = e.target.value ? parseInt(e.target.value) : null;
+        const unionName = e.target.selectedOptions[0]?.textContent || '';
+        const unionValue = unionId ? [{ id: unionId, name: unionName }] : [];
+        await saveMembershipField('unions', unionValue, unionStatus);
+      });
+    } catch (error) {
+      debug.error('Failed to load unions:', error);
+    }
+  }
+
+  // Job Title dropdown
+  const titleSelect = document.getElementById('input-title');
+  const titleStatus = document.getElementById('status-title');
+  if (titleSelect) {
+    try {
+      const titles = await getJobTitles();
+      titleSelect.innerHTML = '<option value="">Veldu starfsheiti...</option>';
+      titles.forEach(title => {
+        const option = document.createElement('option');
+        option.value = title.id;
+        option.textContent = title.name;
+        titleSelect.appendChild(option);
+      });
+
+      // Select current title
+      const currentTitles = membership.titles || [];
+      if (currentTitles.length > 0) {
+        const firstTitle = currentTitles[0];
+        titleSelect.value = firstTitle.id || firstTitle;
+      }
+
+      // Auto-save on change
+      titleSelect.addEventListener('change', async (e) => {
+        const titleId = e.target.value ? parseInt(e.target.value) : null;
+        const titleName = e.target.selectedOptions[0]?.textContent || '';
+        const titleValue = titleId ? [{ id: titleId, name: titleName }] : [];
+        await saveMembershipField('titles', titleValue, titleStatus);
+      });
+    } catch (error) {
+      debug.error('Failed to load job titles:', error);
+    }
+  }
+
+  // Housing situation
+  const housingSelect = document.getElementById('input-housing');
+  const housingStatus = document.getElementById('status-housing');
+  if (housingSelect) {
+    if (profile.housing_situation !== undefined) {
+      housingSelect.value = profile.housing_situation;
+    }
+
+    // Auto-save on change
+    housingSelect.addEventListener('change', async (e) => {
+      const housingValue = e.target.value !== '' ? parseInt(e.target.value) : null;
+      await saveProfileField('housing_situation', housingValue, housingStatus);
+    });
+  }
+
+  debug.log('✅ Membership details initialized');
+}
+
+/**
+ * Save a profile field to Firestore
+ */
+async function saveProfileField(fieldName, value, statusElement) {
+  try {
+    debug.log(`💾 Saving profile.${fieldName}:`, value);
+
+    showStatus(statusElement, 'loading', { baseClass: 'profile-field__status' });
+
+    const db = getFirebaseFirestore();
+    const kennitalaKey = currentUserData.kennitala.replace(/-/g, '');
+    const memberDocRef = doc(db, 'members', kennitalaKey);
+
+    await updateDoc(memberDocRef, {
+      [`profile.${fieldName}`]: value,
+      'profile.updated_at': new Date()
+    });
+
+    // Update local state
+    if (!currentUserData.profile) currentUserData.profile = {};
+    currentUserData.profile[fieldName] = value;
+
+    showStatus(statusElement, 'success', { baseClass: 'profile-field__status' });
+    showToast(R.string.profile_autosave_success || 'Vistað', 'success');
+
+    debug.log(`✅ profile.${fieldName} saved`);
+  } catch (error) {
+    debug.error(`❌ Error saving profile.${fieldName}:`, error);
+    showStatus(statusElement, 'error', { baseClass: 'profile-field__status' });
+    showToast(R.string.profile_autosave_error || 'Villa við vistun', 'error');
+  }
+}
+
+/**
+ * Save a membership field to Firestore
+ */
+async function saveMembershipField(fieldName, value, statusElement) {
+  try {
+    debug.log(`💾 Saving membership.${fieldName}:`, value);
+
+    showStatus(statusElement, 'loading', { baseClass: 'profile-field__status' });
+
+    const db = getFirebaseFirestore();
+    const kennitalaKey = currentUserData.kennitala.replace(/-/g, '');
+    const memberDocRef = doc(db, 'members', kennitalaKey);
+
+    await updateDoc(memberDocRef, {
+      [`membership.${fieldName}`]: value,
+      'profile.updated_at': new Date()
+    });
+
+    // Update local state
+    if (!currentUserData.membership) currentUserData.membership = {};
+    currentUserData.membership[fieldName] = value;
+
+    showStatus(statusElement, 'success', { baseClass: 'profile-field__status' });
+    showToast(R.string.profile_autosave_success || 'Vistað', 'success');
+
+    debug.log(`✅ membership.${fieldName} saved`);
+  } catch (error) {
+    debug.error(`❌ Error saving membership.${fieldName}:`, error);
+    showStatus(statusElement, 'error', { baseClass: 'profile-field__status' });
+    showToast(R.string.profile_autosave_error || 'Villa við vistun', 'error');
+  }
+}
+
+/**
+ * Initialize soft delete account button
+ */
+function initDeleteAccountButton() {
+  const deleteBtn = document.getElementById('btn-delete-account');
+  if (!deleteBtn) {
+    debug.warn('Delete account button not found');
+    return;
+  }
+
+  deleteBtn.addEventListener('click', () => {
+    showDeleteAccountModal();
+  });
+}
+
+/**
+ * Show delete account confirmation modal
+ */
+function showDeleteAccountModal() {
+  let confirmInput = null;
+  let confirmBtn = null;
+  let modal = null;
+
+  const content = document.createElement('div');
+  content.innerHTML = `
+    <div class="modal__message">
+      <p><strong>Ertu viss um að þú viljir eyða aðganginum þínum?</strong></p>
+      <ul style="margin: 1rem 0; padding-left: 1.5rem; color: var(--color-text-muted);">
+        <li>Þú verður ekki lengur sýnileg/ur í félagaskrá</li>
+        <li>Þú getur ekki tekið þátt í kosningum</li>
+        <li>Þú getur endurvakið aðganginn seinna</li>
+      </ul>
+      <p style="margin-top: 1rem;"><strong>Skrifaðu "EYÐA" til að staðfesta:</strong></p>
+      <input type="text" id="confirm-delete-input" class="profile-field__input" placeholder="EYÐA" style="margin-top: 0.5rem; width: 100%;">
+    </div>
+  `;
+
+  modal = showModal({
+    title: '🗑️ Eyða aðgangi',
+    content,
+    size: 'md',
+    buttons: [
+      {
+        text: 'Hætta við',
+        onClick: () => modal.close()
+      },
+      {
+        text: 'Eyða aðgangi',
+        primary: false,
+        onClick: async () => {
+          await handleDeleteAccount(modal);
+        }
+      }
+    ]
+  });
+
+  // Get reference to input and set up validation
+  setTimeout(() => {
+    confirmInput = document.getElementById('confirm-delete-input');
+    const buttons = modal.element.querySelectorAll('.modal__footer .btn');
+    confirmBtn = buttons[buttons.length - 1]; // Last button is confirm
+
+    // Style confirm button as danger
+    if (confirmBtn) {
+      confirmBtn.classList.remove('btn--secondary');
+      confirmBtn.classList.add('btn--danger');
+      confirmBtn.disabled = true;
+    }
+
+    // Enable button only when correct text is entered
+    if (confirmInput) {
+      confirmInput.addEventListener('input', () => {
+        const isValid = confirmInput.value.toUpperCase() === 'EYÐA';
+        if (confirmBtn) {
+          confirmBtn.disabled = !isValid;
+        }
+      });
+      confirmInput.focus();
+    }
+  }, 100);
+}
+
+/**
+ * Handle account deletion
+ */
+async function handleDeleteAccount(modal) {
+  const confirmInput = document.getElementById('confirm-delete-input');
+  if (!confirmInput || confirmInput.value.toUpperCase() !== 'EYÐA') {
+    showToast('Þú verður að skrifa "EYÐA" til að staðfesta', 'error');
+    return;
+  }
+
+  // Get buttons for loading state
+  const buttons = modal.element.querySelectorAll('.modal__footer .btn');
+  const cancelBtn = buttons[0];
+  const confirmBtn = buttons[1];
+  const originalText = confirmBtn?.textContent;
+
+  try {
+    debug.log('🗑️ Initiating soft delete...');
+
+    // Show loading state
+    if (confirmBtn) {
+      confirmBtn.disabled = true;
+      confirmBtn.innerHTML = '<span class="spinner spinner--small"></span> Eyði aðgangi...';
+    }
+    if (cancelBtn) {
+      cancelBtn.disabled = true;
+    }
+    if (confirmInput) {
+      confirmInput.disabled = true;
+    }
+
+    // Call Cloud Function (europe-west2 region)
+    const softDeleteSelf = httpsCallable('softDeleteSelf', 'europe-west2');
+    const result = await softDeleteSelf({ confirmation: 'EYÐA' });
+
+    debug.log('✅ Soft delete successful:', result);
+
+    // Show success in modal
+    if (confirmBtn) {
+      confirmBtn.innerHTML = '✅ Aðgangi eytt!';
+      confirmBtn.classList.remove('btn--danger');
+      confirmBtn.classList.add('btn--success');
+    }
+
+    showToast('Aðgangur þinn hefur verið gerður óvirkur', 'success');
+
+    // Sign out and redirect after a short delay
+    setTimeout(async () => {
+      modal.close();
+      await signOut();
+      window.location.href = '/';
+    }, 1500);
+
+  } catch (error) {
+    debug.error('❌ Soft delete failed:', error);
+
+    // Restore button state
+    if (confirmBtn) {
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = originalText;
+    }
+    if (cancelBtn) {
+      cancelBtn.disabled = false;
+    }
+    if (confirmInput) {
+      confirmInput.disabled = false;
+    }
+
+    showToast(error.message || 'Villa við að eyða aðgangi', 'error');
+  }
+}
+
+/**
  * Initialize profile page
  *
  * @returns {Promise<void>}
@@ -1391,6 +1814,12 @@ async function init() {
     // Initialize communication preferences (reachable/groupable)
     initCommunicationPreferences();
 
+    // Initialize membership details (cell, union, title, housing)
+    await initMembershipDetails();
+
+    // Initialize delete account button
+    initDeleteAccountButton();
+
     // Update profile-specific UI
     updateProfileStrings();
     updateUserInfo(userData, memberData);
@@ -1403,9 +1832,11 @@ async function init() {
     membershipElement.textContent = R.string.membership_verifying || R.string.loading;
     membershipElement.style.color = 'var(--color-primary)';
 
-    // Verify membership status via Cloud Function
-    const isMember = await verifyMembership();
-    updateMembershipStatus(isMember);
+    // Use membership status from Firestore (synced from Django)
+    // This is more accurate than verifyMembership() which only returns boolean
+    const membershipStatus = currentUserData?.membership?.status || 'inactive';
+    debug.log('📊 Membership status from Firestore:', membershipStatus);
+    updateMembershipStatus(membershipStatus);
   } catch (error) {
     // Handle authentication error (redirect to login)
     if (error instanceof AuthenticationError) {

@@ -28,6 +28,52 @@ const db = getFirebaseFirestore();
 // Global i18n storage
 const adminStrings = new Map();
 
+// ============================================================================
+// SESSION STORAGE CACHE - Cleared on browser close for security
+// ============================================================================
+const CACHE_KEY = 'admin_members_list_cache';
+const CACHE_MAX_AGE_MS = 3 * 60 * 1000; // 3 minutes (shorter for admin data)
+
+/**
+ * Get cached members from sessionStorage
+ * Uses sessionStorage instead of localStorage for security - PII data is
+ * cleared when browser closes and not persisted across sessions.
+ * @returns {Object|null} { data, isStale } or null if no cache
+ */
+function getCache() {
+  try {
+    const cached = sessionStorage.getItem(CACHE_KEY);
+    if (!cached) return null;
+
+    const { data, timestamp } = JSON.parse(cached);
+    const age = Date.now() - timestamp;
+
+    return {
+      data,
+      isStale: age > CACHE_MAX_AGE_MS
+    };
+  } catch (e) {
+    debug.warn('[Cache] Failed to read cache:', e);
+    return null;
+  }
+}
+
+/**
+ * Save members to sessionStorage cache
+ * @param {Array} data - Members array to cache
+ */
+function setCache(data) {
+  try {
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify({
+      data,
+      timestamp: Date.now()
+    }));
+    debug.log('[Cache] Members cached:', data.length);
+  } catch (e) {
+    debug.warn('[Cache] Failed to write cache:', e);
+  }
+}
+
 (function() {
   'use strict';
 
@@ -35,7 +81,6 @@ const adminStrings = new Map();
   let currentPage = 1;
   let lastDoc = null;
   let pageHistory = []; // Stack of lastDoc for previous pages
-  let currentStatus = 'active';
   let currentSearch = '';
   let currentDistrict = 'all';
   let isLoading = false;
@@ -43,7 +88,6 @@ const adminStrings = new Map();
   // DOM Elements
   const elements = {
     searchInput: null,
-    filterStatus: null,
     filterDistrict: null,
     tableBody: null,
     loadingState: null,
@@ -73,6 +117,15 @@ const adminStrings = new Map();
       loadingMessage: document.getElementById('members-loading-text'),
       errorMessage: document.getElementById('members-error-message')
     });
+
+    // Check for cached data first - show immediately for instant load
+    const cached = getCache();
+    if (cached?.data && cached.data.length > 0) {
+      debug.log('[Cache] Showing cached members immediately:', cached.data.length);
+      renderMembers(cached.data);
+      uiStates.showContent();
+      elements.paginationContainer.style.display = 'flex';
+    }
 
     // Load i18n strings early (before auth check so UI shows proper text)
     await loadStrings();
@@ -105,15 +158,26 @@ const adminStrings = new Map();
       // Set up event listeners
       setupEventListeners();
 
-      // Load initial data
-      await loadMembers();
+      // If we have cached data, decide whether to refresh
+      if (cached?.data) {
+        if (cached.isStale) {
+          debug.log('[Cache] Cache is stale, refreshing in background');
+          loadMembers(true).catch(err => {
+            debug.warn('[Cache] Background refresh failed:', err);
+          });
+        }
+        // Update member count (non-blocking)
+        updateMemberCount();
+      } else {
+        // No cache - load normally with loading spinner
+        await loadMembers();
+      }
     });
   }
 
   // Initialize DOM element references
   function initElements() {
     elements.searchInput = document.getElementById('members-search-input');
-    elements.filterStatus = document.getElementById('members-filter-status');
     elements.filterDistrict = document.getElementById('members-filter-district');
     elements.tableBody = document.getElementById('members-table-body');
     elements.loadingState = document.getElementById('members-loading');
@@ -220,16 +284,6 @@ const adminStrings = new Map();
     const headerActions = document.getElementById('header-actions');
     if (headerActions) headerActions.textContent = R.string.members_table_header_actions || R.string.member_actions || 'Aðgerðir';
 
-    // Filter dropdown options
-    const filterStatusAll = document.getElementById('filter-status-all');
-    if (filterStatusAll) filterStatusAll.textContent = R.string.filter_status_all || 'Allir';
-
-    const filterStatusActive = document.getElementById('filter-status-active');
-    if (filterStatusActive) filterStatusActive.textContent = R.string.filter_status_active || 'Virkir';
-
-    const filterStatusInactive = document.getElementById('filter-status-inactive');
-    if (filterStatusInactive) filterStatusInactive.textContent = R.string.filter_status_inactive || 'Óvirkir';
-
     // Electoral district dropdown options
     const filterDistrictAll = document.getElementById('filter-district-all');
     if (filterDistrictAll) filterDistrictAll.textContent = R.string.district_all || 'Öll kjördæmi';
@@ -285,13 +339,6 @@ const adminStrings = new Map();
       }, 300); // 300ms debounce
     });
 
-    // Status filter
-    elements.filterStatus?.addEventListener('change', (e) => {
-      currentStatus = e.target.value;
-      resetPagination();
-      loadMembers();
-    });
-
     // Electoral district filter
     elements.filterDistrict?.addEventListener('change', (e) => {
       currentDistrict = e.target.value;
@@ -338,11 +385,14 @@ const adminStrings = new Map();
   }
 
   // Load members from Firestore
-  async function loadMembers() {
+  // @param {boolean} backgroundRefresh - If true, don't show loading spinner
+  async function loadMembers(backgroundRefresh = false) {
     if (isLoading) return;
     isLoading = true;
 
-    uiStates.showLoading(currentSearch ? adminStrings.get('members_searching') : adminStrings.get('members_loading'));
+    if (!backgroundRefresh) {
+      uiStates.showLoading(currentSearch ? adminStrings.get('members_searching') : adminStrings.get('members_loading'));
+    }
 
     try {
       // If searching OR filtering by district, load ALL documents for client-side filtering
@@ -352,7 +402,7 @@ const adminStrings = new Map();
 
       const result = await MembersAPI.fetchMembers({
         limit: limitCount,
-        status: currentStatus,
+        status: 'all',  // Always fetch all members (no status filter)
         search: currentSearch,
         startAfter: needsClientSideFiltering ? null : lastDoc  // No pagination when filtering
       });
@@ -361,6 +411,11 @@ const adminStrings = new Map();
       let filteredMembers = result.members;
       if (currentDistrict !== 'all') {
         filteredMembers = filterMembersByDistrict(result.members, currentDistrict);
+      }
+
+      // Cache the results (only for initial page load without search/district filter)
+      if (!needsClientSideFiltering && currentPage === 1) {
+        setCache(filteredMembers);
       }
 
       if (filteredMembers.length === 0) {
@@ -389,7 +444,9 @@ const adminStrings = new Map();
 
     } catch (error) {
       debug.error('Error loading members:', error);
-      uiStates.showError(error.message || adminStrings.get('members_error_loading'));
+      if (!backgroundRefresh) {
+        uiStates.showError(error.message || adminStrings.get('members_error_loading'));
+      }
     } finally {
       isLoading = false;
     }
@@ -403,7 +460,7 @@ const adminStrings = new Map();
         // Load all members for client-side counting
         const result = await MembersAPI.fetchMembers({
           limit: 5000,
-          status: currentStatus,
+          status: 'all',
           search: '',
           startAfter: null
         });
@@ -415,17 +472,14 @@ const adminStrings = new Map();
         // Get district name
         const districtName = getElectoralDistrictName(currentDistrict);
 
-        // Simple count without status metadata
+        // Show count with district name
         const districtTemplate = adminStrings.get('members_count_in_district') || '%d félagar í %s';
         elements.countText.textContent = districtTemplate.replace('%d', count).replace('%s', districtName);
       } else {
-        // Normal count (no district filter)
-        const count = await MembersAPI.getMembersCount(currentStatus);
-        const statusText = currentStatus === 'all' ? adminStrings.get('members_status_all_plural') :
-                          currentStatus === 'active' ? adminStrings.get('members_status_active_plural') :
-                          adminStrings.get('members_status_inactive_plural');
-        const countTemplate = adminStrings.get('members_count_with_status') || '%d %s félagar';
-        elements.countText.textContent = countTemplate.replace('%d', count).replace('%s', statusText);
+        // Normal count (all members)
+        const count = await MembersAPI.getMembersCount('all');
+        const countTemplate = adminStrings.get('members_count_total') || '%d félagar';
+        elements.countText.textContent = countTemplate.replace('%d', count);
       }
     } catch (error) {
       debug.error('Error getting member count:', error);
@@ -494,6 +548,7 @@ const adminStrings = new Map();
   function getStatusText(status) {
     switch (status) {
       case 'active': return adminStrings.get('members_status_active') || 'Virkur';
+      case 'unpaid': return adminStrings.get('members_status_unpaid') || 'Ógreitt';
       case 'inactive': return adminStrings.get('members_status_inactive') || 'Óvirkur';
       default: return adminStrings.get('members_status_unknown') || 'Óþekkt';
     }

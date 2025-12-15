@@ -488,6 +488,8 @@ router.get('/elections/:id/results', readLimiter, verifyMemberToken, async (req,
         e.status,
         e.voting_type,
         e.seats_to_fill,
+        e.ranked_method,
+        e.quota_type,
         e.closed_at,
         e.scheduled_end,
         e.hidden,
@@ -620,10 +622,17 @@ router.get('/elections/:id/results', readLimiter, verifyMemberToken, async (req,
 // =====================================================
 // STV Results Calculation Helper
 // =====================================================
-// Uses custom STV implementation (Scottish STV rules)
+// Supports both full STV and simple ranking
+// ranked_method: 'stv' (vote transfers) or 'simple' (first preference only)
+// quota_type: 'droop', 'hare', or 'none'
 async function calculateSTVResults(electionId, election, log) {
   // Import local STV utility
   const { stv } = require('../utils/util-stv');
+
+  // Get configuration (with defaults for backwards compatibility)
+  const rankedMethod = election.ranked_method || 'stv';
+  const quotaType = election.quota_type || 'droop';
+  const seatsToFill = election.seats_to_fill || 1;
 
   // Get candidate IDs from election answers
   const candidates = election.answers.map(a => a.id || a.text);
@@ -643,8 +652,10 @@ async function calculateSTVResults(electionId, election, log) {
   if (totalBallots === 0) {
     return {
       total_ballots: 0,
-      seats_to_fill: election.seats_to_fill || 1,
-      quota: 0,
+      seats_to_fill: seatsToFill,
+      ranked_method: rankedMethod,
+      quota_type: quotaType,
+      quota: null,
       winners: [],
       eliminated: [],
       rounds: [],
@@ -657,38 +668,13 @@ async function calculateSTVResults(electionId, election, log) {
     };
   }
 
-  // Convert ballots to STV format
-  // stv expects: { weight: 1, preferences: ["candidate1", "candidate2", ...] }
+  // Convert ballots to format
   const votes = ballotsResult.rows.map(row => ({
     weight: 1,
-    preferences: row.ranked_answers, // Already an array from JSONB
+    preferences: row.ranked_answers,
   }));
 
-  // Collect round-by-round report
-  const rounds = [];
-  let roundNumber = 0;
-
-  // Run STV algorithm
-  const stvResult = stv({
-    seatsToFill: election.seats_to_fill || 1,
-    candidates: candidates,
-    votes: votes,
-    report: (message) => {
-      // Parse round messages for detailed reporting
-      if (message.includes('Round')) {
-        roundNumber++;
-      }
-      rounds.push({
-        round: roundNumber,
-        message: message,
-      });
-    },
-  });
-
-  // Calculate Droop quota for reference
-  const droopQuota = Math.floor(totalBallots / (election.seats_to_fill + 1)) + 1;
-
-  // Count first preference votes
+  // Count first preference votes (needed for both methods)
   const firstPreferenceCounts = new Map();
   candidates.forEach(c => firstPreferenceCounts.set(c, 0));
 
@@ -701,7 +687,7 @@ async function calculateSTVResults(electionId, election, log) {
     }
   });
 
-  // Build first preference results
+  // Build first preference results (sorted by votes)
   const firstPreferenceResults = candidates.map(c => ({
     candidate_id: c,
     text: candidateMap.get(c),
@@ -711,32 +697,88 @@ async function calculateSTVResults(electionId, election, log) {
       : 0,
   })).sort((a, b) => b.votes - a.votes);
 
-  // Build winners list with candidate text
-  const winners = stvResult.winners.map(winnerId => ({
-    candidate_id: winnerId,
-    text: candidateMap.get(winnerId),
-  }));
+  // Calculate quota based on quota_type
+  let quota = null;
+  if (quotaType === 'droop') {
+    quota = Math.floor(totalBallots / (seatsToFill + 1)) + 1;
+  } else if (quotaType === 'hare') {
+    quota = Math.ceil(totalBallots / seatsToFill);
+  }
+  // quota_type === 'none' leaves quota as null
 
-  // Eliminated candidates (all non-winners)
-  const eliminated = candidates
-    .filter(c => !stvResult.winners.includes(c))
-    .map(c => ({
-      candidate_id: c,
-      text: candidateMap.get(c),
+  let winners = [];
+  let eliminated = [];
+  let rounds = [];
+
+  if (rankedMethod === 'stv') {
+    // Full STV with vote transfers
+    let roundNumber = 0;
+
+    const stvResult = stv({
+      seatsToFill: seatsToFill,
+      candidates: candidates,
+      votes: votes,
+      report: (message) => {
+        if (message.includes('Round')) {
+          roundNumber++;
+        }
+        rounds.push({
+          round: roundNumber,
+          message: message,
+        });
+      },
+    });
+
+    winners = stvResult.winners.map(winnerId => ({
+      candidate_id: winnerId,
+      text: candidateMap.get(winnerId),
     }));
 
-  log.info('[STV] Calculation complete', {
+    eliminated = candidates
+      .filter(c => !stvResult.winners.includes(c))
+      .map(c => ({
+        candidate_id: c,
+        text: candidateMap.get(c),
+      }));
+
+  } else {
+    // Simple method: just rank by first preferences, top N win
+    const sortedCandidates = [...firstPreferenceResults];
+
+    winners = sortedCandidates
+      .slice(0, seatsToFill)
+      .map(c => ({
+        candidate_id: c.candidate_id,
+        text: c.text,
+      }));
+
+    eliminated = sortedCandidates
+      .slice(seatsToFill)
+      .map(c => ({
+        candidate_id: c.candidate_id,
+        text: c.text,
+      }));
+
+    // No rounds for simple method
+    rounds = [];
+  }
+
+  log.info('[Ranked Results] Calculation complete', {
     election_id: electionId,
     total_ballots: totalBallots,
-    seats: election.seats_to_fill,
-    quota: droopQuota,
+    seats: seatsToFill,
+    ranked_method: rankedMethod,
+    quota_type: quotaType,
+    quota: quota,
     winners: winners.map(w => w.candidate_id),
-    rounds_count: roundNumber,
+    rounds_count: rounds.length,
   });
 
   return {
     total_ballots: totalBallots,
-    quota: droopQuota,
+    ranked_method: rankedMethod,
+    quota_type: quotaType,
+    quota: quota,
     winners: winners,
     eliminated: eliminated,
     rounds: rounds,

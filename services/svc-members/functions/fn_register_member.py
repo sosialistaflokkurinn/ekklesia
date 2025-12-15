@@ -43,6 +43,7 @@ from google.cloud.firestore_v1 import Increment
 
 from shared.validators import normalize_kennitala, normalize_phone, validate_kennitala
 from util_logging import log_json
+from fn_sync_banned_kennitala import is_kennitala_banned
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -326,6 +327,43 @@ def register_member(req: https_fn.CallableRequest) -> dict[str, Any]:
         normalized_kennitala = normalize_kennitala(ssn)
         normalized_phone = normalize_phone(phone)
         birthday = parse_birthday_from_kennitala(normalized_kennitala)
+
+        # =====================================================================
+        # SHADOW BAN CHECK
+        # If kennitala is banned, return fake success but don't register
+        # This prevents banned users from knowing they're banned
+        # =====================================================================
+        if is_kennitala_banned(normalized_kennitala):
+            # Log the attempt for audit purposes (superuser can see this)
+            log_json('WARN', 'Shadow banned registration attempt',
+                     event='register_member_shadow_banned',
+                     kennitala=f"{normalized_kennitala[:6]}****",
+                     name=name[:20] if name else 'unknown',
+                     email=email[:20] if email else 'unknown')
+
+            # Store in audit log for superuser visibility
+            try:
+                db = firestore.client()
+                db.collection('audit_log').add({
+                    'event': 'shadow_ban_registration_blocked',
+                    'timestamp': firestore.SERVER_TIMESTAMP,
+                    'kennitala_hash': normalized_kennitala[:6] + '****',
+                    'name': name,
+                    'email': email,
+                    'phone': normalized_phone,
+                    'ip_address': req.raw_request.remote_addr if hasattr(req, 'raw_request') else None,
+                    'details': 'Registration blocked due to banned kennitala (shadow ban)'
+                })
+            except Exception as audit_err:
+                logger.warning(f"Failed to write shadow ban audit log: {audit_err}")
+
+            # Return fake success - user thinks they registered
+            return {
+                'comrade_id': 9999,  # Fake ID
+                'django_id': None,
+                'error': None,
+                'shadow_banned': True  # Internal flag, not shown to user
+            }
 
         # Initialize Firestore
         db = firestore.client()
