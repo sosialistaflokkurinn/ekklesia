@@ -334,6 +334,11 @@
   color: var(--color-warning-dark);
 }
 
+.admin-badge--inactive {
+  background-color: var(--color-gray-200);
+  color: var(--color-gray-600);
+}
+
 .admin-badge--neutral {
   background-color: var(--color-gray-100);
   color: var(--color-gray-500);
