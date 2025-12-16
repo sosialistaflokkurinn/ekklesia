@@ -68,15 +68,20 @@ def verifyMembership_handler(req: https_fn.CallableRequest) -> dict:
             # Member if status is 'active' or 'unpaid' (both are valid members)
             is_member = membership_status in ('active', 'unpaid')
 
+            # Audit log for membership verification (issue #40)
             log_json("info", "Member lookup successful",
-                     kennitala=f"{kennitala[:7]}****",
+                     eventType="membership_verification",
+                     kennitalaLast4=kennitala[-4:],  # GDPR: only last 4 digits
                      status=membership_status,
                      fees_paid=fees_paid,
                      isMember=is_member,
                      uid=req.auth.uid)
         else:
+            # Audit log for failed membership verification (issue #40)
             log_json("info", "Member not found in Firestore",
-                     kennitala=f"{kennitala[:7]}****",
+                     eventType="membership_verification",
+                     kennitalaLast4=kennitala[-4:],  # GDPR: only last 4 digits
+                     isMember=False,
                      uid=req.auth.uid)
 
         # Update user profile in Firestore
