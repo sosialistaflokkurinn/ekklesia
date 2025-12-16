@@ -103,6 +103,9 @@ function setI18nStrings() {
   const labelSyncedAt = document.getElementById('label-synced-at');
   if (labelSyncedAt) labelSyncedAt.textContent = R.string.label_synced_at || 'Síðast samstillt';
 
+  const labelUid = document.getElementById('label-uid');
+  if (labelUid) labelUid.textContent = R.string.label_uid || 'Firebase UID';
+
   // Gender options
   const optionGenderNone = document.getElementById('option-gender-none');
   if (optionGenderNone) optionGenderNone.textContent = R.string.option_gender_none || 'Veldu...';
@@ -388,6 +391,14 @@ async function renderProfile() {
     document.getElementById('value-synced-at').textContent = formatDateIcelandic(syncDate);
   } else {
     document.getElementById('value-synced-at').textContent = '-';
+  }
+
+  // Firebase UID - shows if member has logged into the system
+  const uid = memberData.uid || metadata.firebase_uid || '';
+  if (uid) {
+    document.getElementById('value-uid').textContent = uid;
+  } else {
+    document.getElementById('value-uid').textContent = R.string.member_not_logged_in || 'Ekki skráð/ur inn';
   }
 
   // Initialize Phone Manager
