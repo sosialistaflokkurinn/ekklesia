@@ -131,6 +131,7 @@ export class AddressManager {
         this.addresses[index].latitude = validated.latitude;
         this.addresses[index].longitude = validated.longitude;
         this.addresses[index].hnitnum = validated.hnitnum;
+        this.addresses[index].municipality = validated.municipality || '';  // Sveitarfélag (#307)
 
         // Mark as validated with timestamp
         this.addresses[index].validated = true;
@@ -405,6 +406,7 @@ export class AddressManager {
             this.addresses[index].letter = selectedAddress.letter || '';
             this.addresses[index].postal_code = String(selectedAddress.postal_code || '');
             this.addresses[index].city = selectedAddress.city || '';
+            this.addresses[index].municipality = selectedAddress.municipality || '';  // Sveitarfélag (#307)
 
             // Store GPS silently (user doesn't see this)
             this.addresses[index].latitude = selectedAddress.latitude;

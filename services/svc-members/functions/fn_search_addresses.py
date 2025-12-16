@@ -122,6 +122,7 @@ def search_addresses(req: https_fn.CallableRequest) -> dict[str, Any]:
                 "letter": letter,
                 "postal_code": postal_code,
                 "city": city,
+                "municipality": r.get("svfheiti", ""),  # Sveitarfélag (issue #307)
                 "latitude": r.get("lat_wgs84"),
                 "longitude": r.get("long_wgs84"),
                 "hnitnum": r.get("hnitnum"),
