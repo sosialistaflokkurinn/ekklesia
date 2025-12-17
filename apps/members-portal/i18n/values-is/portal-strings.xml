@@ -19,6 +19,7 @@
   <string name="error_csrf_message">Öryggisvilla: CSRF-vörn virk. Vinsamlegast reyndu aftur.</string>
   <string name="nav_brand">Sósíalistaflokkurinn</string>
   <string name="nav_dashboard">Mín síða</string>
+  <string name="nav_admin_overview">Yfirlit</string>
   <string name="nav_profile">Prófíll</string>
   <string name="nav_events">Viðburðir</string>
   <string name="nav_voting">Kosningar</string>
@@ -49,7 +50,7 @@
   <string name="nav_superuser_system_overview">Kerfisyfirlit</string>
   <string name="nav_superuser_login_audit">Innskráningarsaga</string>
   <string name="nav_policy_session">Stefnumótun</string>
-  <string name="nav_back_to_member">Yfirlit</string>
+  <string name="nav_back_to_member">Mín síða</string>
   <string name="nav_open_menu">Opna valmynd</string>
   <string name="nav_close_menu">Loka valmynd</string>
   <string name="nav_close">Loka</string>

@@ -5,7 +5,7 @@
   <!-- ========================================== -->
   <string name="admin_elections_brand">Election Management</string>
   <string name="nav_elections_list">Elections</string>
-  <string name="admin_nav_back_to_member">Overview</string>
+  <string name="admin_nav_back_to_member">My Page</string>
   <string name="admin_nav_logout">Logout</string>
   
   <!-- ========================================== -->

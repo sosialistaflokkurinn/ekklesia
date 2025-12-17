@@ -357,8 +357,9 @@ export const NAV_CONFIGS = {
       textKey: 'nav_admin'  // "Stjórnkerfi"
     },
     links: [
-      { href: '/admin/', textKey: 'nav_dashboard' },
+      { href: '/admin/', textKey: 'nav_admin_overview' },
       { href: '/admin/members.html', textKey: 'nav_admin_members' },
+      { href: '/admin/events.html', textKey: 'nav_admin_events' },
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
       { href: '/admin/sync-members.html', textKey: 'nav_admin_sync' },
       { href: '/admin/sync-history.html', textKey: 'nav_admin_sync_history' },
@@ -376,8 +377,9 @@ export const NAV_CONFIGS = {
       textKey: 'nav_admin'  // Brand → Admin Dashboard
     },
     links: [
-      { href: '/admin/', textKey: 'nav_dashboard' },
+      { href: '/admin/', textKey: 'nav_admin_overview' },
       { href: '/admin/members.html', textKey: 'nav_admin_members' },
+      { href: '/admin/events.html', textKey: 'nav_admin_events' },
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
       { href: '/admin/sync-members.html', textKey: 'nav_admin_sync' },
       { href: '/admin/sync-history.html', textKey: 'nav_admin_sync_history' },
@@ -395,8 +397,9 @@ export const NAV_CONFIGS = {
       textKey: 'nav_admin'  // Brand → Admin Dashboard
     },
     links: [
-      { href: '/admin/', textKey: 'nav_dashboard' },
+      { href: '/admin/', textKey: 'nav_admin_overview' },
       { href: '/admin/members.html', textKey: 'nav_admin_members' },
+      { href: '/admin/events.html', textKey: 'nav_admin_events' },
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
       { href: '/admin/sync-members.html', textKey: 'nav_admin_sync' },
       { href: '/admin/sync-history.html', textKey: 'nav_admin_sync_history' },
@@ -414,7 +417,7 @@ export const NAV_CONFIGS = {
       textKey: 'nav_admin'  // Brand → Admin Dashboard
     },
     links: [
-      { href: '/admin/', textKey: 'nav_dashboard' },
+      { href: '/admin/', textKey: 'nav_admin_overview' },
       { href: '/admin/members.html', textKey: 'nav_admin_members' },
       { href: '/admin/events.html', textKey: 'nav_admin_events' },
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
@@ -433,8 +436,9 @@ export const NAV_CONFIGS = {
       textKey: 'nav_admin'  // Brand → Admin Dashboard
     },
     links: [
-      { href: '/admin/', textKey: 'nav_dashboard' },
+      { href: '/admin/', textKey: 'nav_admin_overview' },
       { href: '/admin/members.html', textKey: 'nav_admin_members' },
+      { href: '/admin/events.html', textKey: 'nav_admin_events' },
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
       { href: '/admin/sync-members.html', textKey: 'nav_admin_sync' },
       { href: '/admin/sync-history.html', textKey: 'nav_admin_sync_history' },
@@ -452,8 +456,9 @@ export const NAV_CONFIGS = {
       textKey: 'nav_admin'  // Brand → Admin Dashboard
     },
     links: [
-      { href: '/admin/', textKey: 'nav_dashboard' },
+      { href: '/admin/', textKey: 'nav_admin_overview' },
       { href: '/admin/members.html', textKey: 'nav_admin_members' },
+      { href: '/admin/events.html', textKey: 'nav_admin_events' },
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
       { href: '/admin/sync-members.html', textKey: 'nav_admin_sync' },
       { href: '/admin/sync-history.html', textKey: 'nav_admin_sync_history' },
@@ -475,7 +480,12 @@ export const NAV_CONFIGS = {
       textKey: 'nav_admin'  // Brand → Admin Dashboard
     },
     links: [
+      { href: '/admin/', textKey: 'nav_admin_overview' },
+      { href: '/admin/members.html', textKey: 'nav_admin_members' },
+      { href: '/admin/events.html', textKey: 'nav_admin_events' },
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
+      { href: '/admin/sync-members.html', textKey: 'nav_admin_sync' },
+      { href: '/admin/sync-history.html', textKey: 'nav_admin_sync_history' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
   },
@@ -490,7 +500,12 @@ export const NAV_CONFIGS = {
       textKey: 'nav_admin'  // Brand → Admin Dashboard
     },
     links: [
+      { href: '/admin/', textKey: 'nav_admin_overview' },
+      { href: '/admin/members.html', textKey: 'nav_admin_members' },
+      { href: '/admin/events.html', textKey: 'nav_admin_events' },
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
+      { href: '/admin/sync-members.html', textKey: 'nav_admin_sync' },
+      { href: '/admin/sync-history.html', textKey: 'nav_admin_sync_history' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
   },
@@ -505,7 +520,12 @@ export const NAV_CONFIGS = {
       textKey: 'nav_admin'  // Brand → Admin Dashboard
     },
     links: [
+      { href: '/admin/', textKey: 'nav_admin_overview' },
+      { href: '/admin/members.html', textKey: 'nav_admin_members' },
+      { href: '/admin/events.html', textKey: 'nav_admin_events' },
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
+      { href: '/admin/sync-members.html', textKey: 'nav_admin_sync' },
+      { href: '/admin/sync-history.html', textKey: 'nav_admin_sync_history' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
   },

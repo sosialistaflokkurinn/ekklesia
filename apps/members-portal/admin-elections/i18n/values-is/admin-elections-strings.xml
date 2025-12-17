@@ -6,7 +6,7 @@
   <!-- Navigation -->
   <string name="admin_elections_brand">Kosningastjórnun</string>
   <string name="nav_elections_list">Kosningar</string>
-  <string name="admin_nav_back_to_member">Yfirlit</string>
+  <string name="admin_nav_back_to_member">Mín síða</string>
   <string name="admin_nav_logout">Útskrá</string>
   
   <!-- Elections List -->
