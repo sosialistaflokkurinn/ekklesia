@@ -20,10 +20,8 @@
   <string name="quick_action_elections_desc">Stjórna kosningum og framboðum</string>
   <string name="quick_action_events_label">Viðburðir</string>
   <string name="quick_action_events_desc">Stjórna viðburðum og fundum</string>
-  <string name="quick_action_sync_label">Samstilla félagaskrá</string>
-  <string name="quick_action_sync_desc">Keyra samstillingu úr eldra Django-kerfi</string>
-  <string name="quick_action_history_label">Samstillingasaga</string>
-  <string name="quick_action_history_desc">Skoða yfirlit yfir fyrri samstillingar</string>
+  <string name="quick_action_sync_label">Samstilling</string>
+  <string name="quick_action_sync_desc">Samstilla félagaskrá og skoða sögu</string>
   <string name="quick_action_queue_label">Samstillingarbiðröð</string>
   <string name="quick_action_queue_desc">Skoða og afgreiða breytingar sem bíða</string>
   <string name="sync_members_title">Samstilla félagaskrá</string>
