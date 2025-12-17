@@ -5,7 +5,7 @@
   <!-- ========================================== -->
   <string name="admin_elections_brand">Election Management</string>
   <string name="nav_elections_list">Elections</string>
-  <string name="admin_nav_back_to_member">My Page</string>
+  <string name="admin_nav_back_to_member">Overview</string>
   <string name="admin_nav_logout">Logout</string>
   
   <!-- ========================================== -->
@@ -66,6 +66,7 @@
   <string name="btn_delete">🗑️ Delete</string>
   <string name="btn_open">🚀 Open</string>
   <string name="btn_close">🛑 Close</string>
+  <string name="btn_results">Results</string>
   <string name="btn_cancel">Cancel</string>
   <string name="btn_save">Save</string>
   <string name="btn_confirm">Confirm</string>
@@ -164,6 +165,10 @@ To confirm, type the election title below:
   <string name="voting_type_single_desc">Members can select one option (radio button).</string>
   <string name="voting_type_multi">Multiple choice</string>
   <string name="voting_type_multi_desc">Members can select multiple options (checkbox).</string>
+  <string name="voting_type_ranked">Ranked choice</string>
+  <string name="voting_type_ranked_desc">Members rank options in order of preference (1st, 2nd, 3rd, etc.).</string>
+  <string name="label_num_seats">Number of seats</string>
+  <string name="help_num_seats">How many options will be selected (winners).</string>
   <string name="label_max_selections">Maximum Selections</string>
   <string name="help_max_selections">Maximum number of options that can be selected (1-10).</string>
   <string name="label_answer_options">Answer Options</string>
