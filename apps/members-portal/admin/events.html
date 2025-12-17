@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Viðburðir - Stjórnkerfi</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+  <!-- Reuse member portal styles -->
+  <link rel="stylesheet" href="/styles/bundle.css?v=20251217k">
+
+  <!-- Admin-specific styles -->
+  <link rel="stylesheet" href="/admin/styles/admin.css?v=20251027b">
+</head>
+<body class="authenticated admin">
+  <!-- Navigation component inserted here -->
+
+  <!-- Page Content -->
+  <div class="page__container">
+    <!-- Events Management -->
+    <div class="card">
+      <h2 class="card__title" id="events-title">Viðburðir</h2>
+      <p class="card__description">Stjórnun viðburða og funda er í þróun.</p>
+    </div>
+  </div>
+
+  <script type="module" src="/admin/js/events.js?v=20251217"></script>
+
+  <!-- Initialize Navigation Component -->
+  <script type="module">
+    import { initNavHeader, NAV_CONFIGS } from '../../ui/components/navigation-bar.js?v=20251121b';
+
+    // Initialize navigation with appropriate config
+    await initNavHeader(NAV_CONFIGS.adminEvents);
+  </script>
+
+</body>
+</html>
