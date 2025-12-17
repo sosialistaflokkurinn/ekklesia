@@ -10,7 +10,7 @@
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
 
   <!-- Reuse member portal styles -->
-  <link rel="stylesheet" href="/styles/bundle.css?v=20251215k">
+  <link rel="stylesheet" href="/styles/bundle.css?v=20251217a">
   <link rel="stylesheet" href="/styles/components/searchable-select.css?v=20251105">
 
   <!-- Admin-specific styles -->
@@ -54,8 +54,19 @@
           </select>
         </div>
 
-        <!-- Create Button -->
+        <!-- Municipality Filter -->
+        <div class="members-controls__filter">
+          <select id="members-filter-municipality" class="members-controls__filter-select" data-searchable>
+            <option value="all" id="filter-municipality-all">Öll sveitarfélög</option>
+            <!-- Options populated dynamically by JavaScript -->
+          </select>
+        </div>
+
+        <!-- Action Buttons -->
         <div class="members-controls__actions">
+          <button id="btn-print-list" class="btn btn--outline" style="display: none;">
+            Prenta lista
+          </button>
           <a href="/admin/member-create.html" class="btn" id="btn-create-member">
             <span id="btn-create-member-text"></span>
           </a>

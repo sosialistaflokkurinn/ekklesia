@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Niðurstöður - Admin</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+  <!-- Reuse member portal styles -->
+  <link rel="stylesheet" href="/styles/bundle.css?v=20251217a">
+  <link rel="stylesheet" href="/admin/styles/admin.css?v=20251027b">
+
+  <style>
+    .results-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .results-summary__item {
+      text-align: center;
+      padding: 1rem;
+      background: var(--color-surface-light, #f5f5f5);
+      border-radius: 8px;
+    }
+    .results-summary__value {
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--color-primary, #333);
+    }
+    .results-summary__label {
+      font-size: 0.875rem;
+      color: var(--color-text-muted, #666);
+    }
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.5rem;
+    }
+    .results-table th,
+    .results-table td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--color-border, #ddd);
+    }
+    .results-table th {
+      background: var(--color-surface-light, #f5f5f5);
+      font-weight: 600;
+    }
+    .results-table__bar-cell {
+      width: 40%;
+    }
+    .results-bar {
+      height: 24px;
+      background: var(--color-surface-light, #e0e0e0);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .results-bar__fill {
+      height: 100%;
+      background: var(--color-primary, #c8102e);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+    .results-bar__fill--winner {
+      background: var(--color-success, #28a745);
+    }
+    .results-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .winner-badge {
+      display: inline-block;
+      padding: 0.125rem 0.5rem;
+      background: var(--color-success, #28a745);
+      color: white;
+      font-size: 0.75rem;
+      border-radius: 4px;
+      margin-left: 0.5rem;
+    }
+  </style>
+</head>
+<body class="authenticated admin">
+
+  <!-- Skip Link for Accessibility -->
+  <a href="#main-content" class="u-skip-link">Fara beint í efni</a>
+
+  <!-- Navigation component inserted here -->
+
+  <!-- Page Content -->
+  <div class="page__container" id="main-content">
+    <!-- Loading State -->
+    <div id="loading-state" class="card">
+      <p>Hleður niðurstöðum...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="error-state" class="card u-hidden">
+      <h2 class="u-text-error">Villa</h2>
+      <p id="error-message">Ekki tókst að sækja niðurstöður.</p>
+      <button id="retry-button" class="btn">Reyna aftur</button>
+    </div>
+
+    <!-- Results Content -->
+    <div id="results-content" class="u-hidden">
+      <!-- Election Header -->
+      <div class="card">
+        <h1 class="card__title" id="election-title">Hleður...</h1>
+        <p class="u-text-muted" id="election-question"></p>
+        <p class="u-text-muted" id="election-dates"></p>
+      </div>
+
+      <!-- Results Summary -->
+      <div class="card">
+        <h2 class="card__title">Yfirlit</h2>
+        <div class="results-summary">
+          <div class="results-summary__item">
+            <div class="results-summary__value" id="total-votes">0</div>
+            <div class="results-summary__label">Atkvæði</div>
+          </div>
+          <div class="results-summary__item">
+            <div class="results-summary__value" id="total-options">0</div>
+            <div class="results-summary__label">Valmöguleikar</div>
+          </div>
+          <div class="results-summary__item">
+            <div class="results-summary__value" id="election-status">-</div>
+            <div class="results-summary__label">Staða</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vote Distribution -->
+      <div class="card">
+        <h2 class="card__title">Atkvæðadreifing</h2>
+        <table class="results-table" id="results-table">
+          <thead>
+            <tr>
+              <th>Svar</th>
+              <th>Atkvæði</th>
+              <th>Hlutfall</th>
+              <th class="results-table__bar-cell">Dreifing</th>
+            </tr>
+          </thead>
+          <tbody id="results-tbody">
+            <!-- Results rows inserted by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Actions -->
+      <div class="card">
+        <h2 class="card__title">Aðgerðir</h2>
+        <div class="results-actions">
+          <button class="btn" id="btn-export-csv">Flytja út CSV</button>
+          <button class="btn btn--outline" id="btn-print">Prenta</button>
+          <a href="/admin-elections/" class="btn btn--outline">Til baka</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/admin-elections/js/election-results.js?v=20251216e"></script>
+
+  <!-- Initialize Navigation Component -->
+  <script type="module">
+    import { initNavHeader, NAV_CONFIGS } from '/ui/components/navigation-bar.js';
+
+    // Initialize navigation with appropriate config
+    await initNavHeader(NAV_CONFIGS.adminElectionsControl);
+  </script>
+
+</body>
+</html>
