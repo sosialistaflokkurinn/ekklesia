@@ -6,7 +6,7 @@
 .admin-container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: var(--spacing-xl);
+  padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-xl);
 }
 
 /* Mobile List - Hidden on desktop */
