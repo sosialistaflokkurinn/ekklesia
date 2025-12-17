@@ -3554,7 +3554,7 @@ body.modal-open {
 
 .nav {
   background: var(--color-socialist-red);
-  padding: var(--spacing-md) var(--spacing-xl) var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-xl);
   box-shadow: var(--shadow-sm);
 }
 
