@@ -18,6 +18,8 @@
   <string name="quick_action_members_desc">Skoða og breyta félagaskrá</string>
   <string name="quick_action_elections_label">Kosningar</string>
   <string name="quick_action_elections_desc">Stjórna kosningum og framboðum</string>
+  <string name="quick_action_events_label">Viðburðir</string>
+  <string name="quick_action_events_desc">Stjórna viðburðum og fundum</string>
   <string name="quick_action_sync_label">Samstilla félagaskrá</string>
   <string name="quick_action_sync_desc">Keyra samstillingu úr eldra Django-kerfi</string>
   <string name="quick_action_history_label">Samstillingasaga</string>
