@@ -339,6 +339,22 @@ body.admin .members-count {
 }
 
 /* ========================================== */
+/* CARD HEADER (title + action) */
+/* ========================================== */
+
+.card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.card__header .card__title {
+  margin-bottom: 0;
+}
+
+/* ========================================== */
 /* CARD MODIFIERS (Admin-specific) */
 /* ========================================== */
 

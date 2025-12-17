@@ -195,10 +195,10 @@ async function triggerSync() {
 }
 
 /**
- * Show sync trigger card, hide others
+ * Show history section, hide status/error cards
  */
-function showTriggerCard() {
-  document.getElementById('sync-trigger-card').classList.remove('u-hidden');
+function showHistorySection() {
+  document.getElementById('history-section').classList.remove('u-hidden');
   document.getElementById('sync-status-card').classList.add('u-hidden');
   document.getElementById('sync-error-card').classList.add('u-hidden');
 }
@@ -209,7 +209,7 @@ function showTriggerCard() {
 function showSyncInProgress() {
   const strings = adminStrings.strings;
 
-  document.getElementById('sync-trigger-card').classList.add('u-hidden');
+  document.getElementById('history-section').classList.add('u-hidden');
   document.getElementById('sync-error-card').classList.add('u-hidden');
 
   const statusCard = document.getElementById('sync-status-card');
@@ -320,7 +320,7 @@ function showSyncSuccess(result) {
 function showSyncError(error) {
   const strings = adminStrings.strings;
 
-  document.getElementById('sync-trigger-card').classList.add('u-hidden');
+  document.getElementById('history-section').classList.add('u-hidden');
   document.getElementById('sync-status-card').classList.add('u-hidden');
 
   const errorCard = document.getElementById('sync-error-card');
@@ -374,24 +374,7 @@ function setPageText(strings) {
   // Page title
   document.getElementById('page-title').textContent = strings.sync_members_title;
 
-  // Navigation - Handled by nav-header.js component
-  // document.getElementById('nav-brand').textContent = strings.admin_brand;
-  // document.getElementById('nav-admin-dashboard').textContent = strings.nav_admin_dashboard;
-  // document.getElementById('nav-admin-members').textContent = strings.nav_admin_members;
-  // document.getElementById('nav-admin-sync').textContent = strings.nav_admin_sync;
-  // document.getElementById('nav-admin-history').textContent = strings.nav_admin_history;
-  // document.getElementById('nav-back-to-member').textContent = strings.nav_back_to_member;
-  // document.getElementById('nav-logout').textContent = strings.nav_logout;
-
-  // Page header
-  document.getElementById('sync-title').textContent = strings.sync_members_title;
-  document.getElementById('sync-subtitle').textContent = strings.sync_members_subtitle;
-
-  // Trigger card
-  document.getElementById('sync-trigger-title').textContent = strings.sync_trigger_title;
-  document.getElementById('sync-description').textContent = strings.sync_trigger_description;
-
-
+  // Sync trigger button (now in history section header)
   document.getElementById('sync-trigger-btn').textContent = strings.sync_trigger_btn;
 
   // Sync status card (initial state)
@@ -435,7 +418,7 @@ function setupEventListeners() {
 
   // Retry button (if error occurs)
   document.getElementById('sync-retry-btn').addEventListener('click', () => {
-    showTriggerCard();
+    showHistorySection();
   });
 
   // Back to dashboard button

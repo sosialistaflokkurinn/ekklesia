@@ -20,22 +20,6 @@
 
   <!-- Page Content -->
   <div class="page__container">
-    <!-- Page Header -->
-    <div class="card">
-      <h1 id="sync-title"></h1>
-      <p class="u-text-muted" id="sync-subtitle"></p>
-    </div>
-
-    <!-- Sync Trigger Card -->
-    <div class="card" id="sync-trigger-card">
-      <h2 class="card__title" id="sync-trigger-title"></h2>
-      <div class="card__content">
-        <p class="u-margin-bottom-md" id="sync-description"></p>
-        <button class="btn btn--outline" id="sync-trigger-btn">
-        </button>
-      </div>
-    </div>
-
     <!-- Sync Status Card (hidden until sync starts) -->
     <div class="card u-hidden" id="sync-status-card">
       <h2 class="card__title" id="sync-status-title"></h2>
@@ -87,7 +71,10 @@
 
     <!-- Sync History Section -->
     <div class="card" id="history-section">
-      <h2 class="card__title" id="history-title"></h2>
+      <div class="card__header">
+        <h2 class="card__title" id="history-title"></h2>
+        <button class="btn btn--outline" id="sync-trigger-btn"></button>
+      </div>
 
       <!-- History Loading State -->
       <div id="history-loading" class="sync-progress">
