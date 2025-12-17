@@ -318,7 +318,7 @@ body.authenticated {
 .welcome-link {
   display: inline-block;
   margin-top: var(--spacing-md);
-  padding: 0.5rem 1rem;
+  padding: var(--spacing-md) var(--spacing-lg);
   background: var(--color-white-alpha-15);
   color: var(--color-white);
   text-decoration: none;
