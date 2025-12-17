@@ -15,7 +15,7 @@ body.authenticated {
 .page__container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: var(--spacing-xl) var(--spacing-lg);
+  padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-xl);
 }
 
 /* Page Tabs (Sub-navigation) */
