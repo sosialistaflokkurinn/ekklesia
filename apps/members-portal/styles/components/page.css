@@ -308,6 +308,7 @@ body.authenticated {
 
 .card--welcome .card__title {
   color: var(--color-white);
+  margin-bottom: var(--spacing-sm);
 }
 
 .card--welcome .card__content {
