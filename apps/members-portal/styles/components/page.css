@@ -295,7 +295,7 @@ body.authenticated {
 .card--welcome {
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
   color: var(--color-white);
-  padding: var(--spacing-md) var(--spacing-xl);
+  padding: var(--spacing-sm) var(--spacing-xl) var(--spacing-md);
   box-shadow: 0 8px 32px var(--color-black-alpha-20),
               0 4px 16px var(--color-primary-alpha-30);
 }
