@@ -695,14 +695,26 @@ export function normalizeElectionStatus(election) {
   if (!election) return election;
 
   const computedStatus = computeElectionStatus(
-    election.status, 
-    election.scheduled_start, 
+    election.status,
+    election.scheduled_start,
     election.scheduled_end
   );
 
+  // Normalize answers: API uses answer_text, frontend expects text
+  let normalizedAnswers = election.answers;
+  if (Array.isArray(election.answers)) {
+    normalizedAnswers = election.answers.map((answer, index) => ({
+      ...answer,
+      // Ensure both text and id are available
+      text: answer.text || answer.answer_text || '',
+      id: answer.id || answer.answer_id || answer.answer_text || `answer-${index}`
+    }));
+  }
+
   return {
     ...election,
-    status: computedStatus
+    status: computedStatus,
+    answers: normalizedAnswers
   };
 }
 

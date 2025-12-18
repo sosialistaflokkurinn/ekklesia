@@ -90,6 +90,7 @@ const MembersAPI = {
           address: data.address || {},
           membership: data.membership || {},
           metadata: data.metadata || {},
+          profile: data.profile || {},  // Include profile for addresses/municipality filtering
           _doc: docSnap // Keep reference for pagination
         });
       }

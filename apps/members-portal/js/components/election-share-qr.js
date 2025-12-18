@@ -2,7 +2,7 @@
  * Election Share QR Code Component
  *
  * Generates a QR code for sharing election URLs.
- * Uses Google Charts API for QR code generation (no external dependencies).
+ * Uses QR Server API (api.qrserver.com) for QR code generation.
  *
  * Features:
  * - QR code generation
@@ -41,14 +41,15 @@ export function getElectionPublicUrl(electionId) {
 }
 
 /**
- * Generate QR code image URL using Google Charts API
+ * Generate QR code image URL using QR Server API
+ * (Google Charts API was deprecated and shut down)
  * @param {string} data - Data to encode in QR code
  * @param {number} size - QR code size in pixels (default: 300)
  * @returns {string} QR code image URL
  */
 function generateQRCodeUrl(data, size = 300) {
   const encodedData = encodeURIComponent(data);
-  return `https://chart.googleapis.com/chart?cht=qr&chs=${size}x${size}&chl=${encodedData}&choe=UTF-8`;
+  return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodedData}&format=png`;
 }
 
 /**
