@@ -99,6 +99,21 @@ const UTILITY_FUNCTIONS = [
   { id: 'cleanupauditlogs', nameKey: 'service_name_cleanupauditlogs' },
 ];
 
+// Firebase Functions - Email (Issue #323)
+const EMAIL_FUNCTIONS = [
+  { id: 'listemailtemplates', nameKey: 'service_name_listemailtemplates' },
+  { id: 'getemailtemplate', nameKey: 'service_name_getemailtemplate' },
+  { id: 'saveemailtemplate', nameKey: 'service_name_saveemailtemplate' },
+  { id: 'deleteemailtemplate', nameKey: 'service_name_deleteemailtemplate' },
+  { id: 'sendemail', nameKey: 'service_name_sendemail' },
+  { id: 'listemailcampaigns', nameKey: 'service_name_listemailcampaigns' },
+  { id: 'createemailcampaign', nameKey: 'service_name_createemailcampaign' },
+  { id: 'sendcampaign', nameKey: 'service_name_sendcampaign' },
+  { id: 'getemailstats', nameKey: 'service_name_getemailstats' },
+  { id: 'listemaillogs', nameKey: 'service_name_listemaillogs' },
+  { id: 'ses-webhook', nameKey: 'service_name_ses_webhook' },
+];
+
 const DATABASE_SERVICES = [
   { id: 'firestore', name: 'Firestore', status: 'unknown' },
   { id: 'cloudsql', name: 'Cloud SQL (PostgreSQL)', status: 'unknown' },
@@ -150,6 +165,10 @@ const SERVICE_GROUPS = {
   utility: {
     nameKey: 'architecture_group_utility',
     services: ['get-django-token']
+  },
+  email: {
+    nameKey: 'architecture_group_email',
+    services: ['listemailtemplates', 'getemailtemplate', 'saveemailtemplate', 'deleteemailtemplate', 'sendemail', 'listemailcampaigns', 'createemailcampaign', 'sendcampaign', 'getemailstats', 'listemaillogs', 'ses-webhook']
   }
 };
 
@@ -184,7 +203,19 @@ const SERVICE_NAMES = {
   'list-postal-codes': 'service_list_postal_codes',
   'get-cells-by-postal-code': 'service_get_cells_by_postal_code',
   'register-member': 'service_register_member',
-  'get-django-token': 'service_get_django_token'
+  'get-django-token': 'service_get_django_token',
+  // Email services (Issue #323)
+  'listemailtemplates': 'service_listemailtemplates',
+  'getemailtemplate': 'service_getemailtemplate',
+  'saveemailtemplate': 'service_saveemailtemplate',
+  'deleteemailtemplate': 'service_deleteemailtemplate',
+  'sendemail': 'service_sendemail',
+  'listemailcampaigns': 'service_listemailcampaigns',
+  'createemailcampaign': 'service_createemailcampaign',
+  'sendcampaign': 'service_sendcampaign',
+  'getemailstats': 'service_getemailstats',
+  'listemaillogs': 'service_listemaillogs',
+  'ses-webhook': 'service_ses_webhook'
 };
 
 // =============================================================================
@@ -491,6 +522,7 @@ function updateServicesTab() {
   renderServicesGrid('registration-functions', mapServices(REGISTRATION_FUNCTIONS));
   renderServicesGrid('superuser-functions', mapServices(SUPERUSER_FUNCTIONS));
   renderServicesGrid('utility-functions', mapServices(UTILITY_FUNCTIONS));
+  renderServicesGrid('email-functions', mapServices(EMAIL_FUNCTIONS));
 
   // Database services
   const dbResults = DATABASE_SERVICES.map(service => {
@@ -509,7 +541,7 @@ function updateServicesTab() {
   renderServicesGrid('firebase-services', firebaseResults);
 
   // Update breakdown counts
-  const allFunctions = [...MEMBER_FUNCTIONS, ...ADDRESS_FUNCTIONS, ...LOOKUP_FUNCTIONS, ...REGISTRATION_FUNCTIONS, ...SUPERUSER_FUNCTIONS, ...UTILITY_FUNCTIONS];
+  const allFunctions = [...MEMBER_FUNCTIONS, ...ADDRESS_FUNCTIONS, ...LOOKUP_FUNCTIONS, ...REGISTRATION_FUNCTIONS, ...SUPERUSER_FUNCTIONS, ...UTILITY_FUNCTIONS, ...EMAIL_FUNCTIONS];
   updateBreakdownCounts({
     gcp: coreResults.length,
     functions: allFunctions.length,

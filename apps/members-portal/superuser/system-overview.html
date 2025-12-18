@@ -219,10 +219,18 @@
 
               <!-- Utility Functions -->
               <g class="architecture-group architecture-group--clickable" id="group-utility" data-group="utility">
+                <rect x="240" y="390" width="130" height="50" rx="6" class="architecture-node architecture-node--group" />
+                <text x="305" y="412" text-anchor="middle" class="architecture-node__label">Hjálparföll</text>
+                <text x="305" y="427" text-anchor="middle" class="architecture-node__count">1 þjónusta</text>
+                <circle cx="350" cy="400" r="5" class="architecture-status" id="status-utility" />
+              </g>
+
+              <!-- Email Functions (Issue #323) -->
+              <g class="architecture-group architecture-group--clickable" id="group-email" data-group="email">
                 <rect x="435" y="390" width="130" height="50" rx="6" class="architecture-node architecture-node--group" />
-                <text x="500" y="412" text-anchor="middle" class="architecture-node__label">Hjálparföll</text>
-                <text x="500" y="427" text-anchor="middle" class="architecture-node__count">1 þjónusta</text>
-                <circle cx="545" cy="400" r="5" class="architecture-status" id="status-utility" />
+                <text x="500" y="412" text-anchor="middle" class="architecture-node__label">Tölvupóstur</text>
+                <text x="500" y="427" text-anchor="middle" class="architecture-node__count">11 þjónustur</text>
+                <circle cx="545" cy="400" r="5" class="architecture-status" id="status-email" />
               </g>
             </g>
 
@@ -243,11 +251,11 @@
                 <circle cx="480" cy="475" r="6" class="architecture-status" id="status-cloudsql" />
               </g>
 
-              <!-- Django (Linode) -->
+              <!-- Django (GCP Cloud Run) -->
               <g class="architecture-group" id="group-django" data-group="django">
                 <rect x="590" y="460" width="140" height="60" rx="6" class="architecture-node architecture-node--external" />
                 <text x="660" y="485" text-anchor="middle" class="architecture-node__label">Django</text>
-                <text x="660" y="502" text-anchor="middle" class="architecture-node__sublabel">Linode</text>
+                <text x="660" y="502" text-anchor="middle" class="architecture-node__sublabel">GCP Cloud Run</text>
                 <circle cx="710" cy="475" r="6" class="architecture-status" id="status-django" />
               </g>
             </g>
@@ -375,6 +383,13 @@
         <h2 class="card__title" data-i18n="health_section_utility">Hjálparföll</h2>
         <p class="card__description u-text-muted" data-i18n="health_section_utility_desc">Bakgrunnsföll og hjálparföll.</p>
         <div class="service-grid" id="utility-functions"></div>
+      </div>
+
+      <!-- Firebase Functions - Email (Issue #323) -->
+      <div class="card">
+        <h2 class="card__title" data-i18n="health_section_email">Tölvupóstur</h2>
+        <p class="card__description u-text-muted" data-i18n="health_section_email_desc">Amazon SES tölvupóstþjónustur fyrir sniðmát, herferðir og sendingar.</p>
+        <div class="service-grid" id="email-functions"></div>
       </div>
 
       <!-- Database & Storage -->
