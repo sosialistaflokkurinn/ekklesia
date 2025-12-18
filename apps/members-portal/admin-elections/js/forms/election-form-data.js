@@ -43,6 +43,9 @@ export function collectFormData(isLoadingElectionData = false) {
   formData.max_selections = formData.voting_type === 'multi-choice'
     ? parseInt(document.getElementById('max-selections').value)
     : 1; // Single-choice must have max_selections = 1
+  formData.num_seats = formData.voting_type === 'ranked-choice'
+    ? parseInt(document.getElementById('num-seats').value)
+    : null;
   formData.answers = getAnswers();
 
   // Note: Schedule options (start timing, duration) are now configured when opening
@@ -72,6 +75,11 @@ export function buildCreatePayload(formData, status = 'draft') {
     // Note: status is NOT included - handled via separate /open endpoint
     // Note: Schedule options are configured when opening from elections list
   };
+
+  // Add num_seats for ranked-choice elections
+  if (formData.voting_type === 'ranked-choice' && formData.num_seats) {
+    payload.num_seats = formData.num_seats;
+  }
 
   return payload;
 }
@@ -114,14 +122,22 @@ export function populateFormFromElection(election, setLoadingFlag) {
     const votingTypeRadio = document.querySelector(`input[name="voting_type"][value="${election.voting_type}"]`);
     if (votingTypeRadio) {
       votingTypeRadio.checked = true;
-      
+
       // Show/hide max selections based on voting type
       const maxSelectionsGroup = document.getElementById('max-selections-group');
+      const numSeatsGroup = document.getElementById('num-seats-group');
+
       if (election.voting_type === 'multi-choice') {
-        maxSelectionsGroup.style.display = 'block';
+        maxSelectionsGroup.classList.remove('hidden');
+        numSeatsGroup.classList.add('hidden');
         document.getElementById('max-selections').value = election.max_selections || 1;
+      } else if (election.voting_type === 'ranked-choice') {
+        maxSelectionsGroup.classList.add('hidden');
+        numSeatsGroup.classList.remove('hidden');
+        document.getElementById('num-seats').value = election.num_seats || 1;
       } else {
-        maxSelectionsGroup.style.display = 'none';
+        maxSelectionsGroup.classList.add('hidden');
+        numSeatsGroup.classList.add('hidden');
       }
     }
 

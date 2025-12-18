@@ -362,6 +362,11 @@ textarea.form-control {
   border-top: 1px solid var(--color-divider);
 }
 
+/* Fix: .btn.hidden needs higher specificity to override .btn display */
+.wizard-navigation .btn.hidden {
+  display: none;
+}
+
 .wizard-nav-right {
   display: flex;
   gap: var(--spacing-md);

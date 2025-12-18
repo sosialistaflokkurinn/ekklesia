@@ -452,6 +452,15 @@ function getActionButtons(election) {
       </button>
     `);
   }
+
+  // Results button (for closed elections or published with votes)
+  if (election.status === 'closed' || (election.status === 'published' && election.vote_count > 0)) {
+    buttons.push(`
+      <button class="btn btn-sm btn-results" data-action="results" data-id="${election.id}" title="${R.string.btn_results || 'Niðurstöður'}">
+        📊 ${R.string.btn_results || 'Niðurstöður'}
+      </button>
+    `);
+  }
   
   // Edit button (always shown, but will be limited for published/closed)
   if (!election.hidden) {
@@ -540,6 +549,10 @@ async function handleAction(event) {
 
     case 'edit':
       window.location.href = `/admin-elections/create.html?id=${electionId}`;
+      break;
+
+    case 'results':
+      window.location.href = `/admin-elections/results.html?id=${electionId}`;
       break;
       
     case 'open':

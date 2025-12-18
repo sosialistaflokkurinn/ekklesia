@@ -42,6 +42,7 @@ const formData = {
   description: '',
   voting_type: 'single-choice',
   max_selections: null,
+  num_seats: null,
   answers: [],
   start_timing: 'immediate',
   scheduled_start: null,
@@ -533,7 +534,10 @@ function updateAnswerPlaceholders() {
 
 function handleVotingTypeChange(e) {
   const maxSelectionsGroup = document.getElementById('max-selections-group');
+  const numSeatsGroup = document.getElementById('num-seats-group');
+
   maxSelectionsGroup.classList.toggle('hidden', e.target.value !== 'multi-choice');
+  numSeatsGroup.classList.toggle('hidden', e.target.value !== 'ranked-choice');
 }
 
 function handleStartTimingChange(e) {
@@ -591,14 +595,24 @@ function updateReview() {
     : `<em>${R.string.review_no_description}</em>`;
 
   // Answer Options
-  const votingTypeText = formData.voting_type === 'single-choice' 
-    ? R.string.voting_type_single 
-    : R.string.voting_type_multi;
+  let votingTypeText;
+  if (formData.voting_type === 'single-choice') {
+    votingTypeText = R.string.voting_type_single;
+  } else if (formData.voting_type === 'multi-choice') {
+    votingTypeText = R.string.voting_type_multi;
+  } else if (formData.voting_type === 'ranked-choice') {
+    votingTypeText = R.string.voting_type_ranked;
+  }
   document.getElementById('review-voting-type').textContent = votingTypeText;
 
-  const maxSelectionsText = formData.voting_type === 'multi-choice' 
-    ? R.format(R.string.duration_max_selections, formData.max_selections)
-    : R.string.duration_one_selection;
+  let maxSelectionsText;
+  if (formData.voting_type === 'multi-choice') {
+    maxSelectionsText = R.format(R.string.duration_max_selections, formData.max_selections);
+  } else if (formData.voting_type === 'ranked-choice') {
+    maxSelectionsText = R.format(R.string.label_num_seats + ': %d', formData.num_seats || 1);
+  } else {
+    maxSelectionsText = R.string.duration_one_selection;
+  }
   document.getElementById('review-max-selections').textContent = maxSelectionsText;
 
   // Securely build answer list using DOM API to prevent XSS
