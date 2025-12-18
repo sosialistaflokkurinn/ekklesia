@@ -108,6 +108,9 @@ from fn_validate_address import validate_address, validate_postal_code
 # Import address search function (autocomplete)
 from fn_search_addresses import search_addresses
 
+# Import municipality migration function (issue #330)
+from fn_migrate_municipality import run_municipality_migration
+
 # ==============================================================================
 # SUPERUSER FUNCTIONS (Epic: Superuser Console)
 # ==============================================================================
@@ -181,6 +184,78 @@ from fn_cells_by_postal_code import get_cells_by_postal_code
 from fn_register_member import register_member
 
 # ==============================================================================
+# EMAIL FUNCTIONS (Issue #323 - Postmark Integration)
+# ==============================================================================
+
+# Import email handlers
+from fn_email import (
+    list_email_templates_handler,
+    get_email_template_handler,
+    save_email_template_handler,
+    delete_email_template_handler,
+    send_email_handler,
+    list_email_campaigns_handler,
+    create_email_campaign_handler,
+    send_campaign_handler,
+    get_email_stats_handler,
+    list_email_logs_handler
+)
+
+# Define decorated functions for email operations
+@https_fn.on_call(timeout_sec=30, memory=256)
+def listEmailTemplates(req: https_fn.CallableRequest) -> dict:
+    """List all email templates - requires admin"""
+    return list_email_templates_handler(req)
+
+@https_fn.on_call(timeout_sec=30, memory=256)
+def getEmailTemplate(req: https_fn.CallableRequest) -> dict:
+    """Get a single email template - requires admin"""
+    return get_email_template_handler(req)
+
+@https_fn.on_call(timeout_sec=30, memory=256)
+def saveEmailTemplate(req: https_fn.CallableRequest) -> dict:
+    """Create or update an email template - requires admin"""
+    return save_email_template_handler(req)
+
+@https_fn.on_call(timeout_sec=30, memory=256)
+def deleteEmailTemplate(req: https_fn.CallableRequest) -> dict:
+    """Delete an email template - requires admin"""
+    return delete_email_template_handler(req)
+
+@https_fn.on_call(timeout_sec=60, memory=256, secrets=["aws-ses-access-key", "aws-ses-secret-key"])
+def sendEmail(req: https_fn.CallableRequest) -> dict:
+    """Send a single transactional email via Amazon SES - requires admin"""
+    return send_email_handler(req)
+
+@https_fn.on_call(timeout_sec=30, memory=256)
+def listEmailCampaigns(req: https_fn.CallableRequest) -> dict:
+    """List email campaigns - requires admin"""
+    return list_email_campaigns_handler(req)
+
+@https_fn.on_call(timeout_sec=30, memory=256)
+def createEmailCampaign(req: https_fn.CallableRequest) -> dict:
+    """Create a new email campaign - requires admin"""
+    return create_email_campaign_handler(req)
+
+@https_fn.on_call(timeout_sec=540, memory=512, secrets=["aws-ses-access-key", "aws-ses-secret-key"])
+def sendCampaign(req: https_fn.CallableRequest) -> dict:
+    """Send an email campaign to all recipients via Amazon SES - requires admin"""
+    return send_campaign_handler(req)
+
+@https_fn.on_call(timeout_sec=30, memory=256)
+def getEmailStats(req: https_fn.CallableRequest) -> dict:
+    """Get email sending statistics - requires admin"""
+    return get_email_stats_handler(req)
+
+@https_fn.on_call(timeout_sec=30, memory=256)
+def listEmailLogs(req: https_fn.CallableRequest) -> dict:
+    """List email send logs - requires admin"""
+    return list_email_logs_handler(req)
+
+# Import SES webhook handler (HTTP function, already decorated)
+from fn_ses_webhook import ses_webhook
+
+# ==============================================================================
 # EXPORTS
 # ==============================================================================
 
@@ -207,6 +282,8 @@ __all__ = [
     'validate_postal_code',
     # Address search (autocomplete)
     'search_addresses',
+    # Municipality migration (issue #330)
+    'run_municipality_migration',
     # Superuser functions
     'setUserRole',
     'getUserRole',
@@ -225,4 +302,16 @@ __all__ = [
     'get_cells_by_postal_code',
     # Registration function
     'register_member',
+    # Email functions (Issue #323)
+    'listEmailTemplates',
+    'getEmailTemplate',
+    'saveEmailTemplate',
+    'deleteEmailTemplate',
+    'sendEmail',
+    'listEmailCampaigns',
+    'createEmailCampaign',
+    'sendCampaign',
+    'getEmailStats',
+    'listEmailLogs',
+    'ses_webhook',
 ]

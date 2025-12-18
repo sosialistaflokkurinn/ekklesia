@@ -164,4 +164,98 @@
   <string name="membership_status_active">Virkur</string>
   <string name="select_union_placeholder">Veldu stéttarfélag...</string>
   <string name="select_job_title_placeholder">Veldu starfsheiti...</string>
+
+  <!-- Email Admin (Issue #323) -->
+  <string name="nav_admin_email">Tölvupóstur</string>
+  <string name="quick_action_email_label">Tölvupóstur</string>
+  <string name="quick_action_email_desc">Senda póst til félaga</string>
+
+  <!-- Email Dashboard -->
+  <string name="email_dashboard_title">Tölvupóstur</string>
+  <string name="email_dashboard_subtitle">Senda tölvupóst til félaga</string>
+  <string name="email_stats_sent">Sent</string>
+  <string name="email_stats_delivered">Afhent</string>
+  <string name="email_stats_opened">Opnað</string>
+  <string name="email_stats_bounced">Skilaði</string>
+  <string name="email_stats_period">síðustu %d daga</string>
+
+  <!-- Email Templates -->
+  <string name="email_templates_title">Sniðmát</string>
+  <string name="email_templates_subtitle">Skoða og breyta póstsniðmátum</string>
+  <string name="email_template_name">Heiti</string>
+  <string name="email_template_subject">Efnislína</string>
+  <string name="email_template_type">Tegund</string>
+  <string name="email_template_language">Tungumál</string>
+  <string name="email_template_variables">Breytur</string>
+  <string name="email_template_body">Meginmál</string>
+  <string name="email_template_create">+ Nýtt sniðmát</string>
+  <string name="email_template_edit">Breyta sniðmáti</string>
+  <string name="email_template_delete">Eyða sniðmáti</string>
+  <string name="email_template_delete_confirm">Ertu viss um að þú viljir eyða þessu sniðmáti? Þetta er ekki hægt að afturkalla.</string>
+  <string name="email_template_save">Vista sniðmát</string>
+  <string name="email_template_saved">Sniðmát vistað</string>
+  <string name="email_template_empty">Engin sniðmát fundust</string>
+  <string name="email_template_type_transactional">Viðskiptapóstur</string>
+  <string name="email_template_type_broadcast">Fjöldapóstur</string>
+  <string name="email_template_lang_is">Íslenska</string>
+  <string name="email_template_lang_en">Enska</string>
+
+  <!-- Email Campaigns -->
+  <string name="email_campaigns_title">Herferðir</string>
+  <string name="email_campaigns_subtitle">Stjórna fjöldapósti</string>
+  <string name="email_campaign_create">+ Ný herferð</string>
+  <string name="email_campaign_name">Heiti herferðar</string>
+  <string name="email_campaign_template">Sniðmát</string>
+  <string name="email_campaign_status">Staða</string>
+  <string name="email_campaign_recipients">Viðtakendur</string>
+  <string name="email_campaign_sent_count">Sent</string>
+  <string name="email_campaign_created">Stofnað</string>
+  <string name="email_campaign_actions">Aðgerðir</string>
+  <string name="email_campaign_send">Senda herferð</string>
+  <string name="email_campaign_send_confirm">Ertu viss um að þú viljir senda þessa herferð til %d félaga?</string>
+  <string name="email_campaign_empty">Engar herferðir fundust</string>
+
+  <!-- Campaign Status -->
+  <string name="campaign_status_draft">Drög</string>
+  <string name="campaign_status_scheduled">Áætlað</string>
+  <string name="campaign_status_sending">Í sendingu</string>
+  <string name="campaign_status_sent">Sent</string>
+  <string name="campaign_status_cancelled">Hætt við</string>
+
+  <!-- Send Email -->
+  <string name="email_send_title">Senda tölvupóst</string>
+  <string name="email_send_subtitle">Senda einn póst til félaga</string>
+  <string name="email_send_recipient">Viðtakandi</string>
+  <string name="email_send_recipient_placeholder">Netfang eða kennitala</string>
+  <string name="email_send_template">Sniðmát</string>
+  <string name="email_send_template_placeholder">Veldu sniðmát...</string>
+  <string name="email_send_preview">Forskoða</string>
+  <string name="email_send_btn">Senda póst</string>
+  <string name="email_send_success">Póstur sendur</string>
+  <string name="email_send_error">Villa við að senda póst</string>
+
+  <!-- Email Logs -->
+  <string name="email_logs_title">Sendingarsaga</string>
+  <string name="email_logs_subtitle">Skoða sendan tölvupóst</string>
+  <string name="email_log_recipient">Viðtakandi</string>
+  <string name="email_log_template">Sniðmát</string>
+  <string name="email_log_status">Staða</string>
+  <string name="email_log_sent_at">Sent</string>
+  <string name="email_log_delivered_at">Afhent</string>
+  <string name="email_log_opened_at">Opnað</string>
+  <string name="email_log_empty">Engin sendingarsaga fannst</string>
+
+  <!-- Email Status -->
+  <string name="email_status_queued">Í biðröð</string>
+  <string name="email_status_sent">Sent</string>
+  <string name="email_status_delivered">Afhent</string>
+  <string name="email_status_opened">Opnað</string>
+  <string name="email_status_bounced">Skilaði</string>
+  <string name="email_status_complained">Kvörtun</string>
+
+  <!-- Recipient Filter -->
+  <string name="email_filter_all_members">Allir félagar</string>
+  <string name="email_filter_active_only">Aðeins virkir</string>
+  <string name="email_filter_by_district">Eftir kjördæmi</string>
+  <string name="email_filter_by_municipality">Eftir sveitarfélagi</string>
 </resources>

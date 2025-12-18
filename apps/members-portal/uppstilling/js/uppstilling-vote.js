@@ -23,6 +23,9 @@ const DRAFT_MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
 const AUTO_SAVE_INTERVAL_MS = 5000; // 5 seconds
 const MIN_JUSTIFICATION_LENGTH = 30;
 
+// Interval ID for cleanup
+let autoSaveIntervalId = null;
+
 // =====================================================
 // DOM Elements
 // =====================================================
@@ -284,7 +287,7 @@ function setupEventListeners() {
   });
 
   // Auto-save periodically while on step 1
-  setInterval(() => {
+  autoSaveIntervalId = setInterval(() => {
     if (rankedForm && step1Card.style.display !== 'none') {
       currentRanking = rankedForm.getRanking();
       saveDraft();
@@ -434,6 +437,10 @@ async function submitVote() {
     });
 
     clearDraft();
+    if (autoSaveIntervalId) {
+      clearInterval(autoSaveIntervalId);
+      autoSaveIntervalId = null;
+    }
     votingContainer.style.display = 'none';
     showSuccessCard();
 

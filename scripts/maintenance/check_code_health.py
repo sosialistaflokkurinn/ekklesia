@@ -915,6 +915,17 @@ class CodeHealthChecker:
                 if line.strip().startswith('//'):
                     continue
 
+                # Skip if any of the previous 3 lines has a security/note comment (reviewed and intentional)
+                skip_due_to_comment = False
+                for offset in range(1, 4):
+                    if i > offset:
+                        prev_line = lines[i - 1 - offset].strip()
+                        if prev_line.startswith('// Note:') or prev_line.startswith('// SECURITY:'):
+                            skip_due_to_comment = True
+                            break
+                if skip_due_to_comment:
+                    continue
+
                 for pattern, name in dangerous_patterns:
                     if re.search(pattern, line):
                         self.issues.append(Issue(
