@@ -1194,24 +1194,60 @@ def get_login_audit_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
 # PURGE DELETED MEMBERS
 # ==============================================================================
 
+def get_deleted_counts_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
+    """
+    Get counts of soft-deleted members and votes.
+
+    Returns:
+        Dict with counts of deleted members and votes.
+    """
+    # Verify superuser access
+    require_superuser(req)
+
+    db = firestore.client()
+
+    try:
+        # Count members with deletedAt != null
+        members_query = db.collection("members").where("membership.deleted_at", "!=", None)
+        deleted_members = len(list(members_query.stream()))
+
+        # Count votes with deletedAt != null (if votes collection exists)
+        deleted_votes = 0
+        try:
+            votes_query = db.collection("votes").where("deletedAt", "!=", None)
+            deleted_votes = len(list(votes_query.stream()))
+        except Exception:
+            pass  # votes collection might not exist
+
+        return {
+            "success": True,
+            "counts": {
+                "members": deleted_members,
+                "votes": deleted_votes
+            }
+        }
+
+    except Exception as e:
+        log_json("error", "Failed to get deleted counts", error=str(e))
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INTERNAL,
+            message=f"Failed to get deleted counts: {str(e)}"
+        )
+
+
 @https_fn.on_call(region="europe-west2")
 def purgedeleted(req: https_fn.CallableRequest) -> Dict[str, Any]:
     """
     Permanently delete members marked as 'deleted'.
-    
+
     This is a dangerous operation that removes data from Firestore.
     It does NOT remove the user from Firebase Auth (that should be handled separately).
-    
+
     Returns:
         Dict with count of deleted documents.
     """
-    # 1. Verify Superuser
-    if not is_superuser(req):
-        log_json("warning", "Unauthorized purgeDeleted attempt", uid=req.auth.uid if req.auth else "anonymous")
-        raise https_fn.HttpsError(
-            code=https_fn.FunctionsErrorCode.PERMISSION_DENIED,
-            message="Only superusers can perform this operation."
-        )
+    # Verify superuser access
+    require_superuser(req)
 
     try:
         db = firestore.client()

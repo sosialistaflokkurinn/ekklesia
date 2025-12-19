@@ -8,8 +8,8 @@
  * ✅ hardDeleteMember - IMPLEMENTED (fn_superuser.py)
  * ✅ anonymizeMember - IMPLEMENTED (fn_superuser.py)
  * ✅ purgeDeleted - IMPLEMENTED (fn_superuser.py) - Purges soft-deleted records
- * ❌ loadDeletedCounts() - MOCK: Returns hardcoded 0
- * ❌ loadRecentOperations() - MOCK: Shows placeholder text
+ * ✅ getDeletedCounts - IMPLEMENTED (fn_superuser.py) - Counts soft-deleted records
+ * ✅ getAuditLogs - IMPLEMENTED (fn_superuser.py) - Query Cloud Logging
  */
 
 import { initSession } from '../../session/init.js';
@@ -245,47 +245,115 @@ async function executeOperation() {
 }
 
 /**
- * Load deleted records count
- *
- * MOCK: Returns hardcoded 0 values
- * TODO: Implement Cloud Function 'getDeletedCounts' to query:
- *   - Firestore members with deletedAt != null
- *   - Firestore votes with deletedAt != null
+ * Load deleted records count from Cloud Function
  */
 async function loadDeletedCounts() {
-  // MOCK: Hardcoded values - no backend implementation yet
-  document.getElementById('deleted-members-count').textContent = '0';
-  document.getElementById('deleted-votes-count').textContent = '0';
-  document.getElementById('purge-deleted-btn').disabled = true;
+  try {
+    const getDeletedCounts = httpsCallable('getDeletedCounts', 'europe-west2');
+    const result = await getDeletedCounts();
+
+    const counts = result.data.counts || { members: 0, votes: 0 };
+    document.getElementById('deleted-members-count').textContent = String(counts.members);
+    document.getElementById('deleted-votes-count').textContent = String(counts.votes);
+
+    // Enable purge button if there are deleted records
+    const totalDeleted = counts.members + counts.votes;
+    document.getElementById('purge-deleted-btn').disabled = totalDeleted === 0;
+
+  } catch (error) {
+    debug.error('Failed to load deleted counts:', error);
+    document.getElementById('deleted-members-count').textContent = '?';
+    document.getElementById('deleted-votes-count').textContent = '?';
+    document.getElementById('purge-deleted-btn').disabled = true;
+  }
 }
 
 /**
  * Load recent dangerous operations for audit trail
- *
- * MOCK: Shows placeholder text only
- * TODO: Call getAuditLogs Cloud Function with filter:
- *   - action IN ['hard_delete_member', 'anonymize_member', 'purge_deleted']
- *   - Display in table format with timestamp, action, target, caller
  */
 async function loadRecentOperations() {
   const container = document.getElementById('recent-dangerous-ops');
-
-  // MOCK: Placeholder - should call getAuditLogs with dangerous ops filter
-  // Use DOM APIs instead of innerHTML to prevent XSS
   container.textContent = '';
-  const placeholder = document.createElement('div');
-  placeholder.className = 'audit-placeholder';
 
-  const noOpsMsg = document.createElement('p');
-  noOpsMsg.textContent = superuserStrings.get('dangerous_no_ops');
-  placeholder.appendChild(noOpsMsg);
+  try {
+    const getAuditLogs = httpsCallable('getAuditLogs', 'europe-west2');
+    const result = await getAuditLogs({
+      hours: 168, // Last 7 days
+      limit: 20
+    });
 
-  const logsInfo = document.createElement('p');
-  logsInfo.className = 'u-text-muted';
-  logsInfo.textContent = superuserStrings.get('dangerous_logs_info');
-  placeholder.appendChild(logsInfo);
+    const logs = (result.data.logs || []).filter(log => {
+      const action = (log.action || '').toLowerCase();
+      const message = (log.message || '').toLowerCase();
+      return action.includes('delete') ||
+             action.includes('anonymize') ||
+             action.includes('purge') ||
+             message.includes('dangerous') ||
+             message.includes('hard delete') ||
+             message.includes('anonymiz');
+    });
 
-  container.appendChild(placeholder);
+    if (logs.length === 0) {
+      const placeholder = document.createElement('div');
+      placeholder.className = 'audit-placeholder';
+
+      const noOpsMsg = document.createElement('p');
+      noOpsMsg.textContent = superuserStrings.get('dangerous_no_ops');
+      placeholder.appendChild(noOpsMsg);
+
+      container.appendChild(placeholder);
+      return;
+    }
+
+    // Create table
+    const table = document.createElement('table');
+    table.className = 'audit-table';
+
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    ['Tími', 'Aðgerð', 'Notandi'].forEach(text => {
+      const th = document.createElement('th');
+      th.textContent = text;
+      headerRow.appendChild(th);
+    });
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    logs.forEach(log => {
+      const row = document.createElement('tr');
+
+      const timeCell = document.createElement('td');
+      if (log.timestamp) {
+        const date = new Date(log.timestamp);
+        timeCell.textContent = date.toLocaleString('is-IS', { dateStyle: 'short', timeStyle: 'short' });
+      } else {
+        timeCell.textContent = '-';
+      }
+      row.appendChild(timeCell);
+
+      const actionCell = document.createElement('td');
+      actionCell.textContent = log.action || log.message || '-';
+      row.appendChild(actionCell);
+
+      const userCell = document.createElement('td');
+      userCell.textContent = log.user || '-';
+      row.appendChild(userCell);
+
+      tbody.appendChild(row);
+    });
+    table.appendChild(tbody);
+
+    container.appendChild(table);
+
+  } catch (error) {
+    debug.error('Failed to load recent operations:', error);
+
+    const errorMsg = document.createElement('p');
+    errorMsg.className = 'u-text-muted';
+    errorMsg.textContent = superuserStrings.get('dangerous_logs_info');
+    container.appendChild(errorMsg);
+  }
 }
 
 /**
