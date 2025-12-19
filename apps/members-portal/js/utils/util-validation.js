@@ -8,13 +8,61 @@
  */
 
 /**
+ * @typedef {Object} FieldError
+ * @property {string} field - Field name that failed validation
+ * @property {string} message - Human-readable error message
+ */
+
+/**
+ * @typedef {Object} MemberProfileData
+ * @property {string} [name] - Member's full name
+ * @property {string} [email] - Email address
+ * @property {string} [phone] - Phone number (Icelandic format)
+ * @property {string} [address] - Street address
+ * @property {string|number} [postal_code] - Postal code (3 digits)
+ */
+
+/**
+ * @typedef {Object} ValidatedProfileData
+ * @property {string} [name] - Sanitized name
+ * @property {string} [email] - Normalized email (lowercase, trimmed)
+ * @property {string} [phone] - Normalized phone (digits only, no +354)
+ * @property {string} [address] - Sanitized address
+ * @property {string} [postal_code] - Postal code as string
+ */
+
+/**
  * Validation error with field-level details
+ *
+ * Thrown when input validation fails. Contains details about
+ * which field(s) failed and why.
+ *
+ * @extends Error
+ *
+ * @example
+ * try {
+ *   validateMemberProfileUpdate({ email: 'invalid' });
+ * } catch (error) {
+ *   if (error instanceof ValidationError) {
+ *     console.log(error.field);  // 'email'
+ *     console.log(error.errors); // [{ field: 'email', message: 'Ógilt netfang' }]
+ *   }
+ * }
  */
 export class ValidationError extends Error {
+  /**
+   * Create a ValidationError
+   * @param {string} message - Error message
+   * @param {string|null} [field=null] - Primary field that failed validation
+   * @param {FieldError[]} [errors=[]] - All field errors
+   */
   constructor(message, field = null, errors = []) {
     super(message);
+    /** @type {string} */
     this.name = 'ValidationError';
+    /** @type {string|null} */
     this.field = field;
+    /** @type {FieldError[]} */
     this.errors = errors;
   }
 }
@@ -111,9 +159,27 @@ export function sanitizeString(input) {
 
 /**
  * Validate member profile update data
- * @param {Object} data - Profile update data
- * @throws {ValidationError} If validation fails
- * @returns {Object} Validated and sanitized data
+ *
+ * Validates and sanitizes profile data before sending to API.
+ * Throws ValidationError with field-level details if validation fails.
+ *
+ * @param {MemberProfileData} data - Profile update data
+ * @returns {ValidatedProfileData} Validated and sanitized data
+ * @throws {ValidationError} If any field fails validation
+ *
+ * @example
+ * try {
+ *   const validated = validateMemberProfileUpdate({
+ *     name: 'Jón Jónsson',
+ *     email: 'jon@example.com',
+ *     phone: '123-4567'
+ *   });
+ *   await updateProfile(validated);
+ * } catch (error) {
+ *   if (error instanceof ValidationError) {
+ *     showFieldError(error.field, error.message);
+ *   }
+ * }
  */
 export function validateMemberProfileUpdate(data) {
   const errors = [];
