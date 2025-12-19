@@ -120,10 +120,14 @@ async function getAppCheckTokenValue() {
   }
 }
 
+/** Default timeout for API requests (30 seconds) */
+const DEFAULT_TIMEOUT_MS = 30000;
+
 /**
  * Make authenticated API request with Firebase ID token and App Check token
  * @param {string} url - API endpoint URL
  * @param {object} options - Fetch options (method, body, headers, etc.)
+ * @param {number} [options.timeout] - Request timeout in ms (default: 30000)
  * @returns {Promise<Response>} Fetch response
  */
 export async function authenticatedFetch(url, options = {}) {
@@ -150,9 +154,25 @@ export async function authenticatedFetch(url, options = {}) {
     headers['X-Firebase-AppCheck'] = appCheckToken;
   }
 
-  // Make request
-  return fetch(url, {
-    ...options,
-    headers,
-  });
+  // Setup timeout with AbortController
+  const timeoutMs = options.timeout || DEFAULT_TIMEOUT_MS;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    // Make request with abort signal
+    const response = await fetch(url, {
+      ...options,
+      headers,
+      signal: controller.signal,
+    });
+    return response;
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      throw new Error(`Request timeout after ${timeoutMs}ms: ${url}`);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }
