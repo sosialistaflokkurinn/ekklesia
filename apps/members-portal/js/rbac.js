@@ -18,6 +18,7 @@
 import { getFirebaseAuth } from '../firebase/app.js';
 import { debug } from './utils/util-debug.js';
 import { R } from '../i18n/strings-loader.js';
+import { showToast } from './components/ui-toast.js';
 
 const auth = getFirebaseAuth();
 
@@ -169,14 +170,14 @@ const ROLE_PERMISSIONS = {
 // CORE RBAC FUNCTIONS
 // ============================================
 
-// Cache for roles to avoid repeated token refreshes
-let cachedRoles = null;
-let cacheExpiry = 0;
+// Per-user cache for roles to prevent cache poisoning between users
+// Map: userId -> { roles: string[], expiry: number }
+const userRolesCache = new Map();
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 /**
  * Get current user's roles from Firebase custom claims
- * Uses caching to avoid slow token refreshes on every call
+ * Uses per-user caching to avoid slow token refreshes on every call
  * @param {boolean} forceRefresh - Force a fresh token fetch
  * @returns {Promise<string[]>} Array of role strings
  */
@@ -185,40 +186,55 @@ export async function getCurrentUserRoles(forceRefresh = false) {
     const user = auth.currentUser;
     if (!user) {
       console.warn('[RBAC] No authenticated user');
-      cachedRoles = null;
       return [];
     }
 
-    // Return cached roles if valid and not forcing refresh
+    const userId = user.uid;
     const now = Date.now();
-    if (!forceRefresh && cachedRoles !== null && now < cacheExpiry) {
-      debug.log('[RBAC] Using cached roles:', cachedRoles);
-      return cachedRoles;
+    const cached = userRolesCache.get(userId);
+
+    // Return cached roles if valid and not forcing refresh
+    if (!forceRefresh && cached && now < cached.expiry) {
+      debug.log('[RBAC] Using cached roles for user:', cached.roles);
+      return cached.roles;
     }
 
     // Get fresh token (only force refresh if explicitly requested or first load)
     const idTokenResult = await user.getIdTokenResult(forceRefresh);
     const roles = idTokenResult.claims.roles || [];
-    
-    // Cache the roles
-    cachedRoles = roles;
-    cacheExpiry = now + CACHE_DURATION;
-    
+
+    // Cache the roles per user
+    userRolesCache.set(userId, {
+      roles,
+      expiry: now + CACHE_DURATION
+    });
+
     debug.log('[RBAC] User roles from token:', roles);
     return roles;
   } catch (error) {
     console.error('[RBAC] Error getting user roles:', error);
-    return cachedRoles || []; // Return cached if available
+    // Return cached if available for this user
+    const user = auth.currentUser;
+    if (user) {
+      const cached = userRolesCache.get(user.uid);
+      if (cached) return cached.roles;
+    }
+    return [];
   }
 }
 
 /**
- * Clear the roles cache (call after role changes)
+ * Clear the roles cache (call after role changes or logout)
+ * @param {string} userId - Optional user ID to clear specific cache, or all if omitted
  */
-export function clearRolesCache() {
-  cachedRoles = null;
-  cacheExpiry = 0;
-  debug.log('[RBAC] Roles cache cleared');
+export function clearRolesCache(userId = null) {
+  if (userId) {
+    userRolesCache.delete(userId);
+    debug.log('[RBAC] Roles cache cleared for user:', userId);
+  } else {
+    userRolesCache.clear();
+    debug.log('[RBAC] All roles cache cleared');
+  }
 }
 
 /**
@@ -429,7 +445,7 @@ export async function requireAdmin(redirectUrl = '/members-area/') {
   const isAdmin = await hasAnyRole([ROLES.ADMIN, ROLES.SUPERUSER]);
   if (!isAdmin) {
     console.error('[RBAC] User does not have admin or superuser role');
-    alert(R.string.error_unauthorized_page_admins_only);
+    showToast(R.string?.error_unauthorized_page_admins_only || 'Aðeins stjórnendur hafa aðgang', 'error');
     window.location.href = redirectUrl;
     throw new Error('Admin role required');
   }
@@ -456,14 +472,17 @@ export async function requireSuperuser(redirectUrl = '/members-area/') {
     const isSuperuser = await hasRole(ROLES.SUPERUSER);
     if (!isSuperuser) {
       console.error('[RBAC] User does not have superuser role');
-      alert(R.string.error_unauthorized_page_superusers_only);
+      showToast(R.string?.error_unauthorized_page_superusers_only || 'Aðeins kerfisstjórar hafa aðgang', 'error');
       window.location.href = redirectUrl;
       throw new Error('Superuser role required');
     }
   } catch (error) {
+    // Check if this is a role error we threw ourselves
+    if (error.message === 'Superuser role required') {
+      throw error;
+    }
     console.error('[RBAC] Error during requireSuperuser check:', error);
-    // It's possible the token is refreshing. Give a more specific error.
-    alert(R.string.error_verifying_superuser_role);
+    showToast(R.string?.error_verifying_superuser_role || 'Villa við að staðfesta aðgang', 'error');
     window.location.href = redirectUrl;
     throw new Error('Could not verify superuser role.');
   }

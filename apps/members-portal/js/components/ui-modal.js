@@ -130,33 +130,42 @@ export function showModal(options = {}) {
     'aria-labelledby': 'modal-title'
   }, modal);
 
+  // Lock body scroll when modal opens
+  const scrollY = window.scrollY;
+  document.body.style.position = 'fixed';
+  document.body.style.top = `-${scrollY}px`;
+  document.body.style.width = '100%';
+  document.body.style.overflow = 'hidden';
+
   // Modal instance API
   const instance = {
     element: overlay,
     close: () => {
       // Trigger close animation
       overlay.classList.remove('modal-overlay--show');
-      
+
       // Remove from DOM after animation
       setTimeout(() => {
         if (overlay.parentElement) {
           overlay.remove();
         }
         activeModal = null;
-        
+
+        // Restore body scroll
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        document.body.style.overflow = '';
+        window.scrollTo(0, scrollY);
+
         // Restore focus to previous element
-        if (previousActiveElement && previousActiveElement.focus) {
+        if (previousActiveElement && typeof previousActiveElement.focus === 'function') {
           previousActiveElement.focus();
         }
-        
+
         // Call onClose callback
         if (onClose) {
           onClose();
-        }
-
-        // Restore focus to previously focused element
-        if (previousActiveElement && typeof previousActiveElement.focus === 'function') {
-          previousActiveElement.focus();
         }
       }, 200);
     }
@@ -260,10 +269,13 @@ export function showConfirm(title, message, options = {}) {
     confirmStyle = 'primary'
   } = options;
 
+  // Create message element safely to prevent XSS
+  const messageEl = el('p', 'modal__message', {}, message);
+
   return new Promise((resolve) => {
     const modal = showModal({
       title,
-      content: `<p class="modal__message">${message}</p>`,
+      content: messageEl,
       buttons: [
         {
           text: cancelText,
@@ -304,10 +316,13 @@ export function showConfirm(title, message, options = {}) {
 export function showAlert(title, message, options = {}) {
   const { okText = getString('ok_btn') } = options;
 
+  // Create message element safely to prevent XSS
+  const messageEl = el('p', 'modal__message', {}, message);
+
   return new Promise((resolve) => {
     const modal = showModal({
       title,
-      content: `<p class="modal__message">${message}</p>`,
+      content: messageEl,
       buttons: [
         {
           text: okText,

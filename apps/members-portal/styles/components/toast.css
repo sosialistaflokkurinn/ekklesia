@@ -13,35 +13,51 @@
  * @requires CSS variables from global.css (--color-*, --spacing-*, --radius-*)
  */
 
-/* Toast container (positioned at bottom-center) */
-.toast {
+/* Toast container for stacking */
+.toast-container {
   position: fixed;
-  bottom: var(--spacing-lg);
+  bottom: 0;
   left: 50%;
-  transform: translateX(-50%) translateY(100px);
-  
+  transform: translateX(-50%);
+  z-index: 10000;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-lg);
+  max-height: 100vh;
+  overflow: hidden;
+}
+
+/* Individual toast (positioned relative to container) */
+.toast {
+  position: relative;
+  bottom: auto;
+  left: auto;
+  transform: translateY(100px);
+
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  
+
   min-width: 300px;
   max-width: 500px;
   padding: var(--spacing-md) var(--spacing-lg);
-  
+
   background: var(--color-bg-card);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-toast-floating);
-  
+
   opacity: 0;
   transition: transform 0.3s ease, opacity 0.3s ease;
-  
-  z-index: 10000;
+
   pointer-events: all;
 }
 
 /* Show state (slide up and fade in) */
 .toast--show {
-  transform: translateX(-50%) translateY(0);
+  transform: translateY(0);
   opacity: 1;
 }
 
@@ -128,28 +144,17 @@
 
 /* Mobile responsive */
 @media (max-width: 768px) {
+  .toast-container {
+    left: 0;
+    right: 0;
+    transform: none;
+    padding: var(--spacing-md);
+  }
+
   .toast {
-    bottom: var(--spacing-md);
-    left: var(--spacing-md);
-    right: var(--spacing-md);
     min-width: auto;
     max-width: none;
-    transform: translateX(0) translateY(100px);
-  }
-
-  .toast--show {
-    transform: translateX(0) translateY(0);
-  }
-}
-
-/* Stack multiple toasts */
-.toast + .toast {
-  bottom: calc(var(--spacing-lg) + 80px);
-}
-
-@media (max-width: 768px) {
-  .toast + .toast {
-    bottom: calc(var(--spacing-md) + 80px);
+    width: 100%;
   }
 }
 
@@ -167,12 +172,6 @@
   }
 
   .toast--show {
-    transform: translateX(-50%) translateY(0);
-  }
-
-  @media (max-width: 768px) {
-    .toast--show {
-      transform: translateX(0) translateY(0);
-    }
+    transform: translateY(0);
   }
 }

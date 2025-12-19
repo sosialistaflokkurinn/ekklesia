@@ -19,23 +19,42 @@ export const auth = getFirebaseAuth();
 // Get App Check instance from centralized firebase/app.js
 export const appCheck = getFirebaseAppCheck();
 
+// Singleton promise for auth resolution to prevent race conditions
+let authResolutionPromise = null;
+
 /**
  * Auth Guard - Redirect to login if not authenticated
  * Call this at the top of protected pages (dashboard, profile)
+ *
+ * Uses singleton pattern to prevent race conditions when called
+ * multiple times concurrently.
  */
 export function requireAuth() {
-  return new Promise((resolve) => {
+  // If already resolving, return existing promise
+  if (authResolutionPromise) {
+    return authResolutionPromise;
+  }
+
+  // Create new resolution promise
+  authResolutionPromise = new Promise((resolve, reject) => {
     const unsubscribe = firebaseOnAuthStateChanged(auth, (user) => {
       unsubscribe();
+      // Clear singleton after resolution
+      authResolutionPromise = null;
+
       if (!user) {
         // Not authenticated - redirect to login
-        window.location.href = '/';
+        // Use replace to prevent back-button issues
+        window.location.replace('/');
+        reject(new Error('Not authenticated'));
       } else {
         // Authenticated - continue
         resolve(user);
       }
     });
   });
+
+  return authResolutionPromise;
 }
 
 /**
@@ -86,11 +105,19 @@ export async function getUserData(user) {
 }
 
 /**
- * Get Firebase App Check token
+ * Get Firebase App Check token with error handling
  * @returns {Promise<string|null>} App Check token or null if unavailable
  */
 async function getAppCheckTokenValue() {
-  return await firebaseGetAppCheckTokenValue();
+  try {
+    const token = await firebaseGetAppCheckTokenValue();
+    return token;
+  } catch (error) {
+    // Log warning but don't block - App Check may be optional
+    debug.warn('App Check token failed:', error.message);
+    // Return null - let backend decide if App Check is required
+    return null;
+  }
 }
 
 /**
