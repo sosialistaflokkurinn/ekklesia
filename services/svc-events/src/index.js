@@ -5,6 +5,9 @@ const { version } = require('../package.json');
 const electionRoutes = require('./routes/route-election');
 const adminRouter = require('./routes/route-admin');
 const externalEventsRouter = require('./routes/route-external-events');
+const kimiChatRouter = require('./routes/route-kimi-chat');
+const partyWikiRouter = require('./routes/route-party-wiki');
+const systemHealthRouter = require('./routes/route-system-health');
 const { verifyAppCheckOptional } = require('./middleware/middleware-app-check');
 const { readLimiter, adminLimiter } = require('./middleware/middleware-rate-limiter');
 const logger = require('./utils/util-logger');
@@ -77,6 +80,9 @@ app.use('/api/admin', adminLimiter);
 // API routes
 app.use('/api', electionRoutes);
 app.use('/api/external-events', externalEventsRouter);
+app.use('/api/kimi', kimiChatRouter);
+app.use('/api/party-wiki', partyWikiRouter);
+app.use('/api/system', systemHealthRouter);
 // Admin-only routes (developer testing only)
 app.use('/api/admin', adminRouter);
 
