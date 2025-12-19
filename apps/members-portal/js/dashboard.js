@@ -25,6 +25,7 @@ import { updateMemberProfile } from './api/api-members.js';
 import { createButton } from './components/ui-button.js';
 import { showModal } from './components/ui-modal.js';
 import { showToast } from './components/ui-toast.js';
+import { SERVICES } from './config/config.js';
 
 /**
  * Required DOM elements for dashboard page
@@ -383,8 +384,8 @@ async function updateProfileData(userData, discrepancies, memberData = {}) {
   await updateMemberProfile(kennitala, updates, memberData);
 }
 
-// Events API configuration
-const EVENTS_API_BASE = 'https://events-service-521240388393.europe-west2.run.app';
+// Events API configuration - from js/config/config.js
+const EVENTS_API_BASE = SERVICES.EVENTS;
 
 // ============================================================================
 // LOCAL STORAGE CACHE - Persistent (no PII - public event data)

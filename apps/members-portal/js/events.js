@@ -13,9 +13,10 @@ import { initAuthenticatedPage } from './page-init.js';
 import { setTextContent, setInnerHTML } from '../ui/dom.js';
 import { createButton } from './components/ui-button.js';
 import { extractVideoLinks, formatRichText, getNextRecurringOccurrence } from './utils/util-format.js';
+import { SERVICES } from './config/config.js';
 
-// API Configuration
-const EVENTS_API_BASE = 'https://events-service-521240388393.europe-west2.run.app';
+// API Configuration - from js/config/config.js
+const EVENTS_API_BASE = SERVICES.EVENTS;
 
 // ============================================================================
 // LOCAL STORAGE CACHE - Persistent (no PII - public Facebook events)

@@ -23,6 +23,7 @@ import {
   isValidKennitala,
   ValidationError
 } from '../utils/util-validation.js';
+import { REGION } from '../config/config.js';
 
 // Re-export ValidationError for consumers
 export { ValidationError };
@@ -102,7 +103,7 @@ async function updateFirestoreMember(kennitala, updates) {
  * @returns {Promise<Object>} Django update result
  * @private
  */
-async function updateDjangoMember(kennitala, updates, region = 'europe-west2') {
+async function updateDjangoMember(kennitala, updates, region = REGION) {
   // Call Cloud Function using Firebase callable function API
   const updateMemberProfile = httpsCallable('updatememberprofile', region);
 
@@ -180,7 +181,7 @@ async function rollbackFirestore(kennitala, originalData) {
  *   // Show error message (Firestore already rolled back)
  * }
  */
-export async function updateMemberProfile(kennitala, updates, originalData, region = 'europe-west2') {
+export async function updateMemberProfile(kennitala, updates, originalData, region = REGION) {
   // Validate kennitala
   const kennitalaNoHyphen = kennitala.replace(/-/g, '');
   if (!isValidKennitala(kennitalaNoHyphen)) {

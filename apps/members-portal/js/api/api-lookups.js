@@ -15,8 +15,7 @@
 
 import { httpsCallable } from '../../firebase/app.js';
 import { debug } from '../utils/util-debug.js';
-
-const REGION = 'europe-west2';
+import { REGION } from '../config/config.js';
 
 // Cache configuration
 const CACHE_VERSION = 1; // Increment to invalidate all caches
