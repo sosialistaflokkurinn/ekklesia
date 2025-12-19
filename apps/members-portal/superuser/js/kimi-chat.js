@@ -384,6 +384,46 @@ function hideLoading() {
 }
 
 /**
+ * Make API request with retry logic
+ */
+async function fetchWithRetry(url, options, maxRetries = 3) {
+  let lastError;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await fetch(url, options);
+
+      if (!response.ok) {
+        // Don't retry 4xx errors (client errors)
+        if (response.status >= 400 && response.status < 500) {
+          throw new Error(`API error: ${response.status}`);
+        }
+        throw new Error(`Server error: ${response.status}`);
+      }
+
+      return response;
+    } catch (error) {
+      lastError = error;
+      debug.log(`Kimi API attempt ${attempt}/${maxRetries} failed:`, error.message);
+
+      // Don't retry on auth or client errors
+      if (error.message.includes('API error')) {
+        throw error;
+      }
+
+      // Wait before retry (exponential backoff: 1s, 2s, 4s)
+      if (attempt < maxRetries) {
+        const waitMs = Math.pow(2, attempt - 1) * 1000;
+        debug.log(`Retrying in ${waitMs}ms...`);
+        await new Promise(resolve => setTimeout(resolve, waitMs));
+      }
+    }
+  }
+
+  throw lastError;
+}
+
+/**
  * Send message to Kimi API
  */
 async function sendMessage(message) {
@@ -411,7 +451,7 @@ async function sendMessage(message) {
 
     const token = await user.getIdToken();
 
-    const response = await fetch(`${EVENTS_API_BASE}/api/kimi/chat`, {
+    const response = await fetchWithRetry(`${EVENTS_API_BASE}/api/kimi/chat`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -422,10 +462,6 @@ async function sendMessage(message) {
         history: chatHistory.slice(-10)
       })
     });
-
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
-    }
 
     const data = await response.json();
     const reply = data.reply;
@@ -438,7 +474,17 @@ async function sendMessage(message) {
   } catch (error) {
     debug.error('Kimi chat error:', error);
     hideLoading();
-    addMessage('assistant', 'Villa kom upp. Reyndu aftur síðar.');
+
+    // Show error with context
+    let errorMsg = 'Villa kom upp.';
+    if (error.message.includes('Not authenticated')) {
+      errorMsg = 'Þú þarft að skrá þig inn aftur.';
+    } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+      errorMsg = 'Náði ekki sambandi við þjón. Athugaðu nettengingu.';
+    } else if (error.message.includes('Server error')) {
+      errorMsg = 'Þjónninn svaraði ekki. Reynt var 3 sinnum.';
+    }
+    addMessage('assistant', errorMsg);
   } finally {
     isLoading = false;
     sendBtn.disabled = false;
