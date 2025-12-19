@@ -80,7 +80,9 @@ app.use('/api/admin', adminLimiter);
 // API routes
 app.use('/api', electionRoutes);
 app.use('/api/external-events', externalEventsRouter);
-app.use('/api/kimi', kimiChatRouter);
+
+// Kimi chat needs larger body limit for conversation history
+app.use('/api/kimi', express.json({ limit: '50kb', strict: true }), kimiChatRouter);
 app.use('/api/party-wiki', partyWikiRouter);
 app.use('/api/system', systemHealthRouter);
 // Admin-only routes (developer testing only)
@@ -100,7 +102,7 @@ app.use((err, req, res, next) => {
   if (err.type === 'entity.too.large') {
     return res.status(413).json({
       error: 'Payload Too Large',
-      message: 'Request body must be under 5kb'
+      message: 'Request body too large (limit: 5kb for most routes, 50kb for /api/kimi)'
     });
   }
 
