@@ -68,6 +68,12 @@ async function init() {
     await loadPolicySession();
 
   } catch (error) {
+    // Handle auth redirect
+    if (error.name === 'AuthenticationError') {
+      window.location.href = error.redirectTo || '/';
+      return;
+    }
+
     console.error('Initialization error:', error);
     showError(error.message);
   }

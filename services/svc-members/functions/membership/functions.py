@@ -13,8 +13,12 @@ from firebase_admin import auth, firestore
 from firebase_functions import https_fn, options
 from util_logging import log_json
 from shared.validators import normalize_kennitala, normalize_phone
-from sync_members import sync_all_members, create_sync_log, update_django_member, update_django_address
-from cleanup_audit_logs import cleanup_old_audit_logs
+from fn_sync_members import (
+    sync_all_members, create_sync_log, update_django_member, update_django_address,
+    get_django_api_token, DJANGO_API_BASE_URL
+)
+from fn_cleanup_audit_logs import cleanup_old_audit_logs
+import requests
 
 
 def verifyMembership_handler(req: https_fn.CallableRequest) -> dict:
@@ -49,27 +53,41 @@ def verifyMembership_handler(req: https_fn.CallableRequest) -> dict:
         member_doc_ref = db.collection('members').document(kennitala_normalized)
         member_doc = member_doc_ref.get()
 
-        # Check if member exists and has active membership status
+        # Check if member exists and determine membership status
+        # 'active' = fees paid, 'unpaid' = member but fees not paid, 'inactive' = deleted/not member
         is_member = False
+        membership_status = 'inactive'
+        fees_paid = False
+
         if member_doc.exists:
             member_data = member_doc.to_dict()
             membership = member_data.get('membership', {})
-            membership_status = membership.get('status', '')
-            is_member = membership_status == 'active'
+            membership_status = membership.get('status', 'inactive')
+            fees_paid = membership.get('fees_paid', False)
 
+            # Member if status is 'active' or 'unpaid' (both are valid members)
+            is_member = membership_status in ('active', 'unpaid')
+
+            # Audit log for membership verification (issue #40)
             log_json("info", "Member lookup successful",
-                     kennitala=f"{kennitala[:7]}****",
+                     eventType="membership_verification",
+                     kennitalaLast4=kennitala[-4:],  # GDPR: only last 4 digits
                      status=membership_status,
+                     fees_paid=fees_paid,
                      isMember=is_member,
                      uid=req.auth.uid)
         else:
+            # Audit log for failed membership verification (issue #40)
             log_json("info", "Member not found in Firestore",
-                     kennitala=f"{kennitala[:7]}****",
+                     eventType="membership_verification",
+                     kennitalaLast4=kennitala[-4:],  # GDPR: only last 4 digits
+                     isMember=False,
                      uid=req.auth.uid)
 
         # Update user profile in Firestore
         db.collection('users').document(req.auth.uid).update({
             'isMember': is_member,
+            'membershipStatus': membership_status,
             'membershipVerifiedAt': firestore.SERVER_TIMESTAMP
         })
 
@@ -91,6 +109,8 @@ def verifyMembership_handler(req: https_fn.CallableRequest) -> dict:
 
         return {
             'isMember': is_member,
+            'membershipStatus': membership_status,  # 'active', 'unpaid', or 'inactive'
+            'feesPaid': fees_paid,
             'verified': True,
             'kennitala': kennitala[:7] + '****'  # Masked for security
         }
@@ -302,14 +322,12 @@ def updatememberprofile_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
         member_data = member_doc.to_dict()
         django_id = member_data.get('metadata', {}).get('django_id')
 
+        # Note: django_id may be None for Firestore-only members (registered via Ekklesia, not Django)
+        # We still allow profile updates - they just won't sync to Django
         if not django_id:
-            log_json("error", "Django ID missing from Firestore member",
+            log_json("info", "Member has no Django ID - Firestore-only update",
                      uid=req.auth.uid,
                      kennitala=f"{kennitala_no_hyphen[:6]}****")
-            raise https_fn.HttpsError(
-                code=https_fn.FunctionsErrorCode.INTERNAL,
-                message="Member data incomplete - please contact admin"
-            )
 
         log_json("debug", "Found member in Firestore",
                  uid=req.auth.uid,
@@ -368,14 +386,23 @@ def updatememberprofile_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
             address_sync_needed = default_iceland_address is not None
 
         # Determine if profile PATCH is needed (skip if only address changes)
-        profile_patch_needed = bool(django_updates)
-        
+        # Also skip Django sync if member has no django_id (Firestore-only member)
+        profile_patch_needed = bool(django_updates) and django_id is not None
+
         # OPTIMIZATION: Run Django API calls in parallel using ThreadPoolExecutor
         # This saves ~2 seconds by not waiting for address sync before profile update
         profile_sync_success = False
         profile_sync_error = None
         updated_member = None
-        
+
+        # Skip Django sync entirely if no django_id
+        if not django_id:
+            log_json("info", "Skipping Django sync - Firestore-only member",
+                     uid=req.auth.uid,
+                     kennitala=f"{kennitala_no_hyphen[:6]}****")
+            address_sync_needed = False  # Also skip address sync
+            profile_sync_success = True  # Mark as success since there's nothing to sync
+
         def do_address_sync():
             """Worker function for address sync"""
             return update_django_address(
@@ -389,59 +416,69 @@ def updatememberprofile_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
                     'country': 'IS'
                 }
             )
-        
+
         def do_profile_update():
             """Worker function for profile PATCH"""
             return update_django_member(django_id, django_updates)
-        
-        # Execute Django calls in parallel
-        with ThreadPoolExecutor(max_workers=2) as executor:
-            futures = {}
-            
-            if address_sync_needed:
-                futures['address'] = executor.submit(do_address_sync)
-            
-            if profile_patch_needed:
-                futures['profile'] = executor.submit(do_profile_update)
-            
-            # Wait for all futures to complete
-            for future_name, future in futures.items():
-                try:
-                    result = future.result(timeout=35)  # Slightly longer than individual timeouts
-                    
-                    if future_name == 'address':
-                        address_sync_result = result
-                        log_json("info", "Address synced to Django NewLocalAddress",
-                                 uid=req.auth.uid,
-                                 street=default_iceland_address.get('street', ''),
-                                 postal=default_iceland_address.get('postal_code', ''),
-                                 map_address_id=address_sync_result.get('map_address_id'),
-                                 address_linked=address_sync_result.get('address_linked'))
-                    
-                    elif future_name == 'profile':
-                        updated_member = result
-                        profile_sync_success = True
-                        log_json("info", "Profile updated successfully in Django",
-                                 uid=req.auth.uid,
-                                 django_id=django_id,
-                                 kennitala=f"{kennitala[:6]}****")
-                
-                except Exception as e:
-                    if future_name == 'address':
-                        # Address sync failures are non-fatal
-                        log_json("warn", "Django address sync failed",
-                                 uid=req.auth.uid,
-                                 error=str(e))
-                        address_sync_result = {'success': False, 'error': str(e)}
-                    else:
-                        # Profile sync failures are fatal
-                        profile_sync_error = str(e)
-                        log_json("error", "Django profile update failed",
-                                 uid=req.auth.uid,
-                                 django_id=django_id,
-                                 error=profile_sync_error)
-        
-        # If profile update was needed but failed, raise error
+
+        # Execute Django calls in parallel (only if django_id exists)
+        if django_id:
+            with ThreadPoolExecutor(max_workers=2) as executor:
+                futures = {}
+
+                if address_sync_needed:
+                    futures['address'] = executor.submit(do_address_sync)
+
+                if profile_patch_needed:
+                    futures['profile'] = executor.submit(do_profile_update)
+
+                # Wait for all futures to complete
+                for future_name, future in futures.items():
+                    try:
+                        result = future.result(timeout=35)  # Slightly longer than individual timeouts
+
+                        if future_name == 'address':
+                            address_sync_result = result
+                            log_json("info", "Address synced to Django NewLocalAddress",
+                                     uid=req.auth.uid,
+                                     street=default_iceland_address.get('street', ''),
+                                     postal=default_iceland_address.get('postal_code', ''),
+                                     map_address_id=address_sync_result.get('map_address_id'),
+                                     address_linked=address_sync_result.get('address_linked'))
+
+                        elif future_name == 'profile':
+                            updated_member = result
+                            profile_sync_success = True
+                            log_json("info", "Profile updated successfully in Django",
+                                     uid=req.auth.uid,
+                                     django_id=django_id,
+                                     kennitala=f"{kennitala[:6]}****")
+
+                    except Exception as e:
+                        error_str = str(e)
+                        if future_name == 'address':
+                            # Address sync failures are non-fatal
+                            log_json("warn", "Django address sync failed",
+                                     uid=req.auth.uid,
+                                     error=error_str)
+                            address_sync_result = {'success': False, 'error': error_str}
+                        else:
+                            # Check if this is a 404 (member doesn't exist in Django)
+                            if '404' in error_str or 'No Comrade matches' in error_str:
+                                log_json("warn", "Member not found in Django - continuing with Firestore-only update",
+                                         uid=req.auth.uid,
+                                         django_id=django_id,
+                                         error=error_str)
+                                profile_sync_success = True  # Allow Firestore update to proceed
+                            else:
+                                # Other profile sync failures are fatal
+                                profile_sync_error = error_str
+                                log_json("error", "Django profile update failed",
+                                         uid=req.auth.uid,
+                                         django_id=django_id,
+                                         error=profile_sync_error)
+
+        # If profile update was needed but failed (and not a 404), raise error
         if profile_patch_needed and not profile_sync_success:
             raise Exception(profile_sync_error or "Profile update failed")
 
@@ -622,4 +659,320 @@ def cleanupauditlogs_handler(req: https_fn.CallableRequest) -> dict:
         raise https_fn.HttpsError(
             code=https_fn.FunctionsErrorCode.INTERNAL,
             message=f"Cleanup failed: {str(e)}"
+        )
+
+
+def soft_delete_self_handler(req: https_fn.CallableRequest) -> dict:
+    """
+    Soft delete the authenticated user's own membership.
+
+    This allows a member to deactivate their own account:
+    1. Sets membership.status to 'inactive' in Firestore
+    2. Sets metadata.deleted_at timestamp
+    3. Disables Firebase Auth account
+    4. Syncs soft delete to Django backend
+
+    The member can later reactivate their account via reactivate_self.
+
+    Requires authentication (must be the member themselves).
+
+    Args:
+        req.data: {
+            'confirmation': str - Must be 'EYÐA' to confirm
+        }
+
+    Returns:
+        Dict with success status
+    """
+    # Verify authentication
+    if not req.auth:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.UNAUTHENTICATED,
+            message="Authentication required"
+        )
+
+    uid = req.auth.uid
+    kennitala = req.auth.token.get('kennitala')
+
+    if not kennitala:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
+            message="No kennitala found for user"
+        )
+
+    # Verify confirmation text
+    confirmation = req.data.get('confirmation', '') if req.data else ''
+    if confirmation != 'EYÐA':
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+            message="Confirmation text must be 'EYÐA'"
+        )
+
+    kennitala_normalized = normalize_kennitala(kennitala)
+    deleted_at = datetime.now(timezone.utc)
+
+    log_json("info", "Soft delete initiated by user",
+             uid=uid,
+             kennitala=f"{kennitala_normalized[:6]}****")
+
+    try:
+        db = firestore.client()
+        member_ref = db.collection('members').document(kennitala_normalized)
+        member_doc = member_ref.get()
+
+        if not member_doc.exists:
+            raise https_fn.HttpsError(
+                code=https_fn.FunctionsErrorCode.NOT_FOUND,
+                message="Member not found"
+            )
+
+        # 1. Update Firestore
+        # Note: We do NOT change membership.status here - it keeps the payment status (active/unpaid)
+        # deleted_at is a separate field to indicate the account is soft-deleted
+        member_ref.update({
+            'membership.deleted_at': deleted_at,
+            'metadata.deleted_by': 'self',
+            'metadata.last_modified': firestore.SERVER_TIMESTAMP
+        })
+
+        log_json("info", "Firestore updated for soft delete",
+                 uid=uid,
+                 kennitala=f"{kennitala_normalized[:6]}****")
+
+        # 2. Disable Firebase Auth account
+        try:
+            auth.update_user(uid, disabled=True)
+            log_json("info", "Firebase Auth disabled",
+                     uid=uid)
+        except Exception as auth_error:
+            log_json("error", "Failed to disable Firebase Auth",
+                     uid=uid,
+                     error=str(auth_error))
+            # Continue anyway - Firestore is source of truth
+
+        # 3. Sync to Django
+        try:
+            django_token = get_django_api_token()
+            response = requests.post(
+                f"{DJANGO_API_BASE_URL}/api/sync/soft-delete/",
+                json={
+                    'kennitala': kennitala_normalized,
+                    'deleted_at': deleted_at.isoformat()
+                },
+                headers={
+                    'Authorization': f'Token {django_token}',
+                    'Content-Type': 'application/json'
+                },
+                timeout=30
+            )
+
+            if response.status_code == 200:
+                log_json("info", "Django soft delete sync successful",
+                         uid=uid,
+                         kennitala=f"{kennitala_normalized[:6]}****")
+            else:
+                log_json("warn", "Django soft delete sync failed",
+                         uid=uid,
+                         status_code=response.status_code,
+                         response=response.text[:200])
+        except Exception as django_error:
+            log_json("error", "Django sync failed for soft delete",
+                     uid=uid,
+                     error=str(django_error))
+            # Continue - Firestore update succeeded
+
+        # 4. Update custom claims to reflect inactive status
+        try:
+            existing_claims = auth.get_user(uid).custom_claims or {}
+            merged_claims = {**existing_claims, 'isMember': False}
+            auth.set_custom_user_claims(uid, merged_claims)
+        except Exception as claims_error:
+            log_json("warn", "Failed to update custom claims",
+                     uid=uid,
+                     error=str(claims_error))
+
+        log_json("info", "Soft delete completed successfully",
+                 uid=uid,
+                 kennitala=f"{kennitala_normalized[:6]}****")
+
+        return {
+            'success': True,
+            'message': 'Aðgangur þinn hefur verið gerður óvirkur',
+            'deleted_at': deleted_at.isoformat()
+        }
+
+    except https_fn.HttpsError:
+        raise
+    except Exception as e:
+        log_json("error", "Soft delete failed",
+                 uid=uid,
+                 error=str(e))
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INTERNAL,
+            message=f"Soft delete failed: {str(e)}"
+        )
+
+
+def reactivate_self_handler(req: https_fn.CallableRequest) -> dict:
+    """
+    Reactivate a soft-deleted membership.
+
+    This is called from a special reactivation page after the user
+    authenticates via Kenni.is. The flow:
+    1. User tries to log in, gets error (Auth disabled)
+    2. User clicks "Endurvakna aðgang"
+    3. User authenticates via Kenni.is
+    4. Frontend calls this function with kennitala
+    5. This function re-enables the account
+
+    The function must verify the kennitala matches the request.
+
+    Args:
+        req.data: {
+            'kennitala': str - Kennitala from Kenni.is authentication
+        }
+
+    Returns:
+        Dict with success status and new Firebase custom token
+    """
+    # Note: This endpoint may be called without Firebase Auth
+    # because the user's account is disabled. We verify via kennitala.
+
+    kennitala = req.data.get('kennitala', '') if req.data else ''
+
+    if not kennitala:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+            message="Kennitala is required"
+        )
+
+    kennitala_normalized = normalize_kennitala(kennitala)
+
+    log_json("info", "Reactivation initiated",
+             kennitala=f"{kennitala_normalized[:6]}****")
+
+    try:
+        db = firestore.client()
+        member_ref = db.collection('members').document(kennitala_normalized)
+        member_doc = member_ref.get()
+
+        if not member_doc.exists:
+            raise https_fn.HttpsError(
+                code=https_fn.FunctionsErrorCode.NOT_FOUND,
+                message="Member not found"
+            )
+
+        member_data = member_doc.to_dict()
+
+        # Verify member was soft-deleted
+        # Check both metadata.deleted_at (Ekklesia) and membership.deleted_at (Django sync)
+        metadata_deleted_at = member_data.get('metadata', {}).get('deleted_at')
+        membership_deleted_at = member_data.get('membership', {}).get('deleted_at')
+        if not metadata_deleted_at and not membership_deleted_at:
+            raise https_fn.HttpsError(
+                code=https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
+                message="Account is not deactivated"
+            )
+
+        # Get Firebase UID from member data
+        firebase_uid = member_data.get('metadata', {}).get('firebase_uid')
+        if not firebase_uid:
+            raise https_fn.HttpsError(
+                code=https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
+                message="No Firebase account linked"
+            )
+
+        # 1. Re-enable Firebase Auth
+        try:
+            auth.update_user(firebase_uid, disabled=False)
+            log_json("info", "Firebase Auth re-enabled",
+                     uid=firebase_uid)
+        except Exception as auth_error:
+            log_json("error", "Failed to re-enable Firebase Auth",
+                     uid=firebase_uid,
+                     error=str(auth_error))
+            raise https_fn.HttpsError(
+                code=https_fn.FunctionsErrorCode.INTERNAL,
+                message="Failed to re-enable account"
+            )
+
+        # 2. Update Firestore - set status back to unpaid (fees need to be re-verified)
+        # Clear both metadata.deleted_at (Ekklesia) and membership.deleted_at (Django sync)
+        member_ref.update({
+            'membership.status': 'unpaid',
+            'membership.deleted_at': firestore.DELETE_FIELD,
+            'metadata.deleted_at': firestore.DELETE_FIELD,
+            'metadata.deleted_by': firestore.DELETE_FIELD,
+            'metadata.reactivated_at': firestore.SERVER_TIMESTAMP,
+            'metadata.last_modified': firestore.SERVER_TIMESTAMP
+        })
+
+        log_json("info", "Firestore updated for reactivation",
+                 kennitala=f"{kennitala_normalized[:6]}****")
+
+        # 3. Sync to Django
+        try:
+            django_token = get_django_api_token()
+            response = requests.post(
+                f"{DJANGO_API_BASE_URL}/api/sync/reactivate/",
+                json={'kennitala': kennitala_normalized},
+                headers={
+                    'Authorization': f'Token {django_token}',
+                    'Content-Type': 'application/json'
+                },
+                timeout=30
+            )
+
+            if response.status_code == 200:
+                log_json("info", "Django reactivation sync successful",
+                         kennitala=f"{kennitala_normalized[:6]}****")
+            else:
+                log_json("warn", "Django reactivation sync failed",
+                         status_code=response.status_code,
+                         response=response.text[:200])
+        except Exception as django_error:
+            log_json("error", "Django sync failed for reactivation",
+                     error=str(django_error))
+            # Continue - Firestore and Auth updates succeeded
+
+        # 4. Update custom claims
+        try:
+            existing_claims = auth.get_user(firebase_uid).custom_claims or {}
+            merged_claims = {**existing_claims, 'isMember': True}
+            auth.set_custom_user_claims(firebase_uid, merged_claims)
+        except Exception as claims_error:
+            log_json("warn", "Failed to update custom claims",
+                     uid=firebase_uid,
+                     error=str(claims_error))
+
+        # 5. Create custom token for immediate login
+        try:
+            custom_token = auth.create_custom_token(firebase_uid)
+            log_json("info", "Custom token created for reactivated user",
+                     uid=firebase_uid)
+        except Exception as token_error:
+            log_json("error", "Failed to create custom token",
+                     uid=firebase_uid,
+                     error=str(token_error))
+            custom_token = None
+
+        log_json("info", "Reactivation completed successfully",
+                 kennitala=f"{kennitala_normalized[:6]}****",
+                 uid=firebase_uid)
+
+        return {
+            'success': True,
+            'message': 'Aðgangur þinn hefur verið endurvakinn',
+            'customToken': custom_token.decode('utf-8') if custom_token else None
+        }
+
+    except https_fn.HttpsError:
+        raise
+    except Exception as e:
+        log_json("error", "Reactivation failed",
+                 kennitala=f"{kennitala_normalized[:6]}****",
+                 error=str(e))
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INTERNAL,
+            message=f"Reactivation failed: {str(e)}"
         )

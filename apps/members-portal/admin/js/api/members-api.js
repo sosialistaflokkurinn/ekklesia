@@ -6,10 +6,8 @@
  */
 
 // Import Firestore from member portal
-import { getFirebaseFirestore } from '../../../firebase/app.js';
-import { debug } from '../../../js/utils/util-debug.js';
-// Import Firestore v9 modular functions
 import {
+  getFirebaseFirestore,
   collection,
   query,
   where,
@@ -20,7 +18,8 @@ import {
   getDoc,
   doc,
   getCountFromServer
-} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+} from '../../../firebase/app.js';
+import { debug } from '../../../js/utils/util-debug.js';
 
 // Get Firestore instance
 const db = getFirebaseFirestore();
@@ -74,6 +73,11 @@ const MembersAPI = {
           continue;
         }
 
+        // Skip soft-deleted members (those with membership.deleted_at set)
+        if (data.membership?.deleted_at) {
+          continue;
+        }
+
         // Flatten nested structure from Django sync
         members.push({
           id: docSnap.id,
@@ -86,6 +90,7 @@ const MembersAPI = {
           address: data.address || {},
           membership: data.membership || {},
           metadata: data.metadata || {},
+          profile: data.profile || {},  // Include profile for addresses/municipality filtering
           _doc: docSnap // Keep reference for pagination
         });
       }
@@ -131,12 +136,13 @@ const MembersAPI = {
       const q = query(membersCol, ...constraints);
       const snapshot = await getDocs(q);
 
-      // Count members, excluding test accounts with 9999 prefix
+      // Count members, excluding test accounts with 9999 prefix and soft-deleted
       let count = 0;
       snapshot.forEach(doc => {
         const data = doc.data();
         const kennitala = data.profile?.kennitala || doc.id;
-        if (!kennitala.startsWith('9999')) {
+        // Skip test accounts and soft-deleted members
+        if (!kennitala.startsWith('9999') && !data.membership?.deleted_at) {
           count++;
         }
       });

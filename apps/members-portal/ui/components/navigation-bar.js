@@ -130,10 +130,7 @@ export function createNavHeader(options = {}) {
 
       <!-- Navigation Drawer -->
       <div class="nav__drawer" id="nav-drawer" aria-hidden="true">
-        <!-- Close button (mobile only) -->
-        <button class="nav__close" id="nav-close" aria-label="${R.string.nav_close || 'Loka'}">
-          <span class="nav__close-icon">✕</span>
-        </button>
+        <!-- Note: Close button removed - hamburger serves as close button when drawer is open -->
 
         ${tabs.length > 0 ? `
           <!-- Sub-navigation tabs (mobile only) -->
@@ -297,8 +294,8 @@ export const NAV_CONFIGS = {
    */
   elections: {
     brand: {
-      href: '/elections/',
-      textKey: 'nav_elections'  // "Kosningar"
+      href: '/members-area/dashboard.html',
+      textKey: 'app_name'  // Brand → Dashboard
     },
     links: [
       { href: '/members-area/dashboard.html', textKey: 'nav_dashboard' },
@@ -306,12 +303,8 @@ export const NAV_CONFIGS = {
       { href: '/elections/', textKey: 'nav_elections' },
       { href: '/events/', textKey: 'nav_events' },
       { href: '/policy-session/', textKey: 'nav_policy_session' }
-    ],
-    tabs: [
-      { href: '/elections/?type=general', textKey: 'election_type_general' },
-      { href: '/elections/?type=board', textKey: 'election_type_board' },
-      { href: '/elections/?type=policy', textKey: 'election_type_policy' }
     ]
+    // Note: Tabs removed - filter buttons on page provide better UX
   },
 
   /**
@@ -320,8 +313,8 @@ export const NAV_CONFIGS = {
    */
   events: {
     brand: {
-      href: '/events/',
-      textKey: 'nav_events'  // "Viðburðir"
+      href: '/members-area/dashboard.html',
+      textKey: 'app_name'  // Brand → Dashboard
     },
     links: [
       { href: '/members-area/dashboard.html', textKey: 'nav_dashboard' },
@@ -338,8 +331,8 @@ export const NAV_CONFIGS = {
    */
   policySession: {
     brand: {
-      href: '/policy-session/',
-      textKey: 'nav_policy_session'  // "Stefnumótun"
+      href: '/members-area/dashboard.html',
+      textKey: 'app_name'  // Brand → Dashboard
     },
     links: [
       { href: '/members-area/dashboard.html', textKey: 'nav_dashboard' },
@@ -364,11 +357,11 @@ export const NAV_CONFIGS = {
       textKey: 'nav_admin'  // "Stjórnkerfi"
     },
     links: [
-      { href: '/admin/', textKey: 'nav_dashboard' },
+      { href: '/admin/', textKey: 'nav_admin_overview' },
       { href: '/admin/members.html', textKey: 'nav_admin_members' },
+      { href: '/admin/events.html', textKey: 'nav_admin_events' },
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
       { href: '/admin/sync-members.html', textKey: 'nav_admin_sync' },
-      { href: '/admin/sync-history.html', textKey: 'nav_admin_sync_history' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
   },
@@ -379,15 +372,15 @@ export const NAV_CONFIGS = {
    */
   adminMembers: {
     brand: {
-      href: '/admin/members.html',
-      textKey: 'nav_admin_members'  // "Félagaskrá"
+      href: '/admin/',
+      textKey: 'nav_admin'  // Brand → Admin Dashboard
     },
     links: [
-      { href: '/admin/', textKey: 'nav_dashboard' },
+      { href: '/admin/', textKey: 'nav_admin_overview' },
       { href: '/admin/members.html', textKey: 'nav_admin_members' },
+      { href: '/admin/events.html', textKey: 'nav_admin_events' },
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
       { href: '/admin/sync-members.html', textKey: 'nav_admin_sync' },
-      { href: '/admin/sync-history.html', textKey: 'nav_admin_sync_history' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
   },
@@ -398,15 +391,15 @@ export const NAV_CONFIGS = {
    */
   adminMemberProfile: {
     brand: {
-      href: '/admin/members.html',
-      textKey: 'nav_admin_member_profile'  // "Upplýsingar félaga"
+      href: '/admin/',
+      textKey: 'nav_admin'  // Brand → Admin Dashboard
     },
     links: [
-      { href: '/admin/', textKey: 'nav_dashboard' },
+      { href: '/admin/', textKey: 'nav_admin_overview' },
       { href: '/admin/members.html', textKey: 'nav_admin_members' },
+      { href: '/admin/events.html', textKey: 'nav_admin_events' },
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
       { href: '/admin/sync-members.html', textKey: 'nav_admin_sync' },
-      { href: '/admin/sync-history.html', textKey: 'nav_admin_sync_history' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
   },
@@ -417,11 +410,11 @@ export const NAV_CONFIGS = {
    */
   adminEvents: {
     brand: {
-      href: '/admin/events.html',
-      textKey: 'nav_admin_events'  // "Viðburðastjórnun"
+      href: '/admin/',
+      textKey: 'nav_admin'  // Brand → Admin Dashboard
     },
     links: [
-      { href: '/admin/', textKey: 'nav_dashboard' },
+      { href: '/admin/', textKey: 'nav_admin_overview' },
       { href: '/admin/members.html', textKey: 'nav_admin_members' },
       { href: '/admin/events.html', textKey: 'nav_admin_events' },
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
@@ -436,15 +429,15 @@ export const NAV_CONFIGS = {
    */
   adminSyncMembers: {
     brand: {
-      href: '/admin/sync-members.html',
-      textKey: 'nav_admin_sync'  // "Samstilling félagaskrár"
+      href: '/admin/',
+      textKey: 'nav_admin'  // Brand → Admin Dashboard
     },
     links: [
-      { href: '/admin/', textKey: 'nav_dashboard' },
+      { href: '/admin/', textKey: 'nav_admin_overview' },
       { href: '/admin/members.html', textKey: 'nav_admin_members' },
+      { href: '/admin/events.html', textKey: 'nav_admin_events' },
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
       { href: '/admin/sync-members.html', textKey: 'nav_admin_sync' },
-      { href: '/admin/sync-history.html', textKey: 'nav_admin_sync_history' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
   },
@@ -455,15 +448,15 @@ export const NAV_CONFIGS = {
    */
   adminSyncHistory: {
     brand: {
-      href: '/admin/sync-history.html',
-      textKey: 'nav_admin_sync_history'  // "Samstillingarsaga"
+      href: '/admin/',
+      textKey: 'nav_admin'  // Brand → Admin Dashboard
     },
     links: [
-      { href: '/admin/', textKey: 'nav_dashboard' },
+      { href: '/admin/', textKey: 'nav_admin_overview' },
       { href: '/admin/members.html', textKey: 'nav_admin_members' },
+      { href: '/admin/events.html', textKey: 'nav_admin_events' },
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
       { href: '/admin/sync-members.html', textKey: 'nav_admin_sync' },
-      { href: '/admin/sync-history.html', textKey: 'nav_admin_sync_history' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
   },
@@ -478,11 +471,15 @@ export const NAV_CONFIGS = {
    */
   adminElections: {
     brand: {
-      href: '/admin-elections/',
-      textKey: 'nav_admin_elections'  // "Kosningastjórnun"
+      href: '/admin/',
+      textKey: 'nav_admin'  // Brand → Admin Dashboard
     },
     links: [
+      { href: '/admin/', textKey: 'nav_admin_overview' },
+      { href: '/admin/members.html', textKey: 'nav_admin_members' },
+      { href: '/admin/events.html', textKey: 'nav_admin_events' },
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
+      { href: '/admin/sync-members.html', textKey: 'nav_admin_sync' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
   },
@@ -493,11 +490,15 @@ export const NAV_CONFIGS = {
    */
   adminElectionsCreate: {
     brand: {
-      href: '/admin-elections/',
-      textKey: 'nav_admin_elections_create'  // "Ný kosning"
+      href: '/admin/',
+      textKey: 'nav_admin'  // Brand → Admin Dashboard
     },
     links: [
+      { href: '/admin/', textKey: 'nav_admin_overview' },
+      { href: '/admin/members.html', textKey: 'nav_admin_members' },
+      { href: '/admin/events.html', textKey: 'nav_admin_events' },
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
+      { href: '/admin/sync-members.html', textKey: 'nav_admin_sync' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
   },
@@ -508,11 +509,15 @@ export const NAV_CONFIGS = {
    */
   adminElectionsControl: {
     brand: {
-      href: '/admin-elections/',
-      textKey: 'nav_admin_elections_control'  // "Stjórnborð kosninga"
+      href: '/admin/',
+      textKey: 'nav_admin'  // Brand → Admin Dashboard
     },
     links: [
+      { href: '/admin/', textKey: 'nav_admin_overview' },
+      { href: '/admin/members.html', textKey: 'nav_admin_members' },
+      { href: '/admin/events.html', textKey: 'nav_admin_events' },
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
+      { href: '/admin/sync-members.html', textKey: 'nav_admin_sync' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
   },
@@ -536,8 +541,7 @@ export const NAV_CONFIGS = {
       { href: '/superuser/roles.html', textKey: 'nav_superuser_roles' },
       { href: '/superuser/audit-logs.html', textKey: 'nav_superuser_audit_logs' },
       { href: '/superuser/dangerous-ops.html', textKey: 'nav_superuser_dangerous_ops' },
-      { href: '/superuser/system-health.html', textKey: 'nav_superuser_system_health' },
-      { href: '/superuser/architecture.html', textKey: 'nav_superuser_architecture' },
+      { href: '/superuser/system-overview.html', textKey: 'nav_superuser_system_overview' },
       { href: '/superuser/login-audit.html', textKey: 'nav_superuser_login_audit' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
@@ -557,8 +561,7 @@ export const NAV_CONFIGS = {
       { href: '/superuser/roles.html', textKey: 'nav_superuser_roles' },
       { href: '/superuser/audit-logs.html', textKey: 'nav_superuser_audit_logs' },
       { href: '/superuser/dangerous-ops.html', textKey: 'nav_superuser_dangerous_ops' },
-      { href: '/superuser/system-health.html', textKey: 'nav_superuser_system_health' },
-      { href: '/superuser/architecture.html', textKey: 'nav_superuser_architecture' },
+      { href: '/superuser/system-overview.html', textKey: 'nav_superuser_system_overview' },
       { href: '/superuser/login-audit.html', textKey: 'nav_superuser_login_audit' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
@@ -578,8 +581,7 @@ export const NAV_CONFIGS = {
       { href: '/superuser/roles.html', textKey: 'nav_superuser_roles' },
       { href: '/superuser/audit-logs.html', textKey: 'nav_superuser_audit_logs' },
       { href: '/superuser/dangerous-ops.html', textKey: 'nav_superuser_dangerous_ops' },
-      { href: '/superuser/system-health.html', textKey: 'nav_superuser_system_health' },
-      { href: '/superuser/architecture.html', textKey: 'nav_superuser_architecture' },
+      { href: '/superuser/system-overview.html', textKey: 'nav_superuser_system_overview' },
       { href: '/superuser/login-audit.html', textKey: 'nav_superuser_login_audit' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
@@ -599,29 +601,27 @@ export const NAV_CONFIGS = {
       { href: '/superuser/roles.html', textKey: 'nav_superuser_roles' },
       { href: '/superuser/audit-logs.html', textKey: 'nav_superuser_audit_logs' },
       { href: '/superuser/dangerous-ops.html', textKey: 'nav_superuser_dangerous_ops' },
-      { href: '/superuser/system-health.html', textKey: 'nav_superuser_system_health' },
-      { href: '/superuser/architecture.html', textKey: 'nav_superuser_architecture' },
+      { href: '/superuser/system-overview.html', textKey: 'nav_superuser_system_overview' },
       { href: '/superuser/login-audit.html', textKey: 'nav_superuser_login_audit' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
   },
 
   /**
-   * Superuser System Health
-   * Shows "Heilbrigði kerfis" for context
+   * Superuser System Overview
+   * Shows "Kerfisyfirlit" for context
    */
-  superuserSystemHealth: {
+  superuserSystemOverview: {
     brand: {
       href: '/superuser/',
-      textKey: 'nav_superuser_system_health'  // "Heilbrigði kerfis"
+      textKey: 'nav_superuser_system_overview'  // "Kerfisyfirlit"
     },
     links: [
       { href: '/superuser/', textKey: 'nav_superuser_overview' },
       { href: '/superuser/roles.html', textKey: 'nav_superuser_roles' },
       { href: '/superuser/audit-logs.html', textKey: 'nav_superuser_audit_logs' },
       { href: '/superuser/dangerous-ops.html', textKey: 'nav_superuser_dangerous_ops' },
-      { href: '/superuser/system-health.html', textKey: 'nav_superuser_system_health' },
-      { href: '/superuser/architecture.html', textKey: 'nav_superuser_architecture' },
+      { href: '/superuser/system-overview.html', textKey: 'nav_superuser_system_overview' },
       { href: '/superuser/login-audit.html', textKey: 'nav_superuser_login_audit' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
@@ -641,29 +641,7 @@ export const NAV_CONFIGS = {
       { href: '/superuser/roles.html', textKey: 'nav_superuser_roles' },
       { href: '/superuser/audit-logs.html', textKey: 'nav_superuser_audit_logs' },
       { href: '/superuser/dangerous-ops.html', textKey: 'nav_superuser_dangerous_ops' },
-      { href: '/superuser/system-health.html', textKey: 'nav_superuser_system_health' },
-      { href: '/superuser/architecture.html', textKey: 'nav_superuser_architecture' },
-      { href: '/superuser/login-audit.html', textKey: 'nav_superuser_login_audit' },
-      { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
-    ]
-  },
-
-  /**
-   * Superuser Architecture Diagram
-   * Shows "Kerfisarkitektúr" for context
-   */
-  superuserArchitecture: {
-    brand: {
-      href: '/superuser/',
-      textKey: 'nav_superuser_architecture'  // "Kerfisarkitektúr"
-    },
-    links: [
-      { href: '/superuser/', textKey: 'nav_superuser_overview' },
-      { href: '/superuser/roles.html', textKey: 'nav_superuser_roles' },
-      { href: '/superuser/audit-logs.html', textKey: 'nav_superuser_audit_logs' },
-      { href: '/superuser/dangerous-ops.html', textKey: 'nav_superuser_dangerous_ops' },
-      { href: '/superuser/system-health.html', textKey: 'nav_superuser_system_health' },
-      { href: '/superuser/architecture.html', textKey: 'nav_superuser_architecture' },
+      { href: '/superuser/system-overview.html', textKey: 'nav_superuser_system_overview' },
       { href: '/superuser/login-audit.html', textKey: 'nav_superuser_login_audit' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]

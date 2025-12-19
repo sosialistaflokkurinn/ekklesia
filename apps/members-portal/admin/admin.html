@@ -10,7 +10,7 @@
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
 
   <!-- Reuse member portal styles -->
-  <link rel="stylesheet" href="/styles/bundle.css?v=20251202">
+  <link rel="stylesheet" href="/styles/bundle.css?v=20251217k">
 
   <!-- Admin-specific styles -->
   <link rel="stylesheet" href="/admin/styles/admin.css?v=20251027b">
@@ -20,12 +20,7 @@
 
   <!-- Page Content -->
   <div class="page__container">
-    <!-- Welcome Card -->
-    <div class="card card--welcome">
-      <h1 class="card__title" id="admin-welcome-title">Loading...</h1>
-      <p class="u-text-muted" id="admin-welcome-subtitle">Loading...</p>
-      <div class="role-badges u-hidden" id="role-badges"></div>
-    </div>
+    <!-- Note: Welcome card removed - user info is shown on member dashboard -->
 
     <!-- Quick Actions -->
     <div class="card">
@@ -39,31 +34,28 @@
           <div class="info-grid__label" id="quick-action-elections-label">Loading...</div>
           <div class="info-grid__value" id="quick-action-elections-desc">Loading...</div>
         </a>
+        <a href="/admin/events.html" class="info-grid__item u-clickable">
+          <div class="info-grid__label" id="quick-action-events-label">Loading...</div>
+          <div class="info-grid__value" id="quick-action-events-desc">Loading...</div>
+        </a>
         <a href="/admin/sync-members.html" class="info-grid__item u-clickable">
           <div class="info-grid__label" id="quick-action-sync-label">Loading...</div>
           <div class="info-grid__value" id="quick-action-sync-desc">Loading...</div>
         </a>
-        <a href="/admin/sync-history.html" class="info-grid__item u-clickable">
-          <div class="info-grid__label" id="quick-action-history-label">Loading...</div>
-          <div class="info-grid__value" id="quick-action-history-desc">Loading...</div>
+        <a href="/admin/email/" class="info-grid__item u-clickable">
+          <div class="info-grid__label" id="quick-action-email-label">Loading...</div>
+          <div class="info-grid__value" id="quick-action-email-desc">Loading...</div>
         </a>
       </div>
     </div>
 
-    <!-- Recent Sync Status (if available) -->
-    <div class="card u-hidden" id="recent-sync-card">
-      <h2 class="card__title" id="last-sync-title">Loading...</h2>
-      <div class="sync-summary" id="recent-sync-summary">
-        Loading...
-      </div>
-    </div>
   </div>
 
   <script type="module" src="/admin/js/admin.js?v=20251121"></script>
 
   <!-- Initialize Navigation Component -->
   <script type="module">
-    import { initNavHeader, NAV_CONFIGS } from '../../ui/components/navigation-bar.js?v=20251121b';
+    import { initNavHeader, NAV_CONFIGS } from '../../ui/components/navigation-bar.js?v=20251217';
     
     // Initialize navigation with appropriate config
     await initNavHeader(NAV_CONFIGS.admin);

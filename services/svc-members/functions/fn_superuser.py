@@ -17,6 +17,7 @@ from util_logging import log_json
 import requests
 import time
 import os
+import ast
 
 # Import Cloud Logging lazily to avoid import issues in local dev
 _logging_client = None
@@ -54,25 +55,23 @@ CLOUD_RUN_SERVICES = [
         "name": "Kenni.is Health Check",
         "url": "https://healthz-521240388393.europe-west2.run.app/"
     },
+    {
+        "id": "django-socialism",
+        "name": "Django Admin (GCP)",
+        "url": "https://django-socialism-521240388393.europe-west2.run.app/felagar/api/"
+    },
 ]
 
 # External services (Linode, etc.)
-EXTERNAL_SERVICES = [
-    {
-        "id": "django-linode",
-        "name": "Django Backend (Linode)",
-        "url": "https://starf.sosialistaflokkurinn.is/felagar/api/"
-    },
-]
+EXTERNAL_SERVICES = []
 
 # Demo/Test services (not in production yet)
 DEMO_SERVICES = [
-    {
-        "id": "django-socialism-demo",
-        "name": "Django Backend (GCP Demo)",
-        "url": "https://django-socialism-demo-521240388393.europe-west2.run.app/felagar/api/"
-    },
+    # django-socialism-demo deleted 2025-12-05 - promoted to production as django-socialism
 ]
+
+# Base URL for Firebase Callable Functions
+FUNCTIONS_BASE_URL = "https://europe-west2-ekklesia-prod-10-2025.cloudfunctions.net"
 
 # Firebase Functions - Member Operations (Cloud Run backed, no /health endpoint)
 MEMBER_FUNCTIONS = [
@@ -91,6 +90,20 @@ ADDRESS_FUNCTIONS = [
     {"id": "validate-postal-code", "name": "Staðfesting póstnúmers"},
 ]
 
+# Firebase Functions - Lookup (safe to ping - return static data)
+LOOKUP_FUNCTIONS = [
+    {"id": "list-unions", "name": "Stéttarfélög", "function_name": "list_unions"},
+    {"id": "list-job-titles", "name": "Starfsheiti", "function_name": "list_job_titles"},
+    {"id": "list-countries", "name": "Lönd", "function_name": "list_countries"},
+    {"id": "list-postal-codes", "name": "Póstnúmer", "function_name": "list_postal_codes"},
+    {"id": "get-cells-by-postal-code", "name": "Sellur eftir póstnúmeri", "function_name": "get_cells_by_postal_code"},
+]
+
+# Firebase Functions - Registration
+REGISTRATION_FUNCTIONS = [
+    {"id": "register-member", "name": "Skráning félaga"},
+]
+
 # Firebase Functions - Superuser Operations
 SUPERUSER_FUNCTIONS = [
     {"id": "checksystemhealth", "name": "Staða kerfis"},
@@ -100,7 +113,8 @@ SUPERUSER_FUNCTIONS = [
     {"id": "getloginaudit", "name": "Innskráningarsaga"},
     {"id": "harddeletemember", "name": "Eyða félaga"},
     {"id": "anonymizemember", "name": "Nafnhreinsa félaga"},
-    {"id": "purgedeleted", "name": "Eyða merktum félögum"},  # New function
+    {"id": "listelevatedusers", "name": "Listi yfir stjórnendur"},
+    {"id": "purgedeleted", "name": "Eyða merktum félögum"},
 ]
 
 # Firebase Functions - Utility/Background
@@ -204,10 +218,20 @@ def set_user_role_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
         # Get target user info
         target_user = auth.get_user(target_uid)
         old_claims = target_user.custom_claims or {}
-        old_role = old_claims.get("role", "member")
+        old_roles = old_claims.get("roles", ["member"])
+        old_role = old_claims.get("role", "member")  # Legacy field
 
-        # Set new custom claims
-        auth.set_custom_user_claims(target_uid, {"role": new_role})
+        # Build new roles array - everyone keeps 'member' base role
+        # Roles hierarchy: member (base), admin, superuser
+        new_roles = ["member"]
+        if new_role == "admin":
+            new_roles.append("admin")
+        elif new_role == "superuser":
+            new_roles.append("superuser")
+        # If new_role == "member", just ['member']
+
+        # Set new custom claims (using 'roles' array as primary)
+        auth.set_custom_user_claims(target_uid, {"roles": new_roles})
 
         # Log the action
         log_json("info", "User role updated",
@@ -215,14 +239,15 @@ def set_user_role_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
                  caller_uid=caller_uid,
                  target_uid=target_uid,
                  target_email=target_user.email,
-                 old_role=old_role,
-                 new_role=new_role)
+                 old_roles=old_roles,
+                 new_roles=new_roles)
 
-        # Update Firestore user document
+        # Update Firestore user document (roles array only, delete legacy 'role' string)
         db = firestore.client()
         user_ref = db.collection("users").document(target_uid)
         user_ref.set({
-            "role": new_role,
+            "roles": new_roles,
+            "role": firestore.DELETE_FIELD,  # Remove legacy field
             "roleUpdatedAt": firestore.SERVER_TIMESTAMP,
             "roleUpdatedBy": caller_uid
         }, merge=True)
@@ -230,8 +255,10 @@ def set_user_role_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
         return {
             "success": True,
             "target_uid": target_uid,
-            "old_role": old_role,
-            "new_role": new_role,
+            "old_role": old_role,  # Keep for backwards compat
+            "new_role": new_role,  # Keep for backwards compat
+            "old_roles": old_roles,
+            "new_roles": new_roles,
             "message": f"Role updated from {old_role} to {new_role}"
         }
 
@@ -279,11 +306,15 @@ def get_user_role_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
         target_user = auth.get_user(target_uid)
         claims = target_user.custom_claims or {}
 
+        # Get roles from array (new format) with fallback
+        roles = claims.get("roles", ["member"])
+
         return {
             "uid": target_uid,
             "email": target_user.email,
             "displayName": target_user.display_name,
-            "role": claims.get("role", "member"),
+            "roles": roles,  # Array format
+            "role": roles[-1] if roles else "member",  # Legacy: highest role for backwards compat
             "disabled": target_user.disabled,
             "lastSignIn": target_user.user_metadata.last_sign_in_timestamp
         }
@@ -366,20 +397,87 @@ def check_system_health_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
         result["category"] = "demo"
         results.append(result)
 
-    # Add Firebase Functions by category (no health endpoint - shown as "available")
-    def add_functions(func_list, category):
-        for service in func_list:
-            results.append({
+    # Check Firebase Callable Functions by pinging them
+    def check_callable_function(service, category):
+        """Check health of a Firebase Callable Function by making HTTP POST."""
+        func_name = service.get("function_name")
+        if not func_name:
+            # No function_name means we can't ping it safely
+            return {
                 "id": service["id"],
                 "name": service["name"],
                 "status": "available",
                 "message": "Tilbúið",
                 "responseTime": None,
                 "category": category
-            })
+            }
 
+        url = f"{FUNCTIONS_BASE_URL}/{func_name}"
+        try:
+            start_time = time.time()
+            # Callable functions expect POST with JSON body {"data": {...}}
+            response = requests.post(
+                url,
+                json={"data": {}},
+                timeout=10,
+                headers={
+                    "Content-Type": "application/json",
+                    "User-Agent": "Ekklesia-HealthCheck/1.0"
+                }
+            )
+            response_time = int((time.time() - start_time) * 1000)
+
+            # 200 = success, 401/403 = auth required but function is running
+            if response.status_code in [200, 401, 403]:
+                return {
+                    "id": service["id"],
+                    "name": service["name"],
+                    "status": "healthy",
+                    "message": f"OK ({response_time}ms)",
+                    "responseTime": response_time,
+                    "category": category
+                }
+            else:
+                return {
+                    "id": service["id"],
+                    "name": service["name"],
+                    "status": "degraded",
+                    "message": f"HTTP {response.status_code} ({response_time}ms)",
+                    "responseTime": response_time,
+                    "category": category
+                }
+
+        except requests.Timeout:
+            return {
+                "id": service["id"],
+                "name": service["name"],
+                "status": "degraded",
+                "message": "Timeout (>10s)",
+                "responseTime": None,
+                "category": category
+            }
+        except requests.RequestException as e:
+            return {
+                "id": service["id"],
+                "name": service["name"],
+                "status": "down",
+                "message": str(e)[:50],
+                "responseTime": None,
+                "category": category
+            }
+
+    # Add Firebase Functions by category
+    def add_functions(func_list, category):
+        for service in func_list:
+            results.append(check_callable_function(service, category))
+
+    # Ping lookup functions (safe - return static data, no auth required)
+    add_functions(LOOKUP_FUNCTIONS, "lookup")
+
+    # Other functions without function_name get "available" status
     add_functions(MEMBER_FUNCTIONS, "member")
     add_functions(ADDRESS_FUNCTIONS, "address")
+    add_functions(REGISTRATION_FUNCTIONS, "registration")
     add_functions(SUPERUSER_FUNCTIONS, "superuser")
     add_functions(UTILITY_FUNCTIONS, "utility")
 
@@ -462,8 +560,8 @@ def check_system_health_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
             "message": str(e)[:50]
         })
 
-    # Summary
-    healthy_count = sum(1 for r in results if r["status"] == "healthy")
+    # Summary - count "available" as healthy (Firebase Functions without health endpoint)
+    healthy_count = sum(1 for r in results if r["status"] in ("healthy", "available"))
     degraded_count = sum(1 for r in results if r["status"] == "degraded")
     down_count = sum(1 for r in results if r["status"] == "down")
 
@@ -532,18 +630,60 @@ def get_audit_logs_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
 
         filter_str = " AND ".join(filters)
 
+# ... inside get_audit_logs_handler ...
+
         # Query logs
         entries = []
         for entry in client.list_entries(filter_=filter_str, max_results=limit):
+            # entry.payload is usually a dict (or OrderedDict) for JSON payloads
             payload = entry.payload if isinstance(entry.payload, dict) else {"message": str(entry.payload)}
+            
+            # Default values
+            message = payload.get("message") or payload.get("msg")
+            action = None
+            resource = None
+            status = None
+            user = payload.get("user") or payload.get("uid")
+
+            # DETECT STRUCTURED AUDIT LOG (GCP Audit Log)
+            # Check for keys present in the raw OrderedDict output seen in logs
+            if not message and "authenticationInfo" in payload and "methodName" in payload:
+                try:
+                    auth_info = payload.get("authenticationInfo", {})
+                    # request_meta = payload.get("requestMetadata", {}) # Not used currently
+                    authz_info_list = payload.get("authorizationInfo", [])
+                    authz_info = authz_info_list[0] if authz_info_list else {}
+                    
+                    user_email = auth_info.get("principalEmail")
+                    method = payload.get("methodName", "").split(".")[-1] # Shorten: google...UpdateFunction -> UpdateFunction
+                    res_name = payload.get("resourceName", "").split("/")[-1] # Shorten resource
+                    
+                    # Set structured fields
+                    user = user_email
+                    action = method
+                    resource = res_name
+                    status = "Granted" if authz_info.get("granted") else "Denied"
+                    
+                    # Format human-readable message
+                    message = f"{user_email} performed {method} on {res_name}"
+                    
+                except Exception as parse_error:
+                    log_json("warning", "Failed to parse structured audit log", error=str(parse_error))
+            
+            # Fallback if message is still empty
+            if not message:
+                message = str(payload)
 
             entries.append({
                 "timestamp": entry.timestamp.isoformat() if entry.timestamp else None,
                 "severity": entry.severity,
                 "service": entry.resource.labels.get("function_name") if entry.resource else None,
-                "message": payload.get("message") or payload.get("msg") or str(payload),
+                "message": message,
                 "correlationId": payload.get("correlationId") or payload.get("correlation_id"),
-                "user": payload.get("user") or payload.get("uid"),
+                "user": user,
+                "action": action,
+                "resource": resource,
+                "status": status,
                 "error": payload.get("error")
             })
 
@@ -810,10 +950,11 @@ def list_elevated_users_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
         # Track by UID or kennitala to avoid duplicates
         superusers_map = {}  # keyed by uid
         admins_map = {}      # keyed by uid
-        django_elevated = {} # keyed by kennitala (for users without Firebase account)
+        # NOTE: django_elevated removed - roles come from Firebase only
 
-        # 1. Query /users/ collection for explicit role field
-        superuser_docs = db.collection("users").where("role", "==", "superuser").stream()
+        # 1. Query /users/ collection for 'roles' array field
+        # Note: setUserRole() stores roles as array: ["member", "superuser"]
+        superuser_docs = db.collection("users").where("roles", "array_contains", "superuser").stream()
         for doc in superuser_docs:
             data = doc.to_dict()
             superusers_map[doc.id] = {
@@ -826,7 +967,7 @@ def list_elevated_users_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
                 "hasLoggedIn": True
             }
 
-        admin_docs = db.collection("users").where("role", "==", "admin").stream()
+        admin_docs = db.collection("users").where("roles", "array_contains", "admin").stream()
         for doc in admin_docs:
             data = doc.to_dict()
             if doc.id not in superusers_map:  # Don't downgrade superusers
@@ -840,151 +981,23 @@ def list_elevated_users_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
                     "hasLoggedIn": True
                 }
 
-        # 2. Check Firebase Auth custom claims (batch operation)
-        # This catches users with roles set via claims but not in /users/ collection
-        try:
-            page = auth.list_users()
-            while page:
-                for user in page.users:
-                    claims = user.custom_claims or {}
-                    role = claims.get("role")
-                    roles = claims.get("roles", [])
-                    
-                    is_superuser = role == "superuser" or "superuser" in roles
-                    is_admin = role == "admin" or "admin" in roles
-                    
-                    if is_superuser and user.uid not in superusers_map:
-                        superusers_map[user.uid] = {
-                            "uid": user.uid,
-                            "kennitala": None,
-                            "displayName": user.display_name or user.email or "Nafnlaus",
-                            "email": user.email or "-",
-                            "roleUpdatedAt": None,
-                            "source": "firebase_claims",
-                            "hasLoggedIn": True
-                        }
-                    elif is_admin and user.uid not in superusers_map and user.uid not in admins_map:
-                        admins_map[user.uid] = {
-                            "uid": user.uid,
-                            "kennitala": None,
-                            "displayName": user.display_name or user.email or "Nafnlaus",
-                            "email": user.email or "-",
-                            "roleUpdatedAt": None,
-                            "source": "firebase_claims",
-                            "hasLoggedIn": True
-                        }
-                
-                # Get next page
-                page = page.get_next_page()
-        except Exception as e:
-            log_json("warning", "Failed to list Firebase Auth users", error=str(e))
-            # Continue with what we have from /users/ collection
+        # 2. Skip Firebase Auth list_users() - it's too slow (iterates ALL users)
+        # The /users/ collection query above is sufficient since:
+        # - All elevated users should have a /users/ document
+        # - setUserRole() creates/updates /users/ document when setting role
+        # - Edge case of claims-only user is rare and acceptable to miss
 
-        # 3. Check /members/ collection for Django elevated flags
-        # This catches users with Django staff/admin roles who haven't logged into Ekklesia
-        # Field is "django_roles" with is_staff and is_superuser booleans
-        try:
-            # Get existing kennitölur to avoid duplicates
-            existing_kts = set()
-            for u in list(superusers_map.values()) + list(admins_map.values()):
-                if u.get("kennitala"):
-                    existing_kts.add(u["kennitala"])
-            
-            # Query members with is_superuser=true
-            superuser_members = db.collection("members").where(
-                "django_roles.is_superuser", "==", True
-            ).stream()
-            for doc in superuser_members:
-                kt = doc.id
-                if kt in existing_kts:
-                    continue
-                data = doc.to_dict()
-                profile = data.get("profile", {})
-                metadata = data.get("metadata", {})
-                firebase_uid = metadata.get("firebase_uid")
-                
-                # Skip if already in map by UID
-                if firebase_uid and firebase_uid in superusers_map:
-                    continue
-                
-                entry = {
-                    "uid": firebase_uid,
-                    "kennitala": kt,
-                    "displayName": profile.get("name") or "Nafnlaus",
-                    "email": profile.get("email") or "-",
-                    "roleUpdatedAt": None,
-                    "source": "django_members",
-                    "hasLoggedIn": firebase_uid is not None,
-                    "djangoFlags": {"is_superuser": True}
-                }
-                
-                if firebase_uid:
-                    superusers_map[firebase_uid] = entry
-                else:
-                    django_elevated[f"kt:{kt}:superuser"] = entry
-                existing_kts.add(kt)
-            
-            # Query members with is_staff=true (admins)
-            staff_members = db.collection("members").where(
-                "django_roles.is_staff", "==", True
-            ).stream()
-            for doc in staff_members:
-                kt = doc.id
-                if kt in existing_kts:
-                    continue
-                data = doc.to_dict()
-                profile = data.get("profile", {})
-                metadata = data.get("metadata", {})
-                django_roles = data.get("django_roles", {})
-                firebase_uid = metadata.get("firebase_uid")
-                
-                # Skip superusers
-                if django_roles.get("is_superuser"):
-                    continue
-                
-                # Skip if already in map by UID
-                if firebase_uid and (firebase_uid in superusers_map or firebase_uid in admins_map):
-                    continue
-                
-                entry = {
-                    "uid": firebase_uid,
-                    "kennitala": kt,
-                    "displayName": profile.get("name") or "Nafnlaus",
-                    "email": profile.get("email") or "-",
-                    "roleUpdatedAt": None,
-                    "source": "django_members",
-                    "hasLoggedIn": firebase_uid is not None,
-                    "djangoFlags": {
-                        "is_staff": True,
-                        "is_admin": django_roles.get("is_admin", False)
-                    }
-                }
-                
-                if firebase_uid:
-                    admins_map[firebase_uid] = entry
-                else:
-                    django_elevated[f"kt:{kt}:admin"] = entry
-                existing_kts.add(kt)
-                
-        except Exception as e:
-            log_json("warning", "Failed to check /members/ for Django elevated users", error=str(e))
-            # Continue with what we have
+        # NOTE: Django roles (is_staff, is_superuser) are NO LONGER queried.
+        # Elevated users come ONLY from Firebase (/users/ collection).
+        # See: tmp/RFC_RBAC_CLEANUP.md
 
-        # Convert to sorted lists (include Django-only users)
-        all_superusers = list(superusers_map.values()) + [
-            v for k, v in django_elevated.items() if ":superuser" in k
-        ]
-        all_admins = list(admins_map.values()) + [
-            v for k, v in django_elevated.items() if ":admin" in k
-        ]
-        
-        superusers = sorted(all_superusers, key=lambda x: (x["displayName"] or "").lower())
-        admins = sorted(all_admins, key=lambda x: (x["displayName"] or "").lower())
+        # Convert to sorted lists
+        superusers = sorted(list(superusers_map.values()), key=lambda x: (x["displayName"] or "").lower())
+        admins = sorted(list(admins_map.values()), key=lambda x: (x["displayName"] or "").lower())
 
         log_json("info", "Listed elevated users",
                 superuser_count=len(superusers),
-                admin_count=len(admins),
-                django_only_count=len(django_elevated))
+                admin_count=len(admins))
 
         return {
             "superusers": superusers,
@@ -1019,8 +1032,8 @@ def _fetch_django_elevated_users() -> Dict[str, list]:
         'Accept': 'application/json'
     }
 
-    # Django API endpoint for all members
-    url = "https://starf.sosialistaflokkurinn.is/felagar/api/full/"
+    # Django API endpoint for all members (GCP Cloud Run)
+    url = "https://django-socialism-521240388393.europe-west2.run.app/felagar/api/full/"
 
     superusers = []
     admins = []

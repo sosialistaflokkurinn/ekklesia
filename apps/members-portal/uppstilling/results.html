@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Niðurstöður - Uppstillingarnefnd</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2" sizes="any">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico?v=2">
+  <link rel="stylesheet" href="/styles/bundle.css?v=20251217k">
+  <link rel="stylesheet" href="styles/uppstilling.css?v=20251210c">
+</head>
+<body class="authenticated">
+  <!-- Navigation component inserted here -->
+
+  <!-- Page Content -->
+  <div class="page__container">
+    <!-- Header -->
+    <div class="card card--welcome">
+      <a href="index.html" class="back-link">&larr; Til baka</a>
+      <h1 class="card__title" id="election-title">Hleður...</h1>
+      <p class="card__subtitle" id="election-info"></p>
+    </div>
+
+    <!-- Loading State -->
+    <div class="card" id="loading-card">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">Hleð niðurstöðum...</p>
+    </div>
+
+    <!-- Error State -->
+    <div class="card card--error" id="error-card" style="display: none;">
+      <h3 class="card__title">Villa</h3>
+      <p id="error-message"></p>
+      <button class="btn btn--primary" onclick="location.reload()">Reyna aftur</button>
+    </div>
+
+    <!-- Results Container -->
+    <div id="results-container" style="display: none;">
+      <!-- Summary Card -->
+      <div class="card">
+        <h3 class="card__title">Yfirlit</h3>
+        <div class="results-summary">
+          <div class="summary-stat">
+            <span class="summary-stat__value" id="votes-cast">0</span>
+            <span class="summary-stat__label">Atkvæði</span>
+          </div>
+          <div class="summary-stat">
+            <span class="summary-stat__value" id="committee-size">0</span>
+            <span class="summary-stat__label">Nefndarmenn</span>
+          </div>
+          <div class="summary-stat">
+            <span class="summary-stat__value" id="seats-to-fill">0</span>
+            <span class="summary-stat__label">Sæti</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Average Rankings -->
+      <div class="card">
+        <h3 class="card__title">Meðalröðun</h3>
+        <p class="card__description">Lægri tala = betra (1 = fyrsta val).</p>
+        <div id="average-rankings" class="rankings-table">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+
+      <!-- STV Winners (if applicable) -->
+      <div class="card" id="stv-winners-card" style="display: none;">
+        <h3 class="card__title">STV Sigurvegari</h3>
+        <p class="card__description">Reiknað með Droop quota.</p>
+        <div id="stv-winners" class="winners-list">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+
+      <!-- Individual Votes -->
+      <div class="card">
+        <h3 class="card__title">Atkvæði nefndarmanna</h3>
+        <p class="card__description">Hver nefndarmaður og röðun þeirra.</p>
+        <div id="individual-votes" class="votes-list">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/uppstilling-results.js?v=20251212"></script>
+
+  <!-- Initialize Navigation Component -->
+  <script type="module">
+    import { initNavHeader, NAV_CONFIGS } from '../../ui/components/navigation-bar.js?v=20251121c';
+    await initNavHeader(NAV_CONFIGS.members);
+  </script>
+</body>
+</html>

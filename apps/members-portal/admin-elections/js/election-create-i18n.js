@@ -58,8 +58,12 @@ export async function initElectionCreateStrings() {
   document.getElementById('voting-type-single-desc').textContent = R.string.voting_type_single_desc;
   document.getElementById('voting-type-multi').textContent = R.string.voting_type_multi;
   document.getElementById('voting-type-multi-desc').textContent = R.string.voting_type_multi_desc;
+  document.getElementById('voting-type-ranked').textContent = R.string.voting_type_ranked;
+  document.getElementById('voting-type-ranked-desc').textContent = R.string.voting_type_ranked_desc;
   document.getElementById('label-max-selections').textContent = R.string.label_max_selections;
   document.getElementById('help-max-selections').textContent = R.string.help_max_selections;
+  document.getElementById('label-num-seats').textContent = R.string.label_num_seats;
+  document.getElementById('help-num-seats').textContent = R.string.help_num_seats;
   document.getElementById('label-answer-options').textContent = R.string.label_answer_options;
   document.getElementById('add-answer-btn').textContent = R.string.btn_add_answer;
   document.getElementById('help-answer-options').textContent = R.string.help_answer_options;

@@ -16,6 +16,7 @@ import {
   httpsCallable,
   getAppCheckTokenValue
 } from '/firebase/app.js';
+import { showConfirm } from './components/ui-modal.js';
 
 /**
  * Base64 URL encode a buffer
@@ -144,7 +145,51 @@ async function handleOAuthCallback(authCode) {
 
     const data = await response.json();
 
-    // Sign in to Firebase with custom token
+    // Check if account needs reactivation (soft-deleted)
+    if (data.requiresReactivation) {
+      debug.log('Account requires reactivation');
+      statusTextEl.textContent = R.string.login_status_inactive;
+
+      // Show reactivation confirmation modal
+      const shouldReactivate = await showReactivationModal();
+
+      if (shouldReactivate) {
+        // Show loading state
+        statusEl.className = 'status authenticating';
+        statusTextEl.innerHTML = `<span class="spinner"></span> ${R.string.login_status_reactivating}`;
+        try {
+          // Call reactivateSelf directly - NO second auth needed!
+          const reactivateSelf = httpsCallable('reactivateSelf', R.string.config_firebase_region);
+          const result = await reactivateSelf({ kennitala: data.kennitala });
+
+          if (result.data?.customToken) {
+            // Sign in with new token from reactivation
+            await signInWithCustomToken(auth, result.data.customToken);
+            debug.log('Account reactivated successfully');
+
+            // Clear PKCE verifier and redirect
+            sessionStorage.removeItem('pkce_code_verifier');
+            window.location.href = R.string.path_dashboard;
+            return;
+          }
+        } catch (reactivateError) {
+          debug.error('Reactivation failed:', reactivateError);
+          statusEl.className = 'status error';
+          statusTextEl.textContent = R.string.login_status_reactivate_error.replace('%s', reactivateError.message);
+          authButtonsEl.style.display = 'block';
+          return;
+        }
+      } else {
+        // User declined reactivation
+        statusEl.className = 'status not-authenticated';
+        statusTextEl.textContent = R.string.login_status_cancelled;
+        authButtonsEl.style.display = 'block';
+        sessionStorage.removeItem('pkce_code_verifier');
+        return;
+      }
+    }
+
+    // Normal flow - sign in with custom token
     await signInWithCustomToken(auth, data.customToken);
 
     // Clear PKCE verifier
@@ -162,14 +207,49 @@ async function handleOAuthCallback(authCode) {
       // Continue to dashboard even if verification fails
     }
 
-    // Redirect to dashboard
-    window.location.href = R.string.path_dashboard;
+    // Redirect to dashboard or saved URL
+    const redirectUrl = sessionStorage.getItem('redirect_after_login');
+    sessionStorage.removeItem('redirect_after_login');
+
+    if (redirectUrl && (redirectUrl.startsWith('/') || redirectUrl.startsWith(window.location.origin))) {
+      debug.log('Redirecting to saved URL:', redirectUrl);
+      window.location.href = redirectUrl;
+    } else {
+      window.location.href = R.string.path_dashboard;
+    }
   } catch (error) {
     debug.error(R.string.log_authentication_error, error);
     statusEl.className = 'status error';
-    statusTextEl.textContent = R.format(R.string.error_authentication, error.message);
-    authButtonsEl.style.display = 'block';
+
+    // Check if account is disabled (soft-deleted)
+    if (error.message?.includes('user-disabled') || error.code === 'auth/user-disabled') {
+      statusTextEl.innerHTML = `
+        <strong>Aðgangur þinn hefur verið gerður óvirkur.</strong><br><br>
+        <a href="/members-area/reactivate.html" class="btn btn--primary" style="margin-top: 1rem;">
+          🔓 Endurvakna aðgang
+        </a>
+      `;
+      authButtonsEl.style.display = 'none';
+    } else {
+      statusTextEl.textContent = R.format(R.string.error_authentication, error.message);
+      authButtonsEl.style.display = 'block';
+    }
   }
+}
+
+/**
+ * Show reactivation confirmation modal
+ * @returns {Promise<boolean>} True if user confirms reactivation
+ */
+async function showReactivationModal() {
+  return showConfirm(
+    'Endurvakna aðgang',
+    'Aðgangur þinn hefur verið gerður óvirkur. Viltu endurvakna hann núna?',
+    {
+      confirmText: 'Já, endurvakna',
+      cancelText: 'Nei, hætta við'
+    }
+  );
 }
 
 /**
@@ -287,8 +367,15 @@ async function init() {
   // Check if already authenticated
   const user = await getCurrentUser();
   if (user) {
-    // Already logged in - redirect to dashboard
-    window.location.href = R.string.path_dashboard;
+    // Already logged in - redirect to dashboard or saved URL
+    const redirectUrl = sessionStorage.getItem('redirect_after_login');
+    sessionStorage.removeItem('redirect_after_login');
+
+    if (redirectUrl && (redirectUrl.startsWith('/') || redirectUrl.startsWith(window.location.origin))) {
+      window.location.href = redirectUrl;
+    } else {
+      window.location.href = R.string.path_dashboard;
+    }
     return;
   }
 

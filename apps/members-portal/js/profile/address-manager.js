@@ -8,8 +8,7 @@
  */
 
 import { R } from '../../i18n/strings-loader.js';
-import { getFirebaseFirestore, httpsCallable } from '../../firebase/app.js';
-import { doc, updateDoc, deleteField } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getFirebaseFirestore, httpsCallable, doc, updateDoc, deleteField } from '../../firebase/app.js';
 
 // Cloud Function for syncing profile updates to Django
 const updateMemberProfileFunction = httpsCallable('updatememberprofile', 'europe-west2');
@@ -17,6 +16,7 @@ import { getCountriesSorted, getCountryFlag } from '../utils/util-countries.js';
 import { debug } from '../utils/util-debug.js';
 import { showToast } from '../components/ui-toast.js';
 import { showStatus, createStatusIcon } from '../components/ui-status.js';
+import { showConfirm } from '../components/ui-modal.js';
 import { SearchableSelect } from '../components/ui-searchable-select.js';
 import { AddressAutocomplete } from '../components/member-address-autocomplete.js';
 import { el } from '../utils/util-dom.js';
@@ -84,7 +84,7 @@ export class AddressManager {
    *
    * @param {number} index - Address index to validate
    * @param {HTMLElement} statusIcon - Status icon element for feedback
-   * @returns {Promise<Object|null>} Validated address data or null
+   * @returns {Promise<Object>} Validation result: { valid: boolean, address?: Object, error?: string }
    */
   async validateIcelandicAddress(index, statusIcon) {
     const address = this.addresses[index];
@@ -92,13 +92,13 @@ export class AddressManager {
     // Only validate Icelandic addresses
     if (address.country !== 'IS') {
       debug.log('🌍 Skipping validation - not Icelandic address');
-      return null;
+      return { valid: true, skipped: true, reason: 'not_icelandic' };
     }
 
     // Need street and number for validation
     if (!address.street || !address.number) {
       debug.log('ℹ️ Skipping validation - missing street or number');
-      return null;
+      return { valid: true, skipped: true, reason: 'missing_fields' };
     }
 
     try {
@@ -131,20 +131,41 @@ export class AddressManager {
         this.addresses[index].latitude = validated.latitude;
         this.addresses[index].longitude = validated.longitude;
         this.addresses[index].hnitnum = validated.hnitnum;
+        this.addresses[index].municipality = validated.municipality || '';  // Sveitarfélag (#307)
+
+        // Mark as validated with timestamp
+        this.addresses[index].validated = true;
+        this.addresses[index].validatedAt = new Date().toISOString();
 
         debug.log(`📍 GPS stored: ${validated.latitude}, ${validated.longitude}`);
+        debug.log(`✅ Address marked as validated`);
 
-        return validated;
+        return { valid: true, address: validated };
       } else {
         debug.warn('⚠️ Address not found in national registry:', result.data.error);
-        // Don't prevent saving - user might know their address better
-        return null;
+        // Mark as not validated
+        this.addresses[index].validated = false;
+        this.addresses[index].validatedAt = null;
+        return { 
+          valid: false, 
+          error: result.data.error || R.string?.address_not_found || 'Heimilisfang finnst ekki í Staðfangaskrá'
+        };
       }
     } catch (error) {
       debug.error('❌ Address validation failed:', error);
-      // Don't prevent saving on validation error
-      return null;
+      // Don't mark validation status on error - network might be down
+      return { valid: false, error: R.string?.address_validation_error || 'Villa við að staðfesta heimilisfang' };
     }
+  }
+
+  /**
+   * Mark address as validated (used when selected from autocomplete)
+   * @param {number} index - Address index
+   */
+  markAsValidated(index) {
+    this.addresses[index].validated = true;
+    this.addresses[index].validatedAt = new Date().toISOString();
+    debug.log(`✅ Address ${index} marked as validated (autocomplete selection)`);
   }
 
   /**
@@ -300,7 +321,11 @@ export class AddressManager {
       });
 
       // Country selector
-      const countrySelector = el('select', 'item-country-selector', {}, ...options);
+      const countrySelector = el('select', 'item-country-selector', {
+        id: `address-country-${index}`,
+        name: `address_country_${index}`,
+        autocomplete: 'country'
+      }, ...options);
 
       // Country change listener
       countrySelector.addEventListener('change', async (e) => {
@@ -355,6 +380,9 @@ export class AddressManager {
       const addressWrapper = el('div', 'address-input--unified-wrapper', {});
       const addressInput = el('input', 'address-input address-input--unified', {
         type: 'text',
+        id: `address-input-${index}`,
+        name: `address_${index}`,
+        autocomplete: 'street-address',
         value: this.formatAddressString(address),
         placeholder: R.string.label_full_address || 'Heimilisfang (t.d. Gullengi 37, 112 Reykjavík)'
       });
@@ -378,11 +406,15 @@ export class AddressManager {
             this.addresses[index].letter = selectedAddress.letter || '';
             this.addresses[index].postal_code = String(selectedAddress.postal_code || '');
             this.addresses[index].city = selectedAddress.city || '';
+            this.addresses[index].municipality = selectedAddress.municipality || '';  // Sveitarfélag (#307)
 
             // Store GPS silently (user doesn't see this)
             this.addresses[index].latitude = selectedAddress.latitude;
             this.addresses[index].longitude = selectedAddress.longitude;
             this.addresses[index].hnitnum = selectedAddress.hnitnum;
+
+            // Mark as validated since it came from autocomplete (iceaddr)
+            this.markAsValidated(index);
 
             // Update the input with formatted address
             addressInput.value = this.formatAddressString(this.addresses[index]);
@@ -431,10 +463,41 @@ export class AddressManager {
           try {
             // Validate if Icelandic address
             if (address.country === 'IS' && parsed.street && parsed.number) {
-              const validated = await this.validateIcelandicAddress(index, statusIcon);
-              if (validated) {
+              const validationResult = await this.validateIcelandicAddress(index, statusIcon);
+              
+              if (validationResult.valid && validationResult.address) {
                 // Update input with validated/corrected address
                 addressInput.value = this.formatAddressString(this.addresses[index]);
+              } else if (!validationResult.valid && !validationResult.skipped) {
+                // Address not found in iceaddr - ask for confirmation
+                const confirmMessage = R.string?.profile_address_not_found_message || 
+                  'Heimilisfangið fannst ekki í Staðfangaskrá Þjóðskrár. Viltu nota þetta heimilisfang samt?';
+                const confirmTitle = R.string?.profile_address_not_found_title || 'Heimilisfang finnst ekki';
+                
+                const confirmed = await showConfirm(confirmTitle, confirmMessage, {
+                  confirmText: R.string?.btn_save_anyway || 'Vista samt',
+                  cancelText: R.string?.btn_cancel || 'Hætta við',
+                  confirmStyle: 'primary'
+                });
+                
+                if (!confirmed) {
+                  // User cancelled - revert to old value
+                  debug.log('❌ User cancelled saving unvalidated address');
+                  e.target.value = oldValue;
+                  this.addresses[index].street = address.street;
+                  this.addresses[index].number = address.number;
+                  this.addresses[index].letter = address.letter;
+                  this.addresses[index].postal_code = address.postal_code;
+                  this.addresses[index].city = address.city;
+                  showStatus(statusIcon, 'idle', { baseClass: 'profile-field__status' });
+                  return;
+                }
+                
+                debug.log('⚠️ User confirmed saving unvalidated address');
+                // Clear GPS coordinates since address is not validated
+                this.addresses[index].latitude = null;
+                this.addresses[index].longitude = null;
+                this.addresses[index].hnitnum = null;
               }
             }
             await this.save();

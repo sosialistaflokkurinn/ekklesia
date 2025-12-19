@@ -4,7 +4,7 @@
 
 | Document | Purpose |
 |----------|---------|
-| [ARCHITECTURE.md](ARCHITECTURE.md) | System design, components, data flow |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | System design, data flow, troubleshooting |
 | [PATTERNS.md](PATTERNS.md) | Code patterns, reusable components, best practices |
 | [SECURITY.md](SECURITY.md) | Security rules, secrets management |
 
@@ -74,6 +74,12 @@ cd services/svc-elections && ./deploy.sh
 cd services/svc-events && ./deploy.sh
 ```
 
+### Deploy Cloud Function (single)
+```bash
+cd services/svc-members
+firebase deploy --only functions:FUNCTION_NAME
+```
+
 ### Rebuild CSS Bundle
 ```bash
 ./scripts/build-css-bundle.sh
@@ -85,13 +91,18 @@ cloud-sql-proxy ekklesia-prod-10-2025:europe-west2:ekklesia-db --port 5433 --gcl
 psql -h localhost -p 5433 -U postgres -d ekklesia
 ```
 
+### Check Function Logs
+```bash
+gcloud functions logs read FUNCTION_NAME --region=europe-west2 --limit=50
+```
+
 ---
 
 ## Critical Rules
 
 | Never | Always |
 |-------|--------|
-| `firebase deploy --only functions` | `firebase deploy --only hosting` |
+| `firebase deploy --only functions` (all) | `firebase deploy --only functions:NAME` |
 | Hardcode Icelandic text | Use i18n system |
 | Commit `.env` files | Use GCP Secret Manager |
 | `git push --no-verify` | Let hooks run |

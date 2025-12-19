@@ -403,6 +403,22 @@ const ICELANDIC_MONTHS = [
 ];
 
 /**
+ * Icelandic month names - short form (3 letters)
+ */
+const ICELANDIC_MONTHS_SHORT = [
+  'jan', 'feb', 'mar', 'apr', 'maí', 'jún',
+  'júl', 'ágú', 'sep', 'okt', 'nóv', 'des'
+];
+
+/**
+ * Icelandic day names (accusative case - "á sunnudaginn")
+ */
+const ICELANDIC_DAYS = [
+  'sunnudaginn', 'mánudaginn', 'þriðjudaginn', 'miðvikudaginn',
+  'fimmtudaginn', 'föstudaginn', 'laugardaginn'
+];
+
+/**
  * Format date and time in Icelandic format
  * @param {string|Date} dateInput - Date string or Date object
  * @returns {string} Formatted as "6. nóvember 2025 kl. 13:30"
@@ -472,45 +488,233 @@ export function formatDateOnlyIcelandic(dateInput) {
 }
 
 /**
- * Election Status Mapping
+ * Format date with day name and time in Icelandic format
+ * @param {string|Date} dateInput - Date string or Date object
+ * @returns {string} Formatted as "sunnudaginn 6. október, kl. 10:00"
  *
- * Backend uses different status names than frontend expects.
- * This provides a centralized mapping.
+ * Includes the Icelandic day name (accusative case) for event displays.
  *
- * Backend → Frontend:
- * - 'published' → 'active'
- * - 'paused' → 'paused'
- * - 'closed' → 'closed'
- * - 'archived' → 'closed'
- * - 'draft' → 'draft'
+ * Examples:
+ * - "2025-10-12T10:00:00" -> "sunnudaginn 12. október, kl. 10:00"
+ * - "2025-01-15T14:30:00" -> "miðvikudaginn 15. janúar, kl. 14:30"
  */
-const ELECTION_STATUS_MAP = {
-  'published': 'active',
-  'paused': 'paused',
-  'closed': 'closed',
-  'archived': 'closed',
-  'draft': 'draft'
-};
+export function formatDateWithDayIcelandic(dateInput) {
+  if (!dateInput) return '';
+
+  const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
+
+  // Validate date
+  if (isNaN(date.getTime())) {
+    return '';
+  }
+
+  // Get date components
+  const dayName = ICELANDIC_DAYS[date.getDay()];
+  const day = date.getDate();
+  const monthIndex = date.getMonth();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+
+  // Format: "sunnudaginn 12. október, kl. 10:00"
+  return `${dayName} ${day}. ${ICELANDIC_MONTHS[monthIndex]}, kl. ${hours}:${minutes}`;
+}
+
+/**
+ * Format date with short month and time in Icelandic format
+ * @param {string|Date} dateInput - Date string or Date object
+ * @returns {string} Formatted as "12. des, kl. 14:30"
+ *
+ * Compact format for lists and history displays.
+ *
+ * Examples:
+ * - "2025-12-12T14:30:00" -> "12. des, kl. 14:30"
+ * - "2025-01-15T09:05:00" -> "15. jan, kl. 09:05"
+ */
+export function formatDateShortIcelandic(dateInput) {
+  if (!dateInput) return '';
+
+  const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
+
+  // Validate date
+  if (isNaN(date.getTime())) {
+    return '';
+  }
+
+  // Get date components
+  const day = date.getDate();
+  const monthIndex = date.getMonth();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+
+  // Format: "12. des, kl. 14:30"
+  return `${day}. ${ICELANDIC_MONTHS_SHORT[monthIndex]}, kl. ${hours}:${minutes}`;
+}
+
+/**
+ * Format time only in Icelandic format (24-hour)
+ * @param {string|Date} dateInput - Date string or Date object
+ * @returns {string} Formatted as "14:30:45" or "14:30"
+ *
+ * Examples:
+ * - "2025-12-12T14:30:45" -> "14:30:45"
+ * - new Date() -> "09:05:23"
+ */
+export function formatTimeIcelandic(dateInput) {
+  if (!dateInput) return '';
+
+  const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
+
+  // Validate date
+  if (isNaN(date.getTime())) {
+    return '';
+  }
+
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+
+  return `${hours}:${minutes}:${seconds}`;
+}
+
+/**
+ * Calculate the next occurrence for recurring weekly events
+ *
+ * For events that span multiple weeks (e.g., weekly meetings), this function
+ * calculates when the next occurrence will be based on the original start day/time.
+ *
+ * @param {Object} event - Event object with startTime, endTime, and isOngoing flags
+ * @param {string|Date} event.startTime - Original start time of the recurring event
+ * @param {string|Date|null} event.endTime - End time (when the series ends)
+ * @param {boolean} event.isOngoing - Whether the event is currently ongoing
+ * @returns {Date|null} Next occurrence date, or null if not a recurring event or past end date
+ *
+ * Examples:
+ * - Weekly Sunday meeting (Oct 12 - Dec 28): returns next Sunday's date
+ * - Past event: returns null
+ * - Non-recurring event (less than 1 week duration): returns null
+ */
+export function getNextRecurringOccurrence(event) {
+  if (!event?.startTime) return null;
+
+  const startDate = new Date(event.startTime);
+  const endDate = event.endTime ? new Date(event.endTime) : null;
+  const now = new Date();
+
+  // Validate dates
+  if (isNaN(startDate.getTime())) return null;
+  if (endDate && isNaN(endDate.getTime())) return null;
+
+  // Check if this is a recurring weekly event (ongoing, spans multiple weeks)
+  const isRecurringWeekly = event.isOngoing && endDate &&
+    (endDate - startDate) > 7 * 24 * 60 * 60 * 1000; // More than 1 week
+
+  if (!isRecurringWeekly) return null;
+
+  // Calculate next occurrence (same day of week as start)
+  const dayOfWeek = startDate.getDay();
+  const nextOccurrence = new Date(now);
+  const daysUntilNext = (dayOfWeek - now.getDay() + 7) % 7;
+  nextOccurrence.setDate(now.getDate() + (daysUntilNext === 0 ? 0 : daysUntilNext));
+  nextOccurrence.setHours(startDate.getHours(), startDate.getMinutes(), 0, 0);
+
+  // If today's occurrence has passed, show next week
+  if (nextOccurrence <= now) {
+    nextOccurrence.setDate(nextOccurrence.getDate() + 7);
+  }
+
+  // Make sure next occurrence is before end date
+  if (nextOccurrence <= endDate) {
+    return nextOccurrence;
+  }
+
+  return null; // Past the end date
+}
+
+/**
+ * Dynamically compute election status based on current time and schedule.
+ * This overrides backend's 'published' status if election has ended/not started.
+ *
+ * @param {string} rawStatus - Raw status from backend (e.g., 'published', 'draft', 'closed')
+ * @param {string} scheduledStart - ISO string for scheduled start time
+ * @param {string|null} scheduledEnd - ISO string for scheduled end time (or null if not set)
+ * @returns {string} Computed status: 'upcoming', 'active', 'closed', 'draft', 'paused', 'archived'
+ */
+export function computeElectionStatus(rawStatus, scheduledStart, scheduledEnd) {
+  const now = new Date();
+  const start = new Date(scheduledStart);
+  const end = scheduledEnd ? new Date(scheduledEnd) : null;
+
+  // Handle non-dynamic statuses first (draft, paused, archived, closed by backend)
+  if (rawStatus === 'draft') return 'draft';
+  if (rawStatus === 'paused') return 'paused';
+  if (rawStatus === 'closed') return 'closed'; // Explicitly closed by backend
+  if (rawStatus === 'archived') return 'closed'; // Archived is functionally closed
+
+  // For 'published' status, dynamically compute based on dates
+  if (rawStatus === 'published') {
+    if (now < start) {
+      return 'upcoming';
+    }
+    if (end && now > end) {
+      return 'closed';
+    }
+    return 'active'; // Between start and end, or no end date
+  }
+
+  // Fallback for any other unexpected status
+  return rawStatus;
+}
 
 /**
  * Map backend election status to frontend status
+ * This is now mostly a passthrough or fallback, as computeElectionStatus is primary.
  * @param {string} backendStatus - Status from backend API
  * @returns {string} Frontend-compatible status
  */
 export function mapElectionStatus(backendStatus) {
+  // This function is kept for backward compatibility and to map explicit backend statuses
+  // For 'published' elections, computeElectionStatus should be used to consider dates.
+  const ELECTION_STATUS_MAP = {
+    'draft': 'draft',
+    'paused': 'paused',
+    'closed': 'closed',
+    'archived': 'closed',
+    // 'published' is handled dynamically by computeElectionStatus
+    // Any other status will pass through (e.g., 'active' if backend ever sends it)
+  };
   return ELECTION_STATUS_MAP[backendStatus] || backendStatus;
 }
 
 /**
  * Normalize election object status from backend to frontend format
+ * This function now uses computeElectionStatus for dynamic status evaluation.
  * @param {Object} election - Election object from API
  * @returns {Object} Election with normalized status
  */
 export function normalizeElectionStatus(election) {
   if (!election) return election;
+
+  const computedStatus = computeElectionStatus(
+    election.status,
+    election.scheduled_start,
+    election.scheduled_end
+  );
+
+  // Normalize answers: API uses answer_text, frontend expects text
+  let normalizedAnswers = election.answers;
+  if (Array.isArray(election.answers)) {
+    normalizedAnswers = election.answers.map((answer, index) => ({
+      ...answer,
+      // Ensure both text and id are available
+      text: answer.text || answer.answer_text || '',
+      id: answer.id || answer.answer_id || answer.answer_text || `answer-${index}`
+    }));
+  }
+
   return {
     ...election,
-    status: mapElectionStatus(election.status)
+    status: computedStatus,
+    answers: normalizedAnswers
   };
 }
 
@@ -532,7 +736,7 @@ export function normalizeElectionsStatus(elections) {
  * Video conference URL patterns
  * Matches common platforms: Zoom, Google Meet, Teams, etc.
  */
-const VIDEO_URL_PATTERN = /https?:\/\/(?:[\w-]+\.)?(?:zoom\.us|meet\.google\.com|teams\.microsoft\.com|whereby\.com|webex\.com|gotomeeting\.com|bluejeans\.com)\/[^\s)>\]]+/gi;
+const VIDEO_URL_PATTERN = /https?:\/\/(?:[\w-]+\.)?(?:zoom\.us|meet\.google\.com|teams\.microsoft\.com|whereby\.com|webex\.com|gotomeeting\.com|bluejeans\.com)\/[^\s)>\\\]]+/gi;
 
 /**
  * Extract video conference links from text
@@ -566,7 +770,7 @@ export function extractVideoLinks(text) {
         links.push(url);
       }
       // Remove the URL from text (and any surrounding whitespace/newlines)
-      cleanedText = cleanedText.replace(new RegExp(url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*', 'g'), '');
+      cleanedText = cleanedText.replace(new RegExp(url.replace(/[.*+?^${}()|[\\]/g, '\\$&') + '\s*', 'g'), '');
     });
   }
 

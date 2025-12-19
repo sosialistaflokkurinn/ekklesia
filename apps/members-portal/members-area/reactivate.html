@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Endurvakna aðgang</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2" sizes="any">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico?v=2">
+  <link rel="stylesheet" href="/styles/bundle.css?v=20251217k">
+</head>
+<body class="authenticated">
+  <!-- Page Content -->
+  <div class="page__container" style="max-width: 600px;">
+
+    <!-- Reactivation Card -->
+    <div class="card">
+      <div style="text-align: center; margin-bottom: 2rem;">
+        <span style="font-size: 4rem;">🔓</span>
+      </div>
+
+      <h2 class="card__title" style="text-align: center; margin-bottom: 1rem;">
+        Endurvakna aðgang
+      </h2>
+
+      <div class="card__content" id="reactivate-content">
+        <p style="text-align: center; margin-bottom: 2rem; color: var(--color-text-muted);">
+          Aðgangur þinn hefur verið gerður óvirkur. Þú getur endurvakið hann með því að auðkenna þig aftur.
+        </p>
+
+        <div style="text-align: center;">
+          <button type="button" class="btn btn--primary" id="btn-reactivate">
+            Auðkenna með Kenni.is
+          </button>
+        </div>
+      </div>
+
+      <!-- Success state (hidden by default) -->
+      <div class="card__content" id="reactivate-success" style="display: none;">
+        <p style="text-align: center; margin-bottom: 2rem; color: var(--color-success, #16a34a);">
+          <span style="font-size: 2rem;">✅</span><br><br>
+          Aðgangur þinn hefur verið endurvakinn!
+        </p>
+        <p style="text-align: center; color: var(--color-text-muted);">
+          Þú verður vísað á forsíðuna eftir augnablik...
+        </p>
+      </div>
+
+      <!-- Error state (hidden by default) -->
+      <div class="card__content" id="reactivate-error" style="display: none;">
+        <p style="text-align: center; margin-bottom: 1rem; color: var(--color-error, #dc2626);">
+          <span style="font-size: 2rem;">❌</span><br><br>
+          <span id="error-message">Villa kom upp</span>
+        </p>
+        <div style="text-align: center;">
+          <button type="button" class="btn btn--secondary" id="btn-retry">
+            Reyna aftur
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 2rem;">
+      <a href="/" class="btn btn--text">← Til baka á forsíðu</a>
+    </div>
+  </div>
+
+  <script type="module" src="/js/reactivate.js?v=20251215"></script>
+</body>
+</html>

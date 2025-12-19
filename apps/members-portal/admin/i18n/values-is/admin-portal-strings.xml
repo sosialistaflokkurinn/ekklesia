@@ -18,10 +18,10 @@
   <string name="quick_action_members_desc">Skoða og breyta félagaskrá</string>
   <string name="quick_action_elections_label">Kosningar</string>
   <string name="quick_action_elections_desc">Stjórna kosningum og framboðum</string>
-  <string name="quick_action_sync_label">Samstilla félagaskrá</string>
-  <string name="quick_action_sync_desc">Keyra samstillingu úr eldra Django-kerfi</string>
-  <string name="quick_action_history_label">Samstillingasaga</string>
-  <string name="quick_action_history_desc">Skoða yfirlit yfir fyrri samstillingar</string>
+  <string name="quick_action_events_label">Viðburðir</string>
+  <string name="quick_action_events_desc">Stjórna viðburðum og fundum</string>
+  <string name="quick_action_sync_label">Samstilling</string>
+  <string name="quick_action_sync_desc">Samstilla félagaskrá og skoða sögu</string>
   <string name="quick_action_queue_label">Samstillingarbiðröð</string>
   <string name="quick_action_queue_desc">Skoða og afgreiða breytingar sem bíða</string>
   <string name="sync_members_title">Samstilla félagaskrá</string>
@@ -72,10 +72,12 @@
   <string name="members_error_loading">Villa kom upp við að hlaða félagaskrá</string>
   <string name="members_btn_view">Skoða</string>
   <string name="members_status_active">Virkur</string>
+  <string name="members_status_unpaid">Ógreitt</string>
   <string name="members_status_inactive">Óvirkur</string>
   <string name="members_status_unknown">Óþekkt</string>
   <string name="members_status_all_plural">allir</string>
   <string name="members_status_active_plural">virkir</string>
+  <string name="members_status_unpaid_plural">ógreiddir</string>
   <string name="members_status_inactive_plural">óvirkir</string>
   <string name="error_unauthorized_admin">Þú hefur ekki aðgang að stjórnkerfi. Aðeins notendur með 'admin' eða 'superuser' hlutverk hafa aðgang.</string>
   <string name="error_sync_trigger">Gat ekki hafið samstillingu: %s</string>
@@ -92,6 +94,7 @@
   <string name="sync_trigger_confirm_btn">Keyra samstillingu</string>
   <string name="filter_status_all">Allir</string>
   <string name="filter_status_active">Virkir</string>
+  <string name="filter_status_unpaid">Ógreitt</string>
   <string name="filter_status_inactive">Óvirkir</string>
   <string name="district_all">Öll kjördæmi</string>
   <string name="district_reykjavik">Reykjavíkurkjördæmi</string>
@@ -154,4 +157,105 @@
   <string name="queue_process_success">Biðröð afgreidd</string>
   <string name="queue_process_error">Villa við að afgreiða biðröð</string>
   <string name="queue_processing">Afgreiði biðröð...</string>
+
+  <!-- Membership status badges -->
+  <string name="membership_status_unpaid">Ógreitt</string>
+  <string name="membership_status_inactive">Óvirkur</string>
+  <string name="membership_status_active">Virkur</string>
+  <string name="select_union_placeholder">Veldu stéttarfélag...</string>
+  <string name="select_job_title_placeholder">Veldu starfsheiti...</string>
+
+  <!-- Email Admin (Issue #323) -->
+  <string name="nav_admin_email">Tölvupóstur</string>
+  <string name="quick_action_email_label">Tölvupóstur</string>
+  <string name="quick_action_email_desc">Senda póst til félaga</string>
+
+  <!-- Email Dashboard -->
+  <string name="email_dashboard_title">Tölvupóstur</string>
+  <string name="email_dashboard_subtitle">Senda tölvupóst til félaga</string>
+  <string name="email_stats_sent">Sent</string>
+  <string name="email_stats_delivered">Afhent</string>
+  <string name="email_stats_opened">Opnað</string>
+  <string name="email_stats_bounced">Skilaði</string>
+  <string name="email_stats_period">síðustu %d daga</string>
+
+  <!-- Email Templates -->
+  <string name="email_templates_title">Sniðmát</string>
+  <string name="email_templates_subtitle">Skoða og breyta póstsniðmátum</string>
+  <string name="email_template_name">Heiti</string>
+  <string name="email_template_subject">Efnislína</string>
+  <string name="email_template_type">Tegund</string>
+  <string name="email_template_language">Tungumál</string>
+  <string name="email_template_variables">Breytur</string>
+  <string name="email_template_body">Meginmál</string>
+  <string name="email_template_create">+ Nýtt sniðmát</string>
+  <string name="email_template_edit">Breyta sniðmáti</string>
+  <string name="email_template_delete">Eyða sniðmáti</string>
+  <string name="email_template_delete_confirm">Ertu viss um að þú viljir eyða þessu sniðmáti? Þetta er ekki hægt að afturkalla.</string>
+  <string name="email_template_save">Vista sniðmát</string>
+  <string name="email_template_saved">Sniðmát vistað</string>
+  <string name="email_template_empty">Engin sniðmát fundust</string>
+  <string name="email_template_type_transactional">Viðskiptapóstur</string>
+  <string name="email_template_type_broadcast">Fjöldapóstur</string>
+  <string name="email_template_lang_is">Íslenska</string>
+  <string name="email_template_lang_en">Enska</string>
+
+  <!-- Email Campaigns -->
+  <string name="email_campaigns_title">Herferðir</string>
+  <string name="email_campaigns_subtitle">Stjórna fjöldapósti</string>
+  <string name="email_campaign_create">+ Ný herferð</string>
+  <string name="email_campaign_name">Heiti herferðar</string>
+  <string name="email_campaign_template">Sniðmát</string>
+  <string name="email_campaign_status">Staða</string>
+  <string name="email_campaign_recipients">Viðtakendur</string>
+  <string name="email_campaign_sent_count">Sent</string>
+  <string name="email_campaign_created">Stofnað</string>
+  <string name="email_campaign_actions">Aðgerðir</string>
+  <string name="email_campaign_send">Senda herferð</string>
+  <string name="email_campaign_send_confirm">Ertu viss um að þú viljir senda þessa herferð til %d félaga?</string>
+  <string name="email_campaign_empty">Engar herferðir fundust</string>
+
+  <!-- Campaign Status -->
+  <string name="campaign_status_draft">Drög</string>
+  <string name="campaign_status_scheduled">Áætlað</string>
+  <string name="campaign_status_sending">Í sendingu</string>
+  <string name="campaign_status_sent">Sent</string>
+  <string name="campaign_status_cancelled">Hætt við</string>
+
+  <!-- Send Email -->
+  <string name="email_send_title">Senda tölvupóst</string>
+  <string name="email_send_subtitle">Senda einn póst til félaga</string>
+  <string name="email_send_recipient">Viðtakandi</string>
+  <string name="email_send_recipient_placeholder">Netfang eða kennitala</string>
+  <string name="email_send_template">Sniðmát</string>
+  <string name="email_send_template_placeholder">Veldu sniðmát...</string>
+  <string name="email_send_preview">Forskoða</string>
+  <string name="email_send_btn">Senda póst</string>
+  <string name="email_send_success">Póstur sendur</string>
+  <string name="email_send_error">Villa við að senda póst</string>
+
+  <!-- Email Logs -->
+  <string name="email_logs_title">Sendingarsaga</string>
+  <string name="email_logs_subtitle">Skoða sendan tölvupóst</string>
+  <string name="email_log_recipient">Viðtakandi</string>
+  <string name="email_log_template">Sniðmát</string>
+  <string name="email_log_status">Staða</string>
+  <string name="email_log_sent_at">Sent</string>
+  <string name="email_log_delivered_at">Afhent</string>
+  <string name="email_log_opened_at">Opnað</string>
+  <string name="email_log_empty">Engin sendingarsaga fannst</string>
+
+  <!-- Email Status -->
+  <string name="email_status_queued">Í biðröð</string>
+  <string name="email_status_sent">Sent</string>
+  <string name="email_status_delivered">Afhent</string>
+  <string name="email_status_opened">Opnað</string>
+  <string name="email_status_bounced">Skilaði</string>
+  <string name="email_status_complained">Kvörtun</string>
+
+  <!-- Recipient Filter -->
+  <string name="email_filter_all_members">Allir félagar</string>
+  <string name="email_filter_active_only">Aðeins virkir</string>
+  <string name="email_filter_by_district">Eftir kjördæmi</string>
+  <string name="email_filter_by_municipality">Eftir sveitarfélagi</string>
 </resources>

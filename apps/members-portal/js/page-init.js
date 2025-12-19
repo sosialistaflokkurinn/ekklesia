@@ -118,11 +118,22 @@ export async function initAuthenticatedPage() {
   // Note: Navigation text, logout handler, and hamburger menu now managed by nav-header component
   // (component loads i18n and creates nav with correct strings automatically)
 
-  // Auth guard - redirect if not authenticated
-  const user = await requireAuth();
+  try {
+    // Auth guard - redirect if not authenticated
+    const user = await requireAuth();
 
-  // Get user data
-  const userData = await getUserData(user);
+    // Get user data
+    const userData = await getUserData(user);
 
-  return { user, userData };
+    return { user, userData };
+  } catch (error) {
+    // If authentication failed, save current URL for redirect-after-login
+    if (error.name === 'AuthenticationError') {
+      // Only save if we are not already on the login page (to avoid loops)
+      if (window.location.pathname !== '/' && window.location.pathname !== '/index.html') {
+        sessionStorage.setItem('redirect_after_login', window.location.href);
+      }
+    }
+    throw error;
+  }
 }

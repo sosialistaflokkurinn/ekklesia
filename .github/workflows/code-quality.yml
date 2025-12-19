@@ -17,6 +17,51 @@ on:
       - 'services/**/*.py'
 
 jobs:
+  code-health:
+    name: Code Health Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run Code Health Checker
+        id: health-check
+        run: |
+          python3 scripts/maintenance/check-code-health.py 2>&1 | tee health-output.txt
+          echo "exit_code=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT
+
+      - name: Post Summary
+        if: always()
+        run: |
+          echo "### 🔍 Code Health Check Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat health-output.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Checks performed:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Missing imports (initNavigation, debug, showToast, R.string)" >> $GITHUB_STEP_SUMMARY
+          echo "- console.log usage (should use debug)" >> $GITHUB_STEP_SUMMARY
+          echo "- Hardcoded URLs" >> $GITHUB_STEP_SUMMARY
+          echo "- Error handling in async functions" >> $GITHUB_STEP_SUMMARY
+          echo "- Event listener memory leaks" >> $GITHUB_STEP_SUMMARY
+          echo "- TODO/FIXME comments" >> $GITHUB_STEP_SUMMARY
+
+      - name: Check for Errors
+        run: |
+          # Fail if there were errors (exit code 1)
+          if grep -q "❌ ERRORS" health-output.txt; then
+            echo "::error::Code health check found errors. Please fix them before merging."
+            exit 1
+          fi
+          echo "✅ No critical errors found"
+
   code-patterns:
     name: Check Code Patterns
     runs-on: ubuntu-latest

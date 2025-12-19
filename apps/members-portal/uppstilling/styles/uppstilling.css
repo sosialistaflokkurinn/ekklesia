@@ -1,0 +1,761 @@
+/**
+ * Uppstillingarnefnd Styles
+ * Styles for nomination committee voting pages
+ */
+
+/* Back link */
+.back-link {
+  display: inline-block;
+  color: var(--color-text-muted, #4a5568);
+  text-decoration: none;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.back-link:hover {
+  color: var(--color-primary, #c41e3a);
+}
+
+/* Back link inside welcome card - needs light color for contrast */
+.card--welcome .back-link {
+  color: var(--color-primary-pale-alpha-90, rgba(252, 233, 216, 0.9));
+}
+
+.card--welcome .back-link:hover {
+  color: var(--color-white, #ffffff);
+}
+
+/* Card subtitle */
+.card__subtitle {
+  color: var(--color-text-muted, #4a5568);
+  margin-top: 0.25rem;
+  font-size: 0.9375rem;
+}
+
+/* Card subtitle inside welcome card - needs light color for contrast */
+.card--welcome .card__subtitle {
+  color: var(--color-primary-pale-alpha-90, rgba(252, 233, 216, 0.9));
+}
+
+.card__description {
+  color: var(--color-text-muted, #4a5568);
+  margin-bottom: 1rem;
+  font-size: 0.9375rem;
+}
+
+/* Loading state */
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--color-border, #e0e0e0);
+  border-top-color: var(--color-primary, #c41e3a);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  text-align: center;
+  color: var(--color-text-muted, #4a5568);
+}
+
+/* Error card */
+.card--error {
+  border-left: 4px solid var(--color-error, #d32f2f);
+}
+
+/* Success card */
+.card--success {
+  border-left: 4px solid var(--color-success, #388e3c);
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: var(--color-text-muted, #4a5568);
+}
+
+/* Elections list */
+.elections-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.election-item {
+  display: block;
+  padding: 1rem;
+  background: var(--color-bg-secondary, #f5f5f5);
+  border-radius: var(--radius-md, 8px);
+  text-decoration: none;
+  color: inherit;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.election-item:hover {
+  background: var(--color-bg-hover, #eeeeee);
+  transform: translateX(4px);
+}
+
+.election-item__title {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: var(--color-text, #333);
+}
+
+.election-item__meta {
+  font-size: 0.875rem;
+  color: var(--color-text-muted, #4a5568);
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.election-item__status {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.election-item__status--published {
+  background: var(--color-success-bg-light, #e8f5e9);
+  color: var(--color-success-darker, #1b5e20);
+}
+
+.election-item__status--closed {
+  background: var(--color-warning-light, #fff3e0);
+  color: var(--color-warning, #f57c00);
+}
+
+.election-item__status--draft {
+  background: var(--color-bg-secondary, #f5f5f5);
+  color: var(--color-text-muted, #4a5568);
+}
+
+/* Step indicator */
+.step-indicator__steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.step-indicator__step {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-text-muted, #718096);
+}
+
+.step-indicator__step--active {
+  color: var(--color-primary, #c41e3a);
+}
+
+.step-indicator__step--completed {
+  color: var(--color-success, #388e3c);
+}
+
+.step-indicator__number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-bg-secondary, #f5f5f5);
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.step-indicator__step--active .step-indicator__number {
+  background: var(--color-primary, #c41e3a);
+  color: white;
+}
+
+.step-indicator__step--completed .step-indicator__number {
+  background: var(--color-success, #388e3c);
+  color: white;
+}
+
+.step-indicator__divider {
+  width: 40px;
+  height: 2px;
+  background: var(--color-border, #e0e0e0);
+}
+
+.step-indicator__label {
+  font-size: 0.875rem;
+}
+
+/* Form actions */
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  justify-content: flex-end;
+}
+
+/* Justification fields */
+.justification-field {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--color-bg-secondary, #f5f5f5);
+  border-radius: var(--radius-md, 8px);
+}
+
+.justification-field__header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.justification-field__rank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--color-primary, #c41e3a);
+  color: white;
+  border-radius: 50%;
+  font-weight: 600;
+}
+
+.justification-field__name {
+  font-weight: 600;
+  color: var(--color-text, #333);
+}
+
+.justification-field__textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 0.75rem;
+  border: 2px solid var(--color-border, #e0e0e0);
+  border-radius: var(--radius-sm, 4px);
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.5;
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+
+.justification-field__textarea:focus {
+  outline: none;
+  border-color: var(--color-primary, #c41e3a);
+}
+
+.justification-field__textarea::placeholder {
+  color: var(--color-text-muted, #718096);
+}
+
+.justification-field__hint {
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #718096);
+  margin-top: 0.5rem;
+}
+
+.justification-field__error {
+  font-size: 0.75rem;
+  color: var(--color-error, #d32f2f);
+  margin-top: 0.5rem;
+  display: none;
+}
+
+.justification-field--error .justification-field__textarea {
+  border-color: var(--color-error, #d32f2f);
+}
+
+.justification-field--error .justification-field__error {
+  display: block;
+}
+
+/* Results summary */
+.results-summary {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.summary-stat {
+  text-align: center;
+  min-width: 80px;
+}
+
+.summary-stat__value {
+  display: block;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-primary, #c41e3a);
+}
+
+.summary-stat__label {
+  font-size: 0.875rem;
+  color: var(--color-text-muted, #4a5568);
+}
+
+/* Rankings table */
+.rankings-table {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ranking-row {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  background: var(--color-bg-secondary, #f5f5f5);
+  border-radius: var(--radius-sm, 4px);
+}
+
+.ranking-row__position {
+  width: 40px;
+  font-weight: 600;
+  color: var(--color-text-muted, #4a5568);
+}
+
+.ranking-row__name {
+  flex: 1;
+  font-weight: 500;
+}
+
+.ranking-row__score {
+  font-weight: 600;
+  color: var(--color-primary, #c41e3a);
+}
+
+.ranking-row__first-votes {
+  font-size: 0.875rem;
+  color: var(--color-text-muted, #4a5568);
+  margin-left: 1rem;
+}
+
+/* Winners list */
+.winners-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.winner-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: var(--color-success-light, #e8f5e9);
+  border-radius: var(--radius-sm, 4px);
+}
+
+.winner-item__icon {
+  font-size: 1.25rem;
+}
+
+.winner-item__name {
+  font-weight: 600;
+}
+
+/* Individual votes */
+.votes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.vote-card {
+  padding: 1rem;
+  background: var(--color-bg-secondary, #f5f5f5);
+  border-radius: var(--radius-md, 8px);
+}
+
+.vote-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--color-border, #e0e0e0);
+}
+
+.vote-card__voter {
+  font-weight: 600;
+  color: var(--color-text, #333);
+}
+
+.vote-card__time {
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #718096);
+}
+
+.vote-card__ranking {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.vote-card__rank-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: white;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.vote-card__rank-number {
+  font-weight: 600;
+  color: var(--color-primary, #c41e3a);
+}
+
+.vote-card__justifications {
+  margin-top: 0.75rem;
+}
+
+.vote-card__justification {
+  margin-bottom: 0.5rem;
+  padding: 0.5rem;
+  background: white;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.vote-card__justification-header {
+  font-weight: 600;
+  color: var(--color-text-muted, #4a5568);
+  margin-bottom: 0.25rem;
+}
+
+.vote-card__justification-text {
+  color: var(--color-text, #333);
+  line-height: 1.4;
+}
+
+/* Toggle justifications button */
+.toggle-justifications-btn {
+  background: none;
+  border: none;
+  color: var(--color-primary, #c41e3a);
+  cursor: pointer;
+  font-size: 0.875rem;
+  padding: 0.25rem 0;
+}
+
+.toggle-justifications-btn:hover {
+  text-decoration: underline;
+}
+
+/* Previous vote display */
+#previous-vote-display {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: var(--color-bg-secondary, #f5f5f5);
+  border-radius: var(--radius-md, 8px);
+}
+
+/* Hide default buttons from ranked-form component - we use our own step navigation */
+.ranked-form__buttons {
+  display: none;
+}
+
+/* Hide question section - already shown in card header */
+.ranked-form__question {
+  display: none;
+}
+
+/* =============================================================================
+   CANDIDATES SECTION
+   ============================================================================= */
+
+/* Candidates grid */
+.candidates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+/* Loading state */
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 2rem;
+  color: var(--color-text-muted, #4a5568);
+}
+
+.loading-spinner--small {
+  width: 24px;
+  height: 24px;
+  margin: 0;
+}
+
+/* Candidate card */
+.candidate-card {
+  padding: 1rem;
+  background: var(--color-bg-secondary, #f5f5f5);
+  border-radius: var(--radius-md, 8px);
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+
+.candidate-card:hover {
+  background: var(--color-bg-hover, #eeeeee);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.candidate-card__name {
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  color: var(--color-text, #333);
+}
+
+.candidate-card__bio {
+  font-size: 0.875rem;
+  color: var(--color-text-muted, #4a5568);
+  line-height: 1.4;
+  margin-bottom: 0.5rem;
+}
+
+.candidate-card__meta {
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #718096);
+  font-style: italic;
+}
+
+/* Candidate contact section */
+.candidate-contact-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--color-info-bg, #ebf8ff);
+  border-radius: var(--radius-md, 8px);
+  margin-bottom: 1rem;
+}
+
+.contact-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: white;
+  border-radius: var(--radius-sm, 4px);
+  font-size: 0.875rem;
+  text-decoration: none;
+  color: var(--color-text, #333);
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.contact-item--email:hover,
+.contact-item--phone:hover {
+  background: var(--color-bg-hover, #f0f0f0);
+  transform: scale(1.02);
+}
+
+.contact-item__icon {
+  font-size: 1rem;
+}
+
+.contact-item__label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #718096);
+  margin-right: 0.25rem;
+}
+
+.contact-item__value {
+  font-weight: 500;
+}
+
+.contact-item--email .contact-item__value {
+  color: var(--color-primary, #c41e3a);
+}
+
+.contact-item--phone .contact-item__value {
+  color: var(--color-success-darker, #1b5e20);
+}
+
+.contact-item--id,
+.contact-item--kt {
+  background: var(--color-bg-secondary, #f5f5f5);
+  cursor: default;
+}
+
+/* Candidate modal */
+.candidate-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.candidate-modal__section {
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border, #e0e0e0);
+}
+
+.candidate-modal__section-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-muted, #4a5568);
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.candidate-modal__links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.candidate-modal__links li {
+  margin-bottom: 0.5rem;
+}
+
+.candidate-modal__links a {
+  color: var(--color-primary, #c41e3a);
+  text-decoration: none;
+}
+
+.candidate-modal__links a:hover {
+  text-decoration: underline;
+}
+
+/* Candidate field (editable) */
+.candidate-field {
+  border-bottom: 1px solid var(--color-border-light, #f0f0f0);
+  padding-bottom: 1rem;
+}
+
+.candidate-field:last-of-type {
+  border-bottom: none;
+}
+
+.candidate-field__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.candidate-field__label {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-text, #333);
+}
+
+.candidate-field__edit-btn {
+  background: none;
+  border: none;
+  color: var(--color-primary, #c41e3a);
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.candidate-field__edit-btn:hover {
+  background: var(--color-primary-light, #fce9d8);
+}
+
+.candidate-field__value {
+  font-size: 0.9375rem;
+  color: var(--color-text-muted, #4a5568);
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.candidate-field__input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid var(--color-border, #e0e0e0);
+  border-radius: var(--radius-sm, 4px);
+  font-family: inherit;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+
+.candidate-field__input:focus {
+  outline: none;
+  border-color: var(--color-primary, #c41e3a);
+}
+
+textarea.candidate-field__input {
+  min-height: 100px;
+}
+
+.candidate-field__actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+/* Small button variant */
+.btn--sm {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8125rem;
+}
+
+/* Edit history */
+.candidate-history__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.candidate-history__item {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted, #4a5568);
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+.candidate-history__user {
+  font-weight: 600;
+  color: var(--color-text, #333);
+}
+
+.candidate-history__field {
+  font-style: italic;
+}
+
+.candidate-history__date {
+  color: var(--color-text-muted, #718096);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .step-indicator__label {
+    display: none;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .form-actions .btn {
+    width: 100%;
+  }
+
+  .results-summary {
+    justify-content: space-around;
+  }
+
+  .candidates-grid {
+    grid-template-columns: 1fr;
+  }
+}

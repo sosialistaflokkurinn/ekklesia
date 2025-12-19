@@ -15,7 +15,32 @@
 
 ---
 
-## System Diagram
+## System Overview
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    SYSTEM ARCHITECTURE                       │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  Ekklesia (THIS PROJECT - Future source of truth)           │
+│  ├── Firestore database (canonical member data)             │
+│  ├── Firebase Hosting (members-portal)                       │
+│  ├── Firebase Functions (svc-members)                        │
+│  ├── Cloud Run (svc-elections, svc-events)                  │
+│  └── Postmark email (planned - #323)                        │
+│                                                              │
+│  Django GCP (INTERIM admin interface)                       │
+│  ├── Cloud Run: django-socialism                            │
+│  ├── Cloud SQL PostgreSQL                                    │
+│  └── SendGrid email (temporary)                             │
+│                                                              │
+│  Linode (DECOMMISSIONED 2025-12-11)                         │
+│  └── Backup: ~/Development/projects/django/backups/         │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Data Flow Diagram
 
 ```
                               ┌─────────────┐
@@ -49,19 +74,37 @@
          │  └──────────────┬───────────────┘          │
          └─────────────────┼───────────────────────────┘
                            │
-                           ▼
-                  ┌─────────────────┐
-                  │   Cloud SQL     │
-                  │  PostgreSQL 15  │
-                  └─────────────────┘
-                           │
-                           │ sync
-                           ▼
-                  ┌─────────────────┐
-                  │  Django/Linode  │
-                  │   (Legacy)      │
-                  └─────────────────┘
+              ┌────────────┼────────────┐
+              │            │            │
+              ▼            ▼            ▼
+     ┌─────────────┐ ┌──────────┐ ┌─────────────┐
+     │  Firestore  │ │Cloud SQL │ │   Django    │
+     │  (SOURCE OF │ │PostgreSQL│ │   (GCP)     │
+     │   TRUTH)    │ │          │ │  (INTERIM)  │
+     └─────────────┘ └──────────┘ └─────────────┘
 ```
+
+## Data Sources (Priority Order)
+
+| Priority | Source | Purpose | Status |
+|----------|--------|---------|--------|
+| 1 | **Firestore** | Canonical member data | Active |
+| 2 | Cloud SQL PostgreSQL | Elections, events | Active |
+| 3 | Django GCP (Cloud Run) | Admin interface | Interim |
+
+**Related issues:** #323 (Postmark email)
+
+### Member Data Model
+
+Members can exist in two states:
+1. **Firestore + Django**: Members registered via Django have `django_id` in Firestore
+2. **Firestore-only**: Members registered via Ekklesia portal have no `django_id`
+
+The `updatememberprofile` function handles both cases:
+- With `django_id`: Updates sync to both Firestore and Django/Cloud SQL
+- Without `django_id`: Updates only in Firestore (Firestore-only members)
+
+**Note:** Some members may have a `django_id` in Firestore but not exist in Cloud SQL (sync gap). The function handles this gracefully by continuing with Firestore-only updates.
 
 ---
 
@@ -196,9 +239,18 @@ User → Kenni.is (PKCE) → Firebase Auth → ID Token → API Request
 
 ### Member Sync
 ```
-Django (Linode) ──webhook──▶ fn_sync_from_django.py ──▶ PostgreSQL
-                                                              │
-                                                        Firebase sync
+                    ┌─────────────────┐
+                    │   Firestore     │ ◄── SOURCE OF TRUTH
+                    │ (canonical data)│
+                    └────────┬────────┘
+                             │
+              ┌──────────────┴──────────────┐
+              │                             │
+              ▼                             ▼
+     ┌─────────────────┐          ┌─────────────────┐
+     │  Django GCP     │          │  PostgreSQL     │
+     │  (admin UI)     │          │  (elections)    │
+     └─────────────────┘          └─────────────────┘
 ```
 
 ---
@@ -218,15 +270,20 @@ psql -h localhost -p 5433 -U postgres -d ekklesia
 
 ### Secrets (GCP Secret Manager)
 
-| Secret | Used By |
-|--------|---------|
-| `DJANGO_API_TOKEN` | sync functions |
-| `KENNI_IS_CLIENT_SECRET` | auth |
-| `DB_PASSWORD` | all services |
+| Secret Name (GCP) | Env Var (App) | Used By |
+|-------------------|---------------|---------|
+| `django-api-token` | `django-api-token` / `DJANGO_API_TOKEN` | sync functions |
+| `kenni-client-secret` | `KENNI_IS_CLIENT_SECRET` | auth |
+| `django-socialism-db-password` | `DB_PASSWORD` | all services |
+
+**Note on Naming:**
+- **Secret Name:** The name in Secret Manager (usually lowercase with hyphens).
+- **Env Var:** The environment variable injected into the container.
+- **Best Practice:** Match the secret name (lowercase) for Firebase Functions, use uppercase for legacy/Docker services.
 
 ```bash
 # Read secret
-gcloud secrets versions access latest --secret="DJANGO_API_TOKEN"
+gcloud secrets versions access latest --secret="django-api-token"
 
 # Verify service secrets
 gcloud run services describe svc-elections \
@@ -243,4 +300,52 @@ gcloud run services describe svc-elections \
 | Frontend | `cd services/svc-members && firebase deploy --only hosting` |
 | Elections | `cd services/svc-elections && ./deploy.sh` |
 | Events | `cd services/svc-events && ./deploy.sh` |
-| Functions | Automatic on `firebase deploy` (but avoid `--only functions`) |
+| Functions | `firebase deploy --only functions:FUNCTION_NAME` (specify function!) |
+| Django | `cd ~/Development/projects/django && gcloud builds submit --config cloudbuild.yaml` |
+
+---
+
+## Troubleshooting
+
+### Django Admin 500 Errors
+
+If Django admin returns 500 errors, check the user preferences table:
+
+```bash
+# Connect to Cloud SQL
+PGPASSWORD='...' psql -h localhost -p 5433 -U postgres -d ekklesia
+
+# Check preferences
+SELECT * FROM preferences_adminpreference;
+
+# Common fix: Invalid sort_field
+UPDATE preferences_adminpreference
+SET sort_field = '-date_joined'
+WHERE sort_field NOT LIKE '%date%' AND sort_field NOT LIKE '%name%';
+```
+
+**Root cause:** The `PreferencesMixin` in Django admin uses `sort_field` from user preferences. Invalid values (e.g., `'3'`) cause `FieldError: Cannot resolve keyword`.
+
+### Cloud Function Errors
+
+Check function logs:
+```bash
+gcloud functions logs read updatememberprofile --region=europe-west2 --limit=50
+```
+
+### Member Sync Issues
+
+Compare members between Firestore and Cloud SQL:
+```bash
+# Firestore: Query via REST API or Firebase Console
+# Cloud SQL:
+SELECT id, first_name, last_name, kennitala
+FROM membership_comrade
+ORDER BY id DESC
+LIMIT 10;
+```
+
+Members may exist in Firestore but not Cloud SQL if:
+- Registered via Ekklesia portal (Firestore-only)
+- Sync failed during Django registration
+- Member deleted from Django but not Firestore

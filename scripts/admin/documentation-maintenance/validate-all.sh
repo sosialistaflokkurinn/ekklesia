@@ -75,7 +75,7 @@ echo -e "${BLUE}Step 2: Validating markdown links${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 
-if python3 "$SCRIPT_DIR/validate-links.py"; then
+if python3 "$SCRIPT_DIR/validate_links.py"; then
     echo -e "${GREEN}✅ Link validation passed${NC}"
 else
     echo -e "${RED}❌ Link validation failed${NC}"

@@ -8,8 +8,7 @@
  */
 
 import { R } from '../../i18n/strings-loader.js';
-import { getFirebaseFirestore } from '../../firebase/app.js';
-import { doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getFirebaseFirestore, doc, updateDoc } from '../../firebase/app.js';
 import { getCountriesSorted, getCountryFlag, getCountryCallingCode } from '../utils/util-countries.js';
 import { debug } from '../utils/util-debug.js';
 import { showToast } from '../components/ui-toast.js';
@@ -132,6 +131,9 @@ export class PhoneManager {
 
       // Country selector
       const countrySelector = el('select', 'phone-country-selector', {
+        id: `phone-country-${index}`,
+        name: `phone_country_${index}`,
+        autocomplete: 'tel-country-code',
         'data-index': index
       }, ...options);
 
@@ -165,6 +167,9 @@ export class PhoneManager {
       // Phone number input
       const numberInput = el('input', 'phone-number-input', {
         type: 'tel',
+        id: `phone-number-${index}`,
+        name: `phone_number_${index}`,
+        autocomplete: 'tel-national',
         value: phone.number,
         placeholder: '7758493',
         'data-index': index

@@ -12,6 +12,8 @@
 
 import { debug } from './util-debug.js';
 import { DEFAULT_DURATION_MINUTES } from './election-constants.js';
+import { openElection, closeElection } from '../../admin-elections/js/api/elections-admin-api.js';
+import { computeElectionStatus } from './util-format.js';
 
 class ElectionState extends EventTarget {
   constructor() {
@@ -41,24 +43,6 @@ class ElectionState extends EventTarget {
   }
 
   /**
-   * Map API status to internal status
-   * API: 'draft' | 'published' | 'paused' | 'closed' | 'archived'
-   * Internal: 'upcoming' | 'active' | 'closed'
-   * @param {string} apiStatus - Status from API
-   * @returns {string} Internal status
-   */
-  mapStatus(apiStatus) {
-    const statusMap = {
-      'draft': 'upcoming',
-      'published': 'active',
-      'paused': 'active',  // Show as active but voting might be paused
-      'closed': 'closed',
-      'archived': 'closed'
-    };
-    return statusMap[apiStatus] || apiStatus;
-  }
-
-  /**
    * Initialize state with election data
    * @param {Object} election - Election data from API
    */
@@ -66,18 +50,13 @@ class ElectionState extends EventTarget {
     // Determine start time: voting_starts_at > scheduled_start > published_at
     const startTime = election.voting_starts_at || election.scheduled_start || election.published_at;
 
-    // Determine end time: voting_ends_at > scheduled_end > (start + default duration)
-    let endTime = election.voting_ends_at || election.scheduled_end;
-
-    // If no end time but we have a start time, calculate end based on default duration
-    if (!endTime && startTime) {
-      const startDate = new Date(startTime);
-      endTime = new Date(startDate.getTime() + DEFAULT_DURATION_MINUTES * 60 * 1000).toISOString();
-    }
+    // Backend is authoritative - trust the end time from API
+    // If null, election has no automatic end (admin must close manually)
+    let endTime = election.voting_ends_at || election.scheduled_end || null;
 
     this.state = {
       id: election.id,
-      status: this.mapStatus(election.status),
+      status: computeElectionStatus(election.status, startTime, endTime),
       voting_starts_at: startTime,
       voting_ends_at: endTime,
       duration_minutes: this.calculateDuration(startTime, endTime),
@@ -186,8 +165,22 @@ class ElectionState extends EventTarget {
       duration: durationMinutes
     });
 
-    // TODO(#283): Call Admin Elections API to persist state to server
-    // await ElectionsAdminAPI.openElection(this.state.id);
+    // Persist to server via Admin Elections API
+    if (this.state.id) {
+      try {
+        await openElection(this.state.id, {
+          voting_starts_at: this.state.voting_starts_at,
+          voting_ends_at: this.state.voting_ends_at,
+          duration_minutes: durationMinutes
+        });
+        debug.log('✅ Election opened on server');
+      } catch (error) {
+        debug.error('❌ Failed to open election on server:', error);
+        // Revert local state on failure
+        this.updateStatus('upcoming');
+        throw error;
+      }
+    }
 
     this.dispatchEvent(new CustomEvent('started', {
       detail: this.state
@@ -206,8 +199,20 @@ class ElectionState extends EventTarget {
 
     debug.log('Election closed immediately');
 
-    // TODO(#283): Call Admin Elections API to persist state to server
-    // await ElectionsAdminAPI.closeElection(this.state.id);
+    // Persist to server via Admin Elections API
+    if (this.state.id) {
+      try {
+        await closeElection(this.state.id, {
+          voting_ends_at: this.state.voting_ends_at
+        });
+        debug.log('✅ Election closed on server');
+      } catch (error) {
+        debug.error('❌ Failed to close election on server:', error);
+        // Revert local state on failure
+        this.updateStatus('active');
+        throw error;
+      }
+    }
 
     this.dispatchEvent(new CustomEvent('closed', {
       detail: this.state

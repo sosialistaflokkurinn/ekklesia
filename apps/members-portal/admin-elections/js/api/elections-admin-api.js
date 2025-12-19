@@ -310,7 +310,7 @@ export async function unhideElection(electionId) {
  */
 export async function deleteElection(electionId) {
   debug.log('[Elections API] Deleting election:', electionId);
-  
+
   const url = `${API_BASE_URL}/elections/${electionId}`;
   const response = await makeAuthenticatedRequest(url, {
     method: 'DELETE'
@@ -321,4 +321,26 @@ export async function deleteElection(electionId) {
   }
 
   return await response.json();
+}
+
+/**
+ * Fetch election results (includes vote breakdown)
+ * @param {string} electionId - Election ID
+ * @returns {Promise<object>} Election with results data
+ */
+export async function fetchElectionResults(electionId) {
+  debug.log('[Elections API] Fetching results for election:', electionId);
+
+  const url = `${API_BASE_URL}/elections/${electionId}/results`;
+  const response = await makeAuthenticatedRequest(url, {
+    method: 'GET'
+  });
+
+  if (!response.ok) {
+    await handleErrorResponse(response, 'Failed to fetch election results');
+  }
+
+  const result = await response.json();
+  debug.log('[Elections API] Election results:', result);
+  return result;
 }
