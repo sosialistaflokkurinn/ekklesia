@@ -63,6 +63,8 @@ CSS_IMPORTANT = re.compile(r"!important")
 MD_LINK = re.compile(r"\[([^\]]+)\]\(([^)]+)\)")
 MD_HEADING = re.compile(r"^#+\s+(.+)", re.MULTILINE)
 MD_CODE_BLOCK = re.compile(r"```")
+MD_TODO_UNCHECKED = re.compile(r"^[-*]\s+\[ \]", re.MULTILINE)
+MD_TODO_CHECKED = re.compile(r"^[-*]\s+\[x\]", re.MULTILINE | re.IGNORECASE)
 
 # --- Analyzers ---
 
@@ -135,12 +137,19 @@ def analyze_css(filepath: Path, content: str) -> Dict[str, Any]:
     }
 
 def analyze_md(filepath: Path, content: str) -> Dict[str, Any]:
+    unchecked = len(MD_TODO_UNCHECKED.findall(content))
+    checked = len(MD_TODO_CHECKED.findall(content))
     return {
         "consistency": {
             "heading_count": len(MD_HEADING.findall(content)),
             "code_block_count": len(MD_CODE_BLOCK.findall(content)) // 2
         },
-        "links": [m[1] for m in MD_LINK.findall(content)]
+        "links": [m[1] for m in MD_LINK.findall(content)],
+        "todos": {
+            "total": unchecked + checked,
+            "unchecked": unchecked,
+            "checked": checked
+        }
     }
 
 ANALYZERS = {
