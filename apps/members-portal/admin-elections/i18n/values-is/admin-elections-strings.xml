@@ -39,6 +39,7 @@
   <string name="btn_delete">🗑️ Eyða</string>
   <string name="btn_open">🚀 Opna</string>
   <string name="btn_close">🛑 Loka</string>
+  <string name="btn_results">Niðurstöður</string>
   <string name="btn_cancel">Hætta við</string>
   <string name="btn_save">Vista</string>
   <string name="btn_confirm">Staðfesta</string>
@@ -112,6 +113,10 @@ Til að staðfesta, sláðu inn heiti kosningarinnar hér fyrir neðan:
   <string name="voting_type_single_desc">Félagsmenn geta valið einn kost (radiobutton).</string>
   <string name="voting_type_multi">Mörg val</string>
   <string name="voting_type_multi_desc">Félagsmenn geta valið marga kosti (checkbox).</string>
+  <string name="voting_type_ranked">Forgangsröðun</string>
+  <string name="voting_type_ranked_desc">Félagsmenn raða valmöguleikum í forgangsröð (1., 2., 3. o.s.frv.).</string>
+  <string name="label_num_seats">Fjöldi sæta</string>
+  <string name="help_num_seats">Hversu margir valmöguleikar verða valdir (sigurvegara).</string>
   <string name="label_max_selections">Hámarksfjöldi vala</string>
   <string name="help_max_selections">Hámarksfjöldi kosta sem má velja (1-10).</string>
   <string name="label_answer_options">Svarmöguleikar</string>

@@ -8,12 +8,11 @@
 
 import { initSession } from '../../session/init.js';
 import { debug } from '../../js/utils/util-debug.js';
-import { getFunctions } from '../../firebase/app.js';
+import { httpsCallable } from '../../firebase/app.js';
 import { requireSuperuser } from '../../js/rbac.js';
 import { showToast } from '../../js/components/ui-toast.js';
 import { R } from '../../i18n/strings-loader.js';
-import { superuserStrings } from '../i18n/superuser-strings-loader.js';
-import { httpsCallable } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js';
+import { superuserStrings } from './i18n/superuser-strings-loader.js';
 
 // Mock data for demonstration (until Cloud Function is implemented)
 const MOCK_LOGS = [
@@ -172,7 +171,7 @@ function filterLogs(logs) {
 async function searchLogs() {
   const searchBtn = document.getElementById('search-btn');
   searchBtn.disabled = true;
-  searchBtn.textContent = superuserStrings.get('audit_searching');
+  searchBtn.textContent = superuserStrings.get('btn_search_loading');
 
   try {
     // Get filter values
@@ -182,8 +181,7 @@ async function searchLogs() {
     const correlationId = document.getElementById('filter-correlation').value.trim();
 
     // Call Cloud Function
-    const functions = getFunctions('europe-west2');
-    const getAuditLogs = httpsCallable(functions, 'getAuditLogs');
+    const getAuditLogs = httpsCallable('getAuditLogs', 'europe-west2');
 
     const result = await getAuditLogs({
       service: service !== 'all' ? service : null,
@@ -208,7 +206,7 @@ async function searchLogs() {
     showToast(superuserStrings.get('audit_fetch_error'), 'warning', { duration: 3000 });
   } finally {
     searchBtn.disabled = false;
-    searchBtn.textContent = superuserStrings.get('audit_search_btn');
+    searchBtn.textContent = superuserStrings.get('btn_search');
   }
 }
 

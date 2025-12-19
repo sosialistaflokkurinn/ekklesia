@@ -30,17 +30,24 @@ export function initNavigation() {
   const hamburger = document.getElementById('nav-hamburger');
   const drawer = document.getElementById('nav-drawer');
   const overlay = document.getElementById('nav-overlay');
-  const closeBtn = document.getElementById('nav-close');
   const navLinks = document.querySelectorAll('.nav__link');
 
   // Check if elements exist (safety check)
-  if (!hamburger || !drawer || !overlay || !closeBtn) {
+  if (!hamburger || !drawer || !overlay) {
     debug.warn('[Nav] Navigation elements not found');
     return;
   }
 
   // Get all focusable elements in drawer for tabindex management
   const drawerFocusables = drawer.querySelectorAll('button, a, input, select, textarea');
+
+  // SAFETY: Ensure drawer starts in closed state (fixes any stale state from caching)
+  drawer.classList.remove('is-open');
+  overlay.classList.remove('is-visible');
+  hamburger.classList.remove('is-active');
+  hamburger.setAttribute('aria-expanded', 'false');
+  drawer.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('nav-open');
 
   /**
    * Set tabindex on drawer focusable elements
@@ -183,11 +190,8 @@ export function initNavigation() {
 
   // Event Listeners
 
-  // Hamburger button click
+  // Hamburger button click (toggles open/close)
   hamburger.addEventListener('click', toggleDrawer);
-
-  // Close button click (FIX #3: return focus = true)
-  closeBtn.addEventListener('click', () => closeDrawer(true));
 
   // Overlay click (click outside drawer to close) (FIX #3: return focus = true)
   overlay.addEventListener('click', () => closeDrawer(true));

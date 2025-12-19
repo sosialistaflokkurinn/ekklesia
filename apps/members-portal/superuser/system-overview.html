@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title" data-i18n="system_overview_title">Kerfisyfirlit - Kerfisstjórn</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+  <!-- Reuse member portal styles -->
+  <link rel="stylesheet" href="/styles/bundle.css?v=20251217k">
+
+  <!-- Superuser-specific styles -->
+  <link rel="stylesheet" href="/superuser/styles/superuser.css?v=20251215">
+</head>
+<body class="authenticated superuser">
+  <!-- Navigation component inserted here -->
+
+  <!-- Page Content -->
+  <div class="page__container">
+
+    <!-- Header with tabs -->
+    <div class="card">
+      <div class="overview-header">
+        <div class="overview-header__info">
+          <p class="card__description" data-i18n="system_overview_desc">Rauntímastaða og arkitektúr kerfisins.</p>
+          <div class="health-summary" id="health-summary">
+            <div class="health-summary__status health-summary__status--loading">
+              <span class="health-summary__dot"></span>
+              <span class="health-summary__text" data-i18n="health_checking">Athuga stöðu...</span>
+            </div>
+            <span class="health-summary__time" id="last-updated">-</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Navigation -->
+      <div class="tabs" role="tablist">
+        <button class="tab tab--active" role="tab" aria-selected="true" data-tab="architecture" id="tab-btn-architecture">
+          <span data-i18n="tab_architecture">Arkitektúr</span>
+        </button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="services" id="tab-btn-services">
+          <span data-i18n="tab_services">Þjónustur</span>
+        </button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="databases" id="tab-btn-databases">
+          <span data-i18n="tab_databases">Gagnagrunnar</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- TAB 1: Architecture Diagram -->
+    <!-- ============================================== -->
+    <div id="tab-architecture" class="tab-content tab-content--active" role="tabpanel">
+
+      <!-- Architecture Diagram Card -->
+      <div class="card">
+        <p class="card__description u-text-muted" data-i18n="architecture_click_group">Smelltu á hóp til að sjá nákvæmari upplýsingar.</p>
+
+        <!-- SVG Architecture Diagram -->
+        <div class="architecture-diagram" id="architecture-diagram">
+          <svg viewBox="0 0 1000 610" preserveAspectRatio="xMidYMid meet">
+            <!-- Definitions for markers and gradients -->
+            <defs>
+              <!-- Arrow marker for connection lines -->
+              <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill="var(--color-muted, #9ca3af)" />
+              </marker>
+
+              <!-- Gradient for animated flow -->
+              <linearGradient id="flowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="var(--color-success, #22c55e)" stop-opacity="0.3" />
+                <stop offset="50%" stop-color="var(--color-success, #22c55e)" stop-opacity="1" />
+                <stop offset="100%" stop-color="var(--color-success, #22c55e)" stop-opacity="0.3" />
+              </linearGradient>
+            </defs>
+
+            <!-- Background grid (subtle) -->
+            <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="var(--color-border, #e5e7eb)" stroke-width="0.5" opacity="0.5"/>
+            </pattern>
+            <rect width="100%" height="100%" fill="url(#grid)" />
+
+            <!-- Layer 1: Users -->
+            <g class="architecture-layer" id="layer-users">
+              <rect x="350" y="10" width="300" height="50" rx="8" class="architecture-node architecture-node--external" />
+              <text x="500" y="40" text-anchor="middle" class="architecture-node__label">Notendur</text>
+              <text x="500" y="55" text-anchor="middle" class="architecture-node__sublabel">Félagar / Stjórnendur / Kerfisstjórar</text>
+            </g>
+
+            <!-- Connection: Users to Firebase Hosting -->
+            <path d="M 500 60 L 500 90" class="architecture-edge" marker-end="url(#arrowhead)" />
+
+            <!-- Layer 2: Firebase Hosting (Frontend) -->
+            <g class="architecture-layer" id="layer-frontend">
+              <rect x="100" y="90" width="800" height="80" rx="8" class="architecture-node architecture-node--firebase" />
+              <text x="500" y="115" text-anchor="middle" class="architecture-node__label">Firebase Hosting</text>
+
+              <!-- Three portals -->
+              <g class="architecture-subnode" data-portal="members">
+                <rect x="150" y="125" width="160" height="35" rx="4" class="architecture-node architecture-node--healthy" />
+                <text x="230" y="147" text-anchor="middle" class="architecture-subnode__label">Félagagátt</text>
+              </g>
+              <g class="architecture-subnode" data-portal="admin">
+                <rect x="420" y="125" width="160" height="35" rx="4" class="architecture-node architecture-node--healthy" />
+                <text x="500" y="147" text-anchor="middle" class="architecture-subnode__label">Stjórnendagátt</text>
+              </g>
+              <g class="architecture-subnode" data-portal="superuser">
+                <rect x="690" y="125" width="160" height="35" rx="4" class="architecture-node architecture-node--healthy" />
+                <text x="770" y="147" text-anchor="middle" class="architecture-subnode__label">Kerfisstjórn</text>
+              </g>
+            </g>
+
+            <!-- Connections: Frontend to services -->
+            <path d="M 230 170 L 230 210" class="architecture-edge" marker-end="url(#arrowhead)" />
+            <path d="M 500 170 L 500 210" class="architecture-edge" marker-end="url(#arrowhead)" />
+            <path d="M 770 170 L 770 210" class="architecture-edge" marker-end="url(#arrowhead)" />
+
+            <!-- Layer 3: Firebase Services -->
+            <g class="architecture-layer" id="layer-firebase">
+              <!-- Firebase Auth -->
+              <g class="architecture-group architecture-group--clickable" id="group-auth" data-group="auth">
+                <rect x="120" y="210" width="180" height="70" rx="8" class="architecture-node architecture-node--group" />
+                <text x="210" y="235" text-anchor="middle" class="architecture-node__label">Auðkenning</text>
+                <text x="210" y="255" text-anchor="middle" class="architecture-node__count">2 þjónustur</text>
+                <circle cx="280" cy="225" r="8" class="architecture-status" id="status-auth" />
+              </g>
+
+              <!-- Firestore -->
+              <g class="architecture-group architecture-group--clickable" id="group-firestore" data-group="firestore">
+                <rect x="410" y="210" width="180" height="70" rx="8" class="architecture-node architecture-node--group" />
+                <text x="500" y="235" text-anchor="middle" class="architecture-node__label">Firestore</text>
+                <text x="500" y="255" text-anchor="middle" class="architecture-node__count">1 þjónusta</text>
+                <circle cx="570" cy="225" r="8" class="architecture-status" id="status-firestore" />
+              </g>
+
+              <!-- Cloud Run -->
+              <g class="architecture-group architecture-group--clickable" id="group-cloudrun" data-group="cloudrun">
+                <rect x="700" y="210" width="180" height="70" rx="8" class="architecture-node architecture-node--group" />
+                <text x="790" y="235" text-anchor="middle" class="architecture-node__label">Cloud Run</text>
+                <text x="790" y="255" text-anchor="middle" class="architecture-node__count">2 þjónustur</text>
+                <circle cx="860" cy="225" r="8" class="architecture-status" id="status-cloudrun" />
+              </g>
+            </g>
+
+            <!-- Data flow connections (animated) -->
+            <g class="architecture-layer" id="layer-flows">
+              <!-- Connections from Cloud Run to service groups (static, no animation) -->
+              <path d="M 790 280 L 115 320" class="architecture-edge architecture-edge--thin" />
+              <path d="M 790 280 L 305 320" class="architecture-edge architecture-edge--thin" />
+              <path d="M 790 280 L 500 320" class="architecture-edge architecture-edge--thin" />
+              <path d="M 790 280 L 690 320" class="architecture-edge architecture-edge--thin" />
+              <path d="M 790 280 L 880 320" class="architecture-edge architecture-edge--thin" />
+
+              <!-- 1. Django → Firestore (sync-from-django webhook) -->
+              <path d="M 730 480 L 780 480 L 780 250 L 590 250" class="architecture-edge architecture-edge--flow architecture-edge--sync-from-django" id="flow-django-firestore" />
+
+              <!-- 2. Firestore → Django (profile updates) -->
+              <path d="M 500 280 L 595 300 L 595 445 L 590 460" class="architecture-edge architecture-edge--flow architecture-edge--sync-to-django" id="flow-firestore-django" />
+
+              <!-- 3. Cloud Run → Cloud SQL (database queries) -->
+              <path d="M 320 380 L 320 445 L 360 460" class="architecture-edge architecture-edge--flow architecture-edge--database" id="flow-cloudrun-sql" />
+
+              <!-- 4. Kenni.is → Auth (OAuth 2.0 flow) -->
+              <path d="M 80 490 L 40 490 L 40 250 L 120 250" class="architecture-edge architecture-edge--flow architecture-edge--auth" id="flow-kenni" />
+            </g>
+
+            <!-- Layer 4: Cloud Run Service Groups -->
+            <g class="architecture-layer" id="layer-services">
+              <!-- Data Sync -->
+              <g class="architecture-group architecture-group--clickable" id="group-sync" data-group="sync">
+                <rect x="50" y="320" width="130" height="60" rx="6" class="architecture-node architecture-node--group" />
+                <text x="115" y="345" text-anchor="middle" class="architecture-node__label">Samstilling</text>
+                <text x="115" y="362" text-anchor="middle" class="architecture-node__count">3 þjónustur</text>
+                <circle cx="160" cy="335" r="6" class="architecture-status" id="status-sync" />
+              </g>
+
+              <!-- Address Validation -->
+              <g class="architecture-group architecture-group--clickable" id="group-address" data-group="address">
+                <rect x="240" y="320" width="130" height="60" rx="6" class="architecture-node architecture-node--group" />
+                <text x="305" y="345" text-anchor="middle" class="architecture-node__label">Heimilisföng</text>
+                <text x="305" y="362" text-anchor="middle" class="architecture-node__count">3 þjónustur</text>
+                <circle cx="350" cy="335" r="6" class="architecture-status" id="status-address" />
+              </g>
+
+              <!-- Audit & Monitoring -->
+              <g class="architecture-group architecture-group--clickable" id="group-audit" data-group="audit">
+                <rect x="435" y="320" width="130" height="60" rx="6" class="architecture-node architecture-node--group" />
+                <text x="500" y="345" text-anchor="middle" class="architecture-node__label">Eftirlit</text>
+                <text x="500" y="362" text-anchor="middle" class="architecture-node__count">3 þjónustur</text>
+                <circle cx="545" cy="335" r="6" class="architecture-status" id="status-audit" />
+              </g>
+
+              <!-- Superuser Functions -->
+              <g class="architecture-group architecture-group--clickable" id="group-superuser" data-group="superuser">
+                <rect x="625" y="320" width="130" height="60" rx="6" class="architecture-node architecture-node--group" />
+                <text x="690" y="345" text-anchor="middle" class="architecture-node__label">Kerfisstjórn</text>
+                <text x="690" y="362" text-anchor="middle" class="architecture-node__count">9 þjónustur</text>
+                <circle cx="735" cy="335" r="6" class="architecture-status" id="status-superuser" />
+              </g>
+
+              <!-- Lookup Functions (skraning-static) -->
+              <g class="architecture-group architecture-group--clickable" id="group-lookup" data-group="lookup">
+                <rect x="815" y="320" width="130" height="60" rx="6" class="architecture-node architecture-node--group" />
+                <text x="880" y="345" text-anchor="middle" class="architecture-node__label">Uppflettingar</text>
+                <text x="880" y="362" text-anchor="middle" class="architecture-node__count">5 þjónustur</text>
+                <circle cx="925" cy="335" r="6" class="architecture-status" id="status-lookup" />
+              </g>
+
+              <!-- Registration Function (skraning-static) -->
+              <g class="architecture-group architecture-group--clickable" id="group-registration" data-group="registration">
+                <rect x="50" y="390" width="130" height="50" rx="6" class="architecture-node architecture-node--group" />
+                <text x="115" y="412" text-anchor="middle" class="architecture-node__label">Skráning</text>
+                <text x="115" y="427" text-anchor="middle" class="architecture-node__count">1 þjónusta</text>
+                <circle cx="160" cy="400" r="5" class="architecture-status" id="status-registration" />
+              </g>
+
+              <!-- Utility Functions -->
+              <g class="architecture-group architecture-group--clickable" id="group-utility" data-group="utility">
+                <rect x="240" y="390" width="130" height="50" rx="6" class="architecture-node architecture-node--group" />
+                <text x="305" y="412" text-anchor="middle" class="architecture-node__label">Hjálparföll</text>
+                <text x="305" y="427" text-anchor="middle" class="architecture-node__count">1 þjónusta</text>
+                <circle cx="350" cy="400" r="5" class="architecture-status" id="status-utility" />
+              </g>
+
+              <!-- Email Functions (Issue #323) -->
+              <g class="architecture-group architecture-group--clickable" id="group-email" data-group="email">
+                <rect x="435" y="390" width="130" height="50" rx="6" class="architecture-node architecture-node--group" />
+                <text x="500" y="412" text-anchor="middle" class="architecture-node__label">Tölvupóstur</text>
+                <text x="500" y="427" text-anchor="middle" class="architecture-node__count">11 þjónustur</text>
+                <circle cx="545" cy="400" r="5" class="architecture-status" id="status-email" />
+              </g>
+            </g>
+
+            <!-- Layer 5: Databases & External Services -->
+            <g class="architecture-layer" id="layer-databases">
+              <!-- Kenni.is -->
+              <g class="architecture-group" id="group-kenni" data-group="kenni">
+                <rect x="80" y="460" width="140" height="60" rx="6" class="architecture-node architecture-node--external" />
+                <text x="150" y="485" text-anchor="middle" class="architecture-node__label">Kenni.is</text>
+                <text x="150" y="502" text-anchor="middle" class="architecture-node__sublabel">OAuth 2.0</text>
+              </g>
+
+              <!-- Cloud SQL -->
+              <g class="architecture-group" id="group-cloudsql" data-group="cloudsql">
+                <rect x="360" y="460" width="140" height="60" rx="6" class="architecture-node architecture-node--database" />
+                <text x="430" y="485" text-anchor="middle" class="architecture-node__label">Cloud SQL</text>
+                <text x="430" y="502" text-anchor="middle" class="architecture-node__sublabel">PostgreSQL</text>
+                <circle cx="480" cy="475" r="6" class="architecture-status" id="status-cloudsql" />
+              </g>
+
+              <!-- Django (GCP Cloud Run) -->
+              <g class="architecture-group" id="group-django" data-group="django">
+                <rect x="590" y="460" width="140" height="60" rx="6" class="architecture-node architecture-node--external" />
+                <text x="660" y="485" text-anchor="middle" class="architecture-node__label">Django</text>
+                <text x="660" y="502" text-anchor="middle" class="architecture-node__sublabel">GCP Cloud Run</text>
+                <circle cx="710" cy="475" r="6" class="architecture-status" id="status-django" />
+              </g>
+            </g>
+
+            <!-- Legend - Status indicators -->
+            <g class="architecture-legend" transform="translate(750, 540)">
+              <text x="0" y="0" class="architecture-legend__title" font-weight="600">Staða:</text>
+              <circle cx="10" cy="20" r="5" class="architecture-status architecture-status--healthy" />
+              <text x="20" y="24" class="architecture-legend__label">Heilbrigt</text>
+              <circle cx="85" cy="20" r="5" class="architecture-status architecture-status--degraded" />
+              <text x="95" y="24" class="architecture-legend__label">Hægvirkt</text>
+              <circle cx="165" cy="20" r="5" class="architecture-status architecture-status--down" />
+              <text x="175" y="24" class="architecture-legend__label">Niðri</text>
+            </g>
+
+            <!-- Legend - Data flow -->
+            <g class="architecture-legend" transform="translate(50, 540)">
+              <text x="0" y="0" class="architecture-legend__title" font-weight="600">Gagnaflæði:</text>
+              <line x1="0" y1="20" x2="25" y2="20" stroke="#3b82f6" stroke-width="2" stroke-dasharray="4,2" />
+              <text x="30" y="24" class="architecture-legend__label">Django → Firestore</text>
+              <line x1="150" y1="20" x2="175" y2="20" stroke="#22c55e" stroke-width="2" stroke-dasharray="4,2" />
+              <text x="180" y="24" class="architecture-legend__label">Firestore → Django</text>
+              <line x1="305" y1="20" x2="330" y2="20" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,2" />
+              <text x="335" y="24" class="architecture-legend__label">SQL fyrirspurnir</text>
+              <line x1="430" y1="20" x2="455" y2="20" stroke="#8b5cf6" stroke-width="2" stroke-dasharray="4,2" />
+              <text x="460" y="24" class="architecture-legend__label">OAuth</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Details Panel (Hidden by default) -->
+      <div class="card u-hidden" id="details-panel">
+        <div class="details-header">
+          <h3 class="card__title" id="details-title" data-i18n="architecture_service_info">Þjónustuupplýsingar</h3>
+          <button type="button" class="btn btn--text" id="close-details" data-i18n="architecture_close_btn">✕ Loka</button>
+        </div>
+        <div class="service-grid" id="details-services">
+          <!-- Service cards will be rendered here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- TAB 2: Services List -->
+    <!-- ============================================== -->
+    <div id="tab-services" class="tab-content" role="tabpanel">
+
+      <!-- Service breakdown by category -->
+      <div class="card">
+        <div class="health-breakdown" id="health-breakdown">
+          <div class="health-breakdown__item">
+            <span class="health-breakdown__label" data-i18n="breakdown_gcp">GCP</span>
+            <span class="health-breakdown__count" id="count-gcp">-</span>
+          </div>
+          <div class="health-breakdown__item">
+            <span class="health-breakdown__label" data-i18n="breakdown_functions">Functions</span>
+            <span class="health-breakdown__count" id="count-functions">-</span>
+          </div>
+          <div class="health-breakdown__item">
+            <span class="health-breakdown__label" data-i18n="breakdown_database">DB</span>
+            <span class="health-breakdown__count" id="count-database">-</span>
+          </div>
+          <div class="health-breakdown__item">
+            <span class="health-breakdown__label" data-i18n="breakdown_firebase">Firebase</span>
+            <span class="health-breakdown__count" id="count-firebase">-</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Core GCP Services -->
+      <div class="card">
+        <h2 class="card__title" data-i18n="health_section_gcp">GCP þjónustur</h2>
+        <p class="card__description u-text-muted" data-i18n="health_section_gcp_desc">Google Cloud Run þjónustur með heilsuskoðun.</p>
+        <div class="service-grid" id="core-services"></div>
+      </div>
+
+      <!-- Firebase Functions - Member Operations -->
+      <div class="card">
+        <h2 class="card__title" data-i18n="health_section_members">Félagaþjónustur</h2>
+        <p class="card__description u-text-muted" data-i18n="health_section_members_desc">Þjónustur fyrir félagaskrá, auðkenningu og samstillingu.</p>
+        <div class="service-grid" id="member-functions"></div>
+      </div>
+
+      <!-- Firebase Functions - Address Validation -->
+      <div class="card">
+        <h2 class="card__title" data-i18n="health_section_address">Heimilisfangaþjónustur</h2>
+        <p class="card__description u-text-muted" data-i18n="health_section_address_desc">Þjónustur fyrir heimilisfangaleit og staðfestingu.</p>
+        <div class="service-grid" id="address-functions"></div>
+      </div>
+
+      <!-- Skráningarsíða (skraning.sosialistaflokkurinn.is) -->
+      <div class="card card--highlight">
+        <h2 class="card__title">
+          <span data-i18n="health_section_registration_site">Skráningarsíða</span>
+          <a href="https://skraning.sosialistaflokkurinn.is/" target="_blank" class="card__link">skraning.sosialistaflokkurinn.is ↗</a>
+        </h2>
+        <p class="card__description u-text-muted" data-i18n="health_section_registration_site_desc">Þjónustur sem nýskráningarsíðan notar til að skrá nýja félaga.</p>
+        <div class="service-grid" id="registration-site-functions"></div>
+      </div>
+
+      <!-- Firebase Functions - Lookup Data -->
+      <div class="card">
+        <h2 class="card__title" data-i18n="health_section_lookup">Uppflettingar</h2>
+        <p class="card__description u-text-muted" data-i18n="health_section_lookup_desc">Gögn fyrir skráningarform (stéttarfélög, starfsheiti, lönd, póstnúmer).</p>
+        <div class="service-grid" id="lookup-functions"></div>
+      </div>
+
+      <!-- Firebase Functions - Registration -->
+      <div class="card">
+        <h2 class="card__title" data-i18n="health_section_registration">Skráningarþjónustur</h2>
+        <p class="card__description u-text-muted" data-i18n="health_section_registration_desc">Þjónustur fyrir skráningu nýrra félaga.</p>
+        <div class="service-grid" id="registration-functions"></div>
+      </div>
+
+      <!-- Firebase Functions - Superuser Operations -->
+      <div class="card">
+        <h2 class="card__title" data-i18n="health_section_superuser">Kerfisstjóraþjónustur</h2>
+        <p class="card__description u-text-muted" data-i18n="health_section_superuser_desc">Þjónustur fyrir kerfisstjórnun og eftirlit.</p>
+        <div class="service-grid" id="superuser-functions"></div>
+      </div>
+
+      <!-- Firebase Functions - Utility -->
+      <div class="card">
+        <h2 class="card__title" data-i18n="health_section_utility">Hjálparföll</h2>
+        <p class="card__description u-text-muted" data-i18n="health_section_utility_desc">Bakgrunnsföll og hjálparföll.</p>
+        <div class="service-grid" id="utility-functions"></div>
+      </div>
+
+      <!-- Firebase Functions - Email (Issue #323) -->
+      <div class="card">
+        <h2 class="card__title" data-i18n="health_section_email">Tölvupóstur</h2>
+        <p class="card__description u-text-muted" data-i18n="health_section_email_desc">Amazon SES tölvupóstþjónustur fyrir sniðmát, herferðir og sendingar.</p>
+        <div class="service-grid" id="email-functions"></div>
+      </div>
+
+      <!-- Database & Storage -->
+      <div class="card">
+        <h2 class="card__title" data-i18n="health_section_database">Gagnagrunnar</h2>
+        <div class="service-grid" id="database-services"></div>
+      </div>
+
+      <!-- Firebase Infrastructure -->
+      <div class="card">
+        <h2 class="card__title" data-i18n="health_section_firebase">Firebase innviðir</h2>
+        <div class="service-grid" id="firebase-services"></div>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- TAB 3: Database Schema -->
+    <!-- ============================================== -->
+    <div id="tab-databases" class="tab-content" role="tabpanel">
+
+      <!-- Database Schema Overview -->
+      <div class="card">
+        <h2 class="card__title">Gagnagrunna skemu</h2>
+        <p class="card__description u-text-muted">Yfirlit yfir gagnaskipan í Firestore og PostgreSQL.</p>
+
+        <div class="schema-overview">
+          <!-- ===== FIRESTORE COLLECTIONS ===== -->
+          <div class="schema-section">
+            <h3 class="schema-section__title">Firestore Collections (6)</h3>
+            <div class="schema-table">
+              <div class="schema-row schema-row--header">
+                <span class="schema-col schema-col--name">Collection</span>
+                <span class="schema-col schema-col--desc">Lýsing</span>
+                <span class="schema-col schema-col--key">Primary Key</span>
+              </div>
+              <div class="schema-row">
+                <span class="schema-col schema-col--name"><code>/users/{firebaseUid}</code></span>
+                <span class="schema-col schema-col--desc">Notendagögn, innskráningarsaga, hlutverk</span>
+                <span class="schema-col schema-col--key">Firebase UID</span>
+              </div>
+              <div class="schema-row">
+                <span class="schema-col schema-col--name"><code>/members/{kennitala}</code></span>
+                <span class="schema-col schema-col--desc">Félagaupplýsingar (samstillt frá Django)</span>
+                <span class="schema-col schema-col--key">Kennitala</span>
+              </div>
+              <div class="schema-row">
+                <span class="schema-col schema-col--name"><code>/members_audit_log/{id}</code></span>
+                <span class="schema-col schema-col--desc">Breytingasaga félaga</span>
+                <span class="schema-col schema-col--key">Auto ID</span>
+              </div>
+              <div class="schema-row">
+                <span class="schema-col schema-col--name"><code>/events/{id}</code></span>
+                <span class="schema-col schema-col--desc">Viðburðir og fundir</span>
+                <span class="schema-col schema-col--key">Auto ID</span>
+              </div>
+              <div class="schema-row">
+                <span class="schema-col schema-col--name"><code>/sync_logs/{id}</code></span>
+                <span class="schema-col schema-col--desc">Samstillingarskrár Django↔Firestore</span>
+                <span class="schema-col schema-col--key">Auto ID</span>
+              </div>
+              <div class="schema-row">
+                <span class="schema-col schema-col--name"><code>/nomination-candidates/{id}</code></span>
+                <span class="schema-col schema-col--desc">Framboðsupplýsingar í uppstillingu</span>
+                <span class="schema-col schema-col--key">Candidate ID</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== CLOUD SQL - EKKLESIA (GCP) ===== -->
+          <div class="schema-section">
+            <h3 class="schema-section__title">Cloud SQL - Ekklesia (GCP) - ekklesia-db</h3>
+            <p class="u-text-muted u-margin-bottom-sm">Kosningakerfi og viðburðasamstilling á Google Cloud Platform.</p>
+            <div class="schema-table">
+              <div class="schema-row schema-row--header">
+                <span class="schema-col schema-col--name">Tafla</span>
+                <span class="schema-col schema-col--desc">Lýsing</span>
+                <span class="schema-col schema-col--key">Primary Key</span>
+              </div>
+              <div class="schema-row">
+                <span class="schema-col schema-col--name"><code>elections.elections</code></span>
+                <span class="schema-col schema-col--desc">Kosningaskilgreiningar og lýsigögn</span>
+                <span class="schema-col schema-col--key">id (UUID)</span>
+              </div>
+              <div class="schema-row">
+                <span class="schema-col schema-col--name"><code>elections.ballots</code></span>
+                <span class="schema-col schema-col--desc">Nafnlausir atkvæðaseðlar</span>
+                <span class="schema-col schema-col--key">id (UUID)</span>
+              </div>
+              <div class="schema-row">
+                <span class="schema-col schema-col--name"><code>elections.voting_tokens</code></span>
+                <span class="schema-col schema-col--desc">Einnota atkvæðatókar (SHA-256 hash)</span>
+                <span class="schema-col schema-col--key">token_hash</span>
+              </div>
+              <div class="schema-row">
+                <span class="schema-col schema-col--name"><code>elections.audit_log</code></span>
+                <span class="schema-col schema-col--desc">Aðgerðaskrá (engin persónugreinanleg gögn)</span>
+                <span class="schema-col schema-col--key">id</span>
+              </div>
+              <div class="schema-row">
+                <span class="schema-col schema-col--name"><code>external_events</code></span>
+                <span class="schema-col schema-col--desc">Facebook viðburðir frá síðu flokksins</span>
+                <span class="schema-col schema-col--key">id</span>
+              </div>
+              <div class="schema-row">
+                <span class="schema-col schema-col--name"><code>external_events_sync_log</code></span>
+                <span class="schema-col schema-col--desc">Samstillingarstaða viðburða</span>
+                <span class="schema-col schema-col--key">id</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== CLOUD SQL - DJANGO (GCP) ===== -->
+          <div class="schema-section">
+            <h3 class="schema-section__title">
+              <button type="button" class="schema-toggle" id="django-toggle" aria-expanded="false">
+                <span class="schema-toggle__icon">▶</span>
+                Cloud SQL - Django (GCP) - socialism
+              </button>
+            </h3>
+            <p class="u-text-muted u-margin-bottom-sm">Félagaskrá og aðalgagnagrunnur Django (108 töflur). <em>Smelltu til að sýna.</em></p>
+
+            <div class="schema-collapsible u-hidden" id="django-tables">
+            <!-- Membership App -->
+            <h4 class="schema-subsection__title">Membership (12 töflur)</h4>
+            <div class="schema-table schema-table--compact">
+              <div class="schema-row schema-row--header">
+                <span class="schema-col schema-col--name">Tafla</span>
+                <span class="schema-col schema-col--desc">Lýsing</span>
+              </div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_comrade</code></span><span class="schema-col schema-col--desc">Félagaskrá (source of truth)</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_contactinfo</code></span><span class="schema-col schema-col--desc">Tengiliðaupplýsingar</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_newlocaladdress</code></span><span class="schema-col schema-col--desc">Íslensk heimilisföng</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_newforeignaddress</code></span><span class="schema-col schema-col--desc">Erlend heimilisföng</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_simpleaddress</code></span><span class="schema-col schema-col--desc">Einföld heimilisföng</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_union</code></span><span class="schema-col schema-col--desc">Stéttarfélög</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_unionmembership</code></span><span class="schema-col schema-col--desc">Stéttarfélagsaðild</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_title</code></span><span class="schema-col schema-col--desc">Starfsheiti</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_comradetitle</code></span><span class="schema-col schema-col--desc">Starfsheiti félaga</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_activation</code></span><span class="schema-col schema-col--desc">Virkjunarlyklar</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_bannedkennitala</code></span><span class="schema-col schema-col--desc">Bönnuð kennitölur</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_membersyncqueue</code></span><span class="schema-col schema-col--desc">Samstillingarbiðröð</span></div>
+            </div>
+
+            <!-- Cells App -->
+            <h4 class="schema-subsection__title">Cells (7 töflur)</h4>
+            <div class="schema-table schema-table--compact">
+              <div class="schema-row schema-row--header">
+                <span class="schema-col schema-col--name">Tafla</span>
+                <span class="schema-col schema-col--desc">Lýsing</span>
+              </div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>cells_cell</code></span><span class="schema-col schema-col--desc">Sellur (landfræðilegar)</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>cells_cell_coordinators</code></span><span class="schema-col schema-col--desc">Sellusamræmingaraðilar</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>cells_cell_countries</code></span><span class="schema-col schema-col--desc">Sellulönd</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>cells_cellgroup</code></span><span class="schema-col schema-col--desc">Selluhópar</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>cells_cellgroup_coordinators</code></span><span class="schema-col schema-col--desc">Selluhópasamræmingaraðilar</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>cells_cellconfig</code></span><span class="schema-col schema-col--desc">Sellustillingar</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>cells_message</code> / <code>cells_reply</code></span><span class="schema-col schema-col--desc">Skilaboð</span></div>
+            </div>
+
+            <!-- Groups App -->
+            <h4 class="schema-subsection__title">Groups (7 töflur)</h4>
+            <div class="schema-table schema-table--compact">
+              <div class="schema-row schema-row--header">
+                <span class="schema-col schema-col--name">Tafla</span>
+                <span class="schema-col schema-col--desc">Lýsing</span>
+              </div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>groups_comradegroup</code></span><span class="schema-col schema-col--desc">Hópar</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>groups_comradegroupmembership</code></span><span class="schema-col schema-col--desc">Hópaðild</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>groups_place</code></span><span class="schema-col schema-col--desc">Staðir</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>groups_event</code></span><span class="schema-col schema-col--desc">Hópviðburðir</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>groups_eventinvitation</code></span><span class="schema-col schema-col--desc">Boð á viðburði</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>groups_accesstoken</code></span><span class="schema-col schema-col--desc">Aðgangstókar</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>groups_post</code></span><span class="schema-col schema-col--desc">Færslur</span></div>
+            </div>
+
+            <!-- Map App -->
+            <h4 class="schema-subsection__title">Map (14 töflur)</h4>
+            <div class="schema-table schema-table--compact">
+              <div class="schema-row schema-row--header">
+                <span class="schema-col schema-col--name">Tafla</span>
+                <span class="schema-col schema-col--desc">Lýsing</span>
+              </div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_continent</code></span><span class="schema-col schema-col--desc">Heimsálfur</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_country</code></span><span class="schema-col schema-col--desc">Lönd</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_countryalias</code></span><span class="schema-col schema-col--desc">Landanöfn (alias)</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_region</code></span><span class="schema-col schema-col--desc">Svæði</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_municipality</code></span><span class="schema-col schema-col--desc">Sveitarfélög</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_municipalityalias</code></span><span class="schema-col schema-col--desc">Sveitarfélagsnöfn</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_municipalitypostalcode</code></span><span class="schema-col schema-col--desc">Sveitarfélag↔Póstnúmer</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_postalcode</code></span><span class="schema-col schema-col--desc">Póstnúmer (geometry)</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_street</code></span><span class="schema-col schema-col--desc">Götur</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_address</code></span><span class="schema-col schema-col--desc">Heimilisföng (geometry)</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_location</code></span><span class="schema-col schema-col--desc">Staðsetningar</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_tilegrid</code> / <code>map_coast</code></span><span class="schema-col schema-col--desc">Kortagerð</span></div>
+            </div>
+
+            <!-- Communication App -->
+            <h4 class="schema-subsection__title">Communication (5 töflur)</h4>
+            <div class="schema-table schema-table--compact">
+              <div class="schema-row schema-row--header">
+                <span class="schema-col schema-col--name">Tafla</span>
+                <span class="schema-col schema-col--desc">Lýsing</span>
+              </div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>communication_email</code></span><span class="schema-col schema-col--desc">Tölvupóstsniðmát</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>communication_sentemail</code></span><span class="schema-col schema-col--desc">Sendir tölvupóstar</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>communication_request</code></span><span class="schema-col schema-col--desc">Beiðnir</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>communication_conversation</code></span><span class="schema-col schema-col--desc">Samtöl</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>communication_groupregistration</code></span><span class="schema-col schema-col--desc">Hópaskráningar</span></div>
+            </div>
+
+            <!-- Other Apps -->
+            <h4 class="schema-subsection__title">Aðrar töflur</h4>
+            <div class="schema-table schema-table--compact">
+              <div class="schema-row schema-row--header">
+                <span class="schema-col schema-col--name">Tafla</span>
+                <span class="schema-col schema-col--desc">Lýsing</span>
+              </div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>billing_membershipfee</code></span><span class="schema-col schema-col--desc">Félagsgjöld</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>issues_*</code></span><span class="schema-col schema-col--desc">Málafundir (4 töflur)</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>conscience_*</code></span><span class="schema-col schema-col--desc">Samviskufundir (4 töflur)</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>discussion_*</code></span><span class="schema-col schema-col--desc">Umræður (4 töflur)</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>elections_*</code></span><span class="schema-col schema-col--desc">Kosningar - Django (4 töflur)</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>icelandstat_*</code></span><span class="schema-col schema-col--desc">Hagstofa gögn (14 töflur)</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>work_*</code></span><span class="schema-col schema-col--desc">Vinnuhópar (3 töflur)</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>auth_*</code> / <code>django_*</code></span><span class="schema-col schema-col--desc">Django kerfistöflur</span></div>
+            </div>
+            </div><!-- end schema-collapsible -->
+          </div>
+
+          <!-- ===== KEY RELATIONSHIPS ===== -->
+          <div class="schema-section">
+            <h3 class="schema-section__title">Tengingar</h3>
+            <div class="schema-relations-grid">
+              <div class="schema-relations-group">
+                <h4>Firestore ↔ Django</h4>
+                <ul class="schema-relations">
+                  <li><code>/members/{kennitala}</code> ↔ <code>membership_comrade.ssn</code> (tvíátta samstilling)</li>
+                  <li><code>/users/{firebaseUid}.kennitala</code> → <code>/members/{kennitala}</code></li>
+                </ul>
+              </div>
+              <div class="schema-relations-group">
+                <h4>Django innbyrðis</h4>
+                <ul class="schema-relations">
+                  <li><code>membership_contactinfo.comrade_id</code> → <code>membership_comrade.id</code></li>
+                  <li><code>membership_newlocaladdress.comrade_id</code> → <code>membership_comrade.id</code></li>
+                  <li><code>cells_cell</code> ↔ <code>membership_comrade</code> (M2M)</li>
+                </ul>
+              </div>
+              <div class="schema-relations-group">
+                <h4>Ekklesia kosningar</h4>
+                <ul class="schema-relations">
+                  <li><code>elections.ballots.token_hash</code> → <code>elections.voting_tokens.token_hash</code></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- Stats Footer (always visible) -->
+    <!-- ============================================== -->
+    <div class="card">
+      <h2 class="card__title" data-i18n="architecture_stats_title">Tölfræði</h2>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-card__value" id="stat-total">-</span>
+          <span class="stat-card__label" data-i18n="architecture_services_label">Þjónustur</span>
+        </div>
+        <div class="stat-card stat-card--success">
+          <span class="stat-card__value" id="stat-healthy">-</span>
+          <span class="stat-card__label" data-i18n="architecture_stat_healthy">Heilbrigðar</span>
+        </div>
+        <div class="stat-card stat-card--warning">
+          <span class="stat-card__value" id="stat-degraded">-</span>
+          <span class="stat-card__label" data-i18n="architecture_stat_degraded">Hægvirkar</span>
+        </div>
+        <div class="stat-card stat-card--error">
+          <span class="stat-card__value" id="stat-down">-</span>
+          <span class="stat-card__label" data-i18n="architecture_stat_down">Niðri</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script type="module" src="/superuser/js/system-overview.js?v=20251214i"></script>
+
+  <!-- Django tables toggle -->
+  <script>
+    document.getElementById('django-toggle')?.addEventListener('click', function() {
+      const tables = document.getElementById('django-tables');
+      const icon = this.querySelector('.schema-toggle__icon');
+      const isHidden = tables.classList.toggle('u-hidden');
+      this.setAttribute('aria-expanded', !isHidden);
+      icon.textContent = isHidden ? '▶' : '▼';
+    });
+  </script>
+  <style>
+    .schema-toggle { background: none; border: none; cursor: pointer; font: inherit; color: inherit; display: flex; align-items: center; gap: 0.5rem; padding: 0; }
+    .schema-toggle:hover { color: var(--color-primary); }
+    .schema-toggle__icon { font-size: 0.75rem; transition: transform 0.2s; }
+  </style>
+
+  <!-- Initialize Navigation Component -->
+  <script type="module">
+    import { initNavHeader, NAV_CONFIGS } from '../ui/components/navigation-bar.js?v=20251212';
+    await initNavHeader(NAV_CONFIGS.superuserSystemOverview);
+  </script>
+
+</body>
+</html>

@@ -135,7 +135,7 @@
 /* ========================================== */
 
 .admin-main {
-  padding-top: 2rem;
+  padding-top: var(--spacing-lg);
   min-height: calc(100vh - var(--admin-nav-height));
 }
 
@@ -339,6 +339,22 @@ body.admin .members-count {
 }
 
 /* ========================================== */
+/* CARD HEADER (title + action) */
+/* ========================================== */
+
+.card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.card__header .card__title {
+  margin-bottom: 0;
+}
+
+/* ========================================== */
 /* CARD MODIFIERS (Admin-specific) */
 /* ========================================== */
 
@@ -435,4 +451,20 @@ body.admin .members-count {
   .info-grid__item.u-clickable:hover {
     transform: none;
   }
+}
+
+/* ========================================== */
+/* ELECTION ACTION BUTTONS */
+/* ========================================== */
+
+/* Results button - blue background for better icon visibility */
+.btn-results {
+  background: #2563eb !important;
+  color: white !important;
+  border-color: #2563eb !important;
+}
+
+.btn-results:hover {
+  background: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
 }

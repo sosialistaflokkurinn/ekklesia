@@ -8,7 +8,7 @@
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2" sizes="any">
   <link rel="icon" type="image/x-icon" href="/favicon.ico?v=2">
-  <link rel="stylesheet" href="/styles/bundle.css?v=20251202">
+  <link rel="stylesheet" href="/styles/bundle.css?v=20251217k">
 </head>
 <body class="authenticated">
   <!-- Navigation component inserted here -->
@@ -18,11 +18,13 @@
     <!-- Welcome Card -->
     <div class="card card--welcome">
       <h2 class="card__title" id="welcome-title">Loading...</h2>
-      <div class="role-badges u-hidden" id="role-badges"></div>
+      <a href="https://www.facebook.com/groups/sosialistar" target="_blank" rel="noopener" class="welcome-link">
+        💬 Sósíalistaspjallið
+      </a>
     </div>
 
     <!-- Featured Event (next upcoming) -->
-    <div class="card" id="featured-event-card" style="display: none;">
+    <div class="card card--compact" id="featured-event-card" style="display: none;">
       <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
         <span style="font-size: 1.25rem;">📅</span>
         <h3 class="card__title" style="margin: 0;">Næsti viðburður</h3>
@@ -32,43 +34,54 @@
       </div>
     </div>
 
+    <!-- Admin/Superuser Quick Access (populated by JS if user has roles) -->
+    <div id="quick-links-roles" class="admin-links"></div>
+
     <!-- Quick Links -->
-    <div class="card card--links">
-      <div class="info-grid">
-        <a href="/members-area/profile.html" class="info-grid__item u-clickable">
-          <div class="info-grid__label" id="quick-link-profile-label" data-i18n="quick_links_profile_label">Loading...</div>
-          <div class="info-grid__value" id="quick-link-profile-desc" data-i18n="quick_links_profile_desc">Loading...</div>
-        </a>
-        <a href="/events/" class="info-grid__item u-clickable">
-          <div class="info-grid__label" id="quick-link-events-label" data-i18n="quick_links_events_label">Loading...</div>
-          <div class="info-grid__value" id="quick-link-events-desc" data-i18n="quick_links_events_desc">Loading...</div>
-        </a>
-        <a href="/elections/" class="info-grid__item u-clickable">
-          <div class="info-grid__label" id="quick-link-voting-label" data-i18n="quick_links_voting_label">Loading...</div>
-          <div class="info-grid__value" id="quick-link-voting-desc" data-i18n="quick_links_voting_desc">Loading...</div>
-        </a>
-        <a href="/policy-session/" class="info-grid__item u-clickable">
-          <div class="info-grid__label" id="quick-link-policy-label" data-i18n="quick_links_policy_label">Loading...</div>
-          <div class="info-grid__value" id="quick-link-policy-desc" data-i18n="quick_links_policy_desc">Loading...</div>
-        </a>
-      </div>
+    <div class="quick-links">
+      <a href="/members-area/profile.html" class="quick-link">
+        <span class="quick-link__icon">👤</span>
+        <div class="quick-link__content">
+          <div class="quick-link__title" id="quick-link-profile-label" data-i18n="quick_links_profile_label">Loading...</div>
+          <div class="quick-link__desc" id="quick-link-profile-desc" data-i18n="quick_links_profile_desc">Loading...</div>
+        </div>
+      </a>
+      <a href="/events/" class="quick-link">
+        <span class="quick-link__icon">📅</span>
+        <div class="quick-link__content">
+          <div class="quick-link__title" id="quick-link-events-label" data-i18n="quick_links_events_label">Loading...</div>
+          <div class="quick-link__desc" id="quick-link-events-desc" data-i18n="quick_links_events_desc">Loading...</div>
+        </div>
+      </a>
+      <a href="/elections/" class="quick-link">
+        <span class="quick-link__icon">🗳️</span>
+        <div class="quick-link__content">
+          <div class="quick-link__title" id="quick-link-voting-label" data-i18n="quick_links_voting_label">Loading...</div>
+          <div class="quick-link__desc" id="quick-link-voting-desc" data-i18n="quick_links_voting_desc">Loading...</div>
+        </div>
+      </a>
+      <a href="/policy-session/" class="quick-link">
+        <span class="quick-link__icon">📋</span>
+        <div class="quick-link__content">
+          <div class="quick-link__title" id="quick-link-policy-label" data-i18n="quick_links_policy_label">Loading...</div>
+          <div class="quick-link__desc" id="quick-link-policy-desc" data-i18n="quick_links_policy_desc">Loading...</div>
+        </div>
+      </a>
+      <a href="/uppstilling/" class="quick-link">
+        <span class="quick-link__icon">✋</span>
+        <div class="quick-link__content">
+          <div class="quick-link__title">Uppstillingarnefnd</div>
+          <div class="quick-link__desc">Nefndarkosningar</div>
+        </div>
+      </a>
     </div>
 
-    <!-- Member Status -->
-    <div class="card" id="membership-card">
-      <h3 class="card__title" id="membership-title">Loading...</h3>
-      <div class="card__content" id="membership-status">
-        Loading...
-      </div>
-      <div id="verify-button-container" class="membership-actions u-margin-top-md">
-        <!-- Button created dynamically by dashboard.js -->
-      </div>
-    </div>
+
   </div>
 
   <!-- Profile Update Modal created dynamically by dashboard.js using showModal() component -->
 
-  <script type="module" src="/js/dashboard.js?v=20251109"></script>
+  <script type="module" src="/js/dashboard.js?v=20251215e"></script>
 
   <!-- Initialize Navigation Component -->
   <script type="module">

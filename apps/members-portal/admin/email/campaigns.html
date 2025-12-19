@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Herferðir - Ekklesia</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/styles/bundle.css?v=20251217k">
+  <link rel="stylesheet" href="/admin/styles/admin.css?v=20251027b">
+</head>
+<body class="authenticated admin">
+  <div class="page__container">
+    <div class="card">
+      <h1 class="card__title">Herferðir</h1>
+      <p class="card__subtitle">Stjórna fjöldapósti</p>
+    </div>
+
+    <div class="card">
+      <div class="alert alert--info">
+        <strong>Kemur fljótlega</strong>
+        <p>Herferðastjórnun er í þróun. Þú getur notað "Senda póst" til að senda til einstakra félaga.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <a href="/admin/email/" class="btn btn--secondary">← Til baka</a>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initSession } from '../../../session/init.js';
+    import { requireAdmin } from '../../../js/rbac.js';
+    import { initNavHeader, NAV_CONFIGS } from '../../../ui/components/navigation-bar.js';
+
+    async function init() {
+      await initSession();
+      await requireAdmin();
+      await initNavHeader(NAV_CONFIGS.admin);
+    }
+    init().catch(e => { window.location.href = '/'; });
+  </script>
+</body>
+</html>

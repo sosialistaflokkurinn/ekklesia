@@ -116,6 +116,55 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // Nomination candidates metadata collection
+    // Contains biographical information about candidates for nomination committee voting
+    // Access is controlled at application level (only committee members can see uppstilling page)
+    match /nomination-candidates/{candidateId} {
+      // Read: All authenticated users (page-level access control in frontend)
+      allow read: if isAuthenticated();
+
+      // Update: All authenticated users can edit candidate info
+      // Edit history is tracked in the document itself
+      allow update: if isAuthenticated();
+
+      // Create/Delete: Only via Admin SDK (Cloud Functions or scripts)
+      allow create, delete: if false;
+    }
+
+    // ==============================================================================
+    // EMAIL COLLECTIONS (Issue #323 - Postmark Integration)
+    // ==============================================================================
+
+    // Email templates collection
+    match /email_templates/{templateId} {
+      // Read: Only admins and superusers can view templates
+      allow read: if hasAdminAccess();
+
+      // Write: Only Cloud Functions (via Admin SDK)
+      // All template CRUD goes through Cloud Functions for validation
+      allow write: if false;
+    }
+
+    // Email campaigns collection
+    match /email_campaigns/{campaignId} {
+      // Read: Only admins and superusers can view campaigns
+      allow read: if hasAdminAccess();
+
+      // Write: Only Cloud Functions (via Admin SDK)
+      // Campaign management goes through Cloud Functions
+      allow write: if false;
+    }
+
+    // Email logs collection
+    match /email_logs/{logId} {
+      // Read: Only admins and superusers can view email logs
+      allow read: if hasAdminAccess();
+
+      // Write: Only Cloud Functions (via Admin SDK)
+      // Logs are written by Cloud Functions and Postmark webhooks
+      allow write: if false;
+    }
+
     // Default: Deny all other access
     match /{document=**} {
       allow read, write: if false;

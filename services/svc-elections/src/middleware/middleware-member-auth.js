@@ -80,7 +80,7 @@ async function verifyMemberToken(req, res, next) {
  * @returns {boolean} - True if member is eligible
  */
 function isEligible(election, req) {
-  const { isAdmin, isMember } = req.user;
+  const { isAdmin, isMember, uid } = req.user;
 
   // Check election eligibility setting
   if (election.eligibility === 'all') {
@@ -93,6 +93,14 @@ function isEligible(election, req) {
 
   if (election.eligibility === 'members') {
     return isMember || isAdmin; // Members and admins
+  }
+
+  // Committee eligibility: only specific UIDs can participate
+  if (election.eligibility === 'committee') {
+    const committeeUids = Array.isArray(election.committee_member_uids)
+      ? election.committee_member_uids
+      : [];
+    return committeeUids.includes(uid);
   }
 
   return false; // Default: not eligible
@@ -245,6 +253,59 @@ function validateAnswers(answerIds, election) {
   return { valid: true };
 }
 
+/**
+ * Validate ranked-choice (STV) answer selections
+ * Checks if submitted ranking is valid for the election
+ *
+ * @param {Array<string>} rankedAnswers - Ordered array of answer IDs (1st preference first)
+ * @param {object} election - Election object from database
+ * @returns {object} - {valid: boolean, error: string}
+ */
+function validateRankedAnswers(rankedAnswers, election) {
+  // Validate input
+  if (!Array.isArray(rankedAnswers) || rankedAnswers.length === 0) {
+    return { valid: false, error: 'Engin forgangsröðun valin' };
+  }
+
+  // Parse election answers (JSONB)
+  const answers = election.answers;
+  if (!Array.isArray(answers)) {
+    return { valid: false, error: 'Ógild kosningastilling' };
+  }
+
+  // Get valid answer IDs (candidate IDs)
+  const validAnswerIds = answers.map(a => {
+    if (typeof a === 'string') return a;
+    return a.id || a.answer_text || a.text;
+  });
+
+  // Check all ranked answers are valid candidates
+  const invalidAnswers = rankedAnswers.filter(id => !validAnswerIds.includes(id));
+  if (invalidAnswers.length > 0) {
+    return { valid: false, error: `Ógild frambjóðendanúmer: ${invalidAnswers.join(', ')}` };
+  }
+
+  // Check for duplicate selections (can't rank same candidate twice)
+  const uniqueAnswers = new Set(rankedAnswers);
+  if (uniqueAnswers.size !== rankedAnswers.length) {
+    return { valid: false, error: 'Ekki má raða sama frambjóðanda oftar en einu sinni' };
+  }
+
+  // For STV, voters must rank at least 1 candidate
+  // They don't need to rank all candidates (partial ranking allowed)
+  if (rankedAnswers.length < 1) {
+    return { valid: false, error: 'Velja þarf að minnsta kosti einn frambjóðanda' };
+  }
+
+  // Optional: Require minimum ranking (e.g., must rank at least seats_to_fill candidates)
+  // This is configurable - currently we allow any ranking length >= 1
+  // if (rankedAnswers.length < election.seats_to_fill) {
+  //   return { valid: false, error: `Raða þarf að minnsta kosti ${election.seats_to_fill} frambjóðendum` };
+  // }
+
+  return { valid: true };
+}
+
 module.exports = {
   verifyMemberToken,
   isEligible,
@@ -252,4 +313,5 @@ module.exports = {
   filterElectionsByEligibility,
   validateVotingWindow,
   validateAnswers,
+  validateRankedAnswers,
 };

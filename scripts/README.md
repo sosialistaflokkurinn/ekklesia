@@ -20,14 +20,14 @@ This directory contains automation scripts for managing the Ekklesia platform in
 
 Located in `scripts/maintenance/`:
 
-- **`check-code-health.py`**: Comprehensive code health checker (missing imports, console.log usage, etc.)
+- **`check_code_health.py`**: Comprehensive code health checker (missing imports, console.log usage, etc.)
 - **`check-code-patterns.sh`**: Shell-based pattern validation.
 - **`analyze_*.py`**: Metadata analysis scripts for CSS, HTML, JS, and Python.
 - **`summarize_metadata.py`**: Summarizes analysis results.
 
 **Usage**:
 ```bash
-python3 scripts/maintenance/check-code-health.py
+python3 scripts/maintenance/check_code_health.py
 python3 scripts/maintenance/summarize_metadata.py
 ```
 

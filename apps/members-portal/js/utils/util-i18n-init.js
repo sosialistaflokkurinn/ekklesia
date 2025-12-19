@@ -10,6 +10,7 @@
 
 import { R } from '../../i18n/strings-loader.js';
 import { showToast } from '../components/ui-toast.js';
+import { debug } from './util-debug.js';
 
 /**
  * Initialize i18n strings for a page using element-to-string mappings

@@ -10,7 +10,7 @@
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
 
   <!-- Reuse member portal styles -->
-  <link rel="stylesheet" href="/styles/bundle.css?v=20251202">
+  <link rel="stylesheet" href="/styles/bundle.css?v=20251217k">
   <link rel="stylesheet" href="/styles/components/searchable-select.css?v=20251105">
 
   <!-- Admin-specific styles -->
@@ -28,11 +28,7 @@
   <!-- Main Content -->
   <main class="page">
     <div class="page__container">
-      <!-- Page Header -->
-      <header class="page__header">
-        <h1 class="page__title" id="page-header-title">Loading...</h1>
-        <p class="page__subtitle" id="page-header-subtitle">Loading...</p>
-      </header>
+      <!-- Note: Page title removed - nav brand shows "Félagaskrá" -->
 
       <!-- Members Controls -->
       <div class="members-controls">
@@ -44,15 +40,6 @@
             class="members-controls__search-input"
             placeholder=""
           >
-        </div>
-
-        <!-- Filter -->
-        <div class="members-controls__filter">
-          <select id="members-filter-status" class="members-controls__filter-select" data-searchable>
-            <option value="all" id="filter-status-all">Loading...</option>
-            <option value="active" selected id="filter-status-active">Loading...</option>
-            <option value="inactive" id="filter-status-inactive">Loading...</option>
-          </select>
         </div>
 
         <!-- Electoral District Filter -->
@@ -67,8 +54,19 @@
           </select>
         </div>
 
-        <!-- Create Button -->
+        <!-- Municipality Filter -->
+        <div class="members-controls__filter">
+          <select id="members-filter-municipality" class="members-controls__filter-select" data-searchable>
+            <option value="all" id="filter-municipality-all">Öll sveitarfélög</option>
+            <!-- Options populated dynamically by JavaScript -->
+          </select>
+        </div>
+
+        <!-- Action Buttons -->
         <div class="members-controls__actions">
+          <button id="btn-print-list" class="btn btn--outline" style="display: none;">
+            Prenta lista
+          </button>
           <a href="/admin/member-create.html" class="btn" id="btn-create-member">
             <span id="btn-create-member-text"></span>
           </a>
@@ -139,7 +137,7 @@
 
   <!-- Initialize Navigation Component -->
   <script type="module">
-    import { initNavHeader, NAV_CONFIGS } from '../../ui/components/navigation-bar.js?v=20251121b';
+    import { initNavHeader, NAV_CONFIGS } from '../../ui/components/navigation-bar.js?v=20251217';
     
     // Initialize navigation with appropriate config
     await initNavHeader(NAV_CONFIGS.adminMembers);

@@ -60,4 +60,17 @@
   <string name="error_unauthorized">Þú hefur ekki heimild til þessarar aðgerðar</string>
   <string name="app_name">Sósíalistaflokkurinn</string>
   <string name="your_answer">Þitt svar</string>
+
+  <!-- Ranked-choice voting (STV/Raðval) -->
+  <string name="voting_question_label">Spurning</string>
+  <string name="ranked_voting_title">Raðaðu í forgangsröð</string>
+  <string name="ranked_vote_button">Skila forgangsröðun</string>
+  <string name="ranked_helper_text">Dragðu frambjóðendur til að raða þeim. Nr. 1 er þitt fyrsta val.</string>
+  <string name="ranked_helper_touch">Haltu fingri á frambjóðanda og dragðu til að færa.</string>
+  <string name="ranked_rank_label">{0}. val</string>
+  <string name="ranked_seats_info">Fjöldi sæta: {0}</string>
+  <string name="ranked_loading_text">Sendir forgangsröðun...</string>
+  <string name="ranked_reset_button">Núllstilla röðun</string>
+  <string name="ranked_confirm_title">Staðfesta forgangsröðun</string>
+  <string name="ranked_confirm_message">Ertu viss um að þú viljir skila þessari forgangsröðun?</string>
 </resources>

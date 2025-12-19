@@ -9,5 +9,11 @@
     },
     "[typescriptreact]": {
         "editor.suggest.showSnippets": false
+    },
+    // Disable YAML validation for GitHub Actions workflows
+    // (false positives on JavaScript template literals in github-script)
+    "yaml.validate": false,
+    "yaml.schemas": {
+        "https://json.schemastore.org/github-workflow.json": ".github/workflows/*.yml"
     }
 }

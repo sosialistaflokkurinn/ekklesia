@@ -11,7 +11,7 @@
 /* ========================================== */
 
 .nav {
-  background: var(--color-primary);
+  background: var(--color-socialist-red);
   padding: var(--spacing-md) var(--spacing-xl);
   box-shadow: var(--shadow-sm);
 }
@@ -62,6 +62,7 @@
 /* Hamburger animation when open */
 .nav__hamburger.is-active .nav__hamburger-line:nth-child(1) {
   transform: rotate(45deg) translateY(10px);
+  background: var(--color-text);  /* Dark color when X is shown */
 }
 
 .nav__hamburger.is-active .nav__hamburger-line:nth-child(2) {
@@ -70,6 +71,7 @@
 
 .nav__hamburger.is-active .nav__hamburger-line:nth-child(3) {
   transform: rotate(-45deg) translateY(-10px);
+  background: var(--color-text);  /* Dark color when X is shown */
 }
 
 /* Overlay - Dark background behind drawer */
@@ -97,10 +99,6 @@
   align-items: center;
 }
 
-.nav__close {
-  display: none;
-}
-
 .nav__links {
   display: flex;
   gap: var(--spacing-lg);
@@ -124,32 +122,32 @@
 }
 
 .nav__link:hover {
-  background: var(--color-burgundy);
-  box-shadow: 0 2px 8px rgba(114, 47, 55, 0.4);
+  background: var(--color-primary);
+  box-shadow: 0 2px 8px var(--color-primary-alpha-40);
 }
 
 .nav__link.nav__link--active {
   background: var(--color-cream);
-  color: var(--color-burgundy);
+  color: var(--color-primary);
   font-weight: var(--font-weight-bold);
-  border: 2px solid var(--color-burgundy);
-  box-shadow: 0 2px 8px rgba(114, 47, 55, 0.3);
+  border: 2px solid var(--color-primary);
+  box-shadow: 0 2px 8px var(--color-primary-alpha-30);
 }
 
 .nav__link.nav__link--active:hover {
   background: var(--color-cream);
-  color: var(--color-burgundy);
+  color: var(--color-primary);
   transform: none;
 }
 
 .nav__link--logout {
-  background: var(--color-burgundy);
-  border: 2px solid var(--color-burgundy-light);
+  background: var(--color-primary);
+  border: 2px solid var(--color-primary-light);
 }
 
 .nav__link--logout:hover {
-  background: var(--color-burgundy-dark);
-  box-shadow: 0 2px 8px rgba(114, 47, 55, 0.5);
+  background: var(--color-primary-dark);
+  box-shadow: 0 2px 8px var(--color-primary-alpha-50);
 }
 
 /* ========================================== */
@@ -189,30 +187,6 @@
     transform: translateX(0);
   }
 
-  /* Close button inside drawer */
-  .nav__close {
-    display: block;
-    position: absolute;
-    top: var(--spacing-md);
-    right: var(--spacing-md);
-    background: none;
-    border: none;
-    font-size: var(--font-size-3xl);
-    color: var(--color-text-muted);
-    cursor: pointer;
-    padding: var(--spacing-sm);
-    line-height: 1;
-    width: 44px;
-    height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .nav__close:hover {
-    color: var(--color-primary);
-  }
-
   /* Sub-navigation tabs in drawer (mobile) */
   .nav__tabs {
     display: flex;
@@ -243,7 +217,7 @@
   .nav__tab--active {
     color: var(--color-primary);
     border-left-color: var(--color-primary);
-    background: var(--color-primary-lighter);
+    background: var(--color-cream);
     font-weight: var(--font-weight-semibold);
   }
 
@@ -273,9 +247,10 @@
   }
 
   .nav__link.nav__link--active {
-    background: var(--color-primary);
-    color: white;
+    background: var(--color-cream);
+    color: var(--color-primary);
     font-weight: var(--font-weight-semibold);
+    border-left: 3px solid var(--color-primary);
   }
 
   .nav__link--logout {
@@ -288,8 +263,8 @@
   }
 
   .nav__link--logout:hover {
-    background: var(--color-primary);
-    color: white;
+    background: var(--color-cream);
+    color: var(--color-primary);
   }
 }
 
@@ -306,8 +281,7 @@
 /* ========================================== */
 
 /* Focus styles for keyboard navigation */
-.nav__hamburger:focus-visible,
-.nav__close:focus-visible {
+.nav__hamburger:focus-visible {
   outline: 2px solid var(--color-white);
   outline-offset: 2px;
 }
@@ -315,10 +289,6 @@
 @media (max-width: 1500px) {
   .nav__hamburger:focus-visible {
     outline-color: var(--color-white);
-  }
-
-  .nav__close:focus-visible {
-    outline-color: var(--color-primary);
   }
 
   .nav__link:focus-visible {

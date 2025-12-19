@@ -15,11 +15,13 @@ set -e
 DAYS_THRESHOLD=${1:-7}  # Default: warn if not updated in 7 days
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 
-# Key documentation files
+# Key documentation files (simplified structure since PR #317)
 DOCS=(
-    "docs/status/CURRENT_DEVELOPMENT_STATUS.md"
-    "docs/development/guides/workflows/USAGE_CONTEXT.md"
-    "docs/operations/OPERATIONAL_PROCEDURES.md"
+    "CLAUDE.md"
+    "docs/README.md"
+    "docs/ARCHITECTURE.md"
+    "docs/PATTERNS.md"
+    "docs/SECURITY.md"
 )
 
 # Function to extract frontmatter 'updated' field
@@ -103,7 +105,7 @@ if [[ $STALE_COUNT -gt 0 ]]; then
     echo "❌ Found $STALE_COUNT stale/missing documentation file(s)"
     echo ""
     echo "💡 To update docs, see:"
-    echo "   docs/development/guides/DOCUMENTATION_MAINTENANCE.md"
+    echo "   docs/README.md"
     exit 1
 else
     echo "✅ All documentation files are up-to-date!"

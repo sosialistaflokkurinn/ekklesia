@@ -154,11 +154,13 @@ export function createScheduleControl(options = {}) {
    */
   function createCloseSection() {
     const heading = el('h3', 'schedule-control__heading schedule-control__heading--danger');
+    // SECURITY: Safe - i18n strings are developer-controlled, not user input
     heading.innerHTML = i18n.closeElectionHeading;
 
     const description = el('p', 'schedule-control__description', {}, i18n.closeElectionDesc);
 
     const closeButton = el('button', 'btn btn--danger schedule-control__action-btn', { type: 'button' });
+    // SECURITY: Safe - i18n strings are developer-controlled, not user input
     closeButton.innerHTML = i18n.closeElectionBtn;
 
     closeButton.addEventListener('click', async () => {

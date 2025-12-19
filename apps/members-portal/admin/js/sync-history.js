@@ -8,8 +8,7 @@
 import { initSession } from '../../session/init.js';
 import { initNavigation } from '../../js/nav-interactions.js';
 import { debug } from '../../js/utils/util-debug.js';
-import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
-import { collection, query, orderBy, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getFirebaseAuth, getFirebaseFirestore, collection, query, orderBy, limit, getDocs } from '../../firebase/app.js';
 import { adminStrings } from './i18n/admin-strings-loader.js';
 import { checkAdminAccess, calculateDuration } from './utils/admin-helpers.js';
 import { el } from '../../js/utils/util-dom.js';
@@ -17,6 +16,50 @@ import { el } from '../../js/utils/util-dom.js';
 // Initialize Firebase services
 const auth = getFirebaseAuth();
 const db = getFirebaseFirestore();
+
+// ============================================================================
+// SESSION STORAGE CACHE - Cleared on browser close for security
+// ============================================================================
+const CACHE_KEY = 'admin_sync_history_cache';
+const CACHE_MAX_AGE_MS = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * Get cached sync logs from sessionStorage
+ * @returns {Object|null} { data, isStale } or null if no cache
+ */
+function getCache() {
+  try {
+    const cached = sessionStorage.getItem(CACHE_KEY);
+    if (!cached) return null;
+
+    const { data, timestamp } = JSON.parse(cached);
+    const age = Date.now() - timestamp;
+
+    return {
+      data,
+      isStale: age > CACHE_MAX_AGE_MS
+    };
+  } catch (e) {
+    debug.warn('[Cache] Failed to read cache:', e);
+    return null;
+  }
+}
+
+/**
+ * Save sync logs to sessionStorage cache
+ * @param {Array} data - Sync logs array to cache
+ */
+function setCache(data) {
+  try {
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify({
+      data,
+      timestamp: Date.now()
+    }));
+    debug.log('[Cache] Sync logs cached:', data.length);
+  } catch (e) {
+    debug.warn('[Cache] Failed to write cache:', e);
+  }
+}
 
 /**
  * Fetch sync logs from Firestore
@@ -152,19 +195,28 @@ function createHistoryRow(log, strings) {
 
 /**
  * Load and display sync history
+ * @param {boolean} backgroundRefresh - If true, don't show loading spinner
  */
-async function loadHistory() {
+async function loadHistory(backgroundRefresh = false) {
   try {
-    showLoading();
+    if (!backgroundRefresh) {
+      showLoading();
+    }
 
     const logs = await fetchSyncLogs();
+
+    // Cache the results
+    setCache(logs);
+
     renderHistoryTable(logs);
 
     debug.log(`✓ Loaded ${logs.length} sync logs`);
 
   } catch (error) {
     debug.error('Failed to load sync history:', error);
-    showHistoryError(error);
+    if (!backgroundRefresh) {
+      showHistoryError(error);
+    }
   }
 }
 
@@ -213,6 +265,13 @@ function setupEventListeners() {
  */
 async function init() {
   try {
+    // Check for cached data first - show immediately for instant load
+    const cached = getCache();
+    if (cached?.data && cached.data.length > 0) {
+      debug.log('[Cache] Showing cached sync logs immediately:', cached.data.length);
+      renderHistoryTable(cached.data);
+    }
+
     // 1. Load admin strings
     const strings = await adminStrings.load();
 
@@ -230,8 +289,18 @@ async function init() {
     // 6. Setup event listeners
     setupEventListeners();
 
-    // 7. Load sync history
-    await loadHistory();
+    // 7. Load sync history (background refresh if we have cached data)
+    if (cached?.data) {
+      if (cached.isStale) {
+        debug.log('[Cache] Cache is stale, refreshing in background');
+        loadHistory(true).catch(err => {
+          debug.warn('[Cache] Background refresh failed:', err);
+        });
+      }
+    } else {
+      // No cache - load normally with loading spinner
+      await loadHistory();
+    }
 
     debug.log('✓ Sync history page initialized');
 

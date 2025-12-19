@@ -13,11 +13,11 @@
 import { initSession } from '../../session/init.js';
 import { initNavigation } from '../../js/nav-interactions.js';
 import { debug } from '../../js/utils/util-debug.js';
-import { R } from '../../i18n/strings-loader.js';
 import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
 import MembersAPI from './api/members-api.js';
-import { formatPhone, maskKennitala } from '../../js/utils/util-format.js';
+import { formatPhone, maskKennitala, formatDateOnlyIcelandic } from '../../js/utils/util-format.js';
 import { filterMembersByDistrict, getElectoralDistrictName } from './utils/electoral-districts.js';
+import { filterMembersByMunicipality, getMunicipalityName, getMunicipalityOptions } from './utils/municipalities.js';
 import { el } from '../../js/utils/util-dom.js';
 import { createListPageStates } from './utils/ui-states.js';
 import { initSearchableSelects } from '../../js/components/ui-searchable-select.js';
@@ -29,6 +29,52 @@ const db = getFirebaseFirestore();
 // Global i18n storage
 const adminStrings = new Map();
 
+// ============================================================================
+// SESSION STORAGE CACHE - Cleared on browser close for security
+// ============================================================================
+const CACHE_KEY = 'admin_members_list_cache';
+const CACHE_MAX_AGE_MS = 3 * 60 * 1000; // 3 minutes (shorter for admin data)
+
+/**
+ * Get cached members from sessionStorage
+ * Uses sessionStorage instead of localStorage for security - PII data is
+ * cleared when browser closes and not persisted across sessions.
+ * @returns {Object|null} { data, isStale } or null if no cache
+ */
+function getCache() {
+  try {
+    const cached = sessionStorage.getItem(CACHE_KEY);
+    if (!cached) return null;
+
+    const { data, timestamp } = JSON.parse(cached);
+    const age = Date.now() - timestamp;
+
+    return {
+      data,
+      isStale: age > CACHE_MAX_AGE_MS
+    };
+  } catch (e) {
+    debug.warn('[Cache] Failed to read cache:', e);
+    return null;
+  }
+}
+
+/**
+ * Save members to sessionStorage cache
+ * @param {Array} data - Members array to cache
+ */
+function setCache(data) {
+  try {
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify({
+      data,
+      timestamp: Date.now()
+    }));
+    debug.log('[Cache] Members cached:', data.length);
+  } catch (e) {
+    debug.warn('[Cache] Failed to write cache:', e);
+  }
+}
+
 (function() {
   'use strict';
 
@@ -36,16 +82,16 @@ const adminStrings = new Map();
   let currentPage = 1;
   let lastDoc = null;
   let pageHistory = []; // Stack of lastDoc for previous pages
-  let currentStatus = 'active';
   let currentSearch = '';
   let currentDistrict = 'all';
+  let currentMunicipality = 'all';
   let isLoading = false;
 
   // DOM Elements
   const elements = {
     searchInput: null,
-    filterStatus: null,
     filterDistrict: null,
+    filterMunicipality: null,
     tableBody: null,
     loadingState: null,
     errorState: null,
@@ -57,8 +103,12 @@ const adminStrings = new Map();
     paginationCurrent: null,
     btnPagePrev: null,
     btnPageNext: null,
-    btnRetry: null
+    btnRetry: null,
+    btnPrintList: null
   };
+
+  // Filtered members for printing
+  let filteredMembersForPrint = [];
 
   // UI State Manager
   let uiStates = null;
@@ -75,8 +125,20 @@ const adminStrings = new Map();
       errorMessage: document.getElementById('members-error-message')
     });
 
+    // Check for cached data first - show immediately for instant load
+    const cached = getCache();
+    if (cached?.data && cached.data.length > 0) {
+      debug.log('[Cache] Showing cached members immediately:', cached.data.length);
+      renderMembers(cached.data);
+      uiStates.showContent();
+      elements.paginationContainer.style.display = 'flex';
+    }
+
     // Load i18n strings early (before auth check so UI shows proper text)
     await loadStrings();
+
+    // Populate municipality dropdown
+    populateMunicipalityDropdown();
 
     // Initialize searchable selects after strings are loaded
     initSearchableSelects({
@@ -106,16 +168,28 @@ const adminStrings = new Map();
       // Set up event listeners
       setupEventListeners();
 
-      // Load initial data
-      await loadMembers();
+      // If we have cached data, decide whether to refresh
+      if (cached?.data) {
+        if (cached.isStale) {
+          debug.log('[Cache] Cache is stale, refreshing in background');
+          loadMembers(true).catch(err => {
+            debug.warn('[Cache] Background refresh failed:', err);
+          });
+        }
+        // Update member count (non-blocking)
+        updateMemberCount();
+      } else {
+        // No cache - load normally with loading spinner
+        await loadMembers();
+      }
     });
   }
 
   // Initialize DOM element references
   function initElements() {
     elements.searchInput = document.getElementById('members-search-input');
-    elements.filterStatus = document.getElementById('members-filter-status');
     elements.filterDistrict = document.getElementById('members-filter-district');
+    elements.filterMunicipality = document.getElementById('members-filter-municipality');
     elements.tableBody = document.getElementById('members-table-body');
     elements.loadingState = document.getElementById('members-loading');
     elements.errorState = document.getElementById('members-error');
@@ -128,6 +202,25 @@ const adminStrings = new Map();
     elements.btnPagePrev = document.getElementById('btn-page-prev');
     elements.btnPageNext = document.getElementById('btn-page-next');
     elements.btnRetry = document.getElementById('btn-retry');
+    elements.btnPrintList = document.getElementById('btn-print-list');
+  }
+
+  // Populate municipality dropdown with options
+  function populateMunicipalityDropdown() {
+    if (!elements.filterMunicipality) return;
+
+    const options = getMunicipalityOptions();
+
+    // Clear existing options except the first one
+    elements.filterMunicipality.innerHTML = '';
+
+    // Add options
+    options.forEach(opt => {
+      const option = document.createElement('option');
+      option.value = opt.value;
+      option.textContent = opt.label;
+      elements.filterMunicipality.appendChild(option);
+    });
   }
 
   // Load i18n strings from admin portal
@@ -197,12 +290,7 @@ const adminStrings = new Map();
     // const navLogout = document.getElementById('nav-logout');
     // if (navLogout) navLogout.textContent = R.string.nav_logout || 'Útskrá';
 
-    // Page header
-    const pageTitle = document.getElementById('page-header-title');
-    if (pageTitle) pageTitle.textContent = R.string.members_list_title || 'Félagar';
-
-    const pageSubtitle = document.getElementById('page-header-subtitle');
-    if (pageSubtitle) pageSubtitle.textContent = R.string.members_list_subtitle || 'Skoða og breyta félagaskrá';
+    // Note: Page header removed - nav brand shows "Félagaskrá"
 
     // Table headers
     const headerName = document.getElementById('header-name');
@@ -225,16 +313,6 @@ const adminStrings = new Map();
 
     const headerActions = document.getElementById('header-actions');
     if (headerActions) headerActions.textContent = R.string.members_table_header_actions || R.string.member_actions || 'Aðgerðir';
-
-    // Filter dropdown options
-    const filterStatusAll = document.getElementById('filter-status-all');
-    if (filterStatusAll) filterStatusAll.textContent = R.string.filter_status_all || 'Allir';
-
-    const filterStatusActive = document.getElementById('filter-status-active');
-    if (filterStatusActive) filterStatusActive.textContent = R.string.filter_status_active || 'Virkir';
-
-    const filterStatusInactive = document.getElementById('filter-status-inactive');
-    if (filterStatusInactive) filterStatusInactive.textContent = R.string.filter_status_inactive || 'Óvirkir';
 
     // Electoral district dropdown options
     const filterDistrictAll = document.getElementById('filter-district-all');
@@ -291,16 +369,16 @@ const adminStrings = new Map();
       }, 300); // 300ms debounce
     });
 
-    // Status filter
-    elements.filterStatus?.addEventListener('change', (e) => {
-      currentStatus = e.target.value;
+    // Electoral district filter
+    elements.filterDistrict?.addEventListener('change', (e) => {
+      currentDistrict = e.target.value;
       resetPagination();
       loadMembers();
     });
 
-    // Electoral district filter
-    elements.filterDistrict?.addEventListener('change', (e) => {
-      currentDistrict = e.target.value;
+    // Municipality filter
+    elements.filterMunicipality?.addEventListener('change', (e) => {
+      currentMunicipality = e.target.value;
       resetPagination();
       loadMembers();
     });
@@ -327,6 +405,9 @@ const adminStrings = new Map();
       loadMembers();
     });
 
+    // Print list button
+    elements.btnPrintList?.addEventListener('click', printCallList);
+
     // Logout
     const navLogout = document.getElementById('nav-logout');
     navLogout?.addEventListener('click', async (e) => {
@@ -344,21 +425,24 @@ const adminStrings = new Map();
   }
 
   // Load members from Firestore
-  async function loadMembers() {
+  // @param {boolean} backgroundRefresh - If true, don't show loading spinner
+  async function loadMembers(backgroundRefresh = false) {
     if (isLoading) return;
     isLoading = true;
 
-    uiStates.showLoading(currentSearch ? adminStrings.get('members_searching') : adminStrings.get('members_loading'));
+    if (!backgroundRefresh) {
+      uiStates.showLoading(currentSearch ? adminStrings.get('members_searching') : adminStrings.get('members_loading'));
+    }
 
     try {
-      // If searching OR filtering by district, load ALL documents for client-side filtering
+      // If searching OR filtering by district/municipality, load ALL documents for client-side filtering
       // For 2,118 members, this is acceptable (~500KB)
-      const needsClientSideFiltering = currentSearch || currentDistrict !== 'all';
+      const needsClientSideFiltering = currentSearch || currentDistrict !== 'all' || currentMunicipality !== 'all';
       const limitCount = needsClientSideFiltering ? 5000 : 50;
 
       const result = await MembersAPI.fetchMembers({
         limit: limitCount,
-        status: currentStatus,
+        status: 'all',  // Always fetch all members (no status filter)
         search: currentSearch,
         startAfter: needsClientSideFiltering ? null : lastDoc  // No pagination when filtering
       });
@@ -366,7 +450,23 @@ const adminStrings = new Map();
       // Apply electoral district filter client-side
       let filteredMembers = result.members;
       if (currentDistrict !== 'all') {
-        filteredMembers = filterMembersByDistrict(result.members, currentDistrict);
+        filteredMembers = filterMembersByDistrict(filteredMembers, currentDistrict);
+      }
+
+      // Apply municipality filter client-side
+      if (currentMunicipality !== 'all') {
+        filteredMembers = filterMembersByMunicipality(filteredMembers, currentMunicipality);
+      }
+
+      // Store filtered members for printing and show/hide print button
+      filteredMembersForPrint = filteredMembers;
+      if (elements.btnPrintList) {
+        elements.btnPrintList.style.display = currentMunicipality !== 'all' ? 'inline-block' : 'none';
+      }
+
+      // Cache the results (only for initial page load without search/district filter)
+      if (!needsClientSideFiltering && currentPage === 1) {
+        setCache(filteredMembers);
       }
 
       if (filteredMembers.length === 0) {
@@ -395,7 +495,9 @@ const adminStrings = new Map();
 
     } catch (error) {
       debug.error('Error loading members:', error);
-      uiStates.showError(error.message || adminStrings.get('members_error_loading'));
+      if (!backgroundRefresh) {
+        uiStates.showError(error.message || adminStrings.get('members_error_loading'));
+      }
     } finally {
       isLoading = false;
     }
@@ -404,34 +506,45 @@ const adminStrings = new Map();
   // Update member count display
   async function updateMemberCount() {
     try {
-      // If electoral district filter is active, count filtered members
-      if (currentDistrict !== 'all') {
+      // If any filter is active, count filtered members
+      if (currentDistrict !== 'all' || currentMunicipality !== 'all') {
         // Load all members for client-side counting
         const result = await MembersAPI.fetchMembers({
           limit: 5000,
-          status: currentStatus,
+          status: 'all',
           search: '',
           startAfter: null
         });
 
-        // Filter by electoral district
-        const filteredMembers = filterMembersByDistrict(result.members, currentDistrict);
+        // Apply filters
+        let filteredMembers = result.members;
+        if (currentDistrict !== 'all') {
+          filteredMembers = filterMembersByDistrict(filteredMembers, currentDistrict);
+        }
+        if (currentMunicipality !== 'all') {
+          filteredMembers = filterMembersByMunicipality(filteredMembers, currentMunicipality);
+        }
+
         const count = filteredMembers.length;
 
-        // Get district name
-        const districtName = getElectoralDistrictName(currentDistrict);
+        // Build filter description
+        let filterName = '';
+        if (currentDistrict !== 'all' && currentMunicipality !== 'all') {
+          filterName = `${getMunicipalityName(currentMunicipality)} (${getElectoralDistrictName(currentDistrict)})`;
+        } else if (currentMunicipality !== 'all') {
+          filterName = getMunicipalityName(currentMunicipality);
+        } else {
+          filterName = getElectoralDistrictName(currentDistrict);
+        }
 
-        // Simple count without status metadata
-        const districtTemplate = adminStrings.get('members_count_in_district') || '%d félagar í %s';
-        elements.countText.textContent = districtTemplate.replace('%d', count).replace('%s', districtName);
+        // Show count with filter name
+        const filterTemplate = adminStrings.get('members_count_in_district') || '%d félagar í %s';
+        elements.countText.textContent = filterTemplate.replace('%d', count).replace('%s', filterName);
       } else {
-        // Normal count (no district filter)
-        const count = await MembersAPI.getMembersCount(currentStatus);
-        const statusText = currentStatus === 'all' ? adminStrings.get('members_status_all_plural') :
-                          currentStatus === 'active' ? adminStrings.get('members_status_active_plural') :
-                          adminStrings.get('members_status_inactive_plural');
-        const countTemplate = adminStrings.get('members_count_with_status') || '%d %s félagar';
-        elements.countText.textContent = countTemplate.replace('%d', count).replace('%s', statusText);
+        // Normal count (all members)
+        const count = await MembersAPI.getMembersCount('all');
+        const countTemplate = adminStrings.get('members_count_total') || '%d félagar';
+        elements.countText.textContent = countTemplate.replace('%d', count);
       }
     } catch (error) {
       debug.error('Error getting member count:', error);
@@ -465,10 +578,10 @@ const adminStrings = new Map();
         el('td', 'members-table__cell', {
           dataset: { label: adminStrings.get('members_table_header_kennitala') }
         }, maskKennitala(member.kennitala)),
-        // Actions
+        // Actions - Use django_id in URL for security (kennitala is sensitive)
         el('td', 'members-table__cell members-table__cell--actions', {},
           el('a', 'members-table__action', {
-            href: `/admin/member-profile.html?id=${member.kennitala}`
+            href: `/admin/member-profile.html?id=${member.metadata?.django_id || member.kennitala}`
           }, adminStrings.get('members_btn_view'))
         )
       );
@@ -500,9 +613,85 @@ const adminStrings = new Map();
   function getStatusText(status) {
     switch (status) {
       case 'active': return adminStrings.get('members_status_active') || 'Virkur';
+      case 'unpaid': return adminStrings.get('members_status_unpaid') || 'Ógreitt';
       case 'inactive': return adminStrings.get('members_status_inactive') || 'Óvirkur';
       default: return adminStrings.get('members_status_unknown') || 'Óþekkt';
     }
+  }
+
+  // Print call list for selected municipality
+  function printCallList() {
+    const municipalityName = getMunicipalityName(currentMunicipality);
+    const today = formatDateOnlyIcelandic(new Date());
+
+    // Build address string from member data
+    const getAddress = (member) => {
+      const addresses = member?.profile?.addresses || member?.addresses || [];
+      const addr = addresses.find(a => a.is_default || a.is_primary) || addresses[0];
+      if (!addr) return '-';
+      const parts = [addr.street || ''];
+      if (addr.number) parts[0] += ' ' + addr.number;
+      if (addr.letter) parts[0] += addr.letter;
+      if (addr.postal_code || addr.city) {
+        parts.push([addr.postal_code, addr.city].filter(Boolean).join(' '));
+      }
+      return parts.join(', ') || '-';
+    };
+
+    // Build table rows
+    const rows = filteredMembersForPrint.map(m => `
+      <tr>
+        <td>${m.name || '-'}</td>
+        <td>${formatPhone(m.phone) || '-'}</td>
+        <td>${getAddress(m)}</td>
+      </tr>
+    `).join('');
+
+    // Create print window
+    // Note: document.write() is acceptable here - writing to a NEW blank window for printing,
+    // not the main document. This is the standard pattern for print preview windows.
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html lang="is">
+      <head>
+        <meta charset="UTF-8">
+        <title>Úthringilisti - ${municipalityName}</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          h1 { font-size: 18px; margin-bottom: 5px; }
+          .date { color: #666; font-size: 12px; margin-bottom: 15px; }
+          table { width: 100%; border-collapse: collapse; font-size: 11px; }
+          th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; }
+          th { background: #f5f5f5; font-weight: bold; }
+          tr:nth-child(even) { background: #fafafa; }
+          @media print {
+            body { padding: 0; }
+            h1 { font-size: 14pt; }
+            table { font-size: 9pt; }
+          }
+        </style>
+      </head>
+      <body>
+        <h1>Úthringilisti - ${municipalityName}</h1>
+        <div class="date">Prentað: ${today} | Fjöldi: ${filteredMembersForPrint.length}</div>
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 30%">Nafn</th>
+              <th style="width: 15%">Sími</th>
+              <th style="width: 55%">Heimilisfang</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+        <script>window.onload = () => window.print();<\/script>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
   }
 
   // Initialize on DOM ready

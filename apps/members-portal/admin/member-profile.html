@@ -10,7 +10,7 @@
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
 
   <!-- Reuse member portal styles -->
-  <link rel="stylesheet" href="/styles/bundle.css?v=20251202">
+  <link rel="stylesheet" href="/styles/bundle.css?v=20251217k">
   <link rel="stylesheet" href="/styles/components/profile-edit.css?v=20251105">
   <link rel="stylesheet" href="/styles/components/address-autocomplete.css?v=20251125">
   <link rel="stylesheet" href="/styles/components/searchable-select.css?v=20251105">
@@ -37,10 +37,7 @@
         </a>
       </div>
 
-      <!-- Page Header -->
-      <header class="page__header">
-        <h1 class="page__title" id="page-header-title"></h1>
-      </header>
+      <!-- Note: Page title removed - nav brand shows context -->
 
       <!-- Loading State -->
       <div id="member-loading" class="admin-loading">
@@ -212,6 +209,58 @@
           </div>
         </div>
 
+        <!-- Additional Membership Info -->
+        <div class="card">
+          <h3 class="card__title" id="section-membership-details">Félagsupplýsingar</h3>
+          <div class="info-grid">
+            <!-- Svæði (readonly) -->
+            <div class="info-grid__item">
+              <div class="info-grid__label" id="label-cell">Svæði</div>
+              <div class="info-grid__value" id="value-cell">-</div>
+            </div>
+
+            <!-- Union -->
+            <div class="info-grid__item">
+              <div class="info-grid__label" id="label-union">Stéttarfélag</div>
+              <div class="profile-field">
+                <select id="input-union" name="union" class="profile-field__input">
+                  <option value="">Veldu stéttarfélag...</option>
+                </select>
+                <span class="profile-field__status" id="status-union" aria-live="polite" aria-atomic="true"></span>
+              </div>
+            </div>
+
+            <!-- Job Title -->
+            <div class="info-grid__item">
+              <div class="info-grid__label" id="label-title">Starfsheiti</div>
+              <div class="profile-field">
+                <select id="input-title" name="title" class="profile-field__input">
+                  <option value="">Veldu starfsheiti...</option>
+                </select>
+                <span class="profile-field__status" id="status-title" aria-live="polite" aria-atomic="true"></span>
+              </div>
+            </div>
+
+            <!-- Housing Situation -->
+            <div class="info-grid__item">
+              <div class="info-grid__label" id="label-housing">Húsnæðisaðstæður</div>
+              <div class="profile-field">
+                <select id="input-housing" name="housing" class="profile-field__input">
+                  <option value="">Veldu...</option>
+                  <option value="0">Á íbúð, engar eftirstöðvar</option>
+                  <option value="1">Á íbúð, eftirstöðvar af láni</option>
+                  <option value="2">Leigi ein(n) eða með maka/fjölskyldu</option>
+                  <option value="3">Leigi með meðleigjendum</option>
+                  <option value="4">Dvel hjá ættingjum/vinum</option>
+                  <option value="5">Dvel í húsi í leyfisleysi</option>
+                  <option value="6">Heimilislaus</option>
+                </select>
+                <span class="profile-field__status" id="status-housing" aria-live="polite" aria-atomic="true"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Membership Info (readonly) -->
         <div class="card">
           <h3 class="card__title" id="section-membership"></h3>
@@ -227,12 +276,20 @@
               <div class="info-grid__value" id="value-joined">-</div>
             </div>
             <div class="info-grid__item">
+              <div class="info-grid__label" id="label-member-since">Félagi í</div>
+              <div class="info-grid__value" id="value-member-since">-</div>
+            </div>
+            <div class="info-grid__item">
               <div class="info-grid__label" id="label-django-id"></div>
               <div class="info-grid__value" id="value-django-id">-</div>
             </div>
             <div class="info-grid__item">
               <div class="info-grid__label" id="label-synced-at"></div>
               <div class="info-grid__value" id="value-synced-at">-</div>
+            </div>
+            <div class="info-grid__item">
+              <div class="info-grid__label" id="label-uid">Firebase UID</div>
+              <div class="info-grid__value" id="value-uid">-</div>
             </div>
           </div>
         </div>
@@ -241,7 +298,7 @@
   </main>
 
   <!-- Scripts -->
-  <script type="module" src="/admin/js/member-profile.js?v=20251122"></script>
+  <script type="module" src="/admin/js/member-profile.js?v=20251216"></script>
 
   <!-- Initialize Navigation Component -->
   <script type="module">

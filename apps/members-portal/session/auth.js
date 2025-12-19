@@ -102,6 +102,18 @@ export async function getUserData(user) {
  * @returns {Promise<void>}
  */
 export async function signOut() {
+  // Clear sessionStorage (contains PII caches like members list, elevated users)
+  sessionStorage.clear();
+
+  // Clear legacy localStorage keys that contained PII (from before security update)
+  // Note: Non-PII caches (events, elections, unions, job_titles) are kept in localStorage
+  const piiCacheKeys = [
+    'admin_members_list_cache',      // Contains: names, kennitala, emails, phones
+    'admin_sync_history_cache',      // May contain kennitala references
+    'superuser_elevated_users_cache' // Contains: names, kennitala, emails
+  ];
+  piiCacheKeys.forEach(key => localStorage.removeItem(key));
+
   const auth = getFirebaseAuth();
   await firebaseSignOut(auth);
 }

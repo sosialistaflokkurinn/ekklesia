@@ -31,7 +31,22 @@ import {
   signInWithCustomToken as firebaseSignInWithCustomToken
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import {
-  getFirestore
+  getFirestore,
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  deleteField,
+  collection,
+  query,
+  where,
+  orderBy,
+  limit,
+  startAfter,
+  onSnapshot,
+  getCountFromServer
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 // Firebase configuration
@@ -187,5 +202,21 @@ export async function getAppCheckTokenValue(forceRefresh = false) {
 export {
   onAuthStateChanged,
   firebaseSignOut as signOut,
-  firebaseSignInWithCustomToken as signInWithCustomToken
+  firebaseSignInWithCustomToken as signInWithCustomToken,
+  // Firestore functions
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  deleteField,
+  collection,
+  query,
+  where,
+  orderBy,
+  limit,
+  startAfter,
+  onSnapshot,
+  getCountFromServer
 };

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sendingarsaga - Ekklesia</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/styles/bundle.css?v=20251217k">
+  <link rel="stylesheet" href="/admin/styles/admin.css?v=20251027b">
+</head>
+<body class="authenticated admin">
+  <div class="page__container">
+    <div class="card">
+      <h1 class="card__title">Sendingarsaga</h1>
+      <p class="card__subtitle">Skoða sendan tölvupóst</p>
+    </div>
+
+    <div class="card">
+      <div id="logs-loading" class="loading-state">
+        <div class="loading-spinner"></div>
+        <p>Hleð sendingarsögu...</p>
+      </div>
+
+      <div id="logs-empty" class="empty-state u-hidden">
+        <p>Engin sendingarsaga fannst</p>
+      </div>
+
+      <table class="data-table u-hidden" id="logs-table">
+        <thead>
+          <tr>
+            <th>Viðtakandi</th>
+            <th>Staða</th>
+            <th>Sent</th>
+          </tr>
+        </thead>
+        <tbody id="logs-tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <a href="/admin/email/" class="btn btn--secondary">← Til baka</a>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initSession } from '../../../session/init.js';
+    import { requireAdmin } from '../../../js/rbac.js';
+    import { initNavHeader, NAV_CONFIGS } from '../../../ui/components/navigation-bar.js';
+    import EmailAPI from './js/api/email-api.js';
+
+    async function init() {
+      await initSession();
+      await requireAdmin();
+      await initNavHeader(NAV_CONFIGS.admin);
+
+      const loadingEl = document.getElementById('logs-loading');
+      const emptyEl = document.getElementById('logs-empty');
+      const tableEl = document.getElementById('logs-table');
+      const tbodyEl = document.getElementById('logs-tbody');
+
+      try {
+        const { logs } = await EmailAPI.listLogs({ limit: 50 });
+        loadingEl.classList.add('u-hidden');
+
+        if (logs.length === 0) {
+          emptyEl.classList.remove('u-hidden');
+          return;
+        }
+
+        tableEl.classList.remove('u-hidden');
+        tbodyEl.innerHTML = logs.map(l => `
+          <tr>
+            <td>${l.recipient_email || '-'}</td>
+            <td><span class="badge badge--${l.status}">${l.status}</span></td>
+            <td>${l.sent_at ? new Date(l.sent_at).toLocaleString('is-IS') : '-'}</td>
+          </tr>
+        `).join('');
+
+      } catch (e) {
+        loadingEl.classList.add('u-hidden');
+        emptyEl.classList.remove('u-hidden');
+        emptyEl.querySelector('p').textContent = 'Villa: ' + e.message;
+      }
+    }
+    init().catch(e => { window.location.href = '/'; });
+  </script>
+</body>
+</html>

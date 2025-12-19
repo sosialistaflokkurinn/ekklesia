@@ -2,14 +2,16 @@ firebase-admin==7.1.0
 firebase-functions==0.5.0
 PyJWT[crypto]==2.10.1
 requests==2.32.5
-google-cloud-storage==3.6.0
+google-cloud-storage==3.7.0
 google-cloud-secret-manager==2.25.0
 google-cloud-logging==3.12.1
 python-dotenv==1.2.1
+boto3>=1.35.0  # AWS SDK for SES email (#323)
+html2text>=2024.2.26  # HTML to plain text conversion for emails
 cloudevents==1.12.0
 iceaddr==0.6.0
 setuptools>=65.0.0
 
 # Testing dependencies
-pytest==9.0.1
+pytest==9.0.2
 pytest-cov==7.0.0

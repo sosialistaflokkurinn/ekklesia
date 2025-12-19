@@ -19,6 +19,7 @@
   <string name="error_csrf_message">Öryggisvilla: CSRF-vörn virk. Vinsamlegast reyndu aftur.</string>
   <string name="nav_brand">Sósíalistaflokkurinn</string>
   <string name="nav_dashboard">Mín síða</string>
+  <string name="nav_admin_overview">Yfirlit</string>
   <string name="nav_profile">Prófíll</string>
   <string name="nav_events">Viðburðir</string>
   <string name="nav_voting">Kosningar</string>
@@ -46,8 +47,7 @@
   <string name="nav_superuser_roles">Hlutverk</string>
   <string name="nav_superuser_audit_logs">Aðgerðaskrá</string>
   <string name="nav_superuser_dangerous_ops">Varasamar aðgerðir</string>
-  <string name="nav_superuser_system_health">Staða kerfis</string>
-  <string name="nav_superuser_architecture">Kerfisarkitektúr</string>
+  <string name="nav_superuser_system_overview">Kerfisyfirlit</string>
   <string name="nav_superuser_login_audit">Innskráningarsaga</string>
   <string name="nav_policy_session">Stefnumótun</string>
   <string name="nav_back_to_member">Mín síða</string>
@@ -69,6 +69,7 @@
   <string name="membership_title">Félagastaða</string>
   <string name="membership_loading">Hleð inn...</string>
   <string name="membership_active">✓ Virk félagsaðild</string>
+  <string name="membership_unpaid">⚠ Ógreidd félagsgjöld</string>
   <string name="membership_inactive">✗ Óvirk félagsaðild</string>
   <string name="membership_not_verified">Óstaðfest</string>
   <string name="membership_verifying">Kannar félagsaðild...</string>
@@ -124,6 +125,9 @@
   <string name="profile_address_saved">Heimilisfang uppfært</string>
   <string name="profile_address_save_error">Villa við vistun heimilisfangs</string>
   <string name="profile_address_validated">Heimilisfang staðfest</string>
+  <string name="profile_address_not_found_title">Heimilisfang finnst ekki</string>
+  <string name="profile_address_not_found_message">Heimilisfangið fannst ekki í Staðfangaskrá Þjóðskrár. Viltu nota þetta heimilisfang samt?</string>
+  <string name="profile_address_not_validated">Heimilisfang ekki staðfest</string>
   <string name="btn_add_address_text">+ Bæta við heimilisfangi</string>
   <string name="section_communication">Samskiptastillingar</string>
   <string name="label_reachable">Má hafa samband</string>
@@ -131,6 +135,12 @@
   <string name="label_groupable">Má bæta í hópa</string>
   <string name="label_groupable_description">Leyfir flokknum að bæta þér í vinnuhópa og póstlista</string>
   <string name="profile_preferences_saved">Stillingar vistaðar</string>
+  <string name="section_additional_info">Aðrar upplýsingar</string>
+  <string name="section_membership_details">Félagsupplýsingar</string>
+  <string name="label_cell">Svæði</string>
+  <string name="label_union">Stéttarfélag</string>
+  <string name="label_title">Starfsheiti</string>
+  <string name="label_housing">Húsnæðisaðstæður</string>
   <string name="events_title">Viðburðir</string>
   <string name="events_subtitle">Fundir og viðburðir flokksins</string>
   <string name="events_tab_upcoming">Framundan</string>
@@ -223,6 +233,7 @@
   <string name="btn_retry">Reyna aftur</string>
   <string name="btn_vote">Kjósa</string>
   <string name="btn_cancel">Hætta við</string>
+  <string name="btn_save_anyway">Vista samt</string>
   <string name="btn_confirm">Staðfesta</string>
   <string name="results_title">Niðurstöður</string>
   <string name="back_to_elections">Til baka í kosningayfirlit</string>
@@ -352,4 +363,119 @@
   <string name="voting_selection_helper">Veldu allt að %s valkosti</string>
   <string name="voting_selection_count">Valið %s af %s</string>
   <string name="toast_close_aria">Loka tilkynningu</string>
+
+  <!-- Ranked voting (STV) strings -->
+  <string name="voting_question_label">Spurning</string>
+  <string name="ranked_voting_title">Raðaðu í forgangsröð</string>
+  <string name="ranked_vote_button">Skila forgangsröðun</string>
+  <string name="ranked_helper_text">Dragðu frambjóðendur til að raða þeim. Nr. 1 er þitt fyrsta val.</string>
+  <string name="ranked_helper_touch">Haltu fingri á frambjóðanda og dragðu til að færa.</string>
+  <string name="ranked_rank_label">{0}. val</string>
+  <string name="ranked_seats_info">Fjöldi sæta: {0}</string>
+  <string name="ranked_loading_text">Sendir forgangsröðun...</string>
+  <string name="ranked_reset_button">Núllstilla röðun</string>
+
+  <!-- Login status strings -->
+  <string name="login_status_inactive">Aðgangur þinn er óvirkur...</string>
+  <string name="login_status_reactivating">Endurvekur aðgang...</string>
+  <string name="login_status_reactivate_error">Villa við endurvöknun: %s</string>
+  <string name="login_status_cancelled">Innskráning hætt við</string>
+
+  <!-- Profile membership badges -->
+  <string name="membership_badge_active">Virk félagsaðild</string>
+  <string name="membership_badge_unpaid">Ógreitt</string>
+  <string name="membership_badge_inactive">Óvirk félagsaðild</string>
+  <string name="profile_select_union_placeholder">Veldu stéttarfélag...</string>
+  <string name="profile_deleting_account">Eyði aðgangi...</string>
+  <string name="profile_account_deleted">Aðgangi eytt!</string>
+
+  <!-- Events page -->
+  <string name="events_link_copied">Afritað!</string>
+
+  <!-- Form labels -->
+  <string name="label_birthday">Fæðingardagur</string>
+  <string name="label_other_info">Aðrar upplýsingar</string>
+  <string name="label_region">Svæði</string>
+  <string name="label_union">Stéttarfélag</string>
+  <string name="label_housing">Húsnæðisaðstæður</string>
+  <string name="label_last_synced">Síðast samstillt</string>
+  <string name="label_member_duration">Félagi í</string>
+
+  <!-- Housing options -->
+  <string name="housing_own_paid">Á íbúð, engar eftirstöðvar</string>
+  <string name="housing_own_mortgage">Á íbúð, eftirstöðvar af láni</string>
+  <string name="housing_rent_alone">Leigi ein(n) eða með maka/fjölskyldu</string>
+  <string name="housing_rent_shared">Leigi með meðleigjendum</string>
+  <string name="housing_with_family">Dvel hjá ættingjum/vinum</string>
+  <string name="housing_squatting">Dvel í húsi í leyfisleysi</string>
+
+  <!-- Reactivate page -->
+  <string name="reactivate_title">Endurvakna aðgang</string>
+  <string name="reactivate_error_title">Villa kom upp</string>
+  <string name="reactivate_back_link">← Til baka á forsíðu</string>
+
+  <!-- Redirect pages -->
+  <string name="redirect_text">Áframsending...</string>
+  <string name="redirect_manual">Áframsending á</string>
+  <string name="redirect_events">viðburði</string>
+
+  <!-- Dashboard -->
+  <string name="dashboard_next_event">Næsti viðburður</string>
+
+  <!-- Uppstilling (Nomination Committee) -->
+  <string name="uppstilling_error_generic">Villa kom upp</string>
+  <string name="uppstilling_error_load_elections">Villa við að sækja kosningar</string>
+  <string name="uppstilling_error_load_results">Villa við að sækja niðurstöður</string>
+  <string name="uppstilling_error_save">Villa við að vista</string>
+  <string name="uppstilling_error_missing_id">Kosningar ID vantar í slóð</string>
+  <string name="uppstilling_error_not_open">Þessi kosning er ekki opin fyrir atkvæðagreiðslu</string>
+  <string name="uppstilling_error_setup_form">Villa við að setja upp atkvæðagreiðsluform</string>
+  <string name="uppstilling_error_submit_vote">Villa við að skrá atkvæði</string>
+  <string name="uppstilling_error_must_rank">Þú verður að raða frambjóðendum áður en þú heldur áfram</string>
+  <string name="uppstilling_no_candidates">Engir frambjóðendur fundust.</string>
+  <string name="uppstilling_no_info">Engar upplýsingar enn.</string>
+  <string name="uppstilling_no_info_short">Engar upplýsingar</string>
+  <string name="uppstilling_no_votes">Engin atkvæði skráð</string>
+  <string name="uppstilling_status_draft">Drög</string>
+  <string name="uppstilling_status_published">Opin</string>
+  <string name="uppstilling_status_paused">Í bið</string>
+  <string name="uppstilling_status_closed">Lokað</string>
+  <string name="uppstilling_status_archived">Geymd</string>
+  <string name="uppstilling_round">Umferð %d</string>
+  <string name="uppstilling_votes_count">%d atkvæði</string>
+  <string name="uppstilling_has_voted">✓ Þú hefur kosið</string>
+  <string name="uppstilling_btn_close">Loka</string>
+  <string name="uppstilling_btn_edit">Breyta</string>
+  <string name="uppstilling_btn_save">Vista</string>
+  <string name="uppstilling_btn_cancel">Hætta við</string>
+  <string name="uppstilling_btn_submit">Skrá atkvæði</string>
+  <string name="uppstilling_btn_submitting">Sendir...</string>
+  <string name="uppstilling_btn_back">Til baka</string>
+  <string name="uppstilling_btn_view_results">Skoða niðurstöður</string>
+  <string name="uppstilling_title_email">Senda tölvupóst</string>
+  <string name="uppstilling_title_phone">Hringja</string>
+  <string name="uppstilling_title_django_id">Django ID</string>
+  <string name="uppstilling_title_kennitala">Kennitala</string>
+  <string name="uppstilling_label_member_id">Félagi #</string>
+  <string name="uppstilling_label_kt">Kt.</string>
+  <string name="uppstilling_field_bio">Æviágrip</string>
+  <string name="uppstilling_field_education">Menntun</string>
+  <string name="uppstilling_field_experience">Reynsla</string>
+  <string name="uppstilling_field_party_roles">Trúnaðarstörf í flokknum</string>
+  <string name="uppstilling_field_party_roles_short">Trúnaðarstörf</string>
+  <string name="uppstilling_field_focus_areas">Áherslumál</string>
+  <string name="uppstilling_field_personal">Persónulegt</string>
+  <string name="uppstilling_field_requested_seat">Óskað eftir sæti</string>
+  <string name="uppstilling_field_notes">Annað</string>
+  <string name="uppstilling_section_links">Tenglar</string>
+  <string name="uppstilling_section_history">Breytingasaga</string>
+  <string name="uppstilling_saved">Vistað!</string>
+  <string name="uppstilling_success_all_voted">Atkvæði þitt hefur verið skráð. Allir nefndarmenn hafa nú kosið.</string>
+  <string name="uppstilling_success_recorded">Atkvæði þitt hefur verið skráð.</string>
+  <string name="uppstilling_select_job_title">Veldu starfsheiti...</string>
+
+  <!-- Profile errors -->
+  <string name="profile_django_save_error">Villa við vistun í Django. Breytingar voru ekki vistaðar. Reyndu aftur.</string>
+  <string name="profile_delete_error">Villa við að eyða aðgangi</string>
+  <string name="save_error">Villa við vistun</string>
 </resources>

@@ -20,7 +20,7 @@ import { requireAuth, getUserData, signOut, AuthenticationError } from '../sessi
 import { requireMember } from './rbac.js';
 import { httpsCallable, getFirebaseAuth, getFirebaseFirestore } from '../firebase/app.js';
 import { setTextContent, setInnerHTML, addEventListener, setDisabled, validateElements } from '../ui/dom.js';
-import { formatPhone, normalizePhoneForComparison } from './utils/util-format.js';
+import { formatPhone, normalizePhoneForComparison, formatDateWithDayIcelandic, getNextRecurringOccurrence } from './utils/util-format.js';
 import { updateMemberProfile } from './api/api-members.js';
 import { createButton } from './components/ui-button.js';
 import { showModal } from './components/ui-modal.js';
@@ -38,15 +38,8 @@ const DASHBOARD_ELEMENTS = [
   'quick-link-voting-label',
   'quick-link-voting-desc',
   'quick-link-policy-label',
-  'quick-link-policy-desc',
-  'membership-title',
-  'membership-status',
-  'verify-button-container',
-  'role-badges'
+  'quick-link-policy-desc'
 ];
-
-// Global button instance
-let verifyMembershipButton = null;
 
 /**
  * Validate dashboard DOM structure
@@ -75,11 +68,6 @@ function updateDashboardStrings() {
   setTextContent('quick-link-voting-desc', R.string.quick_links_voting_desc, 'dashboard');
   setTextContent('quick-link-policy-label', R.string.quick_links_policy_label, 'dashboard');
   setTextContent('quick-link-policy-desc', R.string.quick_links_policy_desc, 'dashboard');
-
-  // Update membership card
-  setTextContent('membership-title', R.string.membership_title, 'dashboard');
-  setTextContent('membership-status', R.string.membership_loading, 'dashboard');
-  setInnerHTML('role-badges', '', 'dashboard');
 }
 
 function buildWelcomeMessage(displayName) {
@@ -101,51 +89,6 @@ function buildWelcomeMessage(displayName) {
   return R.format(template, rawName);
 }
 
-/**
- * Format membership status HTML
- *
- * Pure function - returns HTML string based on state.
- * Separated for testing.
- *
- * @param {boolean} isMember - Whether user is a verified member
- * @returns {string} HTML string for membership status
- */
-export function formatMembershipStatus(isMember) {
-  if (isMember) {
-    return `
-      <div style="color: var(--color-success-text); font-weight: 500;">
-        ✓ ${R.string.membership_active}
-      </div>
-    `;
-  } else {
-    return `
-      <div style="color: var(--color-gray-600);">
-        ${R.string.membership_not_verified}
-      </div>
-    `;
-  }
-}
-
-/**
- * Update membership status UI based on verification state
- *
- * @param {boolean} isMember - Whether user is a verified member
- */
-function updateMembershipUI(isMember) {
-  const html = formatMembershipStatus(isMember);
-  setInnerHTML('membership-status', html, 'dashboard');
-
-  const verifyButtonContainer = document.getElementById('verify-button-container');
-  verifyButtonContainer.style.display = 'block';
-
-  // Update button text using button API
-  if (verifyMembershipButton) {
-    const buttonLabel = isMember ? R.string.btn_verify_membership_again : R.string.btn_verify_membership;
-    verifyMembershipButton.setText(buttonLabel);
-    verifyMembershipButton.enable();
-  }
-}
-
 function renderRoleBadges(roles) {
   const normalizedRoles = Array.isArray(roles) ? roles.filter(Boolean) : [];
   if (normalizedRoles.length === 0) {
@@ -158,21 +101,58 @@ function renderRoleBadges(roles) {
 
     // Admin → Member management dashboard (red)
     if (role === 'admin') {
-      return `<a href="/admin/" class="role-badge role-badge--admin role-badge--clickable" title="${R.string.role_badge_title_open_member_admin}">${label}</a>`;
+      return `<a href="/admin/" class="role-badge role-badge--admin role-badge--button" title="${R.string.role_badge_title_open_member_admin}">${label}</a>`;
     }
 
     // Superuser → Superuser console (blue)
     if (role === 'superuser') {
-      return `<a href="/superuser/" class="role-badge role-badge--superuser role-badge--clickable" title="${R.string.role_badge_title_open_superuser_console || 'Opna kerfisstjórn'}">${label}</a>`;
+      return `<a href="/superuser/" class="role-badge role-badge--superuser role-badge--button" title="${R.string.role_badge_title_open_superuser_console || 'Opna kerfisstjórn'}">${label}</a>`;
     }
 
-    return `<span class="role-badge">${label}</span>`;
+    return `<span class="role-badge role-badge--button">${label}</span>`;
   }).join('');
 
   return `
     <span class="role-badges__label">${R.string.dashboard_roles_label}</span>
     <div class="role-badges__list">${badges}</div>
   `;
+}
+
+/**
+ * Render role-based quick links for admin/superuser
+ * Shows as prominent cards above the Quick Links section
+ */
+function renderRoleQuickLinks(roles) {
+  const normalizedRoles = Array.isArray(roles) ? roles.filter(Boolean) : [];
+  const links = [];
+
+  // Superuser gets first position (blue)
+  if (normalizedRoles.includes('superuser')) {
+    links.push(`
+      <a href="/superuser/" class="admin-link admin-link--superuser">
+        <span class="admin-link__icon">🔧</span>
+        <div class="admin-link__content">
+          <div class="admin-link__title">Kerfisstjórn</div>
+          <div class="admin-link__desc">Kerfisstillingar og yfirlit</div>
+        </div>
+      </a>
+    `);
+  }
+
+  // Admin gets second position (red)
+  if (normalizedRoles.includes('admin')) {
+    links.push(`
+      <a href="/admin/" class="admin-link admin-link--admin">
+        <span class="admin-link__icon">👥</span>
+        <div class="admin-link__content">
+          <div class="admin-link__title">Stjórnandi</div>
+          <div class="admin-link__desc">Umsjá félagaskrár</div>
+        </div>
+      </a>
+    `);
+  }
+
+  return links.join('');
 }
 
 function updateRoleBadges(roles) {
@@ -193,112 +173,16 @@ function updateRoleBadges(roles) {
 }
 
 /**
- * Handle membership verification
- *
- * Separated from setup for testing.
- *
- * @param {Object} user - Firebase user object
- * @returns {Promise<boolean>} Whether verification succeeded
+ * Update role-based quick links in the Quick Links section
  */
-async function verifyMembership(user) {
-  const region = R.string.config_firebase_region;
-  const verifyMembershipFn = httpsCallable('verifyMembership', region);
-
-  // Use button API for loading state
-  if (verifyMembershipButton) {
-    verifyMembershipButton.setLoading(true, R.string.membership_verifying);
+function updateRoleQuickLinks(roles) {
+  const container = document.getElementById('quick-links-roles');
+  if (!container) {
+    return;
   }
 
-  try {
-    const result = await verifyMembershipFn();
-
-    if (result.data.isMember) {
-      const html = `
-        <div style="color: var(--color-success-text); font-weight: 500;">
-          ✓ ${R.string.membership_active}
-        </div>
-      `;
-      setInnerHTML('membership-status', html, 'dashboard');
-
-      // Refresh user data to get updated claims and update role badges
-      const refreshed = await user.getIdTokenResult(true);
-      updateRoleBadges(refreshed.claims.roles);
-
-      // Update button to "Verify Again" state
-      if (verifyMembershipButton) {
-        verifyMembershipButton.setLoading(false);
-        verifyMembershipButton.setText(R.string.btn_verify_membership_again);
-      }
-
-      return true;
-    } else {
-      const html = `
-        <div style="color: var(--color-error-text);">
-          ${R.string.membership_inactive}
-        </div>
-      `;
-      setInnerHTML('membership-status', html, 'dashboard');
-
-      // Update button back to normal state
-      if (verifyMembershipButton) {
-        verifyMembershipButton.setLoading(false);
-        verifyMembershipButton.setText(R.string.btn_verify_membership);
-      }
-
-      // Refresh token to ensure any downgraded claims propagate
-      const refreshed = await user.getIdTokenResult(true);
-      updateRoleBadges(refreshed.claims.roles);
-
-      return false;
-    }
-  } catch (error) {
-    debug.error('Membership verification error:', error);
-
-    const html = `
-      <div style="color: var(--color-error-text);">
-        ${R.string.membership_verification_failed}: ${error.message}
-      </div>
-    `;
-    setInnerHTML('membership-status', html, 'dashboard');
-
-    // Update button back to normal state
-    if (verifyMembershipButton) {
-      verifyMembershipButton.setLoading(false);
-      verifyMembershipButton.setText(R.string.btn_verify_membership);
-    }
-
-    // Ensure claims stay in sync even after error
-    try {
-      const refreshed = await user.getIdTokenResult(true);
-      updateRoleBadges(refreshed.claims.roles);
-    } catch (refreshError) {
-      debug.warn('Failed to refresh claims after verification error', refreshError);
-    }
-
-    throw error;
-  }
-}
-
-/**
- * Setup membership verification button handler
- *
- * @param {Object} user - Firebase user object
- */
-function setupMembershipVerification(user) {
-  // Create button instance
-  verifyMembershipButton = createButton({
-    text: R.string.btn_verify_membership,
-    variant: 'outline',
-    onClick: async () => {
-      await verifyMembership(user);
-    }
-  });
-
-  // Append to container
-  const container = document.getElementById('verify-button-container');
-  if (container) {
-    container.appendChild(verifyMembershipButton.element);
-  }
+  const html = renderRoleQuickLinks(roles);
+  container.innerHTML = html;
 }
 
 /**
@@ -502,77 +386,166 @@ async function updateProfileData(userData, discrepancies, memberData = {}) {
 // Events API configuration
 const EVENTS_API_BASE = 'https://events-service-521240388393.europe-west2.run.app';
 
+// ============================================================================
+// LOCAL STORAGE CACHE - Persistent (no PII - public event data)
+// ============================================================================
+const CACHE_KEY = 'dashboard_featured_event_cache';
+const CACHE_MAX_AGE_MS = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * Get cached featured event from localStorage
+ * Safe to use localStorage - public Facebook event data, no PII.
+ * @returns {Object|null} { data, isStale } or null if no cache
+ */
+function getFeaturedEventCache() {
+  try {
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (!cached) return null;
+
+    const { data, timestamp } = JSON.parse(cached);
+    const age = Date.now() - timestamp;
+
+    return {
+      data,
+      isStale: age > CACHE_MAX_AGE_MS
+    };
+  } catch (e) {
+    debug.warn('[Cache] Failed to read featured event cache:', e);
+    return null;
+  }
+}
+
+/**
+ * Save featured event to localStorage cache
+ * @param {Object} event - Event to cache (or null if no event)
+ */
+function setFeaturedEventCache(event) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({
+      data: event,
+      timestamp: Date.now()
+    }));
+    debug.log('[Cache] Featured event cached:', event?.title || 'null');
+  } catch (e) {
+    debug.warn('[Cache] Failed to write featured event cache:', e);
+  }
+}
+
+/**
+ * Display featured event in the card
+ * @param {Object} event - Event to display
+ */
+function displayFeaturedEvent(event) {
+  if (!event) return;
+
+  // Check for recurring events and use next occurrence date
+  const nextOccurrence = getNextRecurringOccurrence(event);
+  const dateToShow = nextOccurrence || new Date(event.startTime);
+
+  // Format date in Icelandic using central formatter
+  const formattedDate = formatDateWithDayIcelandic(dateToShow);
+
+  // Get location
+  const location = event.location?.display || event.location?.name || '';
+
+  // Build content
+  const card = document.getElementById('featured-event-card');
+  const content = document.getElementById('featured-event-content');
+
+  if (!card || !content) return;
+
+  content.innerHTML = `
+    <a href="/events/" style="text-decoration: none; color: inherit;">
+      <div style="font-weight: 600; font-size: 1rem; margin-bottom: 0.25rem;">${event.title}</div>
+      <div style="color: var(--color-text-secondary); font-size: 0.875rem;">
+        ${formattedDate}
+      </div>
+      ${location ? `<div style="color: var(--color-text-secondary); font-size: 0.875rem;">📍 ${location}</div>` : ''}
+    </a>
+  `;
+
+  card.style.display = 'block';
+  debug.log('Featured event displayed:', event.title);
+}
+
+/**
+ * Fetch featured event from API
+ * @returns {Promise<Object|null>} Event or null
+ */
+async function fetchFeaturedEvent() {
+  let event = null;
+
+  // Try to get admin-selected featured event first
+  const featuredResponse = await fetch(`${EVENTS_API_BASE}/api/external-events/featured`);
+  if (featuredResponse.ok) {
+    const data = await featuredResponse.json();
+    if (data.featured) {
+      event = data.featured;
+      debug.log('Using admin-selected featured event:', event.title);
+    }
+  }
+
+  // Fallback to next upcoming OR ongoing event if no featured event
+  if (!event) {
+    const allEventsResponse = await fetch(`${EVENTS_API_BASE}/api/external-events`);
+    if (allEventsResponse.ok) {
+      const events = await allEventsResponse.json();
+      // Filter for upcoming or ongoing events, sort by start time
+      const upcomingOrOngoing = events
+        .filter(e => e.isUpcoming || e.isOngoing)
+        .sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+
+      if (upcomingOrOngoing.length > 0) {
+        event = upcomingOrOngoing[0];
+        debug.log('Using next upcoming/ongoing event:', event.title);
+      }
+    }
+  }
+
+  return event;
+}
+
 /**
  * Load and display featured event on dashboard
+ * Uses localStorage cache for instant display on repeat visits
  *
  * Priority:
  * 1. Admin-selected featured event (from /api/external-events/featured)
  * 2. Next upcoming event (fallback)
  *
  * Non-blocking - if it fails, dashboard still works
+ *
+ * @param {boolean} backgroundRefresh - If true, don't show if no cache
  */
-async function loadFeaturedEvent() {
+async function loadFeaturedEvent(backgroundRefresh = false) {
   try {
-    let event = null;
+    // Check cache first
+    const cached = getFeaturedEventCache();
 
-    // Try to get admin-selected featured event first
-    const featuredResponse = await fetch(`${EVENTS_API_BASE}/api/external-events/featured`);
-    if (featuredResponse.ok) {
-      const data = await featuredResponse.json();
-      if (data.featured) {
-        event = data.featured;
-        debug.log('Using admin-selected featured event:', event.title);
+    if (cached?.data && !backgroundRefresh) {
+      debug.log('[Cache] Showing cached featured event');
+      displayFeaturedEvent(cached.data);
+
+      // If cache is stale, refresh in background
+      if (cached.isStale) {
+        debug.log('[Cache] Cache stale, refreshing in background');
+        loadFeaturedEvent(true).catch(err => {
+          debug.warn('[Cache] Background refresh failed:', err);
+        });
       }
+      return;
     }
 
-    // Fallback to next upcoming event if no featured event
-    if (!event) {
-      const upcomingResponse = await fetch(`${EVENTS_API_BASE}/api/external-events?upcoming=true&limit=1`);
-      if (upcomingResponse.ok) {
-        const events = await upcomingResponse.json();
-        if (events && events.length > 0) {
-          event = events[0];
-          debug.log('Using next upcoming event:', event.title);
-        }
-      }
+    // Fetch from API
+    const event = await fetchFeaturedEvent();
+
+    // Cache the result (even if null)
+    setFeaturedEventCache(event);
+
+    // Display if we have an event
+    if (event) {
+      displayFeaturedEvent(event);
     }
-
-    if (!event) return;
-
-    const startDate = new Date(event.startTime);
-
-    // Format date
-    const dateStr = startDate.toLocaleDateString('is-IS', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long'
-    });
-    const timeStr = startDate.toLocaleTimeString('is-IS', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-
-    // Get location
-    const location = event.location?.display || event.location?.name || '';
-
-    // Build content
-    const card = document.getElementById('featured-event-card');
-    const content = document.getElementById('featured-event-content');
-
-    if (!card || !content) return;
-
-    content.innerHTML = `
-      <a href="/events/" style="text-decoration: none; color: inherit;">
-        <div style="font-weight: 600; font-size: 1rem; margin-bottom: 0.25rem;">${event.title}</div>
-        <div style="color: var(--color-text-secondary); font-size: 0.875rem;">
-          ${dateStr}, kl. ${timeStr}
-        </div>
-        ${location ? `<div style="color: var(--color-text-secondary); font-size: 0.875rem;">📍 ${location}</div>` : ''}
-      </a>
-    `;
-
-    card.style.display = 'block';
-    debug.log('Featured event displayed:', event.title);
   } catch (error) {
     debug.warn('Failed to load featured event:', error.message);
     // Non-blocking - dashboard still works without featured event
@@ -628,11 +601,8 @@ async function init() {
     const welcomeText = buildWelcomeMessage(userData.displayName);
     setTextContent('welcome-title', welcomeText, 'dashboard');
 
-    // Update membership status UI
-    updateMembershipUI(userData.isMember);
-
-    // Show role badges for elevated users
-    updateRoleBadges(userData.roles);
+    // Show role-based quick links (admin/superuser)
+    updateRoleQuickLinks(userData.roles);
 
     // Load featured event (non-blocking)
     loadFeaturedEvent();
@@ -640,8 +610,6 @@ async function init() {
     // Check for profile data discrepancies between Kenni.is and Firestore
     await checkProfileDiscrepancies(userData);
 
-    // Setup membership verification handler
-    setupMembershipVerification(currentUser);
   } catch (error) {
     // Handle authentication error (redirect to login)
     if (error instanceof AuthenticationError) {

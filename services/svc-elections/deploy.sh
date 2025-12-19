@@ -54,7 +54,7 @@ gcloud run deploy ${SERVICE_NAME} \
   --concurrency 50 \
   --port 8081 \
   --add-cloudsql-instances "$DB_CONNECTION_NAME" \
-  --set-env-vars "NODE_ENV=production,DATABASE_HOST=/cloudsql/$DB_CONNECTION_NAME,DATABASE_PORT=5432,DATABASE_NAME=postgres,DATABASE_USER=postgres,DATABASE_POOL_MIN=2,DATABASE_POOL_MAX=5,DATABASE_POOL_IDLE_TIMEOUT=30000,DATABASE_POOL_CONNECTION_TIMEOUT=2000,CORS_ORIGINS=https://ekklesia-prod-10-2025.web.app^https://ekklesia-prod-10-2025.firebaseapp.com,LOG_LEVEL=info,ELECTION_TITLE=Prófunarkosning 2025,ELECTION_QUESTION=Do you support this proposal?" \
+  --set-env-vars "NODE_ENV=production,DATABASE_HOST=/cloudsql/$DB_CONNECTION_NAME,DATABASE_PORT=5432,DATABASE_NAME=socialism,DATABASE_USER=postgres,DATABASE_POOL_MIN=2,DATABASE_POOL_MAX=5,DATABASE_POOL_IDLE_TIMEOUT=30000,DATABASE_POOL_CONNECTION_TIMEOUT=2000,CORS_ORIGINS=https://ekklesia-prod-10-2025.web.app^https://ekklesia-prod-10-2025.firebaseapp.com,LOG_LEVEL=info,ELECTION_TITLE=Prófunarkosning 2025,ELECTION_QUESTION=Do you support this proposal?" \
   --set-secrets "DATABASE_PASSWORD=postgres-password:latest,S2S_API_KEY=elections-s2s-api-key:latest"
 
 # Get service URL

@@ -5,9 +5,9 @@
  * Uses PhoneManager and AddressManager from profile refactoring.
  */
 
-import { getFirebaseAuth, getFirebaseFirestore, httpsCallable } from '../../firebase/app.js';
-import { doc, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getFirebaseAuth, getFirebaseFirestore, httpsCallable, doc, getDoc, updateDoc, collection, query, where, getDocs } from '../../firebase/app.js';
 import { R } from '../../i18n/strings-loader.js';
+import { adminStrings } from './i18n/admin-strings-loader.js';
 import { showToast } from '../../js/components/ui-toast.js';
 import { showStatus } from '../../js/components/ui-status.js';
 import { debug } from '../../js/utils/util-debug.js';
@@ -18,6 +18,8 @@ import { requireAdmin } from '../../js/rbac.js';
 import { PhoneManager } from '../../js/profile/phone-manager.js';
 import { AddressManager } from '../../js/profile/address-manager.js';
 import { migrateOldPhoneFields, migrateOldAddressFields } from '../../js/profile/migration.js';
+import { getUnions, getJobTitles, getHousingSituationLabel } from '../../js/api/api-lookups.js';
+import { formatDateOnlyIcelandic, formatDateIcelandic, formatMembershipDuration } from '../../js/utils/util-format.js';
 
 // Initialize Firebase
 const auth = getFirebaseAuth();
@@ -33,6 +35,7 @@ const AUTO_SAVE_ERROR_DURATION = 3000; // ms to show error status
 
 // State
 let currentKennitala = null;
+let currentDjangoId = null;  // For URL security - lookup by django_id instead of kennitala
 let memberData = null;
 let phoneManager = null;
 let addressManager = null;
@@ -48,9 +51,7 @@ function setI18nStrings() {
   const backToMembersText = document.getElementById('back-to-members-text');
   if (backToMembersText) backToMembersText.textContent = R.string.back_to_members || 'Til baka til félaga';
 
-  // Page header
-  const pageHeaderTitle = document.getElementById('page-header-title');
-  if (pageHeaderTitle) pageHeaderTitle.textContent = R.string.member_profile_title || 'Félagsupplýsingar';
+  // Note: Page header removed - nav brand shows context
 
   // Loading state
   const memberLoadingText = document.getElementById('member-loading-text');
@@ -101,6 +102,9 @@ function setI18nStrings() {
 
   const labelSyncedAt = document.getElementById('label-synced-at');
   if (labelSyncedAt) labelSyncedAt.textContent = R.string.label_synced_at || 'Síðast samstillt';
+
+  const labelUid = document.getElementById('label-uid');
+  if (labelUid) labelUid.textContent = R.string.label_uid || 'Firebase UID';
 
   // Gender options
   const optionGenderNone = document.getElementById('option-gender-none');
@@ -157,26 +161,40 @@ async function init() {
 
   // Load i18n strings first
   await R.load('is');
+  await adminStrings.load();
 
   // Set all i18n strings
   setI18nStrings();
 
-  // Get kennitala from URL
+  // Get ID from URL - can be django_id (preferred for security) or kennitala (legacy)
   const urlParams = new URLSearchParams(window.location.search);
-  currentKennitala = urlParams.get('id');
+  const idParam = urlParams.get('id');
 
-  debug.log(`📋 URL parameter 'id':`, currentKennitala);
+  debug.log(`📋 URL parameter 'id':`, idParam);
 
-  if (!currentKennitala) {
-    showError('Engin kennitala í URL');
+  if (!idParam) {
+    showError('Ekkert ID í URL');
     return;
   }
 
-  // Handle both formats: with dash (999999-9999) or without (9999999999)
-  if (currentKennitala && !currentKennitala.includes('-') && currentKennitala.length === 10) {
-    // Add dash if missing
-    currentKennitala = `${currentKennitala.slice(0, 6)}-${currentKennitala.slice(6)}`;
-    debug.log(`   Formatted kennitala:`, currentKennitala);
+  // Detect if ID is kennitala (10 digits) or django_id (smaller number)
+  // Kennitala format: DDMMYYNNNN (10 digits) or DDMMYY-NNNN (with dash)
+  const isKennitala = idParam.length === 10 || (idParam.length === 11 && idParam.includes('-'));
+
+  if (isKennitala) {
+    // Legacy: kennitala in URL (less secure but backwards compatible)
+    currentKennitala = idParam;
+    debug.log(`🔑 Detected kennitala format (legacy)`);
+
+    // Handle both formats: with dash (999999-9999) or without (9999999999)
+    if (currentKennitala && !currentKennitala.includes('-') && currentKennitala.length === 10) {
+      currentKennitala = `${currentKennitala.slice(0, 6)}-${currentKennitala.slice(6)}`;
+      debug.log(`   Formatted kennitala:`, currentKennitala);
+    }
+  } else {
+    // New: django_id in URL (more secure - kennitala not exposed)
+    currentDjangoId = parseInt(idParam, 10);
+    debug.log(`🔐 Detected django_id format (secure):`, currentDjangoId);
   }
 
   // Check authentication
@@ -208,36 +226,67 @@ async function init() {
 
 /**
  * Load member data from Firestore
- * Try multiple document ID formats to handle different data structures
- * 
+ * Supports two lookup methods:
+ * 1. By kennitala (document ID) - legacy, less secure
+ * 2. By django_id (query) - new, more secure
+ *
  * @returns {Promise<void>}
  */
 async function loadMemberData() {
   try {
     showLoading();
 
-    // Try multiple key formats
-    const kennitalaWithoutDash = currentKennitala.replace(/-/g, '');
-    const kennitalaWithDash = currentKennitala;
-    
-    debug.log(`🔍 Loading member with kennitala: ${currentKennitala}`);
-    debug.log(`   Trying keys: ["${kennitalaWithoutDash}", "${kennitalaWithDash}"]`);
-    
-    // Try without dash first (most common format)
-    let memberDocRef = doc(db, 'members', kennitalaWithoutDash);
-    let memberDoc = await getDoc(memberDocRef);
+    let memberDoc = null;
 
-    // If not found, try with dash
-    if (!memberDoc.exists()) {
-      debug.log(`   ℹ️ Not found with key: ${kennitalaWithoutDash}, trying with dash...`);
-      memberDocRef = doc(db, 'members', kennitalaWithDash);
+    if (currentDjangoId) {
+      // NEW: Lookup by django_id (more secure - kennitala not in URL)
+      debug.log(`🔍 Loading member by django_id: ${currentDjangoId}`);
+
+      const membersRef = collection(db, 'members');
+      const q = query(membersRef, where('metadata.django_id', '==', currentDjangoId));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        debug.warn(`⚠️ Member not found with django_id: ${currentDjangoId}`);
+        showNotFound();
+        return;
+      }
+
+      memberDoc = querySnapshot.docs[0];
+      // Set kennitala from document ID for save operations
+      currentKennitala = memberDoc.id;
+      if (currentKennitala.length === 10 && !currentKennitala.includes('-')) {
+        currentKennitala = `${currentKennitala.slice(0, 6)}-${currentKennitala.slice(6)}`;
+      }
+      debug.log(`   Found kennitala: ${currentKennitala.slice(0, 6)}****`);
+
+    } else if (currentKennitala) {
+      // LEGACY: Lookup by kennitala (document ID)
+      const kennitalaWithoutDash = currentKennitala.replace(/-/g, '');
+      const kennitalaWithDash = currentKennitala;
+
+      debug.log(`🔍 Loading member with kennitala: ${currentKennitala}`);
+      debug.log(`   Trying keys: ["${kennitalaWithoutDash}", "${kennitalaWithDash}"]`);
+
+      // Try without dash first (most common format)
+      let memberDocRef = doc(db, 'members', kennitalaWithoutDash);
       memberDoc = await getDoc(memberDocRef);
-    }
 
-    if (!memberDoc.exists()) {
-      debug.warn(`⚠️ Member not found with either key format`);
-      debug.warn(`   Tried: ${kennitalaWithoutDash}, ${kennitalaWithDash}`);
-      showNotFound();
+      // If not found, try with dash
+      if (!memberDoc.exists()) {
+        debug.log(`   ℹ️ Not found with key: ${kennitalaWithoutDash}, trying with dash...`);
+        memberDocRef = doc(db, 'members', kennitalaWithDash);
+        memberDoc = await getDoc(memberDocRef);
+      }
+
+      if (!memberDoc.exists()) {
+        debug.warn(`⚠️ Member not found with either key format`);
+        debug.warn(`   Tried: ${kennitalaWithoutDash}, ${kennitalaWithDash}`);
+        showNotFound();
+        return;
+      }
+    } else {
+      showError('Ekkert ID til að leita að');
       return;
     }
 
@@ -255,7 +304,7 @@ async function loadMemberData() {
 
   } catch (error) {
     debug.error('❌ Error loading member:', error);
-    debug.error('   Kennitala:', currentKennitala);
+    debug.error('   ID:', currentDjangoId || currentKennitala);
     debug.error('   Error details:', error.message);
     showError(R.string.error_loading);
   }
@@ -283,32 +332,54 @@ async function renderProfile() {
   // Membership info (readonly)
   const membership = memberData.membership || {};
   const statusBadge = document.getElementById('status-badge');
-  
-  // Check both is_active (boolean) and status (string "active"/"inactive")
-  let isActive = false;
-  if (membership.is_active !== undefined) {
-    isActive = membership.is_active;
-  } else if (membership.status !== undefined) {
-    isActive = membership.status === 'active';
+
+  // Get membership status: 'active', 'unpaid', or 'inactive'
+  let membershipStatus = 'inactive';
+  if (membership.status !== undefined) {
+    membershipStatus = membership.status;
+  } else if (membership.is_active !== undefined) {
+    membershipStatus = membership.is_active ? 'active' : 'inactive';
   } else if (memberData.active !== undefined) {
-    isActive = memberData.active;
+    membershipStatus = memberData.active ? 'active' : 'inactive';
   }
-  
-  if (isActive) {
-    statusBadge.textContent = 'Virkur';
-    statusBadge.className = 'admin-badge admin-badge--success';
+
+  // Display status with appropriate styling
+  // Check for soft-delete first - takes priority over other statuses
+  if (membership.deleted_at) {
+    const deletedDate = membership.deleted_at.toDate ? membership.deleted_at.toDate() : new Date(membership.deleted_at);
+    const formattedDate = formatDateOnlyIcelandic(deletedDate);
+    statusBadge.textContent = `Eytt ${formattedDate}`;
+    statusBadge.className = 'admin-badge admin-badge--error';
   } else {
-    statusBadge.textContent = 'Óvirkur';
-    statusBadge.className = 'admin-badge admin-badge--inactive';
+    switch (membershipStatus) {
+      case 'active':
+        statusBadge.textContent = adminStrings.get('membership_status_active') || 'Virkur';
+        statusBadge.className = 'admin-badge admin-badge--success';
+        break;
+      case 'unpaid':
+        statusBadge.textContent = adminStrings.get('membership_status_unpaid') || 'Ógreitt';
+        statusBadge.className = 'admin-badge admin-badge--warning';
+        break;
+      case 'inactive':
+      default:
+        statusBadge.textContent = adminStrings.get('membership_status_inactive') || 'Óvirkur';
+        statusBadge.className = 'admin-badge admin-badge--inactive';
+        break;
+    }
   }
 
   // Format joined date
   const joinedDate = membership.date_joined || membership.joined_date || memberData.joined_date;
   if (joinedDate) {
     const joined = joinedDate.toDate ? joinedDate.toDate() : new Date(joinedDate);
-    document.getElementById('value-joined').textContent = joined.toLocaleDateString('is-IS');
+    document.getElementById('value-joined').textContent = formatDateOnlyIcelandic(joined);
+
+    // Calculate membership duration
+    const durationText = formatMembershipDuration(joined);
+    document.getElementById('value-member-since').textContent = durationText;
   } else {
     document.getElementById('value-joined').textContent = '-';
+    document.getElementById('value-member-since').textContent = '-';
   }
   
   const metadata = memberData.metadata || {};
@@ -317,9 +388,17 @@ async function renderProfile() {
   if (metadata.synced_at || memberData.synced_at) {
     const syncedAt = metadata.synced_at || memberData.synced_at;
     const syncDate = syncedAt.toDate ? syncedAt.toDate() : new Date(syncedAt);
-    document.getElementById('value-synced-at').textContent = syncDate.toLocaleString('is-IS');
+    document.getElementById('value-synced-at').textContent = formatDateIcelandic(syncDate);
   } else {
     document.getElementById('value-synced-at').textContent = '-';
+  }
+
+  // Firebase UID - shows if member has logged into the system
+  const uid = memberData.uid || metadata.firebase_uid || '';
+  if (uid) {
+    document.getElementById('value-uid').textContent = uid;
+  } else {
+    document.getElementById('value-uid').textContent = R.string.member_not_logged_in || 'Ekki skráð/ur inn';
   }
 
   // Initialize Phone Manager
@@ -356,6 +435,9 @@ async function renderProfile() {
     groupableInput.checked = profile.groupable !== false;
   }
 
+  // Membership details: cell, union, title, housing
+  await renderMembershipDetails();
+
   // Setup field listeners for auto-save
   setupFieldListeners();
 
@@ -365,7 +447,7 @@ async function renderProfile() {
       searchPlaceholder: R.string.search_country,
       noResultsText: R.string.no_results
     });
-    
+
     // Set gender value after SearchableSelect has initialized
     if (genderValue !== '') {
       const genderSelect = document.getElementById('input-gender');
@@ -374,6 +456,85 @@ async function renderProfile() {
       genderSelect.dispatchEvent(new Event('change', { bubbles: true }));
     }
   }, SEARCHABLE_SELECT_INIT_DELAY);
+}
+
+/**
+ * Render membership details: cell, union, job title, housing situation
+ */
+async function renderMembershipDetails() {
+  const profile = memberData.profile || {};
+  const membership = memberData.membership || {};
+
+  // Cell/Svæði (readonly display)
+  const cellValue = document.getElementById('value-cell');
+  if (cellValue) {
+    // Cell is stored as a string (svæði name) in Firestore
+    if (membership.cell) {
+      cellValue.textContent = membership.cell;
+    } else {
+      cellValue.textContent = '-';
+    }
+  }
+
+  // Union dropdown - populate and select current value
+  const unionSelect = document.getElementById('input-union');
+  if (unionSelect) {
+    try {
+      const unions = await getUnions();
+      // Clear and repopulate
+      unionSelect.innerHTML = `<option value="">${adminStrings.get('select_union_placeholder') || 'Veldu stéttarfélag...'}</option>`;
+      unions.forEach(union => {
+        const option = document.createElement('option');
+        option.value = union.id;
+        option.textContent = union.name;
+        unionSelect.appendChild(option);
+      });
+
+      // Select current union if set
+      const currentUnions = membership.unions || [];
+      if (currentUnions.length > 0) {
+        // Use first union (most members have one)
+        const firstUnion = currentUnions[0];
+        unionSelect.value = firstUnion.id || firstUnion;
+      }
+    } catch (error) {
+      debug.error('Failed to load unions:', error);
+    }
+  }
+
+  // Job Title dropdown - populate and select current value
+  const titleSelect = document.getElementById('input-title');
+  if (titleSelect) {
+    try {
+      const titles = await getJobTitles();
+      // Clear and repopulate
+      titleSelect.innerHTML = `<option value="">${adminStrings.get('select_job_title_placeholder') || 'Veldu starfsheiti...'}</option>`;
+      titles.forEach(title => {
+        const option = document.createElement('option');
+        option.value = title.id;
+        option.textContent = title.name;
+        titleSelect.appendChild(option);
+      });
+
+      // Select current title if set
+      const currentTitles = membership.titles || [];
+      if (currentTitles.length > 0) {
+        // Use first title
+        const firstTitle = currentTitles[0];
+        titleSelect.value = firstTitle.id || firstTitle;
+      }
+    } catch (error) {
+      debug.error('Failed to load job titles:', error);
+    }
+  }
+
+  // Housing situation - select current value
+  const housingSelect = document.getElementById('input-housing');
+  if (housingSelect && profile.housing_situation !== undefined) {
+    housingSelect.value = profile.housing_situation;
+  }
+
+  debug.log('✅ Membership details rendered');
 }
 
 /**
@@ -472,6 +633,40 @@ function setupFieldListeners() {
       showToast(R.string.profile_preferences_saved || 'Stillingar vistaðar', 'success');
     });
   }
+
+  // Union (immediate save on change)
+  const unionInput = document.getElementById('input-union');
+  const unionStatus = document.getElementById('status-union');
+  if (unionInput) {
+    unionInput.addEventListener('change', async (e) => {
+      const unionId = e.target.value ? parseInt(e.target.value) : null;
+      const unionName = e.target.selectedOptions[0]?.textContent || '';
+      const unionValue = unionId ? [{ id: unionId, name: unionName }] : [];
+      await saveMembershipField('unions', unionValue, unionStatus);
+    });
+  }
+
+  // Job Title (immediate save on change)
+  const titleInput = document.getElementById('input-title');
+  const titleStatus = document.getElementById('status-title');
+  if (titleInput) {
+    titleInput.addEventListener('change', async (e) => {
+      const titleId = e.target.value ? parseInt(e.target.value) : null;
+      const titleName = e.target.selectedOptions[0]?.textContent || '';
+      const titleValue = titleId ? [{ id: titleId, name: titleName }] : [];
+      await saveMembershipField('titles', titleValue, titleStatus);
+    });
+  }
+
+  // Housing Situation (immediate save on change)
+  const housingInput = document.getElementById('input-housing');
+  const housingStatus = document.getElementById('status-housing');
+  if (housingInput) {
+    housingInput.addEventListener('change', async (e) => {
+      const housingValue = e.target.value !== '' ? parseInt(e.target.value) : null;
+      await saveField('housing_situation', housingValue, housingStatus);
+    });
+  }
 }
 
 /**
@@ -541,6 +736,45 @@ async function saveField(fieldName, value, statusElement) {
     debug.error(`❌ Error saving ${fieldName}:`, error);
     showStatus(statusElement, 'error', { baseClass: 'profile-field__status' });
     showToast(R.string.save_error, 'error');
+  }
+}
+
+/**
+ * Save a membership field to Firestore (membership.* path)
+ *
+ * @param {string} fieldName - Field name to save (e.g., 'unions', 'titles', 'cell')
+ * @param {any} value - Value to save
+ * @param {HTMLElement} statusElement - Status indicator element
+ * @returns {Promise<void>}
+ */
+async function saveMembershipField(fieldName, value, statusElement) {
+  try {
+    debug.log(`💾 Saving membership.${fieldName}:`, value);
+
+    showStatus(statusElement, 'loading', { baseClass: 'profile-field__status' });
+
+    const kennitalaKey = currentKennitala.replace(/-/g, '');
+    const memberDocRef = doc(db, 'members', kennitalaKey);
+
+    // Save to membership.* path in Firestore
+    await updateDoc(memberDocRef, {
+      [`membership.${fieldName}`]: value,
+      updated_at: new Date()
+    });
+
+    // Update local state
+    if (!memberData.membership) memberData.membership = {};
+    memberData.membership[fieldName] = value;
+
+    showStatus(statusElement, 'success', { baseClass: 'profile-field__status' });
+    showToast(R.string.saved || 'Vistað', 'success');
+
+    debug.log(`✅ membership.${fieldName} saved`);
+
+  } catch (error) {
+    debug.error(`❌ Error saving membership.${fieldName}:`, error);
+    showStatus(statusElement, 'error', { baseClass: 'profile-field__status' });
+    showToast(R.string.save_error || 'Villa við vistun', 'error');
   }
 }
 
