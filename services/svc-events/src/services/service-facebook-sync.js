@@ -15,6 +15,7 @@
 const axios = require('axios');
 const logger = require('../utils/util-logger');
 const { query } = require('../config/config-database');
+const { improveEventDescription, isKimiConfigured } = require('../utils/util-kimi');
 
 // Facebook API Configuration
 const FB_API_VERSION = 'v19.0';
@@ -296,10 +297,17 @@ async function syncFacebookEvents() {
 
 /**
  * Upsert a single Facebook event to database
+ * Uses Kimi AI to improve description text if configured
  */
 async function upsertFacebookEvent(event) {
   const place = event.place || {};
   const location = place.location || {};
+
+  // Use Kimi to improve description if available
+  let description = event.description;
+  if (isKimiConfigured() && description) {
+    description = await improveEventDescription(description, event.name);
+  }
 
   await query(`
     INSERT INTO external_events (
@@ -323,7 +331,7 @@ async function upsertFacebookEvent(event) {
   `, [
     event.id,
     event.name,
-    event.description,
+    description,  // Use Kimi-improved description
     event.start_time,
     event.end_time || null,
     place.name || null,

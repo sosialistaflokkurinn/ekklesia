@@ -786,22 +786,30 @@ export function extractVideoLinks(text) {
  * @returns {string} HTML-formatted text
  *
  * Formatting applied:
- * 1. Emails → clickable mailto links
- * 2. Bank accounts (Banki: XXXX-XX-XXXXXX) → monospace highlighted
- * 3. Kennitala (Kt: XXXXXX-XXXX) → monospace highlighted
- * 4. Dates with time (13. desember kl. 17:30) → bold
- * 5. Time schedules (16:30: ...) → formatted schedule box
- * 6. Numbered lists (1. item) → HTML ordered list
- * 7. Headers ending with colon → bold
+ * 1. Markdown bold (**text**) → <strong>text</strong>
+ * 2. Markdown horizontal rule (---) → <hr>
+ * 3. Emails → clickable mailto links
+ * 4. Bank accounts (Banki: XXXX-XX-XXXXXX) → monospace highlighted
+ * 5. Kennitala (Kt: XXXXXX-XXXX) → monospace highlighted
+ * 6. Dates with time (13. desember kl. 17:30) → bold
+ * 7. Time schedules (16:30: ...) → formatted schedule box
+ * 8. Numbered lists (1. item) → HTML ordered list
+ * 9. Headers ending with colon → bold
  *
  * Example:
- * Input: "Dagskrá:\n16:30: Opnun\n17:00: Fundur\nHafið samband: test@test.is"
+ * Input: "**Dagskrá:**\n16:30: Opnun\n17:00: Fundur\nHafið samband: test@test.is"
  * Output: "<strong>Dagskrá:</strong>\n<div class='schedule'>...</div>\nHafið samband: <a href='mailto:test@test.is'>test@test.is</a>"
  */
 export function formatRichText(text) {
   if (!text) return '';
 
   let formatted = text;
+
+  // Markdown: Bold (**text**) → <strong>text</strong>
+  formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+
+  // Markdown: Horizontal rule (--- on its own line)
+  formatted = formatted.replace(/^---$/gm, '<hr style="border: none; border-top: 1px solid var(--color-border, #ddd); margin: 1rem 0;">');
 
   // Make emails clickable
   formatted = formatted.replace(

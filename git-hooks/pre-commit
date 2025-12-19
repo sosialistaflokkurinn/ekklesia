@@ -554,7 +554,10 @@ for file in $STAGED_FILES; do
   if [[ "$file" == *.js ]] && [ -f "$file" ]; then
     # Check for debug( without .log/.warn/.error - common mistake
     # The pattern looks for debug('...' or debug("...' which is wrong usage
-    if grep -En "debug\s*\(['\"]" "$file" 2>/dev/null | grep -Ev "debug\.(log|warn|error|info)" | head -5; then
+    # Exclude: debug.log(), debug.error(), logger.debug(), etc.
+    DEBUG_RESULT=$(grep -En "debug\s*\(['\"]" "$file" 2>/dev/null | grep -Ev "(debug\.(log|warn|error|info)|\.debug\()" | head -5)
+    if [ -n "$DEBUG_RESULT" ]; then
+      echo "$DEBUG_RESULT"
       echo "⚠️  Found debug() misuse in: $file"
       echo "   Use debug.log(), debug.warn(), or debug.error() instead"
       ((DEBUG_ISSUES++))
