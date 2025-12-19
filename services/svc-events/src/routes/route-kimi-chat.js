@@ -21,29 +21,356 @@ const KIMI_API_KEY = process.env.KIMI_API_KEY;
 const KIMI_API_BASE = 'https://api.moonshot.ai/v1';
 const KIMI_MODEL = 'kimi-k2-0711-preview';
 
+// Error handling configuration
+const RETRY_CONFIG = {
+  maxRetries: 3,
+  baseDelayMs: 1000,
+  maxDelayMs: 10000
+};
+
+// Circuit breaker state (in-memory, resets on restart)
+const circuitBreaker = {
+  failures: 0,
+  lastFailure: null,
+  isOpen: false,
+  threshold: 5,          // Open circuit after 5 failures
+  resetTimeMs: 60000     // Reset after 1 minute
+};
+
+/**
+ * Check and update circuit breaker state
+ */
+function checkCircuitBreaker() {
+  if (circuitBreaker.isOpen) {
+    const timeSinceFailure = Date.now() - circuitBreaker.lastFailure;
+    if (timeSinceFailure > circuitBreaker.resetTimeMs) {
+      // Reset circuit breaker (half-open state)
+      circuitBreaker.isOpen = false;
+      circuitBreaker.failures = 0;
+      logger.info('Circuit breaker reset', { operation: 'circuit_breaker_reset' });
+    }
+  }
+  return circuitBreaker.isOpen;
+}
+
+/**
+ * Record a failure in the circuit breaker
+ */
+function recordFailure(error) {
+  circuitBreaker.failures++;
+  circuitBreaker.lastFailure = Date.now();
+
+  if (circuitBreaker.failures >= circuitBreaker.threshold) {
+    circuitBreaker.isOpen = true;
+    logger.warn('Circuit breaker opened', {
+      operation: 'circuit_breaker_open',
+      failures: circuitBreaker.failures,
+      error: error.message
+    });
+  }
+}
+
+/**
+ * Record a success, reset failure count
+ */
+function recordSuccess() {
+  circuitBreaker.failures = 0;
+}
+
+/**
+ * Classify error type and get user-friendly message
+ */
+function classifyError(error) {
+  const status = error.response?.status;
+  const code = error.code;
+
+  // Rate limiting
+  if (status === 429) {
+    return {
+      type: 'rate_limit',
+      retryable: true,
+      retryAfter: parseInt(error.response?.headers?.['retry-after']) || 60,
+      message: 'Kimi API er of álagið. Reyndu aftur eftir smá stund.',
+      logLevel: 'warn'
+    };
+  }
+
+  // Authentication errors
+  if (status === 401 || status === 403) {
+    return {
+      type: 'auth_error',
+      retryable: false,
+      message: 'Villa við auðkenningu við Kimi API.',
+      logLevel: 'error'
+    };
+  }
+
+  // Server errors (5xx)
+  if (status >= 500 && status < 600) {
+    return {
+      type: 'server_error',
+      retryable: true,
+      message: 'Kimi þjónustan er tímabundið óaðgengileg.',
+      logLevel: 'warn'
+    };
+  }
+
+  // Timeout
+  if (code === 'ECONNABORTED' || code === 'ETIMEDOUT' || error.message?.includes('timeout')) {
+    return {
+      type: 'timeout',
+      retryable: true,
+      message: 'Kimi svaraði ekki í tíma. Reyndu aftur.',
+      logLevel: 'warn'
+    };
+  }
+
+  // Network errors
+  if (code === 'ECONNREFUSED' || code === 'ENOTFOUND' || code === 'ENETUNREACH') {
+    return {
+      type: 'network_error',
+      retryable: true,
+      message: 'Ekki náðist samband við Kimi. Athugaðu nettengingu.',
+      logLevel: 'error'
+    };
+  }
+
+  // Bad request (usually our fault)
+  if (status === 400) {
+    return {
+      type: 'bad_request',
+      retryable: false,
+      message: 'Ógild beiðni send til Kimi.',
+      logLevel: 'error'
+    };
+  }
+
+  // Context length exceeded
+  if (error.response?.data?.error?.code === 'context_length_exceeded') {
+    return {
+      type: 'context_exceeded',
+      retryable: false,
+      message: 'Samtalið er orðið of langt. Byrjaðu nýtt samtal.',
+      logLevel: 'warn'
+    };
+  }
+
+  // Default unknown error
+  return {
+    type: 'unknown',
+    retryable: false,
+    message: 'Óvænt villa kom upp við samskipti við Kimi.',
+    logLevel: 'error'
+  };
+}
+
+/**
+ * Sleep for specified milliseconds
+ */
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Calculate delay with exponential backoff and jitter
+ */
+function getRetryDelay(attempt, baseDelay = RETRY_CONFIG.baseDelayMs) {
+  const exponentialDelay = baseDelay * Math.pow(2, attempt);
+  const jitter = Math.random() * 0.3 * exponentialDelay; // 0-30% jitter
+  return Math.min(exponentialDelay + jitter, RETRY_CONFIG.maxDelayMs);
+}
+
 // Service URLs
 const ELECTIONS_SERVICE_URL = process.env.ELECTIONS_SERVICE_URL || 'https://elections-service-521240388393.europe-west2.run.app';
 
+// GitHub Repository Configuration
+const GITHUB_REPO = 'sosialistaflokkurinn/ekklesia';
+const GITHUB_BRANCH = 'main';
+const GITHUB_RAW_BASE = `https://raw.githubusercontent.com/${GITHUB_REPO}/${GITHUB_BRANCH}`;
+const GITHUB_API_BASE = `https://api.github.com/repos/${GITHUB_REPO}`;
+
+/**
+ * Fetch a file from the GitHub repository
+ */
+async function readGitHubFile(path) {
+  try {
+    const url = `${GITHUB_RAW_BASE}/${path}`;
+    const response = await axios.get(url, {
+      timeout: 10000,
+      headers: { 'Accept': 'text/plain' }
+    });
+
+    // Limit file size to prevent context overflow
+    const content = response.data;
+    if (typeof content === 'string' && content.length > 15000) {
+      return content.substring(0, 15000) + '\n\n... [Skrá styttist - of löng]';
+    }
+    return typeof content === 'string' ? content : JSON.stringify(content, null, 2);
+  } catch (error) {
+    if (error.response?.status === 404) {
+      return `Villa: Skráin '${path}' fannst ekki í repo-inu.`;
+    }
+    return `Villa við að lesa skrá: ${error.message}`;
+  }
+}
+
+/**
+ * List contents of a directory in the GitHub repository
+ */
+async function listGitHubDirectory(path = '') {
+  try {
+    const url = `${GITHUB_API_BASE}/contents/${path}`;
+    const response = await axios.get(url, {
+      timeout: 10000,
+      headers: {
+        'Accept': 'application/vnd.github.v3+json',
+        'User-Agent': 'Ekklesia-Kimi-Bot'
+      }
+    });
+
+    if (!Array.isArray(response.data)) {
+      return `'${path}' er skrá, ekki mappa.`;
+    }
+
+    const items = response.data.map(item => {
+      const icon = item.type === 'dir' ? '📁' : '📄';
+      return `${icon} ${item.name}`;
+    });
+
+    return `Innihald '${path || '/'}':\n${items.join('\n')}`;
+  } catch (error) {
+    if (error.response?.status === 404) {
+      return `Villa: Mappan '${path}' fannst ekki.`;
+    }
+    return `Villa við að lesa möppu: ${error.message}`;
+  }
+}
+
+// Tool definitions for Kimi
+const KIMI_TOOLS = [
+  {
+    type: 'function',
+    function: {
+      name: 'read_file',
+      description: 'Lesa skrá úr Ekklesia GitHub repo-inu. Notaðu þetta til að skoða kóða, stillingar eða skjölun.',
+      parameters: {
+        type: 'object',
+        properties: {
+          path: {
+            type: 'string',
+            description: 'Slóð á skrá í repo-inu, t.d. "apps/members-portal/superuser/js/kimi-chat.js" eða "services/svc-events/src/routes/route-kimi-chat.js"'
+          }
+        },
+        required: ['path']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'list_directory',
+      description: 'Sýna innihald möppu í Ekklesia GitHub repo-inu. Notaðu þetta til að kanna strúktúr kóðagrunnsins.',
+      parameters: {
+        type: 'object',
+        properties: {
+          path: {
+            type: 'string',
+            description: 'Slóð á möppu í repo-inu, t.d. "apps/members-portal/js" eða "services/svc-events/src". Tómt fyrir rót.'
+          }
+        },
+        required: []
+      }
+    }
+  }
+];
+
+/**
+ * Execute a tool call from Kimi
+ */
+async function executeToolCall(toolCall) {
+  const { name, arguments: argsStr } = toolCall.function;
+  let args;
+  try {
+    args = JSON.parse(argsStr);
+  } catch {
+    return `Villa: Ógild færibreytur fyrir ${name}`;
+  }
+
+  switch (name) {
+    case 'read_file':
+      return await readGitHubFile(args.path);
+    case 'list_directory':
+      return await listGitHubDirectory(args.path || '');
+    default:
+      return `Villa: Óþekkt tól '${name}'`;
+  }
+}
+
 // Base system prompt
-const BASE_SYSTEM_PROMPT = `Þú ert kerfisstjórnunaraðstoðarmaður fyrir Ekklesia félagakerfi Sósíalistaflokks Íslands.
+const BASE_SYSTEM_PROMPT = `Þú ert Kimi, kerfisstjórnunaraðstoðarmaður og sérfræðingur í Ekklesia kóðagrunni.
 
-Kerfið samanstendur af:
-- Firebase Hosting (frontend - members-portal)
-- Firebase Functions (svc-members - Python)
-- Cloud Run þjónustur (svc-elections, svc-events - Node.js)
-- Cloud SQL PostgreSQL (gagnagrunnur)
-- Firestore (notendagögn)
-- Amazon SES (tölvupóstur)
+## TÓLANOTKUNARREGLUR - MJÖG MIKILVÆGT!
 
-Þú getur hjálpað með:
-- Útskýra hvernig kerfið virkar
-- Greina vandamál og stinga upp á lausnum
-- Svara spurningum um uppsetningu og stillingar
-- Hjálpa við deployment og viðhald
-- Útskýra kóða og arkitektúr
+Þú VERÐUR að nota tólin í eftirfarandi tilfellum - ALDREI svara án þeirra:
 
-Svaraðu á íslensku, stuttlega og hnitmiðað. Notaðu markdown fyrir kóða og skipanir.
-Þegar þú svarar spurningum um heilsu kerfisins, notaðu RAUNVERULEG gögn sem fylgja hér fyrir neðan.`;
+1. **Spurningar um kóða** → Notaðu \`list_directory\` og \`read_file\`
+   - "Hvernig virkar X?" → Lestu kóðann fyrst
+   - "Hvar er Y útfært?" → Finndu skrána og lestu hana
+   - "Sýndu mér Z" → Sæktu kóðann
+
+2. **Bestunar/umbóta spurningar** → Lestu viðeigandi skrár ÁÐUR en þú svarar
+   - "Hvað mætti bæta?" → Lestu kóðann fyrst, svo tillögur
+   - "Eru villur?" → Skoðaðu kóðann fyrst
+
+3. **Skjölun/útskýringar** → Lestu CLAUDE.md eða viðeigandi docs/
+
+**ALDREI** svara spurningum um kóðann án þess að lesa hann fyrst með tólunum!
+**ALDREI** segja "Ég skoða..." og síðan ekki nota tólin - NOTAÐU þau strax!
+
+## GitHub Repository
+Ekklesia kóðinn er opinn á: https://github.com/sosialistaflokkurinn/ekklesia
+
+Tól:
+- \`read_file\`: Lesa skrá (path t.d. "services/svc-events/src/index.js")
+- \`list_directory\`: Sjá innihald möppu (path t.d. "services/svc-events/src" eða "" fyrir rót)
+
+## Kerfisarkitektúr
+\`\`\`
+ekklesia/
+├── apps/members-portal/     # Frontend (Firebase Hosting)
+│   ├── js/components/       # Reusable UI components
+│   ├── js/utils/            # Utility functions
+│   ├── js/api/              # API clients
+│   ├── styles/              # CSS (bundle)
+│   └── superuser/           # Superuser console (þar sem ég bý!)
+├── services/
+│   ├── svc-members/         # Firebase Functions (Python)
+│   │   └── functions/       # Cloud Functions handlers
+│   ├── svc-elections/       # Cloud Run (Node.js) - Atkvæðagreiðslur
+│   └── svc-events/          # Cloud Run (Node.js) - Viðburðir & Kimi
+├── scripts/                 # Automation & deployment
+└── docs/                    # Documentation
+\`\`\`
+
+## Lykilþjónustur
+- **Firebase Hosting**: Frontend á ekklesia-prod-10-2025.web.app
+- **Firebase Functions (svc-members)**: Python - Auth, membership, email
+- **Cloud Run (svc-events)**: Node.js - Viðburðir, Facebook sync, Kimi chat API
+- **Cloud Run (svc-elections)**: Node.js - Atkvæðagreiðslur, kosningar
+- **Cloud SQL PostgreSQL**: Aðalgagnagrunnur (europe-west2)
+- **Firestore**: Notendagögn, sessions, audit logs
+- **Amazon SES**: Tölvupóstur (eu-west-1)
+
+## Deployment
+- Frontend: \`cd services/svc-members && firebase deploy --only hosting\`
+- Functions: \`firebase deploy --only functions:FUNCTION_NAME\`
+- Cloud Run: \`cd services/svc-events && ./deploy.sh\`
+
+## Leiðbeiningar
+- Svaraðu á íslensku, stuttlega og hnitmiðað
+- Notaðu markdown fyrir kóða og skipanir
+- Vísa í skrár með path þegar við á (t.d. \`apps/members-portal/js/utils/\`)
+- Þegar þú svarar spurningum um heilsu kerfisins, notaðu RAUNVERULEG gögn sem fylgja hér fyrir neðan`;
 
 /**
  * Format bytes to human readable
@@ -146,6 +473,7 @@ async function getSystemHealthContext() {
 /**
  * POST /api/kimi/chat
  * Send a message to Kimi and get a response
+ * Supports tool calling for GitHub repository access
  * Requires superuser role
  */
 router.post('/chat', authenticate, requireRole('superuser'), async (req, res) => {
@@ -155,14 +483,27 @@ router.post('/chat', authenticate, requireRole('superuser'), async (req, res) =>
     if (!message || typeof message !== 'string') {
       return res.status(400).json({
         error: 'Bad Request',
-        message: 'Message is required'
+        message: 'Skilaboð vantar'
       });
     }
 
     if (!KIMI_API_KEY) {
       return res.status(503).json({
         error: 'Service Unavailable',
-        message: 'Kimi API not configured'
+        message: 'Kimi API er ekki stillt'
+      });
+    }
+
+    // Check circuit breaker
+    if (checkCircuitBreaker()) {
+      logger.warn('Kimi request rejected by circuit breaker', {
+        operation: 'kimi_circuit_breaker',
+        userId: req.user?.uid
+      });
+      return res.status(503).json({
+        error: 'Service Temporarily Unavailable',
+        message: 'Kimi er tímabundið óaðgengilegur vegna endurtekinna villna. Reyndu aftur eftir mínútu.',
+        retryAfter: Math.ceil((circuitBreaker.resetTimeMs - (Date.now() - circuitBreaker.lastFailure)) / 1000)
       });
     }
 
@@ -173,7 +514,7 @@ router.post('/chat', authenticate, requireRole('superuser'), async (req, res) =>
     // Build messages array with history
     const messages = [
       { role: 'system', content: systemPromptWithHealth },
-      ...history.slice(-10).map(h => ({  // Keep last 10 messages for context
+      ...history.slice(-10).map(h => ({
         role: h.role,
         content: h.content
       })),
@@ -187,51 +528,177 @@ router.post('/chat', authenticate, requireRole('superuser'), async (req, res) =>
       historyLength: history.length
     });
 
-    const response = await axios.post(
-      `${KIMI_API_BASE}/chat/completions`,
-      {
-        model: KIMI_MODEL,
-        messages,
-        temperature: 0.7,
-        max_tokens: 2000
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${KIMI_API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        timeout: 60000
+    // Maximum tool call iterations to prevent infinite loops
+    const MAX_TOOL_ITERATIONS = 5;
+    let iterations = 0;
+    let finalReply = null;
+
+    /**
+     * Make API call with retry logic
+     */
+    async function callKimiWithRetry(requestMessages) {
+      let lastError = null;
+
+      for (let attempt = 0; attempt <= RETRY_CONFIG.maxRetries; attempt++) {
+        try {
+          const response = await axios.post(
+            `${KIMI_API_BASE}/chat/completions`,
+            {
+              model: KIMI_MODEL,
+              messages: requestMessages,
+              tools: KIMI_TOOLS,
+              tool_choice: 'auto',
+              temperature: 0.7,
+              max_tokens: 4000
+            },
+            {
+              headers: {
+                'Authorization': `Bearer ${KIMI_API_KEY}`,
+                'Content-Type': 'application/json'
+              },
+              timeout: 90000
+            }
+          );
+
+          // Success - reset circuit breaker
+          recordSuccess();
+          return response;
+
+        } catch (error) {
+          lastError = error;
+          const errorInfo = classifyError(error);
+
+          logger[errorInfo.logLevel]('Kimi API call failed', {
+            operation: 'kimi_api_error',
+            attempt: attempt + 1,
+            maxRetries: RETRY_CONFIG.maxRetries,
+            errorType: errorInfo.type,
+            retryable: errorInfo.retryable,
+            status: error.response?.status,
+            error: error.message
+          });
+
+          // Don't retry if not retryable
+          if (!errorInfo.retryable) {
+            recordFailure(error);
+            throw error;
+          }
+
+          // Don't retry if this was the last attempt
+          if (attempt >= RETRY_CONFIG.maxRetries) {
+            recordFailure(error);
+            throw error;
+          }
+
+          // Calculate delay (use retryAfter for rate limits)
+          const delay = errorInfo.type === 'rate_limit'
+            ? errorInfo.retryAfter * 1000
+            : getRetryDelay(attempt);
+
+          logger.info('Retrying Kimi API call', {
+            operation: 'kimi_retry',
+            attempt: attempt + 1,
+            delayMs: delay,
+            errorType: errorInfo.type
+          });
+
+          await sleep(delay);
+        }
       }
-    );
 
-    const reply = response.data?.choices?.[0]?.message?.content;
+      throw lastError;
+    }
 
-    if (!reply) {
-      throw new Error('Empty response from Kimi');
+    while (iterations < MAX_TOOL_ITERATIONS) {
+      iterations++;
+
+      const response = await callKimiWithRetry(messages);
+
+      const choice = response.data?.choices?.[0];
+      const assistantMessage = choice?.message;
+
+      if (!assistantMessage) {
+        throw new Error('Empty response from Kimi');
+      }
+
+      // Check if Kimi wants to call tools
+      if (assistantMessage.tool_calls && assistantMessage.tool_calls.length > 0) {
+        // Add assistant message with tool calls to conversation
+        messages.push(assistantMessage);
+
+        // Execute each tool call
+        for (const toolCall of assistantMessage.tool_calls) {
+          logger.info('Kimi tool call', {
+            operation: 'kimi_tool_call',
+            tool: toolCall.function.name,
+            args: toolCall.function.arguments
+          });
+
+          const toolResult = await executeToolCall(toolCall);
+
+          // Add tool result to conversation
+          messages.push({
+            role: 'tool',
+            tool_call_id: toolCall.id,
+            content: toolResult
+          });
+        }
+
+        // Continue loop to get Kimi's response after tool execution
+        continue;
+      }
+
+      // No tool calls - we have the final response
+      finalReply = assistantMessage.content;
+      break;
+    }
+
+    if (!finalReply) {
+      throw new Error('No final response from Kimi after tool calls');
     }
 
     logger.info('Kimi chat response', {
       operation: 'kimi_chat_response',
       userId: req.user?.uid,
-      replyLength: reply.length
+      replyLength: finalReply.length,
+      toolIterations: iterations
     });
 
     res.json({
-      reply,
+      reply: finalReply,
       model: KIMI_MODEL
     });
 
   } catch (error) {
-    logger.error('Kimi chat error', {
+    const errorInfo = classifyError(error);
+
+    logger[errorInfo.logLevel]('Kimi chat error', {
       operation: 'kimi_chat_error',
+      errorType: errorInfo.type,
       error: error.message,
+      status: error.response?.status,
       response: error.response?.data
     });
 
-    res.status(500).json({
-      error: 'Internal Server Error',
-      message: 'Failed to get response from Kimi'
-    });
+    // Return appropriate status code based on error type
+    let statusCode = 500;
+    if (errorInfo.type === 'rate_limit') statusCode = 429;
+    else if (errorInfo.type === 'auth_error') statusCode = 503;
+    else if (errorInfo.type === 'bad_request') statusCode = 400;
+    else if (errorInfo.type === 'context_exceeded') statusCode = 413;
+
+    const responseBody = {
+      error: errorInfo.type,
+      message: errorInfo.message
+    };
+
+    // Add retry-after header for rate limits
+    if (errorInfo.type === 'rate_limit' && errorInfo.retryAfter) {
+      res.set('Retry-After', String(errorInfo.retryAfter));
+      responseBody.retryAfter = errorInfo.retryAfter;
+    }
+
+    res.status(statusCode).json(responseBody);
   }
 });
 

@@ -12,6 +12,7 @@ const EVENTS_API_BASE = 'https://events-service-521240388393.europe-west2.run.ap
 // Chat state
 let isOpen = false;
 let isLoading = false;
+let isExpanded = false;
 let chatHistory = [];
 
 /**
@@ -27,7 +28,11 @@ function createChatWidget() {
     <div id="kimi-chat-panel" class="kimi-chat__panel kimi-chat__panel--hidden">
       <div class="kimi-chat__header">
         <span class="kimi-chat__title">🤖 Kimi Aðstoð</span>
-        <button id="kimi-chat-close" class="kimi-chat__close" title="Loka">&times;</button>
+        <div class="kimi-chat__header-actions">
+          <button id="kimi-chat-clear" class="kimi-chat__clear" title="Nýtt samtal">🗑️</button>
+          <button id="kimi-chat-expand" class="kimi-chat__expand" title="Stækka">⛶</button>
+          <button id="kimi-chat-close" class="kimi-chat__close" title="Loka">&times;</button>
+        </div>
       </div>
       <div id="kimi-chat-messages" class="kimi-chat__messages">
         <div class="kimi-chat__message kimi-chat__message--assistant">
@@ -127,19 +132,51 @@ function addChatStyles() {
       font-size: 1rem;
     }
 
+    .kimi-chat__header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .kimi-chat__clear,
+    .kimi-chat__expand,
     .kimi-chat__close {
       background: none;
       border: none;
       color: inherit;
-      font-size: 24px;
+      font-size: 16px;
       cursor: pointer;
-      padding: 0;
+      padding: 4px;
       line-height: 1;
       opacity: 0.8;
+      border-radius: 4px;
     }
 
+    .kimi-chat__expand,
+    .kimi-chat__close {
+      font-size: 20px;
+    }
+
+    .kimi-chat__clear:hover,
+    .kimi-chat__expand:hover,
     .kimi-chat__close:hover {
       opacity: 1;
+      background: rgba(255,255,255,0.1);
+    }
+
+    /* Expanded state */
+    .kimi-chat__panel--expanded {
+      width: 700px;
+      max-width: calc(100vw - 40px);
+      height: 80vh;
+      max-height: calc(100vh - 100px);
+    }
+
+    @media (min-width: 1200px) {
+      .kimi-chat__panel--expanded {
+        width: 900px;
+        height: 85vh;
+      }
     }
 
     .kimi-chat__messages {
@@ -384,43 +421,62 @@ function hideLoading() {
 }
 
 /**
- * Make API request with retry logic
+ * Custom error class for API errors with structured data
  */
-async function fetchWithRetry(url, options, maxRetries = 3) {
-  let lastError;
-
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      const response = await fetch(url, options);
-
-      if (!response.ok) {
-        // Don't retry 4xx errors (client errors)
-        if (response.status >= 400 && response.status < 500) {
-          throw new Error(`API error: ${response.status}`);
-        }
-        throw new Error(`Server error: ${response.status}`);
-      }
-
-      return response;
-    } catch (error) {
-      lastError = error;
-      debug.log(`Kimi API attempt ${attempt}/${maxRetries} failed:`, error.message);
-
-      // Don't retry on auth or client errors
-      if (error.message.includes('API error')) {
-        throw error;
-      }
-
-      // Wait before retry (exponential backoff: 1s, 2s, 4s)
-      if (attempt < maxRetries) {
-        const waitMs = Math.pow(2, attempt - 1) * 1000;
-        debug.log(`Retrying in ${waitMs}ms...`);
-        await new Promise(resolve => setTimeout(resolve, waitMs));
-      }
-    }
+class KimiApiError extends Error {
+  constructor(message, type, retryAfter = null, status = 500) {
+    super(message);
+    this.name = 'KimiApiError';
+    this.type = type;
+    this.retryAfter = retryAfter;
+    this.status = status;
   }
+}
 
-  throw lastError;
+/**
+ * Make API request - backend handles retries now
+ */
+async function fetchKimiApi(url, options) {
+  try {
+    const response = await fetch(url, options);
+
+    // Parse response body
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      // Use error message from server if available
+      const errorMsg = data.message || 'Villa kom upp';
+      const errorType = data.error || 'unknown';
+      const retryAfter = data.retryAfter || parseInt(response.headers.get('Retry-After')) || null;
+
+      throw new KimiApiError(errorMsg, errorType, retryAfter, response.status);
+    }
+
+    return data;
+  } catch (error) {
+    // Re-throw KimiApiError as-is
+    if (error instanceof KimiApiError) {
+      throw error;
+    }
+
+    // Network errors
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new KimiApiError(
+        'Náði ekki sambandi við þjón. Athugaðu nettengingu.',
+        'network_error',
+        null,
+        0
+      );
+    }
+
+    // Other errors
+    throw new KimiApiError(
+      error.message || 'Óvænt villa kom upp',
+      'unknown',
+      null,
+      500
+    );
+  }
 }
 
 /**
@@ -447,11 +503,13 @@ async function sendMessage(message) {
     // Get Firebase auth token
     const auth = getFirebaseAuth();
     const user = auth.currentUser;
-    if (!user) throw new Error('Not authenticated');
+    if (!user) {
+      throw new KimiApiError('Þú þarft að skrá þig inn aftur.', 'auth_error', null, 401);
+    }
 
     const token = await user.getIdToken();
 
-    const response = await fetchWithRetry(`${EVENTS_API_BASE}/api/kimi/chat`, {
+    const data = await fetchKimiApi(`${EVENTS_API_BASE}/api/kimi/chat`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -463,7 +521,6 @@ async function sendMessage(message) {
       })
     });
 
-    const data = await response.json();
     const reply = data.reply;
 
     // Add assistant message
@@ -475,15 +532,21 @@ async function sendMessage(message) {
     debug.error('Kimi chat error:', error);
     hideLoading();
 
-    // Show error with context
-    let errorMsg = 'Villa kom upp.';
-    if (error.message.includes('Not authenticated')) {
-      errorMsg = 'Þú þarft að skrá þig inn aftur.';
-    } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-      errorMsg = 'Náði ekki sambandi við þjón. Athugaðu nettengingu.';
-    } else if (error.message.includes('Server error')) {
-      errorMsg = 'Þjónninn svaraði ekki. Reynt var 3 sinnum.';
+    // Build user-friendly error message
+    let errorMsg = error.message || 'Villa kom upp.';
+
+    // Add retry info if available
+    if (error.retryAfter) {
+      errorMsg += ` Reyndu aftur eftir ${error.retryAfter} sekúndur.`;
     }
+
+    // Add helpful hints based on error type
+    if (error.type === 'context_exceeded') {
+      errorMsg += '\n\n💡 Ábending: Smelltu á "Nýtt samtal" til að byrja upp á nýtt.';
+    } else if (error.type === 'rate_limit') {
+      errorMsg += '\n\n⏳ Of margar beiðnir sendar. Bíddu aðeins.';
+    }
+
     addMessage('assistant', errorMsg);
   } finally {
     isLoading = false;
@@ -511,6 +574,45 @@ function toggleChat() {
 }
 
 /**
+ * Toggle expanded state
+ */
+function toggleExpand() {
+  isExpanded = !isExpanded;
+  const panel = document.getElementById('kimi-chat-panel');
+  const expandBtn = document.getElementById('kimi-chat-expand');
+
+  if (isExpanded) {
+    panel.classList.add('kimi-chat__panel--expanded');
+    expandBtn.textContent = '⛶';
+    expandBtn.title = 'Minnka';
+  } else {
+    panel.classList.remove('kimi-chat__panel--expanded');
+    expandBtn.textContent = '⛶';
+    expandBtn.title = 'Stækka';
+  }
+}
+
+/**
+ * Clear chat history and reset UI
+ */
+function clearChat() {
+  // Reset history
+  chatHistory = [];
+
+  // Reset messages UI
+  const messagesEl = document.getElementById('kimi-chat-messages');
+  messagesEl.innerHTML = `
+    <div class="kimi-chat__message kimi-chat__message--assistant">
+      <div class="kimi-chat__bubble">
+        Hæ! Ég er Kimi, gervigreindaraðstoðarmaður fyrir Ekklesia kerfið. Hvernig get ég aðstoðað þig?
+      </div>
+    </div>
+  `;
+
+  debug.log('Kimi chat cleared');
+}
+
+/**
  * Initialize chat widget
  */
 export function initKimiChat() {
@@ -523,6 +625,8 @@ export function initKimiChat() {
   // Event listeners
   document.getElementById('kimi-chat-toggle').addEventListener('click', toggleChat);
   document.getElementById('kimi-chat-close').addEventListener('click', toggleChat);
+  document.getElementById('kimi-chat-expand').addEventListener('click', toggleExpand);
+  document.getElementById('kimi-chat-clear').addEventListener('click', clearChat);
 
   document.getElementById('kimi-chat-send').addEventListener('click', () => {
     const input = document.getElementById('kimi-chat-input');
