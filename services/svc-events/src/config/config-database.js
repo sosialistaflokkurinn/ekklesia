@@ -13,10 +13,14 @@ const pool = new Pool({
   user: process.env.DATABASE_USER || 'postgres',
   password: process.env.DATABASE_PASSWORD,
 
-  // Connection pool settings
-  max: 10, // Maximum number of clients in the pool
+  // Connection pool settings (configurable via environment)
+  min: parseInt(process.env.DATABASE_POOL_MIN || '2'),  // Keep connections warm
+  max: parseInt(process.env.DATABASE_POOL_MAX || '25'), // Max connections per instance
   idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
   connectionTimeoutMillis: 10000, // Return error after 10 seconds if connection cannot be established
+
+  // Statement timeout to prevent long-running queries
+  statement_timeout: 30000,
 });
 
 // Test connection on startup
@@ -79,7 +83,20 @@ async function query(text, params) {
   }
 }
 
+/**
+ * Get pool metrics for monitoring
+ * @returns {Object} Pool statistics
+ */
+function getPoolMetrics() {
+  return {
+    totalConnections: pool.totalCount,
+    idleConnections: pool.idleCount,
+    waitingRequests: pool.waitingCount
+  };
+}
+
 module.exports = {
   pool,
-  query
+  query,
+  getPoolMetrics
 };

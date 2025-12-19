@@ -5,9 +5,41 @@
  * a client can make within a time window.
  *
  * Security: Prevents brute force attacks, vote flooding, and resource exhaustion
+ *
+ * Key generation priority:
+ * 1. Authenticated user ID (hardest to spoof)
+ * 2. IP + User-Agent fingerprint (fallback)
  */
 
 const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
+const crypto = require('crypto');
+
+/**
+ * Generate a rate limit key with fingerprinting
+ *
+ * Uses authenticated user ID when available, otherwise falls back
+ * to IP + User-Agent fingerprint to make spoofing harder.
+ *
+ * @param {Object} req - Express request object
+ * @returns {string} Rate limit key
+ */
+function fingerprintKeyGenerator(req) {
+  // Prefer authenticated user ID (harder to spoof)
+  if (req.user?.uid) {
+    return `user:${req.user.uid}`;
+  }
+
+  // Fallback to IP + User-Agent fingerprint
+  const ip = req.ip || 'unknown';
+  const userAgent = req.headers['user-agent'] || '';
+  const fingerprint = crypto
+    .createHash('sha256')
+    .update(`${ip}:${userAgent}`)
+    .digest('hex')
+    .substring(0, 16);
+
+  return `fp:${fingerprint}`;
+}
 
 /**
  * IP Key Generator for rate limiting
@@ -33,7 +65,7 @@ const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
 const readLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 100, // 100 requests per window
-  keyGenerator: ipKeyGenerator, // Use library's IPv6-safe helper
+  keyGenerator: fingerprintKeyGenerator,
   message: {
     error: 'RATE_LIMIT_EXCEEDED',
     message: 'Too many requests, please try again later.',
@@ -52,7 +84,7 @@ const readLimiter = rateLimit({
 const writeLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 30, // 30 requests per window
-  keyGenerator: ipKeyGenerator, // Use library's IPv6-safe helper
+  keyGenerator: fingerprintKeyGenerator,
   message: {
     error: 'RATE_LIMIT_EXCEEDED',
     message: 'Too many write requests, please try again later.',
@@ -71,20 +103,16 @@ const writeLimiter = rateLimit({
 const voteLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 10, // 10 requests per window (strict for security)
-  keyGenerator: ipKeyGenerator, // Use library's IPv6-safe helper
+  keyGenerator: fingerprintKeyGenerator,
   message: {
     error: 'RATE_LIMIT_EXCEEDED',
     message: 'Too many vote attempts, please try again later.',
     retryAfter: '1 minute'
   },
   standardHeaders: true,
-  legacyHeaders: false,
-  // Skip rate limiting for successful votes (to avoid penalizing legitimate voters)
-  skip: (req, res) => {
-    // Only apply rate limit to failed attempts
-    // Successful votes are already protected by database UNIQUE constraint
-    return res.statusCode === 200 || res.statusCode === 201;
-  }
+  legacyHeaders: false
+  // Note: Removed skip() to prevent rate limit bypass via validation errors
+  // All vote attempts now count against the rate limit
 });
 
 /**
@@ -96,7 +124,7 @@ const voteLimiter = rateLimit({
 const adminLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 60, // 60 requests per window (moderate for admin operations)
-  keyGenerator: ipKeyGenerator, // Use library's IPv6-safe helper
+  keyGenerator: fingerprintKeyGenerator,
   message: {
     error: 'RATE_LIMIT_EXCEEDED',
     message: 'Too many admin requests, please try again later.',
