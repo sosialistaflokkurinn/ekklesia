@@ -165,6 +165,84 @@ export function validateKennitala(kennitala) {
 }
 
 /**
+ * Validate kennitala checksum using the official Icelandic algorithm
+ *
+ * The checksum algorithm for Icelandic kennitala:
+ * 1. Kennitala has 10 digits: DDMMYYRRRC where C is check digit
+ * 2. Multiply first 8 digits by weights [3, 2, 7, 6, 5, 4, 3, 2]
+ * 3. Sum the products and add the 9th digit (century indicator, usually ignored)
+ * 4. Check digit = 11 - (sum mod 11), or 0 if result is 11
+ * 5. If result is 10, the kennitala is invalid
+ *
+ * @param {string} kennitala - Kennitala to validate (with or without hyphen)
+ * @returns {boolean} True if checksum is valid
+ *
+ * @example
+ * validateKennitalaChecksum('120174-3399'); // true (valid)
+ * validateKennitalaChecksum('1201743399');  // true (valid)
+ * validateKennitalaChecksum('1201743398');  // false (invalid check digit)
+ */
+export function validateKennitalaChecksum(kennitala) {
+  if (!kennitala) return false;
+
+  // Clean input - remove hyphen and any non-digits
+  const cleaned = kennitala.replace(/[-\s]/g, '');
+
+  // Must be exactly 10 digits
+  if (cleaned.length !== 10 || !/^\d{10}$/.test(cleaned)) {
+    return false;
+  }
+
+  // Weights for positions 1-8 (0-indexed: 0-7)
+  const weights = [3, 2, 7, 6, 5, 4, 3, 2];
+
+  // Calculate weighted sum of first 8 digits
+  let sum = 0;
+  for (let i = 0; i < 8; i++) {
+    sum += parseInt(cleaned[i], 10) * weights[i];
+  }
+
+  // Calculate expected check digit (9th position, 0-indexed: 8)
+  const remainder = sum % 11;
+  const expectedCheckDigit = remainder === 0 ? 0 : 11 - remainder;
+
+  // If expected check digit is 10, the kennitala is invalid
+  if (expectedCheckDigit === 10) {
+    return false;
+  }
+
+  // Compare with actual check digit (9th digit in the kennitala)
+  const actualCheckDigit = parseInt(cleaned[8], 10);
+
+  return expectedCheckDigit === actualCheckDigit;
+}
+
+/**
+ * Full kennitala validation with both format and checksum
+ *
+ * Use this when you need to validate user-entered kennitala that hasn't
+ * been verified by Kenni.is OAuth. For kennitala from Kenni.is, the
+ * simpler validateKennitala() is sufficient.
+ *
+ * @param {string} kennitala - Kennitala to validate
+ * @returns {boolean} True if format AND checksum are valid
+ *
+ * @example
+ * isValidKennitalaWithChecksum('120174-3399'); // true
+ * isValidKennitalaWithChecksum('1201743398');  // false (bad checksum)
+ * isValidKennitalaWithChecksum('12345');       // false (bad format)
+ */
+export function isValidKennitalaWithChecksum(kennitala) {
+  // First validate format
+  if (!validateKennitala(kennitala)) {
+    return false;
+  }
+
+  // Then validate checksum
+  return validateKennitalaChecksum(kennitala);
+}
+
+/**
  * Validate international phone number (E.164 format)
  * @param {string} phone - Phone number to validate
  * @returns {boolean} True if valid international format
