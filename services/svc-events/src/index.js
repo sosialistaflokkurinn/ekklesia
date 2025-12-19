@@ -8,6 +8,7 @@ const externalEventsRouter = require('./routes/route-external-events');
 const kimiChatRouter = require('./routes/route-kimi-chat');
 const partyWikiRouter = require('./routes/route-party-wiki');
 const systemHealthRouter = require('./routes/route-system-health');
+const errorsRouter = require('./routes/route-errors');
 const { verifyAppCheckOptional } = require('./middleware/middleware-app-check');
 const { readLimiter, adminLimiter } = require('./middleware/middleware-rate-limiter');
 const logger = require('./utils/util-logger');
@@ -67,6 +68,10 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+
+// Error reporting endpoint - no App Check (errors can occur before Firebase init)
+// Uses 10kb limit for error batches, has its own rate limiting
+app.use('/api/errors', express.json({ limit: '10kb', strict: true }), errorsRouter);
 
 // Security: Firebase App Check verification (monitor-only mode)
 // After 1-2 days of monitoring, switch to verifyAppCheck for enforcement
