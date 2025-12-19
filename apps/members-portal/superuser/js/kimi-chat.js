@@ -171,6 +171,8 @@ function addChatStyles() {
       font-size: 0.9rem;
       white-space: pre-wrap;
       word-break: break-word;
+      overflow: hidden;
+      max-width: 100%;
     }
 
     .kimi-chat__message--user .kimi-chat__bubble {
@@ -191,6 +193,7 @@ function addChatStyles() {
       border-radius: 4px;
       font-family: monospace;
       font-size: 0.85em;
+      word-break: break-all;
     }
 
     .kimi-chat__bubble pre {
@@ -199,6 +202,9 @@ function addChatStyles() {
       border-radius: 6px;
       overflow-x: auto;
       margin: 8px 0;
+      max-width: 100%;
+      white-space: pre-wrap;
+      word-break: break-all;
     }
 
     .kimi-chat__bubble pre code {
