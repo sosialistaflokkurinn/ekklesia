@@ -109,7 +109,8 @@ from fn_validate_address import validate_address, validate_postal_code
 from fn_search_addresses import search_addresses
 
 # Import municipality migration function (issue #330)
-from fn_migrate_municipality import run_municipality_migration
+# NOTE: Module does not exist - commented out to fix deployment
+# from fn_migrate_municipality import run_municipality_migration
 
 # ==============================================================================
 # SUPERUSER FUNCTIONS (Epic: Superuser Console)
@@ -288,8 +289,8 @@ __all__ = [
     'validate_postal_code',
     # Address search (autocomplete)
     'search_addresses',
-    # Municipality migration (issue #330)
-    'run_municipality_migration',
+    # Municipality migration (issue #330) - module does not exist
+    # 'run_municipality_migration',
     # Superuser functions
     'setUserRole',
     'getUserRole',
