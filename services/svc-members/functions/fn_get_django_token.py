@@ -13,6 +13,7 @@ from flask import jsonify, Request
 import firebase_admin
 from firebase_admin import auth
 from shared.cors import get_allowed_origin, cors_headers_for_origin
+from shared.rate_limit import check_uid_rate_limit
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -76,6 +77,14 @@ def get_django_token(request: Request) -> Tuple[Any, int, dict]:
                 'error': 'Forbidden',
                 'message': 'You do not have permission to access this resource. Admin or superuser role required.'
             }), 403, headers)
+
+        # Security: Rate limit token retrieval (5 per 10 minutes per user)
+        if not check_uid_rate_limit(decoded_token['uid'], 'get_django_token', max_attempts=5, window_minutes=10):
+            logger.warning(f"getDjangoToken: Rate limited user {decoded_token['uid']}")
+            return (jsonify({
+                'error': 'Too Many Requests',
+                'message': 'Rate limit exceeded. Please try again later.'
+            }), 429, headers)
 
         # Get Django token from environment variable (injected via Secret Manager)
         django_token = os.environ.get('DJANGO_API_TOKEN')
