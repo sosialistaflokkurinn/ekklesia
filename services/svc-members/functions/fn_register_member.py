@@ -34,6 +34,7 @@ import logging
 import os
 import re
 import requests
+import random
 from datetime import datetime, timezone
 from typing import Any
 
@@ -42,6 +43,7 @@ from firebase_admin import firestore
 from google.cloud.firestore_v1 import Increment
 
 from shared.validators import normalize_kennitala, normalize_phone, validate_kennitala
+from shared.rate_limit import check_rate_limit
 from util_logging import log_json
 from fn_sync_banned_kennitala import is_kennitala_banned
 
@@ -294,6 +296,22 @@ def register_member(req: https_fn.CallableRequest) -> dict[str, Any]:
         dict with 'comrade_id' (int) and 'error' (str or null)
     """
     try:
+        # Security: IP-based rate limiting (5 registrations per 10 minutes per IP)
+        client_ip = None
+        if hasattr(req, 'raw_request') and req.raw_request:
+            client_ip = req.raw_request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
+            if not client_ip:
+                client_ip = req.raw_request.remote_addr
+
+        if client_ip and not check_rate_limit(client_ip, max_attempts=5, window_minutes=10):
+            log_json('WARN', 'Registration rate limit exceeded',
+                     event='register_member_rate_limited',
+                     ip=client_ip[:20] if client_ip else 'unknown')
+            return {
+                'comrade_id': None,
+                'error': {'_rate_limit': 'Of margar skráningar. Reyndu aftur eftir smá stund.'}
+            }
+
         data = req.data or {}
 
         # Extract required fields
@@ -358,11 +376,13 @@ def register_member(req: https_fn.CallableRequest) -> dict[str, Any]:
                 logger.warning(f"Failed to write shadow ban audit log: {audit_err}")
 
             # Return fake success - user thinks they registered
+            # Security: Use random ID to prevent enumeration of banned kennitalas
+            fake_id = random.randint(10000, 99999)
             return {
-                'comrade_id': 9999,  # Fake ID
+                'comrade_id': fake_id,
                 'django_id': None,
-                'error': None,
-                'shadow_banned': True  # Internal flag, not shown to user
+                'error': None
+                # Note: shadow_banned flag removed to prevent detection
             }
 
         # Initialize Firestore
