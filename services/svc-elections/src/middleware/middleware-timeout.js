@@ -40,18 +40,20 @@ function timeoutMiddleware(durationMs, operation = 'request') {
       });
 
       if (!res.headersSent) {
+        // Security: Generic message - don't expose exact timeout duration
         res.status(503).json({
           error: 'Service Unavailable',
-          message: `Request timeout after ${durationMs}ms`,
+          message: 'Request timeout',
           retryAfter: 5
         });
       }
     }, durationMs);
 
-    // Clear timeout when response is finished
-    res.on('finish', () => {
-      clearTimeout(timeoutId);
-    });
+    // Security: Clear timeout on both finish and close events
+    // to prevent resource leaks on aborted connections
+    const cleanup = () => clearTimeout(timeoutId);
+    res.on('finish', cleanup);
+    res.on('close', cleanup);
 
     // Attach timeout state to request for downstream middleware
     req.timedOut = () => timedOut;

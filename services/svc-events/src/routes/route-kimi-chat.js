@@ -190,11 +190,45 @@ const GITHUB_RAW_BASE = `https://raw.githubusercontent.com/${GITHUB_REPO}/${GITH
 const GITHUB_API_BASE = `https://api.github.com/repos/${GITHUB_REPO}`;
 
 /**
+ * Validate repository path to prevent path traversal attacks
+ * @param {string} path - Path to validate
+ * @returns {string} - Sanitized path
+ * @throws {Error} - If path is invalid
+ */
+function validateRepoPath(path) {
+  if (!path || typeof path !== 'string') {
+    throw new Error('Path required');
+  }
+
+  // Remove leading/trailing slashes and normalize
+  const normalized = path.replace(/^\/+|\/+$/g, '').trim();
+
+  // Security: Block path traversal attempts
+  if (normalized.includes('..') || normalized.startsWith('.')) {
+    throw new Error('Invalid path: traversal not allowed');
+  }
+
+  // Security: Only allow alphanumeric, dash, underscore, dot, and slash
+  if (!/^[\w\-./]+$/.test(normalized)) {
+    throw new Error('Invalid path: contains invalid characters');
+  }
+
+  // Security: Limit path length
+  if (normalized.length > 200) {
+    throw new Error('Invalid path: too long');
+  }
+
+  return normalized;
+}
+
+/**
  * Fetch a file from the GitHub repository
  */
 async function readGitHubFile(path) {
   try {
-    const url = `${GITHUB_RAW_BASE}/${path}`;
+    // Security: Validate path before use
+    const safePath = validateRepoPath(path);
+    const url = `${GITHUB_RAW_BASE}/${safePath}`;
     const response = await axios.get(url, {
       timeout: 10000,
       headers: { 'Accept': 'text/plain' }
@@ -219,7 +253,9 @@ async function readGitHubFile(path) {
  */
 async function listGitHubDirectory(path = '') {
   try {
-    const url = `${GITHUB_API_BASE}/contents/${path}`;
+    // Security: Validate path (empty is allowed for root)
+    const safePath = path ? validateRepoPath(path) : '';
+    const url = `${GITHUB_API_BASE}/contents/${safePath}`;
     const response = await axios.get(url, {
       timeout: 10000,
       headers: {

@@ -6,6 +6,26 @@ const logger = require('../utils/util-logger');
  * Cloud SQL PostgreSQL 15 (ekklesia-db)
  */
 
+/**
+ * Validate required database environment variables at startup
+ * Security: Fail fast if configuration is missing to prevent silent failures
+ */
+function validateDatabaseConfig() {
+  const required = ['DATABASE_PASSWORD'];
+  const missing = required.filter(key => !process.env[key]);
+
+  if (missing.length > 0) {
+    // Security: Log missing vars but don't expose names in production
+    logger.error('[DB] Missing required environment variables', {
+      count: missing.length
+    });
+    throw new Error('Database configuration incomplete');
+  }
+}
+
+// Validate on module load (fail fast)
+validateDatabaseConfig();
+
 const pool = new Pool({
   host: process.env.DATABASE_HOST || '127.0.0.1',
   port: parseInt(process.env.DATABASE_PORT || '5433'),

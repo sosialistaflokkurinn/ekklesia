@@ -72,7 +72,9 @@ const readLimiter = rateLimit({
     retryAfter: '1 minute'
   },
   standardHeaders: true, // Return rate limit info in `RateLimit-*` headers
-  legacyHeaders: false // Disable `X-RateLimit-*` headers
+  legacyHeaders: false, // Disable `X-RateLimit-*` headers
+  // Disable validation - Cloud Run handles IPv6 via load balancer
+  validate: false
 });
 
 /**
@@ -91,7 +93,8 @@ const writeLimiter = rateLimit({
     retryAfter: '1 minute'
   },
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
+  validate: false
 });
 
 /**
@@ -110,7 +113,8 @@ const voteLimiter = rateLimit({
     retryAfter: '1 minute'
   },
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
+  validate: false
   // Note: Removed skip() to prevent rate limit bypass via validation errors
   // All vote attempts now count against the rate limit
 });
@@ -131,7 +135,8 @@ const adminLimiter = rateLimit({
     retryAfter: '1 minute'
   },
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
+  validate: false
 });
 
 module.exports = {

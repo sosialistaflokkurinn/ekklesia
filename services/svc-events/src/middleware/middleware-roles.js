@@ -65,29 +65,22 @@ function generateCorrelationId() {
  */
 function createForbiddenResponse(req, requiredRoles, mode = 'any') {
   const correlationId = req.correlationId || generateCorrelationId();
-  const userRoles = getUserRoles(req);
   const uid = req.user?.uid || 'unknown';
 
-  // Log structured denial event
+  // Log structured denial event (internal only)
   logger.warn('Access denied - insufficient roles', {
     operation: 'role_check',
     correlation_id: correlationId,
     performed_by: uid,
-    granted_roles: userRoles,
-    required_roles: requiredRoles,
-    requirement_mode: mode,
     path: req.path,
     method: req.method
   });
 
+  // Security: Generic response - don't expose roles structure to client
   return {
     error: 'Forbidden',
-    message: mode === 'all'
-      ? `Missing required roles (must have all): ${requiredRoles.join(', ')}`
-      : `Missing required role (must have any of): ${requiredRoles.join(', ')}`,
-    correlation_id: correlationId,
-    required_roles: requiredRoles,
-    requirement_mode: mode
+    message: 'Access denied',
+    correlation_id: correlationId
   };
 }
 
