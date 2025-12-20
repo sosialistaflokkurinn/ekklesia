@@ -14,10 +14,16 @@ from typing import Dict, Any, Optional, List
 from firebase_admin import firestore
 from firebase_functions import https_fn
 from util_logging import log_json
+from shared.rate_limit import check_uid_rate_limit
 from datetime import datetime
 import os
 import re
 import html2text
+
+# Security: Maximum limits
+MAX_TEMPLATE_SIZE = 100000  # 100KB max template size
+MAX_VARIABLE_COUNT = 50  # Max variables in template
+MAX_RECIPIENTS_PER_BATCH = 1000  # Max recipients per campaign batch
 
 # Lazy-load SES client to avoid import issues when credentials not available
 _ses_client = None
@@ -50,7 +56,7 @@ def get_ses_client():
     return _ses_client
 
 
-def get_filtered_members(db, recipient_filter: Dict[str, Any]) -> List:
+def get_filtered_members(db, recipient_filter: Dict[str, Any], max_results: int = MAX_RECIPIENTS_PER_BATCH) -> List:
     """
     Get members filtered by recipient_filter criteria.
 
@@ -60,11 +66,12 @@ def get_filtered_members(db, recipient_filter: Dict[str, Any]) -> List:
             - status: "active" to filter active members only
             - districts: List of district/cell names
             - municipalities: List of city/municipality names
+        max_results: Maximum number of members to return (security limit)
 
     Returns:
         List of Firestore document snapshots matching the filter.
     """
-    members_query = db.collection("members")
+    members_query = db.collection("members").limit(max_results)
 
     # Filter by status
     if recipient_filter.get("status") == "active":
@@ -134,6 +141,18 @@ def require_admin(req: https_fn.CallableRequest) -> Dict[str, Any]:
         )
 
     return claims
+
+
+def validate_email(email: str) -> bool:
+    """
+    Validate email format.
+    Security: Prevents sending to malformed or potentially dangerous addresses.
+    """
+    if not email or len(email) > 254:
+        return False
+    # RFC 5322 simplified pattern
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return bool(re.match(pattern, email))
 
 
 def slugify(text: str) -> str:
@@ -323,6 +342,13 @@ def save_email_template_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
             message="type must be 'transactional' or 'broadcast'"
         )
 
+    # Security: Validate template size
+    if len(body_html) > MAX_TEMPLATE_SIZE:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+            message=f"Template too large. Maximum size is {MAX_TEMPLATE_SIZE // 1000}KB"
+        )
+
     # Auto-generate alias if not provided
     if not alias:
         alias = slugify(name)
@@ -438,16 +464,32 @@ def render_template(body: str, variables: Dict[str, Any]) -> str:
     """
     Render template with variables using simple {{ var }} syntax.
     Supports nested variables like {{ member.name }}.
+
+    Security: Only allows alphanumeric variable names with dots for nesting.
+    Prevents SSTI by not evaluating Python expressions.
     """
+    # Security: Whitelist of allowed top-level variable names
+    ALLOWED_VARS = {'member', 'cell', 'organization', 'date', 'unsubscribe_url', 'subject'}
+
     def replace_var(match):
         var_path = match.group(1).strip()
+
+        # Security: Validate variable name format
+        if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*$', var_path):
+            return ''  # Invalid format, return empty
+
         parts = var_path.split('.')
+
+        # Security: Check if top-level variable is allowed
+        if parts[0] not in ALLOWED_VARS:
+            return ''  # Unknown variable, return empty
+
         value = variables
         for part in parts:
             if isinstance(value, dict):
                 value = value.get(part, '')
             else:
-                return match.group(0)  # Keep original if not found
+                return ''  # Not a dict, return empty
         return str(value) if value else ''
 
     return re.sub(r'\{\{\s*([a-zA-Z_][a-zA-Z0-9_.]*)\s*\}\}', replace_var, body)
@@ -470,6 +512,13 @@ def send_email_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
         Send status with SES message ID.
     """
     require_admin(req)
+
+    # Security: Rate limit email sending (10 per minute per admin)
+    if not check_uid_rate_limit(req.auth.uid, "send_email", max_attempts=10, window_minutes=1):
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED,
+            message="Rate limit exceeded. Maximum 10 emails per minute."
+        )
 
     data = req.data or {}
     template_id = data.get("template_id")
@@ -517,6 +566,13 @@ def send_email_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
                 code=https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
                 message="Member does not have an email address"
             )
+
+    # Security: Validate email format
+    if not validate_email(recipient_email):
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+            message="Invalid email address format"
+        )
 
     # Build variables with member data
     if member_data:
@@ -759,6 +815,13 @@ def send_campaign_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
         Send progress with counts.
     """
     require_admin(req)
+
+    # Security: Rate limit campaign sends (1 per 10 minutes per admin)
+    if not check_uid_rate_limit(req.auth.uid, "send_campaign", max_attempts=1, window_minutes=10):
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED,
+            message="Rate limit exceeded. Maximum 1 campaign per 10 minutes."
+        )
 
     data = req.data or {}
     campaign_id = data.get("campaign_id")
