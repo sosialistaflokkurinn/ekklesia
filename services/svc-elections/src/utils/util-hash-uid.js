@@ -1,5 +1,11 @@
 const crypto = require('crypto');
 
+// Security: Validate LOG_SALT is set in production
+if (process.env.NODE_ENV === 'production' && !process.env.LOG_SALT) {
+  console.error('CRITICAL: LOG_SALT environment variable must be set in production');
+  // Don't throw - allow service to start but log warning
+}
+
 /**
  * Hash UID for logging (one-way, deterministic)
  *
@@ -18,8 +24,8 @@ function hashUidForLogging(uid) {
     return 'unknown';
   }
 
-  // Use environment variable salt (or default for development)
-  const salt = process.env.LOG_SALT || 'default-salt-please-change-in-production';
+  // Use environment variable salt (required in production)
+  const salt = process.env.LOG_SALT || 'dev-only-salt-not-for-production';
 
   // SHA256 hash with salt
   const hash = crypto.createHash('sha256')

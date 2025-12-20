@@ -240,7 +240,8 @@ def handleKenniAuth_handler(req: https_fn.Request) -> https_fn.Response:
         token_response = requests.post(
             token_url,
             data=payload,
-            headers={'Content-Type': 'application/x-www-form-urlencoded'}
+            headers={'Content-Type': 'application/x-www-form-urlencoded'},
+            timeout=15  # Security: 15 second timeout to prevent hanging
         )
         token_response.raise_for_status()
         kenni_is_id_token = token_response.json().get("id_token")
