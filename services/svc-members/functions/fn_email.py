@@ -50,6 +50,50 @@ def get_ses_client():
     return _ses_client
 
 
+def get_filtered_members(db, recipient_filter: Dict[str, Any]) -> List:
+    """
+    Get members filtered by recipient_filter criteria.
+
+    Args:
+        db: Firestore client
+        recipient_filter: Dict with optional keys:
+            - status: "active" to filter active members only
+            - districts: List of district/cell names
+            - municipalities: List of city/municipality names
+
+    Returns:
+        List of Firestore document snapshots matching the filter.
+    """
+    members_query = db.collection("members")
+
+    # Filter by status
+    if recipient_filter.get("status") == "active":
+        members_query = members_query.where("membership.status", "==", "active")
+
+    # Filter by district (cell/svæði) - Firestore query for single district
+    districts = recipient_filter.get("districts", [])
+    if districts and len(districts) == 1:
+        members_query = members_query.where("membership.cell", "==", districts[0])
+
+    # Stream members
+    members = list(members_query.stream())
+
+    # Filter by multiple districts (Python filter if more than one)
+    if districts and len(districts) > 1:
+        members = [m for m in members if m.to_dict().get("membership", {}).get("cell") in districts]
+
+    # Filter by municipality (city in addresses)
+    municipalities = recipient_filter.get("municipalities", [])
+    if municipalities:
+        def has_municipality(member_doc):
+            profile = member_doc.to_dict().get("profile", {})
+            addresses = profile.get("addresses", [])
+            return any(addr.get("city") in municipalities for addr in addresses)
+        members = [m for m in members if has_municipality(m)]
+
+    return members
+
+
 def require_admin(req: https_fn.CallableRequest) -> Dict[str, Any]:
     """
     Verify that the caller has admin or superuser role.
@@ -664,12 +708,8 @@ def create_email_campaign_handler(req: https_fn.CallableRequest) -> Dict[str, An
         )
 
     # Count recipients based on filter
-    members_query = db.collection("members")
-    if recipient_filter.get("status") == "active":
-        members_query = members_query.where("membership.status", "==", "active")
-    # TODO: Add district/municipality filters
-
-    recipient_count = len(list(members_query.stream()))
+    members = get_filtered_members(db, recipient_filter)
+    recipient_count = len(members)
 
     now = datetime.utcnow()
     campaign_data = {
@@ -776,12 +816,9 @@ def send_campaign_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             message="Email service not configured"
         )
 
-    # Get recipients
+    # Get recipients with filtering
     recipient_filter = campaign.get("recipient_filter", {})
-    members_query = db.collection("members")
-
-    if recipient_filter.get("status") == "active":
-        members_query = members_query.where("membership.status", "==", "active")
+    members = get_filtered_members(db, recipient_filter)
 
     sent_count = 0
     failed_count = 0
@@ -789,7 +826,7 @@ def send_campaign_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     try:
         emails_processed = 0
 
-        for member_doc in members_query.stream():
+        for member_doc in members:
             member = member_doc.to_dict()
             email = member.get("profile", {}).get("email")
 

@@ -18,6 +18,15 @@
 import { getFirebaseFirestore, httpsCallable, doc, updateDoc } from '../../firebase/app.js';
 import { debug } from '../utils/util-debug.js';
 import { R } from '../../i18n/strings-loader.js';
+import {
+  validateMemberProfileUpdate,
+  isValidKennitala,
+  ValidationError
+} from '../utils/util-validation.js';
+import { REGION } from '../config/config.js';
+
+// Re-export ValidationError for consumers
+export { ValidationError };
 
 /**
  * Generic Firestore document updater
@@ -94,7 +103,7 @@ async function updateFirestoreMember(kennitala, updates) {
  * @returns {Promise<Object>} Django update result
  * @private
  */
-async function updateDjangoMember(kennitala, updates, region = 'europe-west2') {
+async function updateDjangoMember(kennitala, updates, region = REGION) {
   // Call Cloud Function using Firebase callable function API
   const updateMemberProfile = httpsCallable('updatememberprofile', region);
 
@@ -172,16 +181,34 @@ async function rollbackFirestore(kennitala, originalData) {
  *   // Show error message (Firestore already rolled back)
  * }
  */
-export async function updateMemberProfile(kennitala, updates, originalData, region = 'europe-west2') {
-  // Normalize kennitala for Django API
+export async function updateMemberProfile(kennitala, updates, originalData, region = REGION) {
+  // Validate kennitala
   const kennitalaNoHyphen = kennitala.replace(/-/g, '');
+  if (!isValidKennitala(kennitalaNoHyphen)) {
+    throw new ValidationError('Ógild kennitala', 'kennitala');
+  }
+
+  // Validate and sanitize updates
+  let validatedUpdates;
+  try {
+    validatedUpdates = validateMemberProfileUpdate(updates);
+  } catch (error) {
+    debug.warn('Validation failed:', error.message);
+    throw error;
+  }
+
+  // Check if there are any valid updates
+  if (Object.keys(validatedUpdates).length === 0) {
+    debug.log('No valid updates to apply');
+    return;
+  }
 
   // Step 1: Optimistic update - Update Firestore first (instant feedback)
-  await updateFirestoreMember(kennitalaNoHyphen, updates);
+  await updateFirestoreMember(kennitalaNoHyphen, validatedUpdates);
 
   try {
     // Step 2: Update Django (source of truth)
-    await updateDjangoMember(kennitalaNoHyphen, updates, region);
+    await updateDjangoMember(kennitalaNoHyphen, validatedUpdates, region);
 
     // Success! Both Firestore and Django updated
   } catch (error) {

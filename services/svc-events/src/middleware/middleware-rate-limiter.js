@@ -5,9 +5,41 @@
  * a client can make within a time window.
  *
  * Security: Prevents brute force attacks, token flooding, and resource exhaustion
+ *
+ * Key generation priority:
+ * 1. Authenticated user ID (hardest to spoof)
+ * 2. IP + User-Agent fingerprint (fallback)
  */
 
 const rateLimit = require('express-rate-limit');
+const crypto = require('crypto');
+
+/**
+ * Generate a rate limit key with fingerprinting
+ *
+ * Uses authenticated user ID when available, otherwise falls back
+ * to IP + User-Agent fingerprint to make spoofing harder.
+ *
+ * @param {Object} req - Express request object
+ * @returns {string} Rate limit key
+ */
+function fingerprintKeyGenerator(req) {
+  // Prefer authenticated user ID (harder to spoof)
+  if (req.user?.uid) {
+    return `user:${req.user.uid}`;
+  }
+
+  // Fallback to IP + User-Agent fingerprint
+  const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || 'unknown';
+  const userAgent = req.headers['user-agent'] || '';
+  const fingerprint = crypto
+    .createHash('sha256')
+    .update(`${ip}:${userAgent}`)
+    .digest('hex')
+    .substring(0, 16);
+
+  return `fp:${fingerprint}`;
+}
 
 /**
  * Rate limiter for read operations (GET requests)
@@ -25,11 +57,7 @@ const readLimiter = rateLimit({
   },
   standardHeaders: true, // Return rate limit info in `RateLimit-*` headers
   legacyHeaders: false, // Disable `X-RateLimit-*` headers
-  // Use IP address for rate limiting
-  keyGenerator: (req) => {
-    // Use X-Forwarded-For if behind proxy (Cloud Run), otherwise use req.ip
-    return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip;
-  },
+  keyGenerator: fingerprintKeyGenerator,
   // Disable validation - Cloud Run handles IPv6 via load balancer
   validate: false
 });
@@ -50,9 +78,7 @@ const writeLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => {
-    return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip;
-  },
+  keyGenerator: fingerprintKeyGenerator,
   validate: false
 });
 
@@ -72,16 +98,10 @@ const tokenLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => {
-    return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip;
-  },
-  validate: false,
-  // Skip rate limiting for successful token issuance (to avoid penalizing legitimate users)
-  skip: (req, res) => {
-    // Only apply rate limit to failed attempts
-    // Successful token issuance is already protected by database UNIQUE constraint
-    return res.statusCode === 200 || res.statusCode === 201;
-  }
+  keyGenerator: fingerprintKeyGenerator,
+  validate: false
+  // Note: Removed skip() to prevent rate limit bypass via validation errors
+  // All attempts now count against the rate limit
 });
 
 /**
@@ -100,9 +120,7 @@ const adminLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => {
-    return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip;
-  },
+  keyGenerator: fingerprintKeyGenerator,
   validate: false
 });
 

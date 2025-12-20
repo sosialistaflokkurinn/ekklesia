@@ -15,6 +15,7 @@ import { MockElectionsAPI } from '../../elections/js/api/elections-mock.js';
 import { debug } from '../utils/util-debug.js';
 import { authenticatedFetch } from '../auth.js';
 import { normalizeElectionStatus, normalizeElectionsStatus } from '../utils/util-format.js';
+import { SERVICES } from '../config/config.js';
 
 // DEVELOPMENT FLAG: Toggle between mock and real API
 // NOTE: Real API endpoints implemented in Issue #248
@@ -58,11 +59,11 @@ async function createApiError(response, operation) {
 /**
  * Elections API Base URL
  *
- * Backend is live at https://elections-service-521240388393.europe-west2.run.app
+ * Configured in js/config/config.js
  * Deployed: Cloud Run (Europe West 2)
  * Note: Must match URL in admin-elections/js/api/elections-admin-api.js
  */
-const ELECTIONS_API_BASE = 'https://elections-service-521240388393.europe-west2.run.app';
+const ELECTIONS_API_BASE = SERVICES.ELECTIONS;
 
 /**
  * Get list of elections eligible for member

@@ -21,18 +21,8 @@ const logger = require('../utils/util-logger');
 
 const router = express.Router();
 
-// Debug endpoint - check auth without rate limiting
-router.get('/debug/auth-check', async (req, res) => {
-  const authHeader = req.header('Authorization');
-  
-  res.json({
-    hasAuthHeader: !!authHeader,
-    headerValue: authHeader ? `${authHeader.substring(0, 20)}...` : null,
-    headerStartsWithBearer: authHeader ? authHeader.startsWith('Bearer ') : false,
-    tokenLength: authHeader ? authHeader.split('Bearer ')[1]?.length : 0,
-    timestamp: new Date().toISOString()
-  });
-});
+// Security: Debug endpoint removed (was exposing auth header info without authentication)
+// If needed for debugging, use logging or authenticated endpoint instead
 
 // Apply rate limiting and Firebase token verification to all admin routes
 router.use(adminLimiter);

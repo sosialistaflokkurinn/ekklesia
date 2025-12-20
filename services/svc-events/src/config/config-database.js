@@ -6,6 +6,26 @@ const logger = require('../utils/util-logger');
  * Cloud SQL PostgreSQL 15 (ekklesia-db)
  */
 
+/**
+ * Validate required database environment variables at startup
+ * Security: Fail fast if configuration is missing to prevent silent failures
+ */
+function validateDatabaseConfig() {
+  const required = ['DATABASE_PASSWORD'];
+  const missing = required.filter(key => !process.env[key]);
+
+  if (missing.length > 0) {
+    // Security: Log missing vars but don't expose names in production
+    logger.error('[DB] Missing required environment variables', {
+      count: missing.length
+    });
+    throw new Error('Database configuration incomplete');
+  }
+}
+
+// Validate on module load (fail fast)
+validateDatabaseConfig();
+
 const pool = new Pool({
   host: process.env.DATABASE_HOST || '127.0.0.1',
   port: parseInt(process.env.DATABASE_PORT || '5433'),
@@ -13,10 +33,14 @@ const pool = new Pool({
   user: process.env.DATABASE_USER || 'postgres',
   password: process.env.DATABASE_PASSWORD,
 
-  // Connection pool settings
-  max: 10, // Maximum number of clients in the pool
+  // Connection pool settings (configurable via environment)
+  min: parseInt(process.env.DATABASE_POOL_MIN || '2'),  // Keep connections warm
+  max: parseInt(process.env.DATABASE_POOL_MAX || '25'), // Max connections per instance
   idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
   connectionTimeoutMillis: 10000, // Return error after 10 seconds if connection cannot be established
+
+  // Statement timeout to prevent long-running queries
+  statement_timeout: 30000,
 });
 
 // Test connection on startup
@@ -79,7 +103,20 @@ async function query(text, params) {
   }
 }
 
+/**
+ * Get pool metrics for monitoring
+ * @returns {Object} Pool statistics
+ */
+function getPoolMetrics() {
+  return {
+    totalConnections: pool.totalCount,
+    idleConnections: pool.idleCount,
+    waitingRequests: pool.waitingCount
+  };
+}
+
 module.exports = {
   pool,
-  query
+  query,
+  getPoolMetrics
 };

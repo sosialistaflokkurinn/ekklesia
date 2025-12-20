@@ -15,6 +15,15 @@
 const axios = require('axios');
 const logger = require('../utils/util-logger');
 const { query } = require('../config/config-database');
+const { improveEventDescription, isKimiConfigured } = require('../utils/util-kimi');
+
+// Security: Timeouts for external API calls
+const FACEBOOK_API_TIMEOUT = 30000; // 30 seconds
+const GEOCODE_API_TIMEOUT = 10000;  // 10 seconds
+
+// Security: Input validation limits
+const MAX_TITLE_LENGTH = 500;
+const MAX_DESCRIPTION_LENGTH = 10000;
 
 // Facebook API Configuration
 const FB_API_VERSION = 'v19.0';
@@ -240,7 +249,8 @@ async function syncFacebookEvents() {
           fields: 'id,name,description,start_time,end_time,place,cover,is_online',
           time_filter: 'upcoming',
           limit: 50
-        }
+        },
+        timeout: FACEBOOK_API_TIMEOUT
       });
 
       const events = response.data.data || [];
@@ -253,7 +263,8 @@ async function syncFacebookEvents() {
           fields: 'id,name,description,start_time,end_time,place,cover,is_online',
           time_filter: 'past',
           limit: 20
-        }
+        },
+        timeout: FACEBOOK_API_TIMEOUT
       });
 
       const pastEvents = pastResponse.data.data || [];
@@ -295,11 +306,43 @@ async function syncFacebookEvents() {
 }
 
 /**
+ * Validate and sanitize Facebook event data
+ * Security: Prevent malformed data from corrupting database
+ */
+function validateEventData(event) {
+  const safeString = (val, maxLen) => {
+    if (val === null || val === undefined) return null;
+    return String(val).substring(0, maxLen);
+  };
+
+  return {
+    id: safeString(event.id, 50),
+    name: safeString(event.name, MAX_TITLE_LENGTH),
+    description: safeString(event.description, MAX_DESCRIPTION_LENGTH),
+    start_time: event.start_time || null,
+    end_time: event.end_time || null,
+    is_online: Boolean(event.is_online),
+    cover: event.cover?.source ? safeString(event.cover.source, 500) : null,
+    place: event.place || {}
+  };
+}
+
+/**
  * Upsert a single Facebook event to database
+ * Uses Kimi AI to improve description text if configured
  */
 async function upsertFacebookEvent(event) {
-  const place = event.place || {};
+  // Security: Validate and sanitize input
+  const validated = validateEventData(event);
+
+  const place = validated.place || {};
   const location = place.location || {};
+
+  // Use Kimi to improve description if available
+  let description = validated.description;
+  if (isKimiConfigured() && description) {
+    description = await improveEventDescription(description, validated.name);
+  }
 
   await query(`
     INSERT INTO external_events (
@@ -321,18 +364,18 @@ async function upsertFacebookEvent(event) {
       image_url = EXCLUDED.image_url,
       synced_at = NOW()
   `, [
-    event.id,
-    event.name,
-    event.description,
-    event.start_time,
-    event.end_time || null,
-    place.name || null,
-    location.street || null,
-    location.city || null,
-    location.country || null,
-    event.is_online || false,
-    `https://www.facebook.com/events/${event.id}`,
-    event.cover?.source || null
+    validated.id,
+    validated.name,
+    description,  // Use Kimi-improved description
+    validated.start_time,
+    validated.end_time,
+    place.name ? String(place.name).substring(0, 200) : null,
+    location.street ? String(location.street).substring(0, 200) : null,
+    location.city ? String(location.city).substring(0, 100) : null,
+    location.country ? String(location.country).substring(0, 100) : null,
+    validated.is_online,
+    `https://www.facebook.com/events/${validated.id}`,
+    validated.cover
   ]);
 }
 
@@ -361,7 +404,8 @@ async function geocodeEvents() {
         params: {
           heiti: searchQuery,
           limit: 1
-        }
+        },
+        timeout: GEOCODE_API_TIMEOUT
       });
 
       if (response.data?.results?.length > 0) {

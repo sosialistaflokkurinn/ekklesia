@@ -5,6 +5,10 @@ const { version } = require('../package.json');
 const electionRoutes = require('./routes/route-election');
 const adminRouter = require('./routes/route-admin');
 const externalEventsRouter = require('./routes/route-external-events');
+const kimiChatRouter = require('./routes/route-kimi-chat');
+const partyWikiRouter = require('./routes/route-party-wiki');
+const systemHealthRouter = require('./routes/route-system-health');
+const errorsRouter = require('./routes/route-errors');
 const { verifyAppCheckOptional } = require('./middleware/middleware-app-check');
 const { readLimiter, adminLimiter } = require('./middleware/middleware-rate-limiter');
 const logger = require('./utils/util-logger');
@@ -65,6 +69,10 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Error reporting endpoint - no App Check (errors can occur before Firebase init)
+// Uses 10kb limit for error batches, has its own rate limiting
+app.use('/api/errors', express.json({ limit: '10kb', strict: true }), errorsRouter);
+
 // Security: Firebase App Check verification (monitor-only mode)
 // After 1-2 days of monitoring, switch to verifyAppCheck for enforcement
 // See: docs/security/FIREBASE_APP_CHECK_IMPLEMENTATION.md Phase 5
@@ -77,6 +85,11 @@ app.use('/api/admin', adminLimiter);
 // API routes
 app.use('/api', electionRoutes);
 app.use('/api/external-events', externalEventsRouter);
+
+// Kimi chat needs larger body limit for conversation history
+app.use('/api/kimi', express.json({ limit: '50kb', strict: true }), kimiChatRouter);
+app.use('/api/party-wiki', partyWikiRouter);
+app.use('/api/system', systemHealthRouter);
 // Admin-only routes (developer testing only)
 app.use('/api/admin', adminRouter);
 
@@ -94,7 +107,7 @@ app.use((err, req, res, next) => {
   if (err.type === 'entity.too.large') {
     return res.status(413).json({
       error: 'Payload Too Large',
-      message: 'Request body must be under 5kb'
+      message: 'Request body too large (limit: 5kb for most routes, 50kb for /api/kimi)'
     });
   }
 

@@ -19,11 +19,19 @@ async function authenticate(req, res, next) {
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({
         error: 'Unauthorized',
-        message: 'Missing or invalid Authorization header. Expected: Bearer <token>'
+        message: 'Authentication required'
       });
     }
 
     const idToken = authHeader.split('Bearer ')[1];
+
+    // Security: Basic token format validation
+    if (!idToken || idToken.length < 100 || idToken.length > 2048) {
+      return res.status(401).json({
+        error: 'Unauthorized',
+        message: 'Authentication failed'
+      });
+    }
 
     // Verify token with Firebase Admin SDK
     const decodedToken = await admin.auth().verifyIdToken(idToken);
@@ -31,18 +39,16 @@ async function authenticate(req, res, next) {
     // Extract required claims
     const { uid, kennitala, isMember } = decodedToken;
 
-    // Validate required claims exist
-    if (!uid) {
-      return res.status(401).json({
-        error: 'Unauthorized',
-        message: 'Invalid token: missing uid claim'
+    // Security: Use generic error message to prevent claim enumeration
+    if (!uid || !kennitala) {
+      logger.warn('Token missing required claims', {
+        operation: 'authenticate',
+        hasUid: !!uid,
+        hasKennitala: !!kennitala
       });
-    }
-
-    if (!kennitala) {
       return res.status(401).json({
         error: 'Unauthorized',
-        message: 'Invalid token: missing kennitala claim'
+        message: 'Authentication failed'
       });
     }
 
@@ -50,7 +56,7 @@ async function authenticate(req, res, next) {
     if (!isMember) {
       return res.status(403).json({
         error: 'Forbidden',
-        message: 'Active membership required. Please verify your membership status.'
+        message: 'Active membership required'
       });
     }
 
@@ -64,32 +70,18 @@ async function authenticate(req, res, next) {
 
     next();
   } catch (error) {
+    // Security: Log details internally but return generic message to client
     logger.error('Authentication failed', {
       operation: 'authenticate',
-      error: error.message,
-      code: error.code,
-      stack: error.stack
+      error_code: error.code,
+      correlation_id: req.correlationId
     });
 
-    // Handle specific Firebase errors
-    if (error.code === 'auth/id-token-expired') {
-      return res.status(401).json({
-        error: 'Unauthorized',
-        message: 'Token expired. Please log in again.'
-      });
-    }
-
-    if (error.code === 'auth/argument-error') {
-      return res.status(401).json({
-        error: 'Unauthorized',
-        message: 'Invalid token format'
-      });
-    }
-
-    // Generic error
+    // Security: Use generic error messages to prevent information disclosure
+    // All auth errors return the same message to prevent timing/enumeration attacks
     return res.status(401).json({
       error: 'Unauthorized',
-      message: 'Failed to verify authentication token'
+      message: 'Authentication failed'
     });
   }
 }

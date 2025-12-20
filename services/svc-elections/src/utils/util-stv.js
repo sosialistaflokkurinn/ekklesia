@@ -20,6 +20,26 @@
  * @returns {{winners: string[]}}
  */
 function stv({ seatsToFill, candidates, votes, report = () => {} }) {
+  // Security: Input validation to prevent DoS via algorithmic complexity
+  const MAX_CANDIDATES = 100;
+  const MAX_VOTES = 10000;
+
+  if (!Array.isArray(candidates) || candidates.length === 0) {
+    throw new Error('At least one candidate required');
+  }
+  if (candidates.length > MAX_CANDIDATES) {
+    throw new Error(`Maximum ${MAX_CANDIDATES} candidates allowed`);
+  }
+  if (!Array.isArray(votes)) {
+    throw new Error('Votes must be an array');
+  }
+  if (votes.length > MAX_VOTES) {
+    throw new Error(`Maximum ${MAX_VOTES} votes allowed`);
+  }
+  if (seatsToFill < 1 || seatsToFill > candidates.length) {
+    throw new Error('Invalid seats to fill');
+  }
+
   // Initialize vote counts with fractional weights
   const activeCandidates = new Set(candidates);
   const winners = [];

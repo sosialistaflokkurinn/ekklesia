@@ -23,6 +23,49 @@ const DEFAULT_STRINGS = {
 };
 
 /**
+ * Toast configuration
+ */
+const TOAST_CONFIG = {
+  maxToasts: 5,
+  gap: 10 // pixels between toasts
+};
+
+/**
+ * Track active toasts for stacking
+ */
+const activeToasts = [];
+
+/**
+ * Get or create toast container
+ * @returns {HTMLElement} Toast container element
+ */
+function getToastContainer() {
+  let container = document.getElementById('toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'toast-container';
+    container.setAttribute('aria-live', 'polite');
+    container.setAttribute('aria-atomic', 'false');
+    document.body.appendChild(container);
+  }
+  return container;
+}
+
+/**
+ * Reposition all active toasts
+ */
+function repositionToasts() {
+  let offset = TOAST_CONFIG.gap;
+  for (const entry of activeToasts) {
+    if (entry.element && entry.element.parentElement) {
+      entry.element.style.transform = `translateY(-${offset}px)`;
+      offset += entry.element.offsetHeight + TOAST_CONFIG.gap;
+    }
+  }
+}
+
+/**
  * Show a toast notification
  * 
  * @param {string} message - Message to display
@@ -41,6 +84,14 @@ export function showToast(message, type = 'success', options = {}) {
     duration = 3000,
     dismissible = true
   } = options;
+
+  // Remove oldest toast if at max limit
+  while (activeToasts.length >= TOAST_CONFIG.maxToasts) {
+    const oldest = activeToasts.shift();
+    if (oldest && oldest.element) {
+      hideToast(oldest.element);
+    }
+  }
 
   // Create message span
   const messageSpan = el('span', 'toast__message', {}, message);
@@ -64,18 +115,27 @@ export function showToast(message, type = 'success', options = {}) {
     'aria-live': ariaLive
   }, messageSpan, dismissBtn);
 
-  // Add to DOM
-  document.body.appendChild(toast);
+  // Track this toast
+  const toastEntry = {
+    id: Date.now(),
+    element: toast,
+    timeout: null
+  };
+  activeToasts.push(toastEntry);
 
-  // Trigger animation (slight delay for CSS transition)
+  // Add to container (creates container if needed)
+  const container = getToastContainer();
+  container.appendChild(toast);
+
+  // Trigger animation and position (slight delay for CSS transition)
   setTimeout(() => {
     toast.classList.add('toast--show');
+    repositionToasts();
   }, 10);
 
   // Auto-hide timeout reference
-  let autoHideTimeout;
   if (duration > 0) {
-    autoHideTimeout = setTimeout(() => {
+    toastEntry.timeout = setTimeout(() => {
       hideToast(toast);
     }, duration);
   }
@@ -84,15 +144,16 @@ export function showToast(message, type = 'success', options = {}) {
   return {
     element: toast,
     hide: () => {
-      if (autoHideTimeout) {
-        clearTimeout(autoHideTimeout);
+      if (toastEntry.timeout) {
+        clearTimeout(toastEntry.timeout);
       }
       hideToast(toast);
     },
     destroy: () => {
-      if (autoHideTimeout) {
-        clearTimeout(autoHideTimeout);
+      if (toastEntry.timeout) {
+        clearTimeout(toastEntry.timeout);
       }
+      removeToastFromTracking(toast);
       if (toast.parentElement) {
         toast.remove();
       }
@@ -101,12 +162,30 @@ export function showToast(message, type = 'success', options = {}) {
 }
 
 /**
+ * Remove toast from tracking array
+ * @param {HTMLElement} toast - Toast element to remove from tracking
+ */
+function removeToastFromTracking(toast) {
+  const index = activeToasts.findIndex(entry => entry.element === toast);
+  if (index !== -1) {
+    const entry = activeToasts[index];
+    if (entry.timeout) {
+      clearTimeout(entry.timeout);
+    }
+    activeToasts.splice(index, 1);
+  }
+}
+
+/**
  * Hide and remove a toast notification
- * 
+ *
  * @param {HTMLElement} toast - Toast element to hide
  */
 function hideToast(toast) {
   if (!toast || !toast.parentElement) return;
+
+  // Remove from tracking
+  removeToastFromTracking(toast);
 
   // Remove show class (triggers fade-out animation)
   toast.classList.remove('toast--show');
@@ -116,6 +195,8 @@ function hideToast(toast) {
     if (toast.parentElement) {
       toast.remove();
     }
+    // Reposition remaining toasts
+    repositionToasts();
   }, 300);
 }
 
@@ -163,6 +244,20 @@ export function showWarning(message, options = {}) {
  * Clear all active toasts
  */
 export function clearAllToasts() {
-  const toasts = document.querySelectorAll('.toast');
-  toasts.forEach(toast => hideToast(toast));
+  // Clear all tracked toasts
+  while (activeToasts.length > 0) {
+    const entry = activeToasts.pop();
+    if (entry.timeout) {
+      clearTimeout(entry.timeout);
+    }
+    if (entry.element && entry.element.parentElement) {
+      entry.element.remove();
+    }
+  }
+
+  // Also clear any orphaned toasts not in tracking
+  const container = document.getElementById('toast-container');
+  if (container) {
+    container.innerHTML = '';
+  }
 }

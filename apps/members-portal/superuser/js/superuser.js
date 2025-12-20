@@ -11,6 +11,7 @@ import { debug } from '../../js/utils/util-debug.js';
 import { getFirebaseAuth, httpsCallable } from '../../firebase/app.js';
 import { superuserStrings } from './i18n/superuser-strings-loader.js';
 import { requireSuperuser } from '../../js/rbac.js';
+import { initKimiChat } from './kimi-chat.js';
 
 // Initialize Firebase services
 const auth = getFirebaseAuth();
@@ -176,6 +177,9 @@ async function init() {
 
     // 5. Check system health in background (don't block page load)
     checkSystemHealthQuick(strings);
+
+    // 6. Initialize Kimi chat widget
+    initKimiChat();
 
     debug.log('Superuser dashboard initialized');
 

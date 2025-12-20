@@ -90,11 +90,10 @@ async function verifyFirebaseToken(req, res, next) {
       ip: req.ip,
     });
 
+    // Security: Generic error message to prevent information disclosure
     return res.status(401).json({
       error: 'Unauthorized',
-      message: 'Invalid or expired token',
-      code: 'INVALID_AUTH_TOKEN',
-      details: error.message,
+      message: 'Authentication failed',
     });
   }
 }
@@ -122,19 +121,15 @@ function requireElectionManager(req, res, next) {
   if (!allowedRoles.includes(userRole)) {
     logger.warn('RBAC: Permission denied - insufficient role', {
       uid: req.user.uid,
-      email: req.user.email,
       userRole,
-      requiredRoles: allowedRoles,
       path: req.path,
       method: req.method,
     });
 
+    // Security: Generic error message - don't expose roles structure
     return res.status(403).json({
       error: 'Forbidden',
-      message: 'Insufficient permissions - requires election-manager or superadmin role',
-      code: 'INSUFFICIENT_PERMISSIONS',
-      userRole,
-      requiredRoles: allowedRoles,
+      message: 'Access denied',
     });
   }
 
@@ -170,19 +165,15 @@ function requireSuperadmin(req, res, next) {
   if (userRole !== 'superadmin') {
     logger.warn('RBAC: Permission denied - superadmin required', {
       uid: req.user.uid,
-      email: req.user.email,
       userRole,
-      requiredRole: 'superadmin',
       path: req.path,
       method: req.method,
     });
 
+    // Security: Generic error message - don't expose roles structure
     return res.status(403).json({
       error: 'Forbidden',
-      message: 'Insufficient permissions - requires superadmin role',
-      code: 'SUPERADMIN_REQUIRED',
-      userRole,
-      requiredRole: 'superadmin',
+      message: 'Access denied',
     });
   }
 

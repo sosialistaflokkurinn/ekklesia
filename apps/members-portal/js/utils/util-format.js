@@ -165,6 +165,84 @@ export function validateKennitala(kennitala) {
 }
 
 /**
+ * Validate kennitala checksum using the official Icelandic algorithm
+ *
+ * The checksum algorithm for Icelandic kennitala:
+ * 1. Kennitala has 10 digits: DDMMYYRRRC where C is check digit
+ * 2. Multiply first 8 digits by weights [3, 2, 7, 6, 5, 4, 3, 2]
+ * 3. Sum the products and add the 9th digit (century indicator, usually ignored)
+ * 4. Check digit = 11 - (sum mod 11), or 0 if result is 11
+ * 5. If result is 10, the kennitala is invalid
+ *
+ * @param {string} kennitala - Kennitala to validate (with or without hyphen)
+ * @returns {boolean} True if checksum is valid
+ *
+ * @example
+ * validateKennitalaChecksum('120174-3399'); // true (valid)
+ * validateKennitalaChecksum('1201743399');  // true (valid)
+ * validateKennitalaChecksum('1201743398');  // false (invalid check digit)
+ */
+export function validateKennitalaChecksum(kennitala) {
+  if (!kennitala) return false;
+
+  // Clean input - remove hyphen and any non-digits
+  const cleaned = kennitala.replace(/[-\s]/g, '');
+
+  // Must be exactly 10 digits
+  if (cleaned.length !== 10 || !/^\d{10}$/.test(cleaned)) {
+    return false;
+  }
+
+  // Weights for positions 1-8 (0-indexed: 0-7)
+  const weights = [3, 2, 7, 6, 5, 4, 3, 2];
+
+  // Calculate weighted sum of first 8 digits
+  let sum = 0;
+  for (let i = 0; i < 8; i++) {
+    sum += parseInt(cleaned[i], 10) * weights[i];
+  }
+
+  // Calculate expected check digit (9th position, 0-indexed: 8)
+  const remainder = sum % 11;
+  const expectedCheckDigit = remainder === 0 ? 0 : 11 - remainder;
+
+  // If expected check digit is 10, the kennitala is invalid
+  if (expectedCheckDigit === 10) {
+    return false;
+  }
+
+  // Compare with actual check digit (9th digit in the kennitala)
+  const actualCheckDigit = parseInt(cleaned[8], 10);
+
+  return expectedCheckDigit === actualCheckDigit;
+}
+
+/**
+ * Full kennitala validation with both format and checksum
+ *
+ * Use this when you need to validate user-entered kennitala that hasn't
+ * been verified by Kenni.is OAuth. For kennitala from Kenni.is, the
+ * simpler validateKennitala() is sufficient.
+ *
+ * @param {string} kennitala - Kennitala to validate
+ * @returns {boolean} True if format AND checksum are valid
+ *
+ * @example
+ * isValidKennitalaWithChecksum('120174-3399'); // true
+ * isValidKennitalaWithChecksum('1201743398');  // false (bad checksum)
+ * isValidKennitalaWithChecksum('12345');       // false (bad format)
+ */
+export function isValidKennitalaWithChecksum(kennitala) {
+  // First validate format
+  if (!validateKennitala(kennitala)) {
+    return false;
+  }
+
+  // Then validate checksum
+  return validateKennitalaChecksum(kennitala);
+}
+
+/**
  * Validate international phone number (E.164 format)
  * @param {string} phone - Phone number to validate
  * @returns {boolean} True if valid international format
@@ -786,22 +864,30 @@ export function extractVideoLinks(text) {
  * @returns {string} HTML-formatted text
  *
  * Formatting applied:
- * 1. Emails → clickable mailto links
- * 2. Bank accounts (Banki: XXXX-XX-XXXXXX) → monospace highlighted
- * 3. Kennitala (Kt: XXXXXX-XXXX) → monospace highlighted
- * 4. Dates with time (13. desember kl. 17:30) → bold
- * 5. Time schedules (16:30: ...) → formatted schedule box
- * 6. Numbered lists (1. item) → HTML ordered list
- * 7. Headers ending with colon → bold
+ * 1. Markdown bold (**text**) → <strong>text</strong>
+ * 2. Markdown horizontal rule (---) → <hr>
+ * 3. Emails → clickable mailto links
+ * 4. Bank accounts (Banki: XXXX-XX-XXXXXX) → monospace highlighted
+ * 5. Kennitala (Kt: XXXXXX-XXXX) → monospace highlighted
+ * 6. Dates with time (13. desember kl. 17:30) → bold
+ * 7. Time schedules (16:30: ...) → formatted schedule box
+ * 8. Numbered lists (1. item) → HTML ordered list
+ * 9. Headers ending with colon → bold
  *
  * Example:
- * Input: "Dagskrá:\n16:30: Opnun\n17:00: Fundur\nHafið samband: test@test.is"
+ * Input: "**Dagskrá:**\n16:30: Opnun\n17:00: Fundur\nHafið samband: test@test.is"
  * Output: "<strong>Dagskrá:</strong>\n<div class='schedule'>...</div>\nHafið samband: <a href='mailto:test@test.is'>test@test.is</a>"
  */
 export function formatRichText(text) {
   if (!text) return '';
 
   let formatted = text;
+
+  // Markdown: Bold (**text**) → <strong>text</strong>
+  formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+
+  // Markdown: Horizontal rule (--- on its own line)
+  formatted = formatted.replace(/^---$/gm, '<hr style="border: none; border-top: 1px solid var(--color-border, #ddd); margin: 1rem 0;">');
 
   // Make emails clickable
   formatted = formatted.replace(

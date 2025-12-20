@@ -8,11 +8,12 @@
 
 import { getFirebaseAuth } from '../../firebase/app.js';
 import { debug } from '../utils/util-debug.js';
+import { API_ENDPOINTS } from '../config/config.js';
 
-// API Base URL
-const API_BASE_URL = 'https://elections-service-521240388393.europe-west2.run.app/api/nomination';
+// API Base URL - configured in js/config/config.js
+const API_BASE_URL = API_ENDPOINTS.NOMINATION;
 
-// For local development
+// For local development, override config.js or use:
 // const API_BASE_URL = 'http://localhost:8081/api/nomination';
 
 /**

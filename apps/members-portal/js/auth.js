@@ -19,23 +19,42 @@ export const auth = getFirebaseAuth();
 // Get App Check instance from centralized firebase/app.js
 export const appCheck = getFirebaseAppCheck();
 
+// Singleton promise for auth resolution to prevent race conditions
+let authResolutionPromise = null;
+
 /**
  * Auth Guard - Redirect to login if not authenticated
  * Call this at the top of protected pages (dashboard, profile)
+ *
+ * Uses singleton pattern to prevent race conditions when called
+ * multiple times concurrently.
  */
 export function requireAuth() {
-  return new Promise((resolve) => {
+  // If already resolving, return existing promise
+  if (authResolutionPromise) {
+    return authResolutionPromise;
+  }
+
+  // Create new resolution promise
+  authResolutionPromise = new Promise((resolve, reject) => {
     const unsubscribe = firebaseOnAuthStateChanged(auth, (user) => {
       unsubscribe();
+      // Clear singleton after resolution
+      authResolutionPromise = null;
+
       if (!user) {
         // Not authenticated - redirect to login
-        window.location.href = '/';
+        // Use replace to prevent back-button issues
+        window.location.replace('/');
+        reject(new Error('Not authenticated'));
       } else {
         // Authenticated - continue
         resolve(user);
       }
     });
   });
+
+  return authResolutionPromise;
 }
 
 /**
@@ -86,17 +105,29 @@ export async function getUserData(user) {
 }
 
 /**
- * Get Firebase App Check token
+ * Get Firebase App Check token with error handling
  * @returns {Promise<string|null>} App Check token or null if unavailable
  */
 async function getAppCheckTokenValue() {
-  return await firebaseGetAppCheckTokenValue();
+  try {
+    const token = await firebaseGetAppCheckTokenValue();
+    return token;
+  } catch (error) {
+    // Log warning but don't block - App Check may be optional
+    debug.warn('App Check token failed:', error.message);
+    // Return null - let backend decide if App Check is required
+    return null;
+  }
 }
+
+/** Default timeout for API requests (30 seconds) */
+const DEFAULT_TIMEOUT_MS = 30000;
 
 /**
  * Make authenticated API request with Firebase ID token and App Check token
  * @param {string} url - API endpoint URL
  * @param {object} options - Fetch options (method, body, headers, etc.)
+ * @param {number} [options.timeout] - Request timeout in ms (default: 30000)
  * @returns {Promise<Response>} Fetch response
  */
 export async function authenticatedFetch(url, options = {}) {
@@ -123,9 +154,25 @@ export async function authenticatedFetch(url, options = {}) {
     headers['X-Firebase-AppCheck'] = appCheckToken;
   }
 
-  // Make request
-  return fetch(url, {
-    ...options,
-    headers,
-  });
+  // Setup timeout with AbortController
+  const timeoutMs = options.timeout || DEFAULT_TIMEOUT_MS;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    // Make request with abort signal
+    const response = await fetch(url, {
+      ...options,
+      headers,
+      signal: controller.signal,
+    });
+    return response;
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      throw new Error(`Request timeout after ${timeoutMs}ms: ${url}`);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }
