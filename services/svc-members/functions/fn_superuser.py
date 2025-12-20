@@ -14,10 +14,12 @@ from typing import Dict, Any, Optional
 from firebase_admin import auth, firestore
 from firebase_functions import https_fn, options
 from util_logging import log_json
+from shared.rate_limit import check_uid_rate_limit
 import requests
 import time
 import os
 import ast
+import re
 
 # Import Cloud Logging lazily to avoid import issues in local dev
 _logging_client = None
@@ -605,6 +607,42 @@ def get_audit_logs_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     correlation_id = data.get("correlation_id")
     limit = min(data.get("limit", 100), 500)  # Cap at 500
 
+    # Security: Allowlist for service names to prevent filter injection
+    ALLOWED_SERVICES = {
+        "handlekenniauth", "verifymembership", "syncmembers", "sync-from-django",
+        "updatememberprofile", "auditmemberchanges", "search-addresses",
+        "validate-address", "validate-postal-code", "list-unions", "list-job-titles",
+        "list-countries", "list-postal-codes", "get-cells-by-postal-code",
+        "register-member", "checksystemhealth", "setuserrole", "getuserrole",
+        "getauditlogs", "getloginaudit", "harddeletemember", "anonymizemember",
+        "listelevatedusers", "purgedeleted", "get-django-token", "cleanupauditlogs"
+    }
+    ALLOWED_SEVERITIES = {"DEBUG", "INFO", "NOTICE", "WARNING", "ERROR", "CRITICAL", "ALERT", "EMERGENCY"}
+
+    if service and service not in ALLOWED_SERVICES:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+            message="Invalid service name"
+        )
+
+    if severity and severity.upper() not in ALLOWED_SEVERITIES:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+            message="Invalid severity level"
+        )
+
+    # Security: Validate hours range (1-168 = 1 week max)
+    if not isinstance(hours, int) or hours < 1 or hours > 168:
+        hours = 24  # Default to 24 hours if invalid
+
+    # Security: Sanitize correlation_id (alphanumeric + dashes only, max 64 chars)
+    if correlation_id:
+        if not re.match(r'^[a-zA-Z0-9\-]{1,64}$', str(correlation_id)):
+            raise https_fn.HttpsError(
+                code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+                message="Invalid correlation_id format"
+            )
+
     try:
         client = get_logging_client()
         if not client:
@@ -732,6 +770,13 @@ def hard_delete_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     caller_claims = require_superuser(req)
     caller_uid = req.auth.uid
 
+    # Security: Rate limit destructive operations (3 per hour)
+    if not check_uid_rate_limit(caller_uid, "hard_delete", max_attempts=3, window_minutes=60):
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED,
+            message="Rate limit exceeded. Maximum 3 deletions per hour."
+        )
+
     data = req.data or {}
     kennitala = data.get("kennitala")
     confirmation = data.get("confirmation")
@@ -831,6 +876,13 @@ def anonymize_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     # Verify superuser access
     caller_claims = require_superuser(req)
     caller_uid = req.auth.uid
+
+    # Security: Rate limit destructive operations (5 per hour for anonymization)
+    if not check_uid_rate_limit(caller_uid, "anonymize", max_attempts=5, window_minutes=60):
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED,
+            message="Rate limit exceeded. Maximum 5 anonymizations per hour."
+        )
 
     data = req.data or {}
     kennitala = data.get("kennitala")
@@ -1248,6 +1300,13 @@ def purgedeleted(req: https_fn.CallableRequest) -> Dict[str, Any]:
     """
     # Verify superuser access
     require_superuser(req)
+
+    # Security: Rate limit bulk purge operations (1 per hour)
+    if not check_uid_rate_limit(req.auth.uid, "purge_deleted", max_attempts=1, window_minutes=60):
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED,
+            message="Rate limit exceeded. Maximum 1 purge per hour."
+        )
 
     try:
         db = firestore.client()
