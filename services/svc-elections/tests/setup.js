@@ -34,6 +34,12 @@ jest.mock('firebase-admin', () => {
   };
 });
 
+// Mock express-rate-limit to avoid IPv6 warnings and simplify tests
+jest.mock('express-rate-limit', () => ({
+  rateLimit: jest.fn(() => (req, res, next) => next()),
+  ipKeyGenerator: jest.fn(() => (req) => req.ip || 'test-ip'),
+}));
+
 // Mock Winston logger to reduce noise
 jest.mock('winston', () => {
   // Make format a callable function that also has methods
@@ -53,6 +59,18 @@ jest.mock('winston', () => {
     error: jest.fn(),
     warn: jest.fn(),
     debug: jest.fn(),
+    child: jest.fn(() => ({
+      info: jest.fn(),
+      error: jest.fn(),
+      warn: jest.fn(),
+      debug: jest.fn(),
+    })),
+    createChild: jest.fn(() => ({
+      info: jest.fn(),
+      error: jest.fn(),
+      warn: jest.fn(),
+      debug: jest.fn(),
+    })),
   };
 
   return {

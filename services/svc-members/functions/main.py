@@ -108,9 +108,6 @@ from fn_validate_address import validate_address, validate_postal_code
 # Import address search function (autocomplete)
 from fn_search_addresses import search_addresses
 
-# Import municipality migration function (issue #330)
-# NOTE: Module does not exist - commented out to fix deployment
-# from fn_migrate_municipality import run_municipality_migration
 
 # ==============================================================================
 # SUPERUSER FUNCTIONS (Epic: Superuser Console)

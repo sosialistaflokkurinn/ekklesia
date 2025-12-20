@@ -348,11 +348,6 @@ def ensure_user_has_member_role(db: firestore.Client, django_member: Dict[str, A
     return True
 
 
-# Backwards compatibility alias
-def update_user_roles_from_django(db: firestore.Client, django_member: Dict[str, Any]) -> bool:
-    """DEPRECATED: Use ensure_user_has_member_role instead. Django roles are no longer synced."""
-    return ensure_user_has_member_role(db, django_member)
-
 
 def sync_member_to_firestore(db: firestore.Client, django_member: Dict[str, Any]) -> bool:
     """
@@ -390,7 +385,7 @@ def sync_member_to_firestore(db: firestore.Client, django_member: Dict[str, Any]
                  django_id=django_member.get('id'))
 
         # Epic #116: Also update /users/ collection with roles
-        update_user_roles_from_django(db, django_member)
+        ensure_user_has_member_role(db, django_member)
 
         return True
 
