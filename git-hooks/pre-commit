@@ -554,10 +554,13 @@ for file in $STAGED_FILES; do
   if [[ "$file" == *.js ]] && [ -f "$file" ]; then
     # Check for debug( without .log/.warn/.error - common mistake
     # The pattern looks for debug('...' or debug("...' which is wrong usage
-    if grep -En "debug\s*\(['\"]" "$file" 2>/dev/null | grep -Ev "debug\.(log|warn|error|info)" | head -5; then
+    # Exclude: debug.log(), debug.error(), logger.debug(), etc.
+    DEBUG_RESULT=$(grep -En "debug\s*\(['\"]" "$file" 2>/dev/null | grep -Ev "(debug\.(log|warn|error|info)|\.debug\()" | head -5)
+    if [ -n "$DEBUG_RESULT" ]; then
+      echo "$DEBUG_RESULT"
       echo "⚠️  Found debug() misuse in: $file"
       echo "   Use debug.log(), debug.warn(), or debug.error() instead"
-      ((DEBUG_ISSUES++))
+      ((DEBUG_ISSUES++)) || true
     fi
   fi
 done
@@ -588,7 +591,7 @@ for file in $STAGED_FILES; do
     # Check for toLocaleDateString or toLocaleTimeString with is-IS
     if grep -En "toLocale(Date|Time)String\s*\(\s*['\"]is" "$file" 2>/dev/null; then
       echo "⚠️  Browser locale formatting in: $file"
-      ((LOCALE_ISSUES++))
+      ((LOCALE_ISSUES++)) || true
     fi
   fi
 done
@@ -627,7 +630,7 @@ for file in $STAGED_FILES; do
     # Check for direct gstatic.com imports
     if grep -En "from\s*['\"]https://www\.gstatic\.com/firebasejs" "$file" 2>/dev/null; then
       echo "⚠️  Direct Firebase import in: $file"
-      ((FIREBASE_ISSUES++))
+      ((FIREBASE_ISSUES++)) || true
     fi
   fi
 done
@@ -661,7 +664,7 @@ for file in $STAGED_FILES; do
       # Check for localStorage usage (should use sessionStorage for PII)
       if grep -En "localStorage\.(set|get)Item" "$file" 2>/dev/null; then
         echo "⚠️  localStorage usage in admin/superuser file: $file"
-        ((STORAGE_ISSUES++))
+        ((STORAGE_ISSUES++)) || true
       fi
     fi
   fi
@@ -695,7 +698,7 @@ for file in $STAGED_FILES; do
       # Double check - look for escapeHTML usage in the same file
       if ! grep -q "escapeHTML" "$file" 2>/dev/null; then
         echo "⚠️  innerHTML with template literal (no escapeHTML) in: $file"
-        ((XSS_ISSUES++))
+        ((XSS_ISSUES++)) || true
       fi
     fi
   fi
@@ -732,7 +735,7 @@ for file in $STAGED_FILES; do
     # Check for reject(new Error patterns related to login
     if grep -En "reject\s*\(\s*new\s+Error\s*\(\s*['\"].*([Nn]ot logged|[Nn]ot authenticated|[Nn]o user)" "$file" 2>/dev/null; then
       echo "⚠️  Custom auth rejection in: $file"
-      ((AUTH_ISSUES++))
+      ((AUTH_ISSUES++)) || true
     fi
   fi
 done

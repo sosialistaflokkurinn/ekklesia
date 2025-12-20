@@ -19,6 +19,7 @@
 
 import { getFirebaseAuth } from '../../firebase/app.js';
 import { debug } from '../utils/util-debug.js';
+import { trackRequest } from '../utils/util-cold-start.js';
 
 /**
  * Custom error for API request failures
@@ -56,6 +57,9 @@ export async function authenticatedFetch(url, options = {}) {
     throw new Error('Not authenticated - user must be logged in');
   }
 
+  // Start cold start detection - shows toast if request takes > 3s
+  const cleanup = trackRequest();
+
   try {
     // Get fresh Firebase ID token
     const token = await user.getIdToken();
@@ -79,6 +83,9 @@ export async function authenticatedFetch(url, options = {}) {
   } catch (error) {
     debug.error('API request failed:', error);
     throw error;
+  } finally {
+    // Stop cold start detection
+    cleanup();
   }
 }
 

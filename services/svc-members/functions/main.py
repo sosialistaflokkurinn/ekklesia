@@ -125,6 +125,7 @@ from fn_superuser import (
     anonymize_member_handler,
     list_elevated_users_handler,
     get_login_audit_handler,
+    get_deleted_counts_handler,
     purgedeleted  # Decorated function - import directly
 )
 
@@ -163,6 +164,11 @@ def anonymizeMember(req: https_fn.CallableRequest) -> dict:
 def getLoginAudit(req: https_fn.CallableRequest) -> dict:
     """Get login history from Firestore - requires superuser"""
     return get_login_audit_handler(req)
+
+@https_fn.on_call(timeout_sec=30, memory=256)
+def getDeletedCounts(req: https_fn.CallableRequest) -> dict:
+    """Get counts of soft-deleted members and votes - requires superuser"""
+    return get_deleted_counts_handler(req)
 
 @https_fn.on_call(timeout_sec=120, memory=512, secrets=["django-api-token"])
 def listElevatedUsers(req: https_fn.CallableRequest) -> dict:
@@ -292,6 +298,7 @@ __all__ = [
     'hardDeleteMember',
     'anonymizeMember',
     'getLoginAudit',
+    'getDeletedCounts',
     'listElevatedUsers',
     'purgedeleted',
     # Lookup functions (skraning-static)

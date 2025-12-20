@@ -15,18 +15,40 @@
 
 import { httpsCallable } from '../../firebase/app.js';
 import { debug } from '../utils/util-debug.js';
-
-const REGION = 'europe-west2';
+import { REGION } from '../config/config.js';
 
 // Cache configuration
+const CACHE_VERSION = 1; // Increment to invalidate all caches
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+const CELLS_CACHE_MAX_SIZE = 50; // Max postal codes to cache
 const STORAGE_KEY_UNIONS = 'ekklesia_cache_unions';
 const STORAGE_KEY_JOB_TITLES = 'ekklesia_cache_job_titles';
+const STORAGE_KEY_VERSION = 'ekklesia_cache_version';
 
-// Memory cache storage
+// Memory cache storage with timestamps
 let unionsCache = null;
 let jobTitlesCache = null;
-let cellsCache = {}; // Keyed by postal_code_id
+let cellsCache = new Map(); // Map for LRU-like behavior
+
+/**
+ * Check and update cache version (invalidates old caches)
+ */
+function checkCacheVersion() {
+  try {
+    const storedVersion = localStorage.getItem(STORAGE_KEY_VERSION);
+    if (storedVersion !== String(CACHE_VERSION)) {
+      debug.log(`🔄 Cache version changed (${storedVersion} → ${CACHE_VERSION}), clearing all caches`);
+      localStorage.removeItem(STORAGE_KEY_UNIONS);
+      localStorage.removeItem(STORAGE_KEY_JOB_TITLES);
+      localStorage.setItem(STORAGE_KEY_VERSION, String(CACHE_VERSION));
+    }
+  } catch (error) {
+    debug.warn('Failed to check cache version:', error);
+  }
+}
+
+// Check version on module load
+checkCacheVersion();
 
 /**
  * Get item from localStorage with TTL check
@@ -192,14 +214,17 @@ export async function getJobTitleName(id) {
 
 /**
  * Get cells for a postal code (cached by postal_code_id)
+ * Uses LRU-like eviction when cache exceeds CELLS_CACHE_MAX_SIZE
  *
  * @param {number} postalCodeId - Postal code ID from lookup_postal_codes
+ * @param {boolean} forceRefresh - Force fetch from API
  * @returns {Promise<Array<{id: number, name: string}>>}
  */
-export async function getCellsByPostalCode(postalCodeId) {
-  if (cellsCache[postalCodeId]) {
+export async function getCellsByPostalCode(postalCodeId, forceRefresh = false) {
+  // Check cache unless forcing refresh
+  if (!forceRefresh && cellsCache.has(postalCodeId)) {
     debug.log(`📦 Cells for postal ${postalCodeId} from cache`);
-    return cellsCache[postalCodeId];
+    return cellsCache.get(postalCodeId);
   }
 
   try {
@@ -208,9 +233,18 @@ export async function getCellsByPostalCode(postalCodeId) {
     const result = await getCells({ postal_code_id: postalCodeId });
 
     // API returns array of {id, name}
-    cellsCache[postalCodeId] = result.data || [];
-    debug.log(`✅ Loaded ${cellsCache[postalCodeId].length} cells`);
-    return cellsCache[postalCodeId];
+    const cells = result.data || [];
+
+    // Evict oldest entries if cache is full (simple LRU)
+    if (cellsCache.size >= CELLS_CACHE_MAX_SIZE) {
+      const oldestKey = cellsCache.keys().next().value;
+      cellsCache.delete(oldestKey);
+      debug.log(`🗑️ Evicted oldest cells cache entry: ${oldestKey}`);
+    }
+
+    cellsCache.set(postalCodeId, cells);
+    debug.log(`✅ Loaded ${cells.length} cells`);
+    return cells;
   } catch (error) {
     debug.error('❌ Failed to fetch cells:', error);
     return [];
@@ -240,21 +274,25 @@ export function getHousingSituationLabel(value) {
 /**
  * Clear all caches (for testing or forced refresh)
  * Clears both memory and localStorage caches
+ *
+ * @param {string} type - Optional: 'unions', 'jobTitles', 'cells', or null for all
  */
-export function clearLookupCaches() {
-  unionsCache = null;
-  jobTitlesCache = null;
-  cellsCache = {};
-
-  // Clear localStorage
-  try {
-    localStorage.removeItem(STORAGE_KEY_UNIONS);
-    localStorage.removeItem(STORAGE_KEY_JOB_TITLES);
-  } catch (error) {
-    debug.warn('Failed to clear localStorage caches:', error);
+export function clearLookupCaches(type = null) {
+  if (!type || type === 'unions') {
+    unionsCache = null;
+    try { localStorage.removeItem(STORAGE_KEY_UNIONS); } catch (e) { /* ignore */ }
   }
 
-  debug.log('🗑️ Lookup caches cleared (memory + localStorage)');
+  if (!type || type === 'jobTitles') {
+    jobTitlesCache = null;
+    try { localStorage.removeItem(STORAGE_KEY_JOB_TITLES); } catch (e) { /* ignore */ }
+  }
+
+  if (!type || type === 'cells') {
+    cellsCache.clear();
+  }
+
+  debug.log(`🗑️ Lookup caches cleared: ${type || 'all'}`);
 }
 
 /**

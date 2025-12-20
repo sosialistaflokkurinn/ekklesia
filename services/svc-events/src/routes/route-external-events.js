@@ -41,7 +41,7 @@ const STALE_THRESHOLD = 6 * 60 * 60 * 1000; // 6 hours - trigger background sync
  * Query params:
  *   - upcoming: boolean - filter to only upcoming events
  *   - limit: number - max events to return
- *   - source: string - 'db' to force database, 'fresh' to force Facebook sync
+ *   - source: string - 'db' to force database (fresh sync removed - use POST /sync instead)
  */
 router.get('/', async (req, res) => {
   try {
@@ -50,12 +50,8 @@ router.get('/', async (req, res) => {
     const upcomingBool = upcoming === 'true';
     const limitNum = limit ? parseInt(limit, 10) : undefined;
 
-    // Force fresh sync if requested
-    if (source === 'fresh') {
-      logger.info('Forcing fresh sync from Facebook');
-      await syncFacebookEvents();
-      eventsCache = { data: null, timestamp: 0, lastSync: null }; // Invalidate cache
-    }
+    // Security: source=fresh removed - use authenticated POST /sync endpoint instead
+    // This prevents unauthenticated users from triggering Facebook API calls
 
     // Check in-memory cache first (fastest)
     if (source !== 'db' && eventsCache.data && (now - eventsCache.timestamp < CACHE_DURATION)) {
@@ -187,11 +183,12 @@ router.get('/status', async (req, res) => {
 
 /**
  * POST /api/external-events/sync
- * Manually trigger Facebook sync (admin only in production)
+ * Manually trigger Facebook sync
+ * Security: Requires admin authentication to prevent API quota exhaustion
  */
-router.post('/sync', async (req, res) => {
+router.post('/sync', authenticate, requireAnyRoles(['superuser', 'admin']), async (req, res) => {
   try {
-    logger.info('Manual sync triggered');
+    logger.info('Manual sync triggered', { user: req.user?.uid });
     const result = await syncFacebookEvents();
 
     // Invalidate memory cache
@@ -211,10 +208,11 @@ router.post('/sync', async (req, res) => {
  * POST /api/external-events/geocode
  * Geocode event locations using Staðfangaskrá
  * Enriches location data with GPS coordinates and map URLs
+ * Security: Requires admin authentication
  */
-router.post('/geocode', async (req, res) => {
+router.post('/geocode', authenticate, requireAnyRoles(['superuser', 'admin']), async (req, res) => {
   try {
-    logger.info('Geocoding triggered');
+    logger.info('Geocoding triggered', { user: req.user?.uid });
     const result = await geocodeEvents();
 
     // Invalidate memory cache

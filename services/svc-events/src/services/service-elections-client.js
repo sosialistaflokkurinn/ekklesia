@@ -9,6 +9,27 @@ const logger = require('../utils/util-logger');
 const ELECTIONS_SERVICE_URL = process.env.ELECTIONS_SERVICE_URL || 'https://elections-service-521240388393.europe-west2.run.app';
 const S2S_API_KEY = process.env.S2S_API_KEY;
 
+// Security: Timeout for S2S calls
+const S2S_TIMEOUT = 30000; // 30 seconds
+
+/**
+ * Fetch with timeout using AbortController
+ */
+async function fetchWithTimeout(url, options = {}) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), S2S_TIMEOUT);
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
+    return response;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 /**
  * Register a voting token with Elections service
  * @param {string} tokenHash - SHA-256 hash of the voting token
@@ -25,7 +46,7 @@ async function registerToken(tokenHash) {
   });
 
   try {
-    const response = await fetch(`${ELECTIONS_SERVICE_URL}/api/s2s/register-token`, {
+    const response = await fetchWithTimeout(`${ELECTIONS_SERVICE_URL}/api/s2s/register-token`, {
       method: 'POST',
       headers: {
         'X-API-Key': S2S_API_KEY,
@@ -77,7 +98,7 @@ async function fetchResults() {
   });
 
   try {
-    const response = await fetch(`${ELECTIONS_SERVICE_URL}/api/s2s/results`, {
+    const response = await fetchWithTimeout(`${ELECTIONS_SERVICE_URL}/api/s2s/results`, {
       method: 'GET',
       headers: {
         'X-API-Key': S2S_API_KEY
