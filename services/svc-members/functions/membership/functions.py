@@ -687,6 +687,13 @@ def cleanupauditlogs_handler(req: https_fn.CallableRequest) -> dict:
 
     uid = req.auth.uid
 
+    # Security: Rate limit audit cleanup (1 per 10 minutes)
+    if not check_uid_rate_limit(uid, "cleanup_audit", max_attempts=1, window_minutes=10):
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED,
+            message="Rate limit exceeded. Maximum 1 cleanup per 10 minutes."
+        )
+
     # Get user's roles from Firestore
     db = firestore.client()
     user_ref = db.collection('users').document(uid)

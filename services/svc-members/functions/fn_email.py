@@ -310,6 +310,13 @@ def save_email_template_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
     """
     claims = require_admin(req)
 
+    # Security: Rate limit template saves (20 per 10 minutes)
+    if not check_uid_rate_limit(req.auth.uid, "save_template", max_attempts=20, window_minutes=10):
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED,
+            message="Rate limit exceeded. Maximum 20 template saves per 10 minutes."
+        )
+
     data = req.data or {}
     template_id = data.get("template_id")
     name = data.get("name")
@@ -419,6 +426,13 @@ def delete_email_template_handler(req: https_fn.CallableRequest) -> Dict[str, An
         Success status.
     """
     require_admin(req)
+
+    # Security: Rate limit template deletes (10 per 10 minutes)
+    if not check_uid_rate_limit(req.auth.uid, "delete_template", max_attempts=10, window_minutes=10):
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED,
+            message="Rate limit exceeded. Maximum 10 template deletes per 10 minutes."
+        )
 
     data = req.data or {}
     template_id = data.get("template_id")
@@ -735,6 +749,13 @@ def create_email_campaign_handler(req: https_fn.CallableRequest) -> Dict[str, An
         Created campaign with ID.
     """
     require_admin(req)
+
+    # Security: Rate limit campaign creation (10 per 10 minutes)
+    if not check_uid_rate_limit(req.auth.uid, "create_campaign", max_attempts=10, window_minutes=10):
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED,
+            message="Rate limit exceeded. Maximum 10 campaign creations per 10 minutes."
+        )
 
     data = req.data or {}
     name = data.get("name")

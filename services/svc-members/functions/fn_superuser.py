@@ -192,6 +192,13 @@ def set_user_role_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     caller_claims = require_superuser(req)
     caller_uid = req.auth.uid
 
+    # Security: Rate limit role changes (10 per 10 minutes)
+    if not check_uid_rate_limit(caller_uid, "set_role", max_attempts=10, window_minutes=10):
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED,
+            message="Rate limit exceeded. Maximum 10 role changes per 10 minutes."
+        )
+
     # Validate input
     data = req.data or {}
     target_uid = data.get("target_uid")
