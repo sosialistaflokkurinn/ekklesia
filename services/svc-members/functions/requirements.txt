@@ -8,6 +8,7 @@ google-cloud-logging==3.12.1
 python-dotenv==1.2.1
 boto3>=1.35.0  # AWS SDK for SES email (#323)
 html2text>=2024.2.26  # HTML to plain text conversion for emails
+cryptography>=43.0.0  # SNS signature verification for SES webhook
 cloudevents==1.12.0
 iceaddr==0.6.0
 setuptools>=65.0.0

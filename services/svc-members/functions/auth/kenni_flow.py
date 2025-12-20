@@ -19,6 +19,7 @@ from util_jwks import get_jwks_client_cached_ttl, get_jwks_cache_stats
 from shared.cors import get_allowed_origin, cors_headers_for_origin
 from shared.validators import normalize_kennitala, validate_kennitala, normalize_phone
 from shared.rate_limit import check_rate_limit
+from util_security import validate_auth_input
 
 
 def get_kenni_is_jwks_client(issuer_url: str) -> PyJWKClient:
@@ -33,39 +34,6 @@ def get_kenni_is_jwks_client(issuer_url: str) -> PyJWKClient:
         Cached JWKS client
     """
     return get_jwks_client_cached_ttl(issuer_url)
-
-
-def validate_auth_input(kenni_auth_code: str, pkce_code_verifier: str) -> bool:
-    """
-    Validate authentication input parameters.
-
-    Prevents DoS attacks via oversized payloads.
-
-    Args:
-        kenni_auth_code: OAuth authorization code from Kenni.is
-        pkce_code_verifier: PKCE code verifier
-
-    Raises:
-        ValueError: If input validation fails
-
-    Returns:
-        True if validation passes
-
-    Issue #64: Add input validation for auth code and PKCE verifier
-    """
-    # Check if fields are present
-    if not kenni_auth_code:
-        raise ValueError("Auth code required")
-    if not pkce_code_verifier:
-        raise ValueError("PKCE verifier required")
-
-    # Validate lengths (OAuth 2.0 reasonable limits)
-    if len(kenni_auth_code) > 500:
-        raise ValueError("Auth code too long (max 500 characters)")
-    if len(pkce_code_verifier) > 200:
-        raise ValueError("PKCE verifier too long (max 200 characters)")
-
-    return True
 
 
 def healthz_handler(req: https_fn.Request) -> https_fn.Response:

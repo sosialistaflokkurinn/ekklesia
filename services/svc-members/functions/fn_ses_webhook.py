@@ -25,6 +25,109 @@ from util_logging import log_json
 from datetime import datetime
 import json
 import urllib.request
+import base64
+import re
+from urllib.parse import urlparse
+from cryptography import x509
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.backends import default_backend
+
+
+# Cache for SNS signing certificates (keyed by URL)
+_cert_cache = {}
+
+
+def verify_sns_signature(data: dict) -> bool:
+    """
+    Verify AWS SNS message signature to prevent spoofing.
+
+    SNS messages include a signature that can be verified using the
+    signing certificate provided in the SigningCertURL field.
+
+    Security: Must validate SigningCertURL is from amazonaws.com to prevent SSRF.
+
+    Args:
+        data: SNS message data containing SigningCertURL and Signature
+
+    Returns:
+        True if signature is valid, False otherwise
+    """
+    try:
+        signing_cert_url = data.get('SigningCertURL') or data.get('SigningCertUrl')
+        signature_b64 = data.get('Signature')
+
+        if not signing_cert_url or not signature_b64:
+            log_json('warning', 'SNS message missing SigningCertURL or Signature')
+            return False
+
+        # Security: Validate SigningCertURL is from AWS (prevent SSRF)
+        parsed_url = urlparse(signing_cert_url)
+        if not parsed_url.scheme == 'https':
+            log_json('warning', 'SNS SigningCertURL not HTTPS', url=signing_cert_url)
+            return False
+
+        # Must be from amazonaws.com domain
+        if not re.match(r'^sns\.[a-z0-9-]+\.amazonaws\.com$', parsed_url.netloc):
+            log_json('warning', 'SNS SigningCertURL not from amazonaws.com',
+                     url=signing_cert_url, netloc=parsed_url.netloc)
+            return False
+
+        # Get certificate (with caching)
+        if signing_cert_url in _cert_cache:
+            cert = _cert_cache[signing_cert_url]
+        else:
+            with urllib.request.urlopen(signing_cert_url, timeout=10) as response:
+                cert_pem = response.read()
+            cert = x509.load_pem_x509_certificate(cert_pem, default_backend())
+            _cert_cache[signing_cert_url] = cert
+
+        # Build the string to sign based on message type
+        message_type = data.get('Type', '')
+
+        if message_type == 'Notification':
+            string_to_sign = (
+                f"Message\n{data.get('Message', '')}\n"
+                f"MessageId\n{data.get('MessageId', '')}\n"
+            )
+            if data.get('Subject'):
+                string_to_sign += f"Subject\n{data.get('Subject', '')}\n"
+            string_to_sign += (
+                f"Timestamp\n{data.get('Timestamp', '')}\n"
+                f"TopicArn\n{data.get('TopicArn', '')}\n"
+                f"Type\n{data.get('Type', '')}\n"
+            )
+        elif message_type in ('SubscriptionConfirmation', 'UnsubscribeConfirmation'):
+            string_to_sign = (
+                f"Message\n{data.get('Message', '')}\n"
+                f"MessageId\n{data.get('MessageId', '')}\n"
+                f"SubscribeURL\n{data.get('SubscribeURL', '')}\n"
+                f"Timestamp\n{data.get('Timestamp', '')}\n"
+                f"Token\n{data.get('Token', '')}\n"
+                f"TopicArn\n{data.get('TopicArn', '')}\n"
+                f"Type\n{data.get('Type', '')}\n"
+            )
+        else:
+            log_json('warning', 'Unknown SNS message type for signature verification',
+                     message_type=message_type)
+            return False
+
+        # Verify signature
+        signature = base64.b64decode(signature_b64)
+        public_key = cert.public_key()
+
+        public_key.verify(
+            signature,
+            string_to_sign.encode('utf-8'),
+            padding.PKCS1v15(),
+            hashes.SHA1()  # SNS uses SHA1 for signing
+        )
+
+        return True
+
+    except Exception as e:
+        log_json('error', 'SNS signature verification failed', error=str(e))
+        return False
 
 
 def get_firestore_client():
@@ -234,6 +337,12 @@ def ses_webhook(req: https_fn.Request) -> https_fn.Response:
     if not data:
         log_json('warning', 'Empty webhook payload')
         return https_fn.Response('Empty payload', status=400)
+
+    # Security: Verify SNS message signature to prevent spoofing
+    if not verify_sns_signature(data):
+        log_json('warning', 'SNS signature verification failed - rejecting message',
+                 message_type=data.get('Type'))
+        return https_fn.Response('Signature verification failed', status=403)
 
     # Handle subscription confirmation
     if message_type == 'SubscriptionConfirmation' or data.get('Type') == 'SubscriptionConfirmation':
