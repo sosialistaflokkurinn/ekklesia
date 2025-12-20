@@ -8,11 +8,20 @@ from datetime import datetime, timezone
 from typing import Dict, Any
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
+import re
 
 from firebase_admin import auth, firestore
 from firebase_functions import https_fn, options
 from util_logging import log_json
 from shared.validators import normalize_kennitala, normalize_phone
+from shared.rate_limit import check_uid_rate_limit
+
+# Security: Input validation limits
+MAX_NAME_LENGTH = 100
+MAX_EMAIL_LENGTH = 254
+MAX_PHONE_LENGTH = 20
+MAX_ADDRESS_FIELD_LENGTH = 200
+MAX_ADDRESSES = 5
 from fn_sync_members import (
     sync_all_members, create_sync_log, update_django_member, update_django_address,
     get_django_api_token, DJANGO_API_BASE_URL
@@ -166,6 +175,16 @@ def syncmembers_handler(req: https_fn.Request) -> https_fn.Response:
                 content_type='application/json'
             )
 
+        # Security: Rate limit sync operations (1 per 5 minutes)
+        if not check_uid_rate_limit(uid, "member_sync", max_attempts=1, window_minutes=5):
+            log_json("warn", "Sync rate limit exceeded", uid=uid)
+            return https_fn.Response(
+                status=429,
+                response=json.dumps({'error': "Rate limit exceeded. Maximum 1 sync per 5 minutes."}),
+                headers=headers,
+                content_type='application/json'
+            )
+
         log_json("info", "Member sync initiated", uid=uid)
 
         # Run sync
@@ -256,6 +275,13 @@ def updatememberprofile_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
             message="Authentication required"
         )
 
+    # Security: Rate limit profile updates (5 per 10 minutes per user)
+    if not check_uid_rate_limit(req.auth.uid, "profile_update", max_attempts=5, window_minutes=10):
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED,
+            message="Rate limit exceeded. Maximum 5 profile updates per 10 minutes."
+        )
+
     # Get request data
     kennitala = req.data.get('kennitala')
     updates = req.data.get('updates', {})
@@ -265,6 +291,56 @@ def updatememberprofile_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
             code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
             message="kennitala is required"
         )
+
+    # Security: Validate input field lengths and formats
+    def validate_string_field(value, field_name, max_length):
+        if value is None:
+            return
+        if not isinstance(value, str):
+            raise https_fn.HttpsError(
+                code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+                message=f"{field_name} must be a string"
+            )
+        if len(value) > max_length:
+            raise https_fn.HttpsError(
+                code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+                message=f"{field_name} exceeds maximum length of {max_length}"
+            )
+
+    validate_string_field(updates.get('name'), 'name', MAX_NAME_LENGTH)
+    validate_string_field(updates.get('email'), 'email', MAX_EMAIL_LENGTH)
+    validate_string_field(updates.get('phone'), 'phone', MAX_PHONE_LENGTH)
+
+    # Validate email format if provided
+    if updates.get('email'):
+        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(email_pattern, updates['email']):
+            raise https_fn.HttpsError(
+                code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+                message="Invalid email format"
+            )
+
+    # Validate addresses if provided
+    if 'addresses' in updates:
+        addresses = updates['addresses']
+        if not isinstance(addresses, list):
+            raise https_fn.HttpsError(
+                code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+                message="addresses must be a list"
+            )
+        if len(addresses) > MAX_ADDRESSES:
+            raise https_fn.HttpsError(
+                code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+                message=f"Maximum {MAX_ADDRESSES} addresses allowed"
+            )
+        for addr in addresses:
+            if not isinstance(addr, dict):
+                raise https_fn.HttpsError(
+                    code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+                    message="Each address must be an object"
+                )
+            for field in ['street', 'number', 'city', 'postal_code', 'country']:
+                validate_string_field(addr.get(field), f'address.{field}', MAX_ADDRESS_FIELD_LENGTH)
 
     # Check if user has admin/superuser role (can update any profile)
     user_roles = req.auth.token.get('roles', [])
