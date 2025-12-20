@@ -26,7 +26,8 @@
     "firebase-admin": "^13.6.0",
     "google-auth-library": "^10.5.0",
     "pg": "^8.11.3",
-    "winston": "^3.19.0"
+    "winston": "^3.19.0",
+    "zod": "^3.24.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.11"
