@@ -4,55 +4,100 @@
  * Provides request validation using Zod schemas.
  * Centralizes validation logic and provides consistent error responses.
  *
+ * Security improvements:
+ * - String sanitization (trim, length limits)
+ * - Sensitive field filtering in logs
+ * - Unknown field stripping
+ * - Error count limiting
+ *
  * @module middleware/validation
  */
 
 const { z } = require('zod');
 const logger = require('../utils/util-logger');
 
+// ============================================
+// Security: Sensitive fields to filter from logs
+// ============================================
+const SENSITIVE_FIELDS = ['token', 'password', 'ssn', 'kennitala', 'email'];
+
+/**
+ * Sanitize error details to prevent sensitive data leakage in logs
+ * @param {Array} errors - Zod error array
+ * @returns {Array} - Sanitized error array
+ */
+function sanitizeErrorsForLog(errors) {
+  return errors.map(e => {
+    const fieldPath = e.path.join('.');
+    const isSensitive = SENSITIVE_FIELDS.some(f =>
+      fieldPath.toLowerCase().includes(f.toLowerCase())
+    );
+
+    return {
+      field: fieldPath,
+      code: e.code,
+      // Don't include message for sensitive fields (could contain the value)
+      message: isSensitive ? '[REDACTED]' : e.message
+    };
+  });
+}
+
+/**
+ * Format errors for API response (safe for client)
+ * @param {Array} errors - Zod error array
+ * @param {number} maxErrors - Maximum errors to return
+ * @returns {Array} - Formatted error array
+ */
+function formatErrorsForResponse(errors, maxErrors = 5) {
+  return errors.slice(0, maxErrors).map(e => ({
+    field: e.path.join('.'),
+    message: e.message,
+    code: e.code
+  }));
+}
+
 /**
  * Create a validation middleware for request body
  *
  * @param {z.ZodSchema} schema - Zod schema to validate against
+ * @param {Object} options - Validation options
+ * @param {number} options.maxErrors - Maximum errors to return (default: 5)
  * @returns {Function} Express middleware function
  *
  * @example
- * const electionSchema = z.object({
- *   title: z.string().min(1).max(255),
- *   description: z.string().optional()
- * });
- *
- * router.post('/elections',
- *   validateBody(electionSchema),
+ * router.post('/events',
+ *   validateBody(schemas.createEvent),
  *   async (req, res) => {
- *     // req.validatedBody is guaranteed to match the schema
  *     const { title, description } = req.validatedBody;
  *   }
  * );
  */
-function validateBody(schema) {
+function validateBody(schema, options = {}) {
+  const { maxErrors = 5 } = options;
+
   return (req, res, next) => {
     try {
       req.validatedBody = schema.parse(req.body);
       next();
     } catch (error) {
       if (error instanceof z.ZodError) {
+        // Security: Sanitize errors for logging
+        const safeErrors = sanitizeErrorsForLog(error.errors);
+
         logger.warn('Validation failed', {
           operation: 'validation_error',
           path: req.path,
           method: req.method,
-          errors: error.errors,
-          correlation_id: req.correlationId
+          errorCount: error.errors.length,
+          firstError: safeErrors[0]?.code,
+          correlation_id: req.correlationId,
+          ip: req.ip
         });
 
         return res.status(400).json({
           error: 'Validation Error',
           message: 'Invalid request data',
-          details: error.errors.map(e => ({
-            field: e.path.join('.'),
-            message: e.message,
-            code: e.code
-          }))
+          details: formatErrorsForResponse(error.errors, maxErrors)
         });
       }
       next(error);
@@ -64,22 +109,12 @@ function validateBody(schema) {
  * Create a validation middleware for query parameters
  *
  * @param {z.ZodSchema} schema - Zod schema to validate against
+ * @param {Object} options - Validation options
  * @returns {Function} Express middleware function
- *
- * @example
- * const querySchema = z.object({
- *   status: z.enum(['active', 'closed']).optional(),
- *   limit: z.coerce.number().min(1).max(100).default(50)
- * });
- *
- * router.get('/elections',
- *   validateQuery(querySchema),
- *   async (req, res) => {
- *     const { status, limit } = req.validatedQuery;
- *   }
- * );
  */
-function validateQuery(schema) {
+function validateQuery(schema, options = {}) {
+  const { maxErrors = 5 } = options;
+
   return (req, res, next) => {
     try {
       req.validatedQuery = schema.parse(req.query);
@@ -89,18 +124,14 @@ function validateQuery(schema) {
         logger.warn('Query validation failed', {
           operation: 'query_validation_error',
           path: req.path,
-          errors: error.errors,
+          errorCount: error.errors.length,
           correlation_id: req.correlationId
         });
 
         return res.status(400).json({
           error: 'Validation Error',
           message: 'Invalid query parameters',
-          details: error.errors.map(e => ({
-            field: e.path.join('.'),
-            message: e.message,
-            code: e.code
-          }))
+          details: formatErrorsForResponse(error.errors, maxErrors)
         });
       }
       next(error);
@@ -112,21 +143,12 @@ function validateQuery(schema) {
  * Create a validation middleware for URL parameters
  *
  * @param {z.ZodSchema} schema - Zod schema to validate against
+ * @param {Object} options - Validation options
  * @returns {Function} Express middleware function
- *
- * @example
- * const paramsSchema = z.object({
- *   id: z.string().uuid()
- * });
- *
- * router.get('/elections/:id',
- *   validateParams(paramsSchema),
- *   async (req, res) => {
- *     const { id } = req.validatedParams;
- *   }
- * );
  */
-function validateParams(schema) {
+function validateParams(schema, options = {}) {
+  const { maxErrors = 5 } = options;
+
   return (req, res, next) => {
     try {
       req.validatedParams = schema.parse(req.params);
@@ -136,18 +158,14 @@ function validateParams(schema) {
         logger.warn('Params validation failed', {
           operation: 'params_validation_error',
           path: req.path,
-          errors: error.errors,
+          errorCount: error.errors.length,
           correlation_id: req.correlationId
         });
 
         return res.status(400).json({
           error: 'Validation Error',
           message: 'Invalid URL parameters',
-          details: error.errors.map(e => ({
-            field: e.path.join('.'),
-            message: e.message,
-            code: e.code
-          }))
+          details: formatErrorsForResponse(error.errors, maxErrors)
         });
       }
       next(error);
@@ -156,16 +174,60 @@ function validateParams(schema) {
 }
 
 // ============================================
+// Common Schema Primitives (with security)
+// ============================================
+
+/**
+ * Sanitized string - trimmed with length limits
+ * Use for general text input
+ */
+const sanitizedString = z.string()
+  .trim()
+  .min(1, 'Cannot be empty')
+  .max(500, 'Text too long');
+
+/**
+ * Short sanitized string - for IDs, codes, etc.
+ */
+const shortString = z.string()
+  .trim()
+  .min(1, 'Cannot be empty')
+  .max(100, 'Text too long');
+
+/**
+ * UUID schema - strict format validation
+ */
+const uuidSchema = z.string()
+  .trim()
+  .uuid('Invalid ID format');
+
+/**
+ * Token schema - hex string validation
+ * Supports both 32-char and 64-char tokens
+ */
+const tokenSchema = z.string()
+  .trim()
+  .min(32, 'Invalid token')
+  .max(128, 'Invalid token')
+  .regex(/^[a-f0-9]+$/i, 'Invalid token format');
+
+/**
+ * Kennitala schema - Icelandic national ID
+ * 10 digits, basic format validation
+ */
+const kennitalaSchema = z.string()
+  .trim()
+  .length(10, 'Kennitala must be 10 digits')
+  .regex(/^\d{10}$/, 'Kennitala must contain only digits');
+
+// ============================================
 // Common Schemas for Events Service
 // ============================================
 
-/** UUID schema */
-const uuidSchema = z.string().uuid();
-
 /** Pagination query schema */
 const paginationSchema = z.object({
-  limit: z.coerce.number().min(1).max(100).default(50),
-  offset: z.coerce.number().min(0).default(0)
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+  offset: z.coerce.number().int().min(0).max(100000).default(0)
 });
 
 /** Election status enum */
@@ -173,22 +235,29 @@ const electionStatusSchema = z.enum(['draft', 'active', 'closed']);
 
 /** Token request schema */
 const tokenRequestSchema = z.object({
-  electionId: z.string().uuid(),
-  kennitala: z.string().regex(/^\d{10}$/, 'Kennitala must be 10 digits')
+  electionId: uuidSchema,
+  kennitala: kennitalaSchema
 });
 
 /** Create election schema */
 const createElectionSchema = z.object({
-  title: z.string().min(1).max(255),
-  description: z.string().max(2000).optional(),
-  question: z.string().min(1).max(500),
+  title: sanitizedString.max(255),
+  description: sanitizedString.max(2000).optional(),
+  question: sanitizedString.max(500),
   answers: z.array(z.object({
-    id: z.string(),
-    text: z.string().min(1).max(255)
-  })).min(2).max(20),
+    id: shortString.max(50),
+    text: sanitizedString.max(255)
+  }))
+    .min(2, 'At least 2 answers required')
+    .max(20, 'Maximum 20 answers allowed'),
   startDate: z.string().datetime().optional(),
   endDate: z.string().datetime().optional(),
   isRanked: z.boolean().default(false)
+});
+
+/** Event ID param schema */
+const eventIdParamSchema = z.object({
+  id: uuidSchema
 });
 
 module.exports = {
@@ -197,10 +266,17 @@ module.exports = {
   validateParams,
   // Common schemas
   schemas: {
+    // Primitives
     uuid: uuidSchema,
+    token: tokenSchema,
+    kennitala: kennitalaSchema,
+    sanitizedString,
+    shortString,
+    // Domain schemas
     pagination: paginationSchema,
     electionStatus: electionStatusSchema,
     tokenRequest: tokenRequestSchema,
-    createElection: createElectionSchema
+    createElection: createElectionSchema,
+    eventIdParam: eventIdParamSchema
   }
 };
