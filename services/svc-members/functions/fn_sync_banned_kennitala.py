@@ -15,6 +15,7 @@ from firebase_functions import https_fn, options
 from google.cloud.firestore import SERVER_TIMESTAMP
 
 from util_logging import log_json
+from shared.validators import normalize_kennitala
 
 
 # Collection name for banned kennitalas
@@ -45,11 +46,6 @@ def validate_request(req: https_fn.Request) -> bool:
         provided_key = auth_header
 
     return provided_key == expected_key
-
-
-def normalize_kennitala(kt: str) -> str:
-    """Normalize kennitala: remove dashes, ensure 10 digits."""
-    return kt.replace('-', '').strip()
 
 
 def is_kennitala_banned(kennitala: str) -> bool:
