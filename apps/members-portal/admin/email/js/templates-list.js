@@ -9,7 +9,7 @@ import { debug } from '../../../js/utils/util-debug.js';
 import { adminStrings } from '../../js/i18n/admin-strings-loader.js';
 import { requireAdmin } from '../../../js/rbac.js';
 import { showToast, showError } from '../../../js/components/ui-toast.js';
-import { showModal, hideModal } from '../../../js/components/ui-modal.js';
+// Note: showModal not used here - this page uses its own inline modal
 import EmailAPI from './api/email-api.js';
 
 let strings = {};
