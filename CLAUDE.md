@@ -36,7 +36,7 @@
 | Cloud Functions | `services/svc-members/functions/` → Firebase Functions |
 | Elections/Events | `services/svc-elections/`, `svc-events/` → Cloud Run |
 | Database (future) | **Firestore** (source of truth) |
-| Database (interim) | Cloud SQL PostgreSQL (europe-west2) |
+| Database (interim) | Cloud SQL PostgreSQL (europe-west1: ekklesia-db-eu1) |
 | Django Admin | `~/Development/projects/django/` → Cloud Run (interim) |
 | Deploy frontend | `cd services/svc-members && firebase deploy --only hosting` |
 | Deploy function | `cd services/svc-members && firebase deploy --only functions:NAME` |
