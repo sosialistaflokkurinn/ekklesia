@@ -117,7 +117,8 @@ async function handleOAuthCallback(authCode) {
       headers: headers,
       body: JSON.stringify({
         kenniAuthCode: authCode,
-        pkceCodeVerifier: pkceVerifier
+        pkceCodeVerifier: pkceVerifier,
+        redirectUri: window.location.origin  // Must match what was used in auth request
       })
     });
 
@@ -345,8 +346,8 @@ async function init() {
   // Kenni.is configuration
   const KENNI_IS_ISSUER_URL = R.string.config_kenni_issuer;
   const KENNI_IS_CLIENT_ID = R.string.config_kenni_client_id;
-  // Use configured redirect URI (must exactly match IdP + backend env)
-  const KENNI_IS_REDIRECT_URI = R.string.config_kenni_redirect_uri;
+  // Use current origin as redirect URI (allows custom domains like felagar.sosialistaflokkurinn.is)
+  const KENNI_IS_REDIRECT_URI = window.location.origin;
 
   // Check if this is an OAuth callback
   const urlParams = new URLSearchParams(window.location.search);

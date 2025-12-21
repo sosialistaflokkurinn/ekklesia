@@ -16,7 +16,7 @@ from firebase_admin import auth, firestore
 from firebase_functions import https_fn
 from util_logging import log_json, sanitize_fields
 from util_jwks import get_jwks_client_cached_ttl, get_jwks_cache_stats
-from shared.cors import get_allowed_origin, cors_headers_for_origin
+from shared.cors import get_allowed_origin, cors_headers_for_origin, parse_allowed_origins
 from shared.validators import normalize_kennitala, validate_kennitala, normalize_phone
 from shared.rate_limit import check_rate_limit
 from util_security import validate_auth_input
@@ -134,6 +134,7 @@ def handleKenniAuth_handler(req: https_fn.Request) -> https_fn.Response:
         data = req.get_json()
         kenni_auth_code = data.get('kenniAuthCode')
         pkce_code_verifier = data.get('pkceCodeVerifier')
+        client_redirect_uri = data.get('redirectUri')  # Optional: redirect_uri from client
 
         # Input validation (Issue #64)
         validate_auth_input(kenni_auth_code, pkce_code_verifier)
@@ -179,18 +180,38 @@ def handleKenniAuth_handler(req: https_fn.Request) -> https_fn.Response:
             except Exception as e:
                 log_json("warning", "Failed to read secret file", error=str(e), correlationId=correlation_id)
 
-        redirect_uri = os.environ.get("KENNI_IS_REDIRECT_URI")
+        # Redirect URI: use client-provided value if valid, else fall back to env var
+        # Allowed redirect URIs (validated against CORS origins for security)
+        allowed_redirect_uris = parse_allowed_origins()
+
+        if client_redirect_uri:
+            # Validate client-provided redirect_uri is in allowed list
+            if client_redirect_uri in allowed_redirect_uris or '*' in allowed_redirect_uris:
+                redirect_uri = client_redirect_uri
+                log_json("debug", "Using client-provided redirect_uri", redirectUri=redirect_uri, correlationId=correlation_id)
+            else:
+                log_json("warn", "Invalid redirect_uri from client", providedUri=client_redirect_uri, correlationId=correlation_id)
+                origin = get_allowed_origin(req.headers.get('Origin'))
+                return https_fn.Response(
+                    json.dumps({"error": "INVALID_REDIRECT_URI", "message": "Invalid redirect URI", "correlationId": correlation_id}),
+                    status=400,
+                    mimetype="application/json",
+                    headers={**cors_headers_for_origin(origin), 'X-Correlation-ID': correlation_id},
+                )
+        else:
+            # Fall back to env var for backwards compatibility
+            redirect_uri = os.environ.get("KENNI_IS_REDIRECT_URI")
 
         missing = [
             name for name, val in [
                 ("KENNI_IS_ISSUER_URL", issuer_url),
                 ("KENNI_IS_CLIENT_ID", client_id),
                 ("KENNI_IS_CLIENT_SECRET", client_secret),
-                ("KENNI_IS_REDIRECT_URI", redirect_uri),
+                ("redirect_uri", redirect_uri),
             ] if not val
         ]
         if missing:
-            raise Exception(f"Missing environment variables: {', '.join(missing)}")
+            raise Exception(f"Missing configuration: {', '.join(missing)}")
 
         token_url = f"{issuer_url}/oidc/token"
 
