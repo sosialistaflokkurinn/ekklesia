@@ -1,8 +1,8 @@
 # Elections Service MVP - Dockerfile
-# Node.js 18 + Express
+# Node.js 20 LTS + Express
 # Optimized for Cloud Run deployment
 
-FROM node:18-slim
+FROM node:20-slim
 
 # Set working directory
 WORKDIR /app
