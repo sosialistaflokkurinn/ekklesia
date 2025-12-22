@@ -38,6 +38,7 @@ MIKILVÆGT - Ekki endurtaka þessar upplýsingar því þær birtast annars sta�
 - Titill viðburðar (sýndur sem fyrirsögn)
 - Staðsetning/heimilisfang (sýnt með kortahlekkjum)
 - Dagsetning og tími (sýnt í sérstökum merkimiða)
+- Zoom/fjarfundahlekkir (sýndir sem sérstakir hnappar) - FJARLÆGÐU alla Zoom URL úr textanum
 
 Leiðbeiningar:
 - Einbeita þér að INNIHALDI: hvað á að gerast, hvers vegna, hverjir eru velkomnir

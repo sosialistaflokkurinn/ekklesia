@@ -2,6 +2,9 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { version } = require('../package.json');
+
+// Initialize Firebase Admin SDK (required for App Check, Storage, etc.)
+require('./config/config-firebase');
 const electionRoutes = require('./routes/route-election');
 const adminRouter = require('./routes/route-admin');
 const externalEventsRouter = require('./routes/route-external-events');
@@ -25,11 +28,14 @@ const PORT = process.env.PORT || 8080;
 
 // Middleware
 // CORS configuration - only allow known origins in production
-const corsOrigins = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',').map(s => s.trim()).filter(Boolean) : [
-  'https://ekklesia-prod-10-2025.web.app',
-  'https://ekklesia-prod-10-2025.firebaseapp.com',
-  'http://localhost:3000'
-];
+// Support both comma and semicolon separators (semicolons work better with gcloud --set-env-vars)
+const corsOrigins = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(/[,;]/).map(s => s.trim()).filter(Boolean)
+  : [
+    'https://ekklesia-prod-10-2025.web.app',
+    'https://ekklesia-prod-10-2025.firebaseapp.com',
+    'http://localhost:3000'
+  ];
 
 if (process.env.NODE_ENV === 'production' && (corsOrigins.length === 0 || corsOrigins.includes('*'))) {
   logger.warn('CORS origins not properly restricted in production', {
