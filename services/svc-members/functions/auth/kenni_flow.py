@@ -20,6 +20,7 @@ from shared.cors import get_allowed_origin, cors_headers_for_origin, parse_allow
 from shared.validators import normalize_kennitala, validate_kennitala, normalize_phone
 from shared.rate_limit import check_rate_limit
 from util_security import validate_auth_input
+from db_members import get_member_by_kennitala
 
 
 def get_kenni_is_jwks_client(issuer_url: str) -> PyJWKClient:
@@ -348,28 +349,11 @@ def handleKenniAuth_handler(req: https_fn.Request) -> https_fn.Response:
                     # Re-raise if it's a different error
                     raise
 
-        # Step 4b: Link member document to Firebase UID (bidirectional linking)
-        # This enables direct lookup from /members/{kennitala} → /users/{uid}
-        try:
-            member_ref = db.collection('members').document(normalized_kennitala)
-            member_doc = member_ref.get()
-            if member_doc.exists:
-                member_ref.update({
-                    'metadata.firebase_uid': auth_uid,
-                    'metadata.firebase_uid_linked_at': firestore.SERVER_TIMESTAMP
-                })
-                log_json("info", "Linked member to Firebase UID",
-                         kennitala=f"{normalized_kennitala[:6]}****",
-                         uid=auth_uid, correlationId=correlation_id)
-            else:
-                log_json("debug", "No member document found to link",
-                         kennitala=f"{normalized_kennitala[:6]}****",
-                         correlationId=correlation_id)
-        except Exception as e:
-            # Non-fatal - log and continue (user can still log in)
-            log_json("warn", "Failed to link member to Firebase UID",
-                     error=str(e), kennitala=f"{normalized_kennitala[:6]}****",
-                     correlationId=correlation_id)
+        # Note: Member-UID linking removed - Cloud SQL is source of truth for members
+        # The /users/{uid} collection stores kennitala for linking
+        log_json("debug", "Auth flow completed, kennitala stored in /users collection",
+                 kennitala=f"{normalized_kennitala[:6]}****",
+                 uid=auth_uid, correlationId=correlation_id)
 
         # Step 5: Read roles from Firestore /users/ collection
         # Roles are managed via Firebase Admin Panel (NOT synced from Django)
@@ -420,19 +404,16 @@ def handleKenniAuth_handler(req: https_fn.Request) -> https_fn.Response:
         except Exception as e:
             log_json("warn", "Could not check Firebase Auth disabled status", error=str(e), uid=auth_uid)
 
-        # Also check Firestore membership.deleted_at (Django soft-delete)
+        # Check Cloud SQL for soft-deleted status (source of truth)
         if not account_disabled:
             try:
-                member_doc = firestore.client().collection('members').document(normalized_kennitala).get()
-                if member_doc.exists:
-                    member_data = member_doc.to_dict()
-                    deleted_at = member_data.get('membership', {}).get('deleted_at')
-                    if deleted_at:
-                        account_disabled = True
-                        log_json("info", "User account is soft-deleted in Firestore (membership.deleted_at)",
-                                 uid=auth_uid, kennitala=f"{normalized_kennitala[:6]}****")
+                member = get_member_by_kennitala(normalized_kennitala)
+                if member and member.get('membership', {}).get('deleted_at'):
+                    account_disabled = True
+                    log_json("info", "User account is soft-deleted in Cloud SQL (deleted_at)",
+                             uid=auth_uid, kennitala=f"{normalized_kennitala[:6]}****")
             except Exception as e:
-                log_json("warn", "Could not check Firestore deleted_at status", error=str(e), uid=auth_uid)
+                log_json("warn", "Could not check Cloud SQL deleted_at status", error=str(e), uid=auth_uid)
 
         # Step 8: Return custom token to frontend
         response_data = {

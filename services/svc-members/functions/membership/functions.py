@@ -15,6 +15,7 @@ from firebase_functions import https_fn, options
 from util_logging import log_json
 from shared.validators import normalize_kennitala, normalize_phone
 from shared.rate_limit import check_uid_rate_limit
+from db_members import get_member_by_kennitala
 
 # Security: Input validation limits
 MAX_NAME_LENGTH = 100
@@ -26,7 +27,6 @@ from fn_sync_members import (
     update_django_member, update_django_address,
     get_django_api_token, DJANGO_API_BASE_URL
 )
-from fn_cleanup_audit_logs import cleanup_old_audit_logs
 import requests
 
 
@@ -259,16 +259,15 @@ def updatememberprofile_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
         # Django API doesn't support ?ssn= filter, so we use Firestore lookup
         kennitala_no_hyphen = kennitala.replace('-', '')
 
-        log_json("debug", "Looking up member in Firestore",
+        log_json("debug", "Looking up member in Cloud SQL",
                  uid=req.auth.uid,
                  kennitala=f"{kennitala_no_hyphen[:6]}****")
 
-        db = firestore.client()
-        member_ref = db.collection('members').document(kennitala_no_hyphen)
-        member_doc = member_ref.get()
+        # Get member from Cloud SQL (source of truth)
+        member_data = get_member_by_kennitala(kennitala_no_hyphen)
 
-        if not member_doc.exists:
-            log_json("error", "Member not found in Firestore",
+        if not member_data:
+            log_json("error", "Member not found in Cloud SQL",
                      uid=req.auth.uid,
                      kennitala=f"{kennitala_no_hyphen[:6]}****")
             raise https_fn.HttpsError(
@@ -276,17 +275,9 @@ def updatememberprofile_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
                 message="Member not found in system"
             )
 
-        member_data = member_doc.to_dict()
-        django_id = member_data.get('metadata', {}).get('django_id')
+        django_id = member_data.get('django_id')
 
-        # Note: django_id may be None for Firestore-only members (registered via Ekklesia, not Django)
-        # We still allow profile updates - they just won't sync to Django
-        if not django_id:
-            log_json("info", "Member has no Django ID - Firestore-only update",
-                     uid=req.auth.uid,
-                     kennitala=f"{kennitala_no_hyphen[:6]}****")
-
-        log_json("debug", "Found member in Firestore",
+        log_json("debug", "Found member in Cloud SQL",
                  uid=req.auth.uid,
                  django_id=django_id,
                  kennitala=f"{kennitala_no_hyphen[:6]}****")
@@ -547,85 +538,6 @@ def updatememberprofile_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
         )
 
 
-def cleanupauditlogs_handler(req: https_fn.CallableRequest) -> dict:
-    """
-    Cleanup old audit logs, keeping only the most recent N entries.
-
-    Requires admin role.
-
-    Request data:
-        keep_count: Number of most recent logs to keep (default: 50)
-
-    Returns:
-        Dict with cleanup statistics
-    """
-    # Require authentication
-    if not req.auth:
-        raise https_fn.HttpsError(
-            code=https_fn.FunctionsErrorCode.UNAUTHENTICATED,
-            message="Must be authenticated to cleanup audit logs"
-        )
-
-    uid = req.auth.uid
-
-    # Security: Rate limit audit cleanup (1 per 10 minutes)
-    if not check_uid_rate_limit(uid, "cleanup_audit", max_attempts=1, window_minutes=10):
-        raise https_fn.HttpsError(
-            code=https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED,
-            message="Rate limit exceeded. Maximum 1 cleanup per 10 minutes."
-        )
-
-    # Get user's roles from Firestore
-    db = firestore.client()
-    user_ref = db.collection('users').document(uid)
-    user_doc = user_ref.get()
-
-    if not user_doc.exists:
-        raise https_fn.HttpsError(
-            code=https_fn.FunctionsErrorCode.PERMISSION_DENIED,
-            message="User not found"
-        )
-
-    user_data = user_doc.to_dict()
-    roles = user_data.get('roles', [])
-
-    # Require admin or superuser role (roles is a list like ['member', 'admin'])
-    if not ('admin' in roles or 'superuser' in roles):
-        log_json("warn", "Unauthorized audit log cleanup attempt",
-                 uid=uid,
-                 roles=roles)
-        raise https_fn.HttpsError(
-            code=https_fn.FunctionsErrorCode.PERMISSION_DENIED,
-            message="Admin role required"
-        )
-
-    # Get keep_count parameter (default: 50)
-    keep_count = req.data.get('keep_count', 50) if req.data else 50
-
-    log_json("info", "Starting audit log cleanup",
-             uid=uid,
-             keep_count=keep_count)
-
-    try:
-        # Run cleanup
-        result = cleanup_old_audit_logs(keep_count=keep_count)
-
-        log_json("info", "Audit log cleanup completed",
-                 uid=uid,
-                 result=result)
-
-        return result
-
-    except Exception as e:
-        log_json("error", "Audit log cleanup failed",
-                 uid=uid,
-                 error=str(e))
-        raise https_fn.HttpsError(
-            code=https_fn.FunctionsErrorCode.INTERNAL,
-            message=f"Cleanup failed: {str(e)}"
-        )
-
-
 def soft_delete_self_handler(req: https_fn.CallableRequest) -> dict:
     """
     Soft delete the authenticated user's own membership.
@@ -680,26 +592,16 @@ def soft_delete_self_handler(req: https_fn.CallableRequest) -> dict:
              kennitala=f"{kennitala_normalized[:6]}****")
 
     try:
-        db = firestore.client()
-        member_ref = db.collection('members').document(kennitala_normalized)
-        member_doc = member_ref.get()
+        # Verify member exists in Cloud SQL (source of truth)
+        member_data = get_member_by_kennitala(kennitala_normalized)
 
-        if not member_doc.exists:
+        if not member_data:
             raise https_fn.HttpsError(
                 code=https_fn.FunctionsErrorCode.NOT_FOUND,
                 message="Member not found"
             )
 
-        # 1. Update Firestore
-        # Note: We do NOT change membership.status here - it keeps the payment status (active/unpaid)
-        # deleted_at is a separate field to indicate the account is soft-deleted
-        member_ref.update({
-            'membership.deleted_at': deleted_at,
-            'metadata.deleted_by': 'self',
-            'metadata.last_modified': firestore.SERVER_TIMESTAMP
-        })
-
-        log_json("info", "Firestore updated for soft delete",
+        log_json("info", "Member found, proceeding with soft delete",
                  uid=uid,
                  kennitala=f"{kennitala_normalized[:6]}****")
 
@@ -816,30 +718,31 @@ def reactivate_self_handler(req: https_fn.CallableRequest) -> dict:
              kennitala=f"{kennitala_normalized[:6]}****")
 
     try:
-        db = firestore.client()
-        member_ref = db.collection('members').document(kennitala_normalized)
-        member_doc = member_ref.get()
+        # Get member from Cloud SQL (source of truth)
+        member_data = get_member_by_kennitala(kennitala_normalized)
 
-        if not member_doc.exists:
+        if not member_data:
             raise https_fn.HttpsError(
                 code=https_fn.FunctionsErrorCode.NOT_FOUND,
                 message="Member not found"
             )
 
-        member_data = member_doc.to_dict()
-
-        # Verify member was soft-deleted
-        # Check both metadata.deleted_at (Ekklesia) and membership.deleted_at (Django sync)
-        metadata_deleted_at = member_data.get('metadata', {}).get('deleted_at')
-        membership_deleted_at = member_data.get('membership', {}).get('deleted_at')
-        if not metadata_deleted_at and not membership_deleted_at:
+        # Verify member was soft-deleted (check Cloud SQL deleted_at)
+        deleted_at = member_data.get('membership', {}).get('deleted_at')
+        if not deleted_at:
             raise https_fn.HttpsError(
                 code=https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
                 message="Account is not deactivated"
             )
 
-        # Get Firebase UID from member data
-        firebase_uid = member_data.get('metadata', {}).get('firebase_uid')
+        # Get Firebase UID from /users collection by querying for kennitala
+        db = firestore.client()
+        users_query = db.collection('users').where('kennitala', '==', kennitala_normalized).limit(1).stream()
+        firebase_uid = None
+        for user_doc in users_query:
+            firebase_uid = user_doc.id
+            break
+
         if not firebase_uid:
             raise https_fn.HttpsError(
                 code=https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
@@ -860,18 +763,8 @@ def reactivate_self_handler(req: https_fn.CallableRequest) -> dict:
                 message="Failed to re-enable account"
             )
 
-        # 2. Update Firestore - set status back to unpaid (fees need to be re-verified)
-        # Clear both metadata.deleted_at (Ekklesia) and membership.deleted_at (Django sync)
-        member_ref.update({
-            'membership.status': 'unpaid',
-            'membership.deleted_at': firestore.DELETE_FIELD,
-            'metadata.deleted_at': firestore.DELETE_FIELD,
-            'metadata.deleted_by': firestore.DELETE_FIELD,
-            'metadata.reactivated_at': firestore.SERVER_TIMESTAMP,
-            'metadata.last_modified': firestore.SERVER_TIMESTAMP
-        })
-
-        log_json("info", "Firestore updated for reactivation",
+        # Note: Firestore /members no longer exists - Cloud SQL is source of truth
+        log_json("info", "Proceeding with Django reactivation",
                  kennitala=f"{kennitala_normalized[:6]}****")
 
         # 3. Sync to Django

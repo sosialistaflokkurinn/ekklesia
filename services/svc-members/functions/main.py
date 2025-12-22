@@ -43,7 +43,7 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
 from membership.functions import (
     verifyMembership_handler,
     updatememberprofile_handler,
-    cleanupauditlogs_handler,
+    # Note: cleanupauditlogs_handler removed - /members_audit_log no longer used
     soft_delete_self_handler,
     reactivate_self_handler
 )
@@ -64,14 +64,7 @@ def updatememberprofile(req: https_fn.CallableRequest):
     """Update member profile - delegates to handler"""
     return updatememberprofile_handler(req)
 
-@https_fn.on_call(
-    region="europe-west2",
-    memory=options.MemoryOption.MB_256,
-    timeout_sec=300
-)
-def cleanupauditlogs(req: https_fn.CallableRequest) -> dict:
-    """Cleanup audit logs - delegates to handler"""
-    return cleanupauditlogs_handler(req)
+# Note: cleanupauditlogs removed - /members_audit_log no longer used (Cloud SQL is source of truth)
 
 @https_fn.on_call(timeout_sec=30, memory=256, secrets=["django-api-token"])
 def softDeleteSelf(req: https_fn.CallableRequest) -> dict:
@@ -88,13 +81,13 @@ def reactivateSelf(req: https_fn.CallableRequest) -> dict:
 # ==============================================================================
 
 # Import functions from existing modules
-from fn_audit_members import auditmemberchanges
 from fn_get_django_token import get_django_token
+
+# Note: auditmemberchanges removed - /members collection no longer used (Cloud SQL is source of truth)
 
 # Note: sync_from_django removed - Cloud Functions now read directly from Cloud SQL
 
-# Sync banned kennitalas from Django to Firestore (shadow ban feature)
-from fn_sync_banned_kennitala import sync_banned_kennitala
+# Note: sync_banned_kennitala removed - banned kennitalas checked directly in Cloud SQL
 
 # ==============================================================================
 # ADDRESS VALIDATION FUNCTIONS (iceaddr integration)
@@ -289,13 +282,12 @@ __all__ = [
     # Membership functions
     'verifyMembership',
     'updatememberprofile',
-    'cleanupauditlogs',
+    # Note: cleanupauditlogs removed - /members_audit_log no longer used
     'softDeleteSelf',
     'reactivateSelf',
     # Audit and sync functions
-    'auditmemberchanges',
+    # Note: auditmemberchanges removed - /members collection no longer used
     'get_django_token',
-    'sync_banned_kennitala',  # Django → Firestore banned kennitalas sync
     # Address validation functions
     'validate_address',
     'validate_postal_code',

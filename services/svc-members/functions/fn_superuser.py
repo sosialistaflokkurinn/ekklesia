@@ -15,6 +15,11 @@ from firebase_admin import auth, firestore
 from firebase_functions import https_fn, options
 from util_logging import log_json
 from shared.rate_limit import check_uid_rate_limit
+from db_members import (
+    get_member_by_kennitala,
+    get_member_by_email,
+    get_deleted_member_count
+)
 import requests
 import time
 import os
@@ -45,12 +50,12 @@ CLOUD_RUN_SERVICES = [
     {
         "id": "elections-service",
         "name": "Kosningaþjónusta",
-        "url": "https://elections-service-521240388393.europe-west2.run.app/health"
+        "url": "https://elections-service-521240388393.europe-west1.run.app/health"
     },
     {
         "id": "events-service",
         "name": "Viðburðaþjónusta",
-        "url": "https://events-service-521240388393.europe-west2.run.app/health"
+        "url": "https://events-service-521240388393.europe-west1.run.app/health"
     },
     {
         "id": "healthz",
@@ -60,7 +65,7 @@ CLOUD_RUN_SERVICES = [
     {
         "id": "django-socialism",
         "name": "Django Admin (GCP)",
-        "url": "https://django-socialism-521240388393.europe-west2.run.app/felagar/api/"
+        "url": "https://starf.sosialistaflokkurinn.is/felagar/api/"
     },
 ]
 
@@ -79,10 +84,7 @@ FUNCTIONS_BASE_URL = "https://europe-west2-ekklesia-prod-10-2025.cloudfunctions.
 MEMBER_FUNCTIONS = [
     {"id": "handlekenniauth", "name": "Kenni.is Auth"},
     {"id": "verifymembership", "name": "Staðfesting félagsaðildar"},
-    {"id": "syncmembers", "name": "Samstilling félagaskrár"},
-    {"id": "sync-from-django", "name": "Django → Firestore sync"},
     {"id": "updatememberprofile", "name": "Prófíluppfærsla"},
-    {"id": "auditmemberchanges", "name": "Breytingasaga félaga"},
 ]
 
 # Firebase Functions - Address Validation
@@ -122,7 +124,7 @@ SUPERUSER_FUNCTIONS = [
 # Firebase Functions - Utility/Background
 UTILITY_FUNCTIONS = [
     {"id": "get-django-token", "name": "Django API lykill"},
-    {"id": "cleanupauditlogs", "name": "Hreinsun aðgerðaskráa"},
+    # Note: cleanupauditlogs removed - /members_audit_log no longer used
 ]
 
 # Combined list for backward compatibility
@@ -521,7 +523,7 @@ def check_system_health_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
         credentials.refresh(Request())
 
         # Cloud SQL Admin API endpoint
-        instance_name = "ekklesia-db"
+        instance_name = "ekklesia-db-eu1"
         sql_api_url = f"https://sqladmin.googleapis.com/v1/projects/{project}/instances/{instance_name}"
 
         start_time = time.time()
@@ -617,12 +619,12 @@ def get_audit_logs_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     # Security: Allowlist for service names to prevent filter injection
     ALLOWED_SERVICES = {
         "handlekenniauth", "verifymembership", "syncmembers", "sync-from-django",
-        "updatememberprofile", "auditmemberchanges", "search-addresses",
+        "updatememberprofile", "search-addresses",
         "validate-address", "validate-postal-code", "list-unions", "list-job-titles",
         "list-countries", "list-postal-codes", "get-cells-by-postal-code",
         "register-member", "checksystemhealth", "setuserrole", "getuserrole",
         "getauditlogs", "getloginaudit", "harddeletemember", "anonymizemember",
-        "listelevatedusers", "purgedeleted", "get-django-token", "cleanupauditlogs"
+        "listelevatedusers", "purgedeleted", "get-django-token"
     }
     ALLOWED_SEVERITIES = {"DEBUG", "INFO", "NOTICE", "WARNING", "ERROR", "CRITICAL", "ALERT", "EMERGENCY"}
 
@@ -805,20 +807,23 @@ def hard_delete_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     errors = []
 
     try:
-        # 1. Find member in Firestore
-        member_ref = db.collection("members").document(kennitala)
-        member_doc = member_ref.get()
+        # 1. Verify member exists in Cloud SQL (source of truth)
+        member = get_member_by_kennitala(kennitala)
 
-        if not member_doc.exists:
+        if not member:
             raise https_fn.HttpsError(
                 code=https_fn.FunctionsErrorCode.NOT_FOUND,
                 message=f"Member not found: {kennitala}"
             )
 
-        member_data = member_doc.to_dict()
-        firebase_uid = member_data.get("firebaseUid")
+        # 2. Find firebase_uid by querying /users collection
+        firebase_uid = None
+        users_query = db.collection("users").where("kennitala", "==", kennitala).limit(1).stream()
+        for user_doc in users_query:
+            firebase_uid = user_doc.id
+            break
 
-        # 2. Delete Firebase Auth user if exists
+        # 3. Delete Firebase Auth user if exists
         if firebase_uid:
             try:
                 auth.delete_user(firebase_uid)
@@ -828,7 +833,7 @@ def hard_delete_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             except Exception as e:
                 errors.append(f"Firebase Auth: {str(e)}")
 
-        # 3. Delete from /users/ collection
+        # 4. Delete from /users/ collection
         if firebase_uid:
             try:
                 db.collection("users").document(firebase_uid).delete()
@@ -836,12 +841,7 @@ def hard_delete_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             except Exception as e:
                 errors.append(f"Firestore /users/: {str(e)}")
 
-        # 4. Delete from /members/ collection
-        try:
-            member_ref.delete()
-            deleted_items.append(f"Firestore /members/{kennitala}")
-        except Exception as e:
-            errors.append(f"Firestore /members/: {str(e)}")
+        # Note: Cloud SQL deletion handled in Django admin
 
         # 5. Log the action
         log_json("warning", "DANGEROUS: Member hard deleted",
@@ -910,43 +910,29 @@ def anonymize_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     db = firestore.client()
 
     try:
-        # Find member
-        member_ref = db.collection("members").document(kennitala)
-        member_doc = member_ref.get()
+        # 1. Verify member exists in Cloud SQL (source of truth)
+        member = get_member_by_kennitala(kennitala)
 
-        if not member_doc.exists:
+        if not member:
             raise https_fn.HttpsError(
                 code=https_fn.FunctionsErrorCode.NOT_FOUND,
                 message=f"Member not found: {kennitala}"
             )
 
-        member_data = member_doc.to_dict()
-        firebase_uid = member_data.get("firebaseUid")
+        # 2. Find firebase_uid by querying /users collection
+        firebase_uid = None
+        users_query = db.collection("users").where("kennitala", "==", kennitala).limit(1).stream()
+        for user_doc in users_query:
+            firebase_uid = user_doc.id
+            break
 
         # Generate anonymous ID
         import uuid
         anon_id = f"ANON-{uuid.uuid4().hex[:8].upper()}"
 
-        # Anonymize member document
-        anonymized_data = {
-            "name": anon_id,
-            "email": f"{anon_id.lower()}@anonymized.local",
-            "kennitala": None,
-            "phone": None,
-            "address": None,
-            "postalCode": member_data.get("postalCode"),  # Keep for statistics
-            "region": member_data.get("region"),  # Keep for statistics
-            "memberSince": member_data.get("memberSince"),  # Keep for statistics
-            "anonymizedAt": firestore.SERVER_TIMESTAMP,
-            "anonymizedBy": caller_uid,
-            "isAnonymized": True
-        }
+        anonymized_items = []
 
-        # Create new document with anonymous ID, delete old
-        db.collection("members").document(anon_id).set(anonymized_data)
-        member_ref.delete()
-
-        # Anonymize Firebase Auth user if exists
+        # 3. Anonymize Firebase Auth user if exists
         if firebase_uid:
             try:
                 auth.update_user(
@@ -955,8 +941,17 @@ def anonymize_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
                     email=f"{anon_id.lower()}@anonymized.local",
                     disabled=True
                 )
+                anonymized_items.append("Firebase Auth")
             except Exception as e:
                 log_json("warning", "Could not anonymize Firebase Auth user",
+                         error=str(e), uid=firebase_uid)
+
+            # 4. Delete /users document (contains preferences)
+            try:
+                db.collection("users").document(firebase_uid).delete()
+                anonymized_items.append("/users document")
+            except Exception as e:
+                log_json("warning", "Could not delete /users document",
                          error=str(e), uid=firebase_uid)
 
         # Log the action
@@ -964,12 +959,14 @@ def anonymize_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
                  action="anonymize_member",
                  caller_uid=caller_uid,
                  original_kennitala=kennitala[:6] + "****",
-                 anon_id=anon_id)
+                 anon_id=anon_id,
+                 items=anonymized_items)
 
         return {
             "success": True,
             "anon_id": anon_id,
-            "message": f"Member anonymized as {anon_id}"
+            "anonymized": anonymized_items,
+            "message": f"Firebase Auth anonymized as {anon_id}. Complete anonymization in Django Admin."
         }
 
     except https_fn.HttpsError:
@@ -1091,8 +1088,8 @@ def _fetch_django_elevated_users() -> Dict[str, list]:
         'Accept': 'application/json'
     }
 
-    # Django API endpoint for all members (GCP Cloud Run)
-    url = "https://django-socialism-521240388393.europe-west2.run.app/felagar/api/full/"
+    # Django API endpoint for all members (custom domain)
+    url = "https://starf.sosialistaflokkurinn.is/felagar/api/full/"
 
     superusers = []
     admins = []
@@ -1146,14 +1143,15 @@ def _check_user_has_logged_in(db, email: str) -> bool:
     if not email:
         return False
 
-    # Check /members/ collection for firebase_uid by email
-    members = db.collection("members").where(
-        "profile.email", "==", email
+    # Check /users/ collection for users with this email who have logged in
+    users = db.collection("users").where(
+        "email", "==", email
     ).limit(1).stream()
 
-    for member_doc in members:
-        member_data = member_doc.to_dict()
-        if member_data.get("metadata", {}).get("firebase_uid"):
+    for user_doc in users:
+        user_data = user_doc.to_dict()
+        # If user has lastLogin timestamp, they've logged in
+        if user_data.get("lastLogin"):
             return True
 
     return False
@@ -1257,22 +1255,23 @@ def get_deleted_counts_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     """
     Get counts of soft-deleted members and votes.
 
+    Members queried from Cloud SQL (source of truth).
+    Votes queried from Firestore (elections service).
+
     Returns:
         Dict with counts of deleted members and votes.
     """
     # Verify superuser access
     require_superuser(req)
 
-    db = firestore.client()
-
     try:
-        # Count members with deletedAt != null
-        members_query = db.collection("members").where("membership.deleted_at", "!=", None)
-        deleted_members = len(list(members_query.stream()))
+        # Count members from Cloud SQL (source of truth)
+        deleted_members = get_deleted_member_count()
 
         # Count votes with deletedAt != null (if votes collection exists)
         deleted_votes = 0
         try:
+            db = firestore.client()
             votes_query = db.collection("votes").where("deletedAt", "!=", None)
             deleted_votes = len(list(votes_query.stream()))
         except Exception:

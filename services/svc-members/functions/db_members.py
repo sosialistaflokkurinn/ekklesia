@@ -340,3 +340,58 @@ def get_membership_status(kennitala: str) -> Dict[str, Any]:
         'django_id': result['id'],
         'name': result['name']
     }
+
+
+def get_deleted_member_count() -> int:
+    """Get count of soft-deleted members."""
+    result = execute_query("""
+        SELECT COUNT(*) as count
+        FROM membership_comrade
+        WHERE deleted_at IS NOT NULL
+          AND ssn NOT LIKE '9999%%'
+    """, fetch_one=True)
+    return result['count'] if result else 0
+
+
+def get_member_by_email(email: str) -> Optional[Dict[str, Any]]:
+    """
+    Get a member by email address.
+
+    Args:
+        email: Email address
+
+    Returns:
+        Dict with member data or None if not found
+    """
+    if not email:
+        return None
+
+    query = """
+        SELECT
+            c.id,
+            c.name,
+            c.ssn as kennitala,
+            c.deleted_at,
+            ci.email
+        FROM membership_comrade c
+        JOIN membership_contactinfo ci ON ci.comrade_id = c.id
+        WHERE LOWER(ci.email) = LOWER(%s)
+        LIMIT 1
+    """
+
+    result = execute_query(query, params=(email,), fetch_one=True)
+    if not result:
+        return None
+
+    return {
+        'django_id': result['id'],
+        'kennitala': result['kennitala'],
+        'profile': {
+            'name': result['name'],
+            'email': result['email'],
+        },
+        'membership': {
+            'deleted_at': str(result['deleted_at']) if result['deleted_at'] else None,
+            'status': 'deleted' if result['deleted_at'] else 'active',
+        }
+    }

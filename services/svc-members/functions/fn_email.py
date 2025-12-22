@@ -19,6 +19,12 @@ from datetime import datetime
 import os
 import re
 import html2text
+import hashlib
+import hmac
+import base64
+
+# Cloud SQL member queries
+from db_members import get_member_by_kennitala, get_member_by_django_id, get_members_for_email
 
 # Security: Maximum limits
 MAX_TEMPLATE_SIZE = 100000  # 100KB max template size
@@ -30,6 +36,50 @@ _ses_client = None
 
 # Default sender email (can be overridden by env var)
 DEFAULT_SENDER = os.environ.get('SES_SENDER_EMAIL', 'felagakerfi@sosialistaflokkurinn.is')
+
+# Base URL for unsubscribe links
+BASE_URL = os.environ.get('BASE_URL', 'https://felagar.sosialistaflokkurinn.is')
+
+# Secret for signing unsubscribe tokens (use a dedicated secret in production)
+UNSUBSCRIBE_SECRET = os.environ.get('unsubscribe-secret', 'ekklesia-unsubscribe-default-secret')
+
+
+def generate_unsubscribe_token(member_id: str) -> str:
+    """
+    Generate a secure unsubscribe token for a member.
+    Uses HMAC-SHA256 to create a verifiable token.
+
+    Args:
+        member_id: Django ID of the member (all synced members have this)
+    """
+    message = f"unsubscribe:{member_id}".encode('utf-8')
+    signature = hmac.new(
+        UNSUBSCRIBE_SECRET.encode('utf-8'),
+        message,
+        hashlib.sha256
+    ).digest()
+    # URL-safe base64 encoding
+    token = base64.urlsafe_b64encode(signature).decode('utf-8').rstrip('=')
+    return token
+
+
+def verify_unsubscribe_token(member_id: str, token: str) -> bool:
+    """
+    Verify an unsubscribe token is valid for a given member ID.
+    """
+    expected_token = generate_unsubscribe_token(str(member_id))
+    return hmac.compare_digest(token, expected_token)
+
+
+def generate_unsubscribe_url(member_id: int) -> str:
+    """
+    Generate a complete unsubscribe URL with token.
+
+    Args:
+        member_id: Django ID of the member (all synced members have this)
+    """
+    token = generate_unsubscribe_token(str(member_id))
+    return f"{BASE_URL}/unsubscribe.html?m={member_id}&t={token}"
 
 
 def get_ses_client():
@@ -56,12 +106,11 @@ def get_ses_client():
     return _ses_client
 
 
-def get_filtered_members(db, recipient_filter: Dict[str, Any], max_results: int = MAX_RECIPIENTS_PER_BATCH) -> List:
+def get_filtered_members_sql(recipient_filter: Dict[str, Any], max_results: int = MAX_RECIPIENTS_PER_BATCH) -> List[Dict]:
     """
-    Get members filtered by recipient_filter criteria.
+    Get members filtered by recipient_filter criteria from Cloud SQL.
 
     Args:
-        db: Firestore client
         recipient_filter: Dict with optional keys:
             - status: "active" to filter active members only
             - districts: List of district/cell names
@@ -69,36 +118,18 @@ def get_filtered_members(db, recipient_filter: Dict[str, Any], max_results: int 
         max_results: Maximum number of members to return (security limit)
 
     Returns:
-        List of Firestore document snapshots matching the filter.
+        List of member dicts matching the filter.
     """
-    members_query = db.collection("members").limit(max_results)
-
-    # Filter by status
-    if recipient_filter.get("status") == "active":
-        members_query = members_query.where("membership.status", "==", "active")
-
-    # Filter by district (cell/svæði) - Firestore query for single district
-    districts = recipient_filter.get("districts", [])
-    if districts and len(districts) == 1:
-        members_query = members_query.where("membership.cell", "==", districts[0])
-
-    # Stream members
-    members = list(members_query.stream())
-
-    # Filter by multiple districts (Python filter if more than one)
-    if districts and len(districts) > 1:
-        members = [m for m in members if m.to_dict().get("membership", {}).get("cell") in districts]
-
-    # Filter by municipality (city in addresses)
+    status = recipient_filter.get("status")
     municipalities = recipient_filter.get("municipalities", [])
-    if municipalities:
-        def has_municipality(member_doc):
-            profile = member_doc.to_dict().get("profile", {})
-            addresses = profile.get("addresses", [])
-            return any(addr.get("city") in municipalities for addr in addresses)
-        members = [m for m in members if has_municipality(m)]
+    cells = recipient_filter.get("districts", [])  # Districts are cells
 
-    return members
+    return get_members_for_email(
+        status=status,
+        municipalities=municipalities if municipalities else None,
+        cells=cells if cells else None,
+        max_results=max_results
+    )
 
 
 def require_admin(req: https_fn.CallableRequest) -> Dict[str, Any]:
@@ -513,8 +544,11 @@ def send_email_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     """
     Send a single transactional email via Amazon SES.
 
+    Required data (one of):
+        - template_id: Template ID or alias (template mode)
+        - subject + body_html: Direct content (quick send mode)
+
     Required data:
-        - template_id: Template ID or alias
         - recipient_email: Email address OR
         - recipient_kennitala: Member kennitala (will look up email)
 
@@ -541,11 +575,15 @@ def send_email_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     variables = data.get("variables", {})
     email_type = data.get("email_type", "transactional")
 
-    # Validate required fields
-    if not template_id:
+    # Quick send mode: direct subject and body
+    direct_subject = data.get("subject")
+    direct_body_html = data.get("body_html")
+
+    # Validate: either template_id OR (subject + body_html) required
+    if not template_id and not (direct_subject and direct_body_html):
         raise https_fn.HttpsError(
             code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
-            message="template_id is required"
+            message="Either template_id or (subject + body_html) is required"
         )
 
     if not recipient_email and not recipient_kennitala:
@@ -554,32 +592,59 @@ def send_email_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             message="recipient_email or recipient_kennitala is required"
         )
 
+    # Security: Validate direct content size
+    if direct_body_html and len(direct_body_html) > MAX_TEMPLATE_SIZE:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+            message=f"Email body too large. Maximum size is {MAX_TEMPLATE_SIZE // 1000}KB"
+        )
+
     db = firestore.client()
 
-    # Get template
-    template_result = get_email_template_handler(req)
-    template_subject = template_result.get("subject")
-    template_body_html = template_result.get("body_html")
-    template_body_text = template_result.get("body_text")
+    # Get content from template or use direct content
+    template_result = None
+    if template_id:
+        # Template mode
+        template_result = get_email_template_handler(req)
+        template_subject = template_result.get("subject")
+        template_body_html = template_result.get("body_html")
+        template_body_text = template_result.get("body_text")
+    else:
+        # Quick send mode
+        template_subject = direct_subject
+        template_body_html = direct_body_html
+        template_body_text = html_to_text(direct_body_html)
 
-    # Get recipient email from member if kennitala provided
+    # Get recipient email from member if kennitala provided (using Cloud SQL)
     member_data = {}
     if recipient_kennitala and not recipient_email:
-        members = db.collection("members").where("kennitala", "==", recipient_kennitala).limit(1).stream()
-        member_list = list(members)
-        if not member_list:
+        member_data = get_member_by_kennitala(recipient_kennitala)
+        if not member_data:
             raise https_fn.HttpsError(
                 code=https_fn.FunctionsErrorCode.NOT_FOUND,
                 message=f"Member with kennitala not found"
             )
-        member_doc = member_list[0]
-        member_data = member_doc.to_dict()
         recipient_email = member_data.get("profile", {}).get("email")
         if not recipient_email:
             raise https_fn.HttpsError(
                 code=https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
                 message="Member does not have an email address"
             )
+
+    # Check email marketing consent for broadcast emails
+    if member_data and email_type == "broadcast":
+        preferences = member_data.get("preferences", {})
+        email_marketing = preferences.get("email_marketing", True)  # Default to True for existing members
+        if not email_marketing:
+            log_json("info", "Skipping email - member has opted out",
+                     kennitala=recipient_kennitala,
+                     email_type=email_type)
+            return {
+                "success": False,
+                "skipped": True,
+                "reason": "Félaginn hefur afþakkað fjöldapóst",
+                "recipient": recipient_email
+            }
 
     # Security: Validate email format
     if not validate_email(recipient_email):
@@ -600,6 +665,11 @@ def send_email_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             variables["cell"] = {
                 "name": member_data.get("membership", {}).get("cell", "")
             }
+
+    # Add unsubscribe URL for broadcast emails (using django_id for privacy)
+    django_id = member_data.get("metadata", {}).get("django_id") if member_data else None
+    if django_id and email_type == "broadcast":
+        variables["unsubscribe_url"] = generate_unsubscribe_url(django_id)
 
     # Render template
     rendered_subject = render_template(template_subject, variables)
@@ -639,7 +709,7 @@ def send_email_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             },
             Tags=[
                 {'Name': 'Type', 'Value': email_type},
-                {'Name': 'TemplateId', 'Value': template_result.get("id", "unknown")}
+                {'Name': 'TemplateId', 'Value': template_id or "quick_send"}
             ]
         )
 
@@ -647,7 +717,8 @@ def send_email_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
 
         # Log to email_logs collection
         log_data = {
-            "template_id": template_result.get("id"),
+            "template_id": template_id,  # None for quick send
+            "quick_send": template_id is None,
             "recipient_email": recipient_email,
             "recipient_kennitala": recipient_kennitala,
             "status": "sent",
@@ -663,7 +734,7 @@ def send_email_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
 
         log_json("info", "Email sent via SES",
                  message_id=message_id,
-                 template_id=template_result.get("id"),
+                 template_id=template_id or "quick_send",
                  recipient=recipient_email[:3] + "***",
                  email_type=email_type,
                  admin_uid=req.auth.uid)
@@ -784,8 +855,8 @@ def create_email_campaign_handler(req: https_fn.CallableRequest) -> Dict[str, An
             message=f"Template '{template_id}' not found"
         )
 
-    # Count recipients based on filter
-    members = get_filtered_members(db, recipient_filter)
+    # Count recipients based on filter (using Cloud SQL)
+    members = get_filtered_members_sql(recipient_filter)
     recipient_count = len(members)
 
     now = datetime.utcnow()
@@ -900,9 +971,9 @@ def send_campaign_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             message="Email service not configured"
         )
 
-    # Get recipients with filtering
+    # Get recipients with filtering (using Cloud SQL)
     recipient_filter = campaign.get("recipient_filter", {})
-    members = get_filtered_members(db, recipient_filter)
+    members = get_filtered_members_sql(recipient_filter)
 
     sent_count = 0
     failed_count = 0
@@ -910,12 +981,21 @@ def send_campaign_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     try:
         emails_processed = 0
 
-        for member_doc in members:
-            member = member_doc.to_dict()
+        skipped_count = 0
+
+        for member in members:
+            # member is already a dict from Cloud SQL
             email = member.get("profile", {}).get("email")
+            kennitala = member.get("kennitala")
 
             if not email:
                 failed_count += 1
+                continue
+
+            # Check email marketing consent
+            preferences = member.get("preferences", {})
+            if not preferences.get("email_marketing", True):
+                skipped_count += 1
                 continue
 
             # Build variables
@@ -923,11 +1003,17 @@ def send_campaign_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
                 "member": {
                     "name": member.get("profile", {}).get("name", ""),
                     "first_name": member.get("profile", {}).get("name", "").split()[0] if member.get("profile", {}).get("name") else "",
-                    "email": email
+                    "email": email,
+                    "kennitala": kennitala
                 }
             }
             if member.get("membership", {}).get("cell"):
                 variables["cell"] = {"name": member.get("membership", {}).get("cell", "")}
+
+            # Add unsubscribe URL (using django_id for privacy)
+            django_id = member.get("metadata", {}).get("django_id")
+            if django_id:
+                variables["unsubscribe_url"] = generate_unsubscribe_url(django_id)
 
             # Render template
             rendered_subject = render_template(template.get("subject", ""), variables)
@@ -1004,6 +1090,7 @@ def send_campaign_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
                  campaign_id=campaign_id,
                  sent_count=sent_count,
                  failed_count=failed_count,
+                 skipped_count=skipped_count,
                  admin_uid=req.auth.uid)
 
         return {
@@ -1011,6 +1098,7 @@ def send_campaign_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             "campaign_id": campaign_id,
             "sent_count": sent_count,
             "failed_count": failed_count,
+            "skipped_count": skipped_count,
             "status": "sent"
         }
 
@@ -1141,3 +1229,163 @@ def list_email_logs_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
         })
 
     return {"logs": logs, "count": len(logs)}
+
+
+# ==============================================================================
+# UNSUBSCRIBE
+# ==============================================================================
+
+def unsubscribe_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
+    """
+    Handle email unsubscribe request.
+
+    This function does NOT require authentication - it uses a signed token
+    to verify the request is legitimate.
+
+    Required data:
+        - member_id: Django ID of the member
+        - token: Signed unsubscribe token
+
+    Returns:
+        Success status.
+    """
+    data = req.data or {}
+    member_id = data.get("member_id")
+    token = data.get("token")
+
+    if not member_id or not token:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+            message="member_id and token are required"
+        )
+
+    # Verify the token
+    if not verify_unsubscribe_token(str(member_id), token):
+        log_json("warning", "Invalid unsubscribe token", member_id=member_id)
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.PERMISSION_DENIED,
+            message="Ógildur afþökkunarhlekkur"
+        )
+
+    # Look up member by django_id from Cloud SQL
+    member = get_member_by_django_id(int(member_id))
+    if not member:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.NOT_FOUND,
+            message="Félaginn fannst ekki"
+        )
+
+    # Store unsubscribe preference in /users collection
+    # Find user by kennitala
+    db = firestore.client()
+    kennitala = member.get("kennitala")
+
+    users = db.collection("users").where("kennitala", "==", kennitala).limit(1).stream()
+    user_list = list(users)
+
+    if user_list:
+        # Update existing user doc
+        user_list[0].reference.update({
+            "preferences.email_marketing": False,
+            "preferences.email_marketing_updated_at": datetime.utcnow()
+        })
+    else:
+        # Create user preferences doc keyed by django_id
+        db.collection("users").document(f"django_{member_id}").set({
+            "kennitala": kennitala,
+            "preferences": {
+                "email_marketing": False,
+                "email_marketing_updated_at": datetime.utcnow()
+            }
+        }, merge=True)
+
+    log_json("info", "Member unsubscribed from marketing emails", member_id=member_id, kennitala=f"{kennitala[:6]}****" if kennitala else None)
+
+    return {
+        "success": True,
+        "message": "Þú hefur verið afskráð(ur) af póstlista"
+    }
+
+
+def get_email_preferences_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
+    """
+    Get email preferences for the current authenticated user.
+
+    Preferences stored in /users/{uid} collection (not /members).
+
+    Returns:
+        Email preference settings.
+    """
+    if not req.auth:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.UNAUTHENTICATED,
+            message="Authentication required"
+        )
+
+    db = firestore.client()
+
+    # Get user preferences from /users collection
+    user_doc = db.collection("users").document(req.auth.uid).get()
+
+    if not user_doc.exists:
+        # User document doesn't exist yet - return defaults
+        return {
+            "email_marketing": True,  # Default to True
+            "email_marketing_updated_at": None
+        }
+
+    user_data = user_doc.to_dict()
+    preferences = user_data.get("preferences", {})
+
+    return {
+        "email_marketing": preferences.get("email_marketing", True),  # Default to True
+        "email_marketing_updated_at": preferences.get("email_marketing_updated_at").isoformat() if preferences.get("email_marketing_updated_at") else None
+    }
+
+
+def update_email_preferences_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
+    """
+    Update email preferences for the current authenticated user.
+
+    Preferences stored in /users/{uid} collection (not /members).
+
+    Required data:
+        - email_marketing: Boolean (true to receive marketing emails)
+
+    Returns:
+        Updated preferences.
+    """
+    if not req.auth:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.UNAUTHENTICATED,
+            message="Authentication required"
+        )
+
+    data = req.data or {}
+    email_marketing = data.get("email_marketing")
+
+    if email_marketing is None:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+            message="email_marketing is required"
+        )
+
+    db = firestore.client()
+
+    # Update user preferences in /users collection (merge to create if doesn't exist)
+    user_ref = db.collection("users").document(req.auth.uid)
+    user_ref.set({
+        "preferences": {
+            "email_marketing": bool(email_marketing),
+            "email_marketing_updated_at": datetime.utcnow()
+        }
+    }, merge=True)
+
+    log_json("info", "Member updated email preferences",
+             uid=req.auth.uid,
+             email_marketing=email_marketing)
+
+    return {
+        "success": True,
+        "email_marketing": bool(email_marketing)
+    }
