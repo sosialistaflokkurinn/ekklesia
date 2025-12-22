@@ -418,7 +418,8 @@
         <div class="schema-overview">
           <!-- ===== FIRESTORE COLLECTIONS ===== -->
           <div class="schema-section">
-            <h3 class="schema-section__title">Firestore Collections (6)</h3>
+            <h3 class="schema-section__title">Firestore Collections (5)</h3>
+            <p class="u-text-muted u-margin-bottom-sm"><strong>Athugið:</strong> Félagagögn eru nú í Cloud SQL (PostgreSQL). Firestore geymir notendagögn og cache.</p>
             <div class="schema-table">
               <div class="schema-row schema-row--header">
                 <span class="schema-col schema-col--name">Collection</span>
@@ -431,14 +432,9 @@
                 <span class="schema-col schema-col--key">Firebase UID</span>
               </div>
               <div class="schema-row">
-                <span class="schema-col schema-col--name"><code>/members/{kennitala}</code></span>
-                <span class="schema-col schema-col--desc">Félagaupplýsingar (samstillt frá Django)</span>
-                <span class="schema-col schema-col--key">Kennitala</span>
-              </div>
-              <div class="schema-row">
-                <span class="schema-col schema-col--name"><code>/members_audit_log/{id}</code></span>
-                <span class="schema-col schema-col--desc">Breytingasaga félaga</span>
-                <span class="schema-col schema-col--key">Auto ID</span>
+                <span class="schema-col schema-col--name"><code>/stats/municipality_heatmap</code></span>
+                <span class="schema-col schema-col--desc">Heatmap cache (uppfært á klukkustund)</span>
+                <span class="schema-col schema-col--key">Document ID</span>
               </div>
               <div class="schema-row">
                 <span class="schema-col schema-col--name"><code>/events/{id}</code></span>
@@ -446,13 +442,13 @@
                 <span class="schema-col schema-col--key">Auto ID</span>
               </div>
               <div class="schema-row">
-                <span class="schema-col schema-col--name"><code>/sync_logs/{id}</code></span>
-                <span class="schema-col schema-col--desc">Samstillingarskrár Django↔Firestore</span>
+                <span class="schema-col schema-col--name"><code>/email_templates/{id}</code></span>
+                <span class="schema-col schema-col--desc">Tölvupóstsniðmát</span>
                 <span class="schema-col schema-col--key">Auto ID</span>
               </div>
               <div class="schema-row">
                 <span class="schema-col schema-col--name"><code>/nomination-candidates/{id}</code></span>
-                <span class="schema-col schema-col--desc">Framboðsupplýsingar í uppstillingu</span>
+                <span class="schema-col schema-col--desc">Nomination candidate info</span>
                 <span class="schema-col schema-col--key">Candidate ID</span>
               </div>
             </div>
@@ -509,7 +505,8 @@
                 Cloud SQL - Django (GCP) - socialism
               </button>
             </h3>
-            <p class="u-text-muted u-margin-bottom-sm">Félagaskrá og aðalgagnagrunnur Django (108 töflur). <em>Smelltu til að sýna.</em></p>
+            <p class="u-text-muted u-margin-bottom-sm"><strong style="color: var(--color-success);">Source of Truth</strong> fyrir félagagögn (108 töflur). <em>Smelltu til að sýna.</em></p>
+            <p class="u-text-muted u-margin-bottom-sm">Cloud Functions nota <code>db.py</code> og <code>db_members.py</code> til að lesa/skrifa í PostgreSQL.</p>
 
             <div class="schema-collapsible u-hidden" id="django-tables">
             <!-- Membership App -->
@@ -624,14 +621,15 @@
             <h3 class="schema-section__title">Tengingar</h3>
             <div class="schema-relations-grid">
               <div class="schema-relations-group">
-                <h4>Firestore ↔ Django</h4>
+                <h4>Cloud Functions → Cloud SQL</h4>
                 <ul class="schema-relations">
-                  <li><code>/members/{kennitala}</code> ↔ <code>membership_comrade.ssn</code> (tvíátta samstilling)</li>
-                  <li><code>/users/{firebaseUid}.kennitala</code> → <code>/members/{kennitala}</code></li>
+                  <li><code>verifyMembership</code> → <code>membership_comrade</code> + <code>billing_membershipfee</code></li>
+                  <li><code>get_member_heatmap_data</code> → <code>membership_comrade</code> + <code>map_*</code></li>
+                  <li><code>/users/{firebaseUid}.kennitala</code> → <code>membership_comrade.ssn</code></li>
                 </ul>
               </div>
               <div class="schema-relations-group">
-                <h4>Django innbyrðis</h4>
+                <h4>Cloud SQL (PostgreSQL)</h4>
                 <ul class="schema-relations">
                   <li><code>membership_contactinfo.comrade_id</code> → <code>membership_comrade.id</code></li>
                   <li><code>membership_newlocaladdress.comrade_id</code> → <code>membership_comrade.id</code></li>
@@ -677,7 +675,7 @@
 
   </div>
 
-  <script type="module" src="/superuser/js/system-overview.js?v=20251214i"></script>
+  <script type="module" src="/superuser/js/system-overview.js?v=20251222a"></script>
 
   <!-- Django tables toggle -->
   <script>

@@ -50,9 +50,14 @@ from membership.functions import (
 )
 
 # Define decorated functions in main.py (required by Firebase Functions SDK)
-@https_fn.on_call()
+@https_fn.on_call(
+    region="europe-west2",
+    memory=options.MemoryOption.MB_256,
+    timeout_sec=30,
+    secrets=["django-socialism-db-password"],  # Cloud SQL access
+)
 def verifyMembership(req: https_fn.CallableRequest) -> dict:
-    """Verify membership - delegates to handler"""
+    """Verify membership - delegates to handler (reads from Cloud SQL)"""
     return verifyMembership_handler(req)
 
 @https_fn.on_request(timeout_sec=540, memory=512, secrets=["django-api-token"])
@@ -183,6 +188,7 @@ from fn_list_job_titles import list_job_titles
 from fn_list_countries import list_countries
 from fn_list_postal_codes import list_postal_codes
 from fn_cells_by_postal_code import get_cells_by_postal_code
+from fn_member_heatmap import get_member_heatmap_data, compute_member_heatmap_stats
 
 # Import registration function
 from fn_register_member import register_member
@@ -202,7 +208,10 @@ from fn_email import (
     create_email_campaign_handler,
     send_campaign_handler,
     get_email_stats_handler,
-    list_email_logs_handler
+    list_email_logs_handler,
+    unsubscribe_handler,
+    get_email_preferences_handler,
+    update_email_preferences_handler
 )
 
 # Define decorated functions for email operations
@@ -256,6 +265,21 @@ def listEmailLogs(req: https_fn.CallableRequest) -> dict:
     """List email send logs - requires admin"""
     return list_email_logs_handler(req)
 
+@https_fn.on_call(timeout_sec=30, memory=256, secrets=["unsubscribe-secret"])
+def unsubscribe(req: https_fn.CallableRequest) -> dict:
+    """Unsubscribe from marketing emails - uses signed token, no auth required"""
+    return unsubscribe_handler(req)
+
+@https_fn.on_call(timeout_sec=30, memory=256)
+def getEmailPreferences(req: https_fn.CallableRequest) -> dict:
+    """Get email preferences for current user - requires auth"""
+    return get_email_preferences_handler(req)
+
+@https_fn.on_call(timeout_sec=30, memory=256)
+def updateEmailPreferences(req: https_fn.CallableRequest) -> dict:
+    """Update email preferences for current user - requires auth"""
+    return update_email_preferences_handler(req)
+
 # Import SES webhook handler (HTTP function, already decorated)
 from fn_ses_webhook import ses_webhook
 
@@ -305,6 +329,8 @@ __all__ = [
     'list_countries',
     'list_postal_codes',
     'get_cells_by_postal_code',
+    'get_member_heatmap_data',
+    'compute_member_heatmap_stats',  # Hourly scheduled heatmap update
     # Registration function
     'register_member',
     # Email functions (Issue #323)
@@ -318,5 +344,8 @@ __all__ = [
     'sendCampaign',
     'getEmailStats',
     'listEmailLogs',
+    'unsubscribe',
+    'getEmailPreferences',
+    'updateEmailPreferences',
     'ses_webhook',
 ]

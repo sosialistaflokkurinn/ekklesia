@@ -35,6 +35,7 @@ def verifyMembership_handler(req: https_fn.CallableRequest) -> dict:
     Verify user membership status
 
     Callable function to check if a user's kennitala is in the membership list.
+    Reads from Cloud SQL (Django database) - the single source of truth.
     """
     # Verify authentication
     if not req.auth:
@@ -52,33 +53,22 @@ def verifyMembership_handler(req: https_fn.CallableRequest) -> dict:
         )
 
     try:
-        # Epic #43: Read membership status from Firestore (synced from Django)
-        db = firestore.client()
+        # Cloud SQL migration: Read membership status from PostgreSQL
+        from db_members import get_membership_status
 
         # Normalize kennitala (remove hyphen if present)
         kennitala_normalized = normalize_kennitala(kennitala)
 
-        # Query members collection by document ID (kennitala without hyphen)
-        member_doc_ref = db.collection('members').document(kennitala_normalized)
-        member_doc = member_doc_ref.get()
+        # Query Cloud SQL for membership status
+        member_status = get_membership_status(kennitala_normalized)
 
-        # Check if member exists and determine membership status
-        # 'active' = fees paid, 'unpaid' = member but fees not paid, 'inactive' = deleted/not member
-        is_member = False
-        membership_status = 'inactive'
-        fees_paid = False
+        is_member = member_status['is_member']
+        membership_status = member_status['status']
+        fees_paid = member_status['fees_paid']
 
-        if member_doc.exists:
-            member_data = member_doc.to_dict()
-            membership = member_data.get('membership', {})
-            membership_status = membership.get('status', 'inactive')
-            fees_paid = membership.get('fees_paid', False)
-
-            # Member if status is 'active' or 'unpaid' (both are valid members)
-            is_member = membership_status in ('active', 'unpaid')
-
-            # Audit log for membership verification (issue #40)
-            log_json("info", "Member lookup successful",
+        # Audit log for membership verification
+        if member_status['status'] != 'not_found':
+            log_json("info", "Member lookup successful (Cloud SQL)",
                      eventType="membership_verification",
                      kennitalaLast4=kennitala[-4:],  # GDPR: only last 4 digits
                      status=membership_status,
@@ -86,14 +76,14 @@ def verifyMembership_handler(req: https_fn.CallableRequest) -> dict:
                      isMember=is_member,
                      uid=req.auth.uid)
         else:
-            # Audit log for failed membership verification (issue #40)
-            log_json("info", "Member not found in Firestore",
+            log_json("info", "Member not found in Cloud SQL",
                      eventType="membership_verification",
                      kennitalaLast4=kennitala[-4:],  # GDPR: only last 4 digits
                      isMember=False,
                      uid=req.auth.uid)
 
-        # Update user profile in Firestore
+        # Update user profile in Firestore (users collection - not members)
+        db = firestore.client()
         db.collection('users').document(req.auth.uid).update({
             'isMember': is_member,
             'membershipStatus': membership_status,
@@ -118,7 +108,7 @@ def verifyMembership_handler(req: https_fn.CallableRequest) -> dict:
 
         return {
             'isMember': is_member,
-            'membershipStatus': membership_status,  # 'active', 'unpaid', or 'inactive'
+            'membershipStatus': membership_status,  # 'active', 'unpaid', 'inactive', or 'not_found'
             'feesPaid': fees_paid,
             'verified': True,
             'kennitala': kennitala[:7] + '****'  # Masked for security

@@ -269,3 +269,74 @@ def get_member_municipalities() -> List[Dict[str, Any]]:
         ORDER BY count DESC, m.name
     """
     return execute_query(query)
+
+
+def get_membership_status(kennitala: str) -> Dict[str, Any]:
+    """
+    Get membership status and fee payment info for a kennitala.
+
+    Used by verifyMembership to check if a user is an active member.
+
+    Args:
+        kennitala: 10-digit kennitala (with or without hyphen)
+
+    Returns:
+        Dict with:
+            - is_member: bool (True if active member)
+            - status: str ('active', 'unpaid', 'inactive', 'not_found')
+            - fees_paid: bool (True if current year fee is paid)
+            - django_id: int or None
+            - name: str or None
+    """
+    import datetime
+    current_year = datetime.datetime.now().year
+
+    kennitala = kennitala.replace("-", "").strip()
+
+    # Query member with fee status for current year
+    query = """
+        SELECT
+            c.id,
+            c.name,
+            c.ssn as kennitala,
+            c.deleted_at,
+            mf.date_paid IS NOT NULL as fees_paid_this_year
+        FROM membership_comrade c
+        LEFT JOIN billing_membershipfee mf
+            ON mf.comrade_id = c.id
+            AND mf.year = %s
+        WHERE c.ssn = %s
+    """
+
+    result = execute_query(query, params=(current_year, kennitala), fetch_one=True)
+
+    if not result:
+        return {
+            'is_member': False,
+            'status': 'not_found',
+            'fees_paid': False,
+            'django_id': None,
+            'name': None
+        }
+
+    # Determine status
+    is_deleted = result['deleted_at'] is not None
+    fees_paid = result['fees_paid_this_year'] or False
+
+    if is_deleted:
+        status = 'inactive'
+        is_member = False
+    elif fees_paid:
+        status = 'active'
+        is_member = True
+    else:
+        status = 'unpaid'
+        is_member = True  # Still a member, just hasn't paid current year
+
+    return {
+        'is_member': is_member,
+        'status': status,
+        'fees_paid': fees_paid,
+        'django_id': result['id'],
+        'name': result['name']
+    }
