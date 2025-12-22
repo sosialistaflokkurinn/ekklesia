@@ -173,7 +173,7 @@ jobs:
             console.log(`Created TODO health report issue #${issue.data.number}`);
 
       - name: Upload report artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: todo-health-report-${{ github.run_number }}
           path: todo-report.txt
