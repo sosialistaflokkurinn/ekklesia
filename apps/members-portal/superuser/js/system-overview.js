@@ -92,7 +92,7 @@ const SUPERUSER_FUNCTIONS = [
 
 // Firebase Functions - Utility
 const UTILITY_FUNCTIONS = [
-  { id: 'get-django-token', nameKey: 'service_name_get_django_token' },
+  // get-django-token removed - Linode decommissioned 2025-12-11
 ];
 
 // Firebase Functions - Email (Issue #323)
@@ -158,10 +158,7 @@ const SERVICE_GROUPS = {
     nameKey: 'architecture_group_registration',
     services: ['register-member']
   },
-  utility: {
-    nameKey: 'architecture_group_utility',
-    services: ['get-django-token']
-  },
+  // utility group removed - get-django-token was only service, Linode decommissioned
   email: {
     nameKey: 'architecture_group_email',
     services: ['listemailtemplates', 'getemailtemplate', 'saveemailtemplate', 'deleteemailtemplate', 'sendemail', 'listemailcampaigns', 'createemailcampaign', 'sendcampaign', 'getemailstats', 'listemaillogs', 'ses-webhook']
@@ -195,7 +192,6 @@ const SERVICE_NAMES = {
   'list-postal-codes': 'service_list_postal_codes',
   'get-cells-by-postal-code': 'service_get_cells_by_postal_code',
   'register-member': 'service_register_member',
-  'get-django-token': 'service_get_django_token',
   // Email services (Issue #323)
   'listemailtemplates': 'service_listemailtemplates',
   'getemailtemplate': 'service_getemailtemplate',

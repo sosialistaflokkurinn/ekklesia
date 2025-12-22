@@ -80,8 +80,7 @@ def reactivateSelf(req: https_fn.CallableRequest) -> dict:
 # AUDIT AND SYNC FUNCTIONS (Epic #116, Epic #159)
 # ==============================================================================
 
-# Import functions from existing modules
-from fn_get_django_token import get_django_token
+# Note: get_django_token removed - Linode decommissioned 2025-12-11, Django now on Cloud Run
 
 # Note: auditmemberchanges removed - /members collection no longer used (Cloud SQL is source of truth)
 
@@ -287,7 +286,7 @@ __all__ = [
     'reactivateSelf',
     # Audit and sync functions
     # Note: auditmemberchanges removed - /members collection no longer used
-    'get_django_token',
+    # Note: get_django_token removed - Linode decommissioned 2025-12-11
     # Address validation functions
     'validate_address',
     'validate_postal_code',
