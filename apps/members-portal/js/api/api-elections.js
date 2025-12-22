@@ -19,7 +19,7 @@ import { SERVICES } from '../config/config.js';
 
 // DEVELOPMENT FLAG: Toggle between mock and real API
 // NOTE: Real API endpoints implemented in Issue #248
-// Backend is live at https://elections-service-521240388393.europe-west2.run.app
+// Backend is live at https://elections-service-521240388393.europe-west1.run.app
 const USE_MOCK_API = false;
 
 /**

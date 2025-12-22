@@ -41,10 +41,10 @@ echo "1. Backend Connectivity Tests"
 echo "------------------------------"
 
 run_test "Elections Service Health Check" \
-    "curl -s https://elections-service-521240388393.europe-west2.run.app/health | grep -q 'healthy'"
+    "curl -s https://elections-service-521240388393.europe-west1.run.app/health | grep -q 'healthy'"
 
 run_test "CORS Headers Present" \
-    "curl -s -I -X OPTIONS https://elections-service-521240388393.europe-west2.run.app/api/admin/elections | grep -q 'access-control-allow'"
+    "curl -s -I -X OPTIONS https://elections-service-521240388393.europe-west1.run.app/api/admin/elections | grep -q 'access-control-allow'"
 
 echo ""
 

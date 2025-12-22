@@ -7,7 +7,7 @@ The Ekklesia platform has **two separate election systems** with different purpo
 | System | Path | Purpose | Results Visibility |
 |--------|------|---------|-------------------|
 | **Admin Elections** | `/admin-elections/` | General member voting | Immediate (when closed) |
-| **Uppstilling** | `/uppstilling/` | Committee nominations | Locked until all vote |
+| **Nomination** | `/nomination/` | Committee nominations | Locked until all vote |
 
 ## Election Types
 
@@ -27,7 +27,7 @@ Supports three voting types:
 - Requires `num_seats` parameter (number of winners)
 - Results show: Winners, First-choice distribution, Full rankings
 
-### Uppstilling (`/uppstilling/`)
+### Nomination Committee (`/nomination/`)
 
 Committee nomination elections with special rules:
 - Results locked until ALL committee members have voted
@@ -61,21 +61,21 @@ apps/members-portal/
 │       └── validation/
 │           └── election-validation.js
 │
-└── uppstilling/               # Committee nominations
+└── nomination/                # Committee nominations
     ├── index.html             # Election list
     ├── vote.html              # Voting interface
     ├── results.html           # Results (locked until complete)
     └── js/
-        ├── uppstilling.js
-        ├── uppstilling-vote.js
-        └── uppstilling-results.js
+        ├── nomination.js
+        ├── nomination-vote.js
+        └── nomination-results.js
 ```
 
 ## API Endpoints
 
 ### Elections Service
 
-Base URL: `https://elections-service-521240388393.europe-west2.run.app`
+Base URL: `https://elections-service-521240388393.europe-west1.run.app`
 
 #### Admin Endpoints (`/api/admin/`)
 
