@@ -34,10 +34,7 @@ const CORE_SERVICES = [
 const MEMBER_FUNCTIONS = [
   { id: 'handlekenniauth', nameKey: 'service_name_handlekenniauth' },
   { id: 'verifymembership', nameKey: 'service_name_verifymembership' },
-  { id: 'syncmembers', nameKey: 'service_name_syncmembers' },
-  { id: 'sync-from-django', nameKey: 'service_name_sync_from_django' },
   { id: 'updatememberprofile', nameKey: 'service_name_updatememberprofile' },
-  { id: 'auditmemberchanges', nameKey: 'service_name_auditmemberchanges' },
 ];
 
 // Firebase Functions - Address Validation
@@ -96,7 +93,6 @@ const SUPERUSER_FUNCTIONS = [
 // Firebase Functions - Utility
 const UTILITY_FUNCTIONS = [
   { id: 'get-django-token', nameKey: 'service_name_get_django_token' },
-  { id: 'cleanupauditlogs', nameKey: 'service_name_cleanupauditlogs' },
 ];
 
 // Firebase Functions - Email (Issue #323)
@@ -140,7 +136,7 @@ const SERVICE_GROUPS = {
   },
   sync: {
     nameKey: 'architecture_group_sync',
-    services: ['sync-from-django', 'updatememberprofile', 'syncmembers']
+    services: ['updatememberprofile']
   },
   address: {
     nameKey: 'architecture_group_address',
@@ -148,7 +144,7 @@ const SERVICE_GROUPS = {
   },
   audit: {
     nameKey: 'architecture_group_audit',
-    services: ['auditmemberchanges', 'cleanupauditlogs', 'healthz']
+    services: ['healthz']
   },
   superuser: {
     nameKey: 'architecture_group_superuser',
@@ -176,16 +172,12 @@ const SERVICE_GROUPS = {
 const SERVICE_NAMES = {
   'handlekenniauth': 'service_handlekenniauth',
   'verifymembership': 'service_verifymembership',
-  'sync-from-django': 'service_sync_from_django',
   'updatememberprofile': 'service_updatememberprofile',
-  'syncmembers': 'service_syncmembers',
   'search-addresses': 'service_search_addresses',
   'validate-address': 'service_validate_address',
   'validate-postal-code': 'service_validate_postal_code',
   'elections-service': 'service_elections_service',
   'events-service': 'service_events_service',
-  'auditmemberchanges': 'service_auditmemberchanges',
-  'cleanupauditlogs': 'service_cleanupauditlogs',
   'healthz': 'service_healthz',
   'checksystemhealth': 'service_checksystemhealth',
   'setuserrole': 'service_setuserrole',
