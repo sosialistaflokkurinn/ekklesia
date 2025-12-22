@@ -14,9 +14,12 @@ const request = require('supertest');
 const express = require('express');
 
 // Mock database and auth middleware
-jest.mock('../config/config-database');
-jest.mock('../middleware/middleware-auth');
-jest.mock('../middleware/middleware-roles');
+jest.mock('../../config/config-database');
+jest.mock('../../config/config-firebase');
+jest.mock('../../middleware/middleware-auth');
+jest.mock('../../middleware/middleware-roles');
+jest.mock('../../middleware/middleware-rate-limiter');
+jest.mock('../../utils/util-logger');
 
 const adminRouter = require('../route-admin');
 
