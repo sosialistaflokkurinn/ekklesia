@@ -13,40 +13,63 @@
   <link rel="stylesheet" href="/styles/bundle.css?v=20251217k">
 
   <!-- Admin-specific styles -->
-  <link rel="stylesheet" href="/admin/styles/admin.css?v=20251027b">
+  <link rel="stylesheet" href="/admin/styles/admin.css?v=20251222b">
 </head>
 <body class="authenticated admin">
   <!-- Navigation component inserted here -->
 
   <!-- Page Content -->
   <div class="page__container">
-    <!-- Page Header -->
-    <div class="card">
-      <h1 class="card__title" id="send-title">Loading...</h1>
-      <p class="card__subtitle" id="send-subtitle">Loading...</p>
-    </div>
-
     <!-- Send Form -->
     <div class="card">
       <form id="send-form">
+        <!-- Mode Toggle -->
+        <div class="form-group">
+          <div class="toggle-buttons">
+            <button type="button" class="toggle-btn active" id="mode-template" data-mode="template">
+              Nota sniðmát
+            </button>
+            <button type="button" class="toggle-btn" id="mode-quick" data-mode="quick">
+              Fljótpóstur
+            </button>
+          </div>
+        </div>
+
         <div class="form-group">
           <label for="recipient" id="label-recipient">Loading...</label>
           <input type="text" id="recipient" class="form-input" placeholder="" required>
           <p class="form-help" id="recipient-help">Netfang eða kennitala félaga</p>
         </div>
 
-        <div class="form-group">
-          <label for="template-select" id="label-template">Loading...</label>
-          <select id="template-select" class="form-select" required>
-            <option value="" id="opt-select-template">Loading...</option>
-          </select>
+        <!-- Template Mode Fields -->
+        <div id="template-mode-fields">
+          <div class="form-group">
+            <label for="template-select" id="label-template">Loading...</label>
+            <select id="template-select" class="form-select">
+              <option value="" id="opt-select-template">Loading...</option>
+            </select>
+          </div>
+
+          <!-- Template Preview -->
+          <div class="form-group u-hidden" id="preview-section">
+            <label id="label-preview">Forskoðun</label>
+            <div class="preview-box" id="template-preview">
+              <!-- Preview content -->
+            </div>
+          </div>
         </div>
 
-        <!-- Template Preview -->
-        <div class="form-group u-hidden" id="preview-section">
-          <label id="label-preview">Forskoðun</label>
-          <div class="preview-box" id="template-preview">
-            <!-- Preview content -->
+        <!-- Quick Send Mode Fields -->
+        <div id="quick-mode-fields" class="u-hidden">
+          <div class="form-group">
+            <label for="quick-subject">Efnislína</label>
+            <input type="text" id="quick-subject" class="form-input" placeholder="Efni tölvupóstsins">
+          </div>
+
+          <div class="form-group">
+            <label for="quick-body">Meginmál</label>
+            <textarea id="quick-body" class="form-textarea" rows="10" placeholder="Skrifa tölvupóst hér..."></textarea>
+            <p class="form-help">HTML er leyft. Nokkrar breytur: {{member.name}}, {{member.first_name}}</p>
           </div>
         </div>
 
@@ -60,19 +83,14 @@
     <div class="card u-hidden" id="result-card">
       <div id="result-content"></div>
     </div>
-
-    <!-- Back Links -->
-    <div class="card">
-      <a href="/admin/email/" class="btn btn--secondary" id="back-to-email">← Til baka</a>
-    </div>
   </div>
 
-  <script type="module" src="/admin/email/js/email-send.js?v=20251218"></script>
+  <script type="module" src="/admin/email/js/email-send.js?v=20251222"></script>
 
   <!-- Initialize Navigation Component -->
   <script type="module">
     import { initNavHeader, NAV_CONFIGS } from '../../../ui/components/navigation-bar.js?v=20251217';
-    await initNavHeader(NAV_CONFIGS.admin);
+    await initNavHeader(NAV_CONFIGS.adminEmail);
   </script>
 
 </body>

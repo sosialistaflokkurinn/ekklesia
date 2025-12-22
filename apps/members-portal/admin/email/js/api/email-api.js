@@ -97,22 +97,40 @@ const EmailAPI = {
 
   /**
    * Send a single email to a recipient
+   *
+   * Supports two modes:
+   * 1. Template mode: Pass template_id to use a saved template
+   * 2. Quick send mode: Pass subject and body_html directly
+   *
    * @param {Object} options - Send options
-   * @param {string} options.template_id - Template ID or alias
+   * @param {string} [options.template_id] - Template ID or alias (template mode)
+   * @param {string} [options.subject] - Email subject (quick send mode)
+   * @param {string} [options.body_html] - Email HTML body (quick send mode)
    * @param {string} options.recipient_email - Email address OR
    * @param {string} options.recipient_kennitala - Member kennitala
-   * @param {Object} options.variables - Template variables
+   * @param {Object} [options.variables] - Template variables
    * @returns {Promise<{success: boolean, message_id: string}>}
    */
-  async sendEmail({ template_id, recipient_email, recipient_kennitala, variables = {} }) {
+  async sendEmail({ template_id, subject, body_html, recipient_email, recipient_kennitala, variables = {} }) {
     try {
-      const sendEmail = httpsCallable('sendEmail', REGION);
-      const result = await sendEmail({
-        template_id,
+      const sendEmailFn = httpsCallable('sendEmail', REGION);
+      const payload = {
         recipient_email,
         recipient_kennitala,
         variables
-      });
+      };
+
+      // Template mode vs Quick send mode
+      if (template_id) {
+        payload.template_id = template_id;
+      } else if (subject && body_html) {
+        payload.subject = subject;
+        payload.body_html = body_html;
+      } else {
+        throw new Error('Either template_id or (subject + body_html) is required');
+      }
+
+      const result = await sendEmailFn(payload);
       debug.log('[EmailAPI] sendEmail:', result.data);
       return result.data;
     } catch (error) {

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Félagar án heimilisfangs - Stjórnborð</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+  <!-- Reuse member portal styles -->
+  <link rel="stylesheet" href="/styles/bundle.css?v=20251217k">
+
+  <!-- Admin-specific styles -->
+  <link rel="stylesheet" href="/admin/styles/admin.css">
+  <link rel="stylesheet" href="/admin/styles/members-admin.css">
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-functions-compat.js"></script>
+</head>
+<body class="authenticated admin">
+  <!-- Navigation component inserted here -->
+
+  <!-- Main Content -->
+  <main class="page">
+    <div class="page__container">
+
+      <!-- Page Header with Back Link -->
+      <div class="missing-addresses__header">
+        <a href="/admin/members.html" class="missing-addresses__back">
+          ← Til baka í félagalista
+        </a>
+        <h1 class="missing-addresses__title">Félagar án heimilisfangs</h1>
+        <p class="missing-addresses__description">
+          Þessir félagar vantar heimilisfang. Smelltu á "Breyta" til að bæta við heimilisfangi.
+        </p>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="missing-addresses__stats" id="stats-container">
+        <div class="missing-addresses__stat">
+          <div class="missing-addresses__stat-value" id="stat-count">-</div>
+          <div class="missing-addresses__stat-label">Vantar heimilisfang</div>
+        </div>
+        <div class="missing-addresses__stat">
+          <div class="missing-addresses__stat-value" id="stat-percentage">-</div>
+          <div class="missing-addresses__stat-label">Af öllum félögum</div>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div id="loading-state" class="members-loading">
+        <div class="spinner"></div>
+        <p>Hleð félögum...</p>
+      </div>
+
+      <!-- Error State -->
+      <div id="error-state" class="members-error hidden">
+        <p class="members-error__message" id="error-message">Villa við að hlaða gögnum</p>
+        <button class="btn btn--outline" id="btn-retry">Reyna aftur</button>
+      </div>
+
+      <!-- Empty State (all members have addresses) -->
+      <div id="empty-state" class="members-empty hidden">
+        <p class="members-empty__message">Allir félagar eru með heimilisfang!</p>
+      </div>
+
+      <!-- Members Table -->
+      <div id="table-container" class="members-table-container hidden">
+        <table class="members-table">
+          <thead class="members-table__head">
+            <tr>
+              <th class="members-table__header">ID</th>
+              <th class="members-table__header">Nafn</th>
+              <th class="members-table__header">Sími</th>
+              <th class="members-table__header">Netfang</th>
+              <th class="members-table__header members-table__header--actions">Aðgerðir</th>
+            </tr>
+          </thead>
+          <tbody class="members-table__body" id="table-body">
+            <!-- Rows will be inserted here by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Inline styles for this page -->
+  <style>
+    .missing-addresses__header {
+      margin-bottom: var(--space-lg, 1.5rem);
+    }
+
+    .missing-addresses__back {
+      display: inline-block;
+      margin-bottom: var(--space-sm, 0.5rem);
+      color: var(--color-primary, #dc2626);
+      text-decoration: none;
+      font-size: var(--font-size-sm, 0.875rem);
+    }
+
+    .missing-addresses__back:hover {
+      text-decoration: underline;
+    }
+
+    .missing-addresses__title {
+      font-size: var(--font-size-2xl, 1.5rem);
+      font-weight: 600;
+      margin: 0 0 var(--space-xs, 0.25rem) 0;
+    }
+
+    .missing-addresses__description {
+      color: var(--color-muted, #6b7280);
+      margin: 0;
+      font-size: var(--font-size-sm, 0.875rem);
+    }
+
+    .missing-addresses__stats {
+      display: flex;
+      gap: var(--space-lg, 1.5rem);
+      margin-bottom: var(--space-lg, 1.5rem);
+    }
+
+    .missing-addresses__stat {
+      background: var(--color-surface, #fff);
+      border: 1px solid var(--color-border, #e5e7eb);
+      border-radius: var(--radius-md, 0.5rem);
+      padding: var(--space-md, 1rem);
+      min-width: 120px;
+    }
+
+    .missing-addresses__stat-value {
+      font-size: var(--font-size-2xl, 1.5rem);
+      font-weight: 700;
+      color: var(--color-warning, #f59e0b);
+    }
+
+    .missing-addresses__stat-label {
+      font-size: var(--font-size-sm, 0.875rem);
+      color: var(--color-muted, #6b7280);
+    }
+
+    /* Inline edit row */
+    .inline-edit-row {
+      background: var(--color-surface-alt, #f9fafb);
+    }
+
+    .inline-edit-row td {
+      padding: var(--space-md, 1rem);
+    }
+
+    .inline-edit__form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-sm, 0.5rem);
+      align-items: center;
+    }
+
+    .inline-edit__input {
+      flex: 1;
+      min-width: 200px;
+      padding: var(--space-xs, 0.25rem) var(--space-sm, 0.5rem);
+      border: 1px solid var(--color-border, #e5e7eb);
+      border-radius: var(--radius-sm, 0.25rem);
+      font-size: var(--font-size-sm, 0.875rem);
+    }
+
+    .inline-edit__input--apt {
+      max-width: 80px;
+      flex: 0;
+    }
+
+    .inline-edit__buttons {
+      display: flex;
+      gap: var(--space-xs, 0.25rem);
+    }
+
+    .inline-edit__btn {
+      padding: var(--space-xs, 0.25rem) var(--space-sm, 0.5rem);
+      font-size: var(--font-size-sm, 0.875rem);
+      border-radius: var(--radius-sm, 0.25rem);
+      border: none;
+      cursor: pointer;
+    }
+
+    .inline-edit__btn--save {
+      background: var(--color-primary, #dc2626);
+      color: white;
+    }
+
+    .inline-edit__btn--save:hover {
+      background: var(--color-primary-dark, #b91c1c);
+    }
+
+    .inline-edit__btn--save:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .inline-edit__btn--cancel {
+      background: var(--color-muted, #6b7280);
+      color: white;
+    }
+
+    .inline-edit__btn--cancel:hover {
+      background: #4b5563;
+    }
+
+    /* Address autocomplete dropdown */
+    .address-suggestions {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1px solid var(--color-border, #e5e7eb);
+      border-radius: var(--radius-sm, 0.25rem);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 100;
+    }
+
+    .address-suggestion {
+      padding: var(--space-sm, 0.5rem);
+      cursor: pointer;
+      font-size: var(--font-size-sm, 0.875rem);
+    }
+
+    .address-suggestion:hover,
+    .address-suggestion--highlighted {
+      background: var(--color-surface-alt, #f9fafb);
+    }
+
+    .address-suggestion__main {
+      font-weight: 500;
+    }
+
+    .address-suggestion__detail {
+      color: var(--color-muted, #6b7280);
+      font-size: var(--font-size-xs, 0.75rem);
+    }
+
+    .inline-edit__address-wrapper {
+      position: relative;
+      flex: 1;
+      min-width: 250px;
+    }
+
+    /* Loading indicator */
+    .inline-edit__loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid var(--color-primary, #dc2626);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Success indicator */
+    .row-saved {
+      animation: highlightSaved 2s ease-out;
+    }
+
+    @keyframes highlightSaved {
+      0% { background-color: #d1fae5; }
+      100% { background-color: transparent; }
+    }
+  </style>
+
+  <!-- Scripts -->
+  <script type="module" src="/admin/js/missing-addresses.js?v=20251220"></script>
+
+  <!-- Initialize Navigation Component -->
+  <script type="module">
+    import { initNavHeader, NAV_CONFIGS } from '../../ui/components/navigation-bar.js?v=20251217';
+
+    // Initialize navigation with admin config
+    await initNavHeader(NAV_CONFIGS.adminMissingAddresses);
+  </script>
+
+</body>
+</html>

@@ -9,7 +9,7 @@
 import { initSession } from '../../session/init.js';
 import { initNavigation } from '../../js/nav-interactions.js';
 import { debug } from '../../js/utils/util-debug.js';
-import { getFirebaseAuth } from '../../firebase/app.js';
+import { getFirebaseAuth, getFirebaseFirestore, collection, getDocs } from '../../firebase/app.js';
 import { adminStrings } from './i18n/admin-strings-loader.js';
 import { requireAdmin } from '../../js/rbac.js';
 import { showToast, showError } from '../../js/components/ui-toast.js';
@@ -17,6 +17,7 @@ import { showToast, showError } from '../../js/components/ui-toast.js';
 
 // Initialize Firebase services
 const auth = getFirebaseAuth();
+const db = getFirebaseFirestore();
 
 /**
  * Build welcome message with proper Icelandic grammar
@@ -43,6 +44,130 @@ function buildWelcomeMessage(displayName, strings) {
 }
 
 // Note: renderRoleBadges and updateRoleBadges removed - welcome card was removed
+
+/**
+ * Load and display member registry statistics
+ */
+async function loadMemberStats() {
+  try {
+    const membersRef = collection(db, 'members');
+    const snapshot = await getDocs(membersRef);
+
+    // Skip patterns for test accounts
+    const skipPatterns = ['9999', '0101', '0212'];
+    const skipNames = ['Próf', 'próf', 'Test', 'Debug', 'test'];
+
+    const stats = {
+      total: 0,
+      withAddress: 0,
+      thjodskraFound: 0,
+      thjodskraNotFound: 0,
+      invalidKt: 0,
+      needsReview: 0
+    };
+
+    // Lists for display
+    const invalidKtList = [];
+    const needsReviewList = [];
+
+    snapshot.forEach(docSnap => {
+      const data = docSnap.data();
+      const kt = docSnap.id;
+      const name = data.name || '';
+
+      // Skip test accounts
+      if (skipPatterns.some(p => kt.startsWith(p))) return;
+      if (skipNames.some(s => name.includes(s))) return;
+
+      stats.total++;
+
+      // Check address
+      const addresses = data.profile?.addresses || [];
+      if (addresses.length > 0 && addresses[0]?.street) {
+        stats.withAddress++;
+      }
+
+      // Check Þjóðskrá status
+      if (data.thjodskra_lookup_date) {
+        if (data.thjodskra_not_found) {
+          stats.thjodskraNotFound++;
+        } else {
+          stats.thjodskraFound++;
+        }
+      }
+
+      // Check invalid kennitala
+      if (data.kennitala_invalid_checksum) {
+        stats.invalidKt++;
+        invalidKtList.push({
+          kt,
+          name: name || '(ekkert nafn)',
+          error: data.kennitala_checksum_error || 'Ógild checksum'
+        });
+      }
+
+      // Check needs review
+      if (data.needs_review) {
+        stats.needsReview++;
+        // Determine reason
+        let reason = '';
+        if (data.thjodskra_not_found) reason = 'Ekki fundið í Þjóðskrá';
+        else if (data.kennitala_invalid_checksum) reason = 'Ógild kennitala';
+        else reason = 'Þarfnast yfirferðar';
+
+        needsReviewList.push({
+          kt,
+          name: name || '(ekkert nafn)',
+          reason
+        });
+      }
+    });
+
+    // Update stats UI
+    document.getElementById('stat-total').textContent = stats.total.toLocaleString('is-IS');
+    document.getElementById('stat-with-address').textContent =
+      `${stats.withAddress.toLocaleString('is-IS')} (${Math.round(stats.withAddress / stats.total * 100)}%)`;
+    document.getElementById('stat-thjodskra-found').textContent =
+      `${stats.thjodskraFound.toLocaleString('is-IS')} (${Math.round(stats.thjodskraFound / stats.total * 100)}%)`;
+    document.getElementById('stat-thjodskra-not-found').textContent = stats.thjodskraNotFound.toLocaleString('is-IS');
+    document.getElementById('stat-invalid-kt').textContent = stats.invalidKt.toLocaleString('is-IS');
+    document.getElementById('stat-needs-review').textContent = stats.needsReview.toLocaleString('is-IS');
+
+    // Render invalid kennitala list
+    if (invalidKtList.length > 0) {
+      const invalidKtCard = document.getElementById('invalid-kt-card');
+      const invalidKtListEl = document.getElementById('invalid-kt-list');
+      invalidKtCard.style.display = 'block';
+      invalidKtListEl.innerHTML = invalidKtList.map(m => `
+        <tr>
+          <td><a href="/admin/member-profile.html?kt=${m.kt}">${m.kt}</a></td>
+          <td>${m.name}</td>
+          <td>${m.error}</td>
+        </tr>
+      `).join('');
+    }
+
+    // Render needs review list
+    if (needsReviewList.length > 0) {
+      const needsReviewCard = document.getElementById('needs-review-card');
+      const needsReviewListEl = document.getElementById('needs-review-list');
+      needsReviewCard.style.display = 'block';
+      needsReviewListEl.innerHTML = needsReviewList.map(m => `
+        <tr>
+          <td><a href="/admin/member-profile.html?kt=${m.kt}">${m.kt}</a></td>
+          <td>${m.name}</td>
+          <td>${m.reason}</td>
+        </tr>
+      `).join('');
+    }
+
+    debug.log('Member stats loaded:', stats);
+
+  } catch (error) {
+    debug.error('Failed to load member stats:', error);
+    document.getElementById('stat-total').textContent = 'Villa';
+  }
+}
 
 /**
  * Set page text from admin strings
@@ -98,6 +223,9 @@ async function init() {
 
     // 5. Set page text (with personalized greeting)
     setPageText(strings, userData);
+
+    // 6. Load member statistics
+    loadMemberStats();
 
     debug.log('✓ Admin dashboard initialized');
 

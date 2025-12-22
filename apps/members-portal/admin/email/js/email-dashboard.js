@@ -17,8 +17,6 @@ import EmailAPI from './api/email-api.js';
 function setPageText(strings) {
   // Page title
   document.getElementById('page-title').textContent = strings.email_dashboard_title + ' - Ekklesia';
-  document.getElementById('email-title').textContent = strings.email_dashboard_title;
-  document.getElementById('email-subtitle').textContent = strings.email_dashboard_subtitle;
 
   // Stats labels
   document.getElementById('stats-title').textContent = 'Tölfræði';
@@ -37,9 +35,6 @@ function setPageText(strings) {
   document.getElementById('action-campaigns-desc').textContent = strings.email_campaigns_subtitle;
   document.getElementById('action-logs-label').textContent = strings.email_logs_title;
   document.getElementById('action-logs-desc').textContent = strings.email_logs_subtitle;
-
-  // Back button
-  document.getElementById('back-to-admin').textContent = strings.btn_back_to_dashboard;
 }
 
 /**

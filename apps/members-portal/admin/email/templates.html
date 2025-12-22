@@ -13,26 +13,20 @@
   <link rel="stylesheet" href="/styles/bundle.css?v=20251217k">
 
   <!-- Admin-specific styles -->
-  <link rel="stylesheet" href="/admin/styles/admin.css?v=20251027b">
+  <link rel="stylesheet" href="/admin/styles/admin.css?v=20251222b">
 </head>
 <body class="authenticated admin">
   <!-- Navigation component inserted here -->
 
   <!-- Page Content -->
   <div class="page__container">
-    <!-- Page Header -->
-    <div class="card">
-      <div class="card__header">
-        <div>
-          <h1 class="card__title" id="templates-title">Loading...</h1>
-          <p class="card__subtitle" id="templates-subtitle">Loading...</p>
-        </div>
-        <button class="btn btn--primary" id="create-template-btn">Loading...</button>
-      </div>
-    </div>
-
     <!-- Templates List -->
     <div class="card">
+      <div class="card__header">
+        <h2 class="card__title" id="templates-title">Loading...</h2>
+        <button class="btn btn--primary" id="create-template-btn">Loading...</button>
+      </div>
+
       <div id="templates-loading" class="loading-state">
         <div class="loading-spinner"></div>
         <p>Hleð sniðmátum...</p>
@@ -57,11 +51,6 @@
           <!-- Templates will be inserted here -->
         </tbody>
       </table>
-    </div>
-
-    <!-- Back Links -->
-    <div class="card">
-      <a href="/admin/email/" class="btn btn--secondary" id="back-to-email">Loading...</a>
     </div>
   </div>
 
@@ -118,12 +107,12 @@
     </div>
   </div>
 
-  <script type="module" src="/admin/email/js/templates-list.js?v=20251218"></script>
+  <script type="module" src="/admin/email/js/templates-list.js?v=20251222b"></script>
 
   <!-- Initialize Navigation Component -->
   <script type="module">
     import { initNavHeader, NAV_CONFIGS } from '../../../ui/components/navigation-bar.js?v=20251217';
-    await initNavHeader(NAV_CONFIGS.admin);
+    await initNavHeader(NAV_CONFIGS.adminEmail);
   </script>
 
 </body>

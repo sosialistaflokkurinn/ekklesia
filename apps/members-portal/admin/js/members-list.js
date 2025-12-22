@@ -17,7 +17,7 @@ import { getFirebaseAuth, getFirebaseFirestore } from '../../firebase/app.js';
 import MembersAPI from './api/members-api.js';
 import { formatPhone, maskKennitala, formatDateOnlyIcelandic } from '../../js/utils/util-format.js';
 import { filterMembersByDistrict, getElectoralDistrictName } from './utils/electoral-districts.js';
-import { filterMembersByMunicipality, getMunicipalityName, getMunicipalityOptions } from './utils/municipalities.js';
+import { filterMembersByMunicipality, getMunicipalityName, getMunicipalityOptions, FILTER_MISSING_ADDRESS } from './utils/municipalities.js';
 import { el } from '../../js/utils/util-dom.js';
 import { createListPageStates } from './utils/ui-states.js';
 import { initSearchableSelects } from '../../js/components/ui-searchable-select.js';
@@ -459,9 +459,11 @@ function setCache(data) {
       }
 
       // Store filtered members for printing and show/hide print button
+      // (Don't show print button for "missing address" filter - not useful for call lists)
       filteredMembersForPrint = filteredMembers;
       if (elements.btnPrintList) {
-        elements.btnPrintList.style.display = currentMunicipality !== 'all' ? 'inline-block' : 'none';
+        const showPrint = currentMunicipality !== 'all' && currentMunicipality !== FILTER_MISSING_ADDRESS;
+        elements.btnPrintList.style.display = showPrint ? 'inline-block' : 'none';
       }
 
       // Cache the results (only for initial page load without search/district filter)

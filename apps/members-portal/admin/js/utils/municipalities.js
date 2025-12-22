@@ -109,6 +109,11 @@ export const MUNICIPALITIES_SORTED = [...MUNICIPALITIES].sort((a, b) =>
 );
 
 /**
+ * Special filter value for members missing address
+ */
+export const FILTER_MISSING_ADDRESS = 'missing_address';
+
+/**
  * Get municipality options for dropdown
  *
  * @returns {Array<{value: string, label: string}>} Array of municipality options
@@ -116,6 +121,7 @@ export const MUNICIPALITIES_SORTED = [...MUNICIPALITIES].sort((a, b) =>
 export function getMunicipalityOptions() {
   return [
     { value: 'all', label: 'Öll sveitarfélög' },
+    { value: FILTER_MISSING_ADDRESS, label: '⚠️ Vantar heimilisfang' },
     ...MUNICIPALITIES_SORTED.map(name => ({
       value: name,
       label: name
@@ -131,19 +137,40 @@ export function getMunicipalityOptions() {
  */
 export function getMunicipalityName(municipalityKey) {
   if (municipalityKey === 'all') return '';
+  if (municipalityKey === FILTER_MISSING_ADDRESS) return 'Vantar heimilisfang';
   return municipalityKey;
+}
+
+/**
+ * Check if a member has a valid address with municipality
+ *
+ * @param {Object} member - Member object
+ * @returns {boolean} True if member has valid address
+ */
+export function memberHasAddress(member) {
+  const addresses = member?.profile?.addresses || member?.addresses || [];
+  if (addresses.length === 0) return false;
+
+  // Check if any address has municipality (required for electoral district)
+  const primaryAddress = addresses.find(a => a.is_default || a.is_primary) || addresses[0];
+  return Boolean(primaryAddress?.municipality);
 }
 
 /**
  * Filter members by municipality
  *
  * @param {Array<Object>} members - Array of member objects
- * @param {string} municipalityKey - Municipality name ('all' for no filtering)
+ * @param {string} municipalityKey - Municipality name ('all' for no filtering, 'missing_address' for members without address)
  * @returns {Array<Object>} Filtered members
  */
 export function filterMembersByMunicipality(members, municipalityKey) {
   if (!members || !Array.isArray(members)) return [];
   if (municipalityKey === 'all') return members;
+
+  // Special case: members without address
+  if (municipalityKey === FILTER_MISSING_ADDRESS) {
+    return members.filter(member => !memberHasAddress(member));
+  }
 
   return members.filter(member => {
     // Check default address municipality (is_default in synced data, is_primary in user-edited data)
