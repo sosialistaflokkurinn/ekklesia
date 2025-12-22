@@ -61,20 +61,13 @@
 
         <!-- SVG Architecture Diagram -->
         <div class="architecture-diagram" id="architecture-diagram">
-          <svg viewBox="0 0 1000 650" preserveAspectRatio="xMidYMid meet">
+          <svg viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid meet">
             <!-- Definitions for markers and gradients -->
             <defs>
               <!-- Arrow marker for connection lines -->
               <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
                 <polygon points="0 0, 10 3.5, 0 7" fill="var(--color-muted, #9ca3af)" />
               </marker>
-
-              <!-- Gradient for animated flow -->
-              <linearGradient id="flowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stop-color="var(--color-success, #22c55e)" stop-opacity="0.3" />
-                <stop offset="50%" stop-color="var(--color-success, #22c55e)" stop-opacity="1" />
-                <stop offset="100%" stop-color="var(--color-success, #22c55e)" stop-opacity="0.3" />
-              </linearGradient>
             </defs>
 
             <!-- Background grid (subtle) -->
@@ -91,9 +84,7 @@
             </g>
 
             <!-- Connection: Users to Firebase Hosting -->
-            <path d="M 450 60 L 450 90" class="architecture-edge" marker-end="url(#arrowhead)" />
-            <!-- Connection: Users to Django Admin -->
-            <path d="M 600 60 L 790 60 L 790 525" class="architecture-edge" marker-end="url(#arrowhead)" />
+            <path d="M 500 60 L 500 90" class="architecture-edge" marker-end="url(#arrowhead)" />
 
             <!-- Layer 2: Firebase Hosting (Frontend) -->
             <g class="architecture-layer" id="layer-frontend">
@@ -142,97 +133,87 @@
               <g class="architecture-group architecture-group--clickable" id="group-cloudrun" data-group="cloudrun">
                 <rect x="700" y="210" width="180" height="70" rx="8" class="architecture-node architecture-node--group" />
                 <text x="790" y="235" text-anchor="middle" class="architecture-node__label">Cloud Run</text>
-                <text x="790" y="255" text-anchor="middle" class="architecture-node__count">2 þjónustur</text>
+                <text x="790" y="255" text-anchor="middle" class="architecture-node__count">3 þjónustur</text>
                 <circle cx="860" cy="225" r="8" class="architecture-status" id="status-cloudrun" />
               </g>
             </g>
 
-            <!-- Data flow connections (animated) -->
+            <!-- Data flow connections -->
             <g class="architecture-layer" id="layer-flows">
-              <!-- Connections from Cloud Run to service groups (static, no animation) -->
-              <path d="M 790 280 L 115 320" class="architecture-edge architecture-edge--thin" />
-              <path d="M 790 280 L 305 320" class="architecture-edge architecture-edge--thin" />
-              <path d="M 790 280 L 500 320" class="architecture-edge architecture-edge--thin" />
-              <path d="M 790 280 L 690 320" class="architecture-edge architecture-edge--thin" />
-              <path d="M 790 280 L 880 320" class="architecture-edge architecture-edge--thin" />
+              <!-- Cloud Run → Cloud SQL (database queries) -->
+              <path d="M 790 280 L 790 340 L 610 460" class="architecture-edge architecture-edge--flow architecture-edge--database" id="flow-cloudrun-sql" />
 
-              <!-- 1. Django → Firestore (sync-from-django webhook) -->
-              <path d="M 680 480 L 720 480 L 720 250 L 590 250" class="architecture-edge architecture-edge--flow architecture-edge--sync-from-django" id="flow-django-firestore" />
-
-              <!-- 2. Firestore → Django (profile updates) -->
-              <path d="M 500 280 L 545 300 L 545 445 L 540 460" class="architecture-edge architecture-edge--flow architecture-edge--sync-to-django" id="flow-firestore-django" />
-
-              <!-- 3. Cloud Run → Cloud SQL (database queries) -->
-              <path d="M 320 380 L 320 445 L 360 460" class="architecture-edge architecture-edge--flow architecture-edge--database" id="flow-cloudrun-sql" />
-
-              <!-- 4. Kenni.is → Auth (OAuth 2.0 flow) -->
+              <!-- Kenni.is → Auth (OAuth 2.0 flow) -->
               <path d="M 80 490 L 40 490 L 40 250 L 120 250" class="architecture-edge architecture-edge--flow architecture-edge--auth" id="flow-kenni" />
             </g>
 
-            <!-- Layer 4: Cloud Run Service Groups -->
-            <g class="architecture-layer" id="layer-services">
-              <!-- Data Sync -->
-              <g class="architecture-group architecture-group--clickable" id="group-sync" data-group="sync">
-                <rect x="50" y="320" width="130" height="60" rx="6" class="architecture-node architecture-node--group" />
-                <text x="115" y="345" text-anchor="middle" class="architecture-node__label">Samstilling</text>
-                <text x="115" y="362" text-anchor="middle" class="architecture-node__count">3 þjónustur</text>
-                <circle cx="160" cy="335" r="6" class="architecture-status" id="status-sync" />
+            <!-- Layer 4: Cloud Functions Groups (Row 1) -->
+            <g class="architecture-layer" id="layer-services-row1">
+              <!-- Member Operations -->
+              <g class="architecture-group architecture-group--clickable" id="group-member" data-group="member">
+                <rect x="50" y="310" width="115" height="55" rx="6" class="architecture-node architecture-node--group" />
+                <text x="107" y="332" text-anchor="middle" class="architecture-node__label">Félagar</text>
+                <text x="107" y="350" text-anchor="middle" class="architecture-node__count">3 þjónustur</text>
+                <circle cx="145" cy="322" r="5" class="architecture-status" id="status-member" />
               </g>
 
               <!-- Address Validation -->
               <g class="architecture-group architecture-group--clickable" id="group-address" data-group="address">
-                <rect x="240" y="320" width="130" height="60" rx="6" class="architecture-node architecture-node--group" />
-                <text x="305" y="345" text-anchor="middle" class="architecture-node__label">Heimilisföng</text>
-                <text x="305" y="362" text-anchor="middle" class="architecture-node__count">3 þjónustur</text>
-                <circle cx="350" cy="335" r="6" class="architecture-status" id="status-address" />
+                <rect x="175" y="310" width="115" height="55" rx="6" class="architecture-node architecture-node--group" />
+                <text x="232" y="332" text-anchor="middle" class="architecture-node__label">Heimilisföng</text>
+                <text x="232" y="350" text-anchor="middle" class="architecture-node__count">3 þjónustur</text>
+                <circle cx="270" cy="322" r="5" class="architecture-status" id="status-address" />
               </g>
 
               <!-- Audit & Monitoring -->
               <g class="architecture-group architecture-group--clickable" id="group-audit" data-group="audit">
-                <rect x="435" y="320" width="130" height="60" rx="6" class="architecture-node architecture-node--group" />
-                <text x="500" y="345" text-anchor="middle" class="architecture-node__label">Eftirlit</text>
-                <text x="500" y="362" text-anchor="middle" class="architecture-node__count">3 þjónustur</text>
-                <circle cx="545" cy="335" r="6" class="architecture-status" id="status-audit" />
+                <rect x="300" y="310" width="115" height="55" rx="6" class="architecture-node architecture-node--group" />
+                <text x="357" y="332" text-anchor="middle" class="architecture-node__label">Eftirlit</text>
+                <text x="357" y="350" text-anchor="middle" class="architecture-node__count">1 þjónusta</text>
+                <circle cx="395" cy="322" r="5" class="architecture-status" id="status-audit" />
               </g>
 
               <!-- Superuser Functions -->
               <g class="architecture-group architecture-group--clickable" id="group-superuser" data-group="superuser">
-                <rect x="625" y="320" width="130" height="60" rx="6" class="architecture-node architecture-node--group" />
-                <text x="690" y="345" text-anchor="middle" class="architecture-node__label">Kerfisstjórn</text>
-                <text x="690" y="362" text-anchor="middle" class="architecture-node__count">9 þjónustur</text>
-                <circle cx="735" cy="335" r="6" class="architecture-status" id="status-superuser" />
+                <rect x="425" y="310" width="115" height="55" rx="6" class="architecture-node architecture-node--group" />
+                <text x="482" y="332" text-anchor="middle" class="architecture-node__label">Kerfisstjórn</text>
+                <text x="482" y="350" text-anchor="middle" class="architecture-node__count">10 þjónustur</text>
+                <circle cx="520" cy="322" r="5" class="architecture-status" id="status-superuser" />
               </g>
 
-              <!-- Lookup Functions (skraning-static) -->
+              <!-- Lookup Functions -->
               <g class="architecture-group architecture-group--clickable" id="group-lookup" data-group="lookup">
-                <rect x="815" y="320" width="130" height="60" rx="6" class="architecture-node architecture-node--group" />
-                <text x="880" y="345" text-anchor="middle" class="architecture-node__label">Uppflettingar</text>
-                <text x="880" y="362" text-anchor="middle" class="architecture-node__count">5 þjónustur</text>
-                <circle cx="925" cy="335" r="6" class="architecture-status" id="status-lookup" />
+                <rect x="550" y="310" width="115" height="55" rx="6" class="architecture-node architecture-node--group" />
+                <text x="607" y="332" text-anchor="middle" class="architecture-node__label">Uppflettingar</text>
+                <text x="607" y="350" text-anchor="middle" class="architecture-node__count">5 þjónustur</text>
+                <circle cx="645" cy="322" r="5" class="architecture-status" id="status-lookup" />
               </g>
+            </g>
 
-              <!-- Registration Function (skraning-static) -->
+            <!-- Layer 4: Cloud Functions Groups (Row 2) -->
+            <g class="architecture-layer" id="layer-services-row2">
+              <!-- Registration Function -->
               <g class="architecture-group architecture-group--clickable" id="group-registration" data-group="registration">
-                <rect x="50" y="390" width="130" height="50" rx="6" class="architecture-node architecture-node--group" />
-                <text x="115" y="412" text-anchor="middle" class="architecture-node__label">Skráning</text>
-                <text x="115" y="427" text-anchor="middle" class="architecture-node__count">1 þjónusta</text>
-                <circle cx="160" cy="400" r="5" class="architecture-status" id="status-registration" />
+                <rect x="50" y="375" width="115" height="55" rx="6" class="architecture-node architecture-node--group" />
+                <text x="107" y="397" text-anchor="middle" class="architecture-node__label">Skráning</text>
+                <text x="107" y="415" text-anchor="middle" class="architecture-node__count">1 þjónusta</text>
+                <circle cx="145" cy="387" r="5" class="architecture-status" id="status-registration" />
               </g>
 
-              <!-- Utility Functions -->
-              <g class="architecture-group architecture-group--clickable" id="group-utility" data-group="utility">
-                <rect x="240" y="390" width="130" height="50" rx="6" class="architecture-node architecture-node--group" />
-                <text x="305" y="412" text-anchor="middle" class="architecture-node__label">Hjálparföll</text>
-                <text x="305" y="427" text-anchor="middle" class="architecture-node__count">1 þjónusta</text>
-                <circle cx="350" cy="400" r="5" class="architecture-status" id="status-utility" />
-              </g>
-
-              <!-- Email Functions (Issue #323) -->
+              <!-- Email Functions -->
               <g class="architecture-group architecture-group--clickable" id="group-email" data-group="email">
-                <rect x="435" y="390" width="130" height="50" rx="6" class="architecture-node architecture-node--group" />
-                <text x="500" y="412" text-anchor="middle" class="architecture-node__label">Tölvupóstur</text>
-                <text x="500" y="427" text-anchor="middle" class="architecture-node__count">11 þjónustur</text>
-                <circle cx="545" cy="400" r="5" class="architecture-status" id="status-email" />
+                <rect x="175" y="375" width="115" height="55" rx="6" class="architecture-node architecture-node--group" />
+                <text x="232" y="397" text-anchor="middle" class="architecture-node__label">Tölvupóstur</text>
+                <text x="232" y="415" text-anchor="middle" class="architecture-node__count">14 þjónustur</text>
+                <circle cx="270" cy="387" r="5" class="architecture-status" id="status-email" />
+              </g>
+
+              <!-- Heatmap Functions -->
+              <g class="architecture-group architecture-group--clickable" id="group-heatmap" data-group="heatmap">
+                <rect x="300" y="375" width="115" height="55" rx="6" class="architecture-node architecture-node--group" />
+                <text x="357" y="397" text-anchor="middle" class="architecture-node__label">Hitakort</text>
+                <text x="357" y="415" text-anchor="middle" class="architecture-node__count">2 þjónustur</text>
+                <circle cx="395" cy="387" r="5" class="architecture-status" id="status-heatmap" />
               </g>
             </g>
 
@@ -245,35 +226,32 @@
                 <text x="150" y="502" text-anchor="middle" class="architecture-node__sublabel">OAuth 2.0</text>
               </g>
 
+              <!-- Amazon SES -->
+              <g class="architecture-group" id="group-ses" data-group="ses">
+                <rect x="250" y="460" width="140" height="60" rx="6" class="architecture-node architecture-node--external" />
+                <text x="320" y="485" text-anchor="middle" class="architecture-node__label">Amazon SES</text>
+                <text x="320" y="502" text-anchor="middle" class="architecture-node__sublabel">Tölvupóstur</text>
+              </g>
+
               <!-- Cloud SQL -->
               <g class="architecture-group" id="group-cloudsql" data-group="cloudsql">
-                <rect x="360" y="460" width="140" height="60" rx="6" class="architecture-node architecture-node--database" />
-                <text x="430" y="485" text-anchor="middle" class="architecture-node__label">Cloud SQL</text>
-                <text x="430" y="502" text-anchor="middle" class="architecture-node__sublabel">PostgreSQL</text>
-                <circle cx="480" cy="475" r="6" class="architecture-status" id="status-cloudsql" />
+                <rect x="540" y="460" width="140" height="60" rx="6" class="architecture-node architecture-node--database" />
+                <text x="610" y="485" text-anchor="middle" class="architecture-node__label">Cloud SQL</text>
+                <text x="610" y="502" text-anchor="middle" class="architecture-node__sublabel">PostgreSQL</text>
+                <circle cx="660" cy="475" r="6" class="architecture-status" id="status-cloudsql" />
               </g>
 
               <!-- Django (GCP Cloud Run) -->
               <g class="architecture-group" id="group-django" data-group="django">
-                <rect x="540" y="460" width="140" height="60" rx="6" class="architecture-node architecture-node--external" />
-                <text x="610" y="485" text-anchor="middle" class="architecture-node__label">Django API</text>
-                <text x="610" y="502" text-anchor="middle" class="architecture-node__sublabel">GCP Cloud Run</text>
-                <circle cx="660" cy="475" r="6" class="architecture-status" id="status-django" />
+                <rect x="720" y="460" width="160" height="60" rx="6" class="architecture-node architecture-node--external" />
+                <text x="800" y="485" text-anchor="middle" class="architecture-node__label">Django Admin</text>
+                <text x="800" y="502" text-anchor="middle" class="architecture-node__sublabel">Cloud Run</text>
+                <circle cx="860" cy="475" r="6" class="architecture-status" id="status-django" />
               </g>
-
-              <!-- Django Admin Frontend -->
-              <g class="architecture-group" id="group-django-admin" data-group="django-admin">
-                <rect x="720" y="525" width="140" height="50" rx="6" class="architecture-node architecture-node--firebase" />
-                <text x="790" y="548" text-anchor="middle" class="architecture-node__label">Django Admin</text>
-                <text x="790" y="563" text-anchor="middle" class="architecture-node__sublabel">starf.sosialistaflokkurinn.is</text>
-              </g>
-
-              <!-- Connection: Django Admin to Django API -->
-              <path d="M 720 550 L 680 550 L 680 505 L 660 505" class="architecture-edge" marker-end="url(#arrowhead)" />
             </g>
 
             <!-- Legend - Status indicators -->
-            <g class="architecture-legend" transform="translate(50, 595)">
+            <g class="architecture-legend" transform="translate(50, 560)">
               <text x="0" y="0" class="architecture-legend__title" font-weight="600">Staða:</text>
               <circle cx="55" cy="0" r="5" class="architecture-status architecture-status--healthy" />
               <text x="65" y="4" class="architecture-legend__label">Heilbrigt</text>
@@ -284,16 +262,12 @@
             </g>
 
             <!-- Legend - Data flow -->
-            <g class="architecture-legend" transform="translate(50, 620)">
+            <g class="architecture-legend" transform="translate(50, 585)">
               <text x="0" y="0" class="architecture-legend__title" font-weight="600">Gagnaflæði:</text>
-              <line x1="80" y1="0" x2="105" y2="0" stroke="#3b82f6" stroke-width="2" stroke-dasharray="4,2" />
-              <text x="110" y="4" class="architecture-legend__label">Django → Firestore</text>
-              <line x1="230" y1="0" x2="255" y2="0" stroke="#22c55e" stroke-width="2" stroke-dasharray="4,2" />
-              <text x="260" y="4" class="architecture-legend__label">Firestore → Django</text>
-              <line x1="385" y1="0" x2="410" y2="0" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,2" />
-              <text x="415" y="4" class="architecture-legend__label">SQL fyrirspurnir</text>
-              <line x1="510" y1="0" x2="535" y2="0" stroke="#8b5cf6" stroke-width="2" stroke-dasharray="4,2" />
-              <text x="540" y="4" class="architecture-legend__label">OAuth</text>
+              <line x1="80" y1="0" x2="105" y2="0" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,2" />
+              <text x="110" y="4" class="architecture-legend__label">Cloud Run → SQL</text>
+              <line x1="230" y1="0" x2="255" y2="0" stroke="#8b5cf6" stroke-width="2" stroke-dasharray="4,2" />
+              <text x="260" y="4" class="architecture-legend__label">OAuth (Kenni.is)</text>
             </g>
           </svg>
         </div>
@@ -390,11 +364,11 @@
         <div class="service-grid" id="superuser-functions"></div>
       </div>
 
-      <!-- Firebase Functions - Utility -->
+      <!-- Firebase Functions - Heatmap -->
       <div class="card">
-        <h2 class="card__title" data-i18n="health_section_utility">Hjálparföll</h2>
-        <p class="card__description u-text-muted" data-i18n="health_section_utility_desc">Bakgrunnsföll og hjálparföll.</p>
-        <div class="service-grid" id="utility-functions"></div>
+        <h2 class="card__title" data-i18n="health_section_heatmap">Hitakort</h2>
+        <p class="card__description u-text-muted" data-i18n="health_section_heatmap_desc">Hitakort og tölfræði um félagsdreifingu.</p>
+        <div class="service-grid" id="heatmap-functions"></div>
       </div>
 
       <!-- Firebase Functions - Email (Issue #323) -->
@@ -675,7 +649,7 @@
 
   </div>
 
-  <script type="module" src="/superuser/js/system-overview.js?v=20251222b"></script>
+  <script type="module" src="/superuser/js/system-overview.js?v=20251222c"></script>
 
   <!-- Django tables toggle -->
   <script>

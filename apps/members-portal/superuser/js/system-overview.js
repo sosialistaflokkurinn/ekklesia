@@ -93,11 +93,6 @@ const SUPERUSER_FUNCTIONS = [
   { id: 'getdeletedcounts', nameKey: 'service_name_getdeletedcounts' },
 ];
 
-// Firebase Functions - Utility
-const UTILITY_FUNCTIONS = [
-  // get-django-token removed - Linode decommissioned 2025-12-11
-];
-
 // Firebase Functions Gen 2 - Email (Issue #323)
 const EMAIL_FUNCTIONS = [
   { id: 'listemailtemplates', nameKey: 'service_name_listemailtemplates' },
@@ -534,7 +529,7 @@ function updateServicesTab() {
   renderServicesGrid('lookup-functions', mapServices(LOOKUP_FUNCTIONS));
   renderServicesGrid('registration-functions', mapServices(REGISTRATION_FUNCTIONS));
   renderServicesGrid('superuser-functions', mapServices(SUPERUSER_FUNCTIONS));
-  renderServicesGrid('utility-functions', mapServices(UTILITY_FUNCTIONS));
+  renderServicesGrid('heatmap-functions', mapServices(HEATMAP_FUNCTIONS));
   renderServicesGrid('email-functions', mapServices(EMAIL_FUNCTIONS));
 
   // Database services
@@ -554,7 +549,7 @@ function updateServicesTab() {
   renderServicesGrid('firebase-services', firebaseResults);
 
   // Update breakdown counts
-  const allFunctions = [...MEMBER_FUNCTIONS, ...ADDRESS_FUNCTIONS, ...LOOKUP_FUNCTIONS, ...REGISTRATION_FUNCTIONS, ...SUPERUSER_FUNCTIONS, ...UTILITY_FUNCTIONS, ...EMAIL_FUNCTIONS];
+  const allFunctions = [...MEMBER_FUNCTIONS, ...ADDRESS_FUNCTIONS, ...LOOKUP_FUNCTIONS, ...REGISTRATION_FUNCTIONS, ...SUPERUSER_FUNCTIONS, ...HEATMAP_FUNCTIONS, ...EMAIL_FUNCTIONS];
   updateBreakdownCounts({
     gcp: coreResults.length,
     functions: allFunctions.length,

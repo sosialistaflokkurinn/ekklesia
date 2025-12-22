@@ -121,14 +121,8 @@ SUPERUSER_FUNCTIONS = [
     {"id": "purgedeleted", "name": "Eyða merktum félögum"},
 ]
 
-# Firebase Functions - Utility/Background
-UTILITY_FUNCTIONS = [
-    {"id": "get-django-token", "name": "Django API lykill"},
-    # Note: cleanupauditlogs removed - /members_audit_log no longer used
-]
-
 # Combined list for backward compatibility
-FIREBASE_FUNCTIONS = MEMBER_FUNCTIONS + ADDRESS_FUNCTIONS + SUPERUSER_FUNCTIONS + UTILITY_FUNCTIONS
+FIREBASE_FUNCTIONS = MEMBER_FUNCTIONS + ADDRESS_FUNCTIONS + SUPERUSER_FUNCTIONS
 
 
 def require_superuser(req: https_fn.CallableRequest) -> Dict[str, Any]:
@@ -490,7 +484,6 @@ def check_system_health_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
     add_functions(ADDRESS_FUNCTIONS, "address")
     add_functions(REGISTRATION_FUNCTIONS, "registration")
     add_functions(SUPERUSER_FUNCTIONS, "superuser")
-    add_functions(UTILITY_FUNCTIONS, "utility")
 
     # Check Firestore connectivity
     try:
@@ -618,13 +611,13 @@ def get_audit_logs_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
 
     # Security: Allowlist for service names to prevent filter injection
     ALLOWED_SERVICES = {
-        "handlekenniauth", "verifymembership", "syncmembers", "sync-from-django",
-        "updatememberprofile", "search-addresses",
+        "handlekenniauth", "verifymembership", "updatememberprofile",
+        "softdeleteself", "reactivateself", "search-addresses",
         "validate-address", "validate-postal-code", "list-unions", "list-job-titles",
         "list-countries", "list-postal-codes", "get-cells-by-postal-code",
         "register-member", "checksystemhealth", "setuserrole", "getuserrole",
         "getauditlogs", "getloginaudit", "harddeletemember", "anonymizemember",
-        "listelevatedusers", "purgedeleted", "get-django-token"
+        "listelevatedusers", "purgedeleted"
     }
     ALLOWED_SEVERITIES = {"DEBUG", "INFO", "NOTICE", "WARNING", "ERROR", "CRITICAL", "ALERT", "EMERGENCY"}
 
