@@ -16,6 +16,8 @@
     "node-fetch": "^2.7.0"
   },
   "dependencies": {
-    "firebase-admin": "^13.6.0"
+    "@playwright/test": "^1.57.0",
+    "firebase-admin": "^13.6.0",
+    "pg": "^8.16.3"
   }
 }
