@@ -345,10 +345,9 @@ function getCloudSqlStatus() {
 }
 
 function getDjangoStatus() {
-  const syncStatus = getServiceStatus('sync-from-django');
   const updateStatus = getServiceStatus('updatememberprofile');
-  if (syncStatus === 'down' || updateStatus === 'down') return 'down';
-  if (syncStatus === 'degraded' || updateStatus === 'degraded') return 'degraded';
+  if (updateStatus === 'down') return 'down';
+  if (updateStatus === 'degraded') return 'degraded';
   return 'healthy';
 }
 
@@ -376,15 +375,9 @@ function updateStatusIndicator(element, status) {
 }
 
 function animateDataFlows() {
-  const djangoToFirestore = document.getElementById('flow-django-firestore');
   const firestoreToDjango = document.getElementById('flow-firestore-django');
-
-  const syncStatus = getServiceStatus('sync-from-django');
   const updateStatus = getServiceStatus('updatememberprofile');
 
-  if (djangoToFirestore) {
-    djangoToFirestore.classList.toggle('architecture-edge--active', syncStatus === 'healthy' || syncStatus === 'available');
-  }
   if (firestoreToDjango) {
     firestoreToDjango.classList.toggle('architecture-edge--active', updateStatus === 'healthy' || updateStatus === 'available');
   }
