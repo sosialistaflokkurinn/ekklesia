@@ -20,7 +20,7 @@ from shared.cors import get_allowed_origin, cors_headers_for_origin, parse_allow
 from shared.validators import normalize_kennitala, validate_kennitala, normalize_phone
 from shared.rate_limit import check_rate_limit
 from util_security import validate_auth_input
-from db_members import get_member_by_kennitala
+from db_members import get_member_by_kennitala, update_member_firebase_uid
 
 
 def get_kenni_is_jwks_client(issuer_url: str) -> PyJWKClient:
@@ -349,11 +349,23 @@ def handleKenniAuth_handler(req: https_fn.Request) -> https_fn.Response:
                     # Re-raise if it's a different error
                     raise
 
-        # Note: Member-UID linking removed - Cloud SQL is source of truth for members
-        # The /users/{uid} collection stores kennitala for linking
-        log_json("debug", "Auth flow completed, kennitala stored in /users collection",
-                 kennitala=f"{normalized_kennitala[:6]}****",
-                 uid=auth_uid, correlationId=correlation_id)
+        # Sync firebase_uid to Django/Cloud SQL (non-blocking)
+        # This enables Django admin to see which members have logged in
+        try:
+            sync_success = update_member_firebase_uid(normalized_kennitala, auth_uid)
+            if sync_success:
+                log_json("info", "Synced firebase_uid to Django",
+                         kennitala=f"{normalized_kennitala[:6]}****",
+                         uid=auth_uid, correlationId=correlation_id)
+            else:
+                log_json("debug", "No Django member found or already synced",
+                         kennitala=f"{normalized_kennitala[:6]}****",
+                         uid=auth_uid, correlationId=correlation_id)
+        except Exception as e:
+            # Non-blocking: login succeeds even if Django sync fails
+            log_json("warn", "Failed to sync firebase_uid to Django",
+                     error=str(e), kennitala=f"{normalized_kennitala[:6]}****",
+                     uid=auth_uid, correlationId=correlation_id)
 
         # Step 5: Read roles from Firestore /users/ collection
         # Roles are managed via Firebase Admin Panel (NOT synced from Django)

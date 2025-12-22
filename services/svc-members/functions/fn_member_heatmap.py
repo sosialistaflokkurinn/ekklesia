@@ -82,25 +82,47 @@ def _compute_heatmap_stats() -> dict:
         m.get('adults_18_plus', 0) for m in population_data.values()
     )
 
-    # Country code to name mapping
+    # Country code to name mapping (ISO 3166-1 alpha-2 → Icelandic names)
     country_names = {
+        # Nordic countries
         'NO': 'Noregur',
         'DK': 'Danmörk',
         'SE': 'Svíþjóð',
         'FI': 'Finnland',
+        'FO': 'Færeyjar',
+        'AX': 'Álandseyjar',
+        # Western Europe
         'DE': 'Þýskaland',
         'GB': 'Bretland',
         'IE': 'Írland',
-        'ES': 'Spánn',
-        'PT': 'Portúgal',
         'FR': 'Frakkland',
         'NL': 'Holland',
+        'BE': 'Belgía',
+        'LU': 'Lúxemborg',
         'CH': 'Sviss',
-        'AU': 'Ástralía',
+        # Southern Europe
+        'ES': 'Spánn',
+        'PT': 'Portúgal',
+        # Central/Eastern Europe
+        'CZ': 'Tékkland',
+        # Americas
         'US': 'Bandaríkin',
         'CA': 'Kanada',
+        'PE': 'Perú',
+        # Asia
+        'CN': 'Kína',
+        'IN': 'Indland',
+        'KR': 'Suður-Kórea',
+        'LB': 'Líbanon',
+        'PH': 'Filippseyjar',
+        # Africa
+        'EG': 'Egyptaland',
+        'ET': 'Eþíópía',
+        'DZ': 'Alsír',
+        # Oceania
+        'AU': 'Ástralía',
         'NZ': 'Nýja-Sjáland',
-        'FO': 'Færeyjar',
+        # Fallback
         'XX': 'Annað',
     }
 
@@ -114,12 +136,29 @@ def _compute_heatmap_stats() -> dict:
     total_members = total_result['count'] if total_result else 0
 
     # Map database municipality names → population data names (Hagstofa official names)
-    # Database uses shorter names, population data uses official Hagstofa names
+    # Database uses shorter names or old names from before municipal mergers
+    # Population data uses official Hagstofa names (January 2025)
     db_to_population_name = {
+        # Name differences
         'Reykjavík': 'Reykjavíkurborg',
-        'Blönduósbær': 'Húnabyggð',  # Merged 2022
         'Stykkishólmsbær': 'Sveitarfélagið Stykkishólmur',
-        # Most others match, add more as needed
+        # Merged into Húnabyggð (2022)
+        'Blönduósbær': 'Húnabyggð',
+        # Merged into Múlaþing (2020)
+        'Fljótsdalshérað': 'Múlaþing',
+        'Breiðdalshreppur': 'Múlaþing',
+        'Djúpavogshreppur': 'Múlaþing',
+        # Merged into Suðurnesjabær (2022)
+        'Sveitarfélagið Garður': 'Suðurnesjabær',
+        'Sandgerðisbær': 'Suðurnesjabær',
+        # Merged into Þingeyjarsveit
+        'Skútustaðahreppur': 'Þingeyjarsveit',
+        # Merged into Vesturbyggð
+        'Tálknafjarðarhreppur': 'Vesturbyggð',
+        # Merged into Sveitarfélagið Skagafjörður
+        'Akrahreppur': 'Sveitarfélagið Skagafjörður',
+        # Merged into Húnaþing vestra
+        'Húnavatnshreppur': 'Húnaþing vestra',
     }
 
     # Count members by municipality (from local addresses)

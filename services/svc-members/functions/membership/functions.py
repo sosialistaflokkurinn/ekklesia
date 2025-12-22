@@ -23,7 +23,7 @@ MAX_EMAIL_LENGTH = 254
 MAX_PHONE_LENGTH = 20
 MAX_ADDRESS_FIELD_LENGTH = 200
 MAX_ADDRESSES = 5
-from fn_sync_members import (
+from django_api import (
     update_django_member, update_django_address,
     get_django_api_token, DJANGO_API_BASE_URL
 )

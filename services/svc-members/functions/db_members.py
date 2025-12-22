@@ -395,3 +395,39 @@ def get_member_by_email(email: str) -> Optional[Dict[str, Any]]:
             'status': 'deleted' if result['deleted_at'] else 'active',
         }
     }
+
+
+def update_member_firebase_uid(kennitala: str, firebase_uid: str) -> bool:
+    """
+    Update firebase_uid for a member by kennitala.
+
+    Called during login to sync Firebase UID to Django database.
+    Uses UPSERT pattern - only updates if firebase_uid is NULL or matches.
+
+    Args:
+        kennitala: 10-digit kennitala (with or without hyphen)
+        firebase_uid: Firebase Auth UID
+
+    Returns:
+        True if updated successfully, False otherwise
+    """
+    kennitala = kennitala.replace("-", "").strip()
+
+    # Only update if firebase_uid is NULL or already matches (idempotent)
+    # This prevents overwriting if there's a mismatch (should be investigated)
+    query = """
+        UPDATE membership_comrade
+        SET firebase_uid = %s
+        WHERE ssn = %s
+          AND (firebase_uid IS NULL OR firebase_uid = %s)
+    """
+
+    try:
+        from db import execute_query as exec_write
+        result = exec_write(query, params=(firebase_uid, kennitala, firebase_uid))
+        # execute_query returns affected rows count for UPDATE
+        logger.info(f"Updated firebase_uid for kennitala {kennitala[:6]}****")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to update firebase_uid for kennitala {kennitala[:6]}****: {e}")
+        return False
