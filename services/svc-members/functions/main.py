@@ -42,7 +42,6 @@ def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
 # Import membership handlers (not decorated)
 from membership.functions import (
     verifyMembership_handler,
-    syncmembers_handler,
     updatememberprofile_handler,
     cleanupauditlogs_handler,
     soft_delete_self_handler,
@@ -59,11 +58,6 @@ from membership.functions import (
 def verifyMembership(req: https_fn.CallableRequest) -> dict:
     """Verify membership - delegates to handler (reads from Cloud SQL)"""
     return verifyMembership_handler(req)
-
-@https_fn.on_request(timeout_sec=540, memory=512, secrets=["django-api-token"])
-def syncmembers(req: https_fn.Request) -> https_fn.Response:
-    """Sync members from Django - delegates to handler"""
-    return syncmembers_handler(req)
 
 @https_fn.on_call(timeout_sec=30, memory=256, secrets=["django-api-token"])
 def updatememberprofile(req: https_fn.CallableRequest):
@@ -97,8 +91,7 @@ def reactivateSelf(req: https_fn.CallableRequest) -> dict:
 from fn_audit_members import auditmemberchanges
 from fn_get_django_token import get_django_token
 
-# Real-time sync from Django to Firestore (replaces bidirectional_sync and track_member_changes)
-from fn_sync_from_django import sync_from_django
+# Note: sync_from_django removed - Cloud Functions now read directly from Cloud SQL
 
 # Sync banned kennitalas from Django to Firestore (shadow ban feature)
 from fn_sync_banned_kennitala import sync_banned_kennitala
@@ -295,7 +288,6 @@ __all__ = [
     'handleKenniAuth',
     # Membership functions
     'verifyMembership',
-    'syncmembers',
     'updatememberprofile',
     'cleanupauditlogs',
     'softDeleteSelf',
@@ -303,7 +295,6 @@ __all__ = [
     # Audit and sync functions
     'auditmemberchanges',
     'get_django_token',
-    'sync_from_django',  # Real-time Django → Firestore sync
     'sync_banned_kennitala',  # Django → Firestore banned kennitalas sync
     # Address validation functions
     'validate_address',

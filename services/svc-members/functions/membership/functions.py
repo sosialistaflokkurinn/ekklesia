@@ -23,7 +23,7 @@ MAX_PHONE_LENGTH = 20
 MAX_ADDRESS_FIELD_LENGTH = 200
 MAX_ADDRESSES = 5
 from fn_sync_members import (
-    sync_all_members, create_sync_log, update_django_member, update_django_address,
+    update_django_member, update_django_address,
     get_django_api_token, DJANGO_API_BASE_URL
 )
 from fn_cleanup_audit_logs import cleanup_old_audit_logs
@@ -119,115 +119,6 @@ def verifyMembership_handler(req: https_fn.CallableRequest) -> dict:
         raise https_fn.HttpsError(
             code=https_fn.FunctionsErrorCode.INTERNAL,
             message="Failed to verify membership"
-        )
-
-
-from shared.auth_helpers import verify_firebase_token
-from shared.cors import get_allowed_origin
-
-def syncmembers_handler(req: https_fn.Request) -> https_fn.Response:
-    """
-    Epic #43: Manual trigger to sync all members from Django to Firestore.
-
-    Requires authentication and 'admin' or 'superuser' role.
-    Handles CORS manually to support direct fetch calls.
-
-    Returns:
-        Response object with sync statistics
-    """
-    # Handle CORS
-    origin = req.headers.get('Origin')
-    allowed_origin = get_allowed_origin(origin)
-    headers = {
-        'Access-Control-Allow-Origin': allowed_origin,
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        'Access-Control-Max-Age': '3600'
-    }
-
-    if req.method == 'OPTIONS':
-        return https_fn.Response(status=204, headers=headers)
-
-    try:
-        # Verify authentication
-        decoded_token = verify_firebase_token(req)
-        uid = decoded_token.get('uid')
-        roles = decoded_token.get('roles', [])
-
-        # Verify admin or superuser role
-        has_access = 'admin' in roles or 'superuser' in roles
-        if not has_access:
-            log_json("warn", "Unauthorized sync attempt", uid=uid, roles=roles)
-            return https_fn.Response(
-                status=403,
-                response=json.dumps({'error': "Admin or superuser role required"}),
-                headers=headers,
-                content_type='application/json'
-            )
-
-        # Security: Rate limit sync operations (1 per 5 minutes)
-        if not check_uid_rate_limit(uid, "member_sync", max_attempts=1, window_minutes=5):
-            log_json("warn", "Sync rate limit exceeded", uid=uid)
-            return https_fn.Response(
-                status=429,
-                response=json.dumps({'error': "Rate limit exceeded. Maximum 1 sync per 5 minutes."}),
-                headers=headers,
-                content_type='application/json'
-            )
-
-        log_json("info", "Member sync initiated", uid=uid)
-
-        # Run sync
-        stats = sync_all_members()
-
-        # Create sync log
-        db = firestore.Client()
-        log_id = create_sync_log(db, stats)
-
-        log_json("info", "Member sync completed successfully",
-                 uid=uid,
-                 stats=stats,
-                 log_id=log_id)
-
-        response_data = {
-            'result': {  # Wrap in result for Callable compatibility if needed, though we are raw HTTP now
-                'success': True,
-                'stats': stats,
-                'log_id': log_id
-            }
-        }
-        
-        return https_fn.Response(
-            status=200,
-            response=json.dumps(response_data),
-            headers=headers,
-            content_type='application/json'
-        )
-
-    except https_fn.HttpsError as e:
-        status_code = 500
-        if e.code == https_fn.FunctionsErrorCode.UNAUTHENTICATED:
-            status_code = 401
-        elif e.code == https_fn.FunctionsErrorCode.PERMISSION_DENIED:
-            status_code = 403
-        elif e.code == https_fn.FunctionsErrorCode.INVALID_ARGUMENT:
-            status_code = 400
-        elif e.code == https_fn.FunctionsErrorCode.NOT_FOUND:
-            status_code = 404
-            
-        return https_fn.Response(
-            status=status_code,
-            response=json.dumps({'error': e.message}),
-            headers=headers,
-            content_type='application/json'
-        )
-    except Exception as e:
-        log_json("error", "Member sync failed", error_type=type(e).__name__)
-        return https_fn.Response(
-            status=500,
-            response=json.dumps({'error': 'An internal error occurred during sync'}),
-            headers=headers,
-            content_type='application/json'
         )
 
 
