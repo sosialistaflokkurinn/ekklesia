@@ -237,6 +237,8 @@ function updateProfileStrings() {
   setTextContent('label-reachable-description', R.string.label_reachable_description || 'Leyfir flokknum að hafa samband vegna frétta og atburða', 'profile page');
   setTextContent('label-groupable', R.string.label_groupable || 'Má bæta í hópa', 'profile page');
   setTextContent('label-groupable-description', R.string.label_groupable_description || 'Leyfir flokknum að bæta þér í vinnuhópa og póstlista', 'profile page');
+  setTextContent('label-email-marketing', R.string.label_email_marketing || 'Fá fjöldapóst', 'profile page');
+  setTextContent('label-email-marketing-description', R.string.label_email_marketing_description || 'Fá tölvupóst um fréttir, viðburði og atkvæðagreiðslur', 'profile page');
 }
 
 /**
@@ -1388,6 +1390,45 @@ function initCommunicationPreferences() {
     });
   }
 
+  // Email marketing toggle (stored in preferences.email_marketing)
+  const emailMarketingInput = document.getElementById('input-email-marketing');
+  const emailMarketingStatus = document.getElementById('status-email-marketing');
+  const preferences = currentUserData?.preferences || {};
+
+  if (emailMarketingInput) {
+    // Default to true if not set (opt-in by default)
+    emailMarketingInput.checked = preferences.email_marketing !== false;
+
+    emailMarketingInput.addEventListener('change', async (e) => {
+      const newValue = e.target.checked;
+      debug.log(`📧 Email marketing changed: ${newValue}`);
+
+      showStatus(emailMarketingStatus, 'loading', { baseClass: 'profile-field__status' });
+      try {
+        const db = getFirebaseFirestore();
+        const kennitalaKey = currentUserData.kennitala.replace(/-/g, '');
+        const memberDocRef = doc(db, 'members', kennitalaKey);
+
+        await updateDoc(memberDocRef, {
+          'preferences.email_marketing': newValue,
+          'preferences.updated_at': new Date()
+        });
+
+        // Update local state
+        if (!currentUserData.preferences) currentUserData.preferences = {};
+        currentUserData.preferences.email_marketing = newValue;
+
+        showStatus(emailMarketingStatus, 'success', { baseClass: 'profile-field__status' });
+        showToast(R.string.profile_preferences_saved || 'Stillingar vistaðar', 'success');
+      } catch (error) {
+        debug.error('Failed to save email marketing preference:', error);
+        showStatus(emailMarketingStatus, 'error', { baseClass: 'profile-field__status' });
+        // Revert UI
+        emailMarketingInput.checked = !newValue;
+      }
+    });
+  }
+
   debug.log('✅ Communication preferences initialized');
 }
 
@@ -1782,7 +1823,8 @@ async function init() {
         foreign_address: null
       },
       membership: memberData?.membership || {},
-      metadata: memberData?.metadata || {}
+      metadata: memberData?.metadata || {},
+      preferences: memberData?.preferences || {}
     };
 
     // Initialize edit functionality

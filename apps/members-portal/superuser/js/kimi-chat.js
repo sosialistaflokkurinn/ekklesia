@@ -7,7 +7,7 @@
 import { debug } from '../../js/utils/util-debug.js';
 import { getFirebaseAuth } from '../../firebase/app.js';
 
-const EVENTS_API_BASE = 'https://events-service-521240388393.europe-west2.run.app';
+const EVENTS_API_BASE = 'https://events-service-521240388393.europe-west1.run.app';
 
 // Chat state
 let isOpen = false;
