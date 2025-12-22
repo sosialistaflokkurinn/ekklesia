@@ -47,9 +47,9 @@
 
 | Environment | URL |
 |-------------|-----|
-| Production (Firebase) | https://ekklesia-prod-10-2025.web.app |
-| Production (alt) | https://ekklesia-prod-10-2025.firebaseapp.com |
-| Custom domain | felagakerfi.sosialistaflokkurinn.is (DNS pending - hosted at 1984 ehf) |
+| **Production** | https://felagar.sosialistaflokkurinn.is/ |
+| Hitakort | https://felagar.sosialistaflokkurinn.is/members-area/heatmap.html |
+| Firebase (backup) | https://ekklesia-prod-10-2025.web.app |
 
 **Detailed docs:** [docs/README.md](docs/README.md)
 
