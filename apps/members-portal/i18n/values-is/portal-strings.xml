@@ -77,6 +77,8 @@
   <string name="quick_links_policy_desc">Taka þátt í stefnumótun flokksins</string>
   <string name="quick_links_heatmap_label">Félagadreifing</string>
   <string name="quick_links_heatmap_desc">Skoða hvar félagar búa</string>
+  <string name="quick_links_nomination_label">Uppstillingarnefnd</string>
+  <string name="quick_links_nomination_desc">Raðvalskosningu nefndar</string>
   <string name="page_title_heatmap">Félagadreifing - Sósíalistaflokkurinn</string>
   <string name="heatmap_title">Félagadreifing</string>
   <string name="heatmap_description">Kort sem sýnir hvar félagar búa eftir sveitarfélagi.</string>
