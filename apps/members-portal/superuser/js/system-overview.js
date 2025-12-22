@@ -30,11 +30,13 @@ const CORE_SERVICES = [
   { id: 'django-socialism', nameKey: 'service_name_django_socialism' },
 ];
 
-// Firebase Functions - Member Operations
+// Firebase Functions Gen 2 - Member Operations
 const MEMBER_FUNCTIONS = [
   { id: 'handlekenniauth', nameKey: 'service_name_handlekenniauth' },
   { id: 'verifymembership', nameKey: 'service_name_verifymembership' },
   { id: 'updatememberprofile', nameKey: 'service_name_updatememberprofile' },
+  { id: 'softdeleteself', nameKey: 'service_name_softdeleteself' },
+  { id: 'reactivateself', nameKey: 'service_name_reactivateself' },
 ];
 
 // Firebase Functions - Address Validation
@@ -77,7 +79,7 @@ const REGISTRATION_SITE_SERVICES = [
   { id: 'django-socialism', nameKey: 'service_name_django_socialism', usage: 'Django API sync' },
 ];
 
-// Firebase Functions - Superuser Operations
+// Firebase Functions Gen 2 - Superuser Operations
 const SUPERUSER_FUNCTIONS = [
   { id: 'checksystemhealth', nameKey: 'service_name_checksystemhealth' },
   { id: 'setuserrole', nameKey: 'service_name_setuserrole' },
@@ -88,6 +90,7 @@ const SUPERUSER_FUNCTIONS = [
   { id: 'anonymizemember', nameKey: 'service_name_anonymizemember' },
   { id: 'listelevatedusers', nameKey: 'service_name_listelevatedusers' },
   { id: 'purgedeleted', nameKey: 'service_name_purgedeleted' },
+  { id: 'getdeletedcounts', nameKey: 'service_name_getdeletedcounts' },
 ];
 
 // Firebase Functions - Utility
@@ -95,7 +98,7 @@ const UTILITY_FUNCTIONS = [
   // get-django-token removed - Linode decommissioned 2025-12-11
 ];
 
-// Firebase Functions - Email (Issue #323)
+// Firebase Functions Gen 2 - Email (Issue #323)
 const EMAIL_FUNCTIONS = [
   { id: 'listemailtemplates', nameKey: 'service_name_listemailtemplates' },
   { id: 'getemailtemplate', nameKey: 'service_name_getemailtemplate' },
@@ -108,6 +111,15 @@ const EMAIL_FUNCTIONS = [
   { id: 'getemailstats', nameKey: 'service_name_getemailstats' },
   { id: 'listemaillogs', nameKey: 'service_name_listemaillogs' },
   { id: 'ses-webhook', nameKey: 'service_name_ses_webhook' },
+  { id: 'getemailpreferences', nameKey: 'service_name_getemailpreferences' },
+  { id: 'updateemailpreferences', nameKey: 'service_name_updateemailpreferences' },
+  { id: 'unsubscribe', nameKey: 'service_name_unsubscribe' },
+];
+
+// Firebase Functions Gen 2 - Heatmap/Analytics
+const HEATMAP_FUNCTIONS = [
+  { id: 'compute-member-heatmap-stats', nameKey: 'service_name_compute_heatmap_stats' },
+  { id: 'get-member-heatmap-data', nameKey: 'service_name_get_heatmap_data' },
 ];
 
 const DATABASE_SERVICES = [
@@ -132,11 +144,11 @@ const SERVICE_GROUPS = {
   },
   cloudrun: {
     nameKey: 'architecture_group_cloudrun',
-    services: ['elections-service', 'events-service']
+    services: ['elections-service', 'events-service', 'django-socialism']
   },
-  sync: {
-    nameKey: 'architecture_group_sync',
-    services: ['updatememberprofile']
+  member: {
+    nameKey: 'architecture_group_member',
+    services: ['updatememberprofile', 'softdeleteself', 'reactivateself']
   },
   address: {
     nameKey: 'architecture_group_address',
@@ -148,7 +160,7 @@ const SERVICE_GROUPS = {
   },
   superuser: {
     nameKey: 'architecture_group_superuser',
-    services: ['checksystemhealth', 'setuserrole', 'getuserrole', 'getauditlogs', 'getloginaudit', 'harddeletemember', 'anonymizemember', 'listelevatedusers', 'purgedeleted']
+    services: ['checksystemhealth', 'setuserrole', 'getuserrole', 'getauditlogs', 'getloginaudit', 'harddeletemember', 'anonymizemember', 'listelevatedusers', 'purgedeleted', 'getdeletedcounts']
   },
   lookup: {
     nameKey: 'architecture_group_lookup',
@@ -158,24 +170,34 @@ const SERVICE_GROUPS = {
     nameKey: 'architecture_group_registration',
     services: ['register-member']
   },
-  // utility group removed - get-django-token was only service, Linode decommissioned
   email: {
     nameKey: 'architecture_group_email',
-    services: ['listemailtemplates', 'getemailtemplate', 'saveemailtemplate', 'deleteemailtemplate', 'sendemail', 'listemailcampaigns', 'createemailcampaign', 'sendcampaign', 'getemailstats', 'listemaillogs', 'ses-webhook']
+    services: ['listemailtemplates', 'getemailtemplate', 'saveemailtemplate', 'deleteemailtemplate', 'sendemail', 'listemailcampaigns', 'createemailcampaign', 'sendcampaign', 'getemailstats', 'listemaillogs', 'ses-webhook', 'getemailpreferences', 'updateemailpreferences', 'unsubscribe']
+  },
+  heatmap: {
+    nameKey: 'architecture_group_heatmap',
+    services: ['compute-member-heatmap-stats', 'get-member-heatmap-data']
   }
 };
 
 // Service names for architecture details panel
 const SERVICE_NAMES = {
+  // Member operations
   'handlekenniauth': 'service_handlekenniauth',
   'verifymembership': 'service_verifymembership',
   'updatememberprofile': 'service_updatememberprofile',
+  'softdeleteself': 'service_softdeleteself',
+  'reactivateself': 'service_reactivateself',
+  // Address validation
   'search-addresses': 'service_search_addresses',
   'validate-address': 'service_validate_address',
   'validate-postal-code': 'service_validate_postal_code',
+  // Cloud Run services
   'elections-service': 'service_elections_service',
   'events-service': 'service_events_service',
+  'django-socialism': 'service_django_socialism',
   'healthz': 'service_healthz',
+  // Superuser operations
   'checksystemhealth': 'service_checksystemhealth',
   'setuserrole': 'service_setuserrole',
   'getuserrole': 'service_getuserrole',
@@ -185,12 +207,16 @@ const SERVICE_NAMES = {
   'anonymizemember': 'service_anonymizemember',
   'listelevatedusers': 'service_listelevatedusers',
   'purgedeleted': 'service_purgedeleted',
+  'getdeletedcounts': 'service_getdeletedcounts',
+  // Database
   'firestore-database': 'service_firestore_database',
+  // Lookup services
   'list-unions': 'service_list_unions',
   'list-job-titles': 'service_list_job_titles',
   'list-countries': 'service_list_countries',
   'list-postal-codes': 'service_list_postal_codes',
   'get-cells-by-postal-code': 'service_get_cells_by_postal_code',
+  // Registration
   'register-member': 'service_register_member',
   // Email services (Issue #323)
   'listemailtemplates': 'service_listemailtemplates',
@@ -203,7 +229,13 @@ const SERVICE_NAMES = {
   'sendcampaign': 'service_sendcampaign',
   'getemailstats': 'service_getemailstats',
   'listemaillogs': 'service_listemaillogs',
-  'ses-webhook': 'service_ses_webhook'
+  'ses-webhook': 'service_ses_webhook',
+  'getemailpreferences': 'service_getemailpreferences',
+  'updateemailpreferences': 'service_updateemailpreferences',
+  'unsubscribe': 'service_unsubscribe',
+  // Heatmap/Analytics
+  'compute-member-heatmap-stats': 'service_compute_heatmap_stats',
+  'get-member-heatmap-data': 'service_get_heatmap_data'
 };
 
 // =============================================================================
