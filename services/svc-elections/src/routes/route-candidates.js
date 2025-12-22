@@ -16,10 +16,57 @@ const admin = require('../firebase');
 const logger = require('../utils/util-logger');
 const { verifyMemberToken } = require('../middleware/middleware-member-auth');
 const { readLimiter, voteLimiter } = require('../middleware/middleware-rate-limiter');
+const { validateBody, validateParams, schemas } = require('../middleware/middleware-validation');
+const { z } = require('zod');
 
 const router = express.Router();
 const db = admin.firestore();
 const COLLECTION = 'nomination-candidates';
+
+// =====================================================
+// Validation Schemas
+// =====================================================
+
+// Allowed fields that can be updated on a candidate
+const ALLOWED_FIELDS = ['bio', 'stance', 'photo_url', 'contact_info', 'status', 'notes'];
+
+// Single field update schema
+const singleFieldUpdateSchema = z.object({
+  field: z.string()
+    .trim()
+    .min(1, 'Field name required')
+    .refine(f => ALLOWED_FIELDS.includes(f), {
+      message: `Field must be one of: ${ALLOWED_FIELDS.join(', ')}`
+    }),
+  value: z.union([z.string(), z.number(), z.boolean(), z.null()])
+    .optional(),
+}).strict();
+
+// Multiple fields update schema
+const multiFieldUpdateSchema = z.object({
+  updates: z.record(
+    z.string().refine(f => ALLOWED_FIELDS.includes(f), {
+      message: `Unknown field. Allowed: ${ALLOWED_FIELDS.join(', ')}`
+    }),
+    z.union([z.string().max(5000), z.number(), z.boolean(), z.null()])
+  ).refine(obj => Object.keys(obj).length > 0, {
+    message: 'Updates object cannot be empty'
+  })
+}).strict();
+
+// Combined schema: either single field or multi-field update
+const candidateUpdateSchema = z.union([
+  singleFieldUpdateSchema,
+  multiFieldUpdateSchema
+]);
+
+// Candidate ID param schema
+const candidateIdParamSchema = z.object({
+  id: z.string()
+    .trim()
+    .min(1, 'Candidate ID required')
+    .max(100, 'Candidate ID too long')
+});
 
 // =====================================================
 // GET /api/candidates - List All Candidates
@@ -66,8 +113,12 @@ router.get('/', readLimiter, verifyMemberToken, async (req, res) => {
 // =====================================================
 // GET /api/candidates/:id - Get Single Candidate
 // =====================================================
-router.get('/:id', readLimiter, verifyMemberToken, async (req, res) => {
-  const { id } = req.params;
+router.get('/:id',
+  readLimiter,
+  verifyMemberToken,
+  validateParams(candidateIdParamSchema),
+  async (req, res) => {
+  const { id } = req.validatedParams;
 
   try {
     const doc = await db.collection(COLLECTION).doc(id).get();
@@ -112,17 +163,14 @@ router.get('/:id', readLimiter, verifyMemberToken, async (req, res) => {
 // Body: {
 //   updates: { bio: "...", stance: "..." }  // Multiple fields
 // }
-router.patch('/:id', voteLimiter, verifyMemberToken, async (req, res) => {
-  const { id } = req.params;
-  const { field, value, updates } = req.body;
-
-  // Validate input - either single field or updates object
-  if (!field && !updates) {
-    return res.status(400).json({
-      error: 'Bad Request',
-      message: 'Vantar field/value eða updates',
-    });
-  }
+router.patch('/:id',
+  voteLimiter,
+  verifyMemberToken,
+  validateParams(candidateIdParamSchema),
+  validateBody(candidateUpdateSchema),
+  async (req, res) => {
+  const { id } = req.validatedParams;
+  const { field, value, updates } = req.validatedBody;
 
   try {
     const docRef = db.collection(COLLECTION).doc(id);
@@ -208,8 +256,12 @@ router.patch('/:id', voteLimiter, verifyMemberToken, async (req, res) => {
 // =====================================================
 // GET /api/candidates/:id/history - Get Edit History
 // =====================================================
-router.get('/:id/history', readLimiter, verifyMemberToken, async (req, res) => {
-  const { id } = req.params;
+router.get('/:id/history',
+  readLimiter,
+  verifyMemberToken,
+  validateParams(candidateIdParamSchema),
+  async (req, res) => {
+  const { id } = req.validatedParams;
 
   try {
     const doc = await db.collection(COLLECTION).doc(id).get();
