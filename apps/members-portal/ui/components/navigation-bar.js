@@ -543,46 +543,6 @@ export const NAV_CONFIGS = {
   },
 
   /**
-   * Admin Sync Members
-   * Shows "Samstilling" for context
-   */
-  adminSyncMembers: {
-    brand: {
-      href: '/admin/',
-      textKey: 'nav_admin_sync_short'  // "Samstilling"
-    },
-    links: [
-      { href: '/admin/', textKey: 'nav_admin_overview' },
-      { href: '/admin/members.html', textKey: 'nav_admin_members' },
-      { href: '/admin/missing-addresses.html', textKey: 'nav_missing_addresses' },
-      { href: '/admin/events.html', textKey: 'nav_admin_events' },
-      { href: '/admin/email/', textKey: 'nav_admin_email' },
-      { href: '/admin-elections/', textKey: 'nav_admin_elections' },
-      { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
-    ]
-  },
-
-  /**
-   * Admin Sync History
-   * Shows "Samstillingarsaga" for context
-   */
-  adminSyncHistory: {
-    brand: {
-      href: '/admin/',
-      textKey: 'nav_admin_sync_history'  // "Samstillingarsaga"
-    },
-    links: [
-      { href: '/admin/', textKey: 'nav_admin_overview' },
-      { href: '/admin/members.html', textKey: 'nav_admin_members' },
-      { href: '/admin/missing-addresses.html', textKey: 'nav_missing_addresses' },
-      { href: '/admin/events.html', textKey: 'nav_admin_events' },
-      { href: '/admin/email/', textKey: 'nav_admin_email' },
-      { href: '/admin-elections/', textKey: 'nav_admin_elections' },
-      { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
-    ]
-  },
-
-  /**
    * Admin Missing Addresses
    * Shows "Vantar heimilisfang" for context
    */
