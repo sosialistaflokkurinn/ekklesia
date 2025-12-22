@@ -196,8 +196,6 @@ function setPageText(strings, userData) {
   document.getElementById('quick-action-elections-desc').textContent = strings.quick_action_elections_desc;
   document.getElementById('quick-action-events-label').textContent = strings.quick_action_events_label;
   document.getElementById('quick-action-events-desc').textContent = strings.quick_action_events_desc;
-  document.getElementById('quick-action-sync-label').textContent = strings.quick_action_sync_label;
-  document.getElementById('quick-action-sync-desc').textContent = strings.quick_action_sync_desc;
   document.getElementById('quick-action-email-label').textContent = strings.quick_action_email_label;
   document.getElementById('quick-action-email-desc').textContent = strings.quick_action_email_desc;
 }
