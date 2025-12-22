@@ -19,8 +19,8 @@ import { R } from '../../../i18n/strings-loader.js';
 // LOCAL STORAGE CACHE - Instant load on repeat visits
 // =============================================================================
 const CACHE_KEYS = {
-  ELECTIONS: 'uppstilling_elections_cache',
-  CANDIDATES: 'uppstilling_candidates_cache'
+  ELECTIONS: 'nomination_elections_cache',
+  CANDIDATES: 'nomination_candidates_cache'
 };
 const CACHE_MAX_AGE_MS = 5 * 60 * 1000; // 5 minutes
 

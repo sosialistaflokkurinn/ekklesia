@@ -61,7 +61,7 @@
 
         <!-- SVG Architecture Diagram -->
         <div class="architecture-diagram" id="architecture-diagram">
-          <svg viewBox="0 0 1000 610" preserveAspectRatio="xMidYMid meet">
+          <svg viewBox="0 0 1000 650" preserveAspectRatio="xMidYMid meet">
             <!-- Definitions for markers and gradients -->
             <defs>
               <!-- Arrow marker for connection lines -->
@@ -85,13 +85,15 @@
 
             <!-- Layer 1: Users -->
             <g class="architecture-layer" id="layer-users">
-              <rect x="350" y="10" width="300" height="50" rx="8" class="architecture-node architecture-node--external" />
+              <rect x="300" y="10" width="400" height="50" rx="8" class="architecture-node architecture-node--external" />
               <text x="500" y="40" text-anchor="middle" class="architecture-node__label">Notendur</text>
               <text x="500" y="55" text-anchor="middle" class="architecture-node__sublabel">Félagar / Stjórnendur / Kerfisstjórar</text>
             </g>
 
             <!-- Connection: Users to Firebase Hosting -->
-            <path d="M 500 60 L 500 90" class="architecture-edge" marker-end="url(#arrowhead)" />
+            <path d="M 450 60 L 450 90" class="architecture-edge" marker-end="url(#arrowhead)" />
+            <!-- Connection: Users to Django Admin -->
+            <path d="M 600 60 L 790 60 L 790 525" class="architecture-edge" marker-end="url(#arrowhead)" />
 
             <!-- Layer 2: Firebase Hosting (Frontend) -->
             <g class="architecture-layer" id="layer-frontend">
@@ -155,10 +157,10 @@
               <path d="M 790 280 L 880 320" class="architecture-edge architecture-edge--thin" />
 
               <!-- 1. Django → Firestore (sync-from-django webhook) -->
-              <path d="M 730 480 L 780 480 L 780 250 L 590 250" class="architecture-edge architecture-edge--flow architecture-edge--sync-from-django" id="flow-django-firestore" />
+              <path d="M 680 480 L 720 480 L 720 250 L 590 250" class="architecture-edge architecture-edge--flow architecture-edge--sync-from-django" id="flow-django-firestore" />
 
               <!-- 2. Firestore → Django (profile updates) -->
-              <path d="M 500 280 L 595 300 L 595 445 L 590 460" class="architecture-edge architecture-edge--flow architecture-edge--sync-to-django" id="flow-firestore-django" />
+              <path d="M 500 280 L 545 300 L 545 445 L 540 460" class="architecture-edge architecture-edge--flow architecture-edge--sync-to-django" id="flow-firestore-django" />
 
               <!-- 3. Cloud Run → Cloud SQL (database queries) -->
               <path d="M 320 380 L 320 445 L 360 460" class="architecture-edge architecture-edge--flow architecture-edge--database" id="flow-cloudrun-sql" />
@@ -253,35 +255,45 @@
 
               <!-- Django (GCP Cloud Run) -->
               <g class="architecture-group" id="group-django" data-group="django">
-                <rect x="590" y="460" width="140" height="60" rx="6" class="architecture-node architecture-node--external" />
-                <text x="660" y="485" text-anchor="middle" class="architecture-node__label">Django</text>
-                <text x="660" y="502" text-anchor="middle" class="architecture-node__sublabel">GCP Cloud Run</text>
-                <circle cx="710" cy="475" r="6" class="architecture-status" id="status-django" />
+                <rect x="540" y="460" width="140" height="60" rx="6" class="architecture-node architecture-node--external" />
+                <text x="610" y="485" text-anchor="middle" class="architecture-node__label">Django API</text>
+                <text x="610" y="502" text-anchor="middle" class="architecture-node__sublabel">GCP Cloud Run</text>
+                <circle cx="660" cy="475" r="6" class="architecture-status" id="status-django" />
               </g>
+
+              <!-- Django Admin Frontend -->
+              <g class="architecture-group" id="group-django-admin" data-group="django-admin">
+                <rect x="720" y="525" width="140" height="50" rx="6" class="architecture-node architecture-node--firebase" />
+                <text x="790" y="548" text-anchor="middle" class="architecture-node__label">Django Admin</text>
+                <text x="790" y="563" text-anchor="middle" class="architecture-node__sublabel">starf.sosialistaflokkurinn.is</text>
+              </g>
+
+              <!-- Connection: Django Admin to Django API -->
+              <path d="M 720 550 L 680 550 L 680 505 L 660 505" class="architecture-edge" marker-end="url(#arrowhead)" />
             </g>
 
             <!-- Legend - Status indicators -->
-            <g class="architecture-legend" transform="translate(750, 540)">
+            <g class="architecture-legend" transform="translate(50, 595)">
               <text x="0" y="0" class="architecture-legend__title" font-weight="600">Staða:</text>
-              <circle cx="10" cy="20" r="5" class="architecture-status architecture-status--healthy" />
-              <text x="20" y="24" class="architecture-legend__label">Heilbrigt</text>
-              <circle cx="85" cy="20" r="5" class="architecture-status architecture-status--degraded" />
-              <text x="95" y="24" class="architecture-legend__label">Hægvirkt</text>
-              <circle cx="165" cy="20" r="5" class="architecture-status architecture-status--down" />
-              <text x="175" y="24" class="architecture-legend__label">Niðri</text>
+              <circle cx="55" cy="0" r="5" class="architecture-status architecture-status--healthy" />
+              <text x="65" y="4" class="architecture-legend__label">Heilbrigt</text>
+              <circle cx="130" cy="0" r="5" class="architecture-status architecture-status--degraded" />
+              <text x="140" y="4" class="architecture-legend__label">Hægvirkt</text>
+              <circle cx="210" cy="0" r="5" class="architecture-status architecture-status--down" />
+              <text x="220" y="4" class="architecture-legend__label">Niðri</text>
             </g>
 
             <!-- Legend - Data flow -->
-            <g class="architecture-legend" transform="translate(50, 540)">
+            <g class="architecture-legend" transform="translate(50, 620)">
               <text x="0" y="0" class="architecture-legend__title" font-weight="600">Gagnaflæði:</text>
-              <line x1="0" y1="20" x2="25" y2="20" stroke="#3b82f6" stroke-width="2" stroke-dasharray="4,2" />
-              <text x="30" y="24" class="architecture-legend__label">Django → Firestore</text>
-              <line x1="150" y1="20" x2="175" y2="20" stroke="#22c55e" stroke-width="2" stroke-dasharray="4,2" />
-              <text x="180" y="24" class="architecture-legend__label">Firestore → Django</text>
-              <line x1="305" y1="20" x2="330" y2="20" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,2" />
-              <text x="335" y="24" class="architecture-legend__label">SQL fyrirspurnir</text>
-              <line x1="430" y1="20" x2="455" y2="20" stroke="#8b5cf6" stroke-width="2" stroke-dasharray="4,2" />
-              <text x="460" y="24" class="architecture-legend__label">OAuth</text>
+              <line x1="80" y1="0" x2="105" y2="0" stroke="#3b82f6" stroke-width="2" stroke-dasharray="4,2" />
+              <text x="110" y="4" class="architecture-legend__label">Django → Firestore</text>
+              <line x1="230" y1="0" x2="255" y2="0" stroke="#22c55e" stroke-width="2" stroke-dasharray="4,2" />
+              <text x="260" y="4" class="architecture-legend__label">Firestore → Django</text>
+              <line x1="385" y1="0" x2="410" y2="0" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,2" />
+              <text x="415" y="4" class="architecture-legend__label">SQL fyrirspurnir</text>
+              <line x1="510" y1="0" x2="535" y2="0" stroke="#8b5cf6" stroke-width="2" stroke-dasharray="4,2" />
+              <text x="540" y="4" class="architecture-legend__label">OAuth</text>
             </g>
           </svg>
         </div>
@@ -418,40 +430,53 @@
         <div class="schema-overview">
           <!-- ===== FIRESTORE COLLECTIONS ===== -->
           <div class="schema-section">
-            <h3 class="schema-section__title">Firestore Collections (5)</h3>
-            <p class="u-text-muted u-margin-bottom-sm"><strong>Athugið:</strong> Félagagögn eru nú í Cloud SQL (PostgreSQL). Firestore geymir notendagögn og cache.</p>
+            <h3 class="schema-section__title">Firestore Collections</h3>
+            <p class="u-text-muted u-margin-bottom-sm"><strong>Cloud SQL er source of truth fyrir félagagögn.</strong> Firestore geymir aðeins Firebase Auth tengd gögn.</p>
             <div class="schema-table">
               <div class="schema-row schema-row--header">
                 <span class="schema-col schema-col--name">Collection</span>
                 <span class="schema-col schema-col--desc">Lýsing</span>
-                <span class="schema-col schema-col--key">Primary Key</span>
+                <span class="schema-col schema-col--key">Staða</span>
               </div>
+              <!-- Required - Firebase Auth integration -->
               <div class="schema-row">
                 <span class="schema-col schema-col--name"><code>/users/{firebaseUid}</code></span>
-                <span class="schema-col schema-col--desc">Notendagögn, innskráningarsaga, hlutverk</span>
-                <span class="schema-col schema-col--key">Firebase UID</span>
+                <span class="schema-col schema-col--desc">Notendagögn, hlutverk, preferences, innskráningarsaga</span>
+                <span class="schema-col schema-col--key"><span class="badge badge--success">Nauðsynlegt</span></span>
               </div>
+              <!-- Cache - convenience -->
               <div class="schema-row">
                 <span class="schema-col schema-col--name"><code>/stats/municipality_heatmap</code></span>
                 <span class="schema-col schema-col--desc">Heatmap cache (uppfært á klukkustund)</span>
-                <span class="schema-col schema-col--key">Document ID</span>
+                <span class="schema-col schema-col--key"><span class="badge badge--info">Cache</span></span>
               </div>
-              <div class="schema-row">
-                <span class="schema-col schema-col--name"><code>/events/{id}</code></span>
-                <span class="schema-col schema-col--desc">Viðburðir og fundir</span>
-                <span class="schema-col schema-col--key">Auto ID</span>
-              </div>
+              <!-- Email - could move to Django -->
               <div class="schema-row">
                 <span class="schema-col schema-col--name"><code>/email_templates/{id}</code></span>
                 <span class="schema-col schema-col--desc">Tölvupóstsniðmát</span>
-                <span class="schema-col schema-col--key">Auto ID</span>
+                <span class="schema-col schema-col--key"><span class="badge badge--warning">Mætti flytja</span></span>
               </div>
               <div class="schema-row">
+                <span class="schema-col schema-col--name"><code>/email_campaigns/{id}</code></span>
+                <span class="schema-col schema-col--desc">Tölvupóstherferðir</span>
+                <span class="schema-col schema-col--key"><span class="badge badge--warning">Mætti flytja</span></span>
+              </div>
+              <div class="schema-row">
+                <span class="schema-col schema-col--name"><code>/email_logs/{id}</code></span>
+                <span class="schema-col schema-col--desc">Sendingarskrá tölvupósta</span>
+                <span class="schema-col schema-col--key"><span class="badge badge--warning">Mætti flytja</span></span>
+              </div>
+              <!-- Nomination - accessed via svc-elections API -->
+              <div class="schema-row">
                 <span class="schema-col schema-col--name"><code>/nomination-candidates/{id}</code></span>
-                <span class="schema-col schema-col--desc">Nomination candidate info</span>
-                <span class="schema-col schema-col--key">Candidate ID</span>
+                <span class="schema-col schema-col--desc">Frambjóðendur í uppstillingarnefnd</span>
+                <span class="schema-col schema-col--key"><span class="badge badge--success">svc-elections</span></span>
               </div>
             </div>
+            <p class="u-text-muted u-margin-top-sm" style="font-size: 0.85rem;">
+              <strong>Mætti flytja:</strong> Gæti farið í Django/Cloud SQL seinna.
+              <strong>svc-elections:</strong> Aðgangur gegnum svc-elections API (ekki beint úr frontend).
+            </p>
           </div>
 
           <!-- ===== CLOUD SQL - EKKLESIA (GCP) ===== -->
@@ -648,34 +673,9 @@
       </div>
     </div>
 
-    <!-- ============================================== -->
-    <!-- Stats Footer (always visible) -->
-    <!-- ============================================== -->
-    <div class="card">
-      <h2 class="card__title" data-i18n="architecture_stats_title">Tölfræði</h2>
-      <div class="stats-grid">
-        <div class="stat-card">
-          <span class="stat-card__value" id="stat-total">-</span>
-          <span class="stat-card__label" data-i18n="architecture_services_label">Þjónustur</span>
-        </div>
-        <div class="stat-card stat-card--success">
-          <span class="stat-card__value" id="stat-healthy">-</span>
-          <span class="stat-card__label" data-i18n="architecture_stat_healthy">Heilbrigðar</span>
-        </div>
-        <div class="stat-card stat-card--warning">
-          <span class="stat-card__value" id="stat-degraded">-</span>
-          <span class="stat-card__label" data-i18n="architecture_stat_degraded">Hægvirkar</span>
-        </div>
-        <div class="stat-card stat-card--error">
-          <span class="stat-card__value" id="stat-down">-</span>
-          <span class="stat-card__label" data-i18n="architecture_stat_down">Niðri</span>
-        </div>
-      </div>
-    </div>
-
   </div>
 
-  <script type="module" src="/superuser/js/system-overview.js?v=20251222a"></script>
+  <script type="module" src="/superuser/js/system-overview.js?v=20251222b"></script>
 
   <!-- Django tables toggle -->
   <script>
