@@ -190,16 +190,17 @@ def _compute_heatmap_stats() -> dict:
     # Count members abroad (from foreign addresses)
     # Django model inheritance: newforeignaddress → newcomradeaddress (for current/country)
     # Iceland is country_id = 109
+    # Use LEFT JOIN to include addresses with NULL country_id (labeled as 'XX' / Unknown)
     abroad_query = """
-        SELECT co.code as country_code, COUNT(DISTINCT c.id) as count
+        SELECT COALESCE(co.code, 'XX') as country_code, COUNT(DISTINCT c.id) as count
         FROM membership_comrade c
         JOIN membership_newforeignaddress fa ON fa.comrade_id = c.id
         JOIN membership_newcomradeaddress nca ON fa.newcomradeaddress_ptr_id = nca.id AND nca.current = true
-        JOIN map_country co ON nca.country_id = co.id
+        LEFT JOIN map_country co ON nca.country_id = co.id
         WHERE c.deleted_at IS NULL
           AND c.ssn NOT LIKE '9999%%'
-          AND co.id != 109
-        GROUP BY co.code
+          AND (co.id IS NULL OR co.id != 109)
+        GROUP BY COALESCE(co.code, 'XX')
         ORDER BY count DESC
     """
     abroad_rows = execute_query(abroad_query)
