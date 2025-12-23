@@ -133,8 +133,7 @@ export const SERVICES = [
   { id: 'sendcampaign', nameKey: 'service_name_sendcampaign', group: GROUPS.EMAIL, category: CATEGORIES.EMAIL, type: SERVICE_TYPES.FUNCTION },
   { id: 'getemailstats', nameKey: 'service_name_getemailstats', group: GROUPS.EMAIL, category: CATEGORIES.EMAIL, type: SERVICE_TYPES.FUNCTION },
   { id: 'listemaillogs', nameKey: 'service_name_listemaillogs', group: GROUPS.EMAIL, category: CATEGORIES.EMAIL, type: SERVICE_TYPES.FUNCTION },
-  { id: 'ses-webhook', nameKey: 'service_name_ses_webhook', group: GROUPS.EMAIL, category: CATEGORIES.EMAIL, type: SERVICE_TYPES.FUNCTION },
-  { id: 'getemailpreferences', nameKey: 'service_name_getemailpreferences', group: GROUPS.EMAIL, category: CATEGORIES.EMAIL, type: SERVICE_TYPES.FUNCTION },
+    { id: 'getemailpreferences', nameKey: 'service_name_getemailpreferences', group: GROUPS.EMAIL, category: CATEGORIES.EMAIL, type: SERVICE_TYPES.FUNCTION },
   { id: 'updateemailpreferences', nameKey: 'service_name_updateemailpreferences', group: GROUPS.EMAIL, category: CATEGORIES.EMAIL, type: SERVICE_TYPES.FUNCTION },
   { id: 'unsubscribe', nameKey: 'service_name_unsubscribe', group: GROUPS.EMAIL, category: CATEGORIES.EMAIL, type: SERVICE_TYPES.FUNCTION },
 
