@@ -135,3 +135,5 @@ docs/audits/
 
 # Local git config
 .gitignore.local
+scripts/thjodskra-results.json
+scripts/thjodskra-kennitolur.txt
