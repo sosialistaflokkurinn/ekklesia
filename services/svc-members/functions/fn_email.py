@@ -839,7 +839,10 @@ def send_email_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             }
 
     # Add unsubscribe URL for broadcast emails (using django_id for privacy)
-    django_id = member_data.get("metadata", {}).get("django_id") if member_data else None
+    # Check both metadata.django_id (Firestore) and top-level django_id (Cloud SQL lookup)
+    django_id = None
+    if member_data:
+        django_id = member_data.get("metadata", {}).get("django_id") or member_data.get("django_id")
     if django_id and email_type == "broadcast":
         variables["unsubscribe_url"] = generate_unsubscribe_url(django_id)
 

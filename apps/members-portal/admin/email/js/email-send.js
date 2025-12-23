@@ -152,6 +152,12 @@ async function sendEmail(e) {
     // Build send data based on mode
     const sendData = {};
 
+    // Check if unsubscribe link should be included (broadcast mode)
+    const includeUnsubscribe = document.getElementById('include-unsubscribe').checked;
+    if (includeUnsubscribe) {
+      sendData.email_type = 'broadcast';
+    }
+
     if (currentMode === 'template') {
       const templateId = document.getElementById('template-select').value;
       if (!templateId) {
