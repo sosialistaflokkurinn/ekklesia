@@ -523,8 +523,8 @@ body.superuser {
 }
 
 .log-level--debug {
-  background: rgba(107, 114, 128, 0.1);
-  color: #4b5563;
+  background: var(--color-gray-bg-subtle);
+  color: var(--color-gray-600);
 }
 
 .audit-pagination {
@@ -843,7 +843,7 @@ body.superuser {
 }
 
 .btn--danger:hover:not(:disabled) {
-  background: #dc2626;
+  background: var(--color-danger-hover);
 }
 
 .btn--danger:disabled {
@@ -859,7 +859,7 @@ body.superuser {
 }
 
 .btn--warning:hover:not(:disabled) {
-  background: #d97706;
+  background: var(--color-warning-hover);
 }
 
 .btn--warning:disabled {
@@ -1202,19 +1202,19 @@ body.superuser {
 }
 
 .architecture-flow-label--blue {
-  fill: #3b82f6;
+  fill: var(--color-info-border);
 }
 
 .architecture-flow-label--green {
-  fill: #22c55e;
+  fill: var(--color-success);
 }
 
 .architecture-flow-label--orange {
-  fill: #d97706;
+  fill: var(--color-warning-hover);
 }
 
 .architecture-flow-label--purple {
-  fill: #8b5cf6;
+  fill: var(--color-admin-purple-bright);
 }
 
 /* Service group nodes */
@@ -1246,27 +1246,27 @@ body.superuser {
 
 .architecture-node--auth {
   fill: rgba(139, 92, 246, 0.1);
-  stroke: #8b5cf6;
+  stroke: var(--color-admin-purple-bright);
 }
 
 .architecture-node--sync {
   fill: rgba(59, 130, 246, 0.1);
-  stroke: #3b82f6;
+  stroke: var(--color-info-border);
 }
 
 .architecture-node--address {
   fill: rgba(34, 197, 94, 0.1);
-  stroke: #22c55e;
+  stroke: var(--color-success);
 }
 
 .architecture-node--voting {
   fill: rgba(245, 158, 11, 0.1);
-  stroke: #f59e0b;
+  stroke: var(--color-admin-amber);
 }
 
 .architecture-node--audit {
   fill: rgba(107, 114, 128, 0.1);
-  stroke: #6b7280;
+  stroke: var(--color-gray-500);
 }
 
 .architecture-node--superuser {
@@ -1276,17 +1276,17 @@ body.superuser {
 
 .architecture-node--infra {
   fill: rgba(75, 85, 99, 0.1);
-  stroke: #4b5563;
+  stroke: var(--color-gray-600);
 }
 
 .architecture-node--external {
   fill: rgba(236, 72, 153, 0.1);
-  stroke: #ec4899;
+  stroke: var(--color-admin-pink);
 }
 
 .architecture-node--database {
   fill: rgba(245, 158, 11, 0.1);
-  stroke: #f59e0b;
+  stroke: var(--color-admin-amber);
 }
 
 .architecture-node--firebase {
@@ -1340,17 +1340,17 @@ body.superuser {
 }
 
 .architecture-edge--auth {
-  stroke: #8b5cf6;
+  stroke: var(--color-admin-purple-bright);
   stroke-opacity: 0.5;
 }
 
 .architecture-edge--sync {
-  stroke: #3b82f6;
+  stroke: var(--color-info-border);
   stroke-opacity: 0.5;
 }
 
 .architecture-edge--data {
-  stroke: #22c55e;
+  stroke: var(--color-success);
   stroke-opacity: 0.5;
 }
 
@@ -1368,17 +1368,17 @@ body.superuser {
 }
 
 .architecture-edge--sync-to-django {
-  stroke: #22c55e;
+  stroke: var(--color-success);
   animation: dataFlowAnimation 1.5s linear infinite;
 }
 
 .architecture-edge--sync-from-django {
-  stroke: #3b82f6;
+  stroke: var(--color-info-border);
   animation: dataFlowAnimationReverse 1.5s linear infinite;
 }
 
 .architecture-edge--database {
-  stroke: #f59e0b;
+  stroke: var(--color-admin-amber);
   stroke-opacity: 0.6;
 }
 
@@ -1854,12 +1854,12 @@ body.superuser {
 
 .badge--success {
   background: rgba(34, 197, 94, 0.15);
-  color: #15803d;
+  color: var(--color-success-text-dark);
 }
 
 .badge--warning {
   background: rgba(245, 158, 11, 0.15);
-  color: #b45309;
+  color: var(--color-admin-amber-dark);
 }
 
 @media (max-width: 768px) {

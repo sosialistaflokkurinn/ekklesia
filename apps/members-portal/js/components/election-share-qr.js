@@ -146,14 +146,18 @@ export function showElectionShareModal(options = {}) {
   }, i18n.copy_url);
 
   copyBtn.addEventListener('click', async () => {
-    const success = await copyToClipboard(electionUrl);
-    if (success) {
-      showToast(i18n.copied, 'success');
-      copyBtn.textContent = '✓ ' + i18n.copied;
-      setTimeout(() => {
-        copyBtn.textContent = i18n.copy_url;
-      }, 2000);
-    } else {
+    try {
+      const success = await copyToClipboard(electionUrl);
+      if (success) {
+        showToast(i18n.copied, 'success');
+        copyBtn.textContent = '✓ ' + i18n.copied;
+        setTimeout(() => {
+          copyBtn.textContent = i18n.copy_url;
+        }, 2000);
+      } else {
+        showToast(i18n.copy_failed, 'error');
+      }
+    } catch (error) {
       showToast(i18n.copy_failed, 'error');
     }
   });

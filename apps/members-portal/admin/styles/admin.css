@@ -459,14 +459,14 @@ body.admin .members-count {
 
 /* Results button - blue background for better icon visibility */
 .btn-results {
-  background: #2563eb !important;
+  background: var(--color-info-border) !important;
   color: white !important;
-  border-color: #2563eb !important;
+  border-color: var(--color-info-border) !important;
 }
 
 .btn-results:hover {
-  background: #1d4ed8 !important;
-  border-color: #1d4ed8 !important;
+  background: var(--color-info-dark) !important;
+  border-color: var(--color-info-dark) !important;
 }
 
 /* ========================================== */
