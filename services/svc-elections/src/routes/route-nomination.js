@@ -468,14 +468,6 @@ router.post('/elections/:id/vote', voteLimiter, verifyMemberToken, async (req, r
       await client.query('ROLLBACK');
     }
 
-    // Direct console.error for Cloud Run logs
-    console.error('[Nomination API] Vote error:', {
-      error: error.message,
-      stack: error.stack,
-      election_id: id,
-      uid: req.user?.uid,
-    });
-
     (req.logger || logger).error('[Nomination API] Vote error:', {
       error: error.message,
       stack: error.stack,

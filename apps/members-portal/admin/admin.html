@@ -38,10 +38,6 @@
           <div class="info-grid__label" id="quick-action-events-label">Loading...</div>
           <div class="info-grid__value" id="quick-action-events-desc">Loading...</div>
         </a>
-        <a href="/admin/sync-members.html" class="info-grid__item u-clickable">
-          <div class="info-grid__label" id="quick-action-sync-label">Loading...</div>
-          <div class="info-grid__value" id="quick-action-sync-desc">Loading...</div>
-        </a>
         <a href="/admin/email/" class="info-grid__item u-clickable">
           <div class="info-grid__label" id="quick-action-email-label">Loading...</div>
           <div class="info-grid__value" id="quick-action-email-desc">Loading...</div>
@@ -49,9 +45,74 @@
       </div>
     </div>
 
+    <!-- Member Registry Statistics -->
+    <div class="card" id="stats-card">
+      <h2 class="card__title">Félagaskrá - Tölfræði</h2>
+      <div class="info-grid" id="stats-grid">
+        <div class="info-grid__item">
+          <div class="info-grid__label">Heildarfjöldi</div>
+          <div class="info-grid__value" id="stat-total">-</div>
+        </div>
+        <div class="info-grid__item">
+          <div class="info-grid__label">Með heimilisfang</div>
+          <div class="info-grid__value" id="stat-with-address">-</div>
+        </div>
+        <div class="info-grid__item">
+          <div class="info-grid__label">Fundnir í Þjóðskrá</div>
+          <div class="info-grid__value" id="stat-thjodskra-found">-</div>
+        </div>
+        <div class="info-grid__item">
+          <div class="info-grid__label">Ekki fundnir</div>
+          <div class="info-grid__value" id="stat-thjodskra-not-found">-</div>
+        </div>
+        <div class="info-grid__item">
+          <div class="info-grid__label">Ógild kennitala</div>
+          <div class="info-grid__value" id="stat-invalid-kt">-</div>
+        </div>
+        <div class="info-grid__item">
+          <div class="info-grid__label">Þarfnast yfirferðar</div>
+          <div class="info-grid__value" id="stat-needs-review">-</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Invalid Kennitölur List -->
+    <div class="card" id="invalid-kt-card" style="display: none;">
+      <h2 class="card__title">Ógildar kennitölur</h2>
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Kennitala</th>
+              <th>Nafn</th>
+              <th>Villa</th>
+            </tr>
+          </thead>
+          <tbody id="invalid-kt-list"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Needs Review List -->
+    <div class="card" id="needs-review-card" style="display: none;">
+      <h2 class="card__title">Þarfnast yfirferðar</h2>
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Kennitala</th>
+              <th>Nafn</th>
+              <th>Ástæða</th>
+            </tr>
+          </thead>
+          <tbody id="needs-review-list"></tbody>
+        </table>
+      </div>
+    </div>
+
   </div>
 
-  <script type="module" src="/admin/js/admin.js?v=20251121"></script>
+  <script type="module" src="/admin/js/admin.js?v=20251222c"></script>
 
   <!-- Initialize Navigation Component -->
   <script type="module">

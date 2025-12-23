@@ -7,6 +7,7 @@ const logger = require('./utils/util-logger');
 const electionsRouter = require('./routes/route-elections');
 const adminRouter = require('./routes/route-admin'); // Admin CRUD routes (Issue #192)
 const nominationRouter = require('./routes/route-nomination'); // Nomination committee routes
+const candidatesRouter = require('./routes/route-candidates'); // Candidate metadata
 const correlationIdMiddleware = require('./middleware/middleware-correlation-id');
 
 const app = express();
@@ -68,6 +69,9 @@ app.use('/api/admin', adminRouter);
 // Nomination committee routes
 app.use('/api/nomination', nominationRouter);
 
+// Candidate metadata routes
+app.use('/api/candidates', candidatesRouter);
+
 // 404 handler
 app.use((req, res) => {
   const response = {
@@ -97,7 +101,12 @@ app.use((req, res) => {
       'GET /api/nomination/elections (Committee)',
       'GET /api/nomination/elections/:id (Committee)',
       'POST /api/nomination/elections/:id/vote (Committee)',
-      'GET /api/nomination/elections/:id/results (Committee)'
+      'GET /api/nomination/elections/:id/results (Committee)',
+      // Candidate metadata endpoints
+      'GET /api/candidates (Auth)',
+      'GET /api/candidates/:id (Auth)',
+      'PATCH /api/candidates/:id (Auth)',
+      'GET /api/candidates/:id/history (Auth)'
     ];
   }
 

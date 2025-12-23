@@ -2,7 +2,7 @@
 Cells by Postal Code Cloud Function
 
 Returns cells (sellur) that intersect with a given postal code.
-Data is pre-computed and stored in Firestore collection 'postal_code_cells'.
+Uses spatial query against Cloud SQL (PostGIS).
 
 Usage:
     getCellsByPostalCode({postal_code_id: 1})
@@ -10,7 +10,6 @@ Usage:
 
 Caching:
     Uses in-memory cache with 1 hour TTL, keyed by postal_code_id.
-    Cache persists across invocations on the same container instance.
 """
 
 import logging
@@ -18,10 +17,9 @@ import time
 from typing import Any, Dict, Tuple, List
 
 from firebase_functions import https_fn, options
-from firebase_admin import firestore
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+from db_lookups import get_cells_by_postal_code as db_get_cells
+
 logger = logging.getLogger(__name__)
 
 # In-memory cache: {postal_code_id: (cells_list, cache_time)}
@@ -32,6 +30,7 @@ CACHE_TTL_SECONDS = 3600  # 1 hour
 @https_fn.on_call(
     region="europe-west2",
     memory=options.MemoryOption.MB_256,
+    secrets=["django-socialism-db-password"],
 )
 def get_cells_by_postal_code(req: https_fn.CallableRequest) -> list[dict[str, Any]]:
     """
@@ -41,16 +40,7 @@ def get_cells_by_postal_code(req: https_fn.CallableRequest) -> list[dict[str, An
         req.data: {postal_code_id: int} - The postal code ID to query
 
     Returns:
-        List of cells matching Django format:
-        [
-            {"id": 1, "name": "Sella Miðbæjar"},
-            ...
-        ]
-
-    Note:
-        Cell-postal code mappings are pre-computed during migration.
-        Format matches Django /kort/pnr-sellur/?postal_code_id= endpoint.
-        Uses in-memory cache with 1 hour TTL per postal_code_id.
+        List of cells: [{"id": 1, "name": "Sella Miðbæjar"}, ...]
     """
     global _cells_cache
 
@@ -69,25 +59,13 @@ def get_cells_by_postal_code(req: https_fn.CallableRequest) -> list[dict[str, An
                 logger.info(f"Returning {len(cells)} cells for postal code {postal_code_id} from cache")
                 return cells
 
-        logger.info(f"Fetching cells for postal code {postal_code_id}")
-
-        db = firestore.client()
-        doc_ref = db.collection('postal_code_cells').document(str(postal_code_id))
-        doc = doc_ref.get()
-
-        if not doc.exists:
-            logger.info(f"No cells found for postal code {postal_code_id}")
-            # Cache empty result too
-            _cells_cache[postal_code_id] = ([], time.time())
-            return []
-
-        doc_data = doc.to_dict()
-        cells = doc_data.get('cells', [])
+        logger.info(f"Fetching cells for postal code {postal_code_id} from Cloud SQL")
+        cells = db_get_cells(postal_code_id)
 
         # Update cache
         _cells_cache[postal_code_id] = (cells, time.time())
 
-        logger.info(f"Returning {len(cells)} cells for postal code {postal_code_id} (cached)")
+        logger.info(f"Returning {len(cells)} cells for postal code {postal_code_id}")
         return cells
 
     except Exception as e:

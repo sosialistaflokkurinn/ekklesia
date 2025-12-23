@@ -62,7 +62,8 @@ def get_jwks_client_cached_ttl(issuer_url: str, ttl_seconds: Optional[int] = Non
 
     # Cache miss or expired
     oidc_config_url = f"{issuer_url}/.well-known/openid-configuration"
-    resp = requests.get(oidc_config_url, headers=headers)
+    # Security: 10 second timeout to prevent hanging on JWKS endpoint issues
+    resp = requests.get(oidc_config_url, headers=headers, timeout=10)
     resp.raise_for_status()
     jwks_uri = resp.json()["jwks_uri"]
 

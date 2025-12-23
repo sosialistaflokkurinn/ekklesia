@@ -2,6 +2,9 @@
  * Send Email Page - Issue #323
  *
  * Send a single email to a member or email address.
+ * Supports two modes:
+ * - Template mode: Select a saved template
+ * - Quick send mode: Write subject and body directly
  */
 
 import { initSession } from '../../../session/init.js';
@@ -14,6 +17,7 @@ import EmailAPI from './api/email-api.js';
 let strings = {};
 let templates = [];
 let selectedTemplate = null;
+let currentMode = 'template';  // 'template' or 'quick'
 
 /**
  * Set page text from admin strings
@@ -23,8 +27,6 @@ function setPageText(s) {
 
   // Page title
   document.getElementById('page-title').textContent = strings.email_send_title + ' - Ekklesia';
-  document.getElementById('send-title').textContent = strings.email_send_title;
-  document.getElementById('send-subtitle').textContent = strings.email_send_subtitle;
 
   // Form labels
   document.getElementById('label-recipient').textContent = strings.email_send_recipient;
@@ -100,6 +102,33 @@ function escapeHtml(text) {
 }
 
 /**
+ * Setup mode toggle buttons
+ */
+function setupModeToggle() {
+  const templateBtn = document.getElementById('mode-template');
+  const quickBtn = document.getElementById('mode-quick');
+  const templateFields = document.getElementById('template-mode-fields');
+  const quickFields = document.getElementById('quick-mode-fields');
+
+  function setMode(mode) {
+    currentMode = mode;
+
+    // Update button states
+    templateBtn.classList.toggle('active', mode === 'template');
+    quickBtn.classList.toggle('active', mode === 'quick');
+
+    // Show/hide appropriate fields
+    templateFields.classList.toggle('u-hidden', mode === 'quick');
+    quickFields.classList.toggle('u-hidden', mode === 'template');
+
+    debug.log('[EmailSend] Mode changed to:', mode);
+  }
+
+  templateBtn.addEventListener('click', () => setMode('template'));
+  quickBtn.addEventListener('click', () => setMode('quick'));
+}
+
+/**
  * Send email
  */
 async function sendEmail(e) {
@@ -115,18 +144,35 @@ async function sendEmail(e) {
 
   try {
     const recipient = document.getElementById('recipient').value.trim();
-    const templateId = document.getElementById('template-select').value;
 
-    if (!recipient || !templateId) {
-      throw new Error('Vinsamlega fylltu út alla reiti');
+    if (!recipient) {
+      throw new Error('Vinsamlega sláðu inn viðtakanda');
+    }
+
+    // Build send data based on mode
+    const sendData = {};
+
+    if (currentMode === 'template') {
+      const templateId = document.getElementById('template-select').value;
+      if (!templateId) {
+        throw new Error('Vinsamlega veldu sniðmát');
+      }
+      sendData.template_id = templateId;
+    } else {
+      // Quick send mode
+      const subject = document.getElementById('quick-subject').value.trim();
+      const body = document.getElementById('quick-body').value.trim();
+
+      if (!subject || !body) {
+        throw new Error('Vinsamlega fylltu út efnislínu og meginmál');
+      }
+
+      sendData.subject = subject;
+      sendData.body_html = body;
     }
 
     // Determine if recipient is email or kennitala
     const isEmail = recipient.includes('@');
-    const sendData = {
-      template_id: templateId
-    };
-
     if (isEmail) {
       sendData.recipient_email = recipient;
     } else {
@@ -150,8 +196,13 @@ async function sendEmail(e) {
 
     // Clear form
     document.getElementById('recipient').value = '';
-    document.getElementById('template-select').value = '';
-    document.getElementById('preview-section').classList.add('u-hidden');
+    if (currentMode === 'template') {
+      document.getElementById('template-select').value = '';
+      document.getElementById('preview-section').classList.add('u-hidden');
+    } else {
+      document.getElementById('quick-subject').value = '';
+      document.getElementById('quick-body').value = '';
+    }
 
   } catch (error) {
     debug.error('[EmailSend] Send error:', error);
@@ -192,7 +243,10 @@ async function init() {
     // 5. Load templates
     await loadTemplates();
 
-    // 6. Setup event handlers
+    // 6. Setup mode toggle
+    setupModeToggle();
+
+    // 7. Setup event handlers
     document.getElementById('template-select').addEventListener('change', onTemplateChange);
     document.getElementById('send-form').addEventListener('submit', sendEmail);
 

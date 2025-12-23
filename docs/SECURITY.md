@@ -10,6 +10,9 @@
 | Use `git push --no-verify` | Let pre-commit hooks run |
 | Log actual passwords | Use `***` for passwords in output |
 | `firebase deploy --only functions` | `firebase deploy --only hosting` |
+| Skip rate limiting on handlers | Add rate limiting to write operations |
+| Accept unvalidated input | Validate length, format, and type |
+| Use sentinel values for bans | Use random fake IDs (prevents enumeration) |
 
 ---
 
@@ -35,6 +38,101 @@ git check-ignore -v FILENAME
 
 # Should show nothing sensitive
 git status
+```
+
+---
+
+## Rate Limiting
+
+### Implementation Patterns
+
+```python
+# UID-based (authenticated endpoints)
+from shared.rate_limit import check_uid_rate_limit
+
+if not check_uid_rate_limit(req.auth.uid, "action_name", max_attempts=10, window_minutes=10):
+    raise https_fn.HttpsError(
+        code=https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED,
+        message="Rate limit exceeded"
+    )
+
+# IP-based (public endpoints)
+from shared.rate_limit import check_rate_limit
+
+if not check_rate_limit(client_ip, max_attempts=5, window_minutes=10):
+    return {"error": "Rate limit exceeded"}
+```
+
+### Current Limits (Dec 2025)
+
+| Handler | Limit | Window |
+|---------|-------|--------|
+| `hard_delete` | 3 | 60 min |
+| `anonymize` | 5 | 60 min |
+| `purge_deleted` | 1 | 60 min |
+| `set_role` | 10 | 10 min |
+| `send_email` | 10 | 1 min |
+| `send_campaign` | 1 | 10 min |
+| `profile_update` | 5 | 10 min |
+| `member_sync` | 1 | 5 min |
+| `register_member` (IP) | 5 | 10 min |
+
+---
+
+## Input Validation
+
+### Required Checks
+
+```python
+# Length validation
+MAX_NAME_LENGTH = 100
+MAX_EMAIL_LENGTH = 254
+MAX_ADDRESS_FIELD_LENGTH = 200
+
+# Format validation
+email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+
+# List limits
+MAX_ADDRESSES = 5
+MAX_RECIPIENTS_PER_BATCH = 1000
+MAX_TEMPLATE_SIZE = 100000  # 100KB
+```
+
+### Template Security (SSTI Prevention)
+
+```python
+# Whitelist allowed template variables
+ALLOWED_VARS = {'member', 'cell', 'organization', 'date', 'unsubscribe_url', 'subject'}
+
+# Only allow alphanumeric variable names
+if parts[0] not in ALLOWED_VARS:
+    return ''  # Reject unknown variables
+```
+
+---
+
+## HTTP Request Security
+
+### Timeout Requirements
+
+All external HTTP calls MUST have explicit timeouts:
+
+```python
+# GOOD
+response = requests.post(url, timeout=30)
+
+# BAD - will hang indefinitely
+response = requests.post(url)
+```
+
+### Header Sanitization
+
+Prevent CRLF injection in correlation IDs:
+
+```javascript
+const correlationId = rawId
+    ? rawId.replace(/[\r\n\t]/g, '').substring(0, 64)
+    : crypto.randomUUID();
 ```
 
 ---

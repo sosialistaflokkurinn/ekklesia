@@ -190,10 +190,20 @@ function renderEventsList(events) {
     // Extract video conference links from description
     const { links: videoLinks, cleanedText: cleanDescription } = extractVideoLinks(event.description);
 
-    // Build location section with map links
+    // Build video conference links HTML (used inline with location)
+    const videoLinksHtml = videoLinks.map(url => {
+      let icon = '📹';
+      let label = 'Fjarfundur';
+      if (url.includes('zoom.us')) { icon = '🎥'; label = 'Zoom'; }
+      else if (url.includes('meet.google')) { icon = '📹'; label = 'Google Meet'; }
+      else if (url.includes('teams.microsoft')) { icon = '📹'; label = 'Teams'; }
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="u-text-link" style="font-size: 0.875rem; margin-right: 1rem;">${icon} ${label}</a>`;
+    }).join('');
+
+    // Build location section with map links and video links on same line
     let locationHtml = '';
     if (event.isOnline) {
-      locationHtml = '<p class="u-text-muted">💻 Netviðburður</p>';
+      locationHtml = `<p class="u-text-muted">💻 Netviðburður ${videoLinksHtml ? `<span style="margin-left: 0.5rem;">${videoLinksHtml}</span>` : ''}</p>`;
     } else if (event.mapUrls) {
       // Official Google Maps icon (simplified pin)
       const googleMapsIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 92.3 132.3" style="vertical-align: middle; margin-right: 4px;"><path fill="#1a73e8" d="M60.2 2.2C55.8.8 51 0 46.1 0 32 0 19.3 6.4 10.8 16.5l21.8 18.3L60.2 2.2z"/><path fill="#ea4335" d="M10.8 16.5C4.1 24.5 0 34.9 0 46.1c0 8.7 1.7 15.7 4.6 22l28-33.3-21.8-18.3z"/><path fill="#4285f4" d="M46.2 28.5c9.8 0 17.7 7.9 17.7 17.7 0 4.3-1.6 8.3-4.2 11.4 0 0 13.9-16.6 27.5-32.7-5.6-10.8-15.3-19-27-22.7L32.6 34.8c3.3-3.8 8.1-6.3 13.6-6.3"/><path fill="#fbbc04" d="M46.2 63.8c-9.8 0-17.7-7.9-17.7-17.7 0-4.3 1.5-8.3 4.1-11.3l-28 33.3c4.8 10.6 12.8 19.2 21 29.9l34.1-40.5c-3.3 3.9-8.1 6.3-13.5 6.3"/><path fill="#34a853" d="M59.1 109.2c15.4-24.1 33.3-35 33.3-63 0-7.7-1.9-14.9-5.2-21.3L25.6 98c2.6 3.4 5.3 7.3 7.9 11.3 9.4 14.5 6.8 23.1 12.8 23.1s3.4-8.7 12.8-23.2"/></svg>`;
@@ -207,27 +217,20 @@ function renderEventsList(events) {
           <a href="${event.mapUrls.googleMaps}" target="_blank" rel="noopener noreferrer" class="u-text-link" style="font-size: 0.875rem; margin-right: 1rem;">
             ${googleMapsIcon} Google Maps
           </a>
-          <a href="${event.mapUrls.openStreetMap}" target="_blank" rel="noopener noreferrer" class="u-text-link" style="font-size: 0.875rem;">
+          <a href="${event.mapUrls.openStreetMap}" target="_blank" rel="noopener noreferrer" class="u-text-link" style="font-size: 0.875rem; margin-right: 1rem;">
             ${osmIcon} OpenStreetMap
           </a>
+          ${videoLinksHtml}
         </p>
+      `;
+    } else if (videoLinksHtml) {
+      // No map but has video links - show location with video links
+      locationHtml = `
+        <p class="u-text-muted" style="margin-bottom: 0.25rem;">📍 ${event.location}</p>
+        <p style="margin-top: 0; margin-bottom: 0.5rem;">${videoLinksHtml}</p>
       `;
     } else {
       locationHtml = `<p class="u-text-muted">📍 ${event.location}</p>`;
-    }
-
-    // Build video conference links section
-    let videoLinksHtml = '';
-    if (videoLinks.length > 0) {
-      videoLinksHtml = `
-        <p style="margin-top: 0; margin-bottom: 0.5rem;">
-          ${videoLinks.map(url => `
-            <a href="${url}" target="_blank" rel="noopener noreferrer" class="u-text-link" style="font-size: 0.875rem; margin-right: 1rem;">
-              📹 Fjarfundarhlekk
-            </a>
-          `).join('')}
-        </p>
-      `;
     }
 
     // Badge for ongoing events (started but not ended)
@@ -261,16 +264,15 @@ function renderEventsList(events) {
 
     return `
       <div class="card" id="${eventId}">
-        ${event.imageUrl ? `<img src="${event.imageUrl}" alt="${event.title}" width="600" height="315" style="width: 100%; height: auto; display: block; border-radius: 0.5rem 0.5rem 0 0;">` : ''}
+        ${event.imageUrl ? `<img src="${event.imageUrl}" alt="${event.title}" width="600" height="315" style="width: 100%; height: auto; display: block; border-radius: 0.5rem 0.5rem 0 0;" onerror="this.style.display='none'">` : ''}
         <div class="card__content">
           <h2 class="card__title">${event.title}${ongoingBadge}</h2>
           ${dateHtml}
           ${locationHtml}
-          ${videoLinksHtml}
           <div style="white-space: pre-line;">${formatRichText(cleanDescription)}</div>
           <div style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
             ${event.facebookUrl ? `<a href="${event.facebookUrl}" target="_blank" rel="noopener noreferrer" class="btn btn--secondary btn--small">Skoða á Facebook</a>` : ''}
-            <button class="btn btn--secondary btn--small" onclick="copyEventLink('${eventId}')" title="Afrita hlekk">🔗 Deila</button>
+            <button class="btn btn--secondary btn--small" onclick="copyEventLink('${eventId}')" title="${R.string.events_copy_link_title}">🔗 Deila</button>
           </div>
         </div>
       </div>

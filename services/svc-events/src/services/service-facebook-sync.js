@@ -16,6 +16,7 @@ const axios = require('axios');
 const logger = require('../utils/util-logger');
 const { query } = require('../config/config-database');
 const { improveEventDescription, isKimiConfigured } = require('../utils/util-kimi');
+const { cacheEventImage } = require('../utils/util-image-cache');
 
 // Security: Timeouts for external API calls
 const FACEBOOK_API_TIMEOUT = 30000; // 30 seconds
@@ -330,6 +331,7 @@ function validateEventData(event) {
 /**
  * Upsert a single Facebook event to database
  * Uses Kimi AI to improve description text if configured
+ * Caches event images in Cloud Storage to prevent Facebook CDN expiration
  */
 async function upsertFacebookEvent(event) {
   // Security: Validate and sanitize input
@@ -342,6 +344,16 @@ async function upsertFacebookEvent(event) {
   let description = validated.description;
   if (isKimiConfigured() && description) {
     description = await improveEventDescription(description, validated.name);
+  }
+
+  // Cache image in Cloud Storage (Facebook CDN URLs expire)
+  let imageUrl = null;
+  if (validated.cover) {
+    imageUrl = await cacheEventImage(validated.cover, validated.id);
+    // Fallback to original URL if caching fails
+    if (!imageUrl) {
+      imageUrl = validated.cover;
+    }
   }
 
   await query(`
@@ -375,7 +387,7 @@ async function upsertFacebookEvent(event) {
     location.country ? String(location.country).substring(0, 100) : null,
     validated.is_online,
     `https://www.facebook.com/events/${validated.id}`,
-    validated.cover
+    imageUrl
   ]);
 }
 

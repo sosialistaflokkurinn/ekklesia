@@ -12,7 +12,7 @@ def normalize_kennitala(kennitala: str) -> str:
     """
     Normalize kennitala to 10 digits without hyphen (for use as Firestore document ID).
 
-    Example: "010101-2980" -> "0101012980"
+    Example: "010190-2939" -> "0101902939"
 
     Args:
         kennitala: Kennitala string (with or without hyphen)
@@ -35,16 +35,69 @@ def normalize_kennitala(kennitala: str) -> str:
 
 def validate_kennitala(kennitala: str) -> bool:
     """
-    Validate kennitala format (DDMMYY-XXXX or DDMMYYXXXX).
+    Validate Icelandic kennitala with Mod 11 checksum verification.
+
+    Format: DDMMYY-RRCV or DDMMYYRRCV
+    - DD: Day (01-31 for persons, 41-71 for companies)
+    - MM: Month (01-12)
+    - YY: Year (00-99)
+    - RR: Random number (20-99 typically for persons)
+    - C: Check digit (calculated using Mod 11)
+    - V: Century (0 for 2000s, 9 for 1900s, 8 for 1800s)
 
     Args:
         kennitala: Kennitala string to validate
 
     Returns:
-        True if valid format, False otherwise
+        True if valid format and checksum, False otherwise
     """
-    pattern = r'^\d{6}-?\d{4}$'
-    return bool(re.match(pattern, kennitala))
+    if not kennitala:
+        return False
+
+    # Remove hyphen if present
+    kt = kennitala.replace('-', '').strip()
+
+    # Check format: exactly 10 digits
+    if len(kt) != 10 or not kt.isdigit():
+        return False
+
+    # Extract components
+    day = int(kt[0:2])
+    month = int(kt[2:4])
+    century_digit = int(kt[9])
+
+    # Validate month (1-12)
+    if month < 1 or month > 12:
+        return False
+
+    # Validate day (1-31 for persons, 41-71 for companies)
+    is_company = day > 31
+    actual_day = day - 40 if is_company else day
+    if actual_day < 1 or actual_day > 31:
+        return False
+
+    # Validate century digit (0 for 2000s, 8 for 1800s, 9 for 1900s)
+    if century_digit not in [0, 8, 9]:
+        return False
+
+    # Mod 11 checksum validation
+    # Weights for positions 1-8
+    weights = [3, 2, 7, 6, 5, 4, 3, 2]
+    digits = [int(d) for d in kt[:8]]
+
+    total = sum(d * w for d, w in zip(digits, weights))
+    remainder = total % 11
+    check_digit = 0 if remainder == 0 else 11 - remainder
+
+    # Check digit 10 is invalid - no valid kennitala can have this
+    if check_digit == 10:
+        return False
+
+    # Verify check digit matches position 9 (index 8)
+    if check_digit != int(kt[8]):
+        return False
+
+    return True
 
 
 def format_kennitala(kennitala: str) -> str:
@@ -54,18 +107,18 @@ def format_kennitala(kennitala: str) -> str:
     This is the inverse of normalize_kennitala() - use for display only.
 
     Args:
-        kennitala: 10-digit kennitala (e.g., "0103882369")
+        kennitala: 10-digit kennitala (e.g., "0101902939")
 
     Returns:
-        Formatted kennitala with hyphen (e.g., "010388-2369"),
+        Formatted kennitala with hyphen (e.g., "010190-2939"),
         or original string if format is invalid
 
     Example:
         # Database storage (normalized):
-        normalized = normalize_kennitala("010388-2369")  # "0103882369"
+        normalized = normalize_kennitala("010190-2939")  # "0101902939"
 
         # UI display (formatted):
-        displayed = format_kennitala(normalized)  # "010388-2369"
+        displayed = format_kennitala(normalized)  # "010190-2939"
     """
     if not kennitala:
         return kennitala

@@ -1,120 +1,74 @@
 /**
  * Members API Client - Epic #116, Issue #120
  *
- * Firestore client for members collection CRUD operations.
+ * Cloud Functions client for members CRUD operations.
+ * Reads from Cloud SQL (source of truth) via Cloud Functions.
  * Handles pagination, search, and filtering.
  */
 
-// Import Firestore from member portal
-import {
-  getFirebaseFirestore,
-  collection,
-  query,
-  where,
-  orderBy,
-  limit,
-  startAfter,
-  getDocs,
-  getDoc,
-  doc,
-  getCountFromServer
-} from '../../../firebase/app.js';
+import { httpsCallable } from '../../../firebase/app.js';
 import { debug } from '../../../js/utils/util-debug.js';
 
-// Get Firestore instance
-const db = getFirebaseFirestore();
+const REGION = 'europe-west2';
 
 const MembersAPI = {
   /**
    * Fetch members with pagination and filtering
    * @param {Object} options - Query options
    * @param {number} options.limit - Number of members per page (default: 50)
-   * @param {string} options.status - Filter by status: 'all', 'active', 'inactive'
-   * @param {string} options.search - Search by name or kennitala
-   * @param {Object} options.startAfter - Firestore document for pagination
-   * @returns {Promise<{members: Array, hasMore: boolean, lastDoc: Object}>}
+   * @param {string} options.status - Filter by status: 'all', 'active', 'deleted'
+   * @param {string} options.search - Search by name, kennitala, or email
+   * @param {number} options.offset - Offset for pagination (default: 0)
+   * @param {string} options.municipality - Filter by municipality name
+   * @returns {Promise<{members: Array, hasMore: boolean, total: number}>}
    */
-  async fetchMembers({ limit: limitCount = 50, status = 'active', search = '', startAfter: startAfterDoc = null } = {}) {
+  async fetchMembers({ limit: limitCount = 50, status = 'active', search = '', offset = 0, municipality = '' } = {}) {
     try {
-      // Build query using v9 modular syntax
-      const membersCol = collection(db, 'members');
-      let constraints = [];
+      const listMembers = httpsCallable('listMembers', REGION);
+      const result = await listMembers({
+        limit: limitCount,
+        offset,
+        status,
+        search,
+        municipality
+      });
 
-      // Filter by status (nested in membership.status from Django sync)
-      if (status !== 'all') {
-        constraints.push(where('membership.status', '==', status));
-      }
+      debug.log('[MembersAPI] fetchMembers:', result.data);
 
-      // Order by Django ID descending (newest members first)
-      // metadata.django_id is synced from Django backend
-      constraints.push(orderBy('metadata.django_id', 'desc'));
-
-      // Pagination
-      if (startAfterDoc) {
-        constraints.push(startAfter(startAfterDoc));
-      }
-
-      // Limit (fetch one extra to check if there are more)
-      constraints.push(limit(limitCount + 1));
-
-      const q = query(membersCol, ...constraints);
-      const snapshot = await getDocs(q);
-      const members = [];
-      const docs = snapshot.docs;
-
-      // Process results and flatten Django sync structure
-      for (let i = 0; i < Math.min(docs.length, limitCount); i++) {
-        const docSnap = docs[i];
-        const data = docSnap.data();
-        const kennitala = data.profile?.kennitala || docSnap.id;
-
-        // Skip test accounts with kennitala starting with 9999
-        if (kennitala.startsWith('9999')) {
-          continue;
+      // Map response to expected format
+      const members = (result.data.members || []).map(m => ({
+        id: m.id,
+        kennitala: m.kennitala,
+        name: m.name,
+        email: m.email,
+        phone: m.phone,
+        status: m.status,
+        birthday: m.birthday,
+        date_joined: m.date_joined,
+        municipality: m.municipality,
+        metadata: m.metadata || {},
+        // For backwards compatibility
+        membership: {
+          status: m.status,
+          date_joined: m.date_joined
+        },
+        profile: {
+          name: m.name,
+          email: m.email,
+          phone: m.phone,
+          birthday: m.birthday,
+          kennitala: m.kennitala
         }
-
-        // Skip soft-deleted members (those with membership.deleted_at set)
-        if (data.membership?.deleted_at) {
-          continue;
-        }
-
-        // Flatten nested structure from Django sync
-        members.push({
-          id: docSnap.id,
-          kennitala: kennitala,
-          name: data.profile?.name || 'Unknown',
-          email: data.profile?.email || '',
-          phone: data.profile?.phone || '',
-          status: data.membership?.status || 'unknown',
-          birthday: data.profile?.birthday || '',
-          address: data.address || {},
-          membership: data.membership || {},
-          metadata: data.metadata || {},
-          profile: data.profile || {},  // Include profile for addresses/municipality filtering
-          _doc: docSnap // Keep reference for pagination
-        });
-      }
-
-      // Client-side search filter
-      let filteredMembers = members;
-      if (search) {
-        const searchLower = search.toLowerCase();
-        filteredMembers = members.filter(m =>
-          m.name?.toLowerCase().includes(searchLower) ||
-          m.kennitala?.includes(search) ||
-          m.email?.toLowerCase().includes(searchLower)
-        );
-      }
+      }));
 
       return {
-        members: filteredMembers,
-        hasMore: docs.length > limitCount,
-        lastDoc: docs.length > 0 ? docs[Math.min(docs.length - 1, limitCount - 1)] : null,
-        total: snapshot.size
+        members,
+        hasMore: result.data.hasMore,
+        total: result.data.total
       };
 
     } catch (error) {
-      debug.error('Error fetching members:', error);
+      debug.error('[MembersAPI] fetchMembers error:', error);
       throw new Error(`Failed to fetch members: ${error.message}`);
     }
   },
@@ -126,78 +80,87 @@ const MembersAPI = {
    */
   async getMembersCount(status = 'active') {
     try {
-      const membersCol = collection(db, 'members');
-      let constraints = [];
+      const getMemberStats = httpsCallable('getMemberStats', REGION);
+      const result = await getMemberStats();
 
-      if (status !== 'all') {
-        constraints.push(where('membership.status', '==', status));
+      debug.log('[MembersAPI] getMembersCount:', result.data);
+
+      if (status === 'active') {
+        return result.data.total;
+      } else if (status === 'deleted') {
+        return result.data.deleted;
+      } else {
+        return result.data.total + result.data.deleted;
       }
 
-      const q = query(membersCol, ...constraints);
-      const snapshot = await getDocs(q);
-
-      // Count members, excluding test accounts with 9999 prefix and soft-deleted
-      let count = 0;
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        const kennitala = data.profile?.kennitala || doc.id;
-        // Skip test accounts and soft-deleted members
-        if (!kennitala.startsWith('9999') && !data.membership?.deleted_at) {
-          count++;
-        }
-      });
-
-      return count;
-
     } catch (error) {
-      debug.error('Error getting members count:', error);
+      debug.error('[MembersAPI] getMembersCount error:', error);
       throw new Error(`Failed to get members count: ${error.message}`);
     }
   },
 
   /**
-   * Get single member by kennitala
+   * Get member statistics
+   * @returns {Promise<Object>} Stats object with total, deleted, with_email, municipalities
+   */
+  async getMemberStats() {
+    try {
+      const getMemberStatsFn = httpsCallable('getMemberStats', REGION);
+      const result = await getMemberStatsFn();
+      debug.log('[MembersAPI] getMemberStats:', result.data);
+      return result.data;
+    } catch (error) {
+      debug.error('[MembersAPI] getMemberStats error:', error);
+      throw new Error(`Failed to get member stats: ${error.message}`);
+    }
+  },
+
+  /**
+   * Get single member by kennitala or django_id
    * @param {string} kennitala - Member's kennitala (with or without hyphen)
+   * @param {number} django_id - Member's Django ID (alternative to kennitala)
    * @returns {Promise<Object>}
    */
-  async getMember(kennitala) {
+  async getMember(kennitala, django_id = null) {
     try {
-      // CRITICAL FIX (Issue #166): Normalize kennitala (remove hyphen) before using as document ID
-      const kennitalaNoHyphen = kennitala.replace(/-/g, '');
-      const docRef = doc(db, 'members', kennitalaNoHyphen);
-      const docSnap = await getDoc(docRef);
+      const getMemberFn = httpsCallable('getMember', REGION);
 
-      if (!docSnap.exists()) {
-        throw new Error('Member not found');
+      const payload = {};
+      if (kennitala) {
+        // Normalize kennitala (remove hyphen)
+        payload.kennitala = kennitala.replace(/-/g, '');
+      } else if (django_id) {
+        payload.django_id = django_id;
+      } else {
+        throw new Error('Either kennitala or django_id is required');
       }
 
-      const data = docSnap.data();
-      const memberKennitala = data.profile?.kennitala || docSnap.id;
+      const result = await getMemberFn(payload);
+      debug.log('[MembersAPI] getMember:', result.data);
 
-      // Skip test accounts with kennitala starting with 9999
-      if (memberKennitala.startsWith('9999')) {
-        throw new Error('Test account not accessible');
-      }
+      const member = result.data.member;
 
-      // Flatten nested structure from Django sync
+      // Return with backwards-compatible structure
       return {
-        id: docSnap.id,
-        kennitala: data.profile?.kennitala || docSnap.id,
-        name: data.profile?.name || 'Unknown',
-        email: data.profile?.email || '',
-        phone: data.profile?.phone || '',
-        status: data.membership?.status || 'unknown',
-        birthday: data.profile?.birthday || '',
-        address: data.address || {},
-        membership: data.membership || {},
-        metadata: data.metadata || {},
-        profile: data.profile || {},
-        titles: data.titles || [],
-        unions: data.unions || []
+        id: member.id,
+        kennitala: member.kennitala,
+        name: member.name,
+        email: member.email,
+        phone: member.phone,
+        status: member.status,
+        birthday: member.birthday,
+        address: member.address || {},
+        membership: member.membership || {},
+        metadata: member.metadata || {},
+        profile: member.profile || {},
+        reachable: member.reachable,
+        groupable: member.groupable,
+        titles: member.titles || [],
+        unions: member.unions || []
       };
 
     } catch (error) {
-      debug.error('Error fetching member:', error);
+      debug.error('[MembersAPI] getMember error:', error);
       throw new Error(`Failed to fetch member: ${error.message}`);
     }
   }

@@ -1,7 +1,7 @@
 /**
- * Uppstillingarnefnd Vote Page Logic
+ * Nomination Committee Vote Page Logic
  * Two-step voting: 1) Ranking, 2) Justifications
- * @module uppstilling/vote
+ * @module nomination/vote
  */
 
 import { getFirebaseAuth } from '../../../firebase/app.js';
@@ -17,8 +17,8 @@ import { R } from '../../../i18n/strings-loader.js';
 // Constants
 // =====================================================
 
-const MODULE = 'uppstilling-vote';
-const STORAGE_PREFIX = 'uppstilling_draft_';
+const MODULE = 'nomination-vote';
+const STORAGE_PREFIX = 'nomination_draft_';
 const DRAFT_MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
 const AUTO_SAVE_INTERVAL_MS = 5000; // 5 seconds
 const MIN_JUSTIFICATION_LENGTH = 30;

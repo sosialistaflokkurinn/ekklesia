@@ -1,11 +1,15 @@
 """
 Email Cloud Functions for Ekklesia Admin (#323)
 
-Functions for email management via Amazon SES:
+Functions for email management:
 - Template management (CRUD)
 - Send single transactional email
 - Send bulk campaign emails
 - Email statistics
+
+Email providers (configurable via EMAIL_PROVIDER env):
+- 'sendgrid': SendGrid (default, verified and working)
+- 'resend': Resend.com (backup)
 
 All functions require admin or superuser role.
 """
@@ -14,84 +18,290 @@ from typing import Dict, Any, Optional, List
 from firebase_admin import firestore
 from firebase_functions import https_fn
 from util_logging import log_json
+from shared.rate_limit import check_uid_rate_limit
 from datetime import datetime
 import os
 import re
 import html2text
+import hashlib
+import hmac
+import base64
 
-# Lazy-load SES client to avoid import issues when credentials not available
-_ses_client = None
+# Cloud SQL member queries
+from db_members import get_member_by_kennitala, get_member_by_django_id, get_members_for_email
 
-# Default sender email (can be overridden by env var)
-DEFAULT_SENDER = os.environ.get('SES_SENDER_EMAIL', 'felagakerfi@sosialistaflokkurinn.is')
+# Security: Maximum limits
+MAX_TEMPLATE_SIZE = 100000  # 100KB max template size
+MAX_VARIABLE_COUNT = 50  # Max variables in template
+MAX_RECIPIENTS_PER_BATCH = 1000  # Max recipients per campaign batch
 
+# Lazy-load email clients to avoid import issues when credentials not available
+_resend_client = None
+_sendgrid_client = None
 
-def get_ses_client():
-    """Get Amazon SES client (lazy initialization)."""
-    global _ses_client
-    if _ses_client is None:
-        try:
-            import boto3
-            aws_access_key = os.environ.get('aws-ses-access-key')
-            aws_secret_key = os.environ.get('aws-ses-secret-key')
-            aws_region = os.environ.get('aws-ses-region', 'eu-west-1')
+# Email provider configuration
+# Priority: SendGrid first (verified, working), Resend as backup
+EMAIL_PROVIDER = os.environ.get('EMAIL_PROVIDER', 'sendgrid')  # 'sendgrid', 'resend', or 'auto'
 
-            if aws_access_key and aws_secret_key:
-                _ses_client = boto3.client(
-                    'ses',
-                    region_name=aws_region,
-                    aws_access_key_id=aws_access_key,
-                    aws_secret_access_key=aws_secret_key
-                )
-            else:
-                log_json("warning", "AWS SES credentials not configured")
-        except ImportError:
-            log_json("warning", "boto3 package not installed")
-    return _ses_client
+# Default sender emails
+RESEND_SENDER = os.environ.get('RESEND_SENDER_EMAIL', 'felagakerfi@sosialistaflokkurinn.is')
+SENDGRID_SENDER = os.environ.get('SENDGRID_SENDER_EMAIL', 'xj@xj.is')
+
+# Base URL for unsubscribe links
+BASE_URL = os.environ.get('BASE_URL', 'https://felagar.sosialistaflokkurinn.is')
+
+# Secret for signing unsubscribe tokens (use a dedicated secret in production)
+UNSUBSCRIBE_SECRET = os.environ.get('unsubscribe-secret', 'ekklesia-unsubscribe-default-secret')
 
 
-def get_filtered_members(db, recipient_filter: Dict[str, Any]) -> List:
+def generate_unsubscribe_token(member_id: str) -> str:
     """
-    Get members filtered by recipient_filter criteria.
+    Generate a secure unsubscribe token for a member.
+    Uses HMAC-SHA256 to create a verifiable token.
 
     Args:
-        db: Firestore client
+        member_id: Django ID of the member (all synced members have this)
+    """
+    message = f"unsubscribe:{member_id}".encode('utf-8')
+    signature = hmac.new(
+        UNSUBSCRIBE_SECRET.encode('utf-8'),
+        message,
+        hashlib.sha256
+    ).digest()
+    # URL-safe base64 encoding
+    token = base64.urlsafe_b64encode(signature).decode('utf-8').rstrip('=')
+    return token
+
+
+def verify_unsubscribe_token(member_id: str, token: str) -> bool:
+    """
+    Verify an unsubscribe token is valid for a given member ID.
+    """
+    expected_token = generate_unsubscribe_token(str(member_id))
+    return hmac.compare_digest(token, expected_token)
+
+
+def generate_unsubscribe_url(member_id: int) -> str:
+    """
+    Generate a complete unsubscribe URL with token.
+
+    Args:
+        member_id: Django ID of the member (all synced members have this)
+    """
+    token = generate_unsubscribe_token(str(member_id))
+    return f"{BASE_URL}/unsubscribe.html?m={member_id}&t={token}"
+
+
+def get_resend_client():
+    """Get Resend client (lazy initialization)."""
+    global _resend_client
+    if _resend_client is None:
+        try:
+            import resend
+            api_key = os.environ.get('resend-api-key')
+
+            if api_key:
+                resend.api_key = api_key
+                _resend_client = resend
+                log_json("info", "Resend client initialized")
+            else:
+                log_json("warning", "Resend API key not configured")
+        except ImportError:
+            log_json("warning", "resend package not installed")
+    return _resend_client
+
+
+def get_sendgrid_client():
+    """Get SendGrid client (lazy initialization)."""
+    global _sendgrid_client
+    if _sendgrid_client is None:
+        try:
+            from sendgrid import SendGridAPIClient
+            api_key = os.environ.get('sendgrid-api-key')
+
+            if api_key:
+                _sendgrid_client = SendGridAPIClient(api_key=api_key)
+                log_json("info", "SendGrid client initialized")
+            else:
+                log_json("warning", "SendGrid API key not configured")
+        except ImportError:
+            log_json("warning", "sendgrid package not installed")
+    return _sendgrid_client
+
+
+def send_email_via_resend(to_email: str, subject: str, html_content: str, text_content: str, tags: list = None) -> dict:
+    """
+    Send email via Resend.
+
+    Args:
+        to_email: Recipient email address
+        subject: Email subject
+        html_content: HTML body
+        text_content: Plain text body
+        tags: Optional list of category tags
+
+    Returns:
+        Dict with success status and message_id
+    """
+    resend_client = get_resend_client()
+    if not resend_client:
+        raise Exception("Resend client not available")
+
+    # Build email params
+    params = {
+        "from": f"Sósíalistaflokkurinn <{RESEND_SENDER}>",
+        "to": [to_email],
+        "subject": subject,
+        "html": html_content,
+        "text": text_content,
+    }
+
+    # Add tags if provided
+    if tags:
+        params["tags"] = [{"name": tag, "value": "true"} for tag in tags[:5]]  # Resend limits to 5 tags
+
+    response = resend_client.Emails.send(params)
+
+    if response.get("id"):
+        return {
+            "success": True,
+            "message_id": response.get("id"),
+            "provider": "resend"
+        }
+    else:
+        raise Exception(f"Resend error: {response}")
+
+
+def send_email_via_sendgrid(to_email: str, subject: str, html_content: str, text_content: str, tags: list = None) -> dict:
+    """
+    Send email via SendGrid.
+
+    Args:
+        to_email: Recipient email address
+        subject: Email subject
+        html_content: HTML body
+        text_content: Plain text body
+        tags: Optional list of category tags
+
+    Returns:
+        Dict with success status and message_id
+    """
+    from sendgrid.helpers.mail import Mail, Email, To, Content, Category
+
+    sg = get_sendgrid_client()
+    if not sg:
+        raise Exception("SendGrid client not available")
+
+    # Use SendGrid-verified sender (xj@xj.is)
+    message = Mail(
+        from_email=Email(SENDGRID_SENDER, "Sósíalistaflokkurinn"),
+        to_emails=To(to_email),
+        subject=subject
+    )
+
+    # Add both HTML and plain text content
+    message.add_content(Content("text/plain", text_content))
+    message.add_content(Content("text/html", html_content))
+
+    # Add tracking categories
+    if tags:
+        for tag in tags:
+            message.add_category(Category(tag))
+
+    response = sg.send(message)
+
+    # Extract message ID from headers
+    message_id = response.headers.get('X-Message-Id', 'unknown')
+
+    if response.status_code in [200, 201, 202]:
+        return {
+            "success": True,
+            "message_id": message_id,
+            "provider": "sendgrid"
+        }
+    else:
+        raise Exception(f"SendGrid error: {response.status_code} - {response.body}")
+
+
+def send_email_with_fallback(to_email: str, subject: str, html_content: str, text_content: str, tags: list = None) -> dict:
+    """
+    Send email using configured provider with automatic fallback.
+
+    Order of preference based on EMAIL_PROVIDER env var:
+    - 'sendgrid': Try SendGrid only (default)
+    - 'resend': Try Resend only
+    - 'auto': Try SendGrid first, fall back to Resend
+
+    Args:
+        to_email: Recipient email address
+        subject: Email subject
+        html_content: HTML body
+        text_content: Plain text body
+        tags: Optional list of tags for tracking
+
+    Returns:
+        Dict with success, message_id, and provider used
+    """
+    provider = EMAIL_PROVIDER.lower()
+    last_error = None
+
+    # Determine which providers to try
+    if provider == 'sendgrid':
+        providers_to_try = ['sendgrid']
+    elif provider == 'resend':
+        providers_to_try = ['resend']
+    else:  # 'auto' or default
+        providers_to_try = ['sendgrid', 'resend']
+
+    for current_provider in providers_to_try:
+        try:
+            if current_provider == 'resend':
+                log_json("info", "Sending via Resend", recipient=to_email[:3] + "***")
+                result = send_email_via_resend(to_email, subject, html_content, text_content, tags)
+                log_json("info", "Resend send successful", message_id=result.get("message_id"))
+                return result
+
+            elif current_provider == 'sendgrid':
+                log_json("info", "Sending via SendGrid", recipient=to_email[:3] + "***")
+                result = send_email_via_sendgrid(to_email, subject, html_content, text_content, tags)
+                log_json("info", "SendGrid send successful", message_id=result.get("message_id"))
+                return result
+
+        except Exception as e:
+            last_error = e
+            log_json("warning", f"Email send failed via {current_provider}",
+                     error=str(e),
+                     recipient=to_email[:3] + "***")
+            continue
+
+    # All providers failed
+    raise Exception(f"All email providers failed. Last error: {last_error}")
+
+
+def get_filtered_members_sql(recipient_filter: Dict[str, Any], max_results: int = MAX_RECIPIENTS_PER_BATCH) -> List[Dict]:
+    """
+    Get members filtered by recipient_filter criteria from Cloud SQL.
+
+    Args:
         recipient_filter: Dict with optional keys:
             - status: "active" to filter active members only
             - districts: List of district/cell names
             - municipalities: List of city/municipality names
+        max_results: Maximum number of members to return (security limit)
 
     Returns:
-        List of Firestore document snapshots matching the filter.
+        List of member dicts matching the filter.
     """
-    members_query = db.collection("members")
-
-    # Filter by status
-    if recipient_filter.get("status") == "active":
-        members_query = members_query.where("membership.status", "==", "active")
-
-    # Filter by district (cell/svæði) - Firestore query for single district
-    districts = recipient_filter.get("districts", [])
-    if districts and len(districts) == 1:
-        members_query = members_query.where("membership.cell", "==", districts[0])
-
-    # Stream members
-    members = list(members_query.stream())
-
-    # Filter by multiple districts (Python filter if more than one)
-    if districts and len(districts) > 1:
-        members = [m for m in members if m.to_dict().get("membership", {}).get("cell") in districts]
-
-    # Filter by municipality (city in addresses)
+    status = recipient_filter.get("status")
     municipalities = recipient_filter.get("municipalities", [])
-    if municipalities:
-        def has_municipality(member_doc):
-            profile = member_doc.to_dict().get("profile", {})
-            addresses = profile.get("addresses", [])
-            return any(addr.get("city") in municipalities for addr in addresses)
-        members = [m for m in members if has_municipality(m)]
+    cells = recipient_filter.get("districts", [])  # Districts are cells
 
-    return members
+    return get_members_for_email(
+        status=status,
+        municipalities=municipalities if municipalities else None,
+        cells=cells if cells else None,
+        max_results=max_results
+    )
 
 
 def require_admin(req: https_fn.CallableRequest) -> Dict[str, Any]:
@@ -134,6 +344,18 @@ def require_admin(req: https_fn.CallableRequest) -> Dict[str, Any]:
         )
 
     return claims
+
+
+def validate_email(email: str) -> bool:
+    """
+    Validate email format.
+    Security: Prevents sending to malformed or potentially dangerous addresses.
+    """
+    if not email or len(email) > 254:
+        return False
+    # RFC 5322 simplified pattern
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return bool(re.match(pattern, email))
 
 
 def slugify(text: str) -> str:
@@ -291,6 +513,13 @@ def save_email_template_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
     """
     claims = require_admin(req)
 
+    # Security: Rate limit template saves (20 per 10 minutes)
+    if not check_uid_rate_limit(req.auth.uid, "save_template", max_attempts=20, window_minutes=10):
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED,
+            message="Rate limit exceeded. Maximum 20 template saves per 10 minutes."
+        )
+
     data = req.data or {}
     template_id = data.get("template_id")
     name = data.get("name")
@@ -321,6 +550,13 @@ def save_email_template_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
         raise https_fn.HttpsError(
             code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
             message="type must be 'transactional' or 'broadcast'"
+        )
+
+    # Security: Validate template size
+    if len(body_html) > MAX_TEMPLATE_SIZE:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+            message=f"Template too large. Maximum size is {MAX_TEMPLATE_SIZE // 1000}KB"
         )
 
     # Auto-generate alias if not provided
@@ -394,6 +630,13 @@ def delete_email_template_handler(req: https_fn.CallableRequest) -> Dict[str, An
     """
     require_admin(req)
 
+    # Security: Rate limit template deletes (10 per 10 minutes)
+    if not check_uid_rate_limit(req.auth.uid, "delete_template", max_attempts=10, window_minutes=10):
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED,
+            message="Rate limit exceeded. Maximum 10 template deletes per 10 minutes."
+        )
+
     data = req.data or {}
     template_id = data.get("template_id")
 
@@ -438,16 +681,32 @@ def render_template(body: str, variables: Dict[str, Any]) -> str:
     """
     Render template with variables using simple {{ var }} syntax.
     Supports nested variables like {{ member.name }}.
+
+    Security: Only allows alphanumeric variable names with dots for nesting.
+    Prevents SSTI by not evaluating Python expressions.
     """
+    # Security: Whitelist of allowed top-level variable names
+    ALLOWED_VARS = {'member', 'cell', 'organization', 'date', 'unsubscribe_url', 'subject'}
+
     def replace_var(match):
         var_path = match.group(1).strip()
+
+        # Security: Validate variable name format
+        if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*$', var_path):
+            return ''  # Invalid format, return empty
+
         parts = var_path.split('.')
+
+        # Security: Check if top-level variable is allowed
+        if parts[0] not in ALLOWED_VARS:
+            return ''  # Unknown variable, return empty
+
         value = variables
         for part in parts:
             if isinstance(value, dict):
                 value = value.get(part, '')
             else:
-                return match.group(0)  # Keep original if not found
+                return ''  # Not a dict, return empty
         return str(value) if value else ''
 
     return re.sub(r'\{\{\s*([a-zA-Z_][a-zA-Z0-9_.]*)\s*\}\}', replace_var, body)
@@ -455,10 +714,13 @@ def render_template(body: str, variables: Dict[str, Any]) -> str:
 
 def send_email_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     """
-    Send a single transactional email via Amazon SES.
+    Send a single transactional email via Resend (with SendGrid fallback).
+
+    Required data (one of):
+        - template_id: Template ID or alias (template mode)
+        - subject + body_html: Direct content (quick send mode)
 
     Required data:
-        - template_id: Template ID or alias
         - recipient_email: Email address OR
         - recipient_kennitala: Member kennitala (will look up email)
 
@@ -467,9 +729,16 @@ def send_email_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
         - email_type: 'transactional' (default) or 'broadcast'
 
     Returns:
-        Send status with SES message ID.
+        Send status with message ID.
     """
     require_admin(req)
+
+    # Security: Rate limit email sending (10 per minute per admin)
+    if not check_uid_rate_limit(req.auth.uid, "send_email", max_attempts=10, window_minutes=1):
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED,
+            message="Rate limit exceeded. Maximum 10 emails per minute."
+        )
 
     data = req.data or {}
     template_id = data.get("template_id")
@@ -478,11 +747,15 @@ def send_email_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     variables = data.get("variables", {})
     email_type = data.get("email_type", "transactional")
 
-    # Validate required fields
-    if not template_id:
+    # Quick send mode: direct subject and body
+    direct_subject = data.get("subject")
+    direct_body_html = data.get("body_html")
+
+    # Validate: either template_id OR (subject + body_html) required
+    if not template_id and not (direct_subject and direct_body_html):
         raise https_fn.HttpsError(
             code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
-            message="template_id is required"
+            message="Either template_id or (subject + body_html) is required"
         )
 
     if not recipient_email and not recipient_kennitala:
@@ -491,32 +764,66 @@ def send_email_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             message="recipient_email or recipient_kennitala is required"
         )
 
+    # Security: Validate direct content size
+    if direct_body_html and len(direct_body_html) > MAX_TEMPLATE_SIZE:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+            message=f"Email body too large. Maximum size is {MAX_TEMPLATE_SIZE // 1000}KB"
+        )
+
     db = firestore.client()
 
-    # Get template
-    template_result = get_email_template_handler(req)
-    template_subject = template_result.get("subject")
-    template_body_html = template_result.get("body_html")
-    template_body_text = template_result.get("body_text")
+    # Get content from template or use direct content
+    template_result = None
+    if template_id:
+        # Template mode
+        template_result = get_email_template_handler(req)
+        template_subject = template_result.get("subject")
+        template_body_html = template_result.get("body_html")
+        template_body_text = template_result.get("body_text")
+    else:
+        # Quick send mode
+        template_subject = direct_subject
+        template_body_html = direct_body_html
+        template_body_text = html_to_text(direct_body_html)
 
-    # Get recipient email from member if kennitala provided
+    # Get recipient email from member if kennitala provided (using Cloud SQL)
     member_data = {}
     if recipient_kennitala and not recipient_email:
-        members = db.collection("members").where("kennitala", "==", recipient_kennitala).limit(1).stream()
-        member_list = list(members)
-        if not member_list:
+        member_data = get_member_by_kennitala(recipient_kennitala)
+        if not member_data:
             raise https_fn.HttpsError(
                 code=https_fn.FunctionsErrorCode.NOT_FOUND,
                 message=f"Member with kennitala not found"
             )
-        member_doc = member_list[0]
-        member_data = member_doc.to_dict()
         recipient_email = member_data.get("profile", {}).get("email")
         if not recipient_email:
             raise https_fn.HttpsError(
                 code=https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
                 message="Member does not have an email address"
             )
+
+    # Check email marketing consent for broadcast emails
+    if member_data and email_type == "broadcast":
+        preferences = member_data.get("preferences", {})
+        email_marketing = preferences.get("email_marketing", True)  # Default to True for existing members
+        if not email_marketing:
+            log_json("info", "Skipping email - member has opted out",
+                     kennitala=recipient_kennitala,
+                     email_type=email_type)
+            return {
+                "success": False,
+                "skipped": True,
+                "reason": "Félaginn hefur afþakkað fjöldapóst",
+                "recipient": recipient_email
+            }
+
+    # Security: Validate email format
+    if not validate_email(recipient_email):
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+            message="Invalid email address format"
+        )
 
     # Build variables with member data
     if member_data:
@@ -531,57 +838,50 @@ def send_email_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
                 "name": member_data.get("membership", {}).get("cell", "")
             }
 
+    # Add unsubscribe URL for broadcast emails (using django_id for privacy)
+    django_id = member_data.get("metadata", {}).get("django_id") if member_data else None
+    if django_id and email_type == "broadcast":
+        variables["unsubscribe_url"] = generate_unsubscribe_url(django_id)
+
     # Render template
     rendered_subject = render_template(template_subject, variables)
     rendered_html = render_template(template_body_html, variables)
     rendered_text = render_template(template_body_text, variables)
 
-    # Get SES client
-    ses = get_ses_client()
-    if not ses:
-        raise https_fn.HttpsError(
-            code=https_fn.FunctionsErrorCode.UNAVAILABLE,
-            message="Email service not configured"
-        )
+    # Auto-append unsubscribe footer for broadcast emails
+    if email_type == "broadcast" and variables.get("unsubscribe_url"):
+        unsubscribe_url = variables["unsubscribe_url"]
+        # Only add if not already present in template
+        if "unsubscribe" not in rendered_html.lower():
+            rendered_html += f'''
+<hr style="border: none; border-top: 1px solid #eee; margin: 30px 0 15px 0;">
+<p style="font-size: 12px; color: #999; text-align: center;">
+    <a href="{unsubscribe_url}" style="color: #999;">Afþakka frekari fjöldapóst</a>
+</p>'''
+            rendered_text += f"\n\n---\nAfþakka frekari fjöldapóst: {unsubscribe_url}"
 
     try:
-        # Send via Amazon SES
-        response = ses.send_email(
-            Source=DEFAULT_SENDER,
-            Destination={
-                'ToAddresses': [recipient_email]
-            },
-            Message={
-                'Subject': {
-                    'Data': rendered_subject,
-                    'Charset': 'UTF-8'
-                },
-                'Body': {
-                    'Text': {
-                        'Data': rendered_text,
-                        'Charset': 'UTF-8'
-                    },
-                    'Html': {
-                        'Data': rendered_html,
-                        'Charset': 'UTF-8'
-                    }
-                }
-            },
-            Tags=[
-                {'Name': 'Type', 'Value': email_type},
-                {'Name': 'TemplateId', 'Value': template_result.get("id", "unknown")}
-            ]
+        # Send via unified email function (Resend with SendGrid fallback)
+        result = send_email_with_fallback(
+            to_email=recipient_email,
+            subject=rendered_subject,
+            html_content=rendered_html,
+            text_content=rendered_text,
+            tags=[email_type, template_id or "quick_send"]
         )
 
-        message_id = response.get("MessageId")
+        message_id = result.get("message_id")
+        provider = result.get("provider", "unknown")
 
         # Log to email_logs collection
         log_data = {
-            "template_id": template_result.get("id"),
+            "template_id": template_id,  # None for quick send
+            "quick_send": template_id is None,
             "recipient_email": recipient_email,
             "recipient_kennitala": recipient_kennitala,
             "status": "sent",
-            "ses_message_id": message_id,
+            "message_id": message_id,
+            "provider": provider,
             "sent_at": datetime.utcnow(),
             "metadata": {
                 "type": email_type,
@@ -591,21 +891,23 @@ def send_email_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
         }
         db.collection("email_logs").add(log_data)
 
-        log_json("info", "Email sent via SES",
+        log_json("info", f"Email sent via {provider}",
                  message_id=message_id,
-                 template_id=template_result.get("id"),
+                 template_id=template_id or "quick_send",
                  recipient=recipient_email[:3] + "***",
                  email_type=email_type,
+                 provider=provider,
                  admin_uid=req.auth.uid)
 
         return {
             "success": True,
             "message_id": message_id,
-            "recipient": recipient_email
+            "recipient": recipient_email,
+            "provider": provider
         }
 
     except Exception as e:
-        log_json("error", "Failed to send email via SES",
+        log_json("error", "Failed to send email",
                  error=str(e),
                  template_id=template_id,
                  admin_uid=req.auth.uid)
@@ -680,6 +982,13 @@ def create_email_campaign_handler(req: https_fn.CallableRequest) -> Dict[str, An
     """
     require_admin(req)
 
+    # Security: Rate limit campaign creation (10 per 10 minutes)
+    if not check_uid_rate_limit(req.auth.uid, "create_campaign", max_attempts=10, window_minutes=10):
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED,
+            message="Rate limit exceeded. Maximum 10 campaign creations per 10 minutes."
+        )
+
     data = req.data or {}
     name = data.get("name")
     template_id = data.get("template_id")
@@ -707,8 +1016,8 @@ def create_email_campaign_handler(req: https_fn.CallableRequest) -> Dict[str, An
             message=f"Template '{template_id}' not found"
         )
 
-    # Count recipients based on filter
-    members = get_filtered_members(db, recipient_filter)
+    # Count recipients based on filter (using Cloud SQL)
+    members = get_filtered_members_sql(recipient_filter)
     recipient_count = len(members)
 
     now = datetime.utcnow()
@@ -760,6 +1069,13 @@ def send_campaign_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     """
     require_admin(req)
 
+    # Security: Rate limit campaign sends (1 per 10 minutes per admin)
+    if not check_uid_rate_limit(req.auth.uid, "send_campaign", max_attempts=1, window_minutes=10):
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED,
+            message="Rate limit exceeded. Maximum 1 campaign per 10 minutes."
+        )
+
     data = req.data or {}
     campaign_id = data.get("campaign_id")
     batch_size = min(data.get("batch_size", 100), 500)
@@ -807,18 +1123,9 @@ def send_campaign_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
 
     template = template_doc.to_dict()
 
-    # Get SES client
-    ses = get_ses_client()
-    if not ses:
-        campaign_ref.update({"status": "draft"})  # Revert
-        raise https_fn.HttpsError(
-            code=https_fn.FunctionsErrorCode.UNAVAILABLE,
-            message="Email service not configured"
-        )
-
-    # Get recipients with filtering
+    # Get recipients with filtering (using Cloud SQL)
     recipient_filter = campaign.get("recipient_filter", {})
-    members = get_filtered_members(db, recipient_filter)
+    members = get_filtered_members_sql(recipient_filter)
 
     sent_count = 0
     failed_count = 0
@@ -826,12 +1133,21 @@ def send_campaign_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     try:
         emails_processed = 0
 
-        for member_doc in members:
-            member = member_doc.to_dict()
+        skipped_count = 0
+
+        for member in members:
+            # member is already a dict from Cloud SQL
             email = member.get("profile", {}).get("email")
+            kennitala = member.get("kennitala")
 
             if not email:
                 failed_count += 1
+                continue
+
+            # Check email marketing consent
+            preferences = member.get("preferences", {})
+            if not preferences.get("email_marketing", True):
+                skipped_count += 1
                 continue
 
             # Build variables
@@ -839,44 +1155,41 @@ def send_campaign_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
                 "member": {
                     "name": member.get("profile", {}).get("name", ""),
                     "first_name": member.get("profile", {}).get("name", "").split()[0] if member.get("profile", {}).get("name") else "",
-                    "email": email
+                    "email": email,
+                    "kennitala": kennitala
                 }
             }
             if member.get("membership", {}).get("cell"):
                 variables["cell"] = {"name": member.get("membership", {}).get("cell", "")}
+
+            # Add unsubscribe URL (using django_id for privacy)
+            django_id = member.get("metadata", {}).get("django_id")
+            if django_id:
+                variables["unsubscribe_url"] = generate_unsubscribe_url(django_id)
 
             # Render template
             rendered_subject = render_template(template.get("subject", ""), variables)
             rendered_html = render_template(template.get("body_html", ""), variables)
             rendered_text = render_template(template.get("body_text", ""), variables)
 
-            # Send via SES (individual sends for better tracking)
+            # Auto-append unsubscribe footer for broadcast campaigns
+            unsubscribe_url = variables.get("unsubscribe_url")
+            if unsubscribe_url and "unsubscribe" not in rendered_html.lower():
+                rendered_html += '''
+<hr style="border: none; border-top: 1px solid #eee; margin: 30px 0 15px 0;">
+<p style="font-size: 12px; color: #999; text-align: center;">
+    <a href="{url}" style="color: #999;">Afþakka frekari fjöldapóst</a>
+</p>'''.format(url=unsubscribe_url)
+                rendered_text += f"\n\n---\nAfþakka frekari fjöldapóst: {unsubscribe_url}"
+
+            # Send via configured provider (Resend/SendGrid)
             try:
-                response = ses.send_email(
-                    Source=DEFAULT_SENDER,
-                    Destination={
-                        'ToAddresses': [email]
-                    },
-                    Message={
-                        'Subject': {
-                            'Data': rendered_subject,
-                            'Charset': 'UTF-8'
-                        },
-                        'Body': {
-                            'Text': {
-                                'Data': rendered_text,
-                                'Charset': 'UTF-8'
-                            },
-                            'Html': {
-                                'Data': rendered_html,
-                                'Charset': 'UTF-8'
-                            }
-                        }
-                    },
-                    Tags=[
-                        {'Name': 'Type', 'Value': 'broadcast'},
-                        {'Name': 'CampaignId', 'Value': campaign_id}
-                    ]
+                result = send_email_with_fallback(
+                    to_email=email,
+                    subject=rendered_subject,
+                    html_content=rendered_html,
+                    text_content=rendered_text,
+                    tags=["broadcast", campaign_id]
                 )
 
                 # Log individual email
@@ -886,7 +1199,8 @@ def send_campaign_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
                     "recipient_email": email,
                     "recipient_kennitala": member.get("kennitala"),
                     "status": "sent",
-                    "ses_message_id": response.get("MessageId"),
+                    "message_id": result.get("message_id"),
+                    "provider": result.get("provider"),
                     "sent_at": datetime.utcnow()
                 }
                 db.collection("email_logs").add(log_data)
@@ -920,6 +1234,7 @@ def send_campaign_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
                  campaign_id=campaign_id,
                  sent_count=sent_count,
                  failed_count=failed_count,
+                 skipped_count=skipped_count,
                  admin_uid=req.auth.uid)
 
         return {
@@ -927,6 +1242,7 @@ def send_campaign_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             "campaign_id": campaign_id,
             "sent_count": sent_count,
             "failed_count": failed_count,
+            "skipped_count": skipped_count,
             "status": "sent"
         }
 
@@ -1057,3 +1373,163 @@ def list_email_logs_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
         })
 
     return {"logs": logs, "count": len(logs)}
+
+
+# ==============================================================================
+# UNSUBSCRIBE
+# ==============================================================================
+
+def unsubscribe_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
+    """
+    Handle email unsubscribe request.
+
+    This function does NOT require authentication - it uses a signed token
+    to verify the request is legitimate.
+
+    Required data:
+        - member_id: Django ID of the member
+        - token: Signed unsubscribe token
+
+    Returns:
+        Success status.
+    """
+    data = req.data or {}
+    member_id = data.get("member_id")
+    token = data.get("token")
+
+    if not member_id or not token:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+            message="member_id and token are required"
+        )
+
+    # Verify the token
+    if not verify_unsubscribe_token(str(member_id), token):
+        log_json("warning", "Invalid unsubscribe token", member_id=member_id)
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.PERMISSION_DENIED,
+            message="Ógildur afþökkunarhlekkur"
+        )
+
+    # Look up member by django_id from Cloud SQL
+    member = get_member_by_django_id(int(member_id))
+    if not member:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.NOT_FOUND,
+            message="Félaginn fannst ekki"
+        )
+
+    # Store unsubscribe preference in /users collection
+    # Find user by kennitala
+    db = firestore.client()
+    kennitala = member.get("kennitala")
+
+    users = db.collection("users").where("kennitala", "==", kennitala).limit(1).stream()
+    user_list = list(users)
+
+    if user_list:
+        # Update existing user doc
+        user_list[0].reference.update({
+            "preferences.email_marketing": False,
+            "preferences.email_marketing_updated_at": datetime.utcnow()
+        })
+    else:
+        # Create user preferences doc keyed by django_id
+        db.collection("users").document(f"django_{member_id}").set({
+            "kennitala": kennitala,
+            "preferences": {
+                "email_marketing": False,
+                "email_marketing_updated_at": datetime.utcnow()
+            }
+        }, merge=True)
+
+    log_json("info", "Member unsubscribed from marketing emails", member_id=member_id, kennitala=f"{kennitala[:6]}****" if kennitala else None)
+
+    return {
+        "success": True,
+        "message": "Þú hefur verið afskráð(ur) af póstlista"
+    }
+
+
+def get_email_preferences_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
+    """
+    Get email preferences for the current authenticated user.
+
+    Preferences stored in /users/{uid} collection (not /members).
+
+    Returns:
+        Email preference settings.
+    """
+    if not req.auth:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.UNAUTHENTICATED,
+            message="Authentication required"
+        )
+
+    db = firestore.client()
+
+    # Get user preferences from /users collection
+    user_doc = db.collection("users").document(req.auth.uid).get()
+
+    if not user_doc.exists:
+        # User document doesn't exist yet - return defaults
+        return {
+            "email_marketing": True,  # Default to True
+            "email_marketing_updated_at": None
+        }
+
+    user_data = user_doc.to_dict()
+    preferences = user_data.get("preferences", {})
+
+    return {
+        "email_marketing": preferences.get("email_marketing", True),  # Default to True
+        "email_marketing_updated_at": preferences.get("email_marketing_updated_at").isoformat() if preferences.get("email_marketing_updated_at") else None
+    }
+
+
+def update_email_preferences_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
+    """
+    Update email preferences for the current authenticated user.
+
+    Preferences stored in /users/{uid} collection (not /members).
+
+    Required data:
+        - email_marketing: Boolean (true to receive marketing emails)
+
+    Returns:
+        Updated preferences.
+    """
+    if not req.auth:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.UNAUTHENTICATED,
+            message="Authentication required"
+        )
+
+    data = req.data or {}
+    email_marketing = data.get("email_marketing")
+
+    if email_marketing is None:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+            message="email_marketing is required"
+        )
+
+    db = firestore.client()
+
+    # Update user preferences in /users collection (merge to create if doesn't exist)
+    user_ref = db.collection("users").document(req.auth.uid)
+    user_ref.set({
+        "preferences": {
+            "email_marketing": bool(email_marketing),
+            "email_marketing_updated_at": datetime.utcnow()
+        }
+    }, merge=True)
+
+    log_json("info", "Member updated email preferences",
+             uid=req.auth.uid,
+             email_marketing=email_marketing)
+
+    return {
+        "success": True,
+        "email_marketing": bool(email_marketing)
+    }

@@ -840,6 +840,14 @@ body.profile-editing .profile-edit__input-wrapper {
    Shared between members and admin profiles
    =========================== */
 
+/* Temporary: Hide membership status section (no payment data for 2025)
+   - Hides the entire status row including label and value
+   - Can be removed when payment data is available
+*/
+.info-grid__item:has(#membership-status) {
+  display: none !important;
+}
+
 .admin-badge {
   display: inline-block;
   padding: 0.25rem 0.75rem;

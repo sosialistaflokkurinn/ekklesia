@@ -14,7 +14,7 @@
 │  ├── Firebase Hosting (members-portal)                       │
 │  ├── Firebase Functions (svc-members)                        │
 │  ├── Cloud Run (svc-elections, svc-events)                  │
-│  └── Postmark email (planned - #323)                        │
+│  └── Amazon SES email (#323 - implemented Dec 2025)         │
 │                                                              │
 │  Django GCP (INTERIM admin interface)                       │
 │  ├── Cloud Run: django-socialism                            │
@@ -36,7 +36,7 @@
 | Cloud Functions | `services/svc-members/functions/` → Firebase Functions |
 | Elections/Events | `services/svc-elections/`, `svc-events/` → Cloud Run |
 | Database (future) | **Firestore** (source of truth) |
-| Database (interim) | Cloud SQL PostgreSQL (europe-west2) |
+| Database (interim) | Cloud SQL PostgreSQL (europe-west1: ekklesia-db-eu1) |
 | Django Admin | `~/Development/projects/django/` → Cloud Run (interim) |
 | Deploy frontend | `cd services/svc-members && firebase deploy --only hosting` |
 | Deploy function | `cd services/svc-members && firebase deploy --only functions:NAME` |
@@ -47,9 +47,9 @@
 
 | Environment | URL |
 |-------------|-----|
-| Production (Firebase) | https://ekklesia-prod-10-2025.web.app |
-| Production (alt) | https://ekklesia-prod-10-2025.firebaseapp.com |
-| Custom domain | felagakerfi.sosialistaflokkurinn.is (DNS pending - hosted at 1984 ehf) |
+| **Production** | https://felagar.sosialistaflokkurinn.is/ |
+| Hitakort | https://felagar.sosialistaflokkurinn.is/members-area/heatmap.html |
+| Firebase (backup) | https://ekklesia-prod-10-2025.web.app |
 
 **Detailed docs:** [docs/README.md](docs/README.md)
 
@@ -75,6 +75,9 @@ Follow naming conventions            # See docs/PATTERNS.md
 Run ./scripts/build-css-bundle.sh    # After CSS changes
 Verify secrets after deploy          # gcloud run services describe
 Use --gcloud-auth for proxy          # cloud-sql-proxy auth fix
+Add rate limiting to write handlers  # check_uid_rate_limit()
+Add input validation (length/format) # See docs/SECURITY.md
+Add timeout to HTTP requests         # timeout=30
 ```
 
 ---
@@ -180,8 +183,8 @@ gcloud builds submit --config cloudbuild.yaml \
 ---
 
 ## Related Issues
-- **#323** - Postmark email integration
-- **#324** - Email migration from Linode to GCP
+- **#323** - ✅ Amazon SES email integration (implemented Dec 2025)
+- **#324** - ✅ Email migration from Linode to GCP (completed Dec 2025)
 
 ---
 

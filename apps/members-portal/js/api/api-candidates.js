@@ -1,35 +1,64 @@
 /**
  * Candidate Metadata API Client
  *
- * Client for accessing and updating nomination candidate metadata in Firestore.
+ * Client for accessing and updating nomination candidate metadata via svc-elections.
  * Tracks edit history to show who wrote/modified each field.
  *
- * Firestore collection: nomination-candidates
+ * Backend: svc-elections /api/candidates
+ * Data stored in Firestore: nomination-candidates collection
  */
 
-import { getFirebaseAuth, getFirebaseFirestore, collection, doc, getDoc, getDocs, updateDoc, query, orderBy } from '../../firebase/app.js';
 import { debug } from '../utils/util-debug.js';
+import { authenticatedFetch } from '../auth.js';
+import { API_ENDPOINTS } from '../config/config.js';
+
+const CANDIDATES_API = API_ENDPOINTS.CANDIDATES;
+
+/**
+ * Create detailed API error from response
+ * @param {Response} response - Fetch response object
+ * @param {string} operation - Description of the failed operation
+ * @returns {Promise<Error>} Error with detailed message
+ */
+async function createApiError(response, operation) {
+  let errorMessage = `${operation}: ${response.status} ${response.statusText}`;
+
+  try {
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      const errorBody = await response.json();
+      if (errorBody.message) {
+        errorMessage = `${operation}: ${errorBody.message}`;
+      } else if (errorBody.error) {
+        errorMessage = `${operation}: ${errorBody.error}`;
+      }
+    }
+  } catch {
+    // If we can't parse the body, use the status message
+  }
+
+  const error = new Error(errorMessage);
+  error.status = response.status;
+  error.statusText = response.statusText;
+  return error;
+}
 
 /**
  * Get all candidate metadata
  * @returns {Promise<Array>} Array of candidate objects
  */
 export async function getAllCandidates() {
-  const db = getFirebaseFirestore();
-  const candidatesRef = collection(db, 'nomination-candidates');
-  const q = query(candidatesRef, orderBy('name'));
-
   try {
     debug.log('[Candidates API] Fetching all candidates');
-    const snapshot = await getDocs(q);
+    const response = await authenticatedFetch(`${CANDIDATES_API}`);
 
-    const candidates = [];
-    snapshot.forEach(doc => {
-      candidates.push({ id: doc.id, ...doc.data() });
-    });
+    if (!response.ok) {
+      throw await createApiError(response, 'Failed to fetch candidates');
+    }
 
-    debug.log('[Candidates API] Fetched', candidates.length, 'candidates');
-    return candidates;
+    const data = await response.json();
+    debug.log('[Candidates API] Fetched', data.candidates?.length || 0, 'candidates');
+    return data.candidates || [];
   } catch (error) {
     debug.error('[Candidates API] Error fetching candidates:', error);
     throw error;
@@ -42,19 +71,21 @@ export async function getAllCandidates() {
  * @returns {Promise<Object|null>} Candidate object or null if not found
  */
 export async function getCandidate(candidateId) {
-  const db = getFirebaseFirestore();
-  const docRef = doc(db, 'nomination-candidates', candidateId);
-
   try {
     debug.log('[Candidates API] Fetching candidate:', candidateId);
-    const docSnap = await getDoc(docRef);
+    const response = await authenticatedFetch(`${CANDIDATES_API}/${candidateId}`);
 
-    if (docSnap.exists()) {
-      return { id: docSnap.id, ...docSnap.data() };
+    if (response.status === 404) {
+      debug.warn('[Candidates API] Candidate not found:', candidateId);
+      return null;
     }
 
-    debug.warn('[Candidates API] Candidate not found:', candidateId);
-    return null;
+    if (!response.ok) {
+      throw await createApiError(response, 'Failed to fetch candidate');
+    }
+
+    const data = await response.json();
+    return data.candidate || null;
   } catch (error) {
     debug.error('[Candidates API] Error fetching candidate:', error);
     throw error;
@@ -71,55 +102,24 @@ export async function getCandidate(candidateId) {
  * @returns {Promise<Object>} Updated candidate data
  */
 export async function updateCandidateField(candidateId, field, value) {
-  const db = getFirebaseFirestore();
-  const auth = getFirebaseAuth();
-  const user = auth.currentUser;
-
-  if (!user) {
-    throw new Error('Notandi er ekki innskráður');
-  }
-
-  const docRef = doc(db, 'nomination-candidates', candidateId);
-
   try {
     debug.log('[Candidates API] Updating candidate field:', { candidateId, field });
 
-    // Get current document to update edit history
-    const docSnap = await getDoc(docRef);
-    if (!docSnap.exists()) {
-      throw new Error('Frambjóðandi fannst ekki');
-    }
-
-    const currentData = docSnap.data();
-    const editHistory = currentData.edit_history || [];
-
-    // Add edit entry
-    const editEntry = {
-      field,
-      user_id: user.uid,
-      user_name: user.displayName || user.email,
-      timestamp: new Date().toISOString(),
-      previous_value: currentData[field] || null
-    };
-
-    editHistory.push(editEntry);
-
-    // Update document
-    await updateDoc(docRef, {
-      [field]: value,
-      edit_history: editHistory,
-      updated_at: new Date().toISOString(),
-      last_edited_by: {
-        user_id: user.uid,
-        user_name: user.displayName || user.email,
-        timestamp: new Date().toISOString()
-      }
+    const response = await authenticatedFetch(`${CANDIDATES_API}/${candidateId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ field, value }),
     });
 
-    debug.log('[Candidates API] Updated candidate:', candidateId);
+    if (!response.ok) {
+      throw await createApiError(response, 'Failed to update candidate');
+    }
 
-    // Return updated data
-    return await getCandidate(candidateId);
+    const data = await response.json();
+    debug.log('[Candidates API] Updated candidate:', candidateId);
+    return data.candidate;
   } catch (error) {
     debug.error('[Candidates API] Error updating candidate:', error);
     throw error;
@@ -134,58 +134,24 @@ export async function updateCandidateField(candidateId, field, value) {
  * @returns {Promise<Object>} Updated candidate data
  */
 export async function updateCandidate(candidateId, updates) {
-  const db = getFirebaseFirestore();
-  const auth = getFirebaseAuth();
-  const user = auth.currentUser;
-
-  if (!user) {
-    throw new Error('Notandi er ekki innskráður');
-  }
-
-  const docRef = doc(db, 'nomination-candidates', candidateId);
-
   try {
     debug.log('[Candidates API] Updating candidate:', { candidateId, fields: Object.keys(updates) });
 
-    // Get current document to update edit history
-    const docSnap = await getDoc(docRef);
-    if (!docSnap.exists()) {
-      throw new Error('Frambjóðandi fannst ekki');
-    }
-
-    const currentData = docSnap.data();
-    const editHistory = currentData.edit_history || [];
-    const timestamp = new Date().toISOString();
-
-    // Add edit entries for each changed field
-    for (const [field, value] of Object.entries(updates)) {
-      if (currentData[field] !== value) {
-        editHistory.push({
-          field,
-          user_id: user.uid,
-          user_name: user.displayName || user.email,
-          timestamp,
-          previous_value: currentData[field] || null
-        });
-      }
-    }
-
-    // Update document
-    await updateDoc(docRef, {
-      ...updates,
-      edit_history: editHistory,
-      updated_at: timestamp,
-      last_edited_by: {
-        user_id: user.uid,
-        user_name: user.displayName || user.email,
-        timestamp
-      }
+    const response = await authenticatedFetch(`${CANDIDATES_API}/${candidateId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ updates }),
     });
 
-    debug.log('[Candidates API] Updated candidate:', candidateId);
+    if (!response.ok) {
+      throw await createApiError(response, 'Failed to update candidate');
+    }
 
-    // Return updated data
-    return await getCandidate(candidateId);
+    const data = await response.json();
+    debug.log('[Candidates API] Updated candidate:', candidateId);
+    return data.candidate;
   } catch (error) {
     debug.error('[Candidates API] Error updating candidate:', error);
     throw error;
@@ -198,8 +164,20 @@ export async function updateCandidate(candidateId, updates) {
  * @returns {Promise<Array>} Edit history array
  */
 export async function getCandidateEditHistory(candidateId) {
-  const candidate = await getCandidate(candidateId);
-  return candidate?.edit_history || [];
+  try {
+    debug.log('[Candidates API] Fetching edit history:', candidateId);
+    const response = await authenticatedFetch(`${CANDIDATES_API}/${candidateId}/history`);
+
+    if (!response.ok) {
+      throw await createApiError(response, 'Failed to fetch edit history');
+    }
+
+    const data = await response.json();
+    return data.edit_history || [];
+  } catch (error) {
+    debug.error('[Candidates API] Error fetching edit history:', error);
+    throw error;
+  }
 }
 
 export default {

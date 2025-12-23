@@ -11,8 +11,8 @@
 
 # Core GCP Configuration
 export PROJECT_ID="ekklesia-prod-10-2025"
-export REGION="europe-west2"
-export DB_INSTANCE="ekklesia-db"
+export REGION="europe-west1"
+export DB_INSTANCE="ekklesia-db-eu1"
 
 # Validation - Check all required variables are set before deriving others
 if [ -z "$PROJECT_ID" ]; then

@@ -17,6 +17,7 @@ import {
   getAppCheckTokenValue
 } from '/firebase/app.js';
 import { showConfirm } from './components/ui-modal.js';
+import { showToast } from './components/ui-toast.js';
 
 /**
  * Base64 URL encode a buffer
@@ -117,7 +118,8 @@ async function handleOAuthCallback(authCode) {
       headers: headers,
       body: JSON.stringify({
         kenniAuthCode: authCode,
-        pkceCodeVerifier: pkceVerifier
+        pkceCodeVerifier: pkceVerifier,
+        redirectUri: window.location.origin  // Must match what was used in auth request
       })
     });
 
@@ -273,25 +275,30 @@ function updateLoginStrings() {
  */
 function setupLoginButton(issuerUrl, clientId, redirectUri) {
   document.getElementById('btn-login').addEventListener('click', async () => {
-    const { verifier, challenge } = await generatePKCE();
-    sessionStorage.setItem('pkce_code_verifier', verifier);
+    try {
+      const { verifier, challenge } = await generatePKCE();
+      sessionStorage.setItem('pkce_code_verifier', verifier);
 
-    // Generate and store CSRF state parameter
-    const state = generateState();
-    sessionStorage.setItem('oauth_state', state);
+      // Generate and store CSRF state parameter
+      const state = generateState();
+      sessionStorage.setItem('oauth_state', state);
 
-    const params = new URLSearchParams({
-      client_id: clientId,
-      redirect_uri: redirectUri,
-      response_type: 'code',
-      scope: R.string.config_oauth_scopes,
-      code_challenge: challenge,
-      code_challenge_method: 'S256',
-      state: state,
-    });
+      const params = new URLSearchParams({
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        response_type: 'code',
+        scope: R.string.config_oauth_scopes,
+        code_challenge: challenge,
+        code_challenge_method: 'S256',
+        state: state,
+      });
 
-    const authUrl = `${issuerUrl}/oidc/auth?${params.toString()}`;
-    window.location.assign(authUrl);
+      const authUrl = `${issuerUrl}/oidc/auth?${params.toString()}`;
+      window.location.assign(authUrl);
+    } catch (error) {
+      debug.error('Login initialization error:', error);
+      showToast(R.string.error_authentication || 'Villa við innskráningu', 'error');
+    }
   });
 }
 
@@ -345,8 +352,8 @@ async function init() {
   // Kenni.is configuration
   const KENNI_IS_ISSUER_URL = R.string.config_kenni_issuer;
   const KENNI_IS_CLIENT_ID = R.string.config_kenni_client_id;
-  // Use configured redirect URI (must exactly match IdP + backend env)
-  const KENNI_IS_REDIRECT_URI = R.string.config_kenni_redirect_uri;
+  // Use current origin as redirect URI (allows custom domains like felagar.sosialistaflokkurinn.is)
+  const KENNI_IS_REDIRECT_URI = window.location.origin;
 
   // Check if this is an OAuth callback
   const urlParams = new URLSearchParams(window.location.search);

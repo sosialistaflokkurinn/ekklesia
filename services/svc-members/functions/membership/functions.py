@@ -8,16 +8,25 @@ from datetime import datetime, timezone
 from typing import Dict, Any
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
+import re
 
 from firebase_admin import auth, firestore
 from firebase_functions import https_fn, options
 from util_logging import log_json
 from shared.validators import normalize_kennitala, normalize_phone
-from fn_sync_members import (
-    sync_all_members, create_sync_log, update_django_member, update_django_address,
+from shared.rate_limit import check_uid_rate_limit
+from db_members import get_member_by_kennitala
+
+# Security: Input validation limits
+MAX_NAME_LENGTH = 100
+MAX_EMAIL_LENGTH = 254
+MAX_PHONE_LENGTH = 20
+MAX_ADDRESS_FIELD_LENGTH = 200
+MAX_ADDRESSES = 5
+from django_api import (
+    update_django_member, update_django_address,
     get_django_api_token, DJANGO_API_BASE_URL
 )
-from fn_cleanup_audit_logs import cleanup_old_audit_logs
 import requests
 
 
@@ -26,6 +35,7 @@ def verifyMembership_handler(req: https_fn.CallableRequest) -> dict:
     Verify user membership status
 
     Callable function to check if a user's kennitala is in the membership list.
+    Reads from Cloud SQL (Django database) - the single source of truth.
     """
     # Verify authentication
     if not req.auth:
@@ -43,33 +53,22 @@ def verifyMembership_handler(req: https_fn.CallableRequest) -> dict:
         )
 
     try:
-        # Epic #43: Read membership status from Firestore (synced from Django)
-        db = firestore.client()
+        # Cloud SQL migration: Read membership status from PostgreSQL
+        from db_members import get_membership_status
 
         # Normalize kennitala (remove hyphen if present)
         kennitala_normalized = normalize_kennitala(kennitala)
 
-        # Query members collection by document ID (kennitala without hyphen)
-        member_doc_ref = db.collection('members').document(kennitala_normalized)
-        member_doc = member_doc_ref.get()
+        # Query Cloud SQL for membership status
+        member_status = get_membership_status(kennitala_normalized)
 
-        # Check if member exists and determine membership status
-        # 'active' = fees paid, 'unpaid' = member but fees not paid, 'inactive' = deleted/not member
-        is_member = False
-        membership_status = 'inactive'
-        fees_paid = False
+        is_member = member_status['is_member']
+        membership_status = member_status['status']
+        fees_paid = member_status['fees_paid']
 
-        if member_doc.exists:
-            member_data = member_doc.to_dict()
-            membership = member_data.get('membership', {})
-            membership_status = membership.get('status', 'inactive')
-            fees_paid = membership.get('fees_paid', False)
-
-            # Member if status is 'active' or 'unpaid' (both are valid members)
-            is_member = membership_status in ('active', 'unpaid')
-
-            # Audit log for membership verification (issue #40)
-            log_json("info", "Member lookup successful",
+        # Audit log for membership verification
+        if member_status['status'] != 'not_found':
+            log_json("info", "Member lookup successful (Cloud SQL)",
                      eventType="membership_verification",
                      kennitalaLast4=kennitala[-4:],  # GDPR: only last 4 digits
                      status=membership_status,
@@ -77,14 +76,14 @@ def verifyMembership_handler(req: https_fn.CallableRequest) -> dict:
                      isMember=is_member,
                      uid=req.auth.uid)
         else:
-            # Audit log for failed membership verification (issue #40)
-            log_json("info", "Member not found in Firestore",
+            log_json("info", "Member not found in Cloud SQL",
                      eventType="membership_verification",
                      kennitalaLast4=kennitala[-4:],  # GDPR: only last 4 digits
                      isMember=False,
                      uid=req.auth.uid)
 
-        # Update user profile in Firestore
+        # Update user profile in Firestore (users collection - not members)
+        db = firestore.client()
         db.collection('users').document(req.auth.uid).update({
             'isMember': is_member,
             'membershipStatus': membership_status,
@@ -109,7 +108,7 @@ def verifyMembership_handler(req: https_fn.CallableRequest) -> dict:
 
         return {
             'isMember': is_member,
-            'membershipStatus': membership_status,  # 'active', 'unpaid', or 'inactive'
+            'membershipStatus': membership_status,  # 'active', 'unpaid', 'inactive', or 'not_found'
             'feesPaid': fees_paid,
             'verified': True,
             'kennitala': kennitala[:7] + '****'  # Masked for security
@@ -120,105 +119,6 @@ def verifyMembership_handler(req: https_fn.CallableRequest) -> dict:
         raise https_fn.HttpsError(
             code=https_fn.FunctionsErrorCode.INTERNAL,
             message="Failed to verify membership"
-        )
-
-
-from shared.auth_helpers import verify_firebase_token
-from shared.cors import get_allowed_origin
-
-def syncmembers_handler(req: https_fn.Request) -> https_fn.Response:
-    """
-    Epic #43: Manual trigger to sync all members from Django to Firestore.
-
-    Requires authentication and 'admin' or 'superuser' role.
-    Handles CORS manually to support direct fetch calls.
-
-    Returns:
-        Response object with sync statistics
-    """
-    # Handle CORS
-    origin = req.headers.get('Origin')
-    allowed_origin = get_allowed_origin(origin)
-    headers = {
-        'Access-Control-Allow-Origin': allowed_origin,
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        'Access-Control-Max-Age': '3600'
-    }
-
-    if req.method == 'OPTIONS':
-        return https_fn.Response(status=204, headers=headers)
-
-    try:
-        # Verify authentication
-        decoded_token = verify_firebase_token(req)
-        uid = decoded_token.get('uid')
-        roles = decoded_token.get('roles', [])
-
-        # Verify admin or superuser role
-        has_access = 'admin' in roles or 'superuser' in roles
-        if not has_access:
-            log_json("warn", "Unauthorized sync attempt", uid=uid, roles=roles)
-            return https_fn.Response(
-                status=403,
-                response=json.dumps({'error': "Admin or superuser role required"}),
-                headers=headers,
-                content_type='application/json'
-            )
-
-        log_json("info", "Member sync initiated", uid=uid)
-
-        # Run sync
-        stats = sync_all_members()
-
-        # Create sync log
-        db = firestore.Client()
-        log_id = create_sync_log(db, stats)
-
-        log_json("info", "Member sync completed successfully",
-                 uid=uid,
-                 stats=stats,
-                 log_id=log_id)
-
-        response_data = {
-            'result': {  # Wrap in result for Callable compatibility if needed, though we are raw HTTP now
-                'success': True,
-                'stats': stats,
-                'log_id': log_id
-            }
-        }
-        
-        return https_fn.Response(
-            status=200,
-            response=json.dumps(response_data),
-            headers=headers,
-            content_type='application/json'
-        )
-
-    except https_fn.HttpsError as e:
-        status_code = 500
-        if e.code == https_fn.FunctionsErrorCode.UNAUTHENTICATED:
-            status_code = 401
-        elif e.code == https_fn.FunctionsErrorCode.PERMISSION_DENIED:
-            status_code = 403
-        elif e.code == https_fn.FunctionsErrorCode.INVALID_ARGUMENT:
-            status_code = 400
-        elif e.code == https_fn.FunctionsErrorCode.NOT_FOUND:
-            status_code = 404
-            
-        return https_fn.Response(
-            status=status_code,
-            response=json.dumps({'error': e.message}),
-            headers=headers,
-            content_type='application/json'
-        )
-    except Exception as e:
-        log_json("error", "Member sync failed", error_type=type(e).__name__)
-        return https_fn.Response(
-            status=500,
-            response=json.dumps({'error': 'An internal error occurred during sync'}),
-            headers=headers,
-            content_type='application/json'
         )
 
 
@@ -256,6 +156,13 @@ def updatememberprofile_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
             message="Authentication required"
         )
 
+    # Security: Rate limit profile updates (5 per 10 minutes per user)
+    if not check_uid_rate_limit(req.auth.uid, "profile_update", max_attempts=5, window_minutes=10):
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED,
+            message="Rate limit exceeded. Maximum 5 profile updates per 10 minutes."
+        )
+
     # Get request data
     kennitala = req.data.get('kennitala')
     updates = req.data.get('updates', {})
@@ -265,6 +172,70 @@ def updatememberprofile_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
             code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
             message="kennitala is required"
         )
+
+    # Security: Validate input field lengths and formats
+    def validate_string_field(value, field_name, max_length):
+        if value is None:
+            return
+        if not isinstance(value, str):
+            raise https_fn.HttpsError(
+                code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+                message=f"{field_name} must be a string"
+            )
+        if len(value) > max_length:
+            raise https_fn.HttpsError(
+                code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+                message=f"{field_name} exceeds maximum length of {max_length}"
+            )
+
+    validate_string_field(updates.get('name'), 'name', MAX_NAME_LENGTH)
+    validate_string_field(updates.get('email'), 'email', MAX_EMAIL_LENGTH)
+    validate_string_field(updates.get('phone'), 'phone', MAX_PHONE_LENGTH)
+
+    # Validate email format if provided
+    if updates.get('email'):
+        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(email_pattern, updates['email']):
+            raise https_fn.HttpsError(
+                code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+                message="Invalid email format"
+            )
+
+    # Validate addresses if provided
+    if 'addresses' in updates:
+        addresses = updates['addresses']
+        if not isinstance(addresses, list):
+            raise https_fn.HttpsError(
+                code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+                message="addresses must be a list"
+            )
+        if len(addresses) > MAX_ADDRESSES:
+            raise https_fn.HttpsError(
+                code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+                message=f"Maximum {MAX_ADDRESSES} addresses allowed"
+            )
+        for addr in addresses:
+            if not isinstance(addr, dict):
+                raise https_fn.HttpsError(
+                    code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+                    message="Each address must be an object"
+                )
+            # Validate string fields (number and postal_code can be int or str)
+            for field in ['street', 'city', 'country']:
+                validate_string_field(addr.get(field), f'address.{field}', MAX_ADDRESS_FIELD_LENGTH)
+            # letter is optional string
+            if addr.get('letter'):
+                validate_string_field(addr.get('letter'), 'address.letter', 10)
+            # number and postal_code can be int or str - validate as string after conversion
+            for field in ['number', 'postal_code']:
+                val = addr.get(field)
+                if val is not None:
+                    str_val = str(val)
+                    if len(str_val) > MAX_ADDRESS_FIELD_LENGTH:
+                        raise https_fn.HttpsError(
+                            code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+                            message=f"address.{field} exceeds maximum length"
+                        )
 
     # Check if user has admin/superuser role (can update any profile)
     user_roles = req.auth.token.get('roles', [])
@@ -302,16 +273,15 @@ def updatememberprofile_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
         # Django API doesn't support ?ssn= filter, so we use Firestore lookup
         kennitala_no_hyphen = kennitala.replace('-', '')
 
-        log_json("debug", "Looking up member in Firestore",
+        log_json("debug", "Looking up member in Cloud SQL",
                  uid=req.auth.uid,
                  kennitala=f"{kennitala_no_hyphen[:6]}****")
 
-        db = firestore.client()
-        member_ref = db.collection('members').document(kennitala_no_hyphen)
-        member_doc = member_ref.get()
+        # Get member from Cloud SQL (source of truth)
+        member_data = get_member_by_kennitala(kennitala_no_hyphen)
 
-        if not member_doc.exists:
-            log_json("error", "Member not found in Firestore",
+        if not member_data:
+            log_json("error", "Member not found in Cloud SQL",
                      uid=req.auth.uid,
                      kennitala=f"{kennitala_no_hyphen[:6]}****")
             raise https_fn.HttpsError(
@@ -319,17 +289,9 @@ def updatememberprofile_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
                 message="Member not found in system"
             )
 
-        member_data = member_doc.to_dict()
-        django_id = member_data.get('metadata', {}).get('django_id')
+        django_id = member_data.get('django_id')
 
-        # Note: django_id may be None for Firestore-only members (registered via Ekklesia, not Django)
-        # We still allow profile updates - they just won't sync to Django
-        if not django_id:
-            log_json("info", "Member has no Django ID - Firestore-only update",
-                     uid=req.auth.uid,
-                     kennitala=f"{kennitala_no_hyphen[:6]}****")
-
-        log_json("debug", "Found member in Firestore",
+        log_json("debug", "Found member in Cloud SQL",
                  uid=req.auth.uid,
                  django_id=django_id,
                  kennitala=f"{kennitala_no_hyphen[:6]}****")
@@ -482,94 +444,11 @@ def updatememberprofile_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
         if profile_patch_needed and not profile_sync_success:
             raise Exception(profile_sync_error or "Profile update failed")
 
-        # OPTIMIZATION: Batch all Firestore writes together
-        # Build Firestore updates with nested profile fields
-        firestore_updates = {}
-        if 'name' in updates:
-            firestore_updates['profile.name'] = updates['name']
-        if 'email' in updates:
-            firestore_updates['profile.email'] = updates['email']
-        if 'phone' in updates:
-            firestore_updates['profile.phone'] = normalize_phone(updates['phone'])
-        if 'reachable' in updates:
-            firestore_updates['profile.reachable'] = updates['reachable']
-        if 'groupable' in updates:
-            firestore_updates['profile.groupable'] = updates['groupable']
-        if 'gender' in updates:
-            firestore_updates['profile.gender'] = updates['gender']
-        if 'birthday' in updates:
-            firestore_updates['profile.birthday'] = updates['birthday']
-        if 'addresses' in updates:
-            firestore_updates['profile.addresses'] = updates['addresses']
-        
-        # Always update last_modified timestamp
-        firestore_updates['metadata.last_modified'] = datetime.now(timezone.utc)
-
-        try:
-            # Use batched write for all Firestore operations
-            batch = db.batch()
-            
-            # Main profile update
-            batch.update(member_ref, firestore_updates)
-            
-            # OPTIMIZATION: Only write syncHistory for significant changes
-            # (skip for routine preference changes like reachable/groupable)
-            significant_fields = {'name', 'email', 'phone', 'addresses', 'birthday', 'gender'}
-            has_significant_changes = bool(set(updates.keys()) & significant_fields)
-            
-            if has_significant_changes:
-                # Add syncHistory entries to the batch
-                sync_history_ref = member_ref.collection('syncHistory')
-                
-                if address_sync_needed:
-                    address_log = {
-                        'type': 'address_sync',
-                        'timestamp': datetime.now(timezone.utc),
-                        'source': 'firestore',
-                        'target': 'django',
-                        'success': address_sync_result.get('success', False) if address_sync_result else False,
-                        'address': {
-                            'street': default_iceland_address.get('street', ''),
-                            'number': default_iceland_address.get('number', ''),
-                            'postal_code': default_iceland_address.get('postal_code', '')
-                        }
-                    }
-                    if address_sync_result and address_sync_result.get('success', True):
-                        address_log['django_response'] = {
-                            'map_address_id': address_sync_result.get('map_address_id'),
-                            'address_linked': address_sync_result.get('address_linked'),
-                            'message': address_sync_result.get('message', '')
-                        }
-                    elif address_sync_result:
-                        address_log['error'] = address_sync_result.get('error', 'Unknown error')
-                    batch.set(sync_history_ref.document(), address_log)
-                
-                if profile_patch_needed and profile_sync_success:
-                    profile_log = {
-                        'type': 'profile_sync',
-                        'timestamp': datetime.now(timezone.utc),
-                        'source': 'firestore',
-                        'target': 'django',
-                        'success': True,
-                        'fields_updated': list(django_updates.keys())
-                    }
-                    batch.set(sync_history_ref.document(), profile_log)
-            
-            # Commit all writes at once
-            batch.commit()
-
-            log_json("info", "Profile updated successfully in Firestore",
-                     uid=req.auth.uid,
-                     kennitala=f"{kennitala[:6]}****",
-                     firestore_fields=list(firestore_updates.keys()),
-                     batch_writes=2 if has_significant_changes else 1)
-
-        except Exception as firestore_error:
-            # Log error but don't fail the request - Django is source of truth
-            log_json("warn", "Firestore update failed (Django succeeded)",
-                     uid=req.auth.uid,
-                     kennitala=f"{kennitala[:6]}****",
-                     error=str(firestore_error))
+        # Note: Firestore /members collection updates removed - Cloud SQL is source of truth
+        log_json("info", "Profile updated successfully",
+                 uid=req.auth.uid,
+                 kennitala=f"{kennitala[:6]}****",
+                 updated_fields=list(updates.keys()))
 
         # Return fresh data from Django (or minimal response if only address changed)
         return {
@@ -587,78 +466,6 @@ def updatememberprofile_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
         raise https_fn.HttpsError(
             code=https_fn.FunctionsErrorCode.INTERNAL,
             message=f"Profile update failed: {str(e)}"
-        )
-
-
-def cleanupauditlogs_handler(req: https_fn.CallableRequest) -> dict:
-    """
-    Cleanup old audit logs, keeping only the most recent N entries.
-
-    Requires admin role.
-
-    Request data:
-        keep_count: Number of most recent logs to keep (default: 50)
-
-    Returns:
-        Dict with cleanup statistics
-    """
-    # Require authentication
-    if not req.auth:
-        raise https_fn.HttpsError(
-            code=https_fn.FunctionsErrorCode.UNAUTHENTICATED,
-            message="Must be authenticated to cleanup audit logs"
-        )
-
-    uid = req.auth.uid
-
-    # Get user's roles from Firestore
-    db = firestore.client()
-    user_ref = db.collection('users').document(uid)
-    user_doc = user_ref.get()
-
-    if not user_doc.exists:
-        raise https_fn.HttpsError(
-            code=https_fn.FunctionsErrorCode.PERMISSION_DENIED,
-            message="User not found"
-        )
-
-    user_data = user_doc.to_dict()
-    roles = user_data.get('roles', [])
-
-    # Require admin or superuser role (roles is a list like ['member', 'admin'])
-    if not ('admin' in roles or 'superuser' in roles):
-        log_json("warn", "Unauthorized audit log cleanup attempt",
-                 uid=uid,
-                 roles=roles)
-        raise https_fn.HttpsError(
-            code=https_fn.FunctionsErrorCode.PERMISSION_DENIED,
-            message="Admin role required"
-        )
-
-    # Get keep_count parameter (default: 50)
-    keep_count = req.data.get('keep_count', 50) if req.data else 50
-
-    log_json("info", "Starting audit log cleanup",
-             uid=uid,
-             keep_count=keep_count)
-
-    try:
-        # Run cleanup
-        result = cleanup_old_audit_logs(keep_count=keep_count)
-
-        log_json("info", "Audit log cleanup completed",
-                 uid=uid,
-                 result=result)
-
-        return result
-
-    except Exception as e:
-        log_json("error", "Audit log cleanup failed",
-                 uid=uid,
-                 error=str(e))
-        raise https_fn.HttpsError(
-            code=https_fn.FunctionsErrorCode.INTERNAL,
-            message=f"Cleanup failed: {str(e)}"
         )
 
 
@@ -716,26 +523,16 @@ def soft_delete_self_handler(req: https_fn.CallableRequest) -> dict:
              kennitala=f"{kennitala_normalized[:6]}****")
 
     try:
-        db = firestore.client()
-        member_ref = db.collection('members').document(kennitala_normalized)
-        member_doc = member_ref.get()
+        # Verify member exists in Cloud SQL (source of truth)
+        member_data = get_member_by_kennitala(kennitala_normalized)
 
-        if not member_doc.exists:
+        if not member_data:
             raise https_fn.HttpsError(
                 code=https_fn.FunctionsErrorCode.NOT_FOUND,
                 message="Member not found"
             )
 
-        # 1. Update Firestore
-        # Note: We do NOT change membership.status here - it keeps the payment status (active/unpaid)
-        # deleted_at is a separate field to indicate the account is soft-deleted
-        member_ref.update({
-            'membership.deleted_at': deleted_at,
-            'metadata.deleted_by': 'self',
-            'metadata.last_modified': firestore.SERVER_TIMESTAMP
-        })
-
-        log_json("info", "Firestore updated for soft delete",
+        log_json("info", "Member found, proceeding with soft delete",
                  uid=uid,
                  kennitala=f"{kennitala_normalized[:6]}****")
 
@@ -852,30 +649,31 @@ def reactivate_self_handler(req: https_fn.CallableRequest) -> dict:
              kennitala=f"{kennitala_normalized[:6]}****")
 
     try:
-        db = firestore.client()
-        member_ref = db.collection('members').document(kennitala_normalized)
-        member_doc = member_ref.get()
+        # Get member from Cloud SQL (source of truth)
+        member_data = get_member_by_kennitala(kennitala_normalized)
 
-        if not member_doc.exists:
+        if not member_data:
             raise https_fn.HttpsError(
                 code=https_fn.FunctionsErrorCode.NOT_FOUND,
                 message="Member not found"
             )
 
-        member_data = member_doc.to_dict()
-
-        # Verify member was soft-deleted
-        # Check both metadata.deleted_at (Ekklesia) and membership.deleted_at (Django sync)
-        metadata_deleted_at = member_data.get('metadata', {}).get('deleted_at')
-        membership_deleted_at = member_data.get('membership', {}).get('deleted_at')
-        if not metadata_deleted_at and not membership_deleted_at:
+        # Verify member was soft-deleted (check Cloud SQL deleted_at)
+        deleted_at = member_data.get('membership', {}).get('deleted_at')
+        if not deleted_at:
             raise https_fn.HttpsError(
                 code=https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
                 message="Account is not deactivated"
             )
 
-        # Get Firebase UID from member data
-        firebase_uid = member_data.get('metadata', {}).get('firebase_uid')
+        # Get Firebase UID from /users collection by querying for kennitala
+        db = firestore.client()
+        users_query = db.collection('users').where('kennitala', '==', kennitala_normalized).limit(1).stream()
+        firebase_uid = None
+        for user_doc in users_query:
+            firebase_uid = user_doc.id
+            break
+
         if not firebase_uid:
             raise https_fn.HttpsError(
                 code=https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
@@ -896,18 +694,8 @@ def reactivate_self_handler(req: https_fn.CallableRequest) -> dict:
                 message="Failed to re-enable account"
             )
 
-        # 2. Update Firestore - set status back to unpaid (fees need to be re-verified)
-        # Clear both metadata.deleted_at (Ekklesia) and membership.deleted_at (Django sync)
-        member_ref.update({
-            'membership.status': 'unpaid',
-            'membership.deleted_at': firestore.DELETE_FIELD,
-            'metadata.deleted_at': firestore.DELETE_FIELD,
-            'metadata.deleted_by': firestore.DELETE_FIELD,
-            'metadata.reactivated_at': firestore.SERVER_TIMESTAMP,
-            'metadata.last_modified': firestore.SERVER_TIMESTAMP
-        })
-
-        log_json("info", "Firestore updated for reactivation",
+        # Note: Firestore /members no longer exists - Cloud SQL is source of truth
+        log_json("info", "Proceeding with Django reactivation",
                  kennitala=f"{kennitala_normalized[:6]}****")
 
         # 3. Sync to Django

@@ -162,7 +162,7 @@ export function createScheduleDisplay(options = {}) {
       // Show "Opin kosning" for active elections without end time (admin closes manually)
       const currentState = electionState.getState();
       if (currentState.status === 'active') {
-        endValue.textContent = 'Opin kosning';
+        endValue.textContent = R.string.election_open_no_end;
         endValue.classList.remove('election-detail__schedule-value--empty');
       } else {
         endValue.textContent = notSpecifiedText;

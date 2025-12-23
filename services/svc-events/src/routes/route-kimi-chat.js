@@ -181,7 +181,7 @@ function getRetryDelay(attempt, baseDelay = RETRY_CONFIG.baseDelayMs) {
 }
 
 // Service URLs
-const ELECTIONS_SERVICE_URL = process.env.ELECTIONS_SERVICE_URL || 'https://elections-service-521240388393.europe-west2.run.app';
+const ELECTIONS_SERVICE_URL = process.env.ELECTIONS_SERVICE_URL || 'https://elections-service-521240388393.europe-west1.run.app';
 
 // GitHub Repository Configuration
 const GITHUB_REPO = 'sosialistaflokkurinn/ekklesia';

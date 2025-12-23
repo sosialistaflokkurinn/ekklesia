@@ -14,10 +14,17 @@ from typing import Dict, Any, Optional
 from firebase_admin import auth, firestore
 from firebase_functions import https_fn, options
 from util_logging import log_json
+from shared.rate_limit import check_uid_rate_limit
+from db_members import (
+    get_member_by_kennitala,
+    get_member_by_email,
+    get_deleted_member_count
+)
 import requests
 import time
 import os
 import ast
+import re
 
 # Import Cloud Logging lazily to avoid import issues in local dev
 _logging_client = None
@@ -43,12 +50,12 @@ CLOUD_RUN_SERVICES = [
     {
         "id": "elections-service",
         "name": "Kosningaþjónusta",
-        "url": "https://elections-service-521240388393.europe-west2.run.app/health"
+        "url": "https://elections-service-521240388393.europe-west1.run.app/health"
     },
     {
         "id": "events-service",
         "name": "Viðburðaþjónusta",
-        "url": "https://events-service-521240388393.europe-west2.run.app/health"
+        "url": "https://events-service-521240388393.europe-west1.run.app/health"
     },
     {
         "id": "healthz",
@@ -58,16 +65,8 @@ CLOUD_RUN_SERVICES = [
     {
         "id": "django-socialism",
         "name": "Django Admin (GCP)",
-        "url": "https://django-socialism-521240388393.europe-west2.run.app/felagar/api/"
+        "url": "https://starf.sosialistaflokkurinn.is/felagar/api/"
     },
-]
-
-# External services (Linode, etc.)
-EXTERNAL_SERVICES = []
-
-# Demo/Test services (not in production yet)
-DEMO_SERVICES = [
-    # django-socialism-demo deleted 2025-12-05 - promoted to production as django-socialism
 ]
 
 # Base URL for Firebase Callable Functions
@@ -77,10 +76,7 @@ FUNCTIONS_BASE_URL = "https://europe-west2-ekklesia-prod-10-2025.cloudfunctions.
 MEMBER_FUNCTIONS = [
     {"id": "handlekenniauth", "name": "Kenni.is Auth"},
     {"id": "verifymembership", "name": "Staðfesting félagsaðildar"},
-    {"id": "syncmembers", "name": "Samstilling félagaskrár"},
-    {"id": "sync-from-django", "name": "Django → Firestore sync"},
     {"id": "updatememberprofile", "name": "Prófíluppfærsla"},
-    {"id": "auditmemberchanges", "name": "Breytingasaga félaga"},
 ]
 
 # Firebase Functions - Address Validation
@@ -117,14 +113,8 @@ SUPERUSER_FUNCTIONS = [
     {"id": "purgedeleted", "name": "Eyða merktum félögum"},
 ]
 
-# Firebase Functions - Utility/Background
-UTILITY_FUNCTIONS = [
-    {"id": "get-django-token", "name": "Django API lykill"},
-    {"id": "cleanupauditlogs", "name": "Hreinsun aðgerðaskráa"},
-]
-
 # Combined list for backward compatibility
-FIREBASE_FUNCTIONS = MEMBER_FUNCTIONS + ADDRESS_FUNCTIONS + SUPERUSER_FUNCTIONS + UTILITY_FUNCTIONS
+FIREBASE_FUNCTIONS = MEMBER_FUNCTIONS + ADDRESS_FUNCTIONS + SUPERUSER_FUNCTIONS
 
 
 def require_superuser(req: https_fn.CallableRequest) -> Dict[str, Any]:
@@ -189,6 +179,13 @@ def set_user_role_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     # Verify superuser access
     caller_claims = require_superuser(req)
     caller_uid = req.auth.uid
+
+    # Security: Rate limit role changes (10 per 10 minutes)
+    if not check_uid_rate_limit(caller_uid, "set_role", max_attempts=10, window_minutes=10):
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED,
+            message="Rate limit exceeded. Maximum 10 role changes per 10 minutes."
+        )
 
     # Validate input
     data = req.data or {}
@@ -387,16 +384,6 @@ def check_system_health_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
     for service in CLOUD_RUN_SERVICES:
         results.append(check_service(service))
 
-    # Check external services (Linode, etc.)
-    for service in EXTERNAL_SERVICES:
-        results.append(check_service(service))
-
-    # Check demo services
-    for service in DEMO_SERVICES:
-        result = check_service(service)
-        result["category"] = "demo"
-        results.append(result)
-
     # Check Firebase Callable Functions by pinging them
     def check_callable_function(service, category):
         """Check health of a Firebase Callable Function by making HTTP POST."""
@@ -479,7 +466,6 @@ def check_system_health_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
     add_functions(ADDRESS_FUNCTIONS, "address")
     add_functions(REGISTRATION_FUNCTIONS, "registration")
     add_functions(SUPERUSER_FUNCTIONS, "superuser")
-    add_functions(UTILITY_FUNCTIONS, "utility")
 
     # Check Firestore connectivity
     try:
@@ -512,7 +498,7 @@ def check_system_health_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
         credentials.refresh(Request())
 
         # Cloud SQL Admin API endpoint
-        instance_name = "ekklesia-db"
+        instance_name = "ekklesia-db-eu1"
         sql_api_url = f"https://sqladmin.googleapis.com/v1/projects/{project}/instances/{instance_name}"
 
         start_time = time.time()
@@ -604,6 +590,42 @@ def get_audit_logs_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     hours = data.get("hours", 24)
     correlation_id = data.get("correlation_id")
     limit = min(data.get("limit", 100), 500)  # Cap at 500
+
+    # Security: Allowlist for service names to prevent filter injection
+    ALLOWED_SERVICES = {
+        "handlekenniauth", "verifymembership", "updatememberprofile",
+        "softdeleteself", "reactivateself", "search-addresses",
+        "validate-address", "validate-postal-code", "list-unions", "list-job-titles",
+        "list-countries", "list-postal-codes", "get-cells-by-postal-code",
+        "register-member", "checksystemhealth", "setuserrole", "getuserrole",
+        "getauditlogs", "getloginaudit", "harddeletemember", "anonymizemember",
+        "listelevatedusers", "purgedeleted"
+    }
+    ALLOWED_SEVERITIES = {"DEBUG", "INFO", "NOTICE", "WARNING", "ERROR", "CRITICAL", "ALERT", "EMERGENCY"}
+
+    if service and service not in ALLOWED_SERVICES:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+            message="Invalid service name"
+        )
+
+    if severity and severity.upper() not in ALLOWED_SEVERITIES:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+            message="Invalid severity level"
+        )
+
+    # Security: Validate hours range (1-168 = 1 week max)
+    if not isinstance(hours, int) or hours < 1 or hours > 168:
+        hours = 24  # Default to 24 hours if invalid
+
+    # Security: Sanitize correlation_id (alphanumeric + dashes only, max 64 chars)
+    if correlation_id:
+        if not re.match(r'^[a-zA-Z0-9\-]{1,64}$', str(correlation_id)):
+            raise https_fn.HttpsError(
+                code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+                message="Invalid correlation_id format"
+            )
 
     try:
         client = get_logging_client()
@@ -732,6 +754,13 @@ def hard_delete_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     caller_claims = require_superuser(req)
     caller_uid = req.auth.uid
 
+    # Security: Rate limit destructive operations (3 per hour)
+    if not check_uid_rate_limit(caller_uid, "hard_delete", max_attempts=3, window_minutes=60):
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED,
+            message="Rate limit exceeded. Maximum 3 deletions per hour."
+        )
+
     data = req.data or {}
     kennitala = data.get("kennitala")
     confirmation = data.get("confirmation")
@@ -753,20 +782,23 @@ def hard_delete_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     errors = []
 
     try:
-        # 1. Find member in Firestore
-        member_ref = db.collection("members").document(kennitala)
-        member_doc = member_ref.get()
+        # 1. Verify member exists in Cloud SQL (source of truth)
+        member = get_member_by_kennitala(kennitala)
 
-        if not member_doc.exists:
+        if not member:
             raise https_fn.HttpsError(
                 code=https_fn.FunctionsErrorCode.NOT_FOUND,
                 message=f"Member not found: {kennitala}"
             )
 
-        member_data = member_doc.to_dict()
-        firebase_uid = member_data.get("firebaseUid")
+        # 2. Find firebase_uid by querying /users collection
+        firebase_uid = None
+        users_query = db.collection("users").where("kennitala", "==", kennitala).limit(1).stream()
+        for user_doc in users_query:
+            firebase_uid = user_doc.id
+            break
 
-        # 2. Delete Firebase Auth user if exists
+        # 3. Delete Firebase Auth user if exists
         if firebase_uid:
             try:
                 auth.delete_user(firebase_uid)
@@ -776,7 +808,7 @@ def hard_delete_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             except Exception as e:
                 errors.append(f"Firebase Auth: {str(e)}")
 
-        # 3. Delete from /users/ collection
+        # 4. Delete from /users/ collection
         if firebase_uid:
             try:
                 db.collection("users").document(firebase_uid).delete()
@@ -784,12 +816,7 @@ def hard_delete_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             except Exception as e:
                 errors.append(f"Firestore /users/: {str(e)}")
 
-        # 4. Delete from /members/ collection
-        try:
-            member_ref.delete()
-            deleted_items.append(f"Firestore /members/{kennitala}")
-        except Exception as e:
-            errors.append(f"Firestore /members/: {str(e)}")
+        # Note: Cloud SQL deletion handled in Django admin
 
         # 5. Log the action
         log_json("warning", "DANGEROUS: Member hard deleted",
@@ -832,6 +859,13 @@ def anonymize_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     caller_claims = require_superuser(req)
     caller_uid = req.auth.uid
 
+    # Security: Rate limit destructive operations (5 per hour for anonymization)
+    if not check_uid_rate_limit(caller_uid, "anonymize", max_attempts=5, window_minutes=60):
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED,
+            message="Rate limit exceeded. Maximum 5 anonymizations per hour."
+        )
+
     data = req.data or {}
     kennitala = data.get("kennitala")
     confirmation = data.get("confirmation")
@@ -851,43 +885,29 @@ def anonymize_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     db = firestore.client()
 
     try:
-        # Find member
-        member_ref = db.collection("members").document(kennitala)
-        member_doc = member_ref.get()
+        # 1. Verify member exists in Cloud SQL (source of truth)
+        member = get_member_by_kennitala(kennitala)
 
-        if not member_doc.exists:
+        if not member:
             raise https_fn.HttpsError(
                 code=https_fn.FunctionsErrorCode.NOT_FOUND,
                 message=f"Member not found: {kennitala}"
             )
 
-        member_data = member_doc.to_dict()
-        firebase_uid = member_data.get("firebaseUid")
+        # 2. Find firebase_uid by querying /users collection
+        firebase_uid = None
+        users_query = db.collection("users").where("kennitala", "==", kennitala).limit(1).stream()
+        for user_doc in users_query:
+            firebase_uid = user_doc.id
+            break
 
         # Generate anonymous ID
         import uuid
         anon_id = f"ANON-{uuid.uuid4().hex[:8].upper()}"
 
-        # Anonymize member document
-        anonymized_data = {
-            "name": anon_id,
-            "email": f"{anon_id.lower()}@anonymized.local",
-            "kennitala": None,
-            "phone": None,
-            "address": None,
-            "postalCode": member_data.get("postalCode"),  # Keep for statistics
-            "region": member_data.get("region"),  # Keep for statistics
-            "memberSince": member_data.get("memberSince"),  # Keep for statistics
-            "anonymizedAt": firestore.SERVER_TIMESTAMP,
-            "anonymizedBy": caller_uid,
-            "isAnonymized": True
-        }
+        anonymized_items = []
 
-        # Create new document with anonymous ID, delete old
-        db.collection("members").document(anon_id).set(anonymized_data)
-        member_ref.delete()
-
-        # Anonymize Firebase Auth user if exists
+        # 3. Anonymize Firebase Auth user if exists
         if firebase_uid:
             try:
                 auth.update_user(
@@ -896,8 +916,17 @@ def anonymize_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
                     email=f"{anon_id.lower()}@anonymized.local",
                     disabled=True
                 )
+                anonymized_items.append("Firebase Auth")
             except Exception as e:
                 log_json("warning", "Could not anonymize Firebase Auth user",
+                         error=str(e), uid=firebase_uid)
+
+            # 4. Delete /users document (contains preferences)
+            try:
+                db.collection("users").document(firebase_uid).delete()
+                anonymized_items.append("/users document")
+            except Exception as e:
+                log_json("warning", "Could not delete /users document",
                          error=str(e), uid=firebase_uid)
 
         # Log the action
@@ -905,12 +934,14 @@ def anonymize_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
                  action="anonymize_member",
                  caller_uid=caller_uid,
                  original_kennitala=kennitala[:6] + "****",
-                 anon_id=anon_id)
+                 anon_id=anon_id,
+                 items=anonymized_items)
 
         return {
             "success": True,
             "anon_id": anon_id,
-            "message": f"Member anonymized as {anon_id}"
+            "anonymized": anonymized_items,
+            "message": f"Firebase Auth anonymized as {anon_id}. Complete anonymization in Django Admin."
         }
 
     except https_fn.HttpsError:
@@ -1016,90 +1047,6 @@ def list_elevated_users_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
         )
 
 
-def _fetch_django_elevated_users() -> Dict[str, list]:
-    """
-    Fetch users with elevated privileges from Django API.
-
-    Returns:
-        Dict with 'superusers' and 'admins' lists
-    """
-    django_token = os.environ.get('django-api-token') or os.environ.get('DJANGO_API_TOKEN')
-    if not django_token:
-        raise ValueError("Django API token not found")
-
-    headers = {
-        'Authorization': f'Token {django_token}',
-        'Accept': 'application/json'
-    }
-
-    # Django API endpoint for all members (GCP Cloud Run)
-    url = "https://django-socialism-521240388393.europe-west2.run.app/felagar/api/full/"
-
-    superusers = []
-    admins = []
-
-    # Fetch all pages to find elevated users
-    page = 1
-    while True:
-        response = requests.get(url, headers=headers, params={'page': page}, timeout=30)
-        if not response.ok:
-            break
-
-        data = response.json()
-        results = data.get('results', [])
-
-        for member in results:
-            is_superuser = member.get('is_superuser', False)
-            is_staff = member.get('is_staff', False)
-
-            if is_superuser:
-                superusers.append({
-                    'id': member.get('id'),
-                    'name': member.get('name'),
-                    'email': member.get('contact_info', {}).get('email'),
-                    'username': member.get('username')
-                })
-            elif is_staff:
-                admins.append({
-                    'id': member.get('id'),
-                    'name': member.get('name'),
-                    'email': member.get('contact_info', {}).get('email'),
-                    'username': member.get('username')
-                })
-
-        # Check for next page
-        if not data.get('next'):
-            break
-        page += 1
-
-        # Safety limit
-        if page > 50:
-            break
-
-    return {
-        'superusers': superusers,
-        'admins': admins
-    }
-
-
-def _check_user_has_logged_in(db, email: str) -> bool:
-    """Check if a user with this email has logged into Ekklesia."""
-    if not email:
-        return False
-
-    # Check /members/ collection for firebase_uid by email
-    members = db.collection("members").where(
-        "profile.email", "==", email
-    ).limit(1).stream()
-
-    for member_doc in members:
-        member_data = member_doc.to_dict()
-        if member_data.get("metadata", {}).get("firebase_uid"):
-            return True
-
-    return False
-
-
 # ==============================================================================
 # LOGIN AUDIT
 # ==============================================================================
@@ -1198,22 +1145,23 @@ def get_deleted_counts_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     """
     Get counts of soft-deleted members and votes.
 
+    Members queried from Cloud SQL (source of truth).
+    Votes queried from Firestore (elections service).
+
     Returns:
         Dict with counts of deleted members and votes.
     """
     # Verify superuser access
     require_superuser(req)
 
-    db = firestore.client()
-
     try:
-        # Count members with deletedAt != null
-        members_query = db.collection("members").where("membership.deleted_at", "!=", None)
-        deleted_members = len(list(members_query.stream()))
+        # Count members from Cloud SQL (source of truth)
+        deleted_members = get_deleted_member_count()
 
         # Count votes with deletedAt != null (if votes collection exists)
         deleted_votes = 0
         try:
+            db = firestore.client()
             votes_query = db.collection("votes").where("deletedAt", "!=", None)
             deleted_votes = len(list(votes_query.stream()))
         except Exception:
@@ -1248,6 +1196,13 @@ def purgedeleted(req: https_fn.CallableRequest) -> Dict[str, Any]:
     """
     # Verify superuser access
     require_superuser(req)
+
+    # Security: Rate limit bulk purge operations (1 per hour)
+    if not check_uid_rate_limit(req.auth.uid, "purge_deleted", max_attempts=1, window_minutes=60):
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED,
+            message="Rate limit exceeded. Maximum 1 purge per hour."
+        )
 
     try:
         db = firestore.client()

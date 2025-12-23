@@ -1,0 +1,353 @@
+/**
+ * Iceland Heatmap Styles
+ *
+ * Choropleth map visualization for member distribution.
+ * Part of: Member Heatmap Feature (Dec 2025)
+ */
+
+/* ==========================================================================
+   Map Container
+   ========================================================================== */
+
+.iceland-map {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.iceland-map__svg {
+  width: 100%;
+  aspect-ratio: 8 / 5;
+  background: var(--color-bg-subtle, #f9fafb);
+  border-radius: var(--radius-md, 8px);
+  overflow: hidden;
+}
+
+.iceland-map__map {
+  width: 100%;
+  height: 100%;
+}
+
+.iceland-map__error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: var(--color-muted, #6b7280);
+  text-align: center;
+}
+
+/* ==========================================================================
+   Municipality Regions
+   ========================================================================== */
+
+.iceland-map__region {
+  stroke: var(--color-border, #d1d5db);
+  stroke-width: 0.5px;
+  transition: opacity 0.15s ease, stroke-width 0.15s ease;
+}
+
+.iceland-map__region--hover {
+  opacity: 0.85;
+  stroke-width: 2px;
+  stroke: var(--color-text, #1f2937);
+}
+
+/* ==========================================================================
+   Tooltip
+   ========================================================================== */
+
+.iceland-map__tooltip {
+  position: fixed;
+  background: var(--color-bg-elevated, white);
+  border: 1px solid var(--color-border, #d1d5db);
+  border-radius: var(--radius-md, 8px);
+  padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+  box-shadow: var(--shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.1));
+  font-size: var(--font-size-sm, 0.875rem);
+  pointer-events: none;
+  z-index: 1000;
+  max-width: 200px;
+  line-height: 1.4;
+}
+
+.iceland-map__tooltip strong {
+  display: block;
+  margin-bottom: 2px;
+}
+
+/* ==========================================================================
+   Legend
+   ========================================================================== */
+
+.iceland-map__legend {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-4, 1rem);
+  margin-top: var(--space-4, 1rem);
+  flex-wrap: wrap;
+}
+
+.iceland-map__legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1, 0.25rem);
+}
+
+.iceland-map__legend-swatch {
+  width: 20px;
+  height: 14px;
+  border: 1px solid var(--color-border, #d1d5db);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.iceland-map__legend-label {
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--color-muted, #6b7280);
+}
+
+/* ==========================================================================
+   Stats Cards
+   ========================================================================== */
+
+.heatmap-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-4, 1rem);
+  margin-bottom: var(--space-6, 1.5rem);
+}
+
+.heatmap-stat {
+  text-align: center;
+  padding: var(--space-4, 1rem);
+  background: var(--color-bg-subtle, #f9fafb);
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--color-border-subtle, #e5e7eb);
+}
+
+.heatmap-stat__value {
+  font-size: var(--font-size-2xl, 1.5rem);
+  font-weight: 600;
+  color: var(--color-primary, #dc2626);
+  line-height: 1.2;
+}
+
+.heatmap-stat__label {
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-muted, #6b7280);
+  margin-top: var(--space-1, 0.25rem);
+}
+
+/* ==========================================================================
+   Top Municipalities Table
+   ========================================================================== */
+
+.heatmap-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm, 0.875rem);
+}
+
+.heatmap-table th,
+.heatmap-table td {
+  padding: var(--space-3, 0.75rem) var(--space-4, 1rem);
+  text-align: left;
+  border-bottom: 1px solid var(--color-border-subtle, #e5e7eb);
+}
+
+.heatmap-table th {
+  font-weight: 600;
+  color: var(--color-muted, #6b7280);
+  background: var(--color-bg-subtle, #f9fafb);
+}
+
+.heatmap-table tbody tr:hover {
+  background: var(--color-bg-hover, #f3f4f6);
+}
+
+.heatmap-table td:first-child {
+  color: var(--color-muted, #6b7280);
+  width: 40px;
+}
+
+.heatmap-table td:last-child,
+.heatmap-table th:last-child {
+  text-align: right;
+}
+
+/* ==========================================================================
+   Zoom Controls
+   ========================================================================== */
+
+.iceland-map__zoom-controls {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--space-2, 0.5rem);
+  margin-bottom: var(--space-3, 0.75rem);
+}
+
+.iceland-map__zoom-btn {
+  padding: var(--space-2, 0.5rem) var(--space-4, 1rem);
+  font-size: var(--font-size-sm, 0.875rem);
+  font-weight: 500;
+  color: var(--color-muted, #6b7280);
+  background: var(--color-bg-subtle, #f9fafb);
+  border: 1px solid var(--color-border, #d1d5db);
+  border-radius: var(--radius-md, 8px);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.iceland-map__zoom-btn:hover {
+  background: var(--color-bg-hover, #f3f4f6);
+  border-color: var(--color-border-hover, #9ca3af);
+}
+
+.iceland-map__zoom-btn--active {
+  color: white;
+  background: var(--color-primary, #dc2626);
+  border-color: var(--color-primary, #dc2626);
+}
+
+.iceland-map__zoom-btn--active:hover {
+  background: var(--color-primary-hover, #b91c1c);
+  border-color: var(--color-primary-hover, #b91c1c);
+}
+
+/* SVG transition for smooth zoom */
+.iceland-map__map {
+  transition: viewBox 0.3s ease;
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .iceland-map__legend {
+    gap: var(--space-2, 0.5rem);
+  }
+
+  .iceland-map__legend-item {
+    font-size: var(--font-size-xs, 0.75rem);
+  }
+
+  .iceland-map__legend-swatch {
+    width: 16px;
+    height: 12px;
+  }
+
+  .heatmap-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .heatmap-stat {
+    padding: var(--space-3, 0.75rem);
+  }
+
+  .heatmap-stat__value {
+    font-size: var(--font-size-xl, 1.25rem);
+  }
+
+  .heatmap-stat__label {
+    font-size: var(--font-size-xs, 0.75rem);
+  }
+
+  /* Table → Card layout on mobile */
+  .heatmap-table,
+  .heatmap-table thead,
+  .heatmap-table tbody,
+  .heatmap-table th,
+  .heatmap-table td,
+  .heatmap-table tr {
+    display: block;
+  }
+
+  .heatmap-table thead {
+    display: none; /* Hide headers on mobile */
+  }
+
+  .heatmap-table tbody tr {
+    background: var(--color-bg-subtle, #f9fafb);
+    border-radius: var(--radius-md, 8px);
+    margin-bottom: var(--space-3, 0.75rem);
+    padding: var(--space-3, 0.75rem);
+    border: 1px solid var(--color-border-subtle, #e5e7eb);
+  }
+
+  .heatmap-table tbody tr:hover {
+    background: var(--color-bg-subtle, #f9fafb);
+  }
+
+  .heatmap-table td {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--space-1, 0.25rem) 0;
+    border-bottom: none;
+  }
+
+  .heatmap-table td:first-child {
+    display: none; /* Hide rank number on mobile */
+  }
+
+  .heatmap-table td:nth-child(2) {
+    font-weight: 600;
+    font-size: var(--font-size-base, 1rem);
+    padding-bottom: var(--space-2, 0.5rem);
+    border-bottom: 1px solid var(--color-border-subtle, #e5e7eb);
+    margin-bottom: var(--space-2, 0.5rem);
+  }
+
+  .heatmap-table td:nth-child(2)::before {
+    content: none;
+  }
+
+  .heatmap-table td:nth-child(3)::before {
+    content: 'Félagar: ';
+    color: var(--color-muted, #6b7280);
+  }
+
+  .heatmap-table td:nth-child(4)::before {
+    content: 'Kjósendur: ';
+    color: var(--color-muted, #6b7280);
+  }
+
+  .heatmap-table td:nth-child(5)::before {
+    content: 'Af kjósendum: ';
+    color: var(--color-muted, #6b7280);
+  }
+
+  .heatmap-table td:last-child {
+    text-align: left;
+  }
+
+  /* Total row in abroad table */
+  .heatmap-table tfoot tr {
+    background: var(--color-primary-subtle, #fef2f2);
+    border-color: var(--color-primary, #dc2626);
+  }
+}
+
+@media (max-width: 480px) {
+  .heatmap-stats {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2, 0.5rem);
+  }
+
+  .heatmap-stat {
+    padding: var(--space-2, 0.5rem);
+  }
+
+  .heatmap-stat__value {
+    font-size: var(--font-size-lg, 1.125rem);
+  }
+
+  .iceland-map__zoom-btn {
+    padding: var(--space-1, 0.25rem) var(--space-2, 0.5rem);
+    font-size: var(--font-size-xs, 0.75rem);
+  }
+}

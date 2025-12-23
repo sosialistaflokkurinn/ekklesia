@@ -28,6 +28,19 @@ import { showToast } from './components/ui-toast.js';
 import { SERVICES } from './config/config.js';
 
 /**
+ * Nomination committee member UIDs
+ * These users can see the nomination/uppstilling link on the dashboard
+ */
+const NOMINATION_COMMITTEE_UIDS = [
+  'NE5e8GpzzBcjxuTHWGuJtTfevPD2',
+  'VNu6MunXCCV9USkDmWBAAQreaIs1',
+  'YYcjrF7HZ4VoFkwLdnrlWdlVWq23',
+  'ZTUkKGZxneXY7TLRLwHhe74cvGb2',
+  'mxK7v6CefxMB0NBTxPdiMO7Nh6C3',
+  'KIe8gk1B4NRTQFzSbwTgMVipXGq1'
+];
+
+/**
  * Required DOM elements for dashboard page
  */
 const DASHBOARD_ELEMENTS = [
@@ -184,6 +197,22 @@ function updateRoleQuickLinks(roles) {
 
   const html = renderRoleQuickLinks(roles);
   container.innerHTML = html;
+}
+
+/**
+ * Show nomination link for committee members only
+ * @param {string} uid - Current user's Firebase UID
+ */
+function updateNominationLink(uid) {
+  const nominationLink = document.getElementById('quick-link-nomination');
+  if (!nominationLink) {
+    return;
+  }
+
+  if (NOMINATION_COMMITTEE_UIDS.includes(uid)) {
+    nominationLink.style.display = '';
+    debug.log('Nomination link shown for committee member:', uid);
+  }
 }
 
 /**
@@ -604,6 +633,9 @@ async function init() {
 
     // Show role-based quick links (admin/superuser)
     updateRoleQuickLinks(userData.roles);
+
+    // Show nomination link for committee members
+    updateNominationLink(currentUser.uid);
 
     // Load featured event (non-blocking)
     loadFeaturedEvent();

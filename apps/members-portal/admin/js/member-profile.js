@@ -1,11 +1,12 @@
 /**
  * Admin Member Profile Page
- * 
+ *
  * Unified view/edit page for member profiles in admin area.
+ * Reads from Cloud SQL (source of truth) via Cloud Functions.
  * Uses PhoneManager and AddressManager from profile refactoring.
  */
 
-import { getFirebaseAuth, getFirebaseFirestore, httpsCallable, doc, getDoc, updateDoc, collection, query, where, getDocs } from '../../firebase/app.js';
+import { getFirebaseAuth, httpsCallable } from '../../firebase/app.js';
 import { R } from '../../i18n/strings-loader.js';
 import { adminStrings } from './i18n/admin-strings-loader.js';
 import { showToast } from '../../js/components/ui-toast.js';
@@ -20,13 +21,14 @@ import { AddressManager } from '../../js/profile/address-manager.js';
 import { migrateOldPhoneFields, migrateOldAddressFields } from '../../js/profile/migration.js';
 import { getUnions, getJobTitles, getHousingSituationLabel } from '../../js/api/api-lookups.js';
 import { formatDateOnlyIcelandic, formatDateIcelandic, formatMembershipDuration } from '../../js/utils/util-format.js';
+import MembersAPI from './api/members-api.js';
 
 // Initialize Firebase
 const auth = getFirebaseAuth();
-const db = getFirebaseFirestore();
 
 // Cloud Functions
-const updateMemberProfileFunction = httpsCallable('updatememberprofile', 'europe-west2');
+const REGION = 'europe-west2';
+const updateMemberProfileFunction = httpsCallable('updatememberprofile', REGION);
 
 // Constants
 const SEARCHABLE_SELECT_INIT_DELAY = 100; // ms to wait for DOM ready before initializing SearchableSelect
@@ -225,10 +227,10 @@ async function init() {
 }
 
 /**
- * Load member data from Firestore
+ * Load member data from Cloud SQL via Cloud Function
  * Supports two lookup methods:
- * 1. By kennitala (document ID) - legacy, less secure
- * 2. By django_id (query) - new, more secure
+ * 1. By kennitala - legacy, less secure
+ * 2. By django_id - new, more secure
  *
  * @returns {Promise<void>}
  */
@@ -236,64 +238,37 @@ async function loadMemberData() {
   try {
     showLoading();
 
-    let memberDoc = null;
+    let member = null;
 
     if (currentDjangoId) {
       // NEW: Lookup by django_id (more secure - kennitala not in URL)
       debug.log(`🔍 Loading member by django_id: ${currentDjangoId}`);
-
-      const membersRef = collection(db, 'members');
-      const q = query(membersRef, where('metadata.django_id', '==', currentDjangoId));
-      const querySnapshot = await getDocs(q);
-
-      if (querySnapshot.empty) {
-        debug.warn(`⚠️ Member not found with django_id: ${currentDjangoId}`);
-        showNotFound();
-        return;
-      }
-
-      memberDoc = querySnapshot.docs[0];
-      // Set kennitala from document ID for save operations
-      currentKennitala = memberDoc.id;
-      if (currentKennitala.length === 10 && !currentKennitala.includes('-')) {
+      member = await MembersAPI.getMember(null, currentDjangoId);
+      currentKennitala = member.kennitala;
+      if (currentKennitala && currentKennitala.length === 10 && !currentKennitala.includes('-')) {
         currentKennitala = `${currentKennitala.slice(0, 6)}-${currentKennitala.slice(6)}`;
       }
-      debug.log(`   Found kennitala: ${currentKennitala.slice(0, 6)}****`);
+      debug.log(`   Found kennitala: ${currentKennitala?.slice(0, 6)}****`);
 
     } else if (currentKennitala) {
-      // LEGACY: Lookup by kennitala (document ID)
-      const kennitalaWithoutDash = currentKennitala.replace(/-/g, '');
-      const kennitalaWithDash = currentKennitala;
-
+      // LEGACY: Lookup by kennitala
       debug.log(`🔍 Loading member with kennitala: ${currentKennitala}`);
-      debug.log(`   Trying keys: ["${kennitalaWithoutDash}", "${kennitalaWithDash}"]`);
-
-      // Try without dash first (most common format)
-      let memberDocRef = doc(db, 'members', kennitalaWithoutDash);
-      memberDoc = await getDoc(memberDocRef);
-
-      // If not found, try with dash
-      if (!memberDoc.exists()) {
-        debug.log(`   ℹ️ Not found with key: ${kennitalaWithoutDash}, trying with dash...`);
-        memberDocRef = doc(db, 'members', kennitalaWithDash);
-        memberDoc = await getDoc(memberDocRef);
-      }
-
-      if (!memberDoc.exists()) {
-        debug.warn(`⚠️ Member not found with either key format`);
-        debug.warn(`   Tried: ${kennitalaWithoutDash}, ${kennitalaWithDash}`);
-        showNotFound();
-        return;
-      }
+      member = await MembersAPI.getMember(currentKennitala);
     } else {
       showError('Ekkert ID til að leita að');
       return;
     }
 
+    if (!member) {
+      debug.warn(`⚠️ Member not found`);
+      showNotFound();
+      return;
+    }
+
     memberData = {
-      uid: memberDoc.id,
+      uid: member.id,
       kennitala: currentKennitala,
-      ...memberDoc.data()
+      ...member
     };
 
     debug.log('📦 Member data loaded:', memberData);
@@ -306,26 +281,31 @@ async function loadMemberData() {
     debug.error('❌ Error loading member:', error);
     debug.error('   ID:', currentDjangoId || currentKennitala);
     debug.error('   Error details:', error.message);
-    showError(R.string.error_loading);
+
+    if (error.message.includes('not found') || error.message.includes('NOT_FOUND')) {
+      showNotFound();
+    } else {
+      showError(R.string.error_loading || error.message);
+    }
   }
 }
 
 /**
  * Render profile data to the page
- * Reads from nested memberData structure (profile.*, membership.*, metadata.*)
+ * Reads from memberData structure (profile.*, membership.*, metadata.*)
  *
  * @returns {Promise<void>}
  */
 async function renderProfile() {
-  // Get profile data (data is in memberData.profile.*)
+  // Get profile data
   const profile = memberData.profile || {};
-  
+
   // Basic info
   document.getElementById('input-name').value = profile.name || memberData.name || '';
   document.getElementById('value-kennitala').textContent = memberData.kennitala || '-';
   document.getElementById('input-email').value = profile.email || memberData.email || '';
   document.getElementById('input-birthday').value = profile.birthday || memberData.birthday || '';
-  
+
   // Gender will be set after SearchableSelect initializes
   const genderValue = profile.gender !== undefined ? profile.gender : (memberData.gender !== undefined ? memberData.gender : '');
 
@@ -333,20 +313,14 @@ async function renderProfile() {
   const membership = memberData.membership || {};
   const statusBadge = document.getElementById('status-badge');
 
-  // Get membership status: 'active', 'unpaid', or 'inactive'
-  let membershipStatus = 'inactive';
-  if (membership.status !== undefined) {
-    membershipStatus = membership.status;
-  } else if (membership.is_active !== undefined) {
-    membershipStatus = membership.is_active ? 'active' : 'inactive';
-  } else if (memberData.active !== undefined) {
-    membershipStatus = memberData.active ? 'active' : 'inactive';
-  }
+  // Get membership status: 'active', 'deleted', or 'inactive'
+  let membershipStatus = memberData.status || 'inactive';
 
   // Display status with appropriate styling
   // Check for soft-delete first - takes priority over other statuses
-  if (membership.deleted_at) {
-    const deletedDate = membership.deleted_at.toDate ? membership.deleted_at.toDate() : new Date(membership.deleted_at);
+  if (memberData.deleted_at || membership.deleted_at) {
+    const deletedAt = memberData.deleted_at || membership.deleted_at;
+    const deletedDate = typeof deletedAt === 'string' ? new Date(deletedAt) : deletedAt;
     const formattedDate = formatDateOnlyIcelandic(deletedDate);
     statusBadge.textContent = `Eytt ${formattedDate}`;
     statusBadge.className = 'admin-badge admin-badge--error';
@@ -369,9 +343,9 @@ async function renderProfile() {
   }
 
   // Format joined date
-  const joinedDate = membership.date_joined || membership.joined_date || memberData.joined_date;
+  const joinedDate = memberData.date_joined || membership.date_joined || membership.joined_date;
   if (joinedDate) {
-    const joined = joinedDate.toDate ? joinedDate.toDate() : new Date(joinedDate);
+    const joined = typeof joinedDate === 'string' ? new Date(joinedDate) : joinedDate;
     document.getElementById('value-joined').textContent = formatDateOnlyIcelandic(joined);
 
     // Calculate membership duration
@@ -381,16 +355,14 @@ async function renderProfile() {
     document.getElementById('value-joined').textContent = '-';
     document.getElementById('value-member-since').textContent = '-';
   }
-  
+
   const metadata = memberData.metadata || {};
   document.getElementById('value-django-id').textContent = metadata.django_id || memberData.django_id || '-';
-  
-  if (metadata.synced_at || memberData.synced_at) {
-    const syncedAt = metadata.synced_at || memberData.synced_at;
-    const syncDate = syncedAt.toDate ? syncedAt.toDate() : new Date(syncedAt);
-    document.getElementById('value-synced-at').textContent = formatDateIcelandic(syncDate);
-  } else {
-    document.getElementById('value-synced-at').textContent = '-';
+
+  // Cloud SQL is now source of truth - no sync timestamp needed
+  const syncedAtEl = document.getElementById('value-synced-at');
+  if (syncedAtEl) {
+    syncedAtEl.textContent = 'Cloud SQL (source of truth)';
   }
 
   // Firebase UID - shows if member has logged into the system
@@ -401,38 +373,31 @@ async function renderProfile() {
     document.getElementById('value-uid').textContent = R.string.member_not_logged_in || 'Ekki skráð/ur inn';
   }
 
-  // Initialize Phone Manager
+  // Initialize Phone Manager with data from Cloud SQL
   phoneManager = new PhoneManager(memberData);
   const migratedPhones = migrateOldPhoneFields(memberData);
   phoneManager.initialize(migratedPhones);
   phoneManager.setupListeners();
   phoneManager.render();
 
-  // Initialize Address Manager
+  // Initialize Address Manager with data from Cloud SQL
   addressManager = new AddressManager(memberData);
   const migratedAddresses = migrateOldAddressFields(memberData);
   addressManager.initialize(migratedAddresses);
   addressManager.setupListeners();
   addressManager.render();
 
-  // Auto-save if migration patched addresses (added missing fields)
-  // Use silent mode to avoid showing "Address updated" toast when user didn't change anything
-  if (migratedAddresses._needsSave) {
-    debug.log('🔄 Migration patched addresses, auto-saving to Firestore (silent mode)...');
-    await addressManager.save({ silent: true });
-  }
-
   // Communication preferences (reachable/groupable)
   const reachableInput = document.getElementById('input-reachable');
   if (reachableInput) {
     // Default to true if not set
-    reachableInput.checked = profile.reachable !== false;
+    reachableInput.checked = memberData.reachable !== false;
   }
 
   const groupableInput = document.getElementById('input-groupable');
   if (groupableInput) {
     // Default to true if not set
-    groupableInput.checked = profile.groupable !== false;
+    groupableInput.checked = memberData.groupable !== false;
   }
 
   // Membership details: cell, union, title, housing
@@ -464,12 +429,15 @@ async function renderProfile() {
 async function renderMembershipDetails() {
   const profile = memberData.profile || {};
   const membership = memberData.membership || {};
+  const address = memberData.address || {};
 
-  // Cell/Svæði (readonly display)
+  // Cell/Svæði (readonly display) - from address data
   const cellValue = document.getElementById('value-cell');
   if (cellValue) {
-    // Cell is stored as a string (svæði name) in Firestore
-    if (membership.cell) {
+    // Cell/municipality from address
+    if (address.municipality) {
+      cellValue.textContent = address.municipality;
+    } else if (membership.cell) {
       cellValue.textContent = membership.cell;
     } else {
       cellValue.textContent = '-';
@@ -491,7 +459,7 @@ async function renderMembershipDetails() {
       });
 
       // Select current union if set
-      const currentUnions = membership.unions || [];
+      const currentUnions = memberData.unions || membership.unions || [];
       if (currentUnions.length > 0) {
         // Use first union (most members have one)
         const firstUnion = currentUnions[0];
@@ -517,7 +485,7 @@ async function renderMembershipDetails() {
       });
 
       // Select current title if set
-      const currentTitles = membership.titles || [];
+      const currentTitles = memberData.titles || membership.titles || [];
       if (currentTitles.length > 0) {
         // Use first title
         const firstTitle = currentTitles[0];
@@ -539,21 +507,21 @@ async function renderMembershipDetails() {
 
 /**
  * Setup auto-save listeners for editable fields
- * Compares values against nested profile structure and triggers save on change
+ * Triggers save via Cloud Function on change
  * Uses debouncing for text inputs to prevent excessive saves
- * 
+ *
  * @returns {void}
  */
 function setupFieldListeners() {
   const profile = memberData.profile || {};
-  
+
   // Create debounced save function (500ms delay)
   const debouncedSave = debounce(saveField, 500);
-  
+
   // Name (debounced on input, immediate on blur)
   const nameInput = document.getElementById('input-name');
   const nameStatus = document.getElementById('status-name');
-  
+
   nameInput.addEventListener('input', (e) => {
     const newName = e.target.value.trim();
     const currentName = profile.name || memberData.name || '';
@@ -561,7 +529,7 @@ function setupFieldListeners() {
       debouncedSave('name', newName, nameStatus);
     }
   });
-  
+
   nameInput.addEventListener('blur', async (e) => {
     const newName = e.target.value.trim();
     const currentName = profile.name || memberData.name || '';
@@ -573,7 +541,7 @@ function setupFieldListeners() {
   // Email (debounced on input, immediate on blur)
   const emailInput = document.getElementById('input-email');
   const emailStatus = document.getElementById('status-email');
-  
+
   emailInput.addEventListener('input', (e) => {
     const newEmail = e.target.value.trim();
     const currentEmail = profile.email || memberData.email || '';
@@ -581,7 +549,7 @@ function setupFieldListeners() {
       debouncedSave('email', newEmail, emailStatus);
     }
   });
-  
+
   emailInput.addEventListener('blur', async (e) => {
     const newEmail = e.target.value.trim();
     const currentEmail = profile.email || memberData.email || '';
@@ -670,8 +638,8 @@ function setupFieldListeners() {
 }
 
 /**
- * Save a single field to Firestore with nested path
- * 
+ * Save a single field to Cloud SQL via Cloud Function
+ *
  * @param {string} fieldName - Field name to save (e.g., 'name', 'email')
  * @param {any} value - Value to save (string, number, boolean, etc.)
  * @param {HTMLElement} statusElement - Status indicator element for visual feedback
@@ -683,49 +651,36 @@ async function saveField(fieldName, value, statusElement) {
 
     showStatus(statusElement, 'loading', { baseClass: 'profile-field__status' });
 
-    const kennitalaKey = currentKennitala.replace(/-/g, '');
-    const memberDocRef = doc(db, 'members', kennitalaKey);
+    // Map field names to Django API field names
+    const fieldMapping = {
+      'name': 'name',
+      'email': 'email',
+      'phone': 'phone',
+      'reachable': 'reachable',
+      'groupable': 'groupable',
+      'gender': 'gender',
+      'birthday': 'birthday',
+      'housing_situation': 'housing_situation'
+    };
 
-    // Save to profile.* path in Firestore
-    await updateDoc(memberDocRef, {
-      [`profile.${fieldName}`]: value,
-      updated_at: new Date()
+    const djangoFieldName = fieldMapping[fieldName];
+    if (!djangoFieldName) {
+      debug.log(`ℹ️ Field ${fieldName} not mapped for Django update`);
+      showStatus(statusElement, 'success', { baseClass: 'profile-field__status' });
+      return;
+    }
+
+    // Save to Cloud SQL via Django Cloud Function
+    const updates = { [djangoFieldName]: value };
+    const syncResult = await updateMemberProfileFunction({
+      kennitala: currentKennitala,
+      updates: updates
     });
+    debug.log(`✅ Cloud SQL update result:`, syncResult.data);
 
     // Update local state
     if (!memberData.profile) memberData.profile = {};
     memberData.profile[fieldName] = value;
-
-    // Sync to Django via Cloud Function
-    try {
-      debug.log(`🔄 Syncing ${fieldName} to Django...`);
-
-      // Map Firestore field names to Django API field names
-      const fieldMapping = {
-        'name': 'name',
-        'email': 'email',
-        'phone': 'phone',
-        'reachable': 'reachable',
-        'groupable': 'groupable',
-        'gender': 'gender',
-        'birthday': 'birthday'
-      };
-
-      const djangoFieldName = fieldMapping[fieldName];
-      if (djangoFieldName) {
-        const updates = { [djangoFieldName]: value };
-        const syncResult = await updateMemberProfileFunction({
-          kennitala: currentKennitala,
-          updates: updates
-        });
-        debug.log(`✅ Django sync result:`, syncResult.data);
-      } else {
-        debug.log(`ℹ️ Field ${fieldName} not mapped for Django sync`);
-      }
-    } catch (syncError) {
-      // Log sync error but don't fail the save (Firestore was already updated)
-      debug.warn(`⚠️ Failed to sync to Django:`, syncError);
-    }
 
     showStatus(statusElement, 'success', { baseClass: 'profile-field__status' });
     showToast(R.string.saved, 'success');
@@ -740,7 +695,7 @@ async function saveField(fieldName, value, statusElement) {
 }
 
 /**
- * Save a membership field to Firestore (membership.* path)
+ * Save a membership field to Cloud SQL (membership.* path)
  *
  * @param {string} fieldName - Field name to save (e.g., 'unions', 'titles', 'cell')
  * @param {any} value - Value to save
@@ -753,14 +708,13 @@ async function saveMembershipField(fieldName, value, statusElement) {
 
     showStatus(statusElement, 'loading', { baseClass: 'profile-field__status' });
 
-    const kennitalaKey = currentKennitala.replace(/-/g, '');
-    const memberDocRef = doc(db, 'members', kennitalaKey);
-
-    // Save to membership.* path in Firestore
-    await updateDoc(memberDocRef, {
-      [`membership.${fieldName}`]: value,
-      updated_at: new Date()
+    // Save to Cloud SQL via Django Cloud Function
+    const updates = { [fieldName]: value };
+    const syncResult = await updateMemberProfileFunction({
+      kennitala: currentKennitala,
+      updates: updates
     });
+    debug.log(`✅ Cloud SQL update result:`, syncResult.data);
 
     // Update local state
     if (!memberData.membership) memberData.membership = {};

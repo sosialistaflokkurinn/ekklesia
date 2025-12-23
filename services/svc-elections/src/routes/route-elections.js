@@ -253,7 +253,7 @@ router.get('/elections/:id', readLimiter, verifyMemberToken, async (req, res) =>
 router.post('/elections/:id/vote', voteLimiter, verifyMemberToken, async (req, res) => {
   const startTime = Date.now();
   const { id } = req.params;
-  const { answer_ids, ranked_answers } = req.body;
+  const { answer_ids, ranked_answers } = req.body || {};
 
   let client;
   try {

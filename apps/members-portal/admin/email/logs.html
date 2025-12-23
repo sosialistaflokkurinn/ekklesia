@@ -51,7 +51,7 @@
     async function init() {
       await initSession();
       await requireAdmin();
-      await initNavHeader(NAV_CONFIGS.admin);
+      await initNavHeader(NAV_CONFIGS.adminEmail);
 
       const loadingEl = document.getElementById('logs-loading');
       const emptyEl = document.getElementById('logs-empty');

@@ -7,7 +7,7 @@ Creates member in Firestore and assigns to cell.
 Usage:
     register_member({
         name: "Jón Jónsson",
-        ssn: "0112901234",
+        ssn: "0101902939",
         email: "jon@example.com",
         phone: "8881234",
         address_type: "iceland" | "foreign" | "unlocated",
@@ -34,16 +34,17 @@ import logging
 import os
 import re
 import requests
+import random
 from datetime import datetime, timezone
 from typing import Any
 
 from firebase_functions import https_fn, options
 from firebase_admin import firestore
-from google.cloud.firestore_v1 import Increment
 
 from shared.validators import normalize_kennitala, normalize_phone, validate_kennitala
+from shared.rate_limit import check_rate_limit
 from util_logging import log_json
-from fn_sync_banned_kennitala import is_kennitala_banned
+from db_members import is_kennitala_banned, member_exists
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -53,9 +54,10 @@ logger = logging.getLogger(__name__)
 ICELAND_COUNTRY_ID = 109
 
 # Django API for creating members
+# 2025-12-21: Using custom domain (more stable than Cloud Run URL)
 DJANGO_API_BASE_URL = os.environ.get(
     'DJANGO_API_BASE_URL',
-    'https://django-socialism-521240388393.europe-west2.run.app/felagar'
+    'https://starf.sosialistaflokkurinn.is/felagar'
 )
 
 
@@ -162,29 +164,6 @@ def parse_birthday_from_kennitala(kennitala: str) -> str | None:
         return None
 
 
-def get_next_comrade_id(db: firestore.Client) -> int:
-    """
-    Get next comrade_id using Firestore counter.
-
-    Uses atomic increment on /counters/comrade_id document.
-    """
-    counter_ref = db.collection('counters').document('comrade_id')
-
-    # Try to increment existing counter
-    try:
-        counter_ref.update({'value': Increment(1)})
-        doc = counter_ref.get()
-        return doc.to_dict()['value']
-    except Exception:
-        # Counter doesn't exist, initialize it
-        # First, count existing members to start from correct number
-        members_count = len(list(db.collection('members').limit(10000).stream()))
-        initial_value = max(members_count + 1, 1917)  # Start at 1917 minimum (symbolic)
-
-        counter_ref.set({'value': initial_value})
-        return initial_value
-
-
 def get_lookup_name(db: firestore.Client, collection: str, item_id: int) -> str | None:
     """Get name from lookup collection by ID."""
     if not item_id:
@@ -215,19 +194,23 @@ def get_address_from_iceaddr(hnitnum: int) -> dict | None:
 
         conn = shared_db.connection()
         cursor = conn.cursor()
+
+        # Query by hnitnum - iceaddr's shared_db returns dict rows
         cursor.execute('SELECT * FROM stadfong WHERE hnitnum = ?', (hnitnum,))
         row = cursor.fetchone()
 
         if row:
-            # Get city name from postal code
+            # iceaddr's connection returns dict rows
             postnr = row['postnr']
+
+            # Get city name from postal code
             city = ''
             if postnr:
                 pc_info = postcode_lookup(postnr)
                 if pc_info:
                     city = pc_info.get('stadur_nf', '')
 
-            return {
+            result = {
                 'street': row['heiti_nf'] or '',
                 'number': str(row['husnr']) if row['husnr'] else '',
                 'letter': row['bokst'] or '',
@@ -237,8 +220,23 @@ def get_address_from_iceaddr(hnitnum: int) -> dict | None:
                 'hnitnum': hnitnum,
                 'is_default': True
             }
+            log_json('INFO', 'Address lookup successful',
+                     event='iceaddr_lookup_success',
+                     hnitnum=hnitnum,
+                     street=result['street'],
+                     number=result['number'])
+            return result
+        else:
+            log_json('WARN', 'Address not found in iceaddr',
+                     event='iceaddr_lookup_not_found',
+                     hnitnum=hnitnum)
+
     except Exception as e:
-        logger.error(f"Failed to lookup iceaddr: {e}")
+        log_json('ERROR', 'Failed to lookup iceaddr',
+                 event='iceaddr_lookup_error',
+                 hnitnum=hnitnum,
+                 error=str(e),
+                 error_type=type(e).__name__)
 
     return None
 
@@ -294,6 +292,22 @@ def register_member(req: https_fn.CallableRequest) -> dict[str, Any]:
         dict with 'comrade_id' (int) and 'error' (str or null)
     """
     try:
+        # Security: IP-based rate limiting (5 registrations per 10 minutes per IP)
+        client_ip = None
+        if hasattr(req, 'raw_request') and req.raw_request:
+            client_ip = req.raw_request.headers.get('X-Forwarded-For', '').split(',')[0].strip()
+            if not client_ip:
+                client_ip = req.raw_request.remote_addr
+
+        if client_ip and not check_rate_limit(client_ip, max_attempts=5, window_minutes=10):
+            log_json('WARN', 'Registration rate limit exceeded',
+                     event='register_member_rate_limited',
+                     ip=client_ip[:20] if client_ip else 'unknown')
+            return {
+                'comrade_id': None,
+                'error': {'_rate_limit': 'Of margar skráningar. Reyndu aftur eftir smá stund.'}
+            }
+
         data = req.data or {}
 
         # Extract required fields
@@ -358,19 +372,17 @@ def register_member(req: https_fn.CallableRequest) -> dict[str, Any]:
                 logger.warning(f"Failed to write shadow ban audit log: {audit_err}")
 
             # Return fake success - user thinks they registered
+            # Security: Use random ID to prevent enumeration of banned kennitalas
+            fake_id = random.randint(10000, 99999)
             return {
-                'comrade_id': 9999,  # Fake ID
+                'comrade_id': fake_id,
                 'django_id': None,
-                'error': None,
-                'shadow_banned': True  # Internal flag, not shown to user
+                'error': None
+                # Note: shadow_banned flag removed to prevent detection
             }
 
-        # Initialize Firestore
-        db = firestore.client()
-
-        # Check for duplicate kennitala
-        existing = db.collection('members').document(normalized_kennitala).get()
-        if existing.exists:
+        # Check for duplicate kennitala in Cloud SQL (source of truth)
+        if member_exists(normalized_kennitala):
             log_json('WARN', 'Duplicate kennitala registration attempt',
                      event='register_member_duplicate',
                      kennitala=f"{normalized_kennitala[:6]}****")
@@ -378,6 +390,9 @@ def register_member(req: https_fn.CallableRequest) -> dict[str, Any]:
                 'comrade_id': None,
                 'error': {'ssn': 'Þessi kennitala er þegar skráð'}
             }
+
+        # Initialize Firestore (only for audit logging)
+        db = firestore.client()
 
         # Extract address info
         country_id = int(data.get('country-country', ICELAND_COUNTRY_ID))
@@ -426,137 +441,85 @@ def register_member(req: https_fn.CallableRequest) -> dict[str, Any]:
         union_name = get_lookup_name(db, 'lookup_unions', int(union_id)) if union_id else None
         title_name = get_lookup_name(db, 'lookup_job_titles', int(title_id)) if title_id else None
 
-        # Get next comrade ID
-        comrade_id = get_next_comrade_id(db)
-
-        # Build member document
+        # Extract optional fields
         housing_situation = data.get('comrade-housing_situation')
         reachable = data.get('comrade-reachable') not in [False, 'false', 'False']
         groupable = data.get('comrade-groupable') not in [False, 'false', 'False']
 
-        member_doc = {
-            'profile': {
-                'kennitala': normalized_kennitala,
-                'name': name,
-                'birthday': birthday,
-                'email': email.lower(),
-                'phone': normalized_phone,
-                'foreign_phone': '',
-                'facebook': '',
-                'gender': None,
-                'reachable': reachable,
-                'groupable': groupable,
-                'housing_situation': int(housing_situation) if housing_situation else None,
-                'addresses': addresses
-            },
-            'membership': {
-                'date_joined': datetime.now(timezone.utc),
-                'status': 'active',
-                'unions': [union_name] if union_name else [],
-                'titles': [title_name] if title_name else [],
-                'cell': cell
-            },
-            'metadata': {
-                'comrade_id': comrade_id,
-                'created_at': firestore.SERVER_TIMESTAMP,
-                'last_modified': datetime.now(timezone.utc),
-                'source': 'skraning-static',
-                'django_id': None  # Will be set after Django sync
-            }
-        }
-
-        # Save to Firestore first
-        db.collection('members').document(normalized_kennitala).set(member_doc)
-
-        log_json('INFO', 'Member saved to Firestore',
-                 event='register_member_firestore_saved',
-                 comrade_id=comrade_id,
-                 kennitala=f"{normalized_kennitala[:6]}****")
-
-        # Sync to Django to get django_id
-        django_id = None
-        try:
-            # Build address data for Django
-            address_for_django = {}
-            if addresses:
-                addr = addresses[0]
-                if addr.get('country') == 'IS':
-                    if addr.get('hnitnum'):
-                        address_for_django = {
-                            'type': 'iceland',
-                            'street': addr.get('street', ''),
-                            'number': addr.get('number', ''),
-                            'letter': addr.get('letter', ''),
-                            'postal_code': addr.get('postal_code', ''),
-                            'city': addr.get('city', ''),
-                            'country': 'IS',
-                            'hnitnum': addr.get('hnitnum')
-                        }
-                    else:
-                        address_for_django = {
-                            'type': 'unlocated',
-                            'cell_id': cell.get('id') if cell else None
-                        }
-                else:
+        # Build address data for Django API
+        address_for_django = {}
+        if addresses:
+            addr = addresses[0]
+            if addr.get('country') == 'IS':
+                if addr.get('hnitnum'):
                     address_for_django = {
-                        'type': 'foreign',
+                        'type': 'iceland',
                         'street': addr.get('street', ''),
+                        'number': addr.get('number', ''),
+                        'letter': addr.get('letter', ''),
                         'postal_code': addr.get('postal_code', ''),
                         'city': addr.get('city', ''),
-                        'country': addr.get('country', ''),
-                        'country_id': country_id
+                        'country': 'IS',
+                        'hnitnum': addr.get('hnitnum')
                     }
-            elif cell:
-                # No address but has cell (unlocated)
+                else:
+                    address_for_django = {
+                        'type': 'unlocated',
+                        'cell_id': cell.get('id') if cell else None
+                    }
+            else:
                 address_for_django = {
-                    'type': 'unlocated',
-                    'cell_id': cell.get('id')
+                    'type': 'foreign',
+                    'street': addr.get('street', ''),
+                    'postal_code': addr.get('postal_code', ''),
+                    'city': addr.get('city', ''),
+                    'country': addr.get('country', ''),
+                    'country_id': country_id
                 }
-
-            django_data = {
-                'kennitala': normalized_kennitala,
-                'name': name,
-                'email': email.lower(),
-                'phone': normalized_phone,
-                'birthday': birthday,
-                'housing_situation': int(housing_situation) if housing_situation else None,
-                'reachable': reachable,
-                'groupable': groupable,
-                'address': address_for_django,
-                'union_name': union_name,
-                'title_name': title_name
+        elif cell:
+            # No address but has cell (unlocated)
+            address_for_django = {
+                'type': 'unlocated',
+                'cell_id': cell.get('id')
             }
 
-            django_result = sync_member_to_django(django_data)
-            if django_result and django_result.get('django_id'):
-                django_id = django_result['django_id']
+        # Create member in Django (Cloud SQL is source of truth)
+        django_data = {
+            'kennitala': normalized_kennitala,
+            'name': name,
+            'email': email.lower(),
+            'phone': normalized_phone,
+            'birthday': birthday,
+            'housing_situation': int(housing_situation) if housing_situation else None,
+            'reachable': reachable,
+            'groupable': groupable,
+            'address': address_for_django,
+            'union_name': union_name,
+            'title_name': title_name
+        }
 
-                # Update Firestore with django_id
-                db.collection('members').document(normalized_kennitala).update({
-                    'metadata.django_id': django_id
-                })
+        django_result = sync_member_to_django(django_data)
 
-                log_json('INFO', 'Updated Firestore with django_id',
-                         event='register_member_django_id_updated',
-                         django_id=django_id,
-                         kennitala=f"{normalized_kennitala[:6]}****")
-
-        except Exception as django_err:
-            # Log but don't fail registration - Django sync can happen later
-            log_json('WARN', 'Django sync failed but Firestore registration succeeded',
-                     event='register_member_django_sync_failed',
-                     error=str(django_err),
+        if not django_result or not django_result.get('django_id'):
+            log_json('ERROR', 'Django registration failed - no django_id returned',
+                     event='register_member_django_failed',
                      kennitala=f"{normalized_kennitala[:6]}****")
+            return {
+                'comrade_id': None,
+                'error': 'Villa kom upp við skráningu. Reyndu aftur.'
+            }
 
-        log_json('INFO', 'Member registered successfully',
+        django_id = django_result['django_id']
+
+        log_json('INFO', 'Member registered successfully in Django (Cloud SQL)',
                  event='register_member_success',
-                 comrade_id=comrade_id,
                  django_id=django_id,
                  kennitala=f"{normalized_kennitala[:6]}****",
                  has_address=len(addresses) > 0,
                  has_cell=cell is not None)
 
-        return {'comrade_id': comrade_id, 'django_id': django_id, 'error': None}
+        # Return django_id as comrade_id (they are now the same)
+        return {'comrade_id': django_id, 'django_id': django_id, 'error': None}
 
     except Exception as e:
         logger.error(f"Registration failed: {e}")

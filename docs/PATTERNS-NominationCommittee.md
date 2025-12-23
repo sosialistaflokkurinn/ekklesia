@@ -1,14 +1,14 @@
-# Uppstillingarnefnd (Nomination Committee) System
+# Nomination Committee System
 
 ## Overview
 
-The Uppstillingarnefnd system is a **separate, restricted election system** for committee-based nominations. Only designated committee members can vote, and results are locked until ALL members have voted.
+The Nomination Committee system is a **separate, restricted election system** for committee-based nominations. Only designated committee members can vote, and results are locked until ALL members have voted.
 
 ## Key Differences from Admin Elections
 
-| Feature | Admin Elections | Uppstillingarnefnd |
+| Feature | Admin Elections | Nomination Committee |
 |---------|-----------------|-------------------|
-| **Path** | `/admin-elections/` | `/uppstilling/` |
+| **Path** | `/admin-elections/` | `/nomination/` |
 | **Voters** | All members | Committee members only |
 | **Results** | Visible when closed | Locked until all vote |
 | **Voting Type** | Single/Multi/Ranked | Ranked only |
@@ -46,11 +46,11 @@ Access is controlled by the `committee_member_uids` array in the election docume
 
 ```bash
 # Get current election
-curl -s "https://elections-service-521240388393.europe-west2.run.app/api/admin/elections/{ELECTION_ID}" \
+curl -s "https://elections-service-521240388393.europe-west1.run.app/api/admin/elections/{ELECTION_ID}" \
   -H "Authorization: Bearer $TOKEN"
 
 # Update with new committee member
-curl -X PATCH "https://elections-service-521240388393.europe-west2.run.app/api/admin/elections/{ELECTION_ID}" \
+curl -X PATCH "https://elections-service-521240388393.europe-west1.run.app/api/admin/elections/{ELECTION_ID}" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -110,14 +110,14 @@ findMember('KENNITALA_HERE').then(() => process.exit(0));
 ## File Structure
 
 ```
-apps/members-portal/uppstilling/
+apps/members-portal/nomination/
 ├── index.html              # Committee dashboard
 ├── vote.html               # Voting interface
 ├── results.html            # Results (locked until all vote)
 └── js/
     ├── api-nomination.js   # Nomination-specific API
-    ├── uppstilling-vote.js # Voting logic
-    └── uppstilling-results.js # Results display
+    ├── nomination-vote.js # Voting logic
+    └── nomination-results.js # Results display
 ```
 
 ## API Endpoints
@@ -198,7 +198,7 @@ WHERE id = 'ELECTION_ID';
 ```bash
 TOKEN="your-firebase-token"
 
-curl -X POST "https://elections-service-521240388393.europe-west2.run.app/api/admin/elections" \
+curl -X POST "https://elections-service-521240388393.europe-west1.run.app/api/admin/elections" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{

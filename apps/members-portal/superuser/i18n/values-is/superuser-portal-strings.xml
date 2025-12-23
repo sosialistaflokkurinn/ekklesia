@@ -152,6 +152,32 @@
   <string name="service_name_list_postal_codes">Póstnúmer</string>
   <string name="service_name_get_cells_by_postal_code">Sellur eftir póstnúmeri</string>
   <string name="service_name_register_member">Skráning félaga</string>
+
+  <!-- Member operations -->
+  <string name="service_name_softdeleteself">Afskrá sjálfan sig</string>
+  <string name="service_name_reactivateself">Endurvirkja aðild</string>
+  <string name="service_name_getdeletedcounts">Fjöldi eyddra gagna</string>
+
+  <!-- Email services (Amazon SES) -->
+  <string name="service_name_listemailtemplates">Lista póstsniðmát</string>
+  <string name="service_name_getemailtemplate">Sækja póstsniðmát</string>
+  <string name="service_name_saveemailtemplate">Vista póstsniðmát</string>
+  <string name="service_name_deleteemailtemplate">Eyða póstsniðmáti</string>
+  <string name="service_name_sendemail">Senda tölvupóst</string>
+  <string name="service_name_listemailcampaigns">Lista herferðir</string>
+  <string name="service_name_createemailcampaign">Búa til herferð</string>
+  <string name="service_name_sendcampaign">Senda herferð</string>
+  <string name="service_name_getemailstats">Tölfræði sendinga</string>
+  <string name="service_name_listemaillogs">Sendingarskrá</string>
+  <string name="service_name_ses_webhook">SES Webhook</string>
+  <string name="service_name_getemailpreferences">Sækja póstkjörstillingar</string>
+  <string name="service_name_updateemailpreferences">Uppfæra póstkjörstillingar</string>
+  <string name="service_name_unsubscribe">Afskráning af póstlista</string>
+
+  <!-- Heatmap services -->
+  <string name="service_name_compute_heatmap_stats">Reikna hitakortsgögn</string>
+  <string name="service_name_get_heatmap_data">Sækja hitakortsgögn</string>
+
   <string name="service_status_no_url">Engin heilsuslóð skilgreind</string>
   <string name="service_status_active">Virk</string>
   <string name="service_status_timeout">Tímamörk</string>
@@ -315,7 +341,9 @@
   <string name="architecture_group_lookup">Uppflettingar</string>
   <string name="architecture_group_registration">Skráning</string>
   <string name="architecture_group_demo">Tilraunaþjónustur</string>
-  <string name="architecture_group_utility">Hjálparföll</string>
+  <string name="architecture_group_member">Félagsaðgerðir</string>
+  <string name="architecture_group_email">Tölvupóstur</string>
+  <string name="architecture_group_heatmap">Hitakort</string>
   <string name="architecture_group_infra">Innviðir</string>
 
   <!-- Architecture service names -->
@@ -413,6 +441,10 @@
   <string name="health_section_lookup_desc">Gögn fyrir skráningarform (stéttarfélög, starfsheiti, lönd, póstnúmer).</string>
   <string name="health_section_registration">Skráningarþjónustur</string>
   <string name="health_section_registration_desc">Þjónustur fyrir skráningu nýrra félaga.</string>
+  <string name="health_section_email">Tölvupóstur</string>
+  <string name="health_section_email_desc">Amazon SES tölvupóstþjónustur fyrir sniðmát, herferðir og sendingar.</string>
+  <string name="health_section_heatmap">Hitakort</string>
+  <string name="health_section_heatmap_desc">Hitakort og tölfræði um félagsdreifingu.</string>
   <string name="health_section_database">Gagnagrunnar</string>
   <string name="health_section_schema">Gagnagrunna skemu</string>
   <string name="health_section_schema_desc">Yfirlit yfir gagnaskipan í Firestore og PostgreSQL.</string>

@@ -35,7 +35,7 @@
     async function init() {
       await initSession();
       await requireAdmin();
-      await initNavHeader(NAV_CONFIGS.admin);
+      await initNavHeader(NAV_CONFIGS.adminEmail);
     }
     init().catch(e => { window.location.href = '/'; });
   </script>

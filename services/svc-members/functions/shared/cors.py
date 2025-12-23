@@ -2,6 +2,7 @@
 CORS utilities for Ekklesia Members Service
 
 Handles Cross-Origin Resource Sharing configuration and headers.
+Updated: 2025-12-21 - Added felagar.sosialistaflokkurinn.is
 """
 
 import os
@@ -12,6 +13,7 @@ from typing import Optional
 DEFAULT_ALLOWED_ORIGINS = [
     'https://ekklesia-prod-10-2025.web.app',
     'https://ekklesia-prod-10-2025.firebaseapp.com',
+    'https://felagar.sosialistaflokkurinn.is',
     'http://localhost:3000'
 ]
 

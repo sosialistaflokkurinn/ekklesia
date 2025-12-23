@@ -9,9 +9,10 @@ import { R } from '../../i18n/strings-loader.js';
 import { debug } from '../../../js/utils/util-debug.js';
 import { showModal } from '../../../js/components/ui-modal.js';
 import { getFirebaseAuth } from '../../../firebase/app.js';
+import { SERVICES } from '../../../js/config/config.js';
 
 const auth = getFirebaseAuth();
-const API_BASE_URL = 'https://elections-service-521240388393.europe-west2.run.app/api/admin';
+const API_BASE_URL = `${SERVICES.ELECTIONS}/api/admin`;
 const REQUEST_TIMEOUT_MS = 30000; // 30 seconds
 
 /**

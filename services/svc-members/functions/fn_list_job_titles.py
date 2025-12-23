@@ -2,15 +2,14 @@
 List Job Titles Cloud Function
 
 Returns all job titles (starfsheiti) for dropdown selection in registration forms.
-Data is stored in Firestore collection 'lookup_job_titles'.
+Data is read from Cloud SQL (membership_title table).
 
 Usage:
     listJobTitles({})
-    Returns: { results: [...], error: null }
+    Returns: [{"id": 1, "name": "Aðstoðarmaður"}, ...]
 
 Caching:
     Uses in-memory cache with 1 hour TTL.
-    Cache persists across invocations on the same container instance.
 """
 
 import logging
@@ -18,72 +17,40 @@ import time
 from typing import Any, Optional, List
 
 from firebase_functions import https_fn, options
-from firebase_admin import firestore
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+from db_lookups import get_job_titles
+
 logger = logging.getLogger(__name__)
 
-# In-memory cache (persists across invocations on same container)
-_job_titles_cache: Optional[List[dict]] = None
-_job_titles_cache_time: float = 0
+# In-memory cache
+_cache: Optional[List[dict]] = None
+_cache_time: float = 0
 CACHE_TTL_SECONDS = 3600  # 1 hour
 
 
 @https_fn.on_call(
     region="europe-west2",
     memory=options.MemoryOption.MB_256,
+    secrets=["django-socialism-db-password"],
 )
-def list_job_titles(req: https_fn.CallableRequest) -> dict[str, Any]:
-    """
-    List all job titles for dropdown selection.
-
-    Args:
-        req.data: Optional parameters (currently none used)
-
-    Returns:
-        dict with 'results' array matching Django format:
-        [
-            {"id": 1, "name": "Aðstoðarmaður"},
-            ...
-        ]
-        and 'error' string (null if success)
-
-    Note:
-        Results are sorted by name for consistent display.
-        Format matches Django /kort/starfsheiti/ endpoint.
-        Uses in-memory cache with 1 hour TTL.
-    """
-    global _job_titles_cache, _job_titles_cache_time
+def list_job_titles(req: https_fn.CallableRequest) -> List[dict]:
+    """List all job titles for dropdown selection."""
+    global _cache, _cache_time
 
     try:
         # Return cached data if valid
-        if _job_titles_cache and (time.time() - _job_titles_cache_time) < CACHE_TTL_SECONDS:
-            logger.info(f"Returning {len(_job_titles_cache)} job titles from cache")
-            return _job_titles_cache
+        if _cache and (time.time() - _cache_time) < CACHE_TTL_SECONDS:
+            logger.info(f"Returning {len(_cache)} job titles from cache")
+            return _cache
 
-        logger.info("Fetching job titles from Firestore")
-
-        db = firestore.client()
-        collection_ref = db.collection('lookup_job_titles')
-
-        # Fetch all job titles
-        docs = collection_ref.order_by('name').stream()
-
-        # Format for frontend (matching Django response format)
-        results = []
-        for doc in docs:
-            data = doc.to_dict()
-            results.append({
-                'id': data.get('id'),
-                'name': data.get('name'),
-            })
+        logger.info("Fetching job titles from Cloud SQL")
+        results = get_job_titles()
 
         # Update cache
-        _job_titles_cache = results
-        _job_titles_cache_time = time.time()
+        _cache = results
+        _cache_time = time.time()
 
-        logger.info(f"Returning {len(results)} job titles (cached)")
+        logger.info(f"Returning {len(results)} job titles")
         return results
 
     except Exception as e:

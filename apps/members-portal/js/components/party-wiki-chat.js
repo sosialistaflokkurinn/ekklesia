@@ -7,8 +7,9 @@
 
 import { debug } from '../utils/util-debug.js';
 import { getFirebaseAuth } from '../../firebase/app.js';
+import { R } from '../../i18n/strings-loader.js';
 
-const EVENTS_API_BASE = 'https://events-service-521240388393.europe-west2.run.app';
+const EVENTS_API_BASE = 'https://events-service-521240388393.europe-west1.run.app';
 
 // Chat state
 let isOpen = false;
@@ -22,13 +23,13 @@ function createChatWidget() {
   const widget = document.createElement('div');
   widget.id = 'party-wiki-widget';
   widget.innerHTML = `
-    <button id="party-wiki-toggle" class="party-wiki__toggle" title="Spyrja um flokkinn">
+    <button id="party-wiki-toggle" class="party-wiki__toggle" title="${R.string.party_wiki_toggle_title}">
       <span class="party-wiki__toggle-icon">📚</span>
     </button>
     <div id="party-wiki-panel" class="party-wiki__panel party-wiki__panel--hidden">
       <div class="party-wiki__header">
         <span class="party-wiki__title">📚 Flokkurinn</span>
-        <button id="party-wiki-close" class="party-wiki__close" title="Loka">&times;</button>
+        <button id="party-wiki-close" class="party-wiki__close" title="${R.string.nav_close}">&times;</button>
       </div>
       <div id="party-wiki-messages" class="party-wiki__messages">
         <div class="party-wiki__message party-wiki__message--assistant">
@@ -41,10 +42,10 @@ function createChatWidget() {
         <textarea
           id="party-wiki-input"
           class="party-wiki__input"
-          placeholder="Spurðu um flokkinn..."
+          placeholder="${R.string.party_wiki_placeholder}"
           rows="1"
         ></textarea>
-        <button id="party-wiki-send" class="party-wiki__send" title="Senda">
+        <button id="party-wiki-send" class="party-wiki__send" title="${R.string.party_wiki_send}">
           <span>➤</span>
         </button>
       </div>

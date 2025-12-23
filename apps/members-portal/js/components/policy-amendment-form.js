@@ -126,6 +126,7 @@ export function createAmendmentForm({ sections, sessionId, R, onSubmitSuccess, a
   const container = el('div', 'amendment-form', {}, form);
 
   // Section change handler - show/hide text fields
+  // Cleanup in destroy() - form element removed when container.remove() is called
   let selectedSectionText = '';
 
   sectionSelect.addEventListener('change', () => {

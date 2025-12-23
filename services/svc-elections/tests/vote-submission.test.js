@@ -29,10 +29,7 @@ const {
   validToken,
 } = require('./fixtures/elections');
 
-// Mock express-rate-limit to avoid IPv6 warnings in tests
-jest.mock('express-rate-limit', () => {
-  return jest.fn(() => (req, res, next) => next());
-});
+// Note: express-rate-limit is mocked in tests/setup.js
 
 // Mock Firebase to prevent real Firebase initialization
 jest.mock('../src/firebase', () => ({

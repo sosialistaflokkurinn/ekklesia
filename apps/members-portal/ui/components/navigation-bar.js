@@ -264,8 +264,10 @@ export const NAV_CONFIGS = {
     links: [
       { href: '/members-area/dashboard.html', textKey: 'nav_dashboard' },
       { href: '/members-area/profile.html', textKey: 'nav_profile' },
+      { href: '/members-area/heatmap.html', textKey: 'nav_heatmap' },
       { href: '/elections/', textKey: 'nav_elections' },
       { href: '/events/', textKey: 'nav_events' },
+      { href: '/nomination/', textKey: 'nav_nomination' },
       { href: '/policy-session/', textKey: 'nav_policy_session' }
     ]
   },
@@ -282,29 +284,72 @@ export const NAV_CONFIGS = {
     links: [
       { href: '/members-area/dashboard.html', textKey: 'nav_dashboard' },
       { href: '/members-area/profile.html', textKey: 'nav_profile' },
+      { href: '/members-area/heatmap.html', textKey: 'nav_heatmap' },
       { href: '/elections/', textKey: 'nav_elections' },
       { href: '/events/', textKey: 'nav_events' },
+      { href: '/nomination/', textKey: 'nav_nomination' },
       { href: '/policy-session/', textKey: 'nav_policy_session' }
     ]
   },
 
   /**
-   * Elections List and Detail
+   * Members Heatmap
+   * Shows "Hitakort" for context
+   */
+  membersHeatmap: {
+    brand: {
+      href: '/members-area/dashboard.html',
+      textKey: 'nav_heatmap'  // "Hitakort"
+    },
+    links: [
+      { href: '/members-area/dashboard.html', textKey: 'nav_dashboard' },
+      { href: '/members-area/profile.html', textKey: 'nav_profile' },
+      { href: '/members-area/heatmap.html', textKey: 'nav_heatmap' },
+      { href: '/elections/', textKey: 'nav_elections' },
+      { href: '/events/', textKey: 'nav_events' },
+      { href: '/nomination/', textKey: 'nav_nomination' },
+      { href: '/policy-session/', textKey: 'nav_policy_session' }
+    ]
+  },
+
+  /**
+   * Elections List
    * Shows "Kosningar" for context
    */
   elections: {
     brand: {
       href: '/members-area/dashboard.html',
-      textKey: 'app_name'  // Brand → Dashboard
+      textKey: 'nav_elections'  // "Kosningar"
     },
     links: [
       { href: '/members-area/dashboard.html', textKey: 'nav_dashboard' },
       { href: '/members-area/profile.html', textKey: 'nav_profile' },
+      { href: '/members-area/heatmap.html', textKey: 'nav_heatmap' },
       { href: '/elections/', textKey: 'nav_elections' },
       { href: '/events/', textKey: 'nav_events' },
+      { href: '/nomination/', textKey: 'nav_nomination' },
       { href: '/policy-session/', textKey: 'nav_policy_session' }
     ]
-    // Note: Tabs removed - filter buttons on page provide better UX
+  },
+
+  /**
+   * Election Detail
+   * Shows "Kosning" for context
+   */
+  electionDetail: {
+    brand: {
+      href: '/members-area/dashboard.html',
+      textKey: 'nav_election_detail'  // "Kosning"
+    },
+    links: [
+      { href: '/members-area/dashboard.html', textKey: 'nav_dashboard' },
+      { href: '/members-area/profile.html', textKey: 'nav_profile' },
+      { href: '/members-area/heatmap.html', textKey: 'nav_heatmap' },
+      { href: '/elections/', textKey: 'nav_elections' },
+      { href: '/events/', textKey: 'nav_events' },
+      { href: '/nomination/', textKey: 'nav_nomination' },
+      { href: '/policy-session/', textKey: 'nav_policy_session' }
+    ]
   },
 
   /**
@@ -314,13 +359,15 @@ export const NAV_CONFIGS = {
   events: {
     brand: {
       href: '/members-area/dashboard.html',
-      textKey: 'app_name'  // Brand → Dashboard
+      textKey: 'nav_events'  // "Viðburðir"
     },
     links: [
       { href: '/members-area/dashboard.html', textKey: 'nav_dashboard' },
       { href: '/members-area/profile.html', textKey: 'nav_profile' },
+      { href: '/members-area/heatmap.html', textKey: 'nav_heatmap' },
       { href: '/elections/', textKey: 'nav_elections' },
       { href: '/events/', textKey: 'nav_events' },
+      { href: '/nomination/', textKey: 'nav_nomination' },
       { href: '/policy-session/', textKey: 'nav_policy_session' }
     ]
   },
@@ -332,13 +379,81 @@ export const NAV_CONFIGS = {
   policySession: {
     brand: {
       href: '/members-area/dashboard.html',
-      textKey: 'app_name'  // Brand → Dashboard
+      textKey: 'nav_policy_session'  // "Stefnumótun"
     },
     links: [
       { href: '/members-area/dashboard.html', textKey: 'nav_dashboard' },
       { href: '/members-area/profile.html', textKey: 'nav_profile' },
+      { href: '/members-area/heatmap.html', textKey: 'nav_heatmap' },
       { href: '/elections/', textKey: 'nav_elections' },
       { href: '/events/', textKey: 'nav_events' },
+      { href: '/nomination/', textKey: 'nav_nomination' },
+      { href: '/policy-session/', textKey: 'nav_policy_session' }
+    ]
+  },
+
+  /**
+   * Nomination Index
+   * Shows "Uppstilling" for context
+   */
+  nomination: {
+    brand: {
+      href: '/members-area/dashboard.html',
+      textKey: 'nav_nomination'  // "Uppstilling"
+    },
+    links: [
+      { href: '/members-area/dashboard.html', textKey: 'nav_dashboard' },
+      { href: '/members-area/profile.html', textKey: 'nav_profile' },
+      { href: '/members-area/heatmap.html', textKey: 'nav_heatmap' },
+      { href: '/elections/', textKey: 'nav_elections' },
+      { href: '/events/', textKey: 'nav_events' },
+      { href: '/nomination/', textKey: 'nav_nomination' },
+      { href: '/nomination/vote.html', textKey: 'nav_nomination_vote' },
+      { href: '/nomination/results.html', textKey: 'nav_nomination_results' },
+      { href: '/policy-session/', textKey: 'nav_policy_session' }
+    ]
+  },
+
+  /**
+   * Nomination Vote Page
+   * Shows "Kjósa frambjóðendur" for context
+   */
+  nominationVote: {
+    brand: {
+      href: '/members-area/dashboard.html',
+      textKey: 'nav_nomination_vote'  // "Kjósa frambjóðendur"
+    },
+    links: [
+      { href: '/members-area/dashboard.html', textKey: 'nav_dashboard' },
+      { href: '/members-area/profile.html', textKey: 'nav_profile' },
+      { href: '/members-area/heatmap.html', textKey: 'nav_heatmap' },
+      { href: '/elections/', textKey: 'nav_elections' },
+      { href: '/events/', textKey: 'nav_events' },
+      { href: '/nomination/', textKey: 'nav_nomination' },
+      { href: '/nomination/vote.html', textKey: 'nav_nomination_vote' },
+      { href: '/nomination/results.html', textKey: 'nav_nomination_results' },
+      { href: '/policy-session/', textKey: 'nav_policy_session' }
+    ]
+  },
+
+  /**
+   * Nomination Results Page
+   * Shows "Niðurstöður uppstillingar" for context
+   */
+  nominationResults: {
+    brand: {
+      href: '/members-area/dashboard.html',
+      textKey: 'nav_nomination_results'  // "Niðurstöður uppstillingar"
+    },
+    links: [
+      { href: '/members-area/dashboard.html', textKey: 'nav_dashboard' },
+      { href: '/members-area/profile.html', textKey: 'nav_profile' },
+      { href: '/members-area/heatmap.html', textKey: 'nav_heatmap' },
+      { href: '/elections/', textKey: 'nav_elections' },
+      { href: '/events/', textKey: 'nav_events' },
+      { href: '/nomination/', textKey: 'nav_nomination' },
+      { href: '/nomination/vote.html', textKey: 'nav_nomination_vote' },
+      { href: '/nomination/results.html', textKey: 'nav_nomination_results' },
       { href: '/policy-session/', textKey: 'nav_policy_session' }
     ]
   },
@@ -360,8 +475,8 @@ export const NAV_CONFIGS = {
       { href: '/admin/', textKey: 'nav_admin_overview' },
       { href: '/admin/members.html', textKey: 'nav_admin_members' },
       { href: '/admin/events.html', textKey: 'nav_admin_events' },
+      { href: '/admin/email/', textKey: 'nav_admin_email' },
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
-      { href: '/admin/sync-members.html', textKey: 'nav_admin_sync' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
   },
@@ -373,14 +488,14 @@ export const NAV_CONFIGS = {
   adminMembers: {
     brand: {
       href: '/admin/',
-      textKey: 'nav_admin'  // Brand → Admin Dashboard
+      textKey: 'nav_admin_members'  // "Félagaskrá"
     },
     links: [
       { href: '/admin/', textKey: 'nav_admin_overview' },
       { href: '/admin/members.html', textKey: 'nav_admin_members' },
       { href: '/admin/events.html', textKey: 'nav_admin_events' },
+      { href: '/admin/email/', textKey: 'nav_admin_email' },
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
-      { href: '/admin/sync-members.html', textKey: 'nav_admin_sync' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
   },
@@ -392,14 +507,14 @@ export const NAV_CONFIGS = {
   adminMemberProfile: {
     brand: {
       href: '/admin/',
-      textKey: 'nav_admin'  // Brand → Admin Dashboard
+      textKey: 'nav_admin_member_profile'  // "Upplýsingar félaga"
     },
     links: [
       { href: '/admin/', textKey: 'nav_admin_overview' },
       { href: '/admin/members.html', textKey: 'nav_admin_members' },
       { href: '/admin/events.html', textKey: 'nav_admin_events' },
+      { href: '/admin/email/', textKey: 'nav_admin_email' },
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
-      { href: '/admin/sync-members.html', textKey: 'nav_admin_sync' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
   },
@@ -411,52 +526,33 @@ export const NAV_CONFIGS = {
   adminEvents: {
     brand: {
       href: '/admin/',
-      textKey: 'nav_admin'  // Brand → Admin Dashboard
+      textKey: 'nav_admin_events'  // "Viðburðastjórnun"
     },
     links: [
       { href: '/admin/', textKey: 'nav_admin_overview' },
       { href: '/admin/members.html', textKey: 'nav_admin_members' },
       { href: '/admin/events.html', textKey: 'nav_admin_events' },
+      { href: '/admin/email/', textKey: 'nav_admin_email' },
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
-      { href: '/admin/sync-members.html', textKey: 'nav_admin_sync' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
   },
 
   /**
-   * Admin Sync Members
-   * Shows "Samstilling félagaskrár" for context
+   * Admin Email
+   * Shows "Tölvupóstur" for context
    */
-  adminSyncMembers: {
+  adminEmail: {
     brand: {
       href: '/admin/',
-      textKey: 'nav_admin'  // Brand → Admin Dashboard
+      textKey: 'nav_admin_email'  // "Tölvupóstur"
     },
     links: [
       { href: '/admin/', textKey: 'nav_admin_overview' },
       { href: '/admin/members.html', textKey: 'nav_admin_members' },
       { href: '/admin/events.html', textKey: 'nav_admin_events' },
+      { href: '/admin/email/', textKey: 'nav_admin_email' },
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
-      { href: '/admin/sync-members.html', textKey: 'nav_admin_sync' },
-      { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
-    ]
-  },
-
-  /**
-   * Admin Sync History
-   * Shows "Samstillingarsaga" for context
-   */
-  adminSyncHistory: {
-    brand: {
-      href: '/admin/',
-      textKey: 'nav_admin'  // Brand → Admin Dashboard
-    },
-    links: [
-      { href: '/admin/', textKey: 'nav_admin_overview' },
-      { href: '/admin/members.html', textKey: 'nav_admin_members' },
-      { href: '/admin/events.html', textKey: 'nav_admin_events' },
-      { href: '/admin-elections/', textKey: 'nav_admin_elections' },
-      { href: '/admin/sync-members.html', textKey: 'nav_admin_sync' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
   },
@@ -472,14 +568,13 @@ export const NAV_CONFIGS = {
   adminElections: {
     brand: {
       href: '/admin/',
-      textKey: 'nav_admin'  // Brand → Admin Dashboard
+      textKey: 'nav_admin_elections'  // "Kosningastjórnun"
     },
     links: [
       { href: '/admin/', textKey: 'nav_admin_overview' },
-      { href: '/admin/members.html', textKey: 'nav_admin_members' },
-      { href: '/admin/events.html', textKey: 'nav_admin_events' },
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
-      { href: '/admin/sync-members.html', textKey: 'nav_admin_sync' },
+      { href: '/admin-elections/create.html', textKey: 'nav_admin_elections_create' },
+      { href: '/admin-elections/results.html', textKey: 'nav_admin_elections_results' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
   },
@@ -491,14 +586,13 @@ export const NAV_CONFIGS = {
   adminElectionsCreate: {
     brand: {
       href: '/admin/',
-      textKey: 'nav_admin'  // Brand → Admin Dashboard
+      textKey: 'nav_admin_elections_create'  // "Ný kosning"
     },
     links: [
       { href: '/admin/', textKey: 'nav_admin_overview' },
-      { href: '/admin/members.html', textKey: 'nav_admin_members' },
-      { href: '/admin/events.html', textKey: 'nav_admin_events' },
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
-      { href: '/admin/sync-members.html', textKey: 'nav_admin_sync' },
+      { href: '/admin-elections/create.html', textKey: 'nav_admin_elections_create' },
+      { href: '/admin-elections/results.html', textKey: 'nav_admin_elections_results' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
   },
@@ -510,14 +604,31 @@ export const NAV_CONFIGS = {
   adminElectionsControl: {
     brand: {
       href: '/admin/',
-      textKey: 'nav_admin'  // Brand → Admin Dashboard
+      textKey: 'nav_admin_elections_control'  // "Stjórnborð kosninga"
     },
     links: [
       { href: '/admin/', textKey: 'nav_admin_overview' },
-      { href: '/admin/members.html', textKey: 'nav_admin_members' },
-      { href: '/admin/events.html', textKey: 'nav_admin_events' },
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
-      { href: '/admin/sync-members.html', textKey: 'nav_admin_sync' },
+      { href: '/admin-elections/create.html', textKey: 'nav_admin_elections_create' },
+      { href: '/admin-elections/results.html', textKey: 'nav_admin_elections_results' },
+      { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
+    ]
+  },
+
+  /**
+   * Admin Elections Results
+   * Shows "Niðurstöður" for context
+   */
+  adminElectionsResults: {
+    brand: {
+      href: '/admin/',
+      textKey: 'nav_admin_elections_results'  // "Niðurstöður"
+    },
+    links: [
+      { href: '/admin/', textKey: 'nav_admin_overview' },
+      { href: '/admin-elections/', textKey: 'nav_admin_elections' },
+      { href: '/admin-elections/create.html', textKey: 'nav_admin_elections_create' },
+      { href: '/admin-elections/results.html', textKey: 'nav_admin_elections_results' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
   },

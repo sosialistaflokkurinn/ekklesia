@@ -2,6 +2,9 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { version } = require('../package.json');
+
+// Initialize Firebase Admin SDK (required for App Check, Storage, etc.)
+require('./config/config-firebase');
 const electionRoutes = require('./routes/route-election');
 const adminRouter = require('./routes/route-admin');
 const externalEventsRouter = require('./routes/route-external-events');
@@ -12,6 +15,7 @@ const errorsRouter = require('./routes/route-errors');
 const { verifyAppCheckOptional } = require('./middleware/middleware-app-check');
 const { readLimiter, adminLimiter } = require('./middleware/middleware-rate-limiter');
 const logger = require('./utils/util-logger');
+const { pool } = require('./config/config-database');
 
 /**
  * Events Service (Atburðir)
@@ -24,11 +28,14 @@ const PORT = process.env.PORT || 8080;
 
 // Middleware
 // CORS configuration - only allow known origins in production
-const corsOrigins = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',').map(s => s.trim()).filter(Boolean) : [
-  'https://ekklesia-prod-10-2025.web.app',
-  'https://ekklesia-prod-10-2025.firebaseapp.com',
-  'http://localhost:3000'
-];
+// Support both comma and semicolon separators (semicolons work better with gcloud --set-env-vars)
+const corsOrigins = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(/[,;]/).map(s => s.trim()).filter(Boolean)
+  : [
+    'https://ekklesia-prod-10-2025.web.app',
+    'https://ekklesia-prod-10-2025.firebaseapp.com',
+    'http://localhost:3000'
+  ];
 
 if (process.env.NODE_ENV === 'production' && (corsOrigins.length === 0 || corsOrigins.includes('*'))) {
   logger.warn('CORS origins not properly restricted in production', {
@@ -59,7 +66,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Health check endpoint (no App Check required)
+// Health check endpoint (no App Check required) - liveness probe
 app.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
@@ -67,6 +74,28 @@ app.get('/health', (req, res) => {
     version,
     timestamp: new Date().toISOString()
   });
+});
+
+// Readiness probe - checks database connectivity
+app.get('/health/ready', async (req, res) => {
+  try {
+    await pool.query('SELECT 1');
+    res.json({
+      status: 'ready',
+      database: 'connected',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    logger.error('Readiness check failed', {
+      operation: 'health_ready',
+      error: error.message
+    });
+    res.status(503).json({
+      status: 'not ready',
+      database: 'disconnected',
+      error: error.message
+    });
+  }
 });
 
 // Error reporting endpoint - no App Check (errors can occur before Firebase init)
@@ -123,7 +152,7 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   logger.info('Events Service started', {
     operation: 'server_startup',
     service: 'events-service',
@@ -136,5 +165,36 @@ app.listen(PORT, () => {
     health_check: `http://localhost:${PORT}/health`
   });
 });
+
+// Graceful shutdown handler
+const gracefulShutdown = async (signal) => {
+  logger.info(`${signal} received, shutting down gracefully`, {
+    operation: 'server_shutdown',
+    signal
+  });
+
+  server.close(async () => {
+    logger.info('HTTP server closed', { operation: 'server_shutdown' });
+    try {
+      await pool.end();
+      logger.info('Database pool closed', { operation: 'server_shutdown' });
+    } catch (err) {
+      logger.error('Error closing database pool', {
+        operation: 'server_shutdown',
+        error: err.message
+      });
+    }
+    process.exit(0);
+  });
+
+  // Force exit after 30 seconds if graceful shutdown fails
+  setTimeout(() => {
+    logger.error('Forced shutdown after timeout', { operation: 'server_shutdown' });
+    process.exit(1);
+  }, 30000);
+};
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 module.exports = app;
