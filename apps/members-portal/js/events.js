@@ -272,7 +272,7 @@ function renderEventsList(events) {
           <div style="white-space: pre-line;">${formatRichText(cleanDescription)}</div>
           <div style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
             ${event.facebookUrl ? `<a href="${event.facebookUrl}" target="_blank" rel="noopener noreferrer" class="btn btn--secondary btn--small">Skoða á Facebook</a>` : ''}
-            <button class="btn btn--secondary btn--small" onclick="copyEventLink('${eventId}')" title="Afrita hlekk">🔗 Deila</button>
+            <button class="btn btn--secondary btn--small" onclick="copyEventLink('${eventId}')" title="${R.string.events_copy_link_title}">🔗 Deila</button>
           </div>
         </div>
       </div>

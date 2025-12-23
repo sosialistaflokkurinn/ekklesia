@@ -15,6 +15,7 @@
 
 import { el } from '../utils/util-dom.js';
 import { debug } from '../utils/util-debug.js';
+import { R } from '../../i18n/strings-loader.js';
 
 // Color scale (light to dark - party red)
 const COLOR_SCALE = [
@@ -181,7 +182,7 @@ async function loadSvgMap(container, data, tooltip, onClick) {
     const errorDiv = el('div', 'iceland-map__error');
 
     const errorTitle = document.createElement('p');
-    errorTitle.textContent = 'Ekki tókst að hlaða kortinu';
+    errorTitle.textContent = R.string.map_load_error;
     errorDiv.appendChild(errorTitle);
 
     const errorDetail = document.createElement('p');

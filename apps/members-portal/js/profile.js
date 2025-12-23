@@ -1634,7 +1634,7 @@ function showDeleteAccountModal() {
         <li>Þú getur endurvakið aðganginn seinna</li>
       </ul>
       <p style="margin-top: 1rem;"><strong>Skrifaðu "EYÐA" til að staðfesta:</strong></p>
-      <input type="text" id="confirm-delete-input" class="profile-field__input" placeholder="EYÐA" style="margin-top: 0.5rem; width: 100%;">
+      <input type="text" id="confirm-delete-input" class="profile-field__input" placeholder="${R.string.profile_delete_confirm_placeholder}" style="margin-top: 0.5rem; width: 100%;">
     </div>
   `;
 

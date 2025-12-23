@@ -15,6 +15,7 @@ import { requireMember } from './rbac.js';
 import { getHeatmapData } from './api/api-heatmap.js';
 import { createIcelandMap } from './components/iceland-map.js';
 import { showToast } from './components/ui-toast.js';
+import { R } from '../i18n/strings-loader.js';
 
 /**
  * Escape HTML to prevent XSS
@@ -122,7 +123,7 @@ async function init() {
       loading.textContent = '';
 
       const errorTitle = document.createElement('p');
-      errorTitle.textContent = 'Villa við að hlaða gögnum';
+      errorTitle.textContent = R.string.heatmap_data_load_error;
       loading.appendChild(errorTitle);
 
       const errorDetail = document.createElement('p');
@@ -417,7 +418,7 @@ function renderAbroad(abroad, totalAbroad) {
   totalRow.appendChild(emptyCell);
 
   const totalLabelCell = document.createElement('td');
-  totalLabelCell.textContent = 'Samtals';
+  totalLabelCell.textContent = R.string.heatmap_total_label;
   totalLabelCell.style.fontWeight = 'bold';
   totalRow.appendChild(totalLabelCell);
 

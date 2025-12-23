@@ -502,4 +502,15 @@
   <string name="profile_django_save_error">Villa við vistun í Django. Breytingar voru ekki vistaðar. Reyndu aftur.</string>
   <string name="profile_delete_error">Villa við að eyða aðgangi</string>
   <string name="save_error">Villa við vistun</string>
+
+  <!-- Migrated hardcoded strings -->
+  <string name="election_open_no_end">Opin kosning</string>
+  <string name="map_load_error">Ekki tókst að hlaða kortinu</string>
+  <string name="party_wiki_toggle_title">Spyrja um flokkinn</string>
+  <string name="party_wiki_placeholder">Spurðu um flokkinn...</string>
+  <string name="party_wiki_send">Senda</string>
+  <string name="profile_delete_confirm_placeholder">EYÐA</string>
+  <string name="events_copy_link_title">Afrita hlekk</string>
+  <string name="heatmap_data_load_error">Villa við að hlaða gögnum</string>
+  <string name="heatmap_total_label">Samtals</string>
 </resources>

@@ -140,27 +140,49 @@ def extract_js_strings(content: str) -> List[Tuple[int, str, str]]:
     """
     Extract hardcoded strings from JavaScript.
     Returns: [(line_number, text, context)]
+
+    Skips:
+    - Single-line comments (//)
+    - JSDoc blocks (/** ... */)
+    - Lines with JSDoc tags (@param, @returns, @example, etc.)
+    - Code examples in comments
     """
     results = []
     lines = content.split('\n')
-    
+    in_jsdoc = False
+
     for line_num, line in enumerate(lines, 1):
-        # Skip comments
-        if line.strip().startswith('//') or line.strip().startswith('*'):
+        stripped = line.strip()
+
+        # Track JSDoc block state
+        if '/**' in line:
+            in_jsdoc = True
             continue
-            
+        if '*/' in line:
+            in_jsdoc = False
+            continue
+        if in_jsdoc:
+            continue
+
+        # Skip single-line comments
+        if stripped.startswith('//'):
+            continue
+        # Skip lines that look like JSDoc content (start with *)
+        if stripped.startswith('*'):
+            continue
+
         # Find string literals in assignments: .textContent = "text"
         for match in re.finditer(r'(?:textContent|innerText|innerHTML)\s*=\s*["\']([^"\']+)["\']', line):
             text = match.group(1).strip()
             if text and not should_ignore(text):
                 results.append((line_num, text, match.group(0)))
-        
+
         # Find template literals with hardcoded text
         for match in re.finditer(r'`[^`]*>([A-ZÁÉÍÓÚÝÞÆÖÐ][^<`]{2,})<[^`]*`', line):
             text = match.group(1).strip()
             if text and not should_ignore(text):
                 results.append((line_num, text, f'Template: ...{text[:30]}...'))
-    
+
     return results
 
 
