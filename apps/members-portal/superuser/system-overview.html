@@ -504,7 +504,7 @@
                 Cloud SQL - Django (GCP) - socialism
               </button>
             </h3>
-            <p class="u-text-muted u-margin-bottom-sm"><strong style="color: var(--color-success);">Source of Truth</strong> fyrir félagagögn (108 töflur). <em>Smelltu til að sýna.</em></p>
+            <p class="u-text-muted u-margin-bottom-sm"><strong style="color: var(--color-success);">Source of Truth</strong> fyrir félagagögn (106 töflur). <em>Smelltu til að sýna.</em></p>
             <p class="u-text-muted u-margin-bottom-sm">Cloud Functions nota <code>db.py</code> og <code>db_members.py</code> til að lesa/skrifa í PostgreSQL.</p>
 
             <div class="schema-collapsible u-hidden" id="django-tables">
@@ -512,11 +512,10 @@
             <div class="schema-legend u-margin-bottom-md">
               <span class="badge badge--success">✓ VIRK</span> Cloud Functions nota
               <span class="badge badge--warning">⚠ DJANGO</span> Aðeins Django admin
-              <span class="badge badge--danger">✗ EYÐA</span> Ónotuð, má eyða
             </div>
 
             <!-- Membership App -->
-            <h4 class="schema-subsection__title">Membership (12 töflur)</h4>
+            <h4 class="schema-subsection__title">Membership (11 töflur)</h4>
             <div class="schema-table schema-table--compact">
               <div class="schema-row schema-row--header">
                 <span class="schema-col schema-col--name">Tafla</span>
@@ -535,7 +534,6 @@
               <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_comradetitle</code></span><span class="schema-col schema-col--desc">Starfsheiti félaga - 1,949 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
               <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_activation</code></span><span class="schema-col schema-col--desc">Django virkjunarlyklar - 1,945 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
               <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_bannedkennitala</code></span><span class="schema-col schema-col--desc">Bönnuð kennitölur - 5 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--success">✓ VIRK</span></span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_membersyncqueue</code></span><span class="schema-col schema-col--desc">Samstillingarbiðröð - 0 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--danger">✗ EYÐA</span></span></div>
             </div>
 
             <!-- Cells App -->
@@ -557,7 +555,7 @@
             </div>
 
             <!-- Groups App -->
-            <h4 class="schema-subsection__title">Groups (7 töflur)</h4>
+            <h4 class="schema-subsection__title">Groups (6 töflur)</h4>
             <div class="schema-table schema-table--compact">
               <div class="schema-row schema-row--header">
                 <span class="schema-col schema-col--name">Tafla</span>
@@ -568,7 +566,6 @@
               <div class="schema-row"><span class="schema-col schema-col--name"><code>groups_comradegroupmembership</code></span><span class="schema-col schema-col--desc">Hópaðild - 4,682 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
               <div class="schema-row"><span class="schema-col schema-col--name"><code>groups_place</code></span><span class="schema-col schema-col--desc">Staðir - 17 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
               <div class="schema-row"><span class="schema-col schema-col--name"><code>groups_event</code></span><span class="schema-col schema-col--desc">Hópviðburðir - 13 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>groups_eventinvitation</code></span><span class="schema-col schema-col--desc">Boð á viðburði - 0 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--danger">✗ EYÐA</span></span></div>
               <div class="schema-row"><span class="schema-col schema-col--name"><code>groups_accesstoken</code></span><span class="schema-col schema-col--desc">Aðgangstókar - 1 röð</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
               <div class="schema-row"><span class="schema-col schema-col--name"><code>groups_post</code></span><span class="schema-col schema-col--desc">Færslur - 6 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
             </div>
@@ -634,7 +631,6 @@
               <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
                 <li><strong style="color: var(--color-success);">14 töflur</strong> notaðar af Cloud Functions</li>
                 <li><strong style="color: var(--color-warning);">~50 töflur</strong> aðeins Django admin</li>
-                <li><strong style="color: var(--color-danger);">2 töflur</strong> til að eyða strax (0 raðir)</li>
               </ul>
               <p style="font-size: 0.85rem; margin-top: 0.5rem;">
                 <strong>Varúð:</strong> "⚠ DJANGO" töflur innihalda söguleg gögn. Ekki eyða nema með fullri öryggisafritunar.
