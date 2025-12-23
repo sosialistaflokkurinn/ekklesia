@@ -85,6 +85,11 @@ export function renderServiceCard(service) {
     ? `<div class="service-card__message">${service.message}</div>`
     : '';
 
+  // Region badge
+  const regionHtml = service.region
+    ? `<div class="service-card__region">${service.region}</div>`
+    : '';
+
   return `
     <div class="${cardClass}">
       <div class="service-card__header">
@@ -93,6 +98,7 @@ export function renderServiceCard(service) {
         ${responseTimeHtml}
       </div>
       ${usageHtml}
+      ${regionHtml}
       <div class="service-card__status">${statusText}</div>
       ${messageHtml}
     </div>
@@ -112,6 +118,11 @@ export function renderArchitectureCard(service) {
   const statusClass = `service-card--${normalizedStatus}`;
   const statusText = getArchitectureStatusText(service.status);
 
+  // Region badge
+  const regionHtml = service.region
+    ? `<div class="service-card__region">${service.region}</div>`
+    : '';
+
   return `
     <div class="service-card ${statusClass}">
       <div class="service-card__header">
@@ -119,6 +130,7 @@ export function renderArchitectureCard(service) {
         <span class="service-card__name">${name}</span>
       </div>
       <div class="service-card__id">${service.id}</div>
+      ${regionHtml}
       <div class="service-card__status">${statusText}</div>
     </div>
   `;

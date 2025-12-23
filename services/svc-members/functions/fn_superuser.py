@@ -507,6 +507,9 @@ def check_system_health_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
     add_functions(ADDRESS_FUNCTIONS, "address")
     add_functions(REGISTRATION_FUNCTIONS, "registration")
     add_functions(SUPERUSER_FUNCTIONS, "superuser")
+    add_functions(EMAIL_FUNCTIONS, "email")
+    add_functions(HEATMAP_FUNCTIONS, "heatmap")
+    add_functions(ADMIN_MEMBER_FUNCTIONS, "admin")
 
     # Check Firestore connectivity
     try:
