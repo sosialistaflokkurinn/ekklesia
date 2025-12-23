@@ -508,41 +508,52 @@
             <p class="u-text-muted u-margin-bottom-sm">Cloud Functions nota <code>db.py</code> og <code>db_members.py</code> til að lesa/skrifa í PostgreSQL.</p>
 
             <div class="schema-collapsible u-hidden" id="django-tables">
+            <!-- Legend -->
+            <div class="schema-legend u-margin-bottom-md">
+              <span class="badge badge--success">✓ VIRK</span> Cloud Functions nota
+              <span class="badge badge--warning">⚠ DJANGO</span> Aðeins Django admin
+              <span class="badge badge--danger">✗ EYÐA</span> Ónotuð, má eyða
+            </div>
+
             <!-- Membership App -->
             <h4 class="schema-subsection__title">Membership (12 töflur)</h4>
             <div class="schema-table schema-table--compact">
               <div class="schema-row schema-row--header">
                 <span class="schema-col schema-col--name">Tafla</span>
                 <span class="schema-col schema-col--desc">Lýsing</span>
+                <span class="schema-col schema-col--status">Staða</span>
               </div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_comrade</code></span><span class="schema-col schema-col--desc">Félagaskrá (source of truth)</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_contactinfo</code></span><span class="schema-col schema-col--desc">Tengiliðaupplýsingar</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_newlocaladdress</code></span><span class="schema-col schema-col--desc">Íslensk heimilisföng</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_newforeignaddress</code></span><span class="schema-col schema-col--desc">Erlend heimilisföng</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_simpleaddress</code></span><span class="schema-col schema-col--desc">Einföld heimilisföng</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_union</code></span><span class="schema-col schema-col--desc">Stéttarfélög</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_unionmembership</code></span><span class="schema-col schema-col--desc">Stéttarfélagsaðild</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_title</code></span><span class="schema-col schema-col--desc">Starfsheiti</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_comradetitle</code></span><span class="schema-col schema-col--desc">Starfsheiti félaga</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_activation</code></span><span class="schema-col schema-col--desc">Virkjunarlyklar</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_bannedkennitala</code></span><span class="schema-col schema-col--desc">Bönnuð kennitölur</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_membersyncqueue</code></span><span class="schema-col schema-col--desc">Samstillingarbiðröð</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_comrade</code></span><span class="schema-col schema-col--desc">Félagaskrá (source of truth) - 2,075 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--success">✓ VIRK</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_contactinfo</code></span><span class="schema-col schema-col--desc">Tengiliðaupplýsingar - 2,072 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--success">✓ VIRK</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_newlocaladdress</code></span><span class="schema-col schema-col--desc">Íslensk heimilisföng - 2,965 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--success">✓ VIRK</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_newforeignaddress</code></span><span class="schema-col schema-col--desc">Erlend heimilisföng - 248 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--success">✓ VIRK</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_newcomradeaddress</code></span><span class="schema-col schema-col--desc">Address join table - 3,219 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--success">✓ VIRK</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_simpleaddress</code></span><span class="schema-col schema-col--desc">Legacy einföld heimilisföng - 877 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_union</code></span><span class="schema-col schema-col--desc">Stéttarfélög (dropdown) - 101 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--success">✓ VIRK</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_unionmembership</code></span><span class="schema-col schema-col--desc">Stéttarfélagsaðild - 1,767 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_title</code></span><span class="schema-col schema-col--desc">Starfsheiti (dropdown) - 117 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--success">✓ VIRK</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_comradetitle</code></span><span class="schema-col schema-col--desc">Starfsheiti félaga - 1,949 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_activation</code></span><span class="schema-col schema-col--desc">Django virkjunarlyklar - 1,945 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_bannedkennitala</code></span><span class="schema-col schema-col--desc">Bönnuð kennitölur - 5 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--success">✓ VIRK</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>membership_membersyncqueue</code></span><span class="schema-col schema-col--desc">Samstillingarbiðröð - 0 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--danger">✗ EYÐA</span></span></div>
             </div>
 
             <!-- Cells App -->
-            <h4 class="schema-subsection__title">Cells (7 töflur)</h4>
+            <h4 class="schema-subsection__title">Cells (8 töflur)</h4>
             <div class="schema-table schema-table--compact">
               <div class="schema-row schema-row--header">
                 <span class="schema-col schema-col--name">Tafla</span>
                 <span class="schema-col schema-col--desc">Lýsing</span>
+                <span class="schema-col schema-col--status">Staða</span>
               </div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>cells_cell</code></span><span class="schema-col schema-col--desc">Sellur (landfræðilegar)</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>cells_cell_coordinators</code></span><span class="schema-col schema-col--desc">Sellusamræmingaraðilar</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>cells_cell_countries</code></span><span class="schema-col schema-col--desc">Sellulönd</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>cells_cellgroup</code></span><span class="schema-col schema-col--desc">Selluhópar</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>cells_cellgroup_coordinators</code></span><span class="schema-col schema-col--desc">Selluhópasamræmingaraðilar</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>cells_cellconfig</code></span><span class="schema-col schema-col--desc">Sellustillingar</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>cells_message</code> / <code>cells_reply</code></span><span class="schema-col schema-col--desc">Skilaboð</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>cells_cell</code></span><span class="schema-col schema-col--desc">Sellur (landfræðilegar) - 65 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--success">✓ VIRK</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>cells_cell_members</code></span><span class="schema-col schema-col--desc">Selluaðild (M2M)</span><span class="schema-col schema-col--status"><span class="badge badge--success">✓ VIRK</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>cells_cell_coordinators</code></span><span class="schema-col schema-col--desc">Sellusamræmingaraðilar - 52 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>cells_cell_countries</code></span><span class="schema-col schema-col--desc">Sellulönd - 307 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>cells_cellgroup</code></span><span class="schema-col schema-col--desc">Selluhópar - 29 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>cells_cellgroup_coordinators</code></span><span class="schema-col schema-col--desc">Selluhópasamræmingaraðilar - 1 röð</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>cells_cellconfig</code></span><span class="schema-col schema-col--desc">Sellustillingar - 5 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>cells_message</code> / <code>cells_reply</code></span><span class="schema-col schema-col--desc">Skilaboð - 3/3 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
             </div>
 
             <!-- Groups App -->
@@ -551,14 +562,15 @@
               <div class="schema-row schema-row--header">
                 <span class="schema-col schema-col--name">Tafla</span>
                 <span class="schema-col schema-col--desc">Lýsing</span>
+                <span class="schema-col schema-col--status">Staða</span>
               </div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>groups_comradegroup</code></span><span class="schema-col schema-col--desc">Hópar</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>groups_comradegroupmembership</code></span><span class="schema-col schema-col--desc">Hópaðild</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>groups_place</code></span><span class="schema-col schema-col--desc">Staðir</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>groups_event</code></span><span class="schema-col schema-col--desc">Hópviðburðir</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>groups_eventinvitation</code></span><span class="schema-col schema-col--desc">Boð á viðburði</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>groups_accesstoken</code></span><span class="schema-col schema-col--desc">Aðgangstókar</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>groups_post</code></span><span class="schema-col schema-col--desc">Færslur</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>groups_comradegroup</code></span><span class="schema-col schema-col--desc">Hópar/Sellur - 147 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--success">✓ VIRK</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>groups_comradegroupmembership</code></span><span class="schema-col schema-col--desc">Hópaðild - 4,682 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>groups_place</code></span><span class="schema-col schema-col--desc">Staðir - 17 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>groups_event</code></span><span class="schema-col schema-col--desc">Hópviðburðir - 13 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>groups_eventinvitation</code></span><span class="schema-col schema-col--desc">Boð á viðburði - 0 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--danger">✗ EYÐA</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>groups_accesstoken</code></span><span class="schema-col schema-col--desc">Aðgangstókar - 1 röð</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>groups_post</code></span><span class="schema-col schema-col--desc">Færslur - 6 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
             </div>
 
             <!-- Map App -->
@@ -567,33 +579,35 @@
               <div class="schema-row schema-row--header">
                 <span class="schema-col schema-col--name">Tafla</span>
                 <span class="schema-col schema-col--desc">Lýsing</span>
+                <span class="schema-col schema-col--status">Staða</span>
               </div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_continent</code></span><span class="schema-col schema-col--desc">Heimsálfur</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_country</code></span><span class="schema-col schema-col--desc">Lönd</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_countryalias</code></span><span class="schema-col schema-col--desc">Landanöfn (alias)</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_region</code></span><span class="schema-col schema-col--desc">Svæði</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_municipality</code></span><span class="schema-col schema-col--desc">Sveitarfélög</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_municipalityalias</code></span><span class="schema-col schema-col--desc">Sveitarfélagsnöfn</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_municipalitypostalcode</code></span><span class="schema-col schema-col--desc">Sveitarfélag↔Póstnúmer</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_postalcode</code></span><span class="schema-col schema-col--desc">Póstnúmer (geometry)</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_street</code></span><span class="schema-col schema-col--desc">Götur</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_address</code></span><span class="schema-col schema-col--desc">Heimilisföng (geometry)</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_location</code></span><span class="schema-col schema-col--desc">Staðsetningar</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_tilegrid</code> / <code>map_coast</code></span><span class="schema-col schema-col--desc">Kortagerð</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_country</code></span><span class="schema-col schema-col--desc">Lönd (dropdown)</span><span class="schema-col schema-col--status"><span class="badge badge--success">✓ VIRK</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_region</code></span><span class="schema-col schema-col--desc">Svæði</span><span class="schema-col schema-col--status"><span class="badge badge--success">✓ VIRK</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_municipality</code></span><span class="schema-col schema-col--desc">Sveitarfélög</span><span class="schema-col schema-col--status"><span class="badge badge--success">✓ VIRK</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_postalcode</code></span><span class="schema-col schema-col--desc">Póstnúmer (geometry)</span><span class="schema-col schema-col--status"><span class="badge badge--success">✓ VIRK</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_street</code></span><span class="schema-col schema-col--desc">Götur</span><span class="schema-col schema-col--status"><span class="badge badge--success">✓ VIRK</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_address</code></span><span class="schema-col schema-col--desc">Heimilisföng (geometry)</span><span class="schema-col schema-col--status"><span class="badge badge--success">✓ VIRK</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_continent</code></span><span class="schema-col schema-col--desc">Heimsálfur</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_countryalias</code></span><span class="schema-col schema-col--desc">Landanöfn (alias)</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_municipalityalias</code></span><span class="schema-col schema-col--desc">Sveitarfélagsnöfn</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_municipalitypostalcode</code></span><span class="schema-col schema-col--desc">Sveitarfélag↔Póstnúmer</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_location</code></span><span class="schema-col schema-col--desc">Staðsetningar</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>map_tilegrid</code> / <code>map_coast</code></span><span class="schema-col schema-col--desc">Kortagerð</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
             </div>
 
             <!-- Communication App -->
-            <h4 class="schema-subsection__title">Communication (5 töflur)</h4>
+            <h4 class="schema-subsection__title">Communication (5 töflur) - <span class="u-text-danger">261K+ raðir, legacy Django email</span></h4>
             <div class="schema-table schema-table--compact">
               <div class="schema-row schema-row--header">
                 <span class="schema-col schema-col--name">Tafla</span>
                 <span class="schema-col schema-col--desc">Lýsing</span>
+                <span class="schema-col schema-col--status">Staða</span>
               </div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>communication_email</code></span><span class="schema-col schema-col--desc">Tölvupóstsniðmát</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>communication_sentemail</code></span><span class="schema-col schema-col--desc">Sendir tölvupóstar</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>communication_request</code></span><span class="schema-col schema-col--desc">Beiðnir</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>communication_conversation</code></span><span class="schema-col schema-col--desc">Samtöl</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>communication_groupregistration</code></span><span class="schema-col schema-col--desc">Hópaskráningar</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>communication_email</code></span><span class="schema-col schema-col--desc">Tölvupóstsniðmát - 289 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>communication_sentemail</code></span><span class="schema-col schema-col--desc">Sendir tölvupóstar - 261,462 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>communication_request</code></span><span class="schema-col schema-col--desc">Beiðnir - 11 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>communication_conversation</code></span><span class="schema-col schema-col--desc">Samtöl - 51 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>communication_groupregistration</code></span><span class="schema-col schema-col--desc">Hópaskráningar - 227 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
             </div>
 
             <!-- Other Apps -->
@@ -602,15 +616,29 @@
               <div class="schema-row schema-row--header">
                 <span class="schema-col schema-col--name">Tafla</span>
                 <span class="schema-col schema-col--desc">Lýsing</span>
+                <span class="schema-col schema-col--status">Staða</span>
               </div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>billing_membershipfee</code></span><span class="schema-col schema-col--desc">Félagsgjöld</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>issues_*</code></span><span class="schema-col schema-col--desc">Málafundir (4 töflur)</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>conscience_*</code></span><span class="schema-col schema-col--desc">Samviskufundir (4 töflur)</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>discussion_*</code></span><span class="schema-col schema-col--desc">Umræður (4 töflur)</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>elections_*</code></span><span class="schema-col schema-col--desc">Kosningar - Django (4 töflur)</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>icelandstat_*</code></span><span class="schema-col schema-col--desc">Hagstofa gögn (14 töflur)</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>work_*</code></span><span class="schema-col schema-col--desc">Vinnuhópar (3 töflur)</span></div>
-              <div class="schema-row"><span class="schema-col schema-col--name"><code>auth_*</code> / <code>django_*</code></span><span class="schema-col schema-col--desc">Django kerfistöflur</span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>billing_membershipfee</code></span><span class="schema-col schema-col--desc">Félagsgjöld</span><span class="schema-col schema-col--status"><span class="badge badge--success">✓ VIRK</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>issues_*</code></span><span class="schema-col schema-col--desc">Málafundir (4 töflur) - 2,690 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>conscience_*</code></span><span class="schema-col schema-col--desc">Samviskufundir (4 töflur) - 367 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>discussion_*</code></span><span class="schema-col schema-col--desc">Umræður (4 töflur) - 30 raðir, 3 tómar</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>elections_*</code></span><span class="schema-col schema-col--desc">Kosningar - Django (4 töflur)</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>icelandstat_*</code></span><span class="schema-col schema-col--desc">Hagstofa gögn (14 töflur) - 226K+ raðir</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>work_*</code></span><span class="schema-col schema-col--desc">Vinnuhópar (3 töflur) - 16 raðir</span><span class="schema-col schema-col--status"><span class="badge badge--warning">⚠ DJANGO</span></span></div>
+              <div class="schema-row"><span class="schema-col schema-col--name"><code>auth_*</code> / <code>django_*</code></span><span class="schema-col schema-col--desc">Django kerfistöflur</span><span class="schema-col schema-col--status"><span class="badge badge--info">KERFI</span></span></div>
+            </div>
+
+            <!-- Summary -->
+            <div class="schema-summary u-margin-top-md" style="padding: 1rem; background: var(--color-bg-tertiary); border-radius: 8px;">
+              <h4>Samantekt</h4>
+              <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                <li><strong style="color: var(--color-success);">14 töflur</strong> notaðar af Cloud Functions</li>
+                <li><strong style="color: var(--color-warning);">~50 töflur</strong> aðeins Django admin</li>
+                <li><strong style="color: var(--color-danger);">2 töflur</strong> til að eyða strax (0 raðir)</li>
+              </ul>
+              <p style="font-size: 0.85rem; margin-top: 0.5rem;">
+                <strong>Varúð:</strong> "⚠ DJANGO" töflur innihalda söguleg gögn. Ekki eyða nema með fullri öryggisafritunar.
+              </p>
             </div>
             </div><!-- end schema-collapsible -->
           </div>
@@ -665,6 +693,9 @@
     .schema-toggle { background: none; border: none; cursor: pointer; font: inherit; color: inherit; display: flex; align-items: center; gap: 0.5rem; padding: 0; }
     .schema-toggle:hover { color: var(--color-primary); }
     .schema-toggle__icon { font-size: 0.75rem; transition: transform 0.2s; }
+    .schema-col--status { min-width: 80px; text-align: right; }
+    .schema-legend { display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.85rem; }
+    .badge--info { background: var(--color-info, #3b82f6); color: white; }
   </style>
 
   <!-- Initialize Navigation Component -->
