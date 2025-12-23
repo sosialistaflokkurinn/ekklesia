@@ -9,7 +9,7 @@ import { debug } from '../../../js/utils/util-debug.js';
 import { adminStrings } from '../../js/i18n/admin-strings-loader.js';
 import { requireAdmin } from '../../../js/rbac.js';
 import { showToast, showError } from '../../../js/components/ui-toast.js';
-import { showModal, hideModal } from '../../../js/components/ui-modal.js';
+// Note: showModal not used here - this page uses its own inline modal
 import EmailAPI from './api/email-api.js';
 
 let strings = {};
@@ -23,13 +23,11 @@ function setPageText(s) {
   // Page title
   document.getElementById('page-title').textContent = strings.email_templates_title + ' - Ekklesia';
   document.getElementById('templates-title').textContent = strings.email_templates_title;
-  document.getElementById('templates-subtitle').textContent = strings.email_templates_subtitle;
 
   // Buttons
   document.getElementById('create-template-btn').textContent = strings.email_template_create;
   document.getElementById('create-first-template-btn').textContent = strings.email_template_create;
   document.getElementById('templates-empty-text').textContent = strings.email_template_empty;
-  document.getElementById('back-to-email').textContent = '← Til baka';
 
   // Table headers
   document.getElementById('th-name').textContent = strings.email_template_name;
@@ -79,13 +77,15 @@ async function loadTemplates() {
 
     tbodyEl.innerHTML = templates.map(t => `
       <tr data-id="${t.id}">
-        <td><strong>${escapeHtml(t.name)}</strong></td>
-        <td>${escapeHtml(t.subject)}</td>
-        <td><span class="badge badge--${t.type}">${t.type === 'transactional' ? strings.email_template_type_transactional : strings.email_template_type_broadcast}</span></td>
-        <td>${t.language === 'is' ? strings.email_template_lang_is : strings.email_template_lang_en}</td>
+        <td data-label="${strings.email_template_name}"><strong>${escapeHtml(t.name)}</strong></td>
+        <td data-label="${strings.email_template_subject}">${escapeHtml(t.subject)}</td>
+        <td data-label="${strings.email_template_type}"><span class="badge badge--${t.type}">${t.type === 'transactional' ? strings.email_template_type_transactional : strings.email_template_type_broadcast}</span></td>
+        <td data-label="${strings.email_template_language}">${t.language === 'is' ? strings.email_template_lang_is : strings.email_template_lang_en}</td>
         <td>
-          <button class="btn btn--small btn--secondary edit-btn" data-id="${t.id}">${strings.email_template_edit}</button>
-          <button class="btn btn--small btn--danger delete-btn" data-id="${t.id}">${strings.email_template_delete}</button>
+          <div class="table-actions">
+            <button class="btn btn--small btn--secondary edit-btn" data-id="${t.id}">${strings.email_template_edit}</button>
+            <button class="btn btn--small btn--danger delete-btn" data-id="${t.id}">${strings.email_template_delete}</button>
+          </div>
         </td>
       </tr>
     `).join('');

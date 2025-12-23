@@ -15,72 +15,142 @@
       "predeploy": []
     }
   ],
-  "hosting": {
-    "public": "public",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**",
-      "**/*.md",
-      "**/test-*.html"
-    ],
-    "rewrites": [
-      {
-        "source": "/handleKenniAuth",
-        "function": "handleKenniAuth"
-      },
-      {
-        "source": "/verifyMembership",
-        "function": "verifyMembership"
-      }
-    ],
-    "headers": [
-      {
-        "source": "**/*.@(js|css)",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "public, max-age=3600"
-          }
-        ]
-      },
-      {
-        "source": "**/*.xml",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "public, max-age=300"
-          }
-        ]
-      },
-      {
-        "source": "**/*.svg",
-        "headers": [
-          {
-            "key": "Content-Type",
-            "value": "image/svg+xml"
-          },
-          {
-            "key": "Cache-Control",
-            "value": "public, max-age=3600"
-          }
-        ]
-      },
-      {
-        "source": "**/*.ico",
-        "headers": [
-          {
-            "key": "Content-Type",
-            "value": "image/x-icon"
-          },
-          {
-            "key": "Cache-Control",
-            "value": "public, max-age=3600"
-          }
-        ]
-      }
-    ]
-  },
+  "hosting": [
+    {
+      "site": "ekklesia-prod-10-2025",
+      "public": "public",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**",
+        "**/*.md",
+        "**/test-*.html"
+      ],
+      "rewrites": [
+        {
+          "source": "/handleKenniAuth",
+          "function": "handleKenniAuth"
+        },
+        {
+          "source": "/verifyMembership",
+          "function": "verifyMembership"
+        }
+      ],
+      "headers": [
+        {
+          "source": "**/*.@(js|css)",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=3600"
+            }
+          ]
+        },
+        {
+          "source": "**/*.xml",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=300"
+            }
+          ]
+        },
+        {
+          "source": "**/*.svg",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "image/svg+xml"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=3600"
+            }
+          ]
+        },
+        {
+          "source": "**/*.ico",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "image/x-icon"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=3600"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "site": "felagar-site",
+      "public": "public",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**",
+        "**/*.md",
+        "**/test-*.html"
+      ],
+      "rewrites": [
+        {
+          "source": "/handleKenniAuth",
+          "function": "handleKenniAuth"
+        },
+        {
+          "source": "/verifyMembership",
+          "function": "verifyMembership"
+        }
+      ],
+      "headers": [
+        {
+          "source": "**/*.@(js|css)",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=3600"
+            }
+          ]
+        },
+        {
+          "source": "**/*.xml",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=300"
+            }
+          ]
+        },
+        {
+          "source": "**/*.svg",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "image/svg+xml"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=3600"
+            }
+          ]
+        },
+        {
+          "source": "**/*.ico",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "image/x-icon"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=3600"
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "firestore": {
     "rules": "firestore.rules"
   }

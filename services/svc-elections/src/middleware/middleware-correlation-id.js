@@ -23,9 +23,11 @@ const logger = require('../utils/util-logger');
  */
 function correlationIdMiddleware(req, res, next) {
   // Use incoming header or generate new ID
-  const correlationId = req.header('X-Request-Id') ||
-                        req.header('X-Correlation-Id') ||
-                        crypto.randomUUID();
+  // Security: Sanitize external headers to prevent CRLF injection
+  const rawId = req.header('X-Request-Id') || req.header('X-Correlation-Id');
+  const correlationId = rawId
+    ? rawId.replace(/[\r\n\t]/g, '').substring(0, 64)
+    : crypto.randomUUID();
 
   // Attach to request
   req.correlationId = correlationId;

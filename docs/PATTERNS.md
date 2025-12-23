@@ -7,6 +7,15 @@
 3. **Simple over complex** - Minimum code for the task
 4. **Explicit over implicit** - Clear naming, JSDoc comments
 
+### Related Documentation
+
+| Document | Topics |
+|----------|--------|
+| [PATTERNS-GCP.md](PATTERNS-GCP.md) | GCP/Firebase auth, CLI commands, Cloud Run, Firestore queries |
+| [PATTERNS-ELECTIONS.md](PATTERNS-ELECTIONS.md) | Election types, voting systems, admin elections |
+| [PATTERNS-NominationCommittee.md](PATTERNS-NominationCommittee.md) | Nomination committee, ranked voting, restricted access |
+| [PATTERNS_DATA_DEBUGGING.md](PATTERNS_DATA_DEBUGGING.md) | Data sync issues, debugging data loss, iceaddr, webhook debugging |
+
 ---
 
 ## Secrets Management

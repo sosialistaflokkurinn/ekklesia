@@ -20,10 +20,27 @@
 
   <!-- Page Content -->
   <div class="page__container">
-    <!-- Page Header -->
+    <!-- Quick Actions -->
     <div class="card">
-      <h1 class="card__title" id="email-title">Loading...</h1>
-      <p class="card__subtitle" id="email-subtitle">Loading...</p>
+      <h2 class="card__title" id="actions-title">Loading...</h2>
+      <div class="info-grid">
+        <a href="/admin/email/send.html" class="info-grid__item u-clickable">
+          <div class="info-grid__label" id="action-send-label">Loading...</div>
+          <div class="info-grid__value" id="action-send-desc">Loading...</div>
+        </a>
+        <a href="/admin/email/templates.html" class="info-grid__item u-clickable">
+          <div class="info-grid__label" id="action-templates-label">Loading...</div>
+          <div class="info-grid__value" id="action-templates-desc">Loading...</div>
+        </a>
+        <a href="/admin/email/campaigns.html" class="info-grid__item u-clickable">
+          <div class="info-grid__label" id="action-campaigns-label">Loading...</div>
+          <div class="info-grid__value" id="action-campaigns-desc">Loading...</div>
+        </a>
+        <a href="/admin/email/logs.html" class="info-grid__item u-clickable">
+          <div class="info-grid__label" id="action-logs-label">Loading...</div>
+          <div class="info-grid__value" id="action-logs-desc">Loading...</div>
+        </a>
+      </div>
     </div>
 
     <!-- Stats Card -->
@@ -50,43 +67,16 @@
       <p class="card__note" id="stats-period"></p>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="card">
-      <h2 class="card__title" id="actions-title">Loading...</h2>
-      <div class="info-grid">
-        <a href="/admin/email/send.html" class="info-grid__item u-clickable">
-          <div class="info-grid__label" id="action-send-label">Loading...</div>
-          <div class="info-grid__value" id="action-send-desc">Loading...</div>
-        </a>
-        <a href="/admin/email/templates.html" class="info-grid__item u-clickable">
-          <div class="info-grid__label" id="action-templates-label">Loading...</div>
-          <div class="info-grid__value" id="action-templates-desc">Loading...</div>
-        </a>
-        <a href="/admin/email/campaigns.html" class="info-grid__item u-clickable">
-          <div class="info-grid__label" id="action-campaigns-label">Loading...</div>
-          <div class="info-grid__value" id="action-campaigns-desc">Loading...</div>
-        </a>
-        <a href="/admin/email/logs.html" class="info-grid__item u-clickable">
-          <div class="info-grid__label" id="action-logs-label">Loading...</div>
-          <div class="info-grid__value" id="action-logs-desc">Loading...</div>
-        </a>
-      </div>
-    </div>
-
-    <!-- Back to Admin -->
-    <div class="card">
-      <a href="/admin/" class="btn btn--secondary" id="back-to-admin">Loading...</a>
-    </div>
   </div>
 
-  <script type="module" src="/admin/email/js/email-dashboard.js?v=20251218"></script>
+  <script type="module" src="/admin/email/js/email-dashboard.js?v=20251222"></script>
 
   <!-- Initialize Navigation Component -->
   <script type="module">
     import { initNavHeader, NAV_CONFIGS } from '../../../ui/components/navigation-bar.js?v=20251217';
 
     // Initialize navigation with admin config
-    await initNavHeader(NAV_CONFIGS.admin);
+    await initNavHeader(NAV_CONFIGS.adminEmail);
   </script>
 
 </body>

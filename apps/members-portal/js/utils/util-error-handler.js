@@ -1,10 +1,12 @@
 /**
  * Error Handler Utility
- * 
+ *
  * Provides consistent error handling and display across the application.
- * 
+ *
  * @module utils/error-handler
  */
+
+import { R } from '../../i18n/strings-loader.js';
 
 /**
  * Display error message in a container
@@ -36,7 +38,7 @@ export function showErrorIn(container, message, retryCallback = null) {
   if (retryCallback) {
     const retryBtn = document.createElement('button');
     retryBtn.className = 'btn btn--secondary btn--sm error-state__retry';
-    retryBtn.textContent = 'Reyna aftur';
+    retryBtn.textContent = R.string.btn_retry;
     retryBtn.addEventListener('click', retryCallback);
     errorState.appendChild(retryBtn);
   }

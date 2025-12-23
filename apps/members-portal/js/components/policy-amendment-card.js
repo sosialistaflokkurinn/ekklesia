@@ -177,6 +177,7 @@ export function createAmendmentVoteCard(options = {}) {
   }
 
   // Button event listeners
+  // Cleanup in destroy() - buttons removed when container.remove() is called
   yesBtn.element.addEventListener('click', () => handleVote('yes'));
   noBtn.element.addEventListener('click', () => handleVote('no'));
 

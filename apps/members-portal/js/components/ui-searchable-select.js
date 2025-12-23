@@ -153,6 +153,7 @@ export class SearchableSelect {
     const label = el('span', 'searchable-select__label', {}, this.options.placeholder);
     
     const icon = el('span', 'searchable-select__icon', { 'aria-hidden': 'true' });
+    // SECURITY: Safe - hardcoded SVG icon, no user input
     icon.innerHTML = `
       <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
         <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -176,6 +177,7 @@ export class SearchableSelect {
    */
   createDropdown() {
     const searchIcon = el('span', 'searchable-select__search-icon', { 'aria-hidden': 'true' });
+    // SECURITY: Safe - hardcoded SVG icon, no user input
     searchIcon.innerHTML = `
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
         <circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.5"/>
@@ -472,6 +474,7 @@ export class SearchableSelect {
 
   /**
    * Attach event listeners
+   * // Cleanup in destroy() - wrapper.remove() cleans up component listeners
    */
   attachEventListeners() {
     // Trigger click

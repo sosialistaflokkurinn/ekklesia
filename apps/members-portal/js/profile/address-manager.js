@@ -658,36 +658,15 @@ export class AddressManager {
         debug.log('⏳ Showing loading spinner...');
       }
 
-      const db = getFirebaseFirestore();
-      const kennitalaKey = this.currentUserData.kennitala.replace(/-/g, '');
-      const memberDocRef = doc(db, 'members', kennitalaKey);
-
-      debug.log('📝 Firestore path: /members/' + kennitalaKey);
-
-      // Delete old address field (root level) and save new addresses array
-      await updateDoc(memberDocRef, {
-        'profile.addresses': this.addresses,
-        'profile.updated_at': new Date(),
-        'address': deleteField()  // Remove old address structure
+      // Save to Django/Cloud SQL via Cloud Function (source of truth)
+      debug.log('🔄 Saving addresses to Django/Cloud SQL...');
+      const syncResult = await updateMemberProfileFunction({
+        kennitala: this.currentUserData.kennitala,
+        updates: {
+          addresses: this.addresses
+        }
       });
-
-      debug.log('✅ Addresses saved successfully to Firestore');
-      debug.log('🗑️ Old address field deleted from root level');
-
-      // Sync to Django via Cloud Function (non-blocking)
-      try {
-        debug.log('🔄 Syncing addresses to Django...');
-        const syncResult = await updateMemberProfileFunction({
-          kennitala: this.currentUserData.kennitala,
-          updates: {
-            addresses: this.addresses
-          }
-        });
-        debug.log('✅ Django sync completed:', syncResult.data);
-      } catch (syncError) {
-        // Log but don't fail - Firestore save already succeeded
-        debug.warn('⚠️ Django sync failed (Firestore save succeeded):', syncError.message);
-      }
+      debug.log('✅ Addresses saved to Cloud SQL:', syncResult.data);
 
       if (statusIcon) {
         statusIcon.className = 'profile-field__status profile-field__status--success';

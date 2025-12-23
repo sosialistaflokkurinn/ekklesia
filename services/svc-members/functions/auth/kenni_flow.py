@@ -16,9 +16,11 @@ from firebase_admin import auth, firestore
 from firebase_functions import https_fn
 from util_logging import log_json, sanitize_fields
 from util_jwks import get_jwks_client_cached_ttl, get_jwks_cache_stats
-from shared.cors import get_allowed_origin, cors_headers_for_origin
+from shared.cors import get_allowed_origin, cors_headers_for_origin, parse_allowed_origins
 from shared.validators import normalize_kennitala, validate_kennitala, normalize_phone
 from shared.rate_limit import check_rate_limit
+from util_security import validate_auth_input
+from db_members import get_member_by_kennitala, update_member_firebase_uid
 
 
 def get_kenni_is_jwks_client(issuer_url: str) -> PyJWKClient:
@@ -33,39 +35,6 @@ def get_kenni_is_jwks_client(issuer_url: str) -> PyJWKClient:
         Cached JWKS client
     """
     return get_jwks_client_cached_ttl(issuer_url)
-
-
-def validate_auth_input(kenni_auth_code: str, pkce_code_verifier: str) -> bool:
-    """
-    Validate authentication input parameters.
-
-    Prevents DoS attacks via oversized payloads.
-
-    Args:
-        kenni_auth_code: OAuth authorization code from Kenni.is
-        pkce_code_verifier: PKCE code verifier
-
-    Raises:
-        ValueError: If input validation fails
-
-    Returns:
-        True if validation passes
-
-    Issue #64: Add input validation for auth code and PKCE verifier
-    """
-    # Check if fields are present
-    if not kenni_auth_code:
-        raise ValueError("Auth code required")
-    if not pkce_code_verifier:
-        raise ValueError("PKCE verifier required")
-
-    # Validate lengths (OAuth 2.0 reasonable limits)
-    if len(kenni_auth_code) > 500:
-        raise ValueError("Auth code too long (max 500 characters)")
-    if len(pkce_code_verifier) > 200:
-        raise ValueError("PKCE verifier too long (max 200 characters)")
-
-    return True
 
 
 def healthz_handler(req: https_fn.Request) -> https_fn.Response:
@@ -166,6 +135,7 @@ def handleKenniAuth_handler(req: https_fn.Request) -> https_fn.Response:
         data = req.get_json()
         kenni_auth_code = data.get('kenniAuthCode')
         pkce_code_verifier = data.get('pkceCodeVerifier')
+        client_redirect_uri = data.get('redirectUri')  # Optional: redirect_uri from client
 
         # Input validation (Issue #64)
         validate_auth_input(kenni_auth_code, pkce_code_verifier)
@@ -211,18 +181,38 @@ def handleKenniAuth_handler(req: https_fn.Request) -> https_fn.Response:
             except Exception as e:
                 log_json("warning", "Failed to read secret file", error=str(e), correlationId=correlation_id)
 
-        redirect_uri = os.environ.get("KENNI_IS_REDIRECT_URI")
+        # Redirect URI: use client-provided value if valid, else fall back to env var
+        # Allowed redirect URIs (validated against CORS origins for security)
+        allowed_redirect_uris = parse_allowed_origins()
+
+        if client_redirect_uri:
+            # Validate client-provided redirect_uri is in allowed list
+            if client_redirect_uri in allowed_redirect_uris or '*' in allowed_redirect_uris:
+                redirect_uri = client_redirect_uri
+                log_json("debug", "Using client-provided redirect_uri", redirectUri=redirect_uri, correlationId=correlation_id)
+            else:
+                log_json("warn", "Invalid redirect_uri from client", providedUri=client_redirect_uri, correlationId=correlation_id)
+                origin = get_allowed_origin(req.headers.get('Origin'))
+                return https_fn.Response(
+                    json.dumps({"error": "INVALID_REDIRECT_URI", "message": "Invalid redirect URI", "correlationId": correlation_id}),
+                    status=400,
+                    mimetype="application/json",
+                    headers={**cors_headers_for_origin(origin), 'X-Correlation-ID': correlation_id},
+                )
+        else:
+            # Fall back to env var for backwards compatibility
+            redirect_uri = os.environ.get("KENNI_IS_REDIRECT_URI")
 
         missing = [
             name for name, val in [
                 ("KENNI_IS_ISSUER_URL", issuer_url),
                 ("KENNI_IS_CLIENT_ID", client_id),
                 ("KENNI_IS_CLIENT_SECRET", client_secret),
-                ("KENNI_IS_REDIRECT_URI", redirect_uri),
+                ("redirect_uri", redirect_uri),
             ] if not val
         ]
         if missing:
-            raise Exception(f"Missing environment variables: {', '.join(missing)}")
+            raise Exception(f"Missing configuration: {', '.join(missing)}")
 
         token_url = f"{issuer_url}/oidc/token"
 
@@ -240,7 +230,8 @@ def handleKenniAuth_handler(req: https_fn.Request) -> https_fn.Response:
         token_response = requests.post(
             token_url,
             data=payload,
-            headers={'Content-Type': 'application/x-www-form-urlencoded'}
+            headers={'Content-Type': 'application/x-www-form-urlencoded'},
+            timeout=15  # Security: 15 second timeout to prevent hanging
         )
         token_response.raise_for_status()
         kenni_is_id_token = token_response.json().get("id_token")
@@ -358,28 +349,23 @@ def handleKenniAuth_handler(req: https_fn.Request) -> https_fn.Response:
                     # Re-raise if it's a different error
                     raise
 
-        # Step 4b: Link member document to Firebase UID (bidirectional linking)
-        # This enables direct lookup from /members/{kennitala} → /users/{uid}
+        # Sync firebase_uid to Django/Cloud SQL (non-blocking)
+        # This enables Django admin to see which members have logged in
         try:
-            member_ref = db.collection('members').document(normalized_kennitala)
-            member_doc = member_ref.get()
-            if member_doc.exists:
-                member_ref.update({
-                    'metadata.firebase_uid': auth_uid,
-                    'metadata.firebase_uid_linked_at': firestore.SERVER_TIMESTAMP
-                })
-                log_json("info", "Linked member to Firebase UID",
+            sync_success = update_member_firebase_uid(normalized_kennitala, auth_uid)
+            if sync_success:
+                log_json("info", "Synced firebase_uid to Django",
                          kennitala=f"{normalized_kennitala[:6]}****",
                          uid=auth_uid, correlationId=correlation_id)
             else:
-                log_json("debug", "No member document found to link",
+                log_json("debug", "No Django member found or already synced",
                          kennitala=f"{normalized_kennitala[:6]}****",
-                         correlationId=correlation_id)
+                         uid=auth_uid, correlationId=correlation_id)
         except Exception as e:
-            # Non-fatal - log and continue (user can still log in)
-            log_json("warn", "Failed to link member to Firebase UID",
+            # Non-blocking: login succeeds even if Django sync fails
+            log_json("warn", "Failed to sync firebase_uid to Django",
                      error=str(e), kennitala=f"{normalized_kennitala[:6]}****",
-                     correlationId=correlation_id)
+                     uid=auth_uid, correlationId=correlation_id)
 
         # Step 5: Read roles from Firestore /users/ collection
         # Roles are managed via Firebase Admin Panel (NOT synced from Django)
@@ -430,19 +416,16 @@ def handleKenniAuth_handler(req: https_fn.Request) -> https_fn.Response:
         except Exception as e:
             log_json("warn", "Could not check Firebase Auth disabled status", error=str(e), uid=auth_uid)
 
-        # Also check Firestore membership.deleted_at (Django soft-delete)
+        # Check Cloud SQL for soft-deleted status (source of truth)
         if not account_disabled:
             try:
-                member_doc = firestore.client().collection('members').document(normalized_kennitala).get()
-                if member_doc.exists:
-                    member_data = member_doc.to_dict()
-                    deleted_at = member_data.get('membership', {}).get('deleted_at')
-                    if deleted_at:
-                        account_disabled = True
-                        log_json("info", "User account is soft-deleted in Firestore (membership.deleted_at)",
-                                 uid=auth_uid, kennitala=f"{normalized_kennitala[:6]}****")
+                member = get_member_by_kennitala(normalized_kennitala)
+                if member and member.get('membership', {}).get('deleted_at'):
+                    account_disabled = True
+                    log_json("info", "User account is soft-deleted in Cloud SQL (deleted_at)",
+                             uid=auth_uid, kennitala=f"{normalized_kennitala[:6]}****")
             except Exception as e:
-                log_json("warn", "Could not check Firestore deleted_at status", error=str(e), uid=auth_uid)
+                log_json("warn", "Could not check Cloud SQL deleted_at status", error=str(e), uid=auth_uid)
 
         # Step 8: Return custom token to frontend
         response_data = {

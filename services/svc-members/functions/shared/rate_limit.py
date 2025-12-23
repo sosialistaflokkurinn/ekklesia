@@ -33,6 +33,68 @@ def rate_limit_bucket_id(ip_address: str, now: datetime, window_minutes: int) ->
     return f"{ip_address}:{bucket}:{window_minutes}m"
 
 
+def check_uid_rate_limit(uid: Optional[str], action: str, max_attempts: int = 3, window_minutes: int = 60) -> bool:
+    """
+    Transactional UID-based rate limit for dangerous operations.
+
+    Uses a Firestore transaction to check-and-increment a counter in a time-bucketed document.
+    Stricter defaults for destructive operations: 3 attempts per hour.
+
+    Args:
+        uid: User UID (Firebase Auth)
+        action: Action name (e.g., 'hard_delete', 'anonymize')
+        max_attempts: Maximum allowed attempts in time window (default 3)
+        window_minutes: Time window in minutes (default 60)
+
+    Returns:
+        True if allowed; False if limited.
+    """
+    if not uid:
+        log_json("warn", "Missing UID for rate limiting; denying request")
+        return False
+
+    db = firestore.client()
+    now = datetime.now(timezone.utc)
+    # Bucket by uid + action + time window
+    bucket = int(now.timestamp()) // (window_minutes * 60)
+    doc_id = f"{uid}:{action}:{bucket}:{window_minutes}m"
+    ref = db.collection('rate_limits').document(doc_id)
+    expires_at = now + timedelta(minutes=window_minutes)
+
+    @gcf.transactional
+    def _attempt(transaction) -> bool:
+        snapshot = ref.get(transaction=transaction)
+        if snapshot.exists:
+            data = snapshot.to_dict() or {}
+            count = int(data.get('count', 0))
+            if count >= max_attempts:
+                return False
+            transaction.update(ref, {
+                'count': count + 1,
+                'updatedAt': firestore.SERVER_TIMESTAMP,
+                'expiresAt': expires_at,
+                'uid': uid,
+                'action': action,
+            })
+            return True
+        else:
+            transaction.set(ref, {
+                'count': 1,
+                'createdAt': firestore.SERVER_TIMESTAMP,
+                'updatedAt': firestore.SERVER_TIMESTAMP,
+                'windowMinutes': window_minutes,
+                'expiresAt': expires_at,
+                'uid': uid,
+                'action': action,
+            })
+            return True
+
+    allowed = _attempt(db.transaction())
+    if not allowed:
+        log_json("warn", "UID rate limit exceeded", uid=uid, action=action, windowMinutes=window_minutes, maxAttempts=max_attempts)
+    return allowed
+
+
 def check_rate_limit(ip_address: Optional[str], max_attempts: int = 5, window_minutes: int = 10) -> bool:
     """
     Transactional IP-based rate limit: 5 attempts / 10 minutes (configurable).

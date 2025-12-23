@@ -54,6 +54,15 @@
   <string name="nav_open_menu">Opna valmynd</string>
   <string name="nav_close_menu">Loka valmynd</string>
   <string name="nav_close">Loka</string>
+  <string name="nav_heatmap">Hitakort</string>
+  <string name="nav_election_detail">Kosning</string>
+  <string name="nav_nomination">Uppstilling</string>
+  <string name="nav_nomination_vote">Kjósa frambjóðendur</string>
+  <string name="nav_nomination_results">Niðurstöður uppstillingar</string>
+  <string name="nav_admin_sync_short">Samstilling</string>
+  <string name="nav_missing_addresses">Vantar heimilisfang</string>
+  <string name="nav_admin_email">Tölvupóstur</string>
+  <string name="nav_admin_elections_results">Niðurstöður</string>
   <string name="dashboard_welcome_male">Sæll, félagi %s!</string>
   <string name="dashboard_welcome_female">Sæl, félagi %s!</string>
   <string name="dashboard_welcome_neutral">Sæll/Sæl, félagi %s!</string>
@@ -66,6 +75,19 @@
   <string name="quick_links_voting_desc">Skoða kosningar og kjósa</string>
   <string name="quick_links_policy_label">Stefnumótun</string>
   <string name="quick_links_policy_desc">Taka þátt í stefnumótun flokksins</string>
+  <string name="quick_links_heatmap_label">Félagadreifing</string>
+  <string name="quick_links_heatmap_desc">Skoða hvar félagar búa</string>
+  <string name="quick_links_nomination_label">Uppstillingarnefnd</string>
+  <string name="quick_links_nomination_desc">Raðvalskosningu nefndar</string>
+  <string name="page_title_heatmap">Félagadreifing - Sósíalistaflokkurinn</string>
+  <string name="heatmap_title">Félagadreifing</string>
+  <string name="heatmap_description">Kort sem sýnir hvar félagar búa eftir sveitarfélagi.</string>
+  <string name="heatmap_loading">Hleð kortagögnum...</string>
+  <string name="heatmap_total_members">Félagar samtals</string>
+  <string name="heatmap_municipalities_count">Sveitarfélög</string>
+  <string name="heatmap_address_coverage">Með staðfestu heimilisfangi</string>
+  <string name="heatmap_top_municipalities">Stærstu sveitarfélög</string>
+  <string name="heatmap_error_loading">Villa við að hlaða félagakorti</string>
   <string name="membership_title">Félagastaða</string>
   <string name="membership_loading">Hleð inn...</string>
   <string name="membership_active">✓ Virk félagsaðild</string>
@@ -134,6 +156,8 @@
   <string name="label_reachable_description">Leyfir flokknum að hafa samband vegna frétta og atburða</string>
   <string name="label_groupable">Má bæta í hópa</string>
   <string name="label_groupable_description">Leyfir flokknum að bæta þér í vinnuhópa og póstlista</string>
+  <string name="label_email_marketing">Fá fjöldapóst</string>
+  <string name="label_email_marketing_description">Fá tölvupóst um fréttir, viðburði og atkvæðagreiðslur</string>
   <string name="profile_preferences_saved">Stillingar vistaðar</string>
   <string name="section_additional_info">Aðrar upplýsingar</string>
   <string name="section_membership_details">Félagsupplýsingar</string>
@@ -478,4 +502,15 @@
   <string name="profile_django_save_error">Villa við vistun í Django. Breytingar voru ekki vistaðar. Reyndu aftur.</string>
   <string name="profile_delete_error">Villa við að eyða aðgangi</string>
   <string name="save_error">Villa við vistun</string>
+
+  <!-- Migrated hardcoded strings -->
+  <string name="election_open_no_end">Opin kosning</string>
+  <string name="map_load_error">Ekki tókst að hlaða kortinu</string>
+  <string name="party_wiki_toggle_title">Spyrja um flokkinn</string>
+  <string name="party_wiki_placeholder">Spurðu um flokkinn...</string>
+  <string name="party_wiki_send">Senda</string>
+  <string name="profile_delete_confirm_placeholder">EYÐA</string>
+  <string name="events_copy_link_title">Afrita hlekk</string>
+  <string name="heatmap_data_load_error">Villa við að hlaða gögnum</string>
+  <string name="heatmap_total_label">Samtals</string>
 </resources>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Afþakka póst - Ekklesia</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="/styles/bundle.css?v=20251221">
+
+  <style>
+    .unsubscribe-container {
+      max-width: 500px;
+      margin: 100px auto;
+      padding: var(--spacing-xl);
+      text-align: center;
+    }
+
+    .unsubscribe-card {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-xl);
+      box-shadow: var(--shadow-md);
+    }
+
+    .unsubscribe-icon {
+      font-size: 3rem;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .unsubscribe-title {
+      margin-bottom: var(--spacing-md);
+      color: var(--color-text);
+    }
+
+    .unsubscribe-message {
+      color: var(--color-text-muted);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .spinner-container {
+      display: flex;
+      justify-content: center;
+      padding: var(--spacing-xl);
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--color-gray-200);
+      border-top-color: var(--color-primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .success-icon { color: var(--color-success); }
+    .error-icon { color: var(--color-error); }
+
+    .resubscribe-link {
+      margin-top: var(--spacing-lg);
+      font-size: var(--font-size-sm);
+    }
+  </style>
+</head>
+<body>
+  <div class="unsubscribe-container">
+    <div class="unsubscribe-card">
+      <!-- Loading state -->
+      <div id="loading-state">
+        <div class="spinner-container">
+          <div class="spinner"></div>
+        </div>
+        <p class="unsubscribe-message">Vinnur beiðni...</p>
+      </div>
+
+      <!-- Success state -->
+      <div id="success-state" class="u-hidden">
+        <div class="unsubscribe-icon success-icon">✓</div>
+        <h1 class="unsubscribe-title">Afskráning tókst</h1>
+        <p class="unsubscribe-message">
+          Þú hefur verið afskráð(ur) af póstlista Sósíalistaflokksins.<br>
+          Þú munt ekki lengur fá fjöldapóst frá okkur.
+        </p>
+        <p class="unsubscribe-message">
+          <small>Þú munt áfram fá mikilvægan póst sem tengist aðild þinni (t.d. félagsgjöld, kosningar).</small>
+        </p>
+        <div class="resubscribe-link">
+          <a href="/" class="btn btn--secondary">Fara á forsíðu</a>
+        </div>
+      </div>
+
+      <!-- Error state -->
+      <div id="error-state" class="u-hidden">
+        <div class="unsubscribe-icon error-icon">✕</div>
+        <h1 class="unsubscribe-title">Villa kom upp</h1>
+        <p class="unsubscribe-message" id="error-message">
+          Ekki tókst að vinna afskráningarbeiðni.
+        </p>
+        <div class="resubscribe-link">
+          <a href="/" class="btn btn--secondary">Fara á forsíðu</a>
+        </div>
+      </div>
+
+      <!-- Invalid link state -->
+      <div id="invalid-state" class="u-hidden">
+        <div class="unsubscribe-icon error-icon">⚠</div>
+        <h1 class="unsubscribe-title">Ógildur hlekkur</h1>
+        <p class="unsubscribe-message">
+          Afþökkunarhlekkurinn er ógildur eða útrunninn.<br>
+          Vinsamlegast hafðu samband ef þú vilt afþakka póst.
+        </p>
+        <div class="resubscribe-link">
+          <a href="mailto:felagatal@sosialistaflokkurinn.is" class="btn btn--secondary">
+            Hafa samband
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { httpsCallable } from './firebase/app.js';
+
+    const REGION = 'europe-west2';
+
+    async function handleUnsubscribe() {
+      const loadingState = document.getElementById('loading-state');
+      const successState = document.getElementById('success-state');
+      const errorState = document.getElementById('error-state');
+      const invalidState = document.getElementById('invalid-state');
+      const errorMessage = document.getElementById('error-message');
+
+      // Get parameters from URL
+      const params = new URLSearchParams(window.location.search);
+      const member_id = params.get('m');
+      const token = params.get('t');
+
+      // Check if parameters are present
+      if (!member_id || !token) {
+        loadingState.classList.add('u-hidden');
+        invalidState.classList.remove('u-hidden');
+        return;
+      }
+
+      try {
+        // Call unsubscribe function
+        const unsubscribeFn = httpsCallable('unsubscribe', REGION);
+        const result = await unsubscribeFn({ member_id, token });
+
+        if (result.data.success) {
+          loadingState.classList.add('u-hidden');
+          successState.classList.remove('u-hidden');
+        } else {
+          throw new Error(result.data.message || 'Óþekkt villa');
+        }
+
+      } catch (error) {
+        console.error('Unsubscribe error:', error);
+        loadingState.classList.add('u-hidden');
+
+        if (error.code === 'functions/permission-denied') {
+          invalidState.classList.remove('u-hidden');
+        } else {
+          errorMessage.textContent = error.message || 'Ekki tókst að vinna afskráningarbeiðni.';
+          errorState.classList.remove('u-hidden');
+        }
+      }
+    }
+
+    // Run on page load
+    handleUnsubscribe();
+  </script>
+</body>
+</html>

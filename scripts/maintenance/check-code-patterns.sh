@@ -72,9 +72,11 @@ echo ""
 
 # Pattern 4: Unrealistic kennitala examples in documentation
 echo -e "${BLUE}4️⃣  Checking kennitala documentation examples...${NC}"
-if grep -rn $EXCLUDE_FLAGS -E "(0000000000|9999999999|XXXXXXXXXX)" "$SEARCH_PATH" 2>/dev/null | grep -i "kennitala\|example\|@param\|@returns" | head -5; then
+KENNITALA_EXAMPLES=$(grep -rn $EXCLUDE_FLAGS -E "(0000000000|9999999999|XXXXXXXXXX)" "$SEARCH_PATH" 2>/dev/null | grep -i "kennitala\|example\|@param\|@returns" | head -5 || true)
+if [ -n "$KENNITALA_EXAMPLES" ]; then
+  echo "$KENNITALA_EXAMPLES"
   echo -e "   ${YELLOW}⚠️  Found unrealistic kennitala examples${NC}"
-  echo -e "   ${YELLOW}💡 Use realistic DDMMYY format: 010300-9999 (Jan 3, 2000)${NC}"
+  echo -e "   ${YELLOW}💡 Use test kennitala format: 010190-2939 (standard test SSN)${NC}"
   WARNINGS=$((WARNINGS + 1))
 else
   echo -e "   ${GREEN}✅ No unrealistic kennitala examples in docs${NC}"
@@ -83,11 +85,20 @@ echo ""
 
 # Pattern 5: Async event listeners (warning only - need manual review)
 echo -e "${BLUE}5️⃣  Checking async event listeners for error handling...${NC}"
-ASYNC_LISTENERS=$(grep -rn $EXCLUDE_FLAGS "addEventListener.*async.*=>" "$SEARCH_PATH" 2>/dev/null | head -10 || true)
-if [ -n "$ASYNC_LISTENERS" ]; then
-  echo "$ASYNC_LISTENERS"
-  echo -e "   ${YELLOW}⚠️  Found async event listeners${NC}"
-  echo -e "   ${YELLOW}💡 Verify each has try-catch error handling${NC}"
+ASYNC_MISSING_TRY=0
+while IFS=: read -r file line_num content; do
+  [ -z "$file" ] && continue
+  # Check if there's a 'try' within the next 40 lines (handlers may have validation before try)
+  HAS_TRY=$(sed -n "$((line_num+1)),$((line_num+40))p" "$file" 2>/dev/null | grep -c "try {" || true)
+  if [ "$HAS_TRY" -eq 0 ]; then
+    echo "$file:$line_num:$content"
+    ASYNC_MISSING_TRY=$((ASYNC_MISSING_TRY + 1))
+  fi
+done < <(grep -rn $EXCLUDE_FLAGS "addEventListener.*async.*=>" "$SEARCH_PATH" 2>/dev/null || true)
+
+if [ "$ASYNC_MISSING_TRY" -gt 0 ]; then
+  echo -e "   ${YELLOW}⚠️  Found $ASYNC_MISSING_TRY async listeners without nearby try-catch${NC}"
+  echo -e "   ${YELLOW}💡 Add try-catch error handling${NC}"
   echo -e "   ${YELLOW}   Example:${NC}"
   echo -e "   ${YELLOW}   button.addEventListener('click', async () => {${NC}"
   echo -e "   ${YELLOW}     try { await doSomething(); }${NC}"
@@ -95,7 +106,7 @@ if [ -n "$ASYNC_LISTENERS" ]; then
   echo -e "   ${YELLOW}   });${NC}"
   WARNINGS=$((WARNINGS + 1))
 else
-  echo -e "   ${GREEN}✅ No async event listeners found (or all are safe)${NC}"
+  echo -e "   ${GREEN}✅ All async event listeners have try-catch${NC}"
 fi
 echo ""
 

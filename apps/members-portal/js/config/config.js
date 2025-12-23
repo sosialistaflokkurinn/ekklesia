@@ -24,12 +24,13 @@ export const SERVICES = {
   /**
    * Elections service - handles elections, voting, and policy sessions
    */
-  ELECTIONS: 'https://elections-service-521240388393.europe-west2.run.app',
+  ELECTIONS: 'https://elections-service-521240388393.europe-west1.run.app',
 
   /**
    * Events service - handles external events and Kimi chat
+   * Note: Deployed to europe-west1 for proximity to database (ekklesia-db-eu1)
    */
-  EVENTS: 'https://events-service-521240388393.europe-west2.run.app'
+  EVENTS: 'https://events-service-521240388393.europe-west1.run.app'
 };
 
 /**
@@ -49,5 +50,10 @@ export const API_ENDPOINTS = {
   /**
    * Policy sessions API
    */
-  POLICY_SESSIONS: `${SERVICES.ELECTIONS}/api/policy-sessions`
+  POLICY_SESSIONS: `${SERVICES.ELECTIONS}/api/policy-sessions`,
+
+  /**
+   * Candidate metadata API
+   */
+  CANDIDATES: `${SERVICES.ELECTIONS}/api/candidates`
 };

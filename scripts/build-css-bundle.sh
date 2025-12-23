@@ -37,6 +37,7 @@ CSS_FILES=(
     "$STYLES_DIR/components/modal.css"
     "$STYLES_DIR/components/toast.css"
     "$STYLES_DIR/components/form.css"
+    "$STYLES_DIR/components/profile-edit.css"
 )
 
 # Check all source files exist

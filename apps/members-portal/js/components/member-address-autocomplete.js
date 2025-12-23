@@ -58,6 +58,7 @@ export class AddressAutocomplete {
 
   /**
    * Initialize the autocomplete component
+   * // Cleanup in destroy() method
    */
   init() {
     // Create dropdown container

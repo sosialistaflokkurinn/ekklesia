@@ -6,7 +6,7 @@ const logger = require('../utils/util-logger');
  * Server-to-server communication with Elections service
  */
 
-const ELECTIONS_SERVICE_URL = process.env.ELECTIONS_SERVICE_URL || 'https://elections-service-521240388393.europe-west2.run.app';
+const ELECTIONS_SERVICE_URL = process.env.ELECTIONS_SERVICE_URL || 'https://elections-service-521240388393.europe-west1.run.app';
 const S2S_API_KEY = process.env.S2S_API_KEY;
 
 // Security: Timeout for S2S calls

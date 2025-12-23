@@ -118,17 +118,11 @@ service cloud.firestore {
 
     // Nomination candidates metadata collection
     // Contains biographical information about candidates for nomination committee voting
-    // Access is controlled at application level (only committee members can see uppstilling page)
+    // ACCESS: Only via svc-elections API (Admin SDK) - no direct frontend access
     match /nomination-candidates/{candidateId} {
-      // Read: All authenticated users (page-level access control in frontend)
-      allow read: if isAuthenticated();
-
-      // Update: All authenticated users can edit candidate info
-      // Edit history is tracked in the document itself
-      allow update: if isAuthenticated();
-
-      // Create/Delete: Only via Admin SDK (Cloud Functions or scripts)
-      allow create, delete: if false;
+      // All access goes through svc-elections Cloud Run service
+      // Frontend uses /api/candidates endpoints with Firebase Auth
+      allow read, write: if false;
     }
 
     // ==============================================================================

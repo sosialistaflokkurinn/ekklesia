@@ -97,6 +97,7 @@ h1 {
   --color-success-bg: #c6f6d5;
   --color-success-bg-subtle: rgba(40, 167, 69, 0.1);
   --color-success-text: #22543d;
+  --color-success-text-dark: #15803d;
   --color-success-border: #38a169;
   --color-success: #48bb78;
 
@@ -113,6 +114,12 @@ h1 {
   --color-warning-border: #ffc107;
   --color-warning: #ffc107;
   --color-warning-dark: #856404;
+  --color-warning-hover: #d97706;
+
+  /* Danger colors (red, for destructive actions) */
+  --color-danger: #ef4444;
+  --color-danger-hover: #dc2626;
+  --color-danger-dark: #b91c1c;
 
   --color-info-bg: #ebf8ff;
   --color-info-bg-hover: #bee3f8;
@@ -149,6 +156,10 @@ h1 {
   /* Admin Theme Colors */
   --color-admin-purple-light: #f3e5f5;
   --color-admin-purple: #7b1fa2;
+  --color-admin-purple-bright: #8b5cf6;
+  --color-admin-pink: #ec4899;
+  --color-admin-amber: #f59e0b;
+  --color-admin-amber-dark: #b45309;
   --color-admin-blue: #1976d2;
   --color-admin-blue-dark: #1565c0;
   --color-admin-orange: #f57c00;
