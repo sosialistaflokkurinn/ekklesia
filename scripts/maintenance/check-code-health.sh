@@ -63,8 +63,8 @@ for htmlfile in $HTML_FILES; do
           echo -e "  ${YELLOW}⚠️  Missing initNavigation():${NC}"
           echo "      HTML: $htmlfile"
           echo "      JS:   $jsfile"
-          ((MISSING_NAV_INIT++))
-          ((ISSUES_FOUND++))
+          ((MISSING_NAV_INIT++)) || true
+          ((ISSUES_FOUND++)) || true
         fi
       fi
     fi
@@ -85,8 +85,8 @@ for jsfile in $JS_FILES; do
   if grep -q "debug\.\(log\|warn\|error\|info\)" "$jsfile"; then
     if ! grep -q "import.*debug.*from" "$jsfile"; then
       echo -e "  ${YELLOW}⚠️  Uses debug without import:${NC} $jsfile"
-      ((MISSING_DEBUG++))
-      ((ISSUES_FOUND++))
+      ((MISSING_DEBUG++)) || true
+      ((ISSUES_FOUND++)) || true
     fi
   fi
 done
@@ -102,11 +102,19 @@ MISSING_TOAST=0
 
 for jsfile in $JS_FILES; do
   # Check if file uses showToast but doesn't import it
+  # Skip files that only use window.showToast (runtime check for global)
+  # Skip files that define their own local showToast function
   if grep -q "showToast(" "$jsfile"; then
     if ! grep -q "import.*showToast.*from" "$jsfile"; then
-      echo -e "  ${YELLOW}⚠️  Uses showToast without import:${NC} $jsfile"
-      ((MISSING_TOAST++))
-      ((ISSUES_FOUND++))
+      # Allow window.showToast pattern (runtime fallback check)
+      if ! grep -q "window\.showToast" "$jsfile"; then
+        # Allow local function definition
+        if ! grep -q "function showToast" "$jsfile"; then
+          echo -e "  ${YELLOW}⚠️  Uses showToast without import:${NC} $jsfile"
+          ((MISSING_TOAST++)) || true
+          ((ISSUES_FOUND++)) || true
+        fi
+      fi
     fi
   fi
 done
@@ -121,16 +129,16 @@ echo -e "${BLUE}🚫 Checking for console.log (should use debug instead)...${NC}
 CONSOLE_LOGS=0
 
 for jsfile in $JS_FILES; do
-  # Exclude debug.js itself
-  if [[ "$jsfile" == *"debug.js"* ]]; then
+  # Exclude debug utilities
+  if [[ "$jsfile" == *"debug.js"* ]] || [[ "$jsfile" == *"debug-logger.js"* ]]; then
     continue
   fi
   
-  # Check for console.log
-  if grep -n "console\.log(" "$jsfile" | grep -v "// console.log"; then
+  # Check for console.log (skip comments and JSDoc examples)
+  if grep -n "console\.log(" "$jsfile" | grep -v "// console.log" | grep -v ":\s*\*"; then
     echo -e "  ${YELLOW}⚠️  Found console.log (use debug.log):${NC} $jsfile"
-    ((CONSOLE_LOGS++))
-    ((ISSUES_FOUND++))
+    ((CONSOLE_LOGS++)) || true
+    ((ISSUES_FOUND++)) || true
   fi
 done
 
@@ -145,11 +153,15 @@ MISSING_I18N=0
 
 for jsfile in $JS_FILES; do
   # Check if file uses R.string but doesn't import R
+  # Skip files that check for R's existence (using R as global)
   if grep -q "R\.string\." "$jsfile"; then
     if ! grep -q "import.*R.*from.*i18n" "$jsfile"; then
-      echo -e "  ${YELLOW}⚠️  Uses R.string without import:${NC} $jsfile"
-      ((MISSING_I18N++))
-      ((ISSUES_FOUND++))
+      # Allow files that check if R exists (using global R)
+      if ! grep -q "!R\s*||\|!R\.string\|typeof R" "$jsfile"; then
+        echo -e "  ${YELLOW}⚠️  Uses R.string without import:${NC} $jsfile"
+        ((MISSING_I18N++)) || true
+        ((ISSUES_FOUND++)) || true
+      fi
     fi
   fi
 done
@@ -175,7 +187,7 @@ for jsfile in $JS_FILES; do
       if ! grep -q "// Module cleanup not needed\|// One-time init\|// Cleanup in" "$jsfile"; then
         echo -e "  ${YELLOW}⚠️  addEventListener without cleanup:${NC} $jsfile"
         echo -e "      ${add_count} addEventListener, ${remove_count} removeEventListener"
-        ((DUPLICATE_LISTENERS++))
+        ((DUPLICATE_LISTENERS++)) || true
         # Not counting as critical issue, just warning
       fi
     fi
@@ -202,7 +214,7 @@ for jsfile in $JS_FILES; do
     # If many async functions but no try-catch, might be issue
     if [[ $async_funcs -gt 2 ]] && [[ $try_catch -eq 0 ]]; then
       echo -e "  ${YELLOW}⚠️  ${async_funcs} async functions, no try-catch:${NC} $jsfile"
-      ((MISSING_TRY_CATCH++))
+      ((MISSING_TRY_CATCH++)) || true
       # Not counting as critical issue
     fi
   fi
@@ -221,7 +233,7 @@ for jsfile in $JS_FILES; do
   # Look for https:// in fetch/axios calls
   if grep -n "fetch.*https://\|axios.*https://" "$jsfile" | grep -v "gstatic\|googleapis\|firebasejs"; then
     echo -e "  ${YELLOW}⚠️  Hardcoded URL found:${NC} $jsfile"
-    ((HARDCODED_URLS++))
+    ((HARDCODED_URLS++)) || true
     # Not counting as critical issue
   fi
 done
@@ -240,7 +252,7 @@ for jsfile in $JS_FILES; do
   if [[ -n "$todos" ]]; then
     echo -e "  ${BLUE}ℹ️  TODOs found:${NC} $jsfile"
     echo "$todos" | head -3 | sed 's/^/      /'
-    ((TODO_COUNT++))
+    ((TODO_COUNT++)) || true
   fi
 done
 

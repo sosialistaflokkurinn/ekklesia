@@ -1218,9 +1218,13 @@ function setupAutoSaveListeners() {
   const birthdaySaveBtn = document.getElementById('save-birthday');
   if (birthdayInput) {
     birthdayInput.addEventListener('change', async (e) => {
-      const dateValue = e.target.value; // YYYY-MM-DD format
-      if (dateValue) {
-        await saveProfileField('birthday', dateValue, birthdayStatus);
+      try {
+        const dateValue = e.target.value; // YYYY-MM-DD format
+        if (dateValue) {
+          await saveProfileField('birthday', dateValue, birthdayStatus);
+        }
+      } catch (error) {
+        debug.error('Birthday save error:', error);
       }
     });
 
@@ -1240,8 +1244,12 @@ function setupAutoSaveListeners() {
   const genderSaveBtn = document.getElementById('save-gender');
   if (genderInput) {
     genderInput.addEventListener('change', async (e) => {
-      const genderValue = e.target.value !== '' ? parseInt(e.target.value) : null;
-      await saveProfileField('gender', genderValue, genderStatus);
+      try {
+        const genderValue = e.target.value !== '' ? parseInt(e.target.value) : null;
+        await saveProfileField('gender', genderValue, genderStatus);
+      } catch (error) {
+        debug.error('Gender save error:', error);
+      }
     });
 
     if (genderSaveBtn) {

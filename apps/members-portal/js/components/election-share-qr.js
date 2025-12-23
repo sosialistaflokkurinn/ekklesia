@@ -141,6 +141,7 @@ export function showElectionShareModal(options = {}) {
   const actions = el('div', 'share-qr__actions');
 
   // Copy button
+  // Cleanup in modal.close() - elements removed when modal is closed
   const copyBtn = el('button', 'btn btn--primary share-qr__copy-btn', {
     type: 'button'
   }, i18n.copy_url);

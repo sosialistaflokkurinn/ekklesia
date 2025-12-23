@@ -39,6 +39,8 @@ export function createCard(options = {}) {
 
   const contentEl = el('div', 'card__content');
 
+  // SECURITY: Caller is responsible for sanitizing content.
+  // All current callers pass i18n strings or developer-controlled HTML.
   if (typeof content === 'string') {
     contentEl.innerHTML = content;
   } else if (content instanceof HTMLElement) {
@@ -72,6 +74,7 @@ export function createCard(options = {}) {
     },
     setContent: (newContent) => {
       contentEl.innerHTML = '';
+      // SECURITY: Caller is responsible for sanitizing content
       if (typeof newContent === 'string') {
         contentEl.innerHTML = newContent;
       } else if (newContent instanceof HTMLElement) {
