@@ -273,7 +273,7 @@ def deleteEmailTemplate(req: https_fn.CallableRequest) -> dict:
     """Delete an email template - requires admin"""
     return delete_email_template_handler(req)
 
-@https_fn.on_call(timeout_sec=60, memory=256, secrets=["sendgrid-api-key", "resend-api-key"])
+@https_fn.on_call(timeout_sec=60, memory=256, secrets=["sendgrid-api-key", "resend-api-key", "unsubscribe-secret"])
 def sendEmail(req: https_fn.CallableRequest) -> dict:
     """Send email via SendGrid (primary) or Resend (backup) - requires admin"""
     return send_email_handler(req)
