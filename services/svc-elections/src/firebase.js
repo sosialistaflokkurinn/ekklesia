@@ -21,10 +21,13 @@ if (!admin.apps.length) {
       projectId: process.env.FIREBASE_PROJECT_ID || 'ekklesia-prod-10-2025',
     });
 
-    console.info('✅ Firebase Admin SDK initialized', {
-      projectId: admin.app().options.projectId,
-      credential: process.env.GOOGLE_APPLICATION_CREDENTIALS ? 'Service Account Key' : 'ADC (Auto)',
-    });
+    // Only log in development to avoid cluttering production logs
+    if (process.env.NODE_ENV !== 'production') {
+      console.info('✅ Firebase Admin SDK initialized', {
+        projectId: admin.app().options.projectId,
+        credential: process.env.GOOGLE_APPLICATION_CREDENTIALS ? 'Service Account Key' : 'ADC (Auto)',
+      });
+    }
   } catch (error) {
     logger.error('Failed to initialize Firebase Admin SDK', {
       error: error.message,

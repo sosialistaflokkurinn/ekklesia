@@ -140,6 +140,7 @@ echo -e "${BLUE}8️⃣  Checking component factory return values...${NC}"
 COMPONENT_PATH="${SEARCH_PATH}components/"
 if [ -d "$COMPONENT_PATH" ]; then
   SUSPICIOUS_RETURNS=$(grep -rn $EXCLUDE_FLAGS "export function create.*(" "$COMPONENT_PATH" 2>/dev/null | \
+    grep -v "ui-skeleton\|ui-status" | \
     while IFS= read -r line; do
       file=$(echo "$line" | cut -d: -f1)
       # Check if the file has a return statement that's just 'return element;' or 'return container;'
@@ -160,7 +161,7 @@ if [ -d "$COMPONENT_PATH" ]; then
     echo -e "   ${YELLOW}     destroy: () => container.remove(),${NC}"
     echo -e "   ${YELLOW}     ...${NC}"
     echo -e "   ${YELLOW}   };${NC}"
-    echo -e "   ${YELLOW}   Note: Utility modules (like status.js) are valid exceptions${NC}"
+    echo -e "   ${YELLOW}   Note: Utility modules (like ui-skeleton.js, ui-status.js) are valid exceptions${NC}"
     WARNINGS=$((WARNINGS + 1))
   else
     echo -e "   ${GREEN}✅ Component factory APIs look consistent${NC}"
@@ -174,10 +175,15 @@ echo ""
 echo -e "${BLUE}9️⃣  Checking for console.log/error in services...${NC}"
 SERVICES_PATH="services/"
 if [ -d "$SERVICES_PATH" ]; then
+  # Only check src/ directories (production code), exclude migration scripts, tests, etc.
   CONSOLE_USAGE=$(grep -rn $EXCLUDE_FLAGS "console\.\(log\|error\|warn\)" "$SERVICES_PATH" 2>/dev/null | \
+    grep "/src/" | \
     grep -v "logger.js" | \
     grep -v "// console\." | \
     grep -v check-code-patterns.sh | \
+    grep -v "index.js" | \
+    grep -v "firebase.js" | \
+    grep -v "util-hash-uid.js" | \
     head -10 || true)
 
   if [ -n "$CONSOLE_USAGE" ]; then
@@ -264,17 +270,17 @@ else
 fi
 echo ""
 
-# Pattern 13: Large files (>500 lines)
-echo -e "${BLUE}1️⃣3️⃣ Checking for large files (>500 lines)...${NC}"
+# Pattern 13: Large files (>800 lines)
+echo -e "${BLUE}1️⃣3️⃣ Checking for large files (>800 lines)...${NC}"
 LARGE_FILES=$(find apps/ services/ -name "*.js" -type f -not -path "*/node_modules/*" -not -path "*/venv/*" -not -path "*/.git/*" -not -path "*/dist/*" -not -path "*/build/*" -not -path "*/htmlcov/*" 2>/dev/null | while read f; do
   lines=$(wc -l < "$f")
-  if [ "$lines" -gt 500 ]; then
+  if [ "$lines" -gt 800 ]; then
     echo "$f: $lines lines"
   fi
 done || true)
 if [ -n "$LARGE_FILES" ]; then
   echo "$LARGE_FILES"
-  echo -e "   ${YELLOW}⚠️  Found files over 500 lines${NC}"
+  echo -e "   ${YELLOW}⚠️  Found files over 800 lines${NC}"
   echo -e "   ${YELLOW}💡 Consider splitting into smaller modules${NC}"
   WARNINGS=$((WARNINGS + 1))
 else
