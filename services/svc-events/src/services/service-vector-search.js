@@ -171,6 +171,9 @@ async function searchSimilar(embedding, options = {}) {
       };
 
       const additionalPatterns = [];
+      const queryLower = queryText.toLowerCase();
+      const queryNormalized = normalizeAccents(queryLower);
+
       for (const word of words) {
         // Check compound words
         for (const topic of policyTopics) {
@@ -178,13 +181,25 @@ async function searchSimilar(embedding, options = {}) {
             additionalPatterns.push(topic);
           }
         }
-        // Check keyword mappings
+        // Check single-word keyword mappings
         for (const [keyword, topic] of Object.entries(keywordToTopic)) {
-          if (word.includes(keyword) || normalizeAccents(word).includes(keyword)) {
+          if (!keyword.includes(' ')) {  // Single-word keywords
+            if (word.includes(keyword) || normalizeAccents(word).includes(keyword)) {
+              additionalPatterns.push(topic);
+            }
+          }
+        }
+      }
+
+      // Check multi-word keyword mappings against full query
+      for (const [keyword, topic] of Object.entries(keywordToTopic)) {
+        if (keyword.includes(' ')) {  // Multi-word keywords
+          if (queryLower.includes(keyword) || queryNormalized.includes(keyword)) {
             additionalPatterns.push(topic);
           }
         }
       }
+
       words = [...words, ...additionalPatterns];
 
       if (words.length > 0) {
