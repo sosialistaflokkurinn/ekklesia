@@ -26,6 +26,7 @@ import { createButton } from './components/ui-button.js';
 import { showModal } from './components/ui-modal.js';
 import { showToast } from './components/ui-toast.js';
 import { SERVICES } from './config/config.js';
+import { initMemberAssistantChat } from './components/member-assistant-chat.js';
 
 /**
  * Nomination committee member UIDs
@@ -639,6 +640,9 @@ async function init() {
 
     // Load featured event (non-blocking)
     loadFeaturedEvent();
+
+    // Initialize member assistant chat widget
+    initMemberAssistantChat();
 
     // Check for profile data discrepancies between Kenni.is and Firestore
     await checkProfileDiscrepancies(userData);
