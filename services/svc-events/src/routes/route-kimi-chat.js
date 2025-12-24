@@ -497,26 +497,19 @@ async function getSystemHealthContext() {
     try {
       const MEMBERS_API_URL = 'https://europe-west2-ekklesia-prod-10-2025.cloudfunctions.net';
       const start = Date.now();
-      const membersHealth = await axios.get(`${MEMBERS_API_URL}/checkSystemHealth`, { timeout: 10000 });
+      const membersHealth = await axios.get(`${MEMBERS_API_URL}/membersHealthProbe`, { timeout: 10000 });
       const latency = Date.now() - start;
       const data = membersHealth.data;
 
-      // Count service statuses
-      const services = data.services || [];
-      const healthy = services.filter(s => s.status === 'healthy' || s.status === 'available').length;
-      const degraded = services.filter(s => s.status === 'degraded' || s.status === 'slow').length;
-      const down = services.filter(s => s.status === 'down' || s.status === 'error').length;
+      const isHealthy = data.status === 'healthy';
+      const firestoreStatus = data.firestore === 'connected' ? '✅' : '❌';
 
       lines.push('### svc-members (Firebase Functions)');
-      lines.push(`- Staða: ${down === 0 ? '✅ Heilbrigt' : '⚠️ Vandamál'}`);
+      lines.push(`- Staða: ${isHealthy ? '✅ Heilbrigt' : '⚠️ Vandamál'}`);
       lines.push(`- Latency: ${latency}ms`);
-      lines.push(`- Functions: ${healthy} heilbrigðar, ${degraded} hægvirkar, ${down} niðri`);
-
-      // Show any down services
-      const downServices = services.filter(s => s.status === 'down' || s.status === 'error');
-      if (downServices.length > 0) {
-        lines.push(`- ⚠️ Niðri: ${downServices.map(s => s.name || s.id).join(', ')}`);
-      }
+      lines.push(`- Firestore: ${firestoreStatus} ${data.firestore}`);
+      lines.push(`- Functions: ${data.functions?.total || '?'} deployed`);
+      lines.push(`- Region: ${data.region || 'europe-west2'}`);
     } catch (membersError) {
       lines.push('### svc-members (Firebase Functions)');
       lines.push(`- Staða: ❌ Ekki hægt að ná sambandi: ${membersError.message?.substring(0, 50)}`);

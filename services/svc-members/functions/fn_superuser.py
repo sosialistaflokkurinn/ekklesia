@@ -608,6 +608,57 @@ def check_system_health_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
 
 
 # ==============================================================================
+# HEALTH PROBE (No auth required - for service-to-service calls)
+# ==============================================================================
+
+def members_health_probe_handler(req: https_fn.Request) -> https_fn.Response:
+    """
+    Simple health probe for svc-members Firebase Functions.
+    No authentication required - designed for Kimi and other services.
+
+    Returns summary of function status without detailed checks.
+    """
+    import json
+    from flask import Response
+
+    # Quick Firestore connectivity test
+    try:
+        db = firestore.client()
+        db.collection("_health").document("probe").get()
+        firestore_ok = True
+    except Exception:
+        firestore_ok = False
+
+    # Count deployed functions (static list - update when adding functions)
+    total_functions = 47  # Current count from service catalog
+
+    status = "healthy" if firestore_ok else "degraded"
+
+    result = {
+        "status": status,
+        "service": "svc-members",
+        "type": "Firebase Functions",
+        "region": "europe-west2",
+        "firestore": "connected" if firestore_ok else "error",
+        "functions": {
+            "total": total_functions,
+            "note": "Use checkSystemHealth for detailed status (requires superuser)"
+        },
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    }
+
+    return Response(
+        json.dumps(result),
+        status=200,
+        mimetype="application/json",
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type"
+        }
+    )
+
+# ==============================================================================
 # AUDIT LOGS
 # ==============================================================================
 
