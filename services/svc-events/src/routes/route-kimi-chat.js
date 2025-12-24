@@ -427,6 +427,28 @@ Eftirfarandi eru MEÐVITAÐAR hönnunarákvarðanir, EKKI veikleikar:
 
 Kerfið er **7/10 nútímalegt** - cloud native backend, einfaldur og viðhaldanlegur frontend.
 
+## VM vs Serverless samanburður
+Ef einhver spyr um VM sem valkost:
+
+**Núverandi (Serverless) - $18-27/mán:**
+✅ Kostir: Auto-scaling, engin viðhald, HA innbyggt, pay-per-use
+❌ Gallar: Cloud SQL er dýr (~$15-20), cold starts
+
+**VM valkostur - ~$5-15/mán:**
+✅ Kostir: Ódýrara, PostgreSQL á VM (~$0), fastur kostnaður
+❌ Gallar: Handvirkt viðhald, engin auto-scaling, single point of failure, þarf backup, OS updates
+
+**Hvenær VM?**
+- Mjög lítil notkun, fast budget
+- Einn kerfisstjóri sem kann Linux
+
+**Hvenær serverless?**
+- Breytilegt álag, þarf auto-scaling
+- Enginn kerfisstjóri, lágmarks viðhald
+- Mission critical (HA mikilvægt)
+
+Ekklesia notar serverless vegna lágmarks viðhalds og áreiðanleika.
+
 ## Deployment
 - Frontend: \`cd services/svc-members && firebase deploy --only hosting\`
 - Functions: \`firebase deploy --only functions:FUNCTION_NAME\`
