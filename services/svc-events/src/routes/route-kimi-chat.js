@@ -552,24 +552,24 @@ async function getSystemHealthContext() {
     lines.push(`- Load average: ${os.loadavg().map(l => l.toFixed(2)).join(', ')}`);
     lines.push('');
 
-    // Cost estimation (based on current usage patterns)
-    lines.push('### Áætlaður kostnaður (GCP)');
+    // Cost estimation (based on very low usage - ~50 users, minimal traffic)
+    lines.push('### Áætlaður kostnaður (mjög lítil notkun)');
     lines.push('');
     lines.push('**Google Cloud Platform:**');
-    lines.push('- Cloud Run (svc-events, svc-elections): ~$8-12/mán');
-    lines.push('- Cloud SQL PostgreSQL (db-custom-1-3840): ~$25-35/mán');
-    lines.push('- Firebase Functions (47 functions): ~$3-8/mán');
+    lines.push('- Cloud SQL PostgreSQL: ~$15-20/mán (lægsti grunnkostnaður)');
+    lines.push('- Cloud Run (svc-events, svc-elections): ~$2-5/mán');
+    lines.push('- Firebase Functions: ~$0-1/mán (free tier)');
     lines.push('- Firebase Hosting: ~$0 (free tier)');
-    lines.push('- Cloud Storage: ~$1-2/mán');
+    lines.push('- Cloud Storage: ~$0.50/mán');
     lines.push('- Secret Manager: ~$0 (free tier)');
-    lines.push('- Cloud Build: ~$1-3/mán');
+    lines.push('- Cloud Build: ~$0.50/mán');
     lines.push('');
     lines.push('**Tölvupóstur:**');
-    lines.push('- SendGrid: ~$0 (free tier, 100 emails/day)');
+    lines.push('- SendGrid: ~$0 (free tier, 100 emails/dag)');
     lines.push('');
-    lines.push('**Samtals: ~$40-60/mánuður**');
+    lines.push('**Samtals: ~$18-27/mánuður**');
     lines.push('');
-    lines.push('_Athugið: Þetta er áætlun byggð á venjulegri notkun. Raunverulegan kostnað má sjá í GCP Console → Billing._');
+    lines.push('_Cloud SQL er stærsti kostnaðurinn. Raunverulegan kostnað má sjá í GCP Console → Billing._');
     lines.push('---');
 
     return lines.join('\n');
