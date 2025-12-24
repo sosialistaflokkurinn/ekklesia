@@ -302,44 +302,44 @@ Flokkurinn bauð fram í öllum 6 kjördæmum 30. nóvember 2024 og fékk samtal
 
 REYKJAVÍK SUÐUR (22 frambjóðendur):
 1. STOFNANDI_B (oddviti) - borgarfulltrúi
-2. Hildur Tinna Gilsdóttir
-3. Zophonías Oddur Eggertsson
-4. Gísli Þór Steinsson
-5. Guðbjörg Linda Rafnsdóttir - prófessor
-6. Ólafur Helgi Kjartansson
-7. Kristín Ólafía Jónsdóttir
-8. Arnór Freyr Bjarnason
-9. Hrönn Svavarsdóttir
-10. Kristján Einar Gunnarsson - stjórnarmaður í Eflingu
+2. PERSON_32 - fræðslu- og félagsmálafulltrúi Eflingar
+3. PERSON_01 - formaður Eflingar
+4. PERSON_23 - formaður íþróttafélags
+5. PERSON_02 - tómstundakokkur
+6. PERSON_38 - þýðandi og útgefandi
+7. PERSON_42 - rithöfundur
+8. PERSON_54 - kennari
+9. Bára Halldórsdóttir - listamaður
+10. Sigrún E Unnsteinsdóttir - aðgerðarsinni
 
 REYKJAVÍK NORÐUR (22 frambjóðendur):
-1. STOFNANDI_A (oddviti) - stofnandi flokksins
-2. Sólveig Árný Sverrisdóttir
-3. Dagur Örvar Davíðsson
-4. Stefanía Helga Jóhannesdóttir
-5. Kristján Geir Ólason
-6. María Sunna Arnþórsdóttir
-7. Marinó Marchal
-8. Ingibjörg Elísabet Jónsdóttir
-9. Jón Gauti Eyjólfsson
-10. Ástríður Björg Kristjánsdóttir
+1. STOFNANDI_A (oddviti) - blaðamaður og stofnandi flokksins
+2. María Pétursdóttir - sjónlistamaður
+3. Guðmundur Auðunsson - sjálfstætt starfandi
+4. PERSON_35 - útvarpsumsjónarmaður
+5. PERSON_13 - skrifstofumaður
+6. PERSON_29 - forritari
+7. PERSON_31 Ocon - aðgerðarsinni
+8. Anita da Silva Bjarnadóttir - öryrki
+9. PERSON_14 - framhaldsskólakennari
+10. PERSON_22 - leikstjóri
 
 SUÐVESTURKJÖRDÆMI (27 frambjóðendur):
-1. PERSON_19 (oddviti)
-2. Siv Friðleifsdóttir
-3. Ágúst Hólm Hreinsson
-4. Friðrika Harðardóttir
-5. Björn Ingi Stefánsson
-6. Brynja Sigurðardóttir
-7. Matthías Ársælsson
-8. PERSON_04 Gíslason
-9. Sædís Magnea Karlsdóttir
-10. Viktor Stefánsson
+1. PERSON_19 (oddviti) - prestur
+2. Margrét Pétursdóttir - verkamaður
+3. PERSON_45 - bókasafns- og upplýsingafræðingur
+4. PERSON_34 Ramos - teymisleiðtogi
+5. PERSON_40 Svanlaugar - forritari
+6. PERSON_21 - kennari
+7. Sylviane Lecoultre - nemi
+8. Hörður Svavarsson - leikskólastjóri
+9. Edda Jóhannsdóttir - blaðamaður
+10. PERSON_20 - rappari
 
 SUÐURKJÖRDÆMI (18 frambjóðendur):
-1. PERSON_57 (oddviti)
-2. Jónas Aðalsteinn Jónsson
-3. Sigurður Haukur Sigurgeirsson
+1. PERSON_57 (oddviti) - hárgreiðslukennari
+2. Hallfríður Þórarinsdóttir - mannfræðingur
+3. PERSON_10 - bifvélavirki
 4. Kristín Tómasdóttir
 5. Ingvar Kristjánsson
 6. Herður Jóhannesdóttir
@@ -349,28 +349,28 @@ SUÐURKJÖRDÆMI (18 frambjóðendur):
 10. PERSON_33
 
 NORÐAUSTURKJÖRDÆMI (20 frambjóðendur):
-1. Þorsteinn Bergsson (oddviti)
-2. Sigríður Margrét Sigurðardóttir
-3. Ólafur Teitur Guðnason
-4. Aldís Magnúsdóttir
-5. Steinunn Halldórsdóttir
-6. Gunnar Valgeirsson
-7. Hildur Ósk Garðarsdóttir
-8. Hjörtur Pálmason
-9. Ólöf Jónsdóttir
-10. Árni Davíðsson
+1. Þorsteinn Bergsson (oddviti) - þýðandi og rithöfundur
+2. Ari Orrason - forstöðumaður félagsmiðstöðvar
+3. Saga Unnsteinsdóttir - listaskapari
+4. PERSON_04 - hestabóndi
+5. Kristinn Hannesson - verkamaður
+6. PERSON_36 - öryrki
+7. PERSON_49 - kennari/fornleifafræðingur
+8. PERSON_37 - öryrki
+9. PERSON_27 - eftirlaunaþegi
+10. Ása Ernudóttir - námsmaður
 
 NORÐVESTURKJÖRDÆMI (14 frambjóðendur):
-1. PERSON_25 (oddviti)
-2. Soffía Lind Jóhannesdóttir
-3. Þórir Snær Sigurjónsson
-4. Sigríður Rún Kristjánsdóttir
-5. Sigurður Jón Sigurðsson
-6. Anna Svava Sigurðardóttir
-7. Margrét Berta Einarsdóttir
-8. Gunnar Þór Kristjánsson
-9. Guðrún Kristín Jóhannsdóttir
-10. Kjartan Björn Sigurgeirsson
+1. PERSON_25 (oddviti) - formaður Samtaka leigjenda á Íslandi
+2. PERSON_30 - fiskverkakona
+3. Ævar Kjartansson - útvarpsmaður
+4. Ragnheiður Guðmundsdóttir - stjórnmálafræðingur og ljóðskáld
+5. PERSON_43 - skipstjóri
+6. PERSON_52 - safnakona
+7. PERSON_46 - strandveiðimaður
+8. PERSON_05 Ómarsdóttir - aðgerðarsinni
+9. Brynjólfur Sigurbjörnsson - bifvélavirki
+10. PERSON_06 - bóndi
 
 ÚRSLIT 2024:
 - Samtals 4,0% fylgi (náði ekki 5% þröskuldinum)
@@ -394,7 +394,7 @@ B-listi hlaut 2.099 atkvæði (80%) gegn 519 atkvæðum A-lista (20%).
 Þetta var í fyrsta sinn sem kosið var um formann Eflingar.
 
 B-LISTI 2018:
-1. PERSON_01 (formaður) - síðar á lista Sósíalista 2021
+1. PERSON_01 (formaður) - síðar á lista Sósíalista 2021 og 2024
 2. Magdalena Kwiatkowska - Café Paris
 3. Aðalgeir Björnsson - tækjastjóri hjá Eimskip
 4. PERSON_09 - Náttúru þrif
