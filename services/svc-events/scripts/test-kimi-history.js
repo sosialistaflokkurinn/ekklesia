@@ -95,7 +95,7 @@ Hver: ${citation.who || 'Óþekkt'}
 Hvenær: ${citation.when || 'Óþekkt'}
 Samhengi: ${citation.context || 'Óþekkt'}
 
-${doc.content.substring(0, 1500)}
+${doc.content}
 `;
   }).join('\n\n');
 }
