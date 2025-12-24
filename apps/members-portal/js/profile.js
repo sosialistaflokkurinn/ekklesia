@@ -697,10 +697,14 @@ async function initMembershipDetails() {
       }
 
       titleSelect.addEventListener('change', async (e) => {
-        const titleId = e.target.value ? parseInt(e.target.value) : null;
-        const titleName = e.target.selectedOptions[0]?.textContent || '';
-        const titleValue = titleId ? [{ id: titleId, name: titleName }] : [];
-        await saveMembershipField('titles', titleValue, titleStatus);
+        try {
+          const titleId = e.target.value ? parseInt(e.target.value) : null;
+          const titleName = e.target.selectedOptions[0]?.textContent || '';
+          const titleValue = titleId ? [{ id: titleId, name: titleName }] : [];
+          await saveMembershipField('titles', titleValue, titleStatus);
+        } catch (error) {
+          debug.error('Failed to save title:', error);
+        }
       });
     } catch (error) {
       debug.error('Failed to load job titles:', error);
@@ -716,8 +720,12 @@ async function initMembershipDetails() {
     }
 
     housingSelect.addEventListener('change', async (e) => {
-      const housingValue = e.target.value !== '' ? parseInt(e.target.value) : null;
-      await saveProfileField('housing_situation', housingValue, housingStatus);
+      try {
+        const housingValue = e.target.value !== '' ? parseInt(e.target.value) : null;
+        await saveProfileField('housing_situation', housingValue, housingStatus);
+      } catch (error) {
+        debug.error('Failed to save housing situation:', error);
+      }
     });
   }
 
