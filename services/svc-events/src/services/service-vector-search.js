@@ -165,9 +165,10 @@ async function searchSimilar(embedding, options = {}) {
         'oddvit': 'frambjóðendur', 'oddvitar': 'frambjóðendur', '2024': 'frambjóðendur',
         'daníel': 'frambjóðendur', 'sanna': 'frambjóðendur', 'gunnar smári': 'frambjóðendur',
         // Efling og B-listi
-        'efling': 'efling', 'b-list': 'efling', 'baráttulist': 'efling',
+        'efling': 'efling', 'eflingar': 'efling', 'b-list': 'efling', 'baráttulist': 'efling',
         'sólveig anna': 'efling', 'stéttarfélag': 'efling', 'verkalýð': 'efling',
         'afsögn': 'efling', 'sagði af': 'efling', 'hætt': 'efling',
+        'lista eflingar': 'efling',
       };
 
       const additionalPatterns = [];
@@ -202,6 +203,9 @@ async function searchSimilar(embedding, options = {}) {
 
       words = [...words, ...additionalPatterns];
 
+      // Check if query is about Efling/B-listi
+      const isEflingQuery = additionalPatterns.includes('efling');
+
       if (words.length > 0) {
         // Add title boost: 1.5x if any keyword matches title
         // Use both original and accent-normalized versions for matching
@@ -216,6 +220,11 @@ async function searchSimilar(embedding, options = {}) {
         }
         const patterns = allPatterns.join(' OR ');
         titleBoostClause = `CASE WHEN ${patterns} THEN 1.5 ELSE 1.0 END`;
+
+        // Extra boost for Efling queries matching Efling documents
+        if (isEflingQuery) {
+          titleBoostClause = `CASE WHEN ${patterns} THEN 1.5 ELSE 1.0 END * CASE WHEN LOWER(title) LIKE '%efling%' OR LOWER(title) LIKE '%b-list%' THEN 1.5 ELSE 1.0 END`;
+        }
       }
     }
 
