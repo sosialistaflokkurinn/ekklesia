@@ -67,6 +67,23 @@ const HISTORY_QUESTIONS = [
   'Hvað er markmið Sósíalistaflokksins?',
   'Hversu marga borgarfulltrúa fékk flokkurinn 2022?',
   'Hversu mikið fylgi fékk flokkurinn 2024?',
+
+  // Samanburður - Efling og flokkurinn
+  'Hverjir voru bæði á B-lista Eflingar og hjá Sósíalistaflokknum?',
+  'Hver var tengsl Sólveigar Önnu við flokkinn?',
+  'Af hverju sagði PERSON_01 af sér 2021?',
+  'Hvað gerðist með B-lista Eflingar 2022?',
+
+  // Samanburður - Oddvitar og framboð
+  'Hverjir voru oddvitar í Alþingiskosningum 2021 og 2024?',
+  'Hverjir buðu fram bæði 2021 og 2024?',
+  'Hver var oddviti í Norðausturkjördæmi 2021?',
+  'Hverjir voru borgarfulltrúar í Reykjavík bæði 2018 og 2022?',
+
+  // Samanburður - Tímabil
+  'Hvernig breyttist fylgi flokksins frá 2021 til 2024?',
+  'Hvað gerðist milli sveitarstjórnarkosninga 2018 og 2022?',
+  'Hver var fyrst kosin í Reykjavík og hvað gerðist síðar?',
 ];
 
 function formatContext(documents) {
@@ -111,7 +128,7 @@ async function askKimi(question, context) {
 
 async function main() {
   console.log('='.repeat(70));
-  console.log('KIMI SÖGUPRÓFUN - 21 spurningar');
+  console.log(`KIMI SÖGUPRÓFUN - ${HISTORY_QUESTIONS.length} spurningar`);
   console.log('='.repeat(70) + '\n');
 
   for (let i = 0; i < HISTORY_QUESTIONS.length; i++) {

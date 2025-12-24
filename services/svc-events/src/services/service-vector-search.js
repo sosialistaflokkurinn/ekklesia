@@ -167,6 +167,7 @@ async function searchSimilar(embedding, options = {}) {
         // Efling og B-listi
         'efling': 'efling', 'b-list': 'efling', 'baráttulist': 'efling',
         'sólveig anna': 'efling', 'stéttarfélag': 'efling', 'verkalýð': 'efling',
+        'afsögn': 'efling', 'sagði af': 'efling', 'hætt': 'efling',
       };
 
       const additionalPatterns = [];
