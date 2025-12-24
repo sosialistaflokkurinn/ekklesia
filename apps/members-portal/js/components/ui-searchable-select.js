@@ -239,6 +239,7 @@ export class SearchableSelect {
       }
 
       // Render option content
+      // SECURITY: renderOption callback is developer-provided, must sanitize if using user data
       const content = this.options.renderOption(option);
       if (typeof content === 'string') {
         li.innerHTML = content;
@@ -354,6 +355,7 @@ export class SearchableSelect {
     this.selectElement.value = value;
 
     // Update UI
+    // SECURITY: renderSelected callback is developer-provided, must sanitize if using user data
     const content = this.options.renderSelected(option);
     if (typeof content === 'string') {
       this.triggerLabel.innerHTML = content;

@@ -114,7 +114,8 @@ from fn_superuser import (
     list_elevated_users_handler,
     get_login_audit_handler,
     get_deleted_counts_handler,
-    purgedeleted  # Decorated function - import directly
+    purgedeleted,  # Decorated function - import directly
+    members_health_probe_handler  # HTTP health probe (no auth)
 )
 
 # Define decorated functions for superuser operations
@@ -132,6 +133,11 @@ def getUserRole(req: https_fn.CallableRequest) -> dict:
 def checkSystemHealth(req: https_fn.CallableRequest) -> dict:
     """Check health of all Cloud Run services - requires superuser"""
     return check_system_health_handler(req)
+
+@https_fn.on_request(timeout_sec=10, memory=128)
+def membersHealthProbe(req: https_fn.Request) -> https_fn.Response:
+    """Simple health probe for svc-members - no auth required (for Kimi/service calls)"""
+    return members_health_probe_handler(req)
 
 @https_fn.on_call(timeout_sec=60, memory=512)
 def getAuditLogs(req: https_fn.CallableRequest) -> dict:
@@ -273,7 +279,7 @@ def deleteEmailTemplate(req: https_fn.CallableRequest) -> dict:
     """Delete an email template - requires admin"""
     return delete_email_template_handler(req)
 
-@https_fn.on_call(timeout_sec=60, memory=256, secrets=["sendgrid-api-key", "resend-api-key"])
+@https_fn.on_call(timeout_sec=60, memory=256, secrets=["sendgrid-api-key", "resend-api-key", "unsubscribe-secret"])
 def sendEmail(req: https_fn.CallableRequest) -> dict:
     """Send email via SendGrid (primary) or Resend (backup) - requires admin"""
     return send_email_handler(req)

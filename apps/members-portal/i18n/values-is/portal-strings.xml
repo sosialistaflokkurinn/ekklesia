@@ -510,6 +510,7 @@
   <string name="party_wiki_placeholder">Spurðu um flokkinn...</string>
   <string name="party_wiki_send">Senda</string>
   <string name="profile_delete_confirm_placeholder">EYÐA</string>
+  <string name="profile_delete_confirm_error">Þú verður að skrifa "EYÐA" til að staðfesta</string>
   <string name="events_copy_link_title">Afrita hlekk</string>
   <string name="heatmap_data_load_error">Villa við að hlaða gögnum</string>
   <string name="heatmap_total_label">Samtals</string>

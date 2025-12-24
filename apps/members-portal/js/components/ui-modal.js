@@ -101,6 +101,7 @@ export function showModal(options = {}) {
   // Create modal body
   const body = el('div', 'modal__body');
   if (typeof content === 'string') {
+    // SECURITY: content is developer-provided (i18n strings or static text), not user input
     body.innerHTML = content;
   } else if (content instanceof HTMLElement) {
     body.appendChild(content);

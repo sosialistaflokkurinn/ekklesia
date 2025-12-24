@@ -28,7 +28,7 @@ import hmac
 import base64
 
 # Cloud SQL member queries
-from db_members import get_member_by_kennitala, get_member_by_django_id, get_members_for_email
+from db_members import get_member_by_kennitala, get_member_by_django_id, get_members_for_email, get_member_by_email
 
 # Security: Maximum limits
 MAX_TEMPLATE_SIZE = 100000  # 100KB max template size
@@ -797,11 +797,9 @@ def send_email_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
                 message=f"Member with kennitala not found"
             )
         recipient_email = member_data.get("profile", {}).get("email")
-        if not recipient_email:
-            raise https_fn.HttpsError(
-                code=https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
-                message="Member does not have an email address"
-            )
+    elif recipient_email and email_type == "broadcast":
+        # For broadcast emails sent to direct email, look up member to get django_id for unsubscribe link
+        member_data = get_member_by_email(recipient_email) or {}
 
     # Check email marketing consent for broadcast emails
     if member_data and email_type == "broadcast":
@@ -839,7 +837,10 @@ def send_email_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             }
 
     # Add unsubscribe URL for broadcast emails (using django_id for privacy)
-    django_id = member_data.get("metadata", {}).get("django_id") if member_data else None
+    # Check both metadata.django_id (Firestore) and top-level django_id (Cloud SQL lookup)
+    django_id = None
+    if member_data:
+        django_id = member_data.get("metadata", {}).get("django_id") or member_data.get("django_id")
     if django_id and email_type == "broadcast":
         variables["unsubscribe_url"] = generate_unsubscribe_url(django_id)
 

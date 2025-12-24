@@ -111,7 +111,7 @@ const EmailAPI = {
    * @param {Object} [options.variables] - Template variables
    * @returns {Promise<{success: boolean, message_id: string}>}
    */
-  async sendEmail({ template_id, subject, body_html, recipient_email, recipient_kennitala, variables = {} }) {
+  async sendEmail({ template_id, subject, body_html, recipient_email, recipient_kennitala, variables = {}, email_type = null }) {
     try {
       const sendEmailFn = httpsCallable('sendEmail', REGION);
       const payload = {
@@ -119,6 +119,11 @@ const EmailAPI = {
         recipient_kennitala,
         variables
       };
+
+      // Include email_type if specified (broadcast for unsubscribe link)
+      if (email_type) {
+        payload.email_type = email_type;
+      }
 
       // Template mode vs Quick send mode
       if (template_id) {

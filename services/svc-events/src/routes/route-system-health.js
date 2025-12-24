@@ -38,7 +38,7 @@ async function getDatabaseStats() {
       SELECT
         (SELECT COUNT(*) FROM external_events) as events_count,
         (SELECT COUNT(*) FROM external_events_sync_log) as sync_logs_count,
-        (SELECT COUNT(*) FROM voting_tokens) as voting_tokens_count
+        (SELECT COUNT(*) FROM elections.voting_tokens) as voting_tokens_count
     `);
 
     // Get connection pool stats

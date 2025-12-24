@@ -22,6 +22,7 @@ let chatHistory = [];
 function createChatWidget() {
   const widget = document.createElement('div');
   widget.id = 'party-wiki-widget';
+  // SECURITY: Template uses only i18n strings (R.string.*) - all developer-controlled
   widget.innerHTML = `
     <button id="party-wiki-toggle" class="party-wiki__toggle" title="${R.string.party_wiki_toggle_title}">
       <span class="party-wiki__toggle-icon">📚</span>
@@ -346,6 +347,7 @@ function addMessage(role, content) {
   const messagesEl = document.getElementById('party-wiki-messages');
   const msgEl = document.createElement('div');
   msgEl.className = `party-wiki__message party-wiki__message--${role}`;
+  // SECURITY: formatMessage() escapes HTML before markdown processing (see line 317-321)
   msgEl.innerHTML = `<div class="party-wiki__bubble">${formatMessage(content)}</div>`;
   messagesEl.appendChild(msgEl);
   messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -362,6 +364,7 @@ function showLoading() {
   const loadingEl = document.createElement('div');
   loadingEl.id = 'party-wiki-loading';
   loadingEl.className = 'party-wiki__message party-wiki__message--assistant';
+  // SECURITY: Static HTML only - no user input
   loadingEl.innerHTML = `
     <div class="party-wiki__bubble party-wiki__loading">
       <div class="party-wiki__loading-dot"></div>
