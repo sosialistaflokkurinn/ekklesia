@@ -460,6 +460,41 @@ Ekklesia notar serverless vegna lágmarks viðhalds og áreiðanleika.
 - Functions: \`firebase deploy --only functions:FUNCTION_NAME\`
 - Cloud Run: \`cd services/svc-events && ./deploy.sh\`
 
+## Gagnagrunnur (Cloud SQL PostgreSQL)
+**Tenging frá local:**
+\`\`\`bash
+# Byrja Cloud SQL Proxy
+cloud-sql-proxy ekklesia-prod-10-2025:europe-west1:ekklesia-db-eu1 --port 5433 --gcloud-auth
+
+# Tengjast með psql
+PGPASSWORD='<password>' psql -h localhost -p 5433 -U socialism -d socialism
+\`\`\`
+
+**Lykilupplýsingar:**
+- Instance: \`ekklesia-db-eu1\` (europe-west1)
+- Database: \`socialism\`
+- User: \`socialism\`
+- Port: 5432 (Cloud SQL), 5433 (local proxy)
+- Password: Í Secret Manager (\`django-socialism-db-password\`)
+
+**Connection string (þjónustur):**
+Þjónusturnar nota Unix socket tengingu í Cloud Run:
+\`/cloudsql/ekklesia-prod-10-2025:europe-west1:ekklesia-db-eu1\`
+
+## Algengar skipanir
+\`\`\`bash
+# Logs
+gcloud run services logs read svc-events --region europe-west1 --limit 50
+gcloud functions logs read FUNCTION_NAME --region europe-west2
+
+# Rollback Cloud Run
+gcloud run revisions list --service=svc-events --region=europe-west1
+gcloud run services update-traffic svc-events --to-revisions=REVISION=100 --region=europe-west1
+
+# Secrets
+gcloud secrets versions access latest --secret=SECRET_NAME
+\`\`\`
+
 ## Leiðbeiningar
 - Svaraðu á íslensku, stuttlega og hnitmiðað
 - Notaðu markdown fyrir kóða og skipanir
