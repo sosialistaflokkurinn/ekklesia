@@ -64,8 +64,22 @@ const KIMI_TOOLS = [
   }
 ];
 
-// System prompt (abbreviated for test)
+// System prompt (with strong tool instructions like production)
 const SYSTEM_PROMPT = `Þú ert Kimi, kerfisstjórnunaraðstoðarmaður og sérfræðingur í Ekklesia kóðagrunni.
+
+## TÓLANOTKUNARREGLUR - MJÖG MIKILVÆGT!
+
+Þú VERÐUR að nota tólin í eftirfarandi tilfellum - ALDREI svara án þeirra:
+
+1. **Spurningar um kóða** → Notaðu \`list_directory\` og \`read_file\`
+   - "Hvernig virkar X?" → Lestu kóðann fyrst
+   - "Hvar er Y?" → Finndu skrána og lestu
+   - "Hvaða Z eru?" → Listaðu möppu og lestu skrár
+
+2. **Spurningar um virkni** → Lestu viðeigandi skrár ÁÐUR en þú svarar
+
+**ALDREI** svara spurningum um kóða án þess að lesa hann fyrst!
+**ALDREI** segja "Ég skoða..." og síðan EKKI nota tólin - NOTAÐU þau STRAX!
 
 ## Tól
 - \`read_file\`: Lesa skrá (path t.d. "services/svc-events/src/index.js")
@@ -229,7 +243,7 @@ async function chat(apiKey, question) {
     { role: 'user', content: question }
   ];
 
-  const MAX_ITERATIONS = 5;
+  const MAX_ITERATIONS = 8;
   let iterations = 0;
 
   while (iterations < MAX_ITERATIONS) {
