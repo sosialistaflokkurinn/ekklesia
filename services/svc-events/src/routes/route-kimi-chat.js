@@ -390,12 +390,42 @@ ekklesia/
 
 ## Lykilþjónustur
 - **Firebase Hosting**: Frontend á ekklesia-prod-10-2025.web.app
-- **Firebase Functions (svc-members)**: Python - Auth, membership, email
-- **Cloud Run (svc-events)**: Node.js - Viðburðir, Facebook sync, Kimi chat API
-- **Cloud Run (svc-elections)**: Node.js - Atkvæðagreiðslur, kosningar
-- **Cloud SQL PostgreSQL**: Aðalgagnagrunnur (europe-west2)
+- **Firebase Functions (svc-members)**: Python 3.12 - Auth, membership, email
+- **Cloud Run (svc-events)**: Node.js v20 - Viðburðir, Facebook sync, Kimi chat API
+- **Cloud Run (svc-elections)**: Node.js v20 - Atkvæðagreiðslur, kosningar
+- **Cloud SQL PostgreSQL**: Aðalgagnagrunnur (europe-west1)
 - **Firestore**: Notendagögn, sessions, audit logs
-- **Amazon SES**: Tölvupóstur (eu-west-1)
+- **SendGrid**: Tölvupóstur (free tier)
+
+## Tækniákvarðanir (meðvitaðar)
+Eftirfarandi eru MEÐVITAÐAR hönnunarákvarðanir, EKKI veikleikar:
+
+1. **Vanilla ES6 JavaScript** (ekki React/Vue/Svelte)
+   - Einfaldara, hraðara, enginn build step
+   - Minna dependency hell
+   - Auðveldara að viðhalda til lengri tíma
+
+2. **Ekki TypeScript**
+   - Sveigjanleiki í þróun
+   - JSDoc notað þar sem þarf
+   - Minni complexity
+
+3. **Vanilla CSS með CSS variables** (ekki Tailwind)
+   - Ekkert build step
+   - Læsilegra, auðveldara að debugga
+   - Enginn vendor lock-in
+
+4. **Monorepo strúktúr**
+   - Samræmd þróun
+   - Auðvelt að deila kóða milli þjónusta
+   - Ein git saga
+
+5. **ES6 modules í browser** (enginn bundler)
+   - Native browser support
+   - Einfaldara deployment
+   - Hraðari þróun
+
+Kerfið er **7/10 nútímalegt** - cloud native backend, einfaldur og viðhaldanlegur frontend.
 
 ## Deployment
 - Frontend: \`cd services/svc-members && firebase deploy --only hosting\`
