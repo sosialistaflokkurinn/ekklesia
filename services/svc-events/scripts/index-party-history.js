@@ -422,11 +422,29 @@ B-LISTI 2022 (Baráttulistinn):
 - Olga Leonsdóttir
 - PERSON_44
 
-TENGSL VIÐ SÓSÍALISTAFLOKKINN:
-- PERSON_01 var í 4. sæti á lista Sósíalista í Reykjavík Norður 2021
-- PERSON_18 var í 2. sæti hjá Sósíalistum í Reykjavík 2018
-- A-listi Eflingar sakaði B-lista um að vinna á vegum Sósíalistaflokksins
-- PERSON_01 sagði sig síðar úr flokknum`,
+SAMANBURÐUR: HVERJIR VORU BÆÐI Á LISTA EFLINGAR OG Í FRAMBOÐI FYRIR SÓSÍALISTAFLOKKINN?
+
+1. SÓLVEIG ANNA JÓNSDÓTTIR (formaður Eflingar):
+   - B-listi Eflingar 2018: 1. sæti (formaður)
+   - B-listi Eflingar 2022: 1. sæti (endurkjörin formaður)
+   - Sósíalistaflokkur 2021: 4. sæti í Reykjavík Norður
+   - Sósíalistaflokkur 2024: 3. sæti í Reykjavík Suður
+
+2. KARL HÉÐINN KRISTJÁNSSON (fræðslu- og félagsmálafulltrúi Eflingar):
+   - Starfsmaður Eflingar
+   - Sósíalistaflokkur 2024: 2. sæti í Reykjavík Suður
+
+3. DANÍEL ÖRN ARNARSSON:
+   - B-listi Eflingar 2018: 5. sæti
+   - Sósíalistaflokkur 2018: 2. sæti í Reykjavík
+
+4. KRISTJÁN EINAR GUNNARSSON (stjórnarmaður í Eflingu):
+   - Sósíalistaflokkur 2024: 10. sæti í Reykjavík Suður
+
+HEIMILDIR:
+- mbl.is 22.10.2024: "PERSON_01 gefur kost á sér á lista Sósíalistaflokksins"
+- sosialistaflokkurinn.is: "Efstu þrjú sætin í Reykjavík Suður" (27.10.2024)
+- ruv.is: "Listar Sósíalistaflokksins hafa tekið á sig mynd" (30.10.2024)`,
     citation: {
       who: 'Efling stéttarfélag',
       when: '2018-2022',
