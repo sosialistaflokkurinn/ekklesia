@@ -454,7 +454,7 @@ async function getSystemHealthContext() {
       const tableStats = await query(`
         SELECT
           (SELECT COUNT(*) FROM external_events) as events,
-          (SELECT COUNT(*) FROM voting_tokens) as tokens
+          (SELECT COUNT(*) FROM elections.voting_tokens) as tokens
       `);
       const lastSync = await query(`
         SELECT sync_type, events_count, completed_at
