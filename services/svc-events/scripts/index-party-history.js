@@ -167,13 +167,24 @@ Stofnandi Fósturheimilisbarna. Ólst upp í ríkisumsjá frá 8 ára aldri, fó
 5. ÁSTA DÍS GUÐJÓNSDÓTTIR
 52 ára, úr Vesturlandi. Hefur unnið í byggingariðnaði, fiskveiðum, hárgreiðslu og skrifstofustörfum. Þjálfaður sjúkraliði í Svíþjóð. Formaður stuðningssamtaka í 6 ár, meðstjórnandi Pepp Íslands sem barðist fyrir fólki í fátækt.
 
+6. SÓLVEIG ANNA JÓNSDÓTTIR - formaður Eflingar stéttarfélags (einnig á B-lista Eflingar)
+7. REINHOLD RICHTER
+9. LAUFEY LÍNDAL ÓLAFSDÓTTIR
+14. HÓLMSTEINN A. BREKKAN - blikkari og framkvæmdastjóri Samtaka leigjenda
+28. LUCIANO DUTRA
+37. SIGRÚN UNNSTEINSDÓTTIR
+42. KOLBRÚN - (líklegast Kolbrún Valvesdóttir sem einnig var á B-lista Eflingar)
+
 KÓPAVOGUR - 22 frambjóðendur (3,2% atkvæða, enginn kjörinn):
 
-1. ARNÞÓR SIGURÐSSON (oddviti)
-2. MARÍA PÉTURSDÓTTIR - baráttumaður fyrir fatlaða
+1. ARNÞÓR SIGURÐSSON (oddviti) - kjötiðnaðarmaður, forritari og stjórnarmaður í VR
+2. MARÍA PÉTURSDÓTTIR - myndlistarmaður, kennari og öryrki
 3. RÚNAR EINARSSON - upplifði fjárhagserfiðleika í hruninu
 4. HILDIGUNNUR ÞÓRSDÓTTIR SAARI
-5. ALEXEY MATVEEV - baráttumaður gegn launamismunun innflytjenda`,
+5. ALEXEY MATVEEV - baráttumaður gegn launamismunun innflytjenda
+16. HELGA GUÐMUNDSDÓTTIR
+17. KOLBRÚN VALVESDÓTTIR - einnig á B-lista Eflingar 2018 og 2022
+22. ÖRN G. ELLINGSEN`,
     citation: {
       who: 'Sósíalistaflokkur Íslands',
       when: '2018-05-26',
@@ -279,6 +290,7 @@ VARAFULLTRÚAR:
 6. PERSON_23 - öryrki
 7. PERSON_53 - línukokkur
 8. PERSON_55 - sérkennari
+14. IAN MCDONALD - félagsmaður í Eflingu og stuðningsmaður B-lista
 
 ÚRSLIT:
 - Sósíalistaflokkurinn fékk um 6% atkvæða í Reykjavík
@@ -424,22 +436,40 @@ B-LISTI 2022 (Baráttulistinn):
 
 SAMANBURÐUR: HVERJIR VORU BÆÐI Á LISTA EFLINGAR OG Í FRAMBOÐI FYRIR SÓSÍALISTAFLOKKINN?
 
+== Á B-LISTA EFLINGAR OG FRAMBOÐSLISTA SÓSÍALISTAFLOKKSINS ==
+
 1. SÓLVEIG ANNA JÓNSDÓTTIR (formaður Eflingar):
    - B-listi Eflingar 2018: 1. sæti (formaður)
    - B-listi Eflingar 2022: 1. sæti (endurkjörin formaður)
-   - Sósíalistaflokkur 2021: 4. sæti í Reykjavík Norður
-   - Sósíalistaflokkur 2024: 3. sæti í Reykjavík Suður
+   - Sósíalistaflokkur 2018 Reykjavík: 6. sæti
+   - Sósíalistaflokkur 2021 Reykjavík Norður: 4. sæti
+   - Sósíalistaflokkur 2024 Reykjavík Suður: 3. sæti
 
-2. KARL HÉÐINN KRISTJÁNSSON (fræðslu- og félagsmálafulltrúi Eflingar):
+2. DANÍEL ÖRN ARNARSSON:
+   - B-listi Eflingar 2018: 5. sæti (stjórnarmaður)
+   - Sósíalistaflokkur 2018 Reykjavík: 2. sæti
+
+3. MAGDALENA KWIATKOWSKA (PERSON_08):
+   - B-listi Eflingar 2018: 2. sæti (stjórnarmaður)
+   - Sósíalistaflokkur 2018 Reykjavík: 3. sæti
+
+4. KOLBRÚN VALVESDÓTTIR:
+   - B-listi Eflingar 2018: 8. sæti (stjórnarmaður)
+   - B-listi Eflingar 2022: á listanum
+   - Sósíalistaflokkur 2018 Kópavogur: 17. sæti
+
+== EFLING-TENGSL EN EKKI Á B-LISTA ==
+
+5. KARL HÉÐINN KRISTJÁNSSON (fræðslu- og félagsmálafulltrúi Eflingar):
    - Starfsmaður Eflingar
-   - Sósíalistaflokkur 2024: 2. sæti í Reykjavík Suður
+   - Sósíalistaflokkur 2024 Reykjavík Suður: 2. sæti
 
-3. DANÍEL ÖRN ARNARSSON:
-   - B-listi Eflingar 2018: 5. sæti
-   - Sósíalistaflokkur 2018: 2. sæti í Reykjavík
+6. KRISTJÁN EINAR GUNNARSSON (stjórnarmaður í Eflingu):
+   - Sósíalistaflokkur 2024 Reykjavík Suður: 10. sæti
 
-4. KRISTJÁN EINAR GUNNARSSON (stjórnarmaður í Eflingu):
-   - Sósíalistaflokkur 2024: 10. sæti í Reykjavík Suður
+7. IAN MCDONALD (félagsmaður í Eflingu, stuðningsmaður B-lista):
+   - Skrifaði grein með B-listaflokki 2022
+   - Sósíalistaflokkur 2022 Reykjavík: 14. sæti
 
 HEIMILDIR:
 - mbl.is 22.10.2024: "PERSON_01 gefur kost á sér á lista Sósíalistaflokksins"
