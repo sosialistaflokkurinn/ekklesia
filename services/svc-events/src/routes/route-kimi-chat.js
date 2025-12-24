@@ -520,6 +520,26 @@ async function getSystemHealthContext() {
     lines.push('### Vélbúnaður');
     lines.push(`- CPU kjarnar: ${os.cpus().length}`);
     lines.push(`- Load average: ${os.loadavg().map(l => l.toFixed(2)).join(', ')}`);
+    lines.push('');
+
+    // Cost estimation (based on current usage patterns)
+    lines.push('### Áætlaður kostnaður (GCP)');
+    lines.push('');
+    lines.push('**Google Cloud Platform:**');
+    lines.push('- Cloud Run (svc-events, svc-elections): ~$8-12/mán');
+    lines.push('- Cloud SQL PostgreSQL (db-custom-1-3840): ~$25-35/mán');
+    lines.push('- Firebase Functions (47 functions): ~$3-8/mán');
+    lines.push('- Firebase Hosting: ~$0 (free tier)');
+    lines.push('- Cloud Storage: ~$1-2/mán');
+    lines.push('- Secret Manager: ~$0 (free tier)');
+    lines.push('- Cloud Build: ~$1-3/mán');
+    lines.push('');
+    lines.push('**Tölvupóstur:**');
+    lines.push('- SendGrid: ~$0 (free tier, 100 emails/day)');
+    lines.push('');
+    lines.push('**Samtals: ~$40-60/mánuður**');
+    lines.push('');
+    lines.push('_Athugið: Þetta er áætlun byggð á venjulegri notkun. Raunverulegan kostnað má sjá í GCP Console → Billing._');
     lines.push('---');
 
     return lines.join('\n');
