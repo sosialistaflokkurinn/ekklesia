@@ -162,6 +162,8 @@ async function searchSimilar(embedding, options = {}) {
         // Frambjóðendur
         'frambjóðend': 'frambjóðendur', 'framboð': 'frambjóðendur', 'listi': 'frambjóðendur',
         '2018': 'frambjóðendur', 'kópavog': 'frambjóðendur', 'reykjavík': 'frambjóðendur',
+        'oddvit': 'frambjóðendur', 'oddvitar': 'frambjóðendur', '2024': 'frambjóðendur',
+        'daníel': 'frambjóðendur', 'sanna': 'frambjóðendur', 'gunnar smári': 'frambjóðendur',
         // Efling og B-listi
         'efling': 'efling', 'b-list': 'efling', 'baráttulist': 'efling',
         'sólveig anna': 'efling', 'stéttarfélag': 'efling', 'verkalýð': 'efling',
