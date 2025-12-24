@@ -389,12 +389,18 @@ ekklesia/
 \`\`\`
 
 ## Lykilþjónustur
-- **Firebase Hosting**: Frontend á ekklesia-prod-10-2025.web.app
-- **Firebase Functions (svc-members)**: Python 3.12 - Auth, membership, email
-- **Cloud Run (svc-events)**: Node.js v20 - Viðburðir, Facebook sync, Kimi chat API
-- **Cloud Run (svc-elections)**: Node.js v20 - Atkvæðagreiðslur, kosningar
-- **Cloud SQL PostgreSQL**: Aðalgagnagrunnur (europe-west1)
-- **Firestore**: Notendagögn, sessions, audit logs
+| Þjónusta | Tækni | Hýsing | Region |
+|----------|-------|--------|--------|
+| **svc-members** | Python 3.12 | Firebase Functions | europe-west2 |
+| **svc-events** | Node.js v20 | Cloud Run | europe-west1 |
+| **svc-elections** | Node.js v20 | Cloud Run | europe-west1 |
+| **Frontend** | Vanilla JS | Firebase Hosting | global |
+| **Database** | PostgreSQL 15 | Cloud SQL | europe-west1 |
+
+**MIKILVÆGT:** Cloud Run þjónusturnar (svc-events, svc-elections) eru **Node.js**, EKKI Python!
+Aðeins Firebase Functions (svc-members) notar Python.
+
+- **Firestore**: Sessions, audit logs
 - **SendGrid**: Tölvupóstur (free tier)
 
 ## Tækniákvarðanir (meðvitaðar)
