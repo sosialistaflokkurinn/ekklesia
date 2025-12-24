@@ -73,6 +73,7 @@ function ensureToastElement() {
   // Create toast element
   toastElement = document.createElement('div');
   toastElement.className = 'cold-start-toast';
+  // SECURITY: Static HTML only - no user input
   toastElement.innerHTML = `
     <div class="cold-start-toast__spinner"></div>
     <span class="cold-start-toast__text">Þjónustan er að vakna...</span>

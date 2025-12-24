@@ -77,6 +77,8 @@ MEMBER_FUNCTIONS = [
     {"id": "handlekenniauth", "name": "Kenni.is Auth"},
     {"id": "verifymembership", "name": "Staðfesting félagsaðildar"},
     {"id": "updatememberprofile", "name": "Prófíluppfærsla"},
+    {"id": "softdeleteself", "name": "Afskrá sjálfan sig"},
+    {"id": "reactivateself", "name": "Endurvirkja aðild"},
 ]
 
 # Firebase Functions - Address Validation
@@ -111,10 +113,49 @@ SUPERUSER_FUNCTIONS = [
     {"id": "anonymizemember", "name": "Nafnhreinsa félaga"},
     {"id": "listelevatedusers", "name": "Listi yfir stjórnendur"},
     {"id": "purgedeleted", "name": "Eyða merktum félögum"},
+    {"id": "getdeletedcounts", "name": "Fjöldi eyddra gagna"},
+]
+
+# Firebase Functions - Email Operations (Issue #323)
+EMAIL_FUNCTIONS = [
+    {"id": "listemailtemplates", "name": "Lista póstsniðmát"},
+    {"id": "getemailtemplate", "name": "Sækja póstsniðmát"},
+    {"id": "saveemailtemplate", "name": "Vista póstsniðmát"},
+    {"id": "deleteemailtemplate", "name": "Eyða póstsniðmáti"},
+    {"id": "sendemail", "name": "Senda tölvupóst"},
+    {"id": "listemailcampaigns", "name": "Lista herferðir"},
+    {"id": "createemailcampaign", "name": "Búa til herferð"},
+    {"id": "sendcampaign", "name": "Senda herferð"},
+    {"id": "getemailstats", "name": "Tölfræði sendinga"},
+    {"id": "listemaillogs", "name": "Sendingarskrá"},
+    {"id": "getemailpreferences", "name": "Sækja póstkjörstillingar"},
+    {"id": "updateemailpreferences", "name": "Uppfæra póstkjörstillingar"},
+    {"id": "unsubscribe", "name": "Afskráning af póstlista"},
+]
+
+# Firebase Functions - Heatmap/Analytics
+HEATMAP_FUNCTIONS = [
+    {"id": "compute-member-heatmap-stats", "name": "Reikna hitakortsgögn"},
+    {"id": "get-member-heatmap-data", "name": "Sækja hitakortsgögn"},
+]
+
+# Firebase Functions - Admin Member Operations
+ADMIN_MEMBER_FUNCTIONS = [
+    {"id": "listmembers", "name": "Lista félaga"},
+    {"id": "getmember", "name": "Sækja félaga"},
+    {"id": "getmemberstats", "name": "Tölfræði félaga"},
+    {"id": "getmemberself", "name": "Sækja eigin gögn"},
 ]
 
 # Combined list for backward compatibility
-FIREBASE_FUNCTIONS = MEMBER_FUNCTIONS + ADDRESS_FUNCTIONS + SUPERUSER_FUNCTIONS
+FIREBASE_FUNCTIONS = (
+    MEMBER_FUNCTIONS +
+    ADDRESS_FUNCTIONS +
+    SUPERUSER_FUNCTIONS +
+    EMAIL_FUNCTIONS +
+    HEATMAP_FUNCTIONS +
+    ADMIN_MEMBER_FUNCTIONS
+)
 
 
 def require_superuser(req: https_fn.CallableRequest) -> Dict[str, Any]:
@@ -466,6 +507,9 @@ def check_system_health_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
     add_functions(ADDRESS_FUNCTIONS, "address")
     add_functions(REGISTRATION_FUNCTIONS, "registration")
     add_functions(SUPERUSER_FUNCTIONS, "superuser")
+    add_functions(EMAIL_FUNCTIONS, "email")
+    add_functions(HEATMAP_FUNCTIONS, "heatmap")
+    add_functions(ADMIN_MEMBER_FUNCTIONS, "admin")
 
     # Check Firestore connectivity
     try:
@@ -562,6 +606,57 @@ def check_system_health_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     }
 
+
+# ==============================================================================
+# HEALTH PROBE (No auth required - for service-to-service calls)
+# ==============================================================================
+
+def members_health_probe_handler(req: https_fn.Request) -> https_fn.Response:
+    """
+    Simple health probe for svc-members Firebase Functions.
+    No authentication required - designed for Kimi and other services.
+
+    Returns summary of function status without detailed checks.
+    """
+    import json
+    from flask import Response
+
+    # Quick Firestore connectivity test
+    try:
+        db = firestore.client()
+        db.collection("_health").document("probe").get()
+        firestore_ok = True
+    except Exception:
+        firestore_ok = False
+
+    # Count deployed functions (static list - update when adding functions)
+    total_functions = 47  # Current count from service catalog
+
+    status = "healthy" if firestore_ok else "degraded"
+
+    result = {
+        "status": status,
+        "service": "svc-members",
+        "type": "Firebase Functions",
+        "region": "europe-west2",
+        "firestore": "connected" if firestore_ok else "error",
+        "functions": {
+            "total": total_functions,
+            "note": "Use checkSystemHealth for detailed status (requires superuser)"
+        },
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    }
+
+    return Response(
+        json.dumps(result),
+        status=200,
+        mimetype="application/json",
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type"
+        }
+    )
 
 # ==============================================================================
 # AUDIT LOGS

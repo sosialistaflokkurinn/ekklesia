@@ -734,6 +734,17 @@ body.superuser {
   min-height: 5.5rem;
 }
 
+.service-card__region {
+  font-size: 0.65rem;
+  color: var(--color-text-muted, #6b7280);
+  font-family: monospace;
+  background: var(--color-bg-secondary, #f3f4f6);
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  display: inline-block;
+  margin-bottom: 0.25rem;
+}
+
 /* Highlight card for registration site */
 .card--highlight {
   border: 2px solid var(--color-primary, #dc2626);

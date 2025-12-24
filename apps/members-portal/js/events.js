@@ -503,6 +503,7 @@ window.copyEventLink = function(eventId) {
     const btn = document.querySelector(`#${eventId} button[onclick*="copyEventLink"]`);
     if (btn) {
       const originalText = btn.innerHTML;
+      // SECURITY: R.string is i18n (developer-controlled), emoji is safe
       btn.innerHTML = `✓ ${R.string.events_link_copied}`;
       btn.disabled = true;
       setTimeout(() => {

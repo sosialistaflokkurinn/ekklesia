@@ -389,18 +389,111 @@ ekklesia/
 \`\`\`
 
 ## Lykilþjónustur
-- **Firebase Hosting**: Frontend á ekklesia-prod-10-2025.web.app
-- **Firebase Functions (svc-members)**: Python - Auth, membership, email
-- **Cloud Run (svc-events)**: Node.js - Viðburðir, Facebook sync, Kimi chat API
-- **Cloud Run (svc-elections)**: Node.js - Atkvæðagreiðslur, kosningar
-- **Cloud SQL PostgreSQL**: Aðalgagnagrunnur (europe-west2)
-- **Firestore**: Notendagögn, sessions, audit logs
-- **Amazon SES**: Tölvupóstur (eu-west-1)
+| Þjónusta | Tækni | Hýsing | Region |
+|----------|-------|--------|--------|
+| **svc-members** | Python 3.12 | Firebase Functions | europe-west2 |
+| **svc-events** | Node.js v20 | Cloud Run | europe-west1 |
+| **svc-elections** | Node.js v20 | Cloud Run | europe-west1 |
+| **Frontend** | Vanilla JS | Firebase Hosting | global |
+| **Database** | PostgreSQL 15 | Cloud SQL | europe-west1 |
+
+**MIKILVÆGT:** Cloud Run þjónusturnar (svc-events, svc-elections) eru **Node.js**, EKKI Python!
+Aðeins Firebase Functions (svc-members) notar Python.
+
+- **Firestore**: Sessions, audit logs
+- **SendGrid**: Tölvupóstur (free tier)
+
+## Tækniákvarðanir (meðvitaðar)
+Eftirfarandi eru MEÐVITAÐAR hönnunarákvarðanir, EKKI veikleikar:
+
+1. **Vanilla ES6 JavaScript** (ekki React/Vue/Svelte)
+   - Einfaldara, hraðara, enginn build step
+   - Minna dependency hell
+   - Auðveldara að viðhalda til lengri tíma
+
+2. **Ekki TypeScript**
+   - Sveigjanleiki í þróun
+   - JSDoc notað þar sem þarf
+   - Minni complexity
+
+3. **Vanilla CSS með CSS variables** (ekki Tailwind)
+   - Ekkert build step
+   - Læsilegra, auðveldara að debugga
+   - Enginn vendor lock-in
+
+4. **Monorepo strúktúr**
+   - Samræmd þróun
+   - Auðvelt að deila kóða milli þjónusta
+   - Ein git saga
+
+5. **ES6 modules í browser** (enginn bundler)
+   - Native browser support
+   - Einfaldara deployment
+   - Hraðari þróun
+
+Kerfið er **7/10 nútímalegt** - cloud native backend, einfaldur og viðhaldanlegur frontend.
+
+## VM vs Serverless samanburður
+Ef einhver spyr um VM sem valkost:
+
+**Núverandi (Serverless) - $18-27/mán:**
+✅ Kostir: Auto-scaling, engin viðhald, HA innbyggt, pay-per-use
+❌ Gallar: Cloud SQL er dýr (~$15-20), cold starts
+
+**VM valkostur - ~$5-15/mán:**
+✅ Kostir: Ódýrara, PostgreSQL á VM (~$0), fastur kostnaður
+❌ Gallar: Handvirkt viðhald, engin auto-scaling, single point of failure, þarf backup, OS updates
+
+**Hvenær VM?**
+- Mjög lítil notkun, fast budget
+- Einn kerfisstjóri sem kann Linux
+
+**Hvenær serverless?**
+- Breytilegt álag, þarf auto-scaling
+- Enginn kerfisstjóri, lágmarks viðhald
+- Mission critical (HA mikilvægt)
+
+Ekklesia notar serverless vegna lágmarks viðhalds og áreiðanleika.
 
 ## Deployment
 - Frontend: \`cd services/svc-members && firebase deploy --only hosting\`
 - Functions: \`firebase deploy --only functions:FUNCTION_NAME\`
 - Cloud Run: \`cd services/svc-events && ./deploy.sh\`
+
+## Gagnagrunnur (Cloud SQL PostgreSQL)
+**Tenging frá local:**
+\`\`\`bash
+# Byrja Cloud SQL Proxy
+cloud-sql-proxy ekklesia-prod-10-2025:europe-west1:ekklesia-db-eu1 --port 5433 --gcloud-auth
+
+# Tengjast með psql
+PGPASSWORD='<password>' psql -h localhost -p 5433 -U socialism -d socialism
+\`\`\`
+
+**Lykilupplýsingar:**
+- Instance: \`ekklesia-db-eu1\` (europe-west1)
+- Database: \`socialism\`
+- User: \`socialism\`
+- Port: 5432 (Cloud SQL), 5433 (local proxy)
+- Password: Í Secret Manager (\`django-socialism-db-password\`)
+
+**Connection string (þjónustur):**
+Þjónusturnar nota Unix socket tengingu í Cloud Run:
+\`/cloudsql/ekklesia-prod-10-2025:europe-west1:ekklesia-db-eu1\`
+
+## Algengar skipanir
+\`\`\`bash
+# Logs
+gcloud run services logs read svc-events --region europe-west1 --limit 50
+gcloud functions logs read FUNCTION_NAME --region europe-west2
+
+# Rollback Cloud Run
+gcloud run revisions list --service=svc-events --region=europe-west1
+gcloud run services update-traffic svc-events --to-revisions=REVISION=100 --region=europe-west1
+
+# Secrets
+gcloud secrets versions access latest --secret=SECRET_NAME
+\`\`\`
 
 ## Leiðbeiningar
 - Svaraðu á íslensku, stuttlega og hnitmiðað
@@ -454,7 +547,7 @@ async function getSystemHealthContext() {
       const tableStats = await query(`
         SELECT
           (SELECT COUNT(*) FROM external_events) as events,
-          (SELECT COUNT(*) FROM voting_tokens) as tokens
+          (SELECT COUNT(*) FROM elections.voting_tokens) as tokens
       `);
       const lastSync = await query(`
         SELECT sync_type, events_count, completed_at
@@ -493,10 +586,53 @@ async function getSystemHealthContext() {
     }
     lines.push('');
 
+    // Check Firebase Functions (svc-members)
+    try {
+      const MEMBERS_API_URL = 'https://europe-west2-ekklesia-prod-10-2025.cloudfunctions.net';
+      const start = Date.now();
+      const membersHealth = await axios.get(`${MEMBERS_API_URL}/membersHealthProbe`, { timeout: 10000 });
+      const latency = Date.now() - start;
+      const data = membersHealth.data;
+
+      const isHealthy = data.status === 'healthy';
+      const firestoreStatus = data.firestore === 'connected' ? '✅' : '❌';
+
+      lines.push('### svc-members (Firebase Functions)');
+      lines.push(`- Staða: ${isHealthy ? '✅ Heilbrigt' : '⚠️ Vandamál'}`);
+      lines.push(`- Latency: ${latency}ms`);
+      lines.push(`- Firestore: ${firestoreStatus} ${data.firestore}`);
+      lines.push(`- Functions: ${data.functions?.total || '?'} deployed`);
+      lines.push(`- Region: ${data.region || 'europe-west2'}`);
+    } catch (membersError) {
+      lines.push('### svc-members (Firebase Functions)');
+      lines.push(`- Staða: ❌ Ekki hægt að ná sambandi: ${membersError.message?.substring(0, 50)}`);
+    }
+    lines.push('');
+
     // CPU info
     lines.push('### Vélbúnaður');
     lines.push(`- CPU kjarnar: ${os.cpus().length}`);
     lines.push(`- Load average: ${os.loadavg().map(l => l.toFixed(2)).join(', ')}`);
+    lines.push('');
+
+    // Cost estimation (based on very low usage - ~50 users, minimal traffic)
+    lines.push('### Áætlaður kostnaður (mjög lítil notkun)');
+    lines.push('');
+    lines.push('**Google Cloud Platform:**');
+    lines.push('- Cloud SQL PostgreSQL: ~$15-20/mán (lægsti grunnkostnaður)');
+    lines.push('- Cloud Run (svc-events, svc-elections): ~$2-5/mán');
+    lines.push('- Firebase Functions: ~$0-1/mán (free tier)');
+    lines.push('- Firebase Hosting: ~$0 (free tier)');
+    lines.push('- Cloud Storage: ~$0.50/mán');
+    lines.push('- Secret Manager: ~$0 (free tier)');
+    lines.push('- Cloud Build: ~$0.50/mán');
+    lines.push('');
+    lines.push('**Tölvupóstur:**');
+    lines.push('- SendGrid: ~$0 (free tier, 100 emails/dag)');
+    lines.push('');
+    lines.push('**Samtals: ~$18-27/mánuður**');
+    lines.push('');
+    lines.push('_Cloud SQL er stærsti kostnaðurinn. Raunverulegan kostnað má sjá í GCP Console → Billing._');
     lines.push('---');
 
     return lines.join('\n');
