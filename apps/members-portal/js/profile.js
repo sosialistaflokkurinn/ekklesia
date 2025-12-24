@@ -810,7 +810,7 @@ function showDeleteAccountModal() {
 async function handleDeleteAccount(modal) {
   const confirmInput = document.getElementById('confirm-delete-input');
   if (!confirmInput || confirmInput.value.toUpperCase() !== 'EYÐA') {
-    showToast('Þú verður að skrifa "EYÐA" til að staðfesta', 'error');
+    showToast(R.string('profile_delete_confirm_error'), 'error');
     return;
   }
 
