@@ -295,6 +295,39 @@ async function searchSimilar(embedding, options = {}) {
           WHEN LOWER(title) = 'saga sósíalistaflokksins' THEN 2.0
           ELSE ${contentBoostClause} END`;
       }
+
+      // Fjármál flokksins, Vorstjarnan, Alþýðufélagið queries
+      if (queryLower.includes('vorstjörn') || queryLower.includes('alþýðufélag') ||
+          queryLower.includes('ríkisstyrkur') || queryLower.includes('félagsgjöld') ||
+          (queryLower.includes('peningar') && queryLower.includes('flokk')) ||
+          (queryLower.includes('fjármál') && queryLower.includes('flokk'))) {
+        contentBoostClause = `CASE
+          WHEN LOWER(title) LIKE '%fjármál%klofn%' THEN 4.0
+          WHEN LOWER(content) LIKE '%vorstjörn%' AND LOWER(content) LIKE '%alþýðufélag%' THEN 3.5
+          WHEN LOWER(content) LIKE '%ríkisstyrkur%' OR LOWER(content) LIKE '%félagsgjöld%' THEN 2.5
+          ELSE ${contentBoostClause} END`;
+      }
+
+      // Kosningasjóður 2024 / núll króna queries
+      if ((queryLower.includes('kosningasjóð') && queryLower.includes('2024')) ||
+          (queryLower.includes('núll') && queryLower.includes('kosning')) ||
+          (queryLower.includes('peningar') && queryLower.includes('kosning') && queryLower.includes('2024'))) {
+        contentBoostClause = `CASE
+          WHEN LOWER(content) LIKE '%núll króna%kosningasjóð%' OR LOWER(content) LIKE '%núll%í kosningasjóð%' THEN 4.0
+          WHEN LOWER(title) LIKE '%fjármál%klofn%' THEN 3.5
+          WHEN LOWER(content) LIKE '%kosningasjóð%' AND LOWER(content) LIKE '%2024%' THEN 3.0
+          ELSE ${contentBoostClause} END`;
+      }
+
+      // Elítustjórnmál / launastefna queries
+      if (queryLower.includes('elítustjórnmál') || queryLower.includes('elítu') ||
+          (queryLower.includes('laun') && queryLower.includes('kjör'))) {
+        contentBoostClause = `CASE
+          WHEN LOWER(title) LIKE '%fjármál%klofn%' THEN 3.5
+          WHEN LOWER(content) LIKE '%burt með elítustjórnmál%' THEN 3.0
+          WHEN LOWER(content) LIKE '%lækka laun%' AND LOWER(content) LIKE '%vorstjörn%' THEN 2.5
+          ELSE ${contentBoostClause} END`;
+      }
     }
 
     if (boostPolicySources) {

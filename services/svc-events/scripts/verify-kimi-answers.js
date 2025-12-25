@@ -216,6 +216,57 @@ const VERIFICATION_TESTS = [
     ],
     webSearchQuery: 'Gunnar Smári Egilsson tilkynnti stofnun Sósíalistaflokkur apríl 2017',
   },
+  // Tests 21-25: Fjármál flokksins og klofningur
+  {
+    id: 21,
+    question: 'Hvað er Vorstjarnan og hvernig tengist hún flokknum?',
+    expectedFacts: [
+      { fact: 'Vorstjarnan', required: true },
+      { fact: 'leiga', required: false },
+      { fact: 'styrkur', required: false },
+    ],
+    webSearchQuery: 'Vorstjarnan Sósíalistaflokkur félagasamtök',
+  },
+  {
+    id: 22,
+    question: 'Hvað er Alþýðufélagið og Samstöðin?',
+    expectedFacts: [
+      { fact: 'Alþýðufélag', required: true },
+      { fact: 'Samstöð', required: true },
+      { fact: 'áskrifend', required: false },
+    ],
+    webSearchQuery: 'Alþýðufélagið Samstöðin samstodin.is',
+  },
+  {
+    id: 23,
+    question: 'Hvað var stefna flokksins um fjármál kjörinna fulltrúa 2021?',
+    expectedFacts: [
+      { fact: 'elítustjórnmál', required: false },
+      { fact: 'Vorstjörn', required: true },
+      { fact: 'laun', required: true },
+    ],
+    webSearchQuery: 'Sósíalistaflokkur burt með elítustjórnmál 2021 laun Vorstjarnan',
+  },
+  {
+    id: 24,
+    question: 'Hvert fóru peningar flokksins - ríkisstyrkur og félagsgjöld?',
+    expectedFacts: [
+      { fact: 'Vorstjörn', required: true },
+      { fact: 'Alþýðufélag', required: true },
+      { fact: '50%', required: false },
+    ],
+    webSearchQuery: 'Sósíalistaflokkur fjármál ríkisstyrkur Vorstjarnan Alþýðufélagið',
+  },
+  {
+    id: 25,
+    question: 'Hversu mikið var í kosningasjóði flokksins fyrir kosningarnar 2024?',
+    expectedFacts: [
+      { fact: 'núll', required: true },
+      { fact: 'kosningasjóð', required: false },
+      { fact: '2024', required: true },
+    ],
+    webSearchQuery: 'Sósíalistaflokkur kosningasjóður 2024 fjármál',
+  },
 ];
 
 const SYSTEM_PROMPT = `Þú ert aðstoðarmaður fyrir félaga í Sósíalistaflokknum.
