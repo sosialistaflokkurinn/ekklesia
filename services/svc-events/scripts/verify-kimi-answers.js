@@ -114,7 +114,7 @@ const VERIFICATION_TESTS = [
     id: 10,
     question: 'Hvað er Vor til vinstri?',
     expectedFacts: [
-      { fact: 'Sanna Magdalena', required: true },  // Base form
+      { fact: 'Sönnu', required: true },  // Dative form (Sönnu Magdalenu)
       { fact: 'framboð', required: true },
       { fact: '2026', required: false },
       { fact: 'borgarstjórnarkosning', required: false },
@@ -266,6 +266,17 @@ const VERIFICATION_TESTS = [
       { fact: '2024', required: true },
     ],
     webSearchQuery: 'Sósíalistaflokkur kosningasjóður 2024 fjármál',
+  },
+  {
+    id: 26,
+    question: 'Hver er rót klofnings í Sósíalistaflokknum 2025?',
+    expectedFacts: [
+      { fact: 'fjármál', required: false },
+      { fact: 'Vorstjörn', required: true },
+      { fact: 'peningar', required: false },
+      { fact: 'klofning', required: false },
+    ],
+    webSearchQuery: 'Sósíalistaflokkur klofningur 2025 fjármál Vorstjarnan',
   },
 ];
 

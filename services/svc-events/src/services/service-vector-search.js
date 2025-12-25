@@ -328,6 +328,16 @@ async function searchSimilar(embedding, options = {}) {
           WHEN LOWER(content) LIKE '%lækka laun%' AND LOWER(content) LIKE '%vorstjörn%' THEN 2.5
           ELSE ${contentBoostClause} END`;
       }
+
+      // Klofningur / split queries
+      if (queryLower.includes('klofning') || queryLower.includes('klofn') ||
+          queryLower.includes('rót') || queryLower.includes('sundur')) {
+        contentBoostClause = `CASE
+          WHEN LOWER(title) LIKE '%fjármál%klofn%' THEN 4.0
+          WHEN LOWER(content) LIKE '%rót klofning%' OR LOWER(content) LIKE '%klofningur%' THEN 3.0
+          WHEN LOWER(content) LIKE '%vorstjörn%' AND LOWER(content) LIKE '%alþýðufélag%' THEN 2.5
+          ELSE ${contentBoostClause} END`;
+      }
     }
 
     if (boostPolicySources) {
