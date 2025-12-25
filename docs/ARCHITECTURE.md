@@ -15,6 +15,22 @@
 
 ---
 
+## Key Concepts
+
+| Term | Definition |
+|------|------------|
+| **Firestore** | NoSQL document database - **source of truth** for member data |
+| **Cloud SQL** | PostgreSQL database for elections/events (relational data) |
+| **Kenni.is** | Icelandic electronic ID provider (OAuth PKCE authentication) |
+| **Firebase Auth** | Manages user sessions after Kenni.is authentication |
+| **pgvector** | PostgreSQL extension for vector similarity search (AI/RAG) |
+| **RAG** | Retrieval-Augmented Generation - AI answers using indexed documents |
+| **Kimi** | Moonshot AI LLM used for Party Wiki and Member Assistant |
+| **Source of Truth** | Firestore is canonical; other DBs sync from it |
+| **Django GCP** | Interim admin interface (Cloud Run) - will be replaced |
+
+---
+
 ## System Overview
 
 ```
@@ -306,6 +322,59 @@ User Question → Vertex AI Embedding → pgvector Search → Context Assembly �
 
 ---
 
+## API Examples
+
+### Get Elections (svc-elections)
+```bash
+# Get all elections
+curl -H "Authorization: Bearer $ID_TOKEN" \
+  https://svc-elections-....run.app/api/elections
+
+# Response
+{
+  "elections": [
+    {"id": 1, "title": "Stjórnarkjör 2025", "status": "active", ...}
+  ]
+}
+```
+
+### Cast Vote (svc-elections)
+```bash
+curl -X POST \
+  -H "Authorization: Bearer $ID_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"election_id": 1, "candidate_ids": [5, 3, 8]}' \
+  https://svc-elections-....run.app/api/vote
+```
+
+### AI Chat (svc-events)
+```bash
+# Party Wiki (static knowledge)
+curl -X POST \
+  -H "Authorization: Bearer $ID_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Hver er formanni flokksins?"}' \
+  https://svc-events-....run.app/api/party-wiki/chat
+
+# Member Assistant (RAG)
+curl -X POST \
+  -H "Authorization: Bearer $ID_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Hvað segir stefnuskrá um húsnæðismál?"}' \
+  https://svc-events-....run.app/api/member-assistant/chat
+```
+
+### Update Member Profile (Firebase Function)
+```bash
+curl -X POST \
+  -H "Authorization: Bearer $ID_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"email": "new@example.com", "phone": "555-1234"}' \
+  https://europe-west2-ekklesia-prod-10-2025.cloudfunctions.net/updatememberprofile
+```
+
+---
+
 ## Infrastructure
 
 ### Database Access
@@ -319,28 +388,49 @@ cloud-sql-proxy ekklesia-prod-10-2025:europe-west2:ekklesia-db \
 psql -h localhost -p 5433 -U postgres -d ekklesia
 ```
 
-### Secrets (GCP Secret Manager)
+### Environment Variables by Service
 
-| Secret Name (GCP) | Env Var (App) | Used By |
-|-------------------|---------------|---------|
-| `django-api-token` | `django-api-token` / `DJANGO_API_TOKEN` | sync functions |
-| `kenni-client-secret` | `KENNI_IS_CLIENT_SECRET` | auth |
-| `django-socialism-db-password` | `DB_PASSWORD` | all services |
+#### svc-elections (Cloud Run)
+| Env Var | Secret Name | Purpose |
+|---------|-------------|---------|
+| `DB_HOST` | - | `/cloudsql/ekklesia-prod-10-2025:europe-west2:ekklesia-db` |
+| `DB_NAME` | - | `socialism` |
+| `DB_USER` | - | `socialism` |
+| `DB_PASSWORD` | `django-socialism-db-password` | PostgreSQL password |
 
-**Note on Naming:**
-- **Secret Name:** The name in Secret Manager (usually lowercase with hyphens).
-- **Env Var:** The environment variable injected into the container.
-- **Best Practice:** Match the secret name (lowercase) for Firebase Functions, use uppercase for legacy/Docker services.
+#### svc-events (Cloud Run)
+| Env Var | Secret Name | Purpose |
+|---------|-------------|---------|
+| `DB_*` | (same as elections) | Database connection |
+| `KIMI_API_KEY` | `kimi-api-key` | Moonshot AI API |
+| `VERTEX_PROJECT` | - | GCP project for embeddings |
+
+#### svc-members (Firebase Functions)
+| Env Var | Secret Name | Purpose |
+|---------|-------------|---------|
+| `django-api-token` | `django-api-token` | Django API auth |
+| `django-socialism-db-password` | `django-socialism-db-password` | PostgreSQL |
+| `sendgrid-api-key` | `sendgrid-api-key` | Email sending |
+
+### Secrets Management
 
 ```bash
 # Read secret
 gcloud secrets versions access latest --secret="django-api-token"
 
-# Verify service secrets
+# Verify Cloud Run service secrets
 gcloud run services describe svc-elections \
   --region=europe-west2 \
   --format="json" | jq '.spec.template.spec.containers[0].env'
+
+# List all secrets
+gcloud secrets list --project=ekklesia-prod-10-2025
 ```
+
+**Naming Convention:**
+- Secret Manager: lowercase with hyphens (`django-api-token`)
+- Firebase Functions: match secret name (lowercase)
+- Cloud Run: uppercase (`DB_PASSWORD`) mapped from secret
 
 ---
 

@@ -55,30 +55,80 @@
 
 ---
 
+## Development Setup
+
+### Local Testing
+```bash
+# Frontend with Firebase emulators (recommended)
+cd services/svc-members && firebase emulators:start --only hosting
+
+# Or use Firebase serve
+firebase serve --only hosting --port 5000
+```
+
+### Database Access
+```bash
+# Start Cloud SQL proxy (ALWAYS use --gcloud-auth)
+cloud-sql-proxy ekklesia-prod-10-2025:europe-west2:ekklesia-db --port 5433 --gcloud-auth
+
+# Connect to PostgreSQL
+PGPASSWORD='Socialism2025#Db' psql -h localhost -p 5433 -U socialism -d socialism
+```
+
+### Environment Variables
+Services read secrets from GCP Secret Manager. Key secrets:
+- `django-api-token` - Django API authentication
+- `django-socialism-db-password` - PostgreSQL password
+- `kenni-client-secret` - Kenni.is OAuth secret
+- `kimi-api-key` - Moonshot Kimi API key
+
+---
+
+## Database Structure
+
+### Firestore Collections (Source of Truth)
+| Collection | Purpose | Key Fields |
+|------------|---------|------------|
+| `members` | Member profiles | `uid`, `kennitala`, `name`, `email`, `django_id` |
+| `cells` | Local chapters | `name`, `postal_codes[]`, `region` |
+| `audit_log` | Activity tracking | `action`, `uid`, `timestamp` |
+
+### Cloud SQL Tables (Elections/Events)
+| Table | Purpose |
+|-------|---------|
+| `elections` | Election definitions |
+| `ballots` | Cast votes |
+| `candidates` | Election candidates |
+| `rag_documents` | AI assistant knowledge base (pgvector) |
+
+---
+
 ## Critical Rules
 
-### Never
-```
-firebase deploy --only functions     # Wipes secrets (unless selective)
-python3 -m http.server               # No local server
-git push --no-verify                 # Bypasses hooks
-Hardcode Icelandic text              # Use i18n
-Commit .env or credentials           # Use Secret Manager
-Create duplicate code                # Reuse existing
-Mix annotation/env secrets           # Use valueFrom in YAML
-```
+### Never (and Why)
+
+| Command | Why It's Banned |
+|---------|-----------------|
+| `firebase deploy --only functions` | Redeploys ALL functions (~130MB), wipes secrets from containers not in deploy |
+| `python3 -m http.server` | CORS blocks Firebase Auth; use `firebase serve` instead |
+| `git push --no-verify` | Bypasses pre-commit hooks that catch secrets/PII leaks |
+| Hardcode Icelandic text | Breaks i18n; add strings to `i18n/values-is/*.xml` |
+| Commit `.env` or credentials | Secrets belong in GCP Secret Manager, not git |
+| Create duplicate code | Check `js/components/`, `js/utils/` first - reuse existing |
+| Mix annotation/env secrets | Use only `valueFrom.secretKeyRef` in YAML, not annotations |
 
 ### Always
-```
-Search existing code first           # js/components/, js/utils/
-Follow naming conventions            # See docs/PATTERNS.md
-Run ./scripts/build-css-bundle.sh    # After CSS changes
-Verify secrets after deploy          # gcloud run services describe
-Use --gcloud-auth for proxy          # cloud-sql-proxy auth fix
-Add rate limiting to write handlers  # check_uid_rate_limit()
-Add input validation (length/format) # See docs/SECURITY.md
-Add timeout to HTTP requests         # timeout=30
-```
+
+| Action | Why |
+|--------|-----|
+| Search existing code first | `js/components/`, `js/utils/` have reusable patterns |
+| Follow naming conventions | See docs/PATTERNS.md for `[domain]-[name].js` pattern |
+| Run `./scripts/build-css-bundle.sh` | CSS changes need bundle rebuild before deploy |
+| Verify secrets after deploy | `gcloud run services describe` confirms secret mounting |
+| Use `--gcloud-auth` for proxy | Avoids ADC auth issues with cloud-sql-proxy |
+| Add rate limiting to writes | `check_uid_rate_limit()` prevents abuse |
+| Add input validation | Length/format checks prevent injection attacks |
+| Add timeout to HTTP requests | `timeout=30` prevents hanging connections |
 
 ---
 

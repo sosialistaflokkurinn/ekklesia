@@ -1,5 +1,22 @@
 # Code Patterns & Best Practices
 
+## Quick Reference
+
+| Need | Pattern | Location |
+|------|---------|----------|
+| Show toast message | `showToast('msg', 'success')` | `js/components/ui-toast.js` |
+| Show modal/dialog | `showModal('Title', content)` | `js/components/ui-modal.js` |
+| Create DOM element | `el('div', 'class', {attrs}, children)` | `js/utils/util-dom.js` |
+| Format Icelandic date | `formatDateIcelandic(date)` | `js/utils/util-format.js` |
+| Auth guard (redirect) | `const user = await requireAuth()` | `js/auth.js` |
+| API with auth | `authenticatedFetch(url, opts)` | `js/auth.js` |
+| Get i18n string | `R.string.key_name` | `i18n/strings-loader.js` |
+| Escape HTML (XSS) | `el.textContent = str` (safe) | Use textContent |
+| Python logging | `log_json('INFO', 'msg', event='x')` | `util_logging.py` |
+| Rate limiting | `check_uid_rate_limit(uid)` | `util_security.py` |
+
+---
+
 ## Core Principles
 
 1. **Reuse over rewrite** - Search `js/components/` and `js/utils/` first
@@ -73,6 +90,8 @@ cloud-sql-proxy PROJECT:REGION:INSTANCE --port 5433
 ```
 
 ---
+
+# Frontend Patterns
 
 ## Reusable Components
 
@@ -385,6 +404,8 @@ async function fetchData() {
 
 ---
 
+# Backend Patterns
+
 ## Firestore-only Member Pattern (Python)
 
 When a Cloud Function needs to update member data, handle both Django-synced and Firestore-only members:
@@ -531,6 +552,8 @@ el.textContent = data?.value ?? '';
 ```
 
 ---
+
+# Security Patterns
 
 ## XSS Prevention (escapeHTML)
 
