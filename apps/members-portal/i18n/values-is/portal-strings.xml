@@ -16,7 +16,7 @@
   <string name="error_missing_pkce">Vantar PKCE-sannprófara</string>
   <string name="error_authentication">Auðkenningarvilla: %s</string>
   <string name="error_csrf_title">Villa</string>
-  <string name="error_csrf_message">Öryggisvilla: CSRF-vörn virk. Vinsamlegast reyndu aftur.</string>
+  <string name="error_csrf_message">Öryggisvilla: CSRF-vörn mistókst. Vinsamlegast reyndu aftur.</string>
   <string name="nav_brand">Sósíalistaflokkurinn</string>
   <string name="nav_dashboard">Mín síða</string>
   <string name="nav_admin_overview">Yfirlit</string>
@@ -78,7 +78,7 @@
   <string name="quick_links_heatmap_label">Félagadreifing</string>
   <string name="quick_links_heatmap_desc">Skoða hvar félagar búa</string>
   <string name="quick_links_nomination_label">Uppstillingarnefnd</string>
-  <string name="quick_links_nomination_desc">Raðvalskosningu nefndar</string>
+  <string name="quick_links_nomination_desc">Raðvalskosning nefndar</string>
   <string name="page_title_heatmap">Félagadreifing - Sósíalistaflokkurinn</string>
   <string name="heatmap_title">Félagadreifing</string>
   <string name="heatmap_description">Kort sem sýnir hvar félagar búa eftir sveitarfélagi.</string>

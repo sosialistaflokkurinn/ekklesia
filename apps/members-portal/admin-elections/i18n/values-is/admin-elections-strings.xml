@@ -7,7 +7,7 @@
   <string name="admin_elections_brand">Kosningastjórnun</string>
   <string name="nav_elections_list">Kosningar</string>
   <string name="admin_nav_back_to_member">Mín síða</string>
-  <string name="admin_nav_logout">Útskrá</string>
+  <string name="admin_nav_logout">Skrá út</string>
   
   <!-- Elections List -->
   <string name="admin_elections_title">Kosningar</string>
@@ -18,7 +18,7 @@
   <string name="filter_hidden">Faldar</string>
   <string name="search_placeholder">Leita eftir heiti...</string>
   <string name="btn_create_election">➕ Ný kosning</string>
-  <string name="results_showing">Sýna %d kosningar</string>
+  <string name="results_showing">Sýnir %d kosningar</string>
   <string name="results_showing_singular">Sýnir %d kosningu</string>
   <string name="table_header_title">Heiti</string>
   <string name="table_header_status">Staða</string>
@@ -26,12 +26,12 @@
   <string name="table_header_dates">Tímasetningar</string>
   <string name="table_header_actions">Aðgerðir</string>
   <string name="status_open">Opin</string>
-  <string name="status_closed">Lokað</string>
+  <string name="status_closed">Lokuð</string>
   <string name="label_created">Búin til:</string>
   <string name="label_opened">Opnuð:</string>
   <string name="label_closed">Lokuð:</string>
   <string name="label_votes">Atkvæði:</string>
-  <string name="label_hidden_indicator">🔒 Falið</string>
+  <string name="label_hidden_indicator">🔒 Falin</string>
   <string name="btn_view">👁️ Skoða</string>
   <string name="btn_edit">✏️ Breyta</string>
   <string name="btn_hide">🙈 Fela</string>
@@ -116,7 +116,7 @@ Til að staðfesta, sláðu inn heiti kosningarinnar hér fyrir neðan:
   <string name="voting_type_ranked">Forgangsröðun</string>
   <string name="voting_type_ranked_desc">Félagsmenn raða valmöguleikum í forgangsröð (1., 2., 3. o.s.frv.).</string>
   <string name="label_num_seats">Fjöldi sæta</string>
-  <string name="help_num_seats">Hversu margir valmöguleikar verða valdir (sigurvegara).</string>
+  <string name="help_num_seats">Hversu margir valmöguleikar verða valdir (sigurvegarar).</string>
   <string name="label_max_selections">Hámarksfjöldi vala</string>
   <string name="help_max_selections">Hámarksfjöldi kosta sem má velja (1-10).</string>
   <string name="label_answer_options">Svarmöguleikar</string>
@@ -134,7 +134,7 @@ Til að staðfesta, sláðu inn heiti kosningarinnar hér fyrir neðan:
   <string name="label_scheduled_start">Upphafstími</string>
   <string name="label_duration">Lengd kosningar</string>
   <string name="label_custom_duration">Sérsniðin lengd (mínútur)</string>
-  <string name="help_custom_duration">1 mínúta til 7 dagar (10,080 mínútur)</string>
+  <string name="help_custom_duration">1 mínúta til 7 daga (10.080 mínútur)</string>
   <string name="placeholder_custom_duration">t.d. 240</string>
   <string name="label_use_manual_end">Nota ákveðinn lokatíma frekar en tímalengd.</string>
   <string name="label_scheduled_end">Lokatími</string>
@@ -204,7 +204,7 @@ Til að staðfesta, sláðu inn heiti kosningarinnar hér fyrir neðan:
   <!-- Election Control Page -->
   <string name="loading_election">Hleður kosningu...</string>
   <string name="btn_retry">Reyna aftur</string>
-  <string name="schedule_control_title">Kosningartíðastjórnun</string>
+  <string name="schedule_control_title">Tímastjórnun kosningar</string>
   <string name="member_preview_title">Forskoðun (þannig sjá félagsmenn þetta)</string>
   <string name="member_preview_description">Breytingar uppfærast sjálfkrafa í rauntíma fyrir alla félagsmenn</string>
   

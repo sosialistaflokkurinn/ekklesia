@@ -3,7 +3,7 @@
   <string name="page_title_elections">Kosningar - Sósíalistaflokkurinn</string>
   <string name="elections_title">Kosningar</string>
   <string name="elections_subtitle">Taktu þátt í rafrænum kosningum flokksins</string>
-  <string name="loading_elections">Hleð inn kosningum...</string>
+  <string name="loading_elections">Hleð inn kosningar...</string>
   <string name="error_load_elections">Ekki tókst að sækja kosningar.</string>
   <string name="empty_no_elections">Engar kosningar fundust</string>
   <string name="election_card_voted">✓ Þú hefur kosið</string>
@@ -19,7 +19,7 @@
   <string name="btn_vote">Kjósa</string>
   <string name="election_already_voted">✓ Þú hefur kosið</string>
   <string name="election_already_voted_message">Þú hefur þegar kosið í þessari kosningu.</string>
-  <string name="election_upcoming_message">Þessi kosning hefur ekki enn opnað. Kosning hefst á tilgreindum tíma.</string>
+  <string name="election_upcoming_message">Þessi kosning er ekki enn hafin. Kosning hefst á tilgreindum tíma.</string>
   <string name="confirm_vote_title">Staðfesta atkvæði</string>
   <string name="confirm_vote_message">Ertu viss um að þú viljir skila inn þessu atkvæði? Ekki er hægt að breyta því eftir að það hefur verið staðfest.</string>
   <string name="vote_submitted_success">✓ Atkvæði þitt hefur verið skráð!</string>
@@ -51,7 +51,7 @@
   <string name="results_title">Niðurstöður</string>
   <string name="results_total_votes">Heildaratkvæði:</string>
   <string name="results_no">Nei:</string>
-  <string name="results_loading">Hleð niðurstöðum...</string>
+  <string name="results_loading">Hleð niðurstöður...</string>
   <string name="results_error">Villa við að sækja niðurstöður</string>
   <string name="results_not_available">Niðurstöður ekki tiltækar</string>
   <string name="nav_logout">Útskrá</string>
@@ -69,7 +69,7 @@
   <string name="ranked_helper_touch">Haltu fingri á frambjóðanda og dragðu til að færa.</string>
   <string name="ranked_rank_label">{0}. val</string>
   <string name="ranked_seats_info">Fjöldi sæta: {0}</string>
-  <string name="ranked_loading_text">Sendir forgangsröðun...</string>
+  <string name="ranked_loading_text">Sendi forgangsröðun...</string>
   <string name="ranked_reset_button">Núllstilla röðun</string>
   <string name="ranked_confirm_title">Staðfesta forgangsröðun</string>
   <string name="ranked_confirm_message">Ertu viss um að þú viljir skila þessari forgangsröðun?</string>
