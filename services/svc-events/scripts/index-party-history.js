@@ -1212,6 +1212,84 @@ HEIMILD: Vísir.is, 23. desember 2025`,
       url: 'https://www.visir.is/g/20252820276d/bindur-vonir-vid-vor-til-vinstri',
     },
   },
+  {
+    id: 'fjarmal-flokksins-klofningur-2021-2025',
+    title: 'Fjármál flokksins og klofningur 2021-2025',
+    sourceType: 'party-website',
+    sourceUrl: 'https://sosialistaflokkurinn.is/2021/08/02/burt-med-elitustjornmal/',
+    content: `Fjármál Sósíalistaflokksins og klofningur 2021-2025
+
+BAKGRUNNUR: BURT MEÐ ELÍTUSTJÓRNMÁL (2021)
+
+Fyrir Alþingiskosningar 2021 samþykkti flokkurinn stefnu um að vera "alþýðuflokkur, ekki elítuflokkur". Þetta var sjöunda tilboð til kjósenda, samþykkt á fundi framkvæmda- og málefnastjórna um verslunarmannahelgina 2021.
+
+KJARNI STEFNUNNAR:
+1. Kjörnir fulltrúar lækka laun sín með því að gefa hluta til Vorstjörnunnar
+2. Aðstoðarfólk þingflokks vinnur fyrir hreyfingu almennings, ekki bara þingflokkinn
+3. Styrkir til flokksins verða notaðir til að byggja upp hreyfingu hinna fátæku
+
+LOFORÐIN VORU:
+- "Þingmenn Sósíalista munu lækka laun sín með því að gefa hluta þeirra til Vorstjörnunnar"
+- "Aðstoðarfólk þingflokks sósíalista mun starfa fyrir hreyfingu almennings"
+- "Styrkir til Sósíalistaflokksins verða notaðir til að byggja upp hreyfingu hinna fátæku"
+
+FRAMKVÆMD - FJÁRSTREYMI 2021-2024:
+
+ÁRLEGA:
+- Ríkisstyrkur: 50% til Vorstjörnunnar, 50% til Alþýðufélagsins
+- Borgarstyrkur (~2 milljónir): 100% til Vorstjörnunnar
+
+MÁNAÐARLEGA:
+- Félagsgjöld: 250.000 kr "leiga" til Vorstjörnunnar (= ~3M á ári)
+
+HLIÐARFÉLÖGIN:
+
+VORSTJARNAN:
+- Virkaði eins og húsfélag
+- Fékk borgarstyrk og helming ríkisstyrkja
+- Fékk "leigu" af félagsgjöldum
+- Sanna Magdalena og Gunnar Smári áttu aðkomu að stjórn
+
+ALÞÝÐUFÉLAGIÐ:
+- Félag áskrifenda að Samstöðinni (samstodin.is)
+- Fékk helming ríkisstyrkja
+- Fjármunir fóru síðan til samstodin.is
+
+SAMSTOÐIN (samstodin.is):
+- Vefmiðill/fjölmiðill
+- Fékk greiðslur beint frá flokknum og gegnum Alþýðufélagið
+
+NIÐURSTAÐAN:
+Flokkurinn sjálfur var nánast fjárhagslega tómur. Allar tekjur fóru til hliðarfélaganna sem GSE/Sanna stjórnuðu.
+
+KOSNINGAR 2024 - NÚLL KRÓNA Í KOSNINGASJÓÐ:
+Fyrir Alþingiskosningar 2024 var núll króna í kosningasjóði flokksins. Þetta varð kveikja að mikilli reiði innan flokksins og skipti sköpum í klofningnum. Gagnrýnendur sögðu að flokkurinn gæti ekki barist í kosningum án fjármuna, á meðan forystuvárnir sögðu að hreyfingin ætti að styðja við flokkinn, ekki öfugt.
+
+KLOFNINGURINN:
+
+Þetta fjárstreymi varð ein helsta rót klofningsins í flokknum:
+
+SANNA/GSE VÆNG:
+- Þetta var grasrótarstefna - flokkur sem hluti hreyfingarinnar
+- Peningar áttu að fara til alþýðuhreyfingar
+- Vorstjarnan/Alþýðufélagið voru lögmæt verkfæri
+
+KARL/SÆÞÓR VÆNG:
+- Flokkurinn þarf eigin fjármuni til að starfa
+- Peningar áttu að vera innan flokksins
+- Vorstjarnan/Alþýðufélagið voru "klíkuvæðing"
+
+GAGNRÝNI:
+Gagnrýnendur sögðu að þetta bryti í bága við "járnlögmál klíkuvæðingarinnar" sem flokkurinn sagðist vilja verjast - þ.e. fámennur hópur forystufólks beygði flokkinn undir vilja sinn í gegnum hliðarfélög.
+
+HEIMILD: sosialistaflokkurinn.is/2021/08/02/burt-med-elitustjornmal/`,
+    citation: {
+      who: 'Sósíalistaflokkur Íslands',
+      when: '2021-08-02',
+      context: 'Sjöunda tilboð til kjósenda - Burt með elítustjórnmál',
+      url: 'https://sosialistaflokkurinn.is/2021/08/02/burt-med-elitustjornmal/',
+    },
+  },
 ];
 
 async function indexDocument(doc) {
