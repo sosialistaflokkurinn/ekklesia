@@ -278,6 +278,17 @@ const VERIFICATION_TESTS = [
     ],
     webSearchQuery: 'Sósíalistaflokkur klofningur 2025 fjármál Vorstjarnan',
   },
+  {
+    id: 27,
+    question: 'Hvað er "Burt með elítustjórnmál" og var það formlega samþykkt?',
+    expectedFacts: [
+      { fact: '2021', required: true },
+      { fact: 'aldrei', required: true },  // Aldrei formlega samþykkt
+      { fact: 'laun', required: false },
+      { fact: 'pappír', required: false },  // Engin pappírsslóð
+    ],
+    webSearchQuery: 'Sósíalistaflokkur burt með elítustjórnmál 2021 formlega samþykkt',
+  },
 ];
 
 const SYSTEM_PROMPT = `Þú ert aðstoðarmaður fyrir félaga í Sósíalistaflokknum.

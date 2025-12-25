@@ -1221,7 +1221,10 @@ HEIMILD: Vísir.is, 23. desember 2025`,
 
 BAKGRUNNUR: BURT MEÐ ELÍTUSTJÓRNMÁL (2021)
 
-Fyrir Alþingiskosningar 2021 samþykkti flokkurinn stefnu um að vera "alþýðuflokkur, ekki elítuflokkur". Þetta var sjöunda tilboð til kjósenda, samþykkt á fundi framkvæmda- og málefnastjórna um verslunarmannahelgina 2021.
+Fyrir Alþingiskosningar 2021 birtist grein á heimasíðu flokksins sem hét "Burt með elítustjórnmál" og var kölluð "sjöunda tilboð til kjósenda". Greinin sagðist vera "samþykkt á sameiginlegum fundi framkvæmda- og málefnastjórna sunnudaginn um verslunarmannahelgina 2021."
+
+ATHUGASEMD UM FORMLEGA STÖÐU:
+Þessi stefna var ALDREI formlega samþykkt af neinum sem hefur formlegt hlutverk innan flokksins samkvæmt lögum eða skipulagi. Engin pappírsslóð eða fundargerð staðfestir samþykki. Stefnan var hins vegar framkvæmd í reynd og varð grundvöllur fjárstreymis út úr flokknum.
 
 KJARNI STEFNUNNAR:
 1. Kjörnir fulltrúar lækka laun sín með því að gefa hluta til Vorstjörnunnar
