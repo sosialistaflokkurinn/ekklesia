@@ -41,11 +41,11 @@ const VERIFICATION_TESTS = [
     id: 2,
     question: 'Hver var fyrsti kjörni fulltrúi Sósíalistaflokksins?',
     expectedFacts: [
-      { fact: 'STOFNANDI_B', required: true },
+      { fact: 'Sanna Magdalena Mörtudóttir', required: true },
       { fact: '2018', required: true },
       { fact: 'borgarfulltrúi', required: false },
     ],
-    webSearchQuery: 'STOFNANDI_B Sósíalistaflokkur borgarfulltrúi 2018',
+    webSearchQuery: 'Sanna Magdalena Mörtudóttir Sósíalistaflokkur borgarfulltrúi 2018',
   },
   {
     id: 3,
@@ -60,9 +60,9 @@ const VERIFICATION_TESTS = [
     id: 4,
     question: 'Hver stofnaði Sósíalistaflokkinn?',
     expectedFacts: [
-      { fact: 'STOFNANDI_A', required: true },
+      { fact: 'Gunnar Smári Egilsson', required: true },
     ],
-    webSearchQuery: 'STOFNANDI_A Sósíalistaflokkur stofnandi',
+    webSearchQuery: 'Gunnar Smári Egilsson Sósíalistaflokkur stofnandi',
   },
   {
     id: 5,
@@ -87,10 +87,10 @@ const VERIFICATION_TESTS = [
     id: 7,
     question: 'Hver er formaður Eflingar og hvernig tengist hann/hún flokknum?',
     expectedFacts: [
-      { fact: 'PERSON_01', required: true },
+      { fact: 'Sólveig Anna Jónsdóttir', required: true },
       { fact: 'frambjóðandi', required: false },
     ],
-    webSearchQuery: 'PERSON_01 Efling Sósíalistaflokkur',
+    webSearchQuery: 'Sólveig Anna Jónsdóttir Efling Sósíalistaflokkur',
   },
   {
     id: 8,
@@ -106,7 +106,7 @@ const VERIFICATION_TESTS = [
     id: 9,
     question: 'Hver var oddviti flokksins í Reykjavík Norður í Alþingiskosningunum 2024?',
     expectedFacts: [
-      { fact: 'STOFNANDI_A', required: true },
+      { fact: 'Gunnar Smári', required: true },
     ],
     webSearchQuery: 'Sósíalistaflokkur Alþingiskosningar 2024 Reykjavík Norður oddviti',
   },
@@ -114,12 +114,12 @@ const VERIFICATION_TESTS = [
     id: 10,
     question: 'Hvað er Vor til vinstri?',
     expectedFacts: [
-      { fact: 'STOFNANDI_B', required: true },  // Base form
+      { fact: 'Sanna Magdalena', required: true },  // Base form
       { fact: 'framboð', required: true },
       { fact: '2026', required: false },
       { fact: 'borgarstjórnarkosning', required: false },
     ],
-    webSearchQuery: 'Vor til vinstri STOFNANDI_B 2026',
+    webSearchQuery: 'Vor til vinstri Sanna Magdalena 2026',
   },
   // === NÝ PRÓF 11-20 ===
   {
@@ -144,7 +144,7 @@ const VERIFICATION_TESTS = [
     id: 13,
     question: 'Hver var oddviti flokksins í Reykjavík Suður í Alþingiskosningunum 2024?',
     expectedFacts: [
-      { fact: 'STOFNANDI_B', required: true },
+      { fact: 'Sanna Magdalena', required: true },
     ],
     webSearchQuery: 'Sósíalistaflokkur Alþingiskosningar 2024 Reykjavík Suður oddviti',
   },
@@ -172,10 +172,10 @@ const VERIFICATION_TESTS = [
     id: 16,
     question: 'Hver var formaður framkvæmdastjórnar flokksins upphaflega?',
     expectedFacts: [
-      { fact: 'STOFNANDI_A', required: true },
+      { fact: 'Gunnar Smári', required: true },
       { fact: 'formaður', required: true },
     ],
-    webSearchQuery: 'Sósíalistaflokkur framkvæmdastjórn formaður STOFNANDI_A',
+    webSearchQuery: 'Sósíalistaflokkur framkvæmdastjórn formaður Gunnar Smári',
   },
   {
     id: 17,
@@ -191,8 +191,8 @@ const VERIFICATION_TESTS = [
     id: 18,
     question: 'Hvaða borgarfulltrúar áttu sæti fyrir flokkinn eftir kosningarnar 2022?',
     expectedFacts: [
-      { fact: 'STOFNANDI_B', required: true },
-      { fact: 'Trausti', required: true },  // PERSON_56
+      { fact: 'Sanna Magdalena', required: true },
+      { fact: 'Trausti', required: true },  // Trausti Breiðfjörð Magnússon
     ],
     webSearchQuery: 'Sósíalistaflokkur borgarfulltrúar 2022 Sanna Trausti',
   },
@@ -204,17 +204,17 @@ const VERIFICATION_TESTS = [
       { fact: 'Sólveig', required: false },
       { fact: 'stéttarfélag', required: false },
     ],
-    webSearchQuery: 'B-listi Eflingar Sósíalistaflokkur PERSON_01',
+    webSearchQuery: 'B-listi Eflingar Sósíalistaflokkur Sólveig Anna',
   },
   {
     id: 20,
-    question: 'Hvenær tilkynnti STOFNANDI_A stofnun flokksins og hvar?',
+    question: 'Hvenær tilkynnti Gunnar Smári stofnun flokksins og hvar?',
     expectedFacts: [
       { fact: 'apríl 2017', required: true },
       { fact: 'Harmageddon', required: false },
       { fact: 'X-inu', required: false },
     ],
-    webSearchQuery: 'STOFNANDI_A tilkynnti stofnun Sósíalistaflokkur apríl 2017',
+    webSearchQuery: 'Gunnar Smári Egilsson tilkynnti stofnun Sósíalistaflokkur apríl 2017',
   },
 ];
 

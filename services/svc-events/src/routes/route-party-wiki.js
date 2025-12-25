@@ -58,17 +58,17 @@ Flokkurinn skiptist í:
 ## LYKILFÓLK (NÚVERANDI)
 
 **Framkvæmdastjórn 2025:**
-- PERSON_44 - Formaður (var ritari 2024)
+- Sæþór Benjamín Randalsson - Formaður (var ritari 2024)
 - Sigrún E. Unnsteinsdóttir - Varaformaður (einnig stofnstjórnarmaður Vorstjörnunnar)
 - Guðrún Sveinbjarnardóttir - Ritari
 - Hallfríður Þórarinsdóttir - Gjaldkeri (einnig gjaldkeri 2024)
 
-Aðrir í framkvæmdastjórn: PERSON_32, Bergljót Tul Gunnlaugsdóttir, Guðbergur Egill Eyjólfsson, Hjálmar Friðriksson, Jón Ferdínand Estherarson, Þorvaldur Þorvaldsson
+Aðrir í framkvæmdastjórn: Karl Héðinn Kristjánsson, Bergljót Tul Gunnlaugsdóttir, Guðbergur Egill Eyjólfsson, Hjálmar Friðriksson, Jón Ferdínand Estherarson, Þorvaldur Þorvaldsson
 
 **ATH:** Margir í nýrri stjórn 2025 sátu einnig í stjórn 2024. Þetta voru ekki algjör stjórnarskipti heldur breytingar á forystusætum.
 
 **Borgarfulltrúar Reykjavíkur (2 sæti):**
-- STOFNANDI_B - Oddviti, formaður velferðarráðs
+- Sanna Magdalena Mörtudóttir - Oddviti, formaður velferðarráðs
 - Andrea Ósk Jónsdóttir (tók við af Trausta í sept. 2024)
 
 **Alþingismenn:**
@@ -77,9 +77,9 @@ Aðrir í framkvæmdastjórn: PERSON_32, Bergljót Tul Gunnlaugsdóttir, Guðber
 ## STOFNENDUR (1. MAÍ 2017)
 
 97 stofnfélagar, þar af helstu:
-- STOFNANDI_A - Stofnandi, fyrrverandi ritstjóri
-- STOFNANDI_B - Borgarfulltrúi
-- PERSON_32 - Lögfræðingur
+- Gunnar Smári Egilsson - Stofnandi, fyrrverandi ritstjóri
+- Sanna Magdalena Mörtudóttir - Borgarfulltrúi
+- Karl Héðinn Kristjánsson - Lögfræðingur
 - Védís Guðjónsdóttir - Formaður
 
 ## SAGA - HELSTU ATBURÐIR
@@ -111,7 +111,7 @@ Aðrir í framkvæmdastjórn: PERSON_32, Bergljót Tul Gunnlaugsdóttir, Guðber
 - **ATH:** Samstöðin er enn starfandi, en ekki lengur fjármögnuð af flokknum
 
 ### Efling-stéttarfélag
-- **Tengsl:** PERSON_01 (tengd sósíalistum) var kjörin formaður 2018 og 2022
+- **Tengsl:** Sólveig Anna Jónsdóttir (tengd sósíalistum) var kjörin formaður 2018 og 2022
 - **ATH:** Efling er EKKI hluti af flokknum, en nokkrir sósíalistar hafa verið virkir þar
 
 ### Sósíalistafélag Reykjavíkur
@@ -121,13 +121,13 @@ Aðrir í framkvæmdastjórn: PERSON_32, Bergljót Tul Gunnlaugsdóttir, Guðber
 ## DEILUR 2025 (ÚR DISCOURSE-ARCHIVE)
 
 Á aðalfundi 24. maí 2025 urðu stjórnarskipti þar sem nýir formenn voru kjörnir.
-STOFNANDI_B sagði af sér sem pólitískur leiðtogi 26. maí.
+Sanna Magdalena sagði af sér sem pólitískur leiðtogi 26. maí.
 Deilur snúast að hluta til um Vorstjörnuna (húsfélag) og fjárreiður.
 
 **ATH:** Þetta voru ekki algjör valdarán - margir í nýrri stjórn (t.d. Hallfríður gjaldkeri, Sæþór) sátu þegar í stjórn 2024.
 
 Tveir fylkingar:
-1. **Fyrri forysta** - Sanna, STOFNANDI_A, Sara Stef, Védís
+1. **Fyrri forysta** - Sanna, Gunnar Smári, Sara Stef, Védís
 2. **Nýja forystan** - Sæþór (formaður), Sigrún Lára, Hallfríður
 
 ---

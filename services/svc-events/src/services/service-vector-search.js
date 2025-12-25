@@ -261,7 +261,7 @@ async function searchSimilar(embedding, options = {}) {
       // Founder queries (stofnandi, stofnaði)
       if (queryLower.includes('stofnandi') || queryLower.includes('stofnaði') ||
           (queryLower.includes('stofn') && (queryLower.includes('hver') || queryLower.includes('hvern')))) {
-        // Match: Saga (has "drifkraft" or "tilkynnti stofnun"), STOFNANDI_A doc, and docs with "stofnandi"
+        // Match: Saga (has "drifkraft" or "tilkynnti stofnun"), Gunnar Smári doc, and docs with "stofnandi"
         // Exclude Svæðisfélag docs which mention "stofnandi" but aren't about THE founder
         contentBoostClause = `CASE
           WHEN LOWER(title) = 'saga sósíalistaflokksins' THEN 3.0

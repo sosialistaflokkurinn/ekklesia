@@ -33,7 +33,7 @@ STOFNUN FLOKKSINS
 Sósíalistaflokkur Íslands var formlega stofnaður 1. maí 2017, á baráttudegi verkalýðsins. Stofnfundurinn var haldinn í Tjarnarbíó við Tjarnargötu klukkan 16:00.
 
 LYKILATBURÐIR:
-- 3. apríl 2017: STOFNANDI_A tilkynnti stofnun flokksins í útvarpsþættinum Harmageddon á X-inu
+- 3. apríl 2017: Gunnar Smári Egilsson tilkynnti stofnun flokksins í útvarpsþættinum Harmageddon á X-inu
 - 25. apríl 2017: Tilkynnt að stofnfundur yrði haldinn 1. maí
 - 1. maí 2017: Stofnfundur haldinn í Tjarnarbíó
 - Um 1.250-1.400 stofnfélagar skráðu sig fyrir stofnfund
@@ -43,28 +43,28 @@ STOFNFUNDURINN:
 
 BRÁÐABIRGÐASTJÓRN:
 Á fyrsta fundi bráðabirgðastjórnar 12. júní 2017 skipti stjórnin með sér verkum:
-- STOFNANDI_A (formaður)
-- STOFNANDI_B (varaformaður)
+- Gunnar Smári Egilsson (formaður)
+- Sanna Magdalena Mörtudóttir (varaformaður)
 - Viðar Þorsteinsson (ritari)
 - Benjamín Julian (gjaldkeri)
-- PERSON_15 (meðstjórnandi)
+- Ásta Dís Guðjónsdóttir (meðstjórnandi)
 - Laufey Ólafsdóttir (meðstjórnandi)
 - Sigurður H. Einarsson (meðstjórnandi)
-- PERSON_01 (meðstjórnandi)
+- Sólveig Anna Jónsdóttir (meðstjórnandi)
 
 María Gunnlaugsdóttir var upphaflega kosin í bráðabirgðastjórn en gekk úr stjórn í maímánuði 2017 sökum veikinda.
 
 STOFNENDUR:
-STOFNANDI_A var einn helsti drifkrafturinn á bak við stofnun flokksins. Hann er fæddur 11. janúar 1961 og hafði langa reynslu í fjölmiðlum, m.a. sem ritstjóri Pressunnar (1989), Eintaks (1993-94), og Fréttatímans (2015-2017).
+Gunnar Smári Egilsson var einn helsti drifkrafturinn á bak við stofnun flokksins. Hann er fæddur 11. janúar 1961 og hafði langa reynslu í fjölmiðlum, m.a. sem ritstjóri Pressunnar (1989), Eintaks (1993-94), og Fréttatímans (2015-2017).
 
-STOFNANDI_B varð borgarfulltrúi flokksins. Hún bauð sig fram í Alþingiskosningunum í nóvember 2024 í Reykjavík Suður en náði ekki kjöri. STOFNANDI_A var nær því að ná kjöri í Reykjavík Norður.
+Sanna Magdalena Mörtudóttir varð borgarfulltrúi flokksins. Hún bauð sig fram í Alþingiskosningunum í nóvember 2024 í Reykjavík Suður en náði ekki kjöri. Gunnar Smári Egilsson var nær því að ná kjöri í Reykjavík Norður.
 
 SKIPULAG FLOKKSINS:
 Flokkurinn hefur ekki einn formann. Í staðinn eru formenn í hverri stjórn. Framkvæmdastjórn er valdamesta stjórnin samkvæmt skipulagi og lögum flokksins - hún sér um öll mál sem ekki er getið í skipulagi, hefur eftirlit og er dómari í mörgum málum. Formaður kosningastjórnar hafði um tíma stöðu pólitísks leiðtoga sem fékk umboð beint frá félagsfundi, ekki viðkomandi stjórn.
 
 KOSNINGAR:
 - Alþingiskosningar 2017: Flokkurinn ákvað að bjóða ekki fram
-- Sveitarstjórnarkosningar 2018: Flokkurinn bauð fram í Reykjavík (6,4% atkvæða) og Kópavogi (3,2% atkvæða). STOFNANDI_B var sú eina sem náði kjöri (í Reykjavík) og varð þar með fyrsti kjörni fulltrúi flokksins
+- Sveitarstjórnarkosningar 2018: Flokkurinn bauð fram í Reykjavík (6,4% atkvæða) og Kópavogi (3,2% atkvæða). Sanna Magdalena Mörtudóttir var sú eina sem náði kjöri (í Reykjavík) og varð þar með fyrsti kjörni fulltrúi flokksins
 - Alþingiskosningar 2021: Flokkurinn náði 4,1% fylgi en komst ekki yfir 5% þröskuldinn og fékk því ekkert þingsæti
 - Sveitarstjórnarkosningar 2022: Flokkurinn fékk 2 borgarfulltrúa í Reykjavík (bætti við einum frá 2018)
 - Alþingiskosningar 2024: Flokkurinn fékk 4,0% fylgi en náði ekki 5% þröskuldinum og fékk því ekkert þingsæti
@@ -78,7 +78,7 @@ HEIMILDIR:
 - Wikipedia: Sósíalistaflokkur Íslands (21. öld)
 - sosialistaflokkurinn.is: "Sósíalistaflokkurinn stofnaður 1. maí" (25. apríl 2017)
 - sosialistaflokkurinn.is: "Stofnfundur Sósíalistaflokksins markar fyrstu skrefin" (1. maí 2017)
-- RÚV: "STOFNANDI_A stofnar Sósíalistaflokk Íslands" (2017)
+- RÚV: "Gunnar Smári stofnar Sósíalistaflokk Íslands" (2017)
 - Morgunblaðið/timarit.is: "Draugur fortíðar eða nýtt afl til framtíðar?" (12. apríl 2017)`,
   citation: {
     who: 'Sósíalistaflokkur Íslands',
@@ -102,7 +102,7 @@ SVEITARSTJÓRNARKOSNINGAR 2018:
 Flokkurinn bauð fram í Reykjavík og Kópavogi:
 - Reykjavík: 6,4% atkvæða
 - Kópavogur: 3,2% atkvæða
-STOFNANDI_B var sú eina sem náði kjöri (í Reykjavík) og varð þar með FYRSTI KJÖRNI FULLTRÚI flokksins.
+Sanna Magdalena Mörtudóttir var sú eina sem náði kjöri (í Reykjavík) og varð þar með FYRSTI KJÖRNI FULLTRÚI flokksins.
 
 ALÞINGISKOSNINGAR 2021:
 Flokkurinn bauð fram og náði 4,1% fylgi. Þar sem flokkurinn komst EKKI yfir 5% þröskuldinn fékk hann ekkert þingsæti.
@@ -111,7 +111,7 @@ SVEITARSTJÓRNARKOSNINGAR 2022:
 Flokkurinn fékk 2 borgarfulltrúa í Reykjavík (bætti við einum frá 2018).
 
 ALÞINGISKOSNINGAR 2024:
-Flokkurinn bauð fram 30. nóvember 2024 og fékk 4,0% fylgi. Þar sem flokkurinn komst EKKI yfir 5% þröskuldinn fékk hann ekkert þingsæti. STOFNANDI_B bauð sig fram í Reykjavík Suður en náði ekki kjöri. STOFNANDI_A var nær því að ná kjöri í Reykjavík Norður.`,
+Flokkurinn bauð fram 30. nóvember 2024 og fékk 4,0% fylgi. Þar sem flokkurinn komst EKKI yfir 5% þröskuldinn fékk hann ekkert þingsæti. Sanna Magdalena Mörtudóttir bauð sig fram í Reykjavík Suður en náði ekki kjöri. Gunnar Smári Egilsson var nær því að ná kjöri í Reykjavík Norður.`,
     citation: {
       who: 'Sósíalistaflokkur Íslands',
       when: '2017-2024',
@@ -200,13 +200,13 @@ KÓPAVOGUR - 22 frambjóðendur (3,2% atkvæða, enginn kjörinn):
 Sósíalistaflokkur Íslands var formlega stofnaður á baráttudegi verkalýðsins, 1. maí 2017, í Tjarnarbíó við Tjarnargötu í Reykjavík.
 
 AÐDRAGANDINN:
-- 3. apríl 2017: STOFNANDI_A tilkynnti stofnun flokksins í Harmageddon á X-inu
+- 3. apríl 2017: Gunnar Smári Egilsson tilkynnti stofnun flokksins í Harmageddon á X-inu
 - Um 1.250-1.400 skráðu sig sem stofnfélagar fyrir stofnfundinn
 
 STOFNFUNDURINN Í TJARNARBÍÓ:
 - Haldinn 1. maí 2017 klukkan 16:00 í Tjarnarbíó
 - Á annað hundrað manns mættu á fundinn
-- STOFNANDI_B gekk út í rigninguna með grunnstefnuna
+- Sanna Magdalena gekk út í rigninguna með grunnstefnuna
 - Kosin var bráðabirgðastjórn til að undirbúa sósíalistaþing haustið 2017
 
 ALÞINGISKOSNINGAR 2017:
@@ -229,38 +229,38 @@ Morgunblaðið skrifaði 12. apríl 2017 greinina "Draugur fortíðar eða nýtt
 Flokkurinn bauð fram í 5 af 6 kjördæmum og fékk samtals 4,1% fylgi (komst ekki yfir 5% þröskuldinn).
 
 REYKJAVÍK NORÐUR (22 frambjóðendur):
-1. STOFNANDI_A (oddviti) - atvinnulaus blaðamaður, formaður framkvæmdastjórnar
-2. PERSON_35 - námslausn
+1. Gunnar Smári Egilsson (oddviti) - atvinnulaus blaðamaður, formaður framkvæmdastjórnar
+2. Laufey Líndal Ólafsdóttir - námslausn
 3. Atli Gíslason - tölvunarfræðingur
-4. PERSON_01 - formaður Eflingar
-5. PERSON_42 - rithöfundur
-11. STOFNANDI_B - borgarfulltrúi
+4. Sólveig Anna Jónsdóttir - formaður Eflingar
+5. Oddný Eir Ævarsdóttir - rithöfundur
+11. Sanna Magdalena Mörtudóttir - borgarfulltrúi
 
 REYKJAVÍK SUÐUR (22 frambjóðendur):
 1. Katrín Baldursdóttir (oddviti) - hagfræðingur, blaðamaður og kennari
-2. PERSON_51 - kennari
-3. PERSON_39 Kemp - lagadeild
+2. Símon Vestarr Hjaltason - kennari
+3. María Lilja Þrastardóttir Kemp - lagadeild
 4. Ólafur Jónsson - skipstjóri á lífeyri
-5. PERSON_14 - kennari
+5. Ása Lind Finnbogadóttir - kennari
 
 SUÐVESTURKJÖRDÆMI (26 frambjóðendur):
 1. María Pétursdóttir (oddviti) - listamaður, fötlunarbaráttukona
 2. Þór Saari - hagfræðingur, fyrrverandi þingmaður (Borgarahreyfingin 2009-2013)
 3. Agnieszka Sokolowska - bókasafnsfræðingur
 4. Luciano Dutra - þýðandi
-5. PERSON_21 - tónlistarmaður
+5. Ester Bíbí Ásgeirsdóttir - tónlistarmaður
 
 SUÐURKJÖRDÆMI (20 frambjóðendur):
 1. Guðmundur Auðunsson (oddviti) - pólitískur hagfræðingur
-2. PERSON_17 - framhaldsskólakennari
-3. PERSON_16 - þjálfari, varaformaður ASÍ-UNG
-4. PERSON_11 - verkefnastjóri
-5. PERSON_57 - hárgreiðslumeistari og kennari
+2. Birna Eik Benediktsdóttir - framhaldsskólakennari
+3. Ástþór Jón Ragnheiðarson - þjálfari, varaformaður ASÍ-UNG
+4. Arna Þórdís Árnadóttir - verkefnastjóri
+5. Unnur Rán Reynisdóttir - hárgreiðslumeistari og kennari
 
 NORÐVESTURKJÖRDÆMI (16 frambjóðendur):
 1. Helga Thorberg (oddviti) - leikkona og garðyrkjufræðingur
-2. PERSON_12 - mannréttindalögfræðingur
-3. PERSON_47 - vélaverkfræðingur og sveitarstjórnarmaður
+2. Árni Múli Jónasson - mannréttindalögfræðingur
+3. Sigurður Jón Hreinsson - vélaverkfræðingur og sveitarstjórnarmaður
 4. Aldís Schram - lögfræðingur og kennari
 5. Bergvin Eyþórsson - þjónustufulltrúi
 
@@ -280,21 +280,21 @@ ATH: Flokkurinn bauð ekki fram í Norðausturkjördæmi 2021.`,
 J-listi Sósíalistaflokks Íslands með 46 frambjóðendur.
 
 KJÖRNIR BORGARFULLTRÚAR:
-1. STOFNANDI_B (KJÖRIN) - borgarfulltrúi síðan 2018
-2. PERSON_56 (KJÖRINN) - stuðningsfulltrúi og nemi
+1. Sanna Magdalena Mörtudóttir (KJÖRIN) - borgarfulltrúi síðan 2018
+2. Trausti Breiðfjörð Magnússon (KJÖRINN) - stuðningsfulltrúi og nemi
 
 VARAFULLTRÚAR:
-3. PERSON_07 - starfsmaður leikskóla í Reykjavík
+3. Andrea Jóhanna Helgadóttir - starfsmaður leikskóla í Reykjavík
 4. Ásta Þ. Skjalddal Guðjónsdóttir - samhæfingarstjóri Pepp Ísland
-5. PERSON_02 - frístundaleiðbeinandi
-6. PERSON_23 - öryrki
-7. PERSON_53 - línukokkur
-8. PERSON_55 - sérkennari
+5. Halldóra Jóhanna Hafsteinsdóttir - frístundaleiðbeinandi
+6. Geirdís Hanna Kristjánsdóttir - öryrki
+7. Sturla Freyr Magnússon - línukokkur
+8. Thelma Rán Gylfadóttir - sérkennari
 14. IAN MCDONALD - félagsmaður í Eflingu og stuðningsmaður B-lista
 
 ÚRSLIT:
 - Sósíalistaflokkurinn fékk um 6% atkvæða í Reykjavík
-- 2 borgarfulltrúar kjörnir (STOFNANDI_B og Trausti Breiðfjörð)
+- 2 borgarfulltrúar kjörnir (Sanna Magdalena og Trausti Breiðfjörð)
 - Andrea varaborgarfulltrúi
 
 ATH: Trausti Breiðfjörð sagði af sér sem borgarfulltrúi 2024.`,
@@ -313,76 +313,76 @@ ATH: Trausti Breiðfjörð sagði af sér sem borgarfulltrúi 2024.`,
 Flokkurinn bauð fram í öllum 6 kjördæmum 30. nóvember 2024 og fékk samtals 4,0% fylgi.
 
 REYKJAVÍK SUÐUR (22 frambjóðendur):
-1. STOFNANDI_B (oddviti) - borgarfulltrúi
-2. PERSON_32 - fræðslu- og félagsmálafulltrúi Eflingar
-3. PERSON_01 - formaður Eflingar
-4. PERSON_23 - formaður íþróttafélags
-5. PERSON_02 - tómstundakokkur
-6. PERSON_38 - þýðandi og útgefandi
-7. PERSON_42 - rithöfundur
-8. PERSON_54 - kennari
+1. Sanna Magdalena Mörtudóttir (oddviti) - borgarfulltrúi
+2. Karl Héðinn Kristjánsson - fræðslu- og félagsmálafulltrúi Eflingar
+3. Sólveig Anna Jónsdóttir - formaður Eflingar
+4. Geirdís Hanna Kristjánsdóttir - formaður íþróttafélags
+5. Halldóra Jóhanna Hafsteins - tómstundakokkur
+6. Luciano Domingues Dutra - þýðandi og útgefandi
+7. Oddný Eir Ævarsdóttir - rithöfundur
+8. Tamila Gámez Garcell - kennari
 9. Bára Halldórsdóttir - listamaður
 10. Sigrún E Unnsteinsdóttir - aðgerðarsinni
 
 REYKJAVÍK NORÐUR (22 frambjóðendur):
-1. STOFNANDI_A (oddviti) - blaðamaður og stofnandi flokksins
+1. Gunnar Smári Egilsson (oddviti) - blaðamaður og stofnandi flokksins
 2. María Pétursdóttir - sjónlistamaður
 3. Guðmundur Auðunsson - sjálfstætt starfandi
-4. PERSON_35 - útvarpsumsjónarmaður
-5. PERSON_13 - skrifstofumaður
-6. PERSON_29 - forritari
-7. PERSON_31 Ocon - aðgerðarsinni
+4. Laufey Líndal Ólafsdóttir - útvarpsumsjónarmaður
+5. Arnlaugur Samúel Arnþórsson - skrifstofumaður
+6. Jökull Sólberg Auðunsson - forritari
+7. Karla Esperanza Barralaga Ocon - aðgerðarsinni
 8. Anita da Silva Bjarnadóttir - öryrki
-9. PERSON_14 - framhaldsskólakennari
-10. PERSON_22 - leikstjóri
+9. Ása Lind Finnbogadóttir - framhaldsskólakennari
+10. Eyjólfur Bergur Eyvindarson - leikstjóri
 
 SUÐVESTURKJÖRDÆMI (27 frambjóðendur):
-1. PERSON_19 (oddviti) - prestur
+1. Davíð Þór Jónsson (oddviti) - prestur
 2. Margrét Pétursdóttir - verkamaður
-3. PERSON_45 - bókasafns- og upplýsingafræðingur
-4. PERSON_34 Ramos - teymisleiðtogi
-5. PERSON_40 Svanlaugar - forritari
-6. PERSON_21 - kennari
+3. Sara Stef Hildar - bókasafns- og upplýsingafræðingur
+4. Kristbjörg Eva Andersen Ramos - teymisleiðtogi
+5. Marzuk Ingi Lamsiah Svanlaugar - forritari
+6. Ester Bíbí Ásgeirsdóttir - kennari
 7. Sylviane Lecoultre - nemi
 8. Hörður Svavarsson - leikskólastjóri
 9. Edda Jóhannsdóttir - blaðamaður
-10. PERSON_20 - rappari
+10. Erpur Þórólfur Eyvindsson - rappari
 
 SUÐURKJÖRDÆMI (18 frambjóðendur):
-1. PERSON_57 (oddviti) - hárgreiðslukennari
+1. Unnur Rán Reynisdóttir (oddviti) - hárgreiðslukennari
 2. Hallfríður Þórarinsdóttir - mannfræðingur
-3. PERSON_10 - bifvélavirki
+3. Arnar Páll Gunnlaugsson - bifvélavirki
 4. Kristín Tómasdóttir
 5. Ingvar Kristjánsson
 6. Herður Jóhannesdóttir
 7. Árni Stefánsson
-8. PERSON_28
-9. PERSON_48
-10. PERSON_33
+8. Heiða Dís Sighvatsdóttir
+9. Sigurður Rúnar Bjarkason
+10. Kolbrún Andrea Ragnarsdóttir
 
 NORÐAUSTURKJÖRDÆMI (20 frambjóðendur):
 1. Þorsteinn Bergsson (oddviti) - þýðandi og rithöfundur
 2. Ari Orrason - forstöðumaður félagsmiðstöðvar
 3. Saga Unnsteinsdóttir - listaskapari
-4. PERSON_04 - hestabóndi
+4. Jón Þór Sigurðsson - hestabóndi
 5. Kristinn Hannesson - verkamaður
-6. PERSON_36 - öryrki
-7. PERSON_49 - kennari/fornleifafræðingur
-8. PERSON_37 - öryrki
-9. PERSON_27 - eftirlaunaþegi
+6. Lilja Björg Jónsdóttir - öryrki
+7. Sigurður Snæbjörn Stefánsson - kennari/fornleifafræðingur
+8. Líney Marsibil Guðrúnardóttir - öryrki
+9. Haraldur Ingi Haraldsson - eftirlaunaþegi
 10. Ása Ernudóttir - námsmaður
 
 NORÐVESTURKJÖRDÆMI (14 frambjóðendur):
-1. PERSON_25 (oddviti) - formaður Samtaka leigjenda á Íslandi
-2. PERSON_30 - fiskverkakona
+1. Guðmundur Hrafn Arngrímsson (oddviti) - formaður Samtaka leigjenda á Íslandi
+2. Jónína Björg Magnúsdóttir - fiskverkakona
 3. Ævar Kjartansson - útvarpsmaður
 4. Ragnheiður Guðmundsdóttir - stjórnmálafræðingur og ljóðskáld
-5. PERSON_43 - skipstjóri
-6. PERSON_52 - safnakona
-7. PERSON_46 - strandveiðimaður
-8. PERSON_05 Ómarsdóttir - aðgerðarsinni
+5. Ólafur Örn Jónsson - skipstjóri
+6. Sólveig Hulda Benjamínsdóttir - safnakona
+7. Sigfús Bergmann Önundarson - strandveiðimaður
+8. Ágústa Anna Sigurlína Ómarsdóttir - aðgerðarsinni
 9. Brynjólfur Sigurbjörnsson - bifvélavirki
-10. PERSON_06 - bóndi
+10. Álfur Logi Guðjónsson - bóndi
 
 ÚRSLIT 2024:
 - Samtals 4,0% fylgi (náði ekki 5% þröskuldinum)
@@ -399,40 +399,40 @@ NORÐVESTURKJÖRDÆMI (14 frambjóðendur):
     title: 'B-listi Eflingar - Tengsl við Sósíalistaflokkinn',
     content: `B-listi Eflingar (Baráttulistinn) - Tengsl við Sósíalistaflokkinn
 
-B-listi Eflingar var stofnaður 2018 undir forystu PERSON_01. Margir á listanum voru einnig virkir í Sósíalistaflokknum.
+B-listi Eflingar var stofnaður 2018 undir forystu Sólveigar Önnu Jónsdóttur. Margir á listanum voru einnig virkir í Sósíalistaflokknum.
 
 KOSNINGAR 2018 - YFIRBURÐASIGUR:
 B-listi hlaut 2.099 atkvæði (80%) gegn 519 atkvæðum A-lista (20%).
 Þetta var í fyrsta sinn sem kosið var um formann Eflingar.
 
 B-LISTI 2018:
-1. PERSON_01 (formaður) - síðar á lista Sósíalista 2021 og 2024
+1. Sólveig Anna Jónsdóttir (formaður) - síðar á lista Sósíalista 2021 og 2024
 2. Magdalena Kwiatkowska - Café Paris
 3. Aðalgeir Björnsson - tækjastjóri hjá Eimskip
-4. PERSON_09 - Náttúru þrif
-5. PERSON_18 - einnig á lista Sósíalista í Reykjavík 2018
-6. PERSON_03 - bílstjóri hjá Snæland Grímsson
+4. Anna Marta Marjankowska - Náttúru þrif
+5. Daníel Örn Arnarsson - einnig á lista Sósíalista í Reykjavík 2018
+6. Guðmundur Jónatan Baldursson - bílstjóri hjá Snæland Grímsson
 7. Jamie McQuilkin - Resource International
 8. Kolbrún Valvesdóttir - starfsmaður Reykjavíkurborgar
 
 AFSÖGN SÓLVEIGAR ÖNNU 2021:
-31. október 2021 sagði PERSON_01 af sér sem formaður Eflingar vegna deilna við starfsfólk.
+31. október 2021 sagði Sólveig Anna af sér sem formaður Eflingar vegna deilna við starfsfólk.
 Starfsfólk sakaði hana um "aftökulista" og kjarasamningsbrot.
 Starfsmenn sendu síðar yfirlýsingu að þeir hefðu ekki viljað að hún segði af sér.
 
 KOSNINGAR 2022 - SÓLVEIG NÁR AFTUR VÖLDUM:
 Þrír listar buðu fram. B-listi hlaut 2.047 atkvæði (52,5%), A-listi 1.434 og C-listi 331.
-PERSON_01 endurkjörin formaður.
+Sólveig Anna endurkjörin formaður.
 
 B-LISTI 2022 (Baráttulistinn):
-- PERSON_01 (formaður)
+- Sólveig Anna Jónsdóttir (formaður)
 - Ísak Jónsson (gjaldkeri)
-- PERSON_24
+- Guðbjörg María Jósepsdóttir
 - Innocentia F. Friðgeirsson
 - Kolbrún Valvesdóttir
-- PERSON_41
+- Michael Bragi Whalley
 - Olga Leonsdóttir
-- PERSON_44
+- Sæþór Benjamín Randalsson
 
 SAMANBURÐUR: HVERJIR VORU BÆÐI Á LISTA EFLINGAR OG Í FRAMBOÐI FYRIR SÓSÍALISTAFLOKKINN?
 
@@ -449,7 +449,7 @@ SAMANBURÐUR: HVERJIR VORU BÆÐI Á LISTA EFLINGAR OG Í FRAMBOÐI FYRIR SÓSÍ
    - B-listi Eflingar 2018: 5. sæti (stjórnarmaður)
    - Sósíalistaflokkur 2018 Reykjavík: 2. sæti
 
-3. MAGDALENA KWIATKOWSKA (PERSON_08):
+3. MAGDALENA KWIATKOWSKA (Anna Maria Wojtynska):
    - B-listi Eflingar 2018: 2. sæti (stjórnarmaður)
    - Sósíalistaflokkur 2018 Reykjavík: 3. sæti
 
@@ -480,43 +480,43 @@ Af 14 manna B-lista Eflingar (2018 + 2022) eru aðeins 5 skráðir félagar:
 - Daníel Örn - skráður 2020-03-07
 - Ísak Jónsson - skráður 2025-05-23
 - Kolbrún Valvesdóttir - skráður 2025-09-21
-- PERSON_44 - skráður 2018-10-29
+- Sæþór Benjamín Randalsson - skráður 2018-10-29
 
 ❌ EKKI LENGUR Í FÉLAGASKRÁ:
-- PERSON_01 - STOFNFÉLAGI 2017, sagði sig úr apríl 2025
+- Sólveig Anna Jónsdóttir - STOFNFÉLAGI 2017, sagði sig úr apríl 2025
 
 ❌ ALDREI Í FÉLAGASKRÁ:
 - Magdalena Kwiatkowska
-- PERSON_09
-- PERSON_03
+- Anna Marta Marjankowska
+- Guðmundur Jónatan Baldursson
 - Jamie McQuilkin
-- PERSON_24
+- Guðbjörg María Jósepsdóttir
 - Innocentia F. Friðgeirsson
-- PERSON_41
+- Michael Bragi Whalley
 - Olga Leonsdóttir
 
-ATHYGLISVERT: PERSON_01 var stofnfélagi frá 2017 en sagði sig úr flokknum í apríl 2025 eftir átök við María Pétursdóttur.
+ATHYGLISVERT: Sólveig Anna var stofnfélagi frá 2017 en sagði sig úr flokknum í apríl 2025 eftir átök við María Pétursdóttur.
 
 SÓLVEIG ANNA GAGNRÝND OG HÆTTIR (2025):
 
-Í apríl 2025 sagði PERSON_01 sig úr Sósíalistaflokknum eftir átök við María Pétursdóttur.
+Í apríl 2025 sagði Sólveig Anna sig úr Sósíalistaflokknum eftir átök við María Pétursdóttur.
 
 AÐDRAGANDI:
-- 6. apríl 2025: PERSON_01 og Hallgrímur Helgason deildu hart um „vók" í þættinum Synir Egils
+- 6. apríl 2025: Sólveig Anna og Hallgrímur Helgason deildu hart um „vók" í þættinum Synir Egils
 - Hallgrímur bar Sólveigu saman við Donald Trump og gagnrýndi afstöðu hennar til vók-aktívisma
 - María Pétursdóttir (flokksfulltrúi) sakaði Sólveigu opinberlega um að vera á hægri væng fasisma
 
 AFSÖGN SÓLVEIGAR 23. APRÍL 2025:
-PERSON_01 tilkynnti brottför sína á Facebook í umræðuhópi flokksins:
+Sólveig Anna tilkynnti brottför sína á Facebook í umræðuhópi flokksins:
 "Andrúmsloftið er orðið svo óþolandi eitrað."
 "Það er miður, en það er ekkert að gera nema að yfirgefa flokkinn, sem ég geri hér."
 
 Hún sagðist ekki hafa fengið stuðning frá forystu flokksins - aðeins Andrea Helgadóttir borgarfulltrúi hafði samband.
 
 HEIMILDIR:
-- ruv.is 23.04.2025: "PERSON_01 segir sig úr Sósíalistaflokknum"
-- nutiminn.is 06.04.2025: "PERSON_01 og Hallgrímur Helgason deildu hart um vók"
-- mbl.is 22.10.2024: "PERSON_01 gefur kost á sér á lista Sósíalistaflokksins"
+- ruv.is 23.04.2025: "Sólveig Anna segir sig úr Sósíalistaflokknum"
+- nutiminn.is 06.04.2025: "Sólveig Anna og Hallgrímur Helgason deildu hart um vók"
+- mbl.is 22.10.2024: "Sólveig Anna gefur kost á sér á lista Sósíalistaflokksins"
 - sosialistaflokkurinn.is: "Efstu þrjú sætin í Reykjavík Suður" (27.10.2024)`,
     citation: {
       who: 'Efling stéttarfélag / Sósíalistaflokkurinn',
@@ -527,10 +527,10 @@ HEIMILDIR:
   },
   {
     id: 'gunnar-smari-ferill',
-    title: 'STOFNANDI_A - Ferill',
-    content: `STOFNANDI_A - Einn af stofnendum Sósíalistaflokksins
+    title: 'Gunnar Smári Egilsson - Ferill',
+    content: `Gunnar Smári Egilsson - Einn af stofnendum Sósíalistaflokksins
 
-STOFNANDI_A (f. 1961) er íslenskur fjölmiðlamaður og frumkvöðull sem var einn af helstu drifkröftum á bak við stofnun Sósíalistaflokks Íslands.
+Gunnar Smári Egilsson (f. 1961) er íslenskur fjölmiðlamaður og frumkvöðull sem var einn af helstu drifkröftum á bak við stofnun Sósíalistaflokks Íslands.
 
 FERILL Í FJÖLMIÐLUM:
 - 1982: Hóf störf á Kvikmyndablaðinu
@@ -554,7 +554,7 @@ HEIMILDIR:
 - timarit.is - Fjölnir 04.07.1997
 - DV/timarit.is 24.05.2013`,
     citation: {
-      who: 'STOFNANDI_A',
+      who: 'Gunnar Smári Egilsson',
       when: '1961-2025',
       context: 'Ferill stofnanda Sósíalistaflokksins',
       url: 'https://timarit.is/',
@@ -686,7 +686,7 @@ Trúnaðarráð getur veitt skriflega áminningu eða víkið einstaklingi úr f
 
 Stjórn Trúnaðarráðs er skipuð af þremur aðalmönnum og tveimur til vara sem eru kjörnir á aðalfundi.
 
-Nú er starfandi trúnaðarráð til bráðabirgða: Júlíus K Valdimarsson, Katrín Baldursdóttir og PERSON_50.
+Nú er starfandi trúnaðarráð til bráðabirgða: Júlíus K Valdimarsson, Katrín Baldursdóttir og Silja Sóley Birgisdóttir.
 
 KJÖRGENGI TIL STJÓRNARSETU:
 Félagsmaður getur á hverjum tíma aðeins setið í einni kjörinni stjórn (Framkvæmdastjórn, Félagastjórn, Baráttustjórn, Málefnastjórn eða Kosningastjórn). Seta félagsmanns í kjörinni stjórn útilokar hann ekki frá setu í slembivalinni stjórn.
@@ -727,7 +727,7 @@ Stjórn Trúnaðarráðs er skipuð af þremur aðalmönnum og tveimur til vara 
 NÚVERANDI STJÓRN (bráðabirgða):
 - Júlíus K Valdimarsson
 - Katrín Baldursdóttir
-- PERSON_50
+- Silja Sóley Birgisdóttir
 
 HEIMILD: sosialistaflokkurinn.is/um-flokkinn/skipulag/`,
     citation: {
@@ -948,7 +948,7 @@ HEIMILD: Lög og skipulag Sósíalistaflokksins, 7. gr. laga`,
     content: `Innri átök í Sósíalistaflokknum 2025 - Greining
 
 AÐALFUNDUR MAÍ 2025:
-Á aðalfundi flokksins 24. maí 2025 var STOFNANDI_B kjörin sjálfkjörna sem pólitískur leiðtogi Sósíalistaflokksins. Hún var þannig valin af flokksfélögum til að leiða flokkinn.
+Á aðalfundi flokksins 24. maí 2025 var Sanna Magdalena Mörtudóttir kjörin sjálfkjörna sem pólitískur leiðtogi Sósíalistaflokksins. Hún var þannig valin af flokksfélögum til að leiða flokkinn.
 
 ÁGREININGUR UM FRAMKVÆMDASTJÓRN:
 Sanna vildi fá að handvelja framkvæmdastjórn en fundurinn kaus með lýðræðislegu vali. Sanna var óánægð með úrslit kosninga í framkvæmdastjórn - niðurstaðan var ekki eins og hún vildi.
@@ -965,7 +965,7 @@ Flokkurinn hefur ekki greitt Vorstjörnunni krónu árið 2025. Hins vegar hafa 
 KLOFNINGAR:
 Tveir megin armar átakanna:
 1. Karl (Héðinn) og Sæþór armur
-2. Sanna og STOFNANDI_A armur
+2. Sanna og Gunnar Smári armur
 
 SJÓNARHORN UTAN ÁTAKANNA:
 Margir félagsmenn sem voru ekki hluti af hvorum arminum telja að Sanna hafi viljað einræðisvald og bregðist þegar hún fékk það ekki. Aðrir telja að flokkurinn hafi brugðist henni.
@@ -975,7 +975,7 @@ Nýtt félagakerfi fyrir flokkinn var smíðað samhliða þessum átökum - ör
 
 HEIMILD: Vísir.is 16. desember 2025 - "Að kveikja í húsinu af því þú færð ekki að ráða öllu"`,
     citation: {
-      who: 'PERSON_26',
+      who: 'Guðröður Atli Jónsson',
       when: '2025-12-16',
       context: 'Greining á innri átökum í Sósíalistaflokknum',
       url: 'https://www.visir.is/g/20252818192d/',
@@ -1082,13 +1082,13 @@ HEIMILD: sosialistaflokkurinn.is, lög flokksins gr. 4 og 7`,
   },
   {
     id: 'vor-til-vinstri-vefsida',
-    title: 'Vor til vinstri - Heimasíða STOFNANDI_B',
+    title: 'Vor til vinstri - Heimasíða Sönnu Magdalenu',
     sourceType: 'discourse-article',
     sourceUrl: 'https://vortilvinstri.is/',
-    content: `Vor til vinstri! - Framboð STOFNANDI_B í borgarstjórnarkosningunum 2026
+    content: `Vor til vinstri! - Framboð Sönnu Magdalenu Mörtudóttur í borgarstjórnarkosningunum 2026
 
 YFIRLIT:
-Vor til vinstri er nýtt framboð sem STOFNANDI_B tilkynnti í desember 2025. Markmiðið er að bjóða fram í borgarstjórnarkosningunum í Reykjavík 2026 undir merkjum félagshyggju.
+Vor til vinstri er nýtt framboð sem Sanna Magdalena Mörtudóttir tilkynnti í desember 2025. Markmiðið er að bjóða fram í borgarstjórnarkosningunum í Reykjavík 2026 undir merkjum félagshyggju.
 
 FYRIR FÓLKIÐ Í BORGINNI:
 "Ég trúi því að lausnirnar fyrir Reykjavík sé að finna í félagshyggju — í því að byggja borg þar sem lífsgæði og réttlæti eru í forgrunni."
@@ -1132,7 +1132,7 @@ GERUM ÞETTA SAMAN:
 "Þó að ég bjóði til samtals um borgina, þá veit ég að þetta er stærra verkefni. Vandinn sem við stöndum frammi fyrir er víða sá sami. Fólki í öðrum sveitarfélögum er velkomið að taka þátt og tengjast öðrum."
 
 "Gerum þetta saman því við viljum vor til vinstri!"
-– STOFNANDI_B
+– Sanna Magdalena Mörtudóttir
 
 TENGILIÐAUPPLÝSINGAR:
 - Netfang: vortilvinstri@vortilvinstri.is
@@ -1140,7 +1140,7 @@ TENGILIÐAUPPLÝSINGAR:
 
 HEIMILD: https://vortilvinstri.is/ (skoðað desember 2025)`,
     citation: {
-      who: 'STOFNANDI_B',
+      who: 'Sanna Magdalena Mörtudóttir',
       when: '2025-12',
       context: 'Heimasíða framboðsins Vor til vinstri í borgarstjórnarkosningar 2026',
       url: 'https://vortilvinstri.is/',
@@ -1155,7 +1155,7 @@ HEIMILD: https://vortilvinstri.is/ (skoðað desember 2025)`,
 
 VÍSIR - 22. desember 2025
 
-STOFNANDI_B, borgarfulltrúi sósíalista í Reykjavík, hyggst bjóða sig fram í borgarstjórnarkosningum 2026 undir merkjum Vors til vinstri.
+Sanna Magdalena Mörtudóttir, borgarfulltrúi sósíalista í Reykjavík, hyggst bjóða sig fram í borgarstjórnarkosningum 2026 undir merkjum Vors til vinstri.
 
 TILKYNNING Á VORTILVINSTRI.IS:
 Á vortilvinstri.is segir Sanna meðal annars: „Ég starfa fyrir grasrótina og fólkið í borginni. Þess vegna ætla ég EKKI að segja mig úr flokknum, þrátt fyrir þrýsting frá nýrri stjórn."
@@ -1172,7 +1172,7 @@ Sanna býður til samstöðu: „Við sem vitum að félagshyggjan er svarið vi
 HÖFUNDUR: Kristín Þorsteinsdóttir
 HEIMILD: Vísir.is, 22. desember 2025`,
     citation: {
-      who: 'Kristín Þorsteinsdóttir / STOFNANDI_B',
+      who: 'Kristín Þorsteinsdóttir / Sanna Magdalena Mörtudóttir',
       when: '2025-12-22',
       context: 'Frétt í Vísi um tilkynningu Sönnu um framboð Vors til vinstri',
       url: 'https://www.visir.is/g/20252816686d/sanna-bydur-sig-fram-undir-merkjum-vors-til-vinstri',
@@ -1187,13 +1187,13 @@ HEIMILD: Vísir.is, 22. desember 2025`,
 
 VÍSIR - 23. desember 2025
 
-Svandís Svavarsdóttir, fyrrverandi ráðherra Vinstri grænna, hefur lýst stuðningi við Vor til vinstri og STOFNANDI_B.
+Svandís Svavarsdóttir, fyrrverandi ráðherra Vinstri grænna, hefur lýst stuðningi við Vor til vinstri og Sönnu Magdalenu Mörtudóttur.
 
 STUÐNINGUR VIÐ SÖNNU:
 Á Facebook skrifaði Svandís: „Kraftaverki trúi ég ekki en aftur á móti trúi ég miklu öllu á þá sem hafa brennandi vilja til og innri elda til að takast á við þau viðfangsefni sem við stöndum frammi fyrir."
 
 VONIR UM BREYTINGAR Í BORGARMÁLUM:
-„Ég bind vonir við Vor til vinstri og þakklátt að STOFNANDI_B ætlar að reyna að fylkja liði og hugmyndum og stofna til samtals um úrræði sem leiði til raunverulegra breytinga í borgarmálum."
+„Ég bind vonir við Vor til vinstri og þakklátt að Sanna Magdalena ætlar að reyna að fylkja liði og hugmyndum og stofna til samtals um úrræði sem leiði til raunverulegra breytinga í borgarmálum."
 
 Svandís nefndi sérstaklega:
 - Húsnæðismál
