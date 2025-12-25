@@ -471,15 +471,56 @@ SAMANBURÐUR: HVERJIR VORU BÆÐI Á LISTA EFLINGAR OG Í FRAMBOÐI FYRIR SÓSÍ
    - Skrifaði grein með B-listaflokki 2022
    - Sósíalistaflokkur 2022 Reykjavík: 14. sæti
 
+FÉLAGASKRÁ SÓSÍALISTAFLOKKSINS - SAMANBURÐUR VIÐ B-LISTA:
+
+Af 14 manna B-lista Eflingar (2018 + 2022) eru aðeins 5 skráðir félagar:
+
+✅ Í FÉLAGASKRÁ:
+- Aðalgeir Björnsson - skráður 2021-03-23
+- Daníel Örn - skráður 2020-03-07
+- Ísak Jónsson - skráður 2025-05-23
+- Kolbrún Valvesdóttir - skráður 2025-09-21
+- PERSON_44 - skráður 2018-10-29
+
+❌ EKKI Í FÉLAGASKRÁ:
+- PERSON_01 (formaður Eflingar!)
+- Magdalena Kwiatkowska
+- PERSON_09
+- PERSON_03
+- Jamie McQuilkin
+- PERSON_24
+- Innocentia F. Friðgeirsson
+- PERSON_41
+- Olga Leonsdóttir
+
+ATHYGLISVERT: PERSON_01 var á framboðslistum flokksins 2018, 2021 og 2024 en var ALDREI skráður félagi!
+
+SÓLVEIG ANNA GAGNRÝND OG HÆTTIR (2025):
+
+Í apríl 2025 sagði PERSON_01 sig úr Sósíalistaflokknum eftir átök við María Pétursdóttur.
+
+AÐDRAGANDI:
+- 6. apríl 2025: PERSON_01 og Hallgrímur Helgason deildu hart um „vók" í þættinum Synir Egils
+- Hallgrímur bar Sólveigu saman við Donald Trump og gagnrýndi afstöðu hennar til vók-aktívisma
+- María Pétursdóttir (flokksfulltrúi) sakaði Sólveigu opinberlega um að vera á hægri væng fasisma
+
+AFSÖGN SÓLVEIGAR 23. APRÍL 2025:
+PERSON_01 tilkynnti brottför sína á Facebook í umræðuhópi flokksins:
+"Andrúmsloftið er orðið svo óþolandi eitrað."
+"Það er miður, en það er ekkert að gera nema að yfirgefa flokkinn, sem ég geri hér."
+
+Hún sagðist ekki hafa fengið stuðning frá forystu flokksins - aðeins Andrea Helgadóttir borgarfulltrúi hafði samband.
+
 HEIMILDIR:
+- ruv.is 23.04.2025: "PERSON_01 segir sig úr Sósíalistaflokknum"
+- nutiminn.is 06.04.2025: "PERSON_01 og Hallgrímur Helgason deildu hart um vók"
 - mbl.is 22.10.2024: "PERSON_01 gefur kost á sér á lista Sósíalistaflokksins"
-- sosialistaflokkurinn.is: "Efstu þrjú sætin í Reykjavík Suður" (27.10.2024)
-- ruv.is: "Listar Sósíalistaflokksins hafa tekið á sig mynd" (30.10.2024)`,
+- sosialistaflokkurinn.is: "Efstu þrjú sætin í Reykjavík Suður" (27.10.2024)`,
     citation: {
-      who: 'Efling stéttarfélag',
-      when: '2018-2022',
-      context: 'Stjórnarkosningar Eflingar',
-      url: 'https://efling.is/kynning-a-frambodum-til-stjornarkosninga-2022/',
+      who: 'Efling stéttarfélag / Sósíalistaflokkurinn',
+      when: '2018-2025',
+      context: 'Tengsl Eflingar og Sósíalistaflokksins, félagaskrá',
+      url: 'https://www.ruv.is/frettir/innlent/2025-04-23-solveig-anna-segir-sig-ur-sosialistaflokknum-442134',
     },
   },
   {
