@@ -3,11 +3,12 @@
   "metadata": {
     "project": "ekklesia-prod-10-2025",
     "project_number": "521240388393",
-    "generated": "2025-12-05T15:30:00Z",
+    "generated": "2025-12-25T10:00:00Z",
     "generated_by": "gcloud + firebase CLI",
-    "total_services": 29,
+    "total_services": 45,
     "region": "europe-west2",
-    "service_account": "521240388393-compute@developer.gserviceaccount.com"
+    "service_account": "521240388393-compute@developer.gserviceaccount.com",
+    "notes": "Includes new email (SendGrid), heatmap, and RAG functions. get-django-token removed."
   },
   "services": [
     {
@@ -762,11 +763,17 @@
       "count": 1,
       "services": ["django-socialism-demo"]
     },
-    "utility": {
-      "name": "Hjálparföll",
-      "description": "Bakgrunnsföll",
-      "count": 1,
-      "services": ["get-django-token"]
+    "email": {
+      "name": "Tölvupóstar",
+      "description": "SendGrid email sending and templates",
+      "count": 10,
+      "services": ["sendemail", "sendcampaign", "createemailcampaign", "listemailcampaigns", "listemaillogs", "listemailtemplates", "getemailtemplate", "saveemailtemplate", "deleteemailtemplate", "unsubscribe"]
+    },
+    "heatmap": {
+      "name": "Heatmap",
+      "description": "Member geographic distribution",
+      "count": 2,
+      "services": ["compute-member-heatmap-stats", "get-member-heatmap-data"]
     }
   },
   "summary": {

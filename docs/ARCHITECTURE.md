@@ -6,9 +6,9 @@
 |-------|----------|------|--------|
 | Frontend | `apps/members-portal/` | Static HTML/JS | `firebase deploy --only hosting` |
 | Elections API | `services/svc-elections/` | Node.js/Express | `./deploy.sh` |
-| Events API | `services/svc-events/` | Node.js/Express | `./deploy.sh` |
+| Events + AI | `services/svc-events/` | Node.js + Kimi (2 assistants) | `./deploy.sh` |
 | Members API | `services/svc-members/functions/` | Python/Firebase | Firebase Functions |
-| Database | Cloud SQL | PostgreSQL 15 | Managed |
+| Database | Cloud SQL | PostgreSQL 15 + pgvector | Managed |
 | Auth | Firebase + Kenni.is | OAuth PKCE | Managed |
 
 **Region:** `europe-west2` (London)
@@ -27,7 +27,8 @@
 │  ├── Firebase Hosting (members-portal)                       │
 │  ├── Firebase Functions (svc-members)                        │
 │  ├── Cloud Run (svc-elections, svc-events)                  │
-│  └── Postmark email (planned - #323)                        │
+│  ├── SendGrid email (#323 - implemented Dec 2025)           │
+│  └── AI assistants (Party Wiki + RAG Member Assistant)      │
 │                                                              │
 │  Django GCP (INTERIM admin interface)                       │
 │  ├── Cloud Run: django-socialism                            │
@@ -92,7 +93,7 @@
 | 2 | Cloud SQL PostgreSQL | Elections, events | Active |
 | 3 | Django GCP (Cloud Run) | Admin interface | Interim |
 
-**Related issues:** #323 (Postmark email)
+**Related issues:** #323 (Amazon SES email - completed), #416 (Kimi RAG assistant)
 
 ### Member Data Model
 
@@ -172,23 +173,46 @@ svc-elections/
 ├── src/
 │   ├── routes/
 │   │   ├── route-admin.js
-│   │   └── route-elections.js
+│   │   ├── route-elections.js
+│   │   ├── route-candidates.js
+│   │   └── route-nomination.js
 │   │
 │   ├── middleware/
 │   │   ├── middleware-member-auth.js
 │   │   ├── middleware-rbac-auth.js
 │   │   ├── middleware-s2s-auth.js
-│   │   ├── middleware-rate-limiter.js
-│   │   ├── middleware-app-check.js
-│   │   └── middleware-correlation-id.js
+│   │   └── middleware-rate-limiter.js
 │   │
-│   ├── services/
-│   │   └── service-audit.js
-│   │
-│   └── config/
+│   └── services/
+│       └── service-audit.js
 │
 ├── migrations/
 ├── tests/
+└── deploy.sh
+```
+
+### services/svc-events/ (Node.js + AI)
+
+```
+svc-events/
+├── src/
+│   ├── routes/
+│   │   ├── route-events.js
+│   │   ├── route-party-wiki.js         # Static knowledge chat
+│   │   └── route-member-assistant.js   # RAG AI chat endpoint
+│   │
+│   ├── services/
+│   │   ├── service-embedding.js        # Vertex AI embeddings
+│   │   └── service-vector-search.js    # pgvector search
+│   │
+│   └── config/
+│       └── config-database.js
+│
+├── scripts/
+│   ├── verify-kimi-answers.js          # RAG verification tests
+│   └── index-*.js                      # Document indexing
+│
+├── migrations/
 └── deploy.sh
 ```
 
@@ -252,6 +276,33 @@ User → Kenni.is (PKCE) → Firebase Auth → ID Token → API Request
      │  (admin UI)     │          │  (elections)    │
      └─────────────────┘          └─────────────────┘
 ```
+
+### AI Assistants (Kimi)
+
+**Two assistants with different architectures:**
+
+| | Party Wiki 📚 | Member Assistant ? |
+|---|---|---|
+| Route | `route-party-wiki.js` | `route-member-assistant.js` |
+| Frontend | `party-wiki-chat.js` | `member-assistant-chat.js` |
+| Tech | Static system prompt | RAG + pgvector |
+| Knowledge | Hardcoded facts | Dynamic document retrieval |
+| Use case | Quick facts | Deep research with citations |
+
+**Member Assistant (RAG) Flow:**
+```
+User Question → Vertex AI Embedding → pgvector Search → Context Assembly → Kimi LLM → Response
+                                           │
+                                    ┌──────┴──────┐
+                                    │ rag_documents│
+                                    │ (pgvector)   │
+                                    └─────────────┘
+```
+
+**RAG Sources indexed:**
+- party-website (xj.is)
+- kosningaprof-2024 (RÚV)
+- discourse-archive
 
 ---
 

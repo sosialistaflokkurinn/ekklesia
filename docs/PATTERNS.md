@@ -15,6 +15,7 @@
 | [PATTERNS-ELECTIONS.md](PATTERNS-ELECTIONS.md) | Election types, voting systems, admin elections |
 | [PATTERNS-NominationCommittee.md](PATTERNS-NominationCommittee.md) | Nomination committee, ranked voting, restricted access |
 | [PATTERNS_DATA_DEBUGGING.md](PATTERNS_DATA_DEBUGGING.md) | Data sync issues, debugging data loss, iceaddr, webhook debugging |
+| [PATTERNS-KIMI-Felagar.md](PATTERNS-KIMI-Felagar.md) | RAG system, vector search, Kimi LLM, verification tests |
 
 ---
 

@@ -173,7 +173,7 @@ Stofnandi Fósturheimilisbarna. Ólst upp í ríkisumsjá frá 8 ára aldri, fó
 14. HÓLMSTEINN A. BREKKAN - blikkari og framkvæmdastjóri Samtaka leigjenda
 28. LUCIANO DUTRA
 37. SIGRÚN UNNSTEINSDÓTTIR
-42. KOLBRÚN - (líklegast Kolbrún Valvesdóttir sem einnig var á B-lista Eflingar)
+42. SIGRÍÐUR KOLBRÚN GUÐNADÓTTIR
 
 KÓPAVOGUR - 22 frambjóðendur (3,2% atkvæða, enginn kjörinn):
 
@@ -482,8 +482,10 @@ Af 14 manna B-lista Eflingar (2018 + 2022) eru aðeins 5 skráðir félagar:
 - Kolbrún Valvesdóttir - skráður 2025-09-21
 - PERSON_44 - skráður 2018-10-29
 
-❌ EKKI Í FÉLAGASKRÁ:
-- PERSON_01 (formaður Eflingar!)
+❌ EKKI LENGUR Í FÉLAGASKRÁ:
+- PERSON_01 - STOFNFÉLAGI 2017, sagði sig úr apríl 2025
+
+❌ ALDREI Í FÉLAGASKRÁ:
 - Magdalena Kwiatkowska
 - PERSON_09
 - PERSON_03
@@ -493,7 +495,7 @@ Af 14 manna B-lista Eflingar (2018 + 2022) eru aðeins 5 skráðir félagar:
 - PERSON_41
 - Olga Leonsdóttir
 
-ATHYGLISVERT: PERSON_01 var á framboðslistum flokksins 2018, 2021 og 2024 en var ALDREI skráður félagi!
+ATHYGLISVERT: PERSON_01 var stofnfélagi frá 2017 en sagði sig úr flokknum í apríl 2025 eftir átök við María Pétursdóttur.
 
 SÓLVEIG ANNA GAGNRÝND OG HÆTTIR (2025):
 
@@ -558,6 +560,658 @@ HEIMILDIR:
       url: 'https://timarit.is/',
     },
   },
+  {
+    id: 'log-flokksins',
+    title: 'Lög Sósíalistaflokksins',
+    sourceType: 'party-website',
+    sourceUrl: 'https://sosialistaflokkurinn.is/um-flokkinn/login/',
+    content: `Lög Sósíalistaflokks Íslands
+
+1. gr. Heiti og heimilisfang
+Stjórnmálasamtökin heita Sósíalistaflokkur Íslands. Sósíalistaflokkur Íslands starfar samkvæmt lögum nr. 162/2006 um starfsemi stjórnmálasamtaka. Heimilisfang Sósíalistaflokks Íslands og aðalstarfsstöð er Bolholt 6, 105 Reykjavík.
+
+2. gr. Tilgangur samtakanna
+Tilgangur Sósíalistaflokks Íslands er að starfrækja sósíalísk stjórnmálasamtök sem vinna að því að almenningur nái yfirráðum yfir öllum meginstofnunum samfélagsins, að bæta lífskjör launafólks og lífeyrisþega, að efla frelsi, jöfnuð, jafnrétti, friðhelgi og samkennd í samfélaginu og að rækja ábyrgð gagnvart vistkerfum og auðlindum jarðar sem falla í skaut komandi kynslóða.
+
+Tilgangi þessu nær Sósíalistaflokkur Íslands meðal annars með því að bjóða fram í kosningum, jafnt til Alþingis sem og sveitarstjórnarkosningum. Tilgangi sínum hyggst Sósíalistaflokkur Íslands einnig ná með því að efla sósíalíska vitund og umræðu, starfa með undirokuðum hópum almennings og leita áhrifa innan stofnana samfélagsins eftir því sem kostur er.
+
+3. gr. Skipulag samtakanna
+Æðsta vald Sósíalistaflokks Íslands í mótun og framkvæmd pólitískrar stefnu er árlegt Sósíalistaþing sem nánar er kveðið á um í Skipulagi.
+
+Félagi getur á hverjum tíma aðeins setið í einni kjörinni stjórn (Framkvæmdastjórn, Félagastjórn, Baráttustjórn, Stjórnarráði eða Málefnastjórn). Seta félaga í kjörinni stjórn útilokar viðkomandi ekki frá setu í slembivalinni stjórn (til að mynda Samvisku, Kjörnefnd eða Málefnahópum).
+
+Hver félagi skal ekki sitja sem aðalmaður og varamaður lengur en tólf ár í hverri stjórn og ekki gegna formennsku í hverri nefnd lengur en átta ár. Meðlimur Trúnaðarráðs má ekki sitja í öðrum stjórnum flokksins.
+
+4. gr. Aðild að samtökunum
+Öllum er velkomið að ganga til liðs við Sósíalistaflokk Íslands, óháð kyni, uppruna, trú eða kynhneigð, með fyrirvara um heimild Trúnaðarráðs til brottvísunar úr flokknum. Félagar geta tilkynnt úrsögn úr flokknum með tölvupósti.
+
+5. gr. Stjórn flokksins
+Framkvæmdastjórn skal skipuð 9 félögum kjörnum á Sósíalistaþingi, til árs í senn. Einnig skal kjósa 4 varamenn. Framkvæmdastjórn fer með málefni flokksins milli Sósíalistaþinga.
+
+Framkvæmdastjórn skiptir með sér verkum og skal velja úr sínum röðum formann, varaformann, ritara og gjaldkera. Formaður boðar til funda. Firmaritun er í höndum meirihluta Framkvæmdastjórnar.
+
+Framkvæmdastjórn ábyrgist daglegan rekstur flokksins, hefur umsjón með heimasíðu og kynningarmálum, sér um fjármál flokksins, heldur utan um félagaskrá og skal safna saman fundargerðum og öðrum heimildum um ákvarðanir og starfsemi flokksins milli Aðalfunda.
+
+Framkvæmdastjórn er ábyrg fyrir að starfsemi flokksins sé í samræmi við Lög og Skipulag og er heimilt að skera úr um ágreining um ákvarðanir annarra stofnana flokksins. Ætíð má skjóta ákvörðunum Framkvæmdastjórnar til Trúnaðarráðs.
+
+6. gr. Endurskoðun reikninga
+Framkvæmdastjórn velur endurskoðanda og/eða endurskoðunarfélag til eins árs í senn.
+
+7. gr. Breyting á samþykktum
+Starfstímabil Sósíalistaflokks Íslands er almanaksárið. Á aðalfundi, sem haldinn er árlega á Sósíalistaþingi, skal gera upp árangur liðins árs.
+
+Sósíalistaþingi er heimilt að efna til auka aðalfundar. Aðalfundur skal haldinn ár hvert og skal boðað til hans með minnst tveggja vikna fyrirvara með sannanlegum hætti. Aðeins félagar hafa þátttökurétt í störfum Sósíalistaþings. Einfaldur meirihluti viðstaddra félaga ræður úrslitum mála.
+
+Dagskrá Sósíalistaþings:
+1. Kosning fundarstjóra og fundarritara
+2. Skýrsla Framkvæmdastjórnar lögð fram
+3. Reikningar lagðir fram til samþykktar
+4. Lagabreytingar
+5. Ákvörðun félagsgjalds
+6. Kosning Framkvæmdastjórnar og annarra stjórna
+7. Önnur mál
+
+8. gr. Slit samtakanna
+Ákvörðun um slit eða niðurlagningu Sósíalistaflokk Íslands skal tekin af tveimur aðalfundum og skal einfaldur meirihluti ráða. Seinni aðalfundurinn ráðstafar eignum flokksins.
+
+9. gr.
+Þar sem ákvæði þessa samþykkta segja ekki til um hvernig með skuli farið skal hlíta ákvæðum laga nr. 162/2006 um starfsemi stjórnmálsamtaka svo og öðrum lagaákvæðum er við geta átt.
+
+HEIMILD: sosialistaflokkurinn.is/um-flokkinn/login/`,
+    citation: {
+      who: 'Sósíalistaflokkur Íslands',
+      when: '2017-2025',
+      context: 'Opinber lög flokksins',
+      url: 'https://sosialistaflokkurinn.is/um-flokkinn/login/',
+    },
+  },
+  {
+    id: 'skipulag-flokksins',
+    title: 'Skipulag Sósíalistaflokksins',
+    sourceType: 'party-website',
+    sourceUrl: 'https://sosialistaflokkurinn.is/um-flokkinn/skipulag/',
+    content: `Skipulag Sósíalistaflokks Íslands
+
+INNGANGUR:
+Sósíalistaflokkur Íslands ætlar sér að vera öflug fjöldahreyfing almennings og taka virkan þátt í baráttu hans fyrir frelsi, jöfnuði, jafnrétti og mannhelgi á öllum sviðum samfélagsins. Tilgangur Skipulagsins er að stuðla að lýðræði, gagnsæi og valddreifingu í starfi flokksins. Engin stjórnmálahreyfing er ónæm fyrir vandamálum á borð við klíkumyndun, leyndarhyggju og samþjöppun valds og er Skipulaginu jafnframt ætlað að setja þeim hömlur.
+
+Ávallt skal hafa jafnrétti að leiðarljósi í störfum flokksins. Skipulagið hefur stöðu flokkslaga.
+
+SÓSÍALISTAÞING:
+Sósíalistaþing markar pólitíska stefnu Sósíalistaflokks Íslands út frá tillögum Málefnahópa og þiggja aðrar stofnanir flokksins umboð sitt frá því. Meirihluti greiddra atkvæða ræður úrslitum mála. Sósíalistaþing skal haldið minnst árlega og er um leið vettvangur árlegs Aðalfundar.
+
+FRAMKVÆMDASTJÓRN:
+Framkvæmdastjórn heldur utan um lög, skipulag og uppbyggingu flokksins og sér um öll málefni flokksins sem ekki er tekið fram í lögum, skipulagi eða samþykktum Sósíalistaþing að sé hlutverk annarra stjórna eða hópa innan flokksins.
+
+Framkvæmdastjórn heldur utan um slembival Kjörnefndar og Samvisku. Framkvæmdastjórn hefur eftirlit með uppbyggingu starfs innan flokksins og grípur inn í ef stjórnir verða óstarfhæfar.
+
+MÁLEFNAHÓPAR OG MÁLEFNASTJÓRN:
+Til að styðja við stefnumótun flokksins starfar Málefnastjórn sem annast framkvæmd stefnumótunarvinnu á milli Sósíalistaþinga. Málefnastjórn skipar slembivalda hópa félagsmanna ("Málefnahópa") sem vinna stefnudrög í einstökum málaflokkum.
+
+Kosning Málefnastjórnar fer fram á Sósíalistaþingi. Hún skal skipuð 9 aðalmönnum og 4 til vara.
+
+KOSNINGASTJÓRN:
+Kosningastjórn heldur utan um framboð Sósíalistaflokksins til Alþingis og sveitastjórna. Hún sér um val á framboðslista, mótar kosningastefnu byggða á stefnum flokksins og rekur kosningabaráttu.
+
+Kosningastjórn er kjörin á Sósíalistaþingi og skal skipuð 9 aðalmönnum og 4 til vara. Formaður Kosningastjórnar er kosinn sérstaklega á félagsfundi og er jafnframt pólitískur leiðtogi flokksins á sviði Alþingis og sveitastjórna.
+
+UPPSTILLINGARNEFND:
+Innan kosningastjórnar starfar níu manna Uppstillingarnefnd framboðslista sem hefur það hlutverk að leggja til framboðslista fyrir þingkosningar í öllum kjördæmum fyrir félagsfund til samþykkar.
+
+Þau sem bjóða sig fram í Uppstillingarnefnd gangast undir að bjóða sig ekki fram í efstu fimm sæti framboðslista.
+
+Uppstillingarnefnd er heimilt að leggja sérstaklega til leiðtoga framboðslista og/eða framvarðarsveit framboðsins samkvæmt tillögum frá formanni Kosningastjórnar.
+
+FÉLAGAFUNDIR 2024 - UMBOÐ UPPSTILLINGARNEFNDAR:
+"Uppstillingarnefnd fyrir þingkosningar 2024 er kosin til að raða framboðslistum í öllum kjördæmum og leggja fyrir félagsfund. Nefndin tekur við tillögum pólitísks leiðtoga um skipan efstu þriggja frambjóðenda í hverju kjördæmi. Nefndin tekur við tilnefningum í önnur sæti frá öllum flokksmönnum og raðar frambjóðendum í öll sæti frá 4. sæti og neðar."
+
+SVÆÐISFÉLÖG OG FÉLAGASTJÓRN:
+Í Sósíalistaflokknum skulu vera starfrækt Svæðisfélög. Svæðisfélag skal aldrei vera minna en eitt sveitarfélag. Svæðisfélög kjósa sér svæðisstjórnir með formanni, ritara og gjaldkera.
+
+Félagastjórn styður Svæðisfélög. Félagastjórn er kjörin á Sósíalistaþingi og skal skipuð 9 aðalmönnum og 4 til vara.
+
+BARÁTTUHÓPAR OG BARÁTTUSTJÓRN:
+Félögum í Sósíalistaflokknum er heimilt að stofna sjálfstæða baráttuhópa á borð við Unga sósíalista, Meistaradeild, Verkalýðsráð, Innflytjendaráð og Öryrkjaráð. Þessir hópar eru sjálfstæðir og starfa eftir eigin stefnuyfirlýsingum, geta ályktað í eigin nafni en ekki í nafni flokksins sjálfs.
+
+Hver hópur þarf að skipa fimm manna stjórn hið minnsta og skulu félagar í Sósíalistaflokknum sitja í stjórninni.
+
+Baráttustjórn flokksins er tengiliður baráttuhópanna við Sósíalistaþing. Í Baráttustjórn sitja formenn og varaformenn allra baráttuhópa.
+
+TRÚNAÐARRÁÐ:
+Trúnaðarráð er trúnaðar- og aðhaldsafl hreyfingarinnar. Hlutverk hennar er að skera úr um ágreiningsmál sem geta komið upp á milli félagsmanna. Trúnaðarráð skal beita sér fyrir vönduðum starfsháttum, góðum samskiptum, virðingu fyrir persónum og jafnrétti.
+
+Erindi til Trúnaðarráðs skal senda á: trunadarrad@sosialistaflokkurinn.is
+
+Trúnaðarráð getur veitt skriflega áminningu eða víkið einstaklingi úr flokknum. Til að víkja einstakling úr flokknum skal Trúnaðarráð almennt virkja slembivalinn 30 manna hóp til að fara yfir málið. Félagsmaður hefur rétt til að skjóta ákvörðun um brottvísun til aðalfundar.
+
+Stjórn Trúnaðarráðs er skipuð af þremur aðalmönnum og tveimur til vara sem eru kjörnir á aðalfundi.
+
+Nú er starfandi trúnaðarráð til bráðabirgða: Júlíus K Valdimarsson, Katrín Baldursdóttir og PERSON_50.
+
+KJÖRGENGI TIL STJÓRNARSETU:
+Félagsmaður getur á hverjum tíma aðeins setið í einni kjörinni stjórn (Framkvæmdastjórn, Félagastjórn, Baráttustjórn, Málefnastjórn eða Kosningastjórn). Seta félagsmanns í kjörinni stjórn útilokar hann ekki frá setu í slembivalinni stjórn.
+
+Hver félagsmaður skal ekki sitja sem aðalmaður og varamaður lengur en tólf ár í hverri stjórn og ekki gegna formennsku lengur en átta ár.
+
+HEIMILD: sosialistaflokkurinn.is/um-flokkinn/skipulag/`,
+    citation: {
+      who: 'Sósíalistaflokkur Íslands',
+      when: '2017-2025',
+      context: 'Opinbert skipulag flokksins',
+      url: 'https://sosialistaflokkurinn.is/um-flokkinn/skipulag/',
+    },
+  },
+  {
+    id: 'trunadarrad',
+    title: 'Trúnaðarráð Sósíalistaflokksins',
+    sourceType: 'party-website',
+    sourceUrl: 'https://sosialistaflokkurinn.is/um-flokkinn/skipulag/',
+    content: `Trúnaðarráð Sósíalistaflokksins
+
+HLUTVERK:
+Trúnaðarráð er trúnaðar- og aðhaldsafl hreyfingarinnar. Hlutverk hennar er að skera úr um ágreiningsmál sem geta komið upp á milli félagsmanna. Trúnaðarráð skal beita sér fyrir vönduðum starfsháttum, góðum samskiptum, virðingu fyrir persónum og jafnrétti milli einstaklinga í starfi flokksins.
+
+ERINDI:
+Erindi til Trúnaðarráðs skal senda á: trunadarrad@sosialistaflokkurinn.is
+
+Mál sem trúnaðarráð gæti þurft að taka fyrir gætu varðað t.d. meint afglöp stjórnarmanna í embætti eða meinta ósæmilega framkomu félagsmanns við aðra félagsmenn eða á opinberum vettvangi. Eftir fremsta megni ber Trúnaðarráði að reyna að stofna til sátta í ágreiningsmálum.
+
+ÚRRÆÐI:
+Trúnaðarráð getur veitt skriflega áminningu eða víkið einstaklingi úr flokknum. Til að víkja einstakling úr flokknum skal Trúnaðarráð almennt virkja slembivalinn 30 manna hóp til að fara yfir málið.
+
+Félagsmaður hefur ávallt andmælarétt til að skýra sína hlið. Félagsmaður hefur rétt til að skjóta ákvörðun um brottvísun til aðalfundar.
+
+SKIPUN:
+Stjórn Trúnaðarráðs er skipuð af þremur aðalmönnum og tveimur til vara sem eru kjörnir á aðalfundi.
+
+NÚVERANDI STJÓRN (bráðabirgða):
+- Júlíus K Valdimarsson
+- Katrín Baldursdóttir
+- PERSON_50
+
+HEIMILD: sosialistaflokkurinn.is/um-flokkinn/skipulag/`,
+    citation: {
+      who: 'Sósíalistaflokkur Íslands',
+      when: '2017-2025',
+      context: 'Trúnaðarráð flokksins',
+      url: 'https://sosialistaflokkurinn.is/um-flokkinn/skipulag/',
+    },
+  },
+  {
+    id: 'framkvaemdastjorn',
+    title: 'Framkvæmdastjórn Sósíalistaflokksins',
+    sourceType: 'party-website',
+    sourceUrl: 'https://sosialistaflokkurinn.is/um-flokkinn/skipulag/',
+    content: `Framkvæmdastjórn Sósíalistaflokksins
+
+HLUTVERK:
+Framkvæmdastjórn er valdamesta stjórn flokksins samkvæmt lögum og skipulagi. Hún sér um öll mál sem ekki er getið í skipulagi að sé hlutverk annarra stjórna.
+
+HELSTU VERKEFNI:
+- Heldur utan um lög, skipulag og uppbyggingu flokksins
+- Ábyrgist daglegan rekstur flokksins
+- Hefur umsjón með heimasíðu og kynningarmálum
+- Sér um fjármál flokksins
+- Heldur utan um félagaskrá
+- Safnar saman fundargerðum og heimildum um ákvarðanir
+- Hefur eftirlit með uppbyggingu starfs innan flokksins
+- Grípur inn í ef stjórnir verða óstarfhæfar
+- Heldur utan um slembival Kjörnefndar og Samvisku
+
+SKIPUN:
+Framkvæmdastjórn skal skipuð 9 félögum kjörnum á Sósíalistaþingi, til árs í senn. Einnig skal kjósa 4 varamenn.
+
+EMBÆTTI:
+Framkvæmdastjórn skiptir með sér verkum og skal velja úr sínum röðum:
+- Formann (boðar til funda)
+- Varaformann
+- Ritara
+- Gjaldkera
+
+Firmaritun er í höndum meirihluta Framkvæmdastjórnar.
+
+ÁFRÝJUN:
+Ætíð má skjóta ákvörðunum Framkvæmdastjórnar til Trúnaðarráðs.
+
+HEIMILD: sosialistaflokkurinn.is/um-flokkinn/skipulag/`,
+    citation: {
+      who: 'Sósíalistaflokkur Íslands',
+      when: '2017-2025',
+      context: 'Framkvæmdastjórn flokksins',
+      url: 'https://sosialistaflokkurinn.is/um-flokkinn/skipulag/',
+    },
+  },
+  {
+    id: 'kosningastjorn-uppstillingarnefnd',
+    title: 'Kosningastjórn og Uppstillingarnefnd',
+    sourceType: 'party-website',
+    sourceUrl: 'https://sosialistaflokkurinn.is/um-flokkinn/skipulag/',
+    content: `Kosningastjórn og Uppstillingarnefnd Sósíalistaflokksins
+
+KOSNINGASTJÓRN - HLUTVERK:
+Kosningastjórn heldur utan um framboð Sósíalistaflokksins til Alþingis og sveitastjórna. Hún sér um:
+- Val á framboðslista með aðferðum sem samþykktar hafa verið
+- Mótar kosningastefnu byggða á stefnum flokksins
+- Rekur kosningabaráttu til þings og sveitarstjórna
+- Heldur utan um stjórnmálaumræðu á vef flokksins
+- Þjálfar upp talsfólk flokksins
+- Efnir til stjórnmálafunda
+
+SKIPUN:
+Kosningastjórn er kjörin á Sósíalistaþingi og skal skipuð 9 aðalmönnum og 4 til vara.
+
+FORMAÐUR KOSNINGASTJÓRNAR:
+Formaður Kosningastjórnar er kosinn sérstaklega á félagsfundi og er jafnframt pólitískur leiðtogi flokksins á sviði Alþingis og sveitastjórna.
+
+UPPSTILLINGARNEFND:
+Innan kosningastjórnar starfar níu manna Uppstillingarnefnd framboðslista sem hefur það hlutverk að leggja til framboðslista fyrir þingkosningar í öllum kjördæmum fyrir félagsfund til samþykkar.
+
+Uppstillingarnefnd tilnefnir tvo ábyrgðarmenn sem eru í forsvari fyrir nefndina.
+
+REGLUR UM UPPSTILLINGARNEFND:
+- Þau sem bjóða sig fram í Uppstillingarnefnd gangast undir að bjóða sig ekki fram í efstu fimm sæti framboðslista
+- Uppstillingarnefnd er heimilt að leggja sérstaklega til leiðtoga framboðslista og/eða framvarðarsveit samkvæmt tillögum frá formanni Kosningastjórnar
+
+UMBOÐ UPPSTILLINGARNEFNDAR 2024 (félagsfundur):
+"Uppstillingarnefnd tekur við tillögum pólitísks leiðtoga um skipan efstu þriggja frambjóðenda í hverju kjördæmi. Nefndin tekur við tilnefningum í önnur sæti frá öllum flokksmönnum og raðar frambjóðendum í öll sæti frá 4. sæti og neðar."
+
+HEIMILD: sosialistaflokkurinn.is/um-flokkinn/skipulag/`,
+    citation: {
+      who: 'Sósíalistaflokkur Íslands',
+      when: '2017-2025',
+      context: 'Kosningastjórn og Uppstillingarnefnd',
+      url: 'https://sosialistaflokkurinn.is/um-flokkinn/skipulag/',
+    },
+  },
+  {
+    id: 'lagaumhverfi-stjornmalaflokka',
+    title: 'Lagaumhverfi stjórnmálaflokka á Íslandi',
+    sourceType: 'party-website',
+    sourceUrl: 'https://sosialistaflokkurinn.is/um-flokkinn/login/',
+    content: `Lagaumhverfi stjórnmálaflokka á Íslandi
+
+Stjórnmálaflokkar á Íslandi starfa á grunni blöndu af stjórnarskrárvörðum réttindum, almennum lögum sem gilda um fjármál og skráningu þeirra, og eigin samþykktum.
+
+1. STJÓRNARSKRÁIN OG FÉLAGAFRELSI
+Grundvöllur allra stjórnmálasamtaka er 74. gr. stjórnarskrárinnar, sem tryggir rétt fólks til að stofna félög í sérhverjum löglegum tilgangi. Stjórnmálaflokkar eru í grunninn almenn félagasamtök sem byggja á þessu frelsi.
+
+2. LÖG UM STARFSEMI STJÓRNMÁLASAMTAKA (NR. 162/2006)
+Þetta eru mikilvægustu sérlögin sem gilda beint um flokkana:
+
+SKRÁNING:
+Ríkisskattstjóri heldur skrá yfir stjórnmálasamtök. Til að vera skráð þurfa samtök að hafa þann tilgang að bjóða fram í kosningum og hafa samþykktir sem uppfylla ákveðin skilyrði.
+
+FJÁRMÁL:
+Lögin setja strangar reglur um hámarksframlög frá lögaðilum og einstaklingum (t.d. að hámarki 550.000 kr. á ári) og banna nafnlaus framlög.
+
+OPINBER FRAMLÖG:
+Kveðið er á um rétt flokka til fjárframlaga úr ríkissjóði og frá sveitarfélögum miðað við atkvæðamagn og þingstyrk.
+
+GAGNSÆI:
+Flokkum er skylt að skila ársreikningum til Ríkisendurskoðunar til birtingar.
+
+3. KOSNINGALÖG (NR. 112/2021)
+Þessi lög gilda um hvernig flokkar bjóða fram og hvernig staðið er að kosningum til Alþingis, sveitarstjórna og forsetakjörs:
+
+LISTABÓKSTAFIR:
+Hvernig flokkar sækja um bókstafi og heiti.
+
+FRAMBOÐSLISTAR:
+Reglur um hvernig skila skuli framboðum, meðmæli kjósenda og gildi lista.
+
+UMBOÐSMENN:
+Rétt flokka til að hafa umboðsmenn viðstadda við talningu og eftirlit með kosningum.
+
+4. INNRI LÖG OG SAMÞYKKTIR
+Þar sem engin heildarlög eru til um almenn félagasamtök, ráðast innri vinnubrögð flokka (eins og fundarsköp, stjórnarkjör og ákvörðunartaka) að mestu af þeirra eigin lögum.
+
+SÓSÍALISTAFLOKKUR ÍSLANDS:
+- Starfar samkvæmt eigin Lögum og Skipulagi
+- Í lögum flokksins (1. gr.) segir beint að hann starfi samkvæmt lögum nr. 162/2006
+- Innri strúktúr hans, svo sem Sósíalistaþing (æðsta vald), Framkvæmdastjórn, og notkun slembivals, er alfarið stýrt af þessum innri reglum
+
+SAMANTEKT:
+Stjórnmálaflokkar starfa samkvæmt:
+1. Stjórnarskránni (74. gr. - félagafrelsi)
+2. Lögum nr. 162/2006 (um fjármál og skráningu)
+3. Kosningalögum nr. 112/2021 (um framboð)
+4. Sínum eigin félagslögum (um innra starf)`,
+    citation: {
+      who: 'Íslenski löggjafinn / Sósíalistaflokkur Íslands',
+      when: '2006-2025',
+      context: 'Lagaumhverfi stjórnmálaflokka á Íslandi',
+      url: 'https://www.althingi.is/lagas/nuna/2006162.html',
+    },
+  },
+  {
+    id: 'sosialistaping-vs-felagsfundur',
+    title: 'Sósíalistaþing og félagsfundur - Munur og völd',
+    sourceType: 'party-website',
+    sourceUrl: 'https://sosialistaflokkurinn.is/um-flokkinn/skipulag/',
+    content: `Sósíalistaþing og félagsfundur - Munur og völd
+
+SÓSÍALISTAÞING - ÆÐSTA VALD FLOKKSINS
+Sósíalistaþing er æðsta vald flokksins í mótun og framkvæmd pólitískrar stefnu. Þingið getur:
+- Boðað til aukaaðalfundar (samkvæmt 7. gr. laga)
+- Frestað framhaldi aðalfundarstarfa fram að tiltekinni dagsetningu eins oft og þarf
+- Samþykkt lagabreytingar
+- Kosið stjórnir flokksins
+- Ákvarðað félagsgjald
+
+HVERJIR GETA BOÐAÐ TIL SÓSÍALISTAÞINGS?
+Samkvæmt skipulaginu hafa þrjár stjórnir heimild til að boða til Sósíalistaþings:
+
+1. FRAMKVÆMDASTJÓRN - annast að jafnaði boðun og framkvæmd Sósíalistaþings
+2. MÁLEFNASTJÓRN - hefur heimild til að boða til þings af sjálfsdáðum ef tilefni þykir til
+3. KOSNINGASTJÓRN - hefur einnig sjálfstæða heimild til að boða til þings þyki tilefni til
+
+AUKAAÐALFUNDUR
+Samkvæmt 7. gr. laga flokksins er Sósíalistaþingi heimilt að efna til aukaaðalfundar. Slíkur aukaaðalfundur hefur sama vald og reglulegur aðalfundur.
+
+Í reynd þýðir þetta að annaðhvort þarf samþykkt á þingi til að boða þann næsta, eða að ein af þessum þremur stjórnum nýti heimild sína til að boða þingið.
+
+ALMENNUR FÉLAGSFUNDUR - ANNARS KONAR VALD
+Almennir félagsfundir hafa EKKI formlegt lagalegt vald til að skipa Sósíalistaþingi að koma saman samkvæmt 7. gr. laga.
+
+Hins vegar hafa félagsfundir mikilvægt vald í öðrum málum:
+- Samþykkja framboðslista (til jafns við Sósíalistaþing)
+- Samþykkja aðferðir við val á framboðslistum
+- Kjósa pólitískan leiðtoga (formann kosningastjórnar) sérstaklega
+
+MUNUR Á SÓSÍALISTAÞINGI OG FÉLAGSFUNDI:
+
+SÓSÍALISTAÞING:
+- Æðsta vald flokksins
+- Haldið minnst árlega
+- Setur stefnu og lög
+- Kýs stjórnir
+
+FÉLAGSFUNDUR:
+- Milli þinga
+- Samþykkir framboðslista
+- Kýs pólitískan leiðtoga
+- Getur EKKI krafist aukaaðalfundar samkvæmt 7. gr.
+
+HEIMILD: Lög og skipulag Sósíalistaflokksins, 7. gr. laga`,
+    citation: {
+      who: 'Sósíalistaflokkur Íslands',
+      when: '2017-2025',
+      context: 'Túlkun á völdum Sósíalistaþings og félagsfundar',
+      url: 'https://sosialistaflokkurinn.is/um-flokkinn/skipulag/',
+    },
+  },
+  {
+    id: 'innri-atok-2025',
+    title: 'Innri átök í Sósíalistaflokknum 2025',
+    sourceType: 'discourse-archive',
+    sourceUrl: 'https://www.visir.is/g/20252818192d/',
+    content: `Innri átök í Sósíalistaflokknum 2025 - Greining
+
+AÐALFUNDUR MAÍ 2025:
+Á aðalfundi flokksins 24. maí 2025 var STOFNANDI_B kjörin sjálfkjörna sem pólitískur leiðtogi Sósíalistaflokksins. Hún var þannig valin af flokksfélögum til að leiða flokkinn.
+
+ÁGREININGUR UM FRAMKVÆMDASTJÓRN:
+Sanna vildi fá að handvelja framkvæmdastjórn en fundurinn kaus með lýðræðislegu vali. Sanna var óánægð með úrslit kosninga í framkvæmdastjórn - niðurstaðan var ekki eins og hún vildi.
+
+AFSÖGN SÖNNU 26. MAÍ 2025:
+Sanna sagði af sér formennsku tveimur dögum eftir aðalfund. Hún hafði verið kjörin leiðtogi en vildi einnig ráða niður í önnur sæti stjórnar.
+
+"VOR TIL VINSTRI" FRAMBOÐ:
+Í desember 2025 tilkynnti Sanna um nýtt framboð "Vor til vinstri" - sérframboð utan Sósíalistaflokksins.
+
+FJÁRMÁL OG SAMSTÖÐIN:
+Flokkurinn hefur ekki greitt Vorstjörnunni krónu árið 2025. Hins vegar hafa tugir milljóna runnið til Samstöðvarinnar (fjölmiðill Gunnars Smára). Árið 2025 voru 11 milljónir króna millifærðar til Samstöðvarinnar án samninga og undir þrýstingi.
+
+KLOFNINGAR:
+Tveir megin armar átakanna:
+1. Karl (Héðinn) og Sæþór armur
+2. Sanna og STOFNANDI_A armur
+
+SJÓNARHORN UTAN ÁTAKANNA:
+Margir félagsmenn sem voru ekki hluti af hvorum arminum telja að Sanna hafi viljað einræðisvald og bregðist þegar hún fékk það ekki. Aðrir telja að flokkurinn hafi brugðist henni.
+
+EKKLESIA FÉLAGAKERFIÐ:
+Nýtt félagakerfi fyrir flokkinn var smíðað samhliða þessum átökum - örugg félagagátt sem einfaldar aðgengi að félagsaðild, viðburðum og kosningum.
+
+HEIMILD: Vísir.is 16. desember 2025 - "Að kveikja í húsinu af því þú færð ekki að ráða öllu"`,
+    citation: {
+      who: 'PERSON_26',
+      when: '2025-12-16',
+      context: 'Greining á innri átökum í Sósíalistaflokknum',
+      url: 'https://www.visir.is/g/20252818192d/',
+    },
+  },
+  {
+    id: 'ruv-kosningaprof-2024',
+    title: 'RÚV Kosningapróf 2024 - Svör Sósíalistaflokksins',
+    sourceType: 'kosningaprof',
+    sourceUrl: 'https://kosningaprof.ruv.is/flokkar/sosialistaflokkur-islands/',
+    content: `RÚV Kosningapróf 2024 - Svör Sósíalistaflokks Íslands
+
+HEILBRIGÐISMÁL:
+- Auka vægi einkareksturs í heilbrigðiskerfinu: MJÖG ÓSAMMÁLA
+- Draga úr kostnaðarþátttöku sjúklinga: MJÖG SAMMÁLA ("Heilbrigðisþjónusta á að vera gjaldfrjáls")
+
+EFNAHAGSMÁL:
+- Lágmarkslaun eiga að vera hærri: MJÖG SAMMÁLA
+- Skattar á fyrirtæki: HÆRRI (lægri á lítil, hærri á stór)
+- Skattar á tekjur almennings: MUN LÆGRI (afnema skatt af lægstu tekjum)
+- Fyrirtæki greiði meira fyrir auðlindanýtingu: MJÖG SAMMÁLA
+- Innheimta veggjöld: MJÖG ÓSAMMÁLA ("jarðgöng, brýr og vegir öllum aðgengilegir án gjaldtöku")
+
+UTANRÍKISMÁL:
+- Ísland fjármagni vopnakaup fyrir Úkraínu: MJÖG ÓSAMMÁLA ("fordæmum allt ofbeldi og styðjum á engan hátt stríðsátök")
+- Tala af festu gegn hernaði Ísraela á Gaza: MJÖG SAMMÁLA
+- Þjóðaratkvæðagreiðsla um ESB-viðræður: NOKKUÐ SAMMÁLA
+
+UMHVERFISMÁL:
+- Hækka gjöld á mengunarvalda: NOKKUÐ SAMMÁLA ("stigvaxandi kolefnis- og mengunarskatta")
+- Hagsmunir náttúrunnar vega þyngra en fjárhagslegir: MJÖG SAMMÁLA
+- Nauðsynlegt að virkja meira: MJÖG ÓSAMMÁLA
+
+INNFLYTJENDAMÁL:
+- Herða lög svo færri sæki um vernd: MJÖG ÓSAMMÁLA
+- Útgjöld til aðlögunar innflytjenda: MUN MEIRA ("inngildingu fremur en aðlögun")
+
+SAMFÉLAG:
+- Íslenskt samfélag einkennist af réttlæti: NOKKUÐ ÓSAMMÁLA ("þúsundir barna búa við fátækt, húsnæðiskrísa")
+- Samfélag var öruggt en er ekki lengur: NOKKUÐ SAMMÁLA (kennt um nýfrjálshyggju)
+- Slaka á regluverki í byggingariðnaði: MJÖG ÓSAMMÁLA
+
+MIKILVÆGUSTU MÁL:
+1. Heilbrigðismál
+2. Húsnæðismál
+3. Vextir og verðbólga
+4. Útgjöld og tekjur hins opinbera
+
+HEIMILD: RÚV Kosningapróf 2024`,
+    citation: {
+      who: 'Sósíalistaflokkur Íslands',
+      when: '2024-11',
+      context: 'RÚV Kosningapróf fyrir Alþingiskosningar 2024',
+      url: 'https://kosningaprof.ruv.is/flokkar/sosialistaflokkur-islands/',
+    },
+  },
+  {
+    id: 'adild-og-felagsgjald',
+    title: 'Aðild og félagsgjald',
+    sourceType: 'party-website',
+    sourceUrl: 'https://skraning.sosialistaflokkurinn.is/',
+    content: `Aðild að Sósíalistaflokknum - Hvernig á að gerast félagi
+
+HVERNIG Á AÐ GANGA Í FLOKKINN?
+Þú getur skráð þig í Sósíalistaflokkinn á netinu:
+https://skraning.sosialistaflokkurinn.is/
+
+Á skráningarsíðunni þarftu að gefa upp:
+- Nafn
+- Kennitölu
+- Netfang
+- Símanúmer
+- Heimilisfang
+
+HVERJIR MEGA GANGA Í FLOKKINN?
+Samkvæmt lögum flokksins (4. gr.) er öllum velkomið að ganga til liðs við Sósíalistaflokk Íslands, óháð kyni, uppruna, trú eða kynhneigð.
+
+FÉLAGSGJALD:
+Félagsgjald er ákveðið á aðalfundi Sósíalistaþings (samkvæmt 7. gr. laga).
+Núverandi félagsgjald er 500 kr. á mánuði (6.000 kr. á ári).
+Félagsgjald er greitt með reikningi eða kröfu.
+
+HVERNIG Á AÐ SEGJA SIG ÚR FLOKKNUM?
+Samkvæmt lögum flokksins (4. gr.) geta félagar tilkynnt úrsögn úr flokknum með tölvupósti.
+Sendu tölvupóst á: xj@xj.is eða framkvaemdastjorn@sosialistaflokkurinn.is
+
+SVÆÐISFÉLÖG:
+Þegar þú skráir þig í flokkinn tilheyrir þú sjálfkrafa svæðisfélagi á þínu búsetusvæði.
+Svæðisfélögin halda reglulega fundi og bjóða nýja félagsmenn sérstaklega velkomna.
+
+RÉTTINDI FÉLAGA:
+- Atkvæðisréttur á Sósíalistaþingi og félagsfundum
+- Kjörgengi í stjórnir flokksins
+- Málfrelsi og tillöguréttur á fundum allra svæðisfélaga
+- Tilnefningarréttur í framboðslista
+
+HEIMILD: sosialistaflokkurinn.is, lög flokksins gr. 4 og 7`,
+    citation: {
+      who: 'Sósíalistaflokkur Íslands',
+      when: '2025',
+      context: 'Aðild og félagsgjald',
+      url: 'https://skraning.sosialistaflokkurinn.is/',
+    },
+  },
+  {
+    id: 'vor-til-vinstri-vefsida',
+    title: 'Vor til vinstri - Heimasíða STOFNANDI_B',
+    sourceType: 'discourse-article',
+    sourceUrl: 'https://vortilvinstri.is/',
+    content: `Vor til vinstri! - Framboð STOFNANDI_B í borgarstjórnarkosningunum 2026
+
+YFIRLIT:
+Vor til vinstri er nýtt framboð sem STOFNANDI_B tilkynnti í desember 2025. Markmiðið er að bjóða fram í borgarstjórnarkosningunum í Reykjavík 2026 undir merkjum félagshyggju.
+
+FYRIR FÓLKIÐ Í BORGINNI:
+"Ég trúi því að lausnirnar fyrir Reykjavík sé að finna í félagshyggju — í því að byggja borg þar sem lífsgæði og réttlæti eru í forgrunni."
+
+"Nú er kominn tími til að við, fólkið á vinstri vængnum, tökum höndum saman og búum til raunverulegt afl fyrir komandi borgarstjórnarkosningar. Við þurfum samstöðu og opið samtal."
+
+VANDINN Í REYKJAVÍK:
+- Heimili fólks hefur verið markaðsvætt, verktökum, bröskurum og leigusölum til hagnaðar
+- Fólk þarf að flytja úr borginni til að finna húsnæði á viðráðanlegu verði
+- Sjálfsögð þjónusta við börn eins og tómstundir eru of dýrar
+- Almenningssamgöngur eru dýrar og tímafrekar
+
+REYKJAVÍK SEM ÞJÓNAR FÓLKINU:
+"Borgin þarf að vera hugsuð út frá raunveruleikanum, sérstaklega þörfum barna, eldra fólks, leigjenda, ungs fólks og þeirra tekjulágu."
+
+"Við þurfum öfluga þjónustu og hverfi þar sem stutt er í það sem skiptir máli: borg sem er einföld, þægileg og ódýrari fyrir okkur öll."
+
+SANNGJARNT SKATTKERFI:
+"Það gengur ekki að þau tekjuhæstu og ríkustu greiði nánast ekkert til nærsamfélagsins. Þetta grefur undan getu borgarinnar til að veita öfluga þjónustu og bæta lífsgæði."
+
+"Reykjavík á að leiða baráttu um sanngjarnt og sjálfsagt útsvar á fjármagnstekjur þeirra ríkustu."
+
+TAKK FYRIR TRAUSTIÐ:
+"Undanfarin tvö kjörtímabil hef ég lagt mig alla fram við að vinna fyrir borgarbúa sem þurfa á öflugu vinstra afli að halda."
+
+UM BREYTINGAR Í SÓSÍALISTAFLOKKNUM:
+"Það er ekkert leyndarmál að innan sósíalistaflokksins hafa orðið miklar breytingar. Ný stjórn hefur skapað óvissu og togstreitu meðal félaga, bæði innan sem utan flokks. Fjöldi fólks hefur áhyggjur af því hvert flokkurinn stefnir. Ég skil þær áhyggjur mjög vel."
+
+"En ég er sannfærð um að þessi tímabundna óvissa verði stuttur kafli í sögu flokksins. Kjarninn í minni nálgun er enn sá sami; efnahagslegt og félagslegt réttlæti."
+
+FÓLK FRAM YFIR FLOKKA:
+"Ég starfa fyrir grasrótina og fólkið í borginni. Þess vegna ætla ég EKKI að segja mig úr flokknum, þrátt fyrir þrýsting frá nýrri stjórn."
+
+"Ég trúi því að á næsta aðalfundi taki fólk við stjórn sem hefur skýra sýn, heiðarleika og stuðning meirihluta félaga."
+
+"Þar til ætla ég að halda áfram að vinna af fullum krafti fyrir þau gildi sem sameina vinstra fólk. Því baráttan framundan er stærri en flokkar. Baráttan krefst samstöðu allra þeirra sem vilja réttlátari, ódýrari og lífvænlegri borg."
+
+GERUM ÞETTA SAMAN:
+"Við sem vitum að félagshyggjan er svarið við vanda borgarinnar þurfum að sýna ábyrgð, sameinast og skapa grundvöll fyrir öflugt vinstra framboð í þágu fólksins í borginni — óháð flokksmerkjum."
+
+"Þó að ég bjóði til samtals um borgina, þá veit ég að þetta er stærra verkefni. Vandinn sem við stöndum frammi fyrir er víða sá sami. Fólki í öðrum sveitarfélögum er velkomið að taka þátt og tengjast öðrum."
+
+"Gerum þetta saman því við viljum vor til vinstri!"
+– STOFNANDI_B
+
+TENGILIÐAUPPLÝSINGAR:
+- Netfang: vortilvinstri@vortilvinstri.is
+- Skráning: https://forms.gle/u6yE9qmJxUjNNEab8
+
+HEIMILD: https://vortilvinstri.is/ (skoðað desember 2025)`,
+    citation: {
+      who: 'STOFNANDI_B',
+      when: '2025-12',
+      context: 'Heimasíða framboðsins Vor til vinstri í borgarstjórnarkosningar 2026',
+      url: 'https://vortilvinstri.is/',
+    },
+  },
+  {
+    id: 'visir-sanna-vor-til-vinstri-2025',
+    title: 'Sanna býður sig fram undir merkjum Vors til vinstri',
+    sourceType: 'news-article',
+    sourceUrl: 'https://www.visir.is/g/20252816686d/sanna-bydur-sig-fram-undir-merkjum-vors-til-vinstri',
+    content: `Sanna býður sig fram undir merkjum Vors til vinstri
+
+VÍSIR - 22. desember 2025
+
+STOFNANDI_B, borgarfulltrúi sósíalista í Reykjavík, hyggst bjóða sig fram í borgarstjórnarkosningum 2026 undir merkjum Vors til vinstri.
+
+TILKYNNING Á VORTILVINSTRI.IS:
+Á vortilvinstri.is segir Sanna meðal annars: „Ég starfa fyrir grasrótina og fólkið í borginni. Þess vegna ætla ég EKKI að segja mig úr flokknum, þrátt fyrir þrýsting frá nýrri stjórn."
+
+ÁHYGGJUR AF STÖÐU FLOKKSINS:
+„Það er ekkert leyndarmál að innan sósíalistaflokksins hafa orðið miklar breytingar. Ný stjórn hefur skapað óvissu og togstreitu meðal félaga, bæði innan sem utan flokks. Fjöldi fólks hefur áhyggjur af því hvert flokkurinn stefnir. Ég skil þær áhyggjur mjög vel."
+
+VON UM BREYTINGAR:
+„En ég er sannfærð um að þessi tímabundna óvissa verði stuttur kafli í sögu flokksins."
+
+ÓHÁÐ FLOKKSMERKJUM:
+Sanna býður til samstöðu: „Við sem vitum að félagshyggjan er svarið við vanda borgarinnar þurfum að sýna ábyrgð, sameinast og skapa grundvöll fyrir öflugt vinstra framboð í þágu fólksins í borginni — óháð flokksmerkjum."
+
+HÖFUNDUR: Kristín Þorsteinsdóttir
+HEIMILD: Vísir.is, 22. desember 2025`,
+    citation: {
+      who: 'Kristín Þorsteinsdóttir / STOFNANDI_B',
+      when: '2025-12-22',
+      context: 'Frétt í Vísi um tilkynningu Sönnu um framboð Vors til vinstri',
+      url: 'https://www.visir.is/g/20252816686d/sanna-bydur-sig-fram-undir-merkjum-vors-til-vinstri',
+    },
+  },
+  {
+    id: 'visir-svandis-vor-til-vinstri-2025',
+    title: 'Svandís Svavarsdóttir bindur vonir við Vor til vinstri',
+    sourceType: 'news-article',
+    sourceUrl: 'https://www.visir.is/g/20252820276d/bindur-vonir-vid-vor-til-vinstri',
+    content: `Svandís Svavarsdóttir bindur vonir við Vor til vinstri
+
+VÍSIR - 23. desember 2025
+
+Svandís Svavarsdóttir, fyrrverandi ráðherra Vinstri grænna, hefur lýst stuðningi við Vor til vinstri og STOFNANDI_B.
+
+STUÐNINGUR VIÐ SÖNNU:
+Á Facebook skrifaði Svandís: „Kraftaverki trúi ég ekki en aftur á móti trúi ég miklu öllu á þá sem hafa brennandi vilja til og innri elda til að takast á við þau viðfangsefni sem við stöndum frammi fyrir."
+
+VONIR UM BREYTINGAR Í BORGARMÁLUM:
+„Ég bind vonir við Vor til vinstri og þakklátt að STOFNANDI_B ætlar að reyna að fylkja liði og hugmyndum og stofna til samtals um úrræði sem leiði til raunverulegra breytinga í borgarmálum."
+
+Svandís nefndi sérstaklega:
+- Húsnæðismál
+- Almenningssamgöngur
+
+„Þessir málaflokkar hafa verið illviðráðanlegir stjórnmálamönnum undanfarið."
+
+UM SVANDÍSI:
+Svandís Svavarsdóttir var formaður Vinstri grænna í mörg ár og gegndi embætti ráðherra (heilbrigðisráðherra o.fl.) í ríkisstjórnum Katrínar Jakobsdóttur.
+
+HEIMILD: Vísir.is, 23. desember 2025`,
+    citation: {
+      who: 'Svandís Svavarsdóttir',
+      when: '2025-12-23',
+      context: 'Fyrrverandi formaður VG lýsir stuðningi við Vor til vinstri',
+      url: 'https://www.visir.is/g/20252820276d/bindur-vonir-vid-vor-til-vinstri',
+    },
+  },
 ];
 
 async function indexDocument(doc) {
@@ -602,7 +1256,7 @@ async function main() {
   // Index key events
   console.log('\n📅 Indexing key events...');
   for (const event of KEY_EVENTS) {
-    event.sourceType = 'discourse-archive';
+    event.sourceType = event.sourceType || 'discourse-archive';
     if (await indexDocument(event)) success++; else failed++;
   }
 

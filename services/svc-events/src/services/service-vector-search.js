@@ -66,7 +66,8 @@ async function searchSimilar(embedding, options = {}) {
           .replace(/inn$/, '')            // flokkinn -> flokk
           .replace(/num$/, '')            // flokknum -> flokk
           .replace(/ana$/, '')            // flokkana -> flokk
-          .replace(/unum$/, '');          // flokkunum -> flokk
+          .replace(/unum$/, '')           // flokkunum -> flokk
+          .replace(/ið$/, '');            // félagsgjaldið -> félagsgjald
       };
 
       let words = queryText.toLowerCase()
@@ -147,9 +148,12 @@ async function searchSimilar(embedding, options = {}) {
 
         // Um flokkinn / Saga
         'saga': 'saga', 'sögu': 'saga', 'sögul': 'saga',
-        'stofn': 'stofnun', 'stofnaður': 'stofnun', 'uppruna': 'stofnun',
+        'stofn': 'stofnun', 'stofnaður': 'stofnun', 'stofnaði': 'stofnun', 'stofnandi': 'stofnun',
+        'uppruna': 'stofnun',
         'flokkinn': 'sósíalistaflokkinn', 'hverjir': 'sósíalistaflokkinn',
         'hvað er': 'sósíalistaflokkinn', 'sósíal': 'sósíalistaflokkinn',
+        // Fyrsti/fyrsta - historical firsts
+        'fyrsti': 'saga', 'fyrsta': 'saga', 'fyrst': 'saga',
         // Skipulag flokksins
         'skipulag': 'skipulag', 'framkvæmdastjórn': 'skipulag', 'valdamest': 'skipulag',
         'formaður': 'skipulag', 'formann': 'skipulag', 'kosningastjórn': 'skipulag',
@@ -206,7 +210,11 @@ async function searchSimilar(embedding, options = {}) {
       // Check if query is about Efling/B-listi
       const isEflingQuery = additionalPatterns.includes('efling');
 
-      if (words.length > 0) {
+      // Extract years from query for direct matching (2017-2030)
+      const yearMatch = queryLower.match(/\b(20[12][0-9])\b/g);
+      const queryYears = yearMatch ? [...new Set(yearMatch)] : [];
+
+      if (words.length > 0 || queryYears.length > 0) {
         // Add title boost: 1.5x if any keyword matches title
         // Use both original and accent-normalized versions for matching
         const allPatterns = [];
@@ -218,13 +226,74 @@ async function searchSimilar(embedding, options = {}) {
             allPatterns.push(`LOWER(TRANSLATE(title, 'áéíóúýðþæö', 'aeiouydthaeo')) LIKE '%${normalized}%'`);
           }
         }
-        const patterns = allPatterns.join(' OR ');
-        titleBoostClause = `CASE WHEN ${patterns} THEN 1.5 ELSE 1.0 END`;
+
+        // Add direct year matching with strong boost (2.0x)
+        // This ensures "2018" in query matches documents with "2018" in title
+        let yearBoostClause = '1.0';
+        if (queryYears.length > 0) {
+          const yearPatterns = queryYears.map(y => `title LIKE '%${y}%'`);
+          yearBoostClause = `CASE WHEN ${yearPatterns.join(' OR ')} THEN 2.0 ELSE 1.0 END`;
+        }
+
+        const patterns = allPatterns.length > 0 ? allPatterns.join(' OR ') : 'FALSE';
+        titleBoostClause = `CASE WHEN ${patterns} THEN 1.5 ELSE 1.0 END * ${yearBoostClause}`;
 
         // Extra boost for Efling queries matching Efling documents
         if (isEflingQuery) {
-          titleBoostClause = `CASE WHEN ${patterns} THEN 1.5 ELSE 1.0 END * CASE WHEN LOWER(title) LIKE '%efling%' OR LOWER(title) LIKE '%b-list%' THEN 1.5 ELSE 1.0 END`;
+          titleBoostClause = `CASE WHEN ${patterns} THEN 1.5 ELSE 1.0 END * ${yearBoostClause} * CASE WHEN LOWER(title) LIKE '%efling%' OR LOWER(title) LIKE '%b-list%' THEN 1.5 ELSE 1.0 END`;
         }
+      }
+    }
+
+    // Content-based boost for specific historical fact queries
+    // This boosts documents that contain the actual factual answer in their content
+    let contentBoostClause = '1.0';
+    if (queryText) {
+      const queryLower = queryText.toLowerCase();
+
+      // Historical firsts (fyrsti kjörni fulltrúi)
+      if (queryLower.includes('fyrsti kjörni') || queryLower.includes('fyrsta kjörna') ||
+          queryLower.includes('fyrsti fulltrúi') || queryLower.includes('fyrsta fulltrúa') ||
+          (queryLower.includes('fyrst') && queryLower.includes('kjör'))) {
+        contentBoostClause = `CASE WHEN LOWER(content) LIKE '%fyrsti kjörni%' OR LOWER(content) LIKE '%fyrsta kjörna%' THEN 2.5 ELSE 1.0 END`;
+      }
+
+      // Founder queries (stofnandi, stofnaði)
+      if (queryLower.includes('stofnandi') || queryLower.includes('stofnaði') ||
+          (queryLower.includes('stofn') && (queryLower.includes('hver') || queryLower.includes('hvern')))) {
+        // Match: Saga (has "drifkraft" or "tilkynnti stofnun"), STOFNANDI_A doc, and docs with "stofnandi"
+        // Exclude Svæðisfélag docs which mention "stofnandi" but aren't about THE founder
+        contentBoostClause = `CASE
+          WHEN LOWER(title) = 'saga sósíalistaflokksins' THEN 3.0
+          WHEN LOWER(title) LIKE '%gunnar smári%' THEN 2.8
+          WHEN LOWER(content) LIKE '%drifkraft%stofnun%' OR LOWER(content) LIKE '%tilkynnti stofnun%' THEN 2.5
+          WHEN LOWER(content) LIKE '%stofnandi%' AND LOWER(title) NOT LIKE '%svæðisfélag%' AND LOWER(title) NOT LIKE '%frambjóðendur%' THEN 2.0
+          ELSE ${contentBoostClause} END`;
+      }
+
+      // Vor til vinstri queries
+      if (queryLower.includes('vor til vinstri')) {
+        contentBoostClause = `CASE WHEN LOWER(content) LIKE '%vor til vinstri%' THEN 2.5 ELSE ${contentBoostClause} END`;
+      }
+
+      // Aðalfundur 2025 / hallarbylting queries
+      if ((queryLower.includes('aðalfund') && queryLower.includes('2025')) ||
+          queryLower.includes('hallarbylting') ||
+          (queryLower.includes('maí 2025') && queryLower.includes('fundur'))) {
+        contentBoostClause = `CASE
+          WHEN LOWER(title) LIKE '%aðalfund%hallarbylting%' THEN 3.0
+          WHEN LOWER(title) LIKE '%aðalfund%' THEN 2.5
+          WHEN LOWER(content) LIKE '%hallarbylting%' THEN 2.0
+          ELSE ${contentBoostClause} END`;
+      }
+
+      // Formaður framkvæmdastjórnar queries (especially "upphaflega")
+      if (queryLower.includes('formaður') && queryLower.includes('framkvæmdastjórn')) {
+        contentBoostClause = `CASE
+          WHEN LOWER(title) LIKE '%gunnar smári%' AND LOWER(content) LIKE '%formaður%' THEN 3.0
+          WHEN LOWER(content) LIKE '%formaður framkvæmdastjórnar%' THEN 2.5
+          WHEN LOWER(title) = 'saga sósíalistaflokksins' THEN 2.0
+          ELSE ${contentBoostClause} END`;
       }
     }
 
@@ -248,7 +317,8 @@ async function searchSimilar(embedding, options = {}) {
             WHEN source_type = 'discourse-person' THEN 0.6
             ELSE 1.0
           END *
-          ${titleBoostClause} AS similarity
+          ${titleBoostClause} *
+          ${contentBoostClause} AS similarity
         FROM rag_documents
         WHERE embedding IS NOT NULL
           AND 1 - (embedding <=> $1::vector) > $2
@@ -263,7 +333,7 @@ async function searchSimilar(embedding, options = {}) {
           title,
           content,
           citation,
-          (1 - (embedding <=> $1::vector)) * ${titleBoostClause} AS similarity
+          (1 - (embedding <=> $1::vector)) * ${titleBoostClause} * ${contentBoostClause} AS similarity
         FROM rag_documents
         WHERE embedding IS NOT NULL
           AND 1 - (embedding <=> $1::vector) > $2
