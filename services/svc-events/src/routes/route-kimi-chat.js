@@ -19,7 +19,11 @@ const router = express.Router();
 // Kimi API Configuration
 const KIMI_API_KEY = process.env.KIMI_API_KEY;
 const KIMI_API_BASE = 'https://api.moonshot.ai/v1';
-const KIMI_MODEL = 'kimi-k2-0711-preview';
+const KIMI_MODEL_DEFAULT = 'kimi-k2-0711-preview';
+const KIMI_MODELS = {
+  'kimi-k2-0711-preview': { name: 'Preview (hraður)', timeout: 90000 },
+  'kimi-k2-thinking': { name: 'Thinking (nákvæmur)', timeout: 180000 }  // Longer timeout for thinking
+};
 
 // Error handling configuration
 const RETRY_CONFIG = {
@@ -650,7 +654,7 @@ async function getSystemHealthContext() {
  */
 router.post('/chat', authenticate, requireRole('superuser'), async (req, res) => {
   try {
-    const { message, history = [] } = req.body;
+    const { message, history = [], model: requestedModel } = req.body;
 
     if (!message || typeof message !== 'string') {
       return res.status(400).json({
@@ -658,6 +662,12 @@ router.post('/chat', authenticate, requireRole('superuser'), async (req, res) =>
         message: 'Skilaboð vantar'
       });
     }
+
+    // Validate and select model (default to preview)
+    const selectedModel = requestedModel && KIMI_MODELS[requestedModel]
+      ? requestedModel
+      : KIMI_MODEL_DEFAULT;
+    const modelConfig = KIMI_MODELS[selectedModel];
 
     if (!KIMI_API_KEY) {
       return res.status(503).json({
@@ -697,7 +707,8 @@ router.post('/chat', authenticate, requireRole('superuser'), async (req, res) =>
       operation: 'kimi_chat',
       userId: req.user?.uid,
       messageLength: message.length,
-      historyLength: history.length
+      historyLength: history.length,
+      model: selectedModel
     });
 
     // Maximum tool call iterations to prevent infinite loops
@@ -716,7 +727,7 @@ router.post('/chat', authenticate, requireRole('superuser'), async (req, res) =>
           const response = await axios.post(
             `${KIMI_API_BASE}/chat/completions`,
             {
-              model: KIMI_MODEL,
+              model: selectedModel,
               messages: requestMessages,
               tools: KIMI_TOOLS,
               tool_choice: 'auto',
@@ -728,7 +739,7 @@ router.post('/chat', authenticate, requireRole('superuser'), async (req, res) =>
                 'Authorization': `Bearer ${KIMI_API_KEY}`,
                 'Content-Type': 'application/json'
               },
-              timeout: 90000
+              timeout: modelConfig.timeout
             }
           );
 
@@ -838,7 +849,8 @@ router.post('/chat', authenticate, requireRole('superuser'), async (req, res) =>
 
     res.json({
       reply: finalReply,
-      model: KIMI_MODEL
+      model: selectedModel,
+      modelName: modelConfig.name
     });
 
   } catch (error) {
@@ -872,6 +884,25 @@ router.post('/chat', authenticate, requireRole('superuser'), async (req, res) =>
 
     res.status(statusCode).json(responseBody);
   }
+});
+
+/**
+ * GET /api/kimi/models
+ * Get available Kimi models
+ * Public endpoint (for UI)
+ */
+router.get('/models', (req, res) => {
+  const models = Object.entries(KIMI_MODELS).map(([id, config]) => ({
+    id,
+    name: config.name,
+    timeout: config.timeout,
+    isDefault: id === KIMI_MODEL_DEFAULT
+  }));
+
+  res.json({
+    models,
+    default: KIMI_MODEL_DEFAULT
+  });
 });
 
 module.exports = router;

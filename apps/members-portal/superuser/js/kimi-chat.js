@@ -14,6 +14,8 @@ let isOpen = false;
 let isLoading = false;
 let isExpanded = false;
 let chatHistory = [];
+let selectedModel = 'kimi-k2-0711-preview';
+let availableModels = [];
 
 /**
  * Create the chat widget HTML
@@ -29,6 +31,10 @@ function createChatWidget() {
       <div class="kimi-chat__header">
         <span class="kimi-chat__title">🤖 Kimi Aðstoð</span>
         <div class="kimi-chat__header-actions">
+          <select id="kimi-chat-model" class="kimi-chat__model-select" title="Velja módel">
+            <option value="kimi-k2-0711-preview">⚡ Hraður</option>
+            <option value="kimi-k2-thinking">🧠 Nákvæmur (hægur)</option>
+          </select>
           <button id="kimi-chat-clear" class="kimi-chat__clear" title="Nýtt samtal">🗑️</button>
           <button id="kimi-chat-expand" class="kimi-chat__expand" title="Stækka">⛶</button>
           <button id="kimi-chat-close" class="kimi-chat__close" title="Loka">&times;</button>
@@ -136,6 +142,27 @@ function addChatStyles() {
       display: flex;
       align-items: center;
       gap: 8px;
+    }
+
+    .kimi-chat__model-select {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: inherit;
+      font-size: 11px;
+      padding: 4px 6px;
+      border-radius: 4px;
+      cursor: pointer;
+      outline: none;
+      max-width: 120px;
+    }
+
+    .kimi-chat__model-select:hover {
+      background: rgba(255,255,255,0.25);
+    }
+
+    .kimi-chat__model-select option {
+      background: var(--color-burgundy, #722f37);
+      color: var(--color-cream, #fce9d8);
     }
 
     .kimi-chat__clear,
@@ -462,7 +489,7 @@ async function fetchKimiApi(url, options) {
     // Network errors
     if (error.name === 'TypeError' && error.message.includes('fetch')) {
       throw new KimiApiError(
-        'Náði ekki sambandi við þjón. Athugaðu nettengingu.',
+        'Náði ekki sambandi við þjónustuna. Athugaðu nettengingu.',
         'network_error',
         null,
         0
@@ -509,6 +536,9 @@ async function sendMessage(message) {
 
     const token = await user.getIdToken();
 
+    const modelSelect = document.getElementById('kimi-chat-model');
+    const model = modelSelect ? modelSelect.value : selectedModel;
+
     const data = await fetchKimiApi(`${EVENTS_API_BASE}/api/kimi/chat`, {
       method: 'POST',
       headers: {
@@ -517,7 +547,8 @@ async function sendMessage(message) {
       },
       body: JSON.stringify({
         message,
-        history: chatHistory.slice(-10)
+        history: chatHistory.slice(-10),
+        model
       })
     });
 

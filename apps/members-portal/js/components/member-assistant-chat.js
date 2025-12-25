@@ -17,6 +17,7 @@ let isOpen = false;
 let isLoading = false;
 let isExpanded = false;
 let chatHistory = [];
+let selectedModel = 'kimi-k2-0711-preview';
 
 /**
  * Create the chat widget HTML
@@ -43,15 +44,15 @@ function createChatWidget() {
           </div>
         </div>
         <div class="member-assistant__header-actions">
-          <button id="member-assistant-clear" class="member-assistant__clear" title="Nýtt samtal">&#128465;</button>
-          <button id="member-assistant-expand" class="member-assistant__expand" title="Stækka">&#9974;</button>
-          <button id="member-assistant-close" class="member-assistant__close" title="Loka">&times;</button>
+          <button id="member-assistant-clear" class="member-assistant__clear" title="Nýtt samtal">🗑</button>
+          <button id="member-assistant-expand" class="member-assistant__expand" title="Stækka">⛶</button>
+          <button id="member-assistant-close" class="member-assistant__close" title="Loka">×</button>
         </div>
       </div>
       <div id="member-assistant-messages" class="member-assistant__messages">
         <div class="member-assistant__message member-assistant__message--assistant">
           <div class="member-assistant__bubble">
-            Sæl! Ég get svarað spurningum um stefnu flokksins, sogu hans og fleira. Hvaða upplysingar ertu að leita að?
+            Sæl! Ég get svarað spurningum um stefnu flokksins, sögu hans og fleira. Hvaða upplýsingar ertu að leita að?
           </div>
         </div>
         <div class="member-assistant__suggestions">
@@ -61,6 +62,10 @@ function createChatWidget() {
         </div>
       </div>
       <div class="member-assistant__input-area">
+        <select id="member-assistant-model" class="member-assistant__model-select" title="Velja módel">
+          <option value="kimi-k2-0711-preview">⚡ Hraður</option>
+          <option value="kimi-k2-thinking">🧠 Nákvæmur (hægur)</option>
+        </select>
         <textarea
           id="member-assistant-input"
           class="member-assistant__input"
@@ -68,7 +73,7 @@ function createChatWidget() {
           rows="1"
         ></textarea>
         <button id="member-assistant-send" class="member-assistant__send" title="Senda">
-          <span>&#10148;</span>
+          <span>➤</span>
         </button>
       </div>
     </div>
@@ -252,6 +257,31 @@ function addChatStyles() {
       gap: 8px;
     }
 
+    .member-assistant__model-select {
+      background: var(--color-cream-dark, #f5e6d3);
+      border: 1px solid var(--color-cream-dark, #f5e6d3);
+      color: var(--color-text, #333);
+      font-size: 12px;
+      padding: 8px 10px;
+      border-radius: 20px;
+      cursor: pointer;
+      outline: none;
+      min-width: 100px;
+    }
+
+    .member-assistant__model-select:hover {
+      border-color: var(--color-burgundy, #722f37);
+    }
+
+    .member-assistant__model-select:focus {
+      border-color: var(--color-burgundy, #722f37);
+    }
+
+    .member-assistant__model-select option {
+      background: var(--color-surface, #fff);
+      color: var(--color-text, #333);
+    }
+
     .member-assistant__clear,
     .member-assistant__expand,
     .member-assistant__close {
@@ -367,16 +397,6 @@ function addChatStyles() {
       border-bottom: none;
     }
 
-    .member-assistant__citation--link {
-      color: var(--color-red, #d32f2f);
-      text-decoration: none;
-      cursor: pointer;
-    }
-
-    .member-assistant__citation--link:hover {
-      text-decoration: underline;
-    }
-
     .member-assistant__input-area {
       padding: 12px;
       border-top: 1px solid var(--color-cream-dark, #f5e6d3);
@@ -441,6 +461,17 @@ function addChatStyles() {
     .member-assistant__loading-dot:nth-child(1) { animation-delay: -0.32s; }
     .member-assistant__loading-dot:nth-child(2) { animation-delay: -0.16s; }
 
+    .member-assistant__countdown {
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-top: 8px;
+      padding: 5px 14px;
+      background: var(--color-burgundy, #722f37);
+      border-radius: 12px;
+      display: inline-block;
+    }
+
     @keyframes member-assistant-bounce {
       0%, 80%, 100% { transform: scale(0); }
       40% { transform: scale(1); }
@@ -450,28 +481,11 @@ function addChatStyles() {
 }
 
 /**
- * Format citations for display with clickable links
+ * Format citations - disabled, citations are handled in the AI response itself
  */
 function formatCitations(citations) {
-  if (!citations || citations.length === 0) return '';
-
-  const citationItems = citations.map(c => {
-    const parts = [c.who, c.when, c.context].filter(Boolean);
-    const text = parts.join(' - ');
-
-    // If URL exists, make it a clickable link
-    if (c.url) {
-      return `<a href="${c.url}" target="_blank" rel="noopener noreferrer" class="member-assistant__citation member-assistant__citation--link">${text} ↗</a>`;
-    }
-    return `<span class="member-assistant__citation">${text}</span>`;
-  }).join('');
-
-  return `
-    <div class="member-assistant__citations">
-      <div class="member-assistant__citations-title">Heimildir:</div>
-      ${citationItems}
-    </div>
-  `;
+  // Citations removed from UI - the AI includes source references in its response text
+  return '';
 }
 
 /**
@@ -500,10 +514,13 @@ function addMessage(role, content, citations = null) {
   messagesEl.scrollTop = messagesEl.scrollHeight;
 }
 
+// Countdown timer state
+let countdownInterval = null;
+
 /**
- * Show loading indicator
+ * Show loading indicator with countdown
  */
-function showLoading() {
+function showLoading(expectedSeconds = 30) {
   const messagesEl = document.getElementById('member-assistant-messages');
   if (!messagesEl) return;
 
@@ -517,16 +534,35 @@ function showLoading() {
         <div class="member-assistant__loading-dot"></div>
         <div class="member-assistant__loading-dot"></div>
       </div>
+      <div class="member-assistant__countdown" id="member-assistant-countdown">
+        ~${expectedSeconds} sek
+      </div>
     </div>
   `;
   messagesEl.appendChild(loadingDiv);
   messagesEl.scrollTop = messagesEl.scrollHeight;
+
+  // Start countdown
+  let remaining = expectedSeconds;
+  countdownInterval = setInterval(() => {
+    remaining--;
+    const countdownEl = document.getElementById('member-assistant-countdown');
+    if (countdownEl && remaining > 0) {
+      countdownEl.textContent = `~${remaining} sek`;
+    } else if (countdownEl) {
+      countdownEl.textContent = 'næstum tilbúið...';
+    }
+  }, 1000);
 }
 
 /**
  * Hide loading indicator
  */
 function hideLoading() {
+  if (countdownInterval) {
+    clearInterval(countdownInterval);
+    countdownInterval = null;
+  }
   const loadingEl = document.getElementById('member-assistant-loading');
   if (loadingEl) {
     loadingEl.remove();
@@ -548,16 +584,28 @@ async function sendMessage(message) {
   if (inputEl) inputEl.value = '';
   if (sendBtn) sendBtn.disabled = true;
 
-  showLoading();
+  // Get model for timeout and countdown
+  const modelSelect = document.getElementById('member-assistant-model');
+  const model = modelSelect ? modelSelect.value : selectedModel;
+  const isThinking = model === 'kimi-k2-thinking';
+
+  // Expected response time: thinking ~60-120s, preview ~15-30s
+  const expectedSeconds = isThinking ? 90 : 20;
+  showLoading(expectedSeconds);
 
   try {
     const auth = getFirebaseAuth();
     const user = auth.currentUser;
     if (!user) {
-      throw new Error('Notandi er ekki skraður inn');
+      throw new Error('Notandi er ekki skráður inn');
     }
 
     const token = await user.getIdToken();
+
+    // Set timeout based on model (backend + buffer)
+    const timeoutMs = isThinking ? 210000 : 120000;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     const response = await fetch(`${EVENTS_API_BASE}/api/member-assistant/chat`, {
       method: 'POST',
@@ -567,9 +615,13 @@ async function sendMessage(message) {
       },
       body: JSON.stringify({
         message,
-        history: chatHistory.slice(-6)
-      })
+        history: chatHistory.slice(-6),
+        model
+      }),
+      signal: controller.signal
     });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       const error = await response.json();
@@ -587,7 +639,12 @@ async function sendMessage(message) {
   } catch (error) {
     hideLoading();
     debug.error('member-assistant', 'Error:', error);
-    addMessage('assistant', `Villa: ${error.message}`);
+    // User-friendly error messages
+    let errorMsg = error.message;
+    if (error.name === 'AbortError') {
+      errorMsg = 'Beiðnin tók of langan tíma. Prófaðu aftur eða notaðu hraðari módel.';
+    }
+    addMessage('assistant', `Villa: ${errorMsg}`);
   } finally {
     isLoading = false;
     if (sendBtn) sendBtn.disabled = false;
@@ -645,7 +702,7 @@ function clearChat() {
   messagesEl.innerHTML = `
     <div class="member-assistant__message member-assistant__message--assistant">
       <div class="member-assistant__bubble">
-        Sæl! Ég get svarað spurningum um stefnu flokksins, sogu hans og fleira. Hvaða upplysingar ertu að leita að?
+        Sæl! Ég get svarað spurningum um stefnu flokksins, sögu hans og fleira. Hvaða upplýsingar ertu að leita að?
       </div>
     </div>
     <div class="member-assistant__suggestions">

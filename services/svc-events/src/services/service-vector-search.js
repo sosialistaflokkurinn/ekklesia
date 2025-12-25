@@ -251,6 +251,28 @@ async function searchSimilar(embedding, options = {}) {
     if (queryText) {
       const queryLower = queryText.toLowerCase();
 
+      // CURATED ANSWERS - These are manually verified high-quality Q&A pairs
+      // They should get the HIGHEST boost (7.0) when matching relevant queries
+      const heimsvaldastefnaTerms = ['heimsvald', 'nato', 'herlaus', 'hernaðar', 'friðarbandalag', 'varnarsamning'];
+      const esbTerms = ['evrópu', 'esb', 'evrópusamband'];
+      const kapitalismiTerms = ['kapítal', 'auðvald', 'lýðræðisvæð', 'stórfyrirtæk'];
+
+      if (heimsvaldastefnaTerms.some(term => queryLower.includes(term))) {
+        contentBoostClause = `CASE
+          WHEN source_type = 'curated-answer' AND chunk_id = 'stefna-heimsvaldastefna' THEN 7.0
+          ELSE ${contentBoostClause} END`;
+      }
+      if (esbTerms.some(term => queryLower.includes(term))) {
+        contentBoostClause = `CASE
+          WHEN source_type = 'curated-answer' AND chunk_id = 'stefna-esb' THEN 7.0
+          ELSE ${contentBoostClause} END`;
+      }
+      if (kapitalismiTerms.some(term => queryLower.includes(term))) {
+        contentBoostClause = `CASE
+          WHEN source_type = 'curated-answer' AND chunk_id = 'stefna-kapitalismi' THEN 7.0
+          ELSE ${contentBoostClause} END`;
+      }
+
       // Historical firsts (fyrsti kjörni fulltrúi)
       if (queryLower.includes('fyrsti kjörni') || queryLower.includes('fyrsta kjörna') ||
           queryLower.includes('fyrsti fulltrúi') || queryLower.includes('fyrsta fulltrúa') ||
@@ -338,10 +360,188 @@ async function searchSimilar(embedding, options = {}) {
           WHEN LOWER(content) LIKE '%vorstjörn%' AND LOWER(content) LIKE '%alþýðufélag%' THEN 2.5
           ELSE ${contentBoostClause} END`;
       }
+
+      // Heimildin Kosningapróf - samsvörun/match percentage queries
+      if ((queryLower.includes('samsvör') || queryLower.includes('samsvaran') || queryLower.includes('match')) &&
+          (queryLower.includes('heimild') || queryLower.includes('kosningapróf'))) {
+        contentBoostClause = `CASE
+          WHEN source_type = 'heimildin-2024' AND chunk_id LIKE '%candidate%' THEN 4.0
+          WHEN LOWER(content) LIKE '%samsvörun við flokksstefnu%' THEN 3.5
+          WHEN source_type = 'heimildin-2024' THEN 2.0
+          ELSE ${contentBoostClause} END`;
+      }
+
+      // Heimildin Kosningapróf - candidate-specific queries
+      if (queryLower.includes('heimild') || (queryLower.includes('kosningapróf') && !queryLower.includes('rúv'))) {
+        // Check for candidate names
+        if (queryLower.includes('gunnar smári')) {
+          contentBoostClause = `CASE
+            WHEN chunk_id = 'heimildin-2024-candidate-gunnar_smari_egilsson' THEN 4.5
+            WHEN source_type = 'heimildin-2024' AND LOWER(content) LIKE '%gunnar smári%' THEN 3.0
+            ELSE ${contentBoostClause} END`;
+        } else if (queryLower.includes('sanna') || queryLower.includes('sönnu')) {
+          contentBoostClause = `CASE
+            WHEN chunk_id = 'heimildin-2024-candidate-sanna_magdalena_mortudottir' THEN 4.5
+            WHEN source_type = 'heimildin-2024' AND LOWER(content) LIKE '%sanna%' THEN 3.0
+            ELSE ${contentBoostClause} END`;
+        } else if (queryLower.includes('davíð') || queryLower.includes('david')) {
+          contentBoostClause = `CASE
+            WHEN chunk_id = 'heimildin-2024-candidate-david_thor_jonsson' THEN 4.5
+            WHEN source_type = 'heimildin-2024' AND LOWER(content) LIKE '%davíð%' THEN 3.0
+            ELSE ${contentBoostClause} END`;
+        }
+      }
+
+      // Heimildin - specific policy queries (löggæsla, arðgreiðsluskatt, etc.)
+      if (queryLower.includes('heimild') || queryLower.includes('kosningapróf')) {
+        if (queryLower.includes('löggæslu') || queryLower.includes('lögreglu')) {
+          contentBoostClause = `CASE
+            WHEN source_type = 'heimildin-2024' AND LOWER(content) LIKE '%löggæslu%' THEN 4.0
+            ELSE ${contentBoostClause} END`;
+        }
+        if (queryLower.includes('arðgreiðslu')) {
+          contentBoostClause = `CASE
+            WHEN source_type = 'heimildin-2024' AND LOWER(content) LIKE '%arðgreiðslu%' THEN 4.0
+            ELSE ${contentBoostClause} END`;
+        }
+      }
+
+      // Kjóstu rétt queries - boost kjosturett-2024 source
+      if (queryLower.includes('kjóstu rétt') || queryLower.includes('kjosturett')) {
+        contentBoostClause = `CASE
+          WHEN source_type = 'kjosturett-2024' THEN 4.0
+          ELSE ${contentBoostClause} END`;
+      }
+
+      // Kjóstu rétt - specific topic queries
+      if (queryLower.includes('kjóstu rétt') || queryLower.includes('kjosturett')) {
+        if (queryLower.includes('einkarekstur') || queryLower.includes('heilbrigð')) {
+          contentBoostClause = `CASE
+            WHEN source_type = 'kjosturett-2024' AND LOWER(content) LIKE '%einkarekstur%heilbrigð%' THEN 5.0
+            WHEN source_type = 'kjosturett-2024' AND LOWER(content) LIKE '%einkarekstur%' THEN 4.0
+            ELSE ${contentBoostClause} END`;
+        }
+        if (queryLower.includes('leiguþak') || queryLower.includes('húsnæð')) {
+          contentBoostClause = `CASE
+            WHEN source_type = 'kjosturett-2024' AND LOWER(content) LIKE '%leiguþak%' THEN 5.0
+            WHEN source_type = 'kjosturett-2024' AND LOWER(content) LIKE '%húsnæð%' THEN 4.0
+            ELSE ${contentBoostClause} END`;
+        }
+        if (queryLower.includes('orkufyrirtæk') || queryLower.includes('selja')) {
+          contentBoostClause = `CASE
+            WHEN source_type = 'kjosturett-2024' AND LOWER(content) LIKE '%selja%orkufyrirtæk%' THEN 5.0
+            WHEN source_type = 'kjosturett-2024' AND LOWER(content) LIKE '%orkufyrirtæk%' THEN 4.0
+            ELSE ${contentBoostClause} END`;
+        }
+        if (queryLower.includes('flóttam') || queryLower.includes('hælisleiten')) {
+          contentBoostClause = `CASE
+            WHEN source_type = 'kjosturett-2024' AND LOWER(content) LIKE '%flóttam%' THEN 5.0
+            WHEN source_type = 'kjosturett-2024' AND LOWER(content) LIKE '%hæli%' THEN 4.0
+            ELSE ${contentBoostClause} END`;
+        }
+        if (queryLower.includes('ísrael') || queryLower.includes('viðskiptaþving')) {
+          contentBoostClause = `CASE
+            WHEN source_type = 'kjosturett-2024' AND LOWER(content) LIKE '%ísrael%viðskiptaþving%' THEN 5.0
+            WHEN source_type = 'kjosturett-2024' AND LOWER(content) LIKE '%ísrael%' THEN 4.0
+            ELSE ${contentBoostClause} END`;
+        }
+      }
+
+      // Utanríkismál queries - boost foreign policy sources (handle Icelandic inflections)
+      const foreignPolicyTerms = ['nato', 'evrópu', 'esb', 'heimsvald', 'imperial',
+        'hernaðar', 'herlaus', 'friðar', 'úkraín', 'palestín', 'ísrael', 'bandarík',
+        'kína', 'rússland', 'útanríkis', 'utanríkis'];
+      if (foreignPolicyTerms.some(term => queryLower.includes(term))) {
+        contentBoostClause = `CASE
+          WHEN source_type = 'party-website' AND LOWER(title) LIKE '%utanríkismál%' THEN 5.0
+          WHEN source_type = 'heimildin-2024' AND LOWER(title) LIKE '%utanríkismál%' THEN 4.5
+          WHEN source_type = 'kjosturett-2024' AND LOWER(title) LIKE '%utanríkismál%' THEN 4.5
+          WHEN LOWER(content) LIKE '%nato%' THEN 3.0
+          WHEN LOWER(content) LIKE '%evrópu%' THEN 3.0
+          WHEN LOWER(content) LIKE '%heimsvald%' THEN 3.0
+          WHEN LOWER(content) LIKE '%herlaus%' THEN 3.0
+          ELSE ${contentBoostClause} END`;
+      }
+
+      // Specific ESB/EU query boost - prioritize the direct answer document
+      if (queryLower.includes('evrópu') || queryLower.includes('esb')) {
+        contentBoostClause = `CASE
+          WHEN LOWER(title) LIKE '%standa utan evrópusamband%' THEN 6.0
+          WHEN LOWER(title) LIKE '%evrópusamband%' AND source_type = 'heimildin-2024' THEN 5.0
+          WHEN LOWER(content) LIKE '%standa utan%' AND LOWER(content) LIKE '%evrópu%' THEN 4.0
+          ELSE ${contentBoostClause} END`;
+      }
+
+      // Ideology queries - boost party manifesto/stefna sources
+      const ideologyTerms = ['kapítal', 'sósíal', 'stétt', 'auðvald', 'verkalýð',
+        'jafnaðar', 'kommún', 'bylt', 'valdataka', 'barátt'];
+      if (ideologyTerms.some(term => queryLower.includes(term))) {
+        contentBoostClause = `CASE
+          WHEN source_type = 'party-website' AND LOWER(title) LIKE '%um sósíalistaflokkinn%' THEN 5.0
+          WHEN source_type = 'party-website' AND LOWER(title) LIKE '%stefna%' THEN 4.5
+          WHEN LOWER(content) LIKE '%auðvald%' THEN 3.0
+          WHEN LOWER(content) LIKE '%stéttabarátt%' THEN 3.0
+          WHEN LOWER(content) LIKE '%verkalýð%' THEN 3.0
+          ELSE ${contentBoostClause} END`;
+      }
+
+      // Viðskiptaráð Kosningaáttaviti queries - boost vidskiptarad-2024 source
+      if (queryLower.includes('viðskiptaráð') || queryLower.includes('kosningaáttavit')) {
+        contentBoostClause = `CASE
+          WHEN source_type = 'vidskiptarad-2024' THEN 4.0
+          ELSE ${contentBoostClause} END`;
+
+        // Specific topic boosts for Viðskiptaráð
+        if (queryLower.includes('stóreignaskatt')) {
+          contentBoostClause = `CASE
+            WHEN source_type = 'vidskiptarad-2024' AND LOWER(content) LIKE '%stóreignaskatt%' THEN 5.0
+            ELSE ${contentBoostClause} END`;
+        }
+        if (queryLower.includes('skólamáltíð')) {
+          contentBoostClause = `CASE
+            WHEN source_type = 'vidskiptarad-2024' AND LOWER(content) LIKE '%skólamáltíð%' THEN 5.0
+            ELSE ${contentBoostClause} END`;
+        }
+        if (queryLower.includes('félagsleg') && queryLower.includes('húsnæð')) {
+          contentBoostClause = `CASE
+            WHEN source_type = 'vidskiptarad-2024' AND LOWER(content) LIKE '%félagsleg%húsnæð%' THEN 5.0
+            ELSE ${contentBoostClause} END`;
+        }
+        if (queryLower.includes('landsbank')) {
+          contentBoostClause = `CASE
+            WHEN source_type = 'vidskiptarad-2024' AND LOWER(content) LIKE '%landsbank%' THEN 5.0
+            ELSE ${contentBoostClause} END`;
+        }
+        if (queryLower.includes('landsvirkjun')) {
+          contentBoostClause = `CASE
+            WHEN source_type = 'vidskiptarad-2024' AND LOWER(content) LIKE '%landsvirkjun%' THEN 5.0
+            ELSE ${contentBoostClause} END`;
+        }
+        if (queryLower.includes('jafnlauna')) {
+          contentBoostClause = `CASE
+            WHEN source_type = 'vidskiptarad-2024' AND LOWER(content) LIKE '%jafnlauna%' THEN 5.0
+            ELSE ${contentBoostClause} END`;
+        }
+        if (queryLower.includes('loftslag')) {
+          contentBoostClause = `CASE
+            WHEN source_type = 'vidskiptarad-2024' AND LOWER(content) LIKE '%loftslag%' THEN 5.0
+            ELSE ${contentBoostClause} END`;
+        }
+        if (queryLower.includes('skammtíma') || queryLower.includes('airbnb')) {
+          contentBoostClause = `CASE
+            WHEN source_type = 'vidskiptarad-2024' AND LOWER(content) LIKE '%skammtíma%' THEN 5.0
+            ELSE ${contentBoostClause} END`;
+        }
+        if (queryLower.includes('leig') && queryLower.includes('kærunefnd')) {
+          contentBoostClause = `CASE
+            WHEN source_type = 'vidskiptarad-2024' AND LOWER(content) LIKE '%kærunefnd%' THEN 5.0
+            ELSE ${contentBoostClause} END`;
+        }
+      }
     }
 
     if (boostPolicySources) {
-      // Boost policy sources (party-website, kosningaprof) and reduce person profiles
+      // Boost policy sources - party-website (stefna) is PRIMARY, kosningaprof is secondary
       // Also boost if title matches query keywords
       sql = `
         SELECT
@@ -354,10 +554,13 @@ async function searchSimilar(embedding, options = {}) {
           citation,
           (1 - (embedding <=> $1::vector)) *
           CASE
-            WHEN source_type = 'party-website' THEN 1.3
+            WHEN source_type = 'party-website' THEN 2.0
+            WHEN source_type = 'heimildin-2024' THEN 1.3
+            WHEN source_type = 'kjosturett-2024' THEN 1.3
             WHEN source_type = 'kosningaprof-2024' THEN 1.2
-            WHEN source_type = 'discourse-archive' THEN 1.2
-            WHEN source_type = 'discourse-person' THEN 0.6
+            WHEN source_type = 'vidskiptarad-2024' THEN 1.1
+            WHEN source_type = 'discourse-archive' THEN 1.0
+            WHEN source_type = 'discourse-person' THEN 0.5
             ELSE 1.0
           END *
           ${titleBoostClause} *

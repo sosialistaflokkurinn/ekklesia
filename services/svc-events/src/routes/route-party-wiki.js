@@ -16,7 +16,11 @@ const router = express.Router();
 // Kimi API Configuration
 const KIMI_API_KEY = process.env.KIMI_API_KEY;
 const KIMI_API_BASE = 'https://api.moonshot.ai/v1';
-const KIMI_MODEL = 'kimi-k2-0711-preview';
+const KIMI_MODEL_DEFAULT = 'kimi-k2-0711-preview';
+const KIMI_MODELS = {
+  'kimi-k2-0711-preview': { name: 'Preview (hraður)', timeout: 60000 },
+  'kimi-k2-thinking': { name: 'Thinking (nákvæmur)', timeout: 120000 }
+};
 
 // Party Wiki System Prompt - Contains core knowledge about the party
 const PARTY_WIKI_PROMPT = `Þú ert Wikipedia-stílaður þekkingaraðstoðarmaður um Sósíalistaflokkinn (xj.is).
@@ -164,7 +168,7 @@ const WEB_SEARCH_TOOL = {
  */
 router.post('/chat', authenticate, async (req, res) => {
   try {
-    const { message, history = [] } = req.body;
+    const { message, history = [], model: requestedModel } = req.body;
 
     if (!message || typeof message !== 'string') {
       return res.status(400).json({
@@ -172,6 +176,12 @@ router.post('/chat', authenticate, async (req, res) => {
         message: 'Message is required'
       });
     }
+
+    // Validate and select model (default to preview)
+    const selectedModel = requestedModel && KIMI_MODELS[requestedModel]
+      ? requestedModel
+      : KIMI_MODEL_DEFAULT;
+    const modelConfig = KIMI_MODELS[selectedModel];
 
     if (!KIMI_API_KEY) {
       return res.status(503).json({
@@ -194,13 +204,14 @@ router.post('/chat', authenticate, async (req, res) => {
       operation: 'party_wiki_chat',
       userId: req.user?.uid,
       messageLength: message.length,
-      historyLength: history.length
+      historyLength: history.length,
+      model: selectedModel
     });
 
     const response = await axios.post(
       `${KIMI_API_BASE}/chat/completions`,
       {
-        model: KIMI_MODEL,
+        model: selectedModel,
         messages,
         temperature: 0.5,  // Lower temperature for more factual responses
         max_tokens: 2000,
@@ -211,7 +222,7 @@ router.post('/chat', authenticate, async (req, res) => {
           'Authorization': `Bearer ${KIMI_API_KEY}`,
           'Content-Type': 'application/json'
         },
-        timeout: 60000  // Longer timeout for web search
+        timeout: modelConfig.timeout
       }
     );
 
@@ -229,7 +240,8 @@ router.post('/chat', authenticate, async (req, res) => {
 
     res.json({
       reply,
-      model: KIMI_MODEL
+      model: selectedModel,
+      modelName: modelConfig.name
     });
 
   } catch (error) {

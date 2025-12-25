@@ -21,7 +21,11 @@ const router = express.Router();
 // Kimi API Configuration
 const KIMI_API_KEY = process.env.KIMI_API_KEY;
 const KIMI_API_BASE = 'https://api.moonshot.ai/v1';
-const KIMI_MODEL = 'kimi-k2-0711-preview';
+const KIMI_MODEL_DEFAULT = 'kimi-k2-0711-preview';
+const KIMI_MODELS = {
+  'kimi-k2-0711-preview': { name: 'Preview (hraður)', timeout: 90000 },
+  'kimi-k2-thinking': { name: 'Thinking (nákvæmur)', timeout: 180000 }
+};
 
 // RAG Configuration
 const RAG_CONFIG = {
@@ -198,7 +202,7 @@ async function saveConversation({
  */
 router.post('/chat', authenticate, async (req, res) => {
   try {
-    const { message, history = [] } = req.body;
+    const { message, history = [], model: requestedModel } = req.body;
 
     if (!message || typeof message !== 'string') {
       return res.status(400).json({
@@ -206,6 +210,12 @@ router.post('/chat', authenticate, async (req, res) => {
         message: 'Spurning vantar',
       });
     }
+
+    // Validate and select model (default to preview)
+    const selectedModel = requestedModel && KIMI_MODELS[requestedModel]
+      ? requestedModel
+      : KIMI_MODEL_DEFAULT;
+    const modelConfig = KIMI_MODELS[selectedModel];
 
     if (!KIMI_API_KEY) {
       return res.status(503).json({
@@ -220,6 +230,7 @@ router.post('/chat', authenticate, async (req, res) => {
       operation: 'member_assistant_query',
       userId: req.user?.uid,
       messageLength: message.length,
+      model: selectedModel,
     });
 
     // Step 1: Generate embedding for the query
@@ -283,7 +294,7 @@ router.post('/chat', authenticate, async (req, res) => {
       const response = await axios.post(
         `${KIMI_API_BASE}/chat/completions`,
         {
-          model: KIMI_MODEL,
+          model: selectedModel,
           messages,
           temperature: 0.7,
           max_tokens: RAG_CONFIG.maxTokens,
@@ -293,7 +304,7 @@ router.post('/chat', authenticate, async (req, res) => {
             Authorization: `Bearer ${KIMI_API_KEY}`,
             'Content-Type': 'application/json',
           },
-          timeout: 60000,
+          timeout: modelConfig.timeout,
         }
       );
 
@@ -345,7 +356,7 @@ router.post('/chat', authenticate, async (req, res) => {
         question: message,
         response: kimiReply,
         citations,
-        model: KIMI_MODEL,
+        model: selectedModel,
         contextDocs: retrievedDocs.length,
         responseTimeMs,
       });
@@ -359,7 +370,8 @@ router.post('/chat', authenticate, async (req, res) => {
     res.json({
       reply: kimiReply,
       citations,
-      model: KIMI_MODEL,
+      model: selectedModel,
+      modelName: modelConfig.name,
     });
   } catch (error) {
     logger.error('Member assistant error', {
@@ -393,7 +405,7 @@ router.post('/debug/chat', async (req, res) => {
   }
 
   try {
-    const { message, history = [] } = req.body;
+    const { message, history = [], model: requestedModel } = req.body;
 
     if (!message || typeof message !== 'string') {
       return res.status(400).json({
@@ -401,6 +413,12 @@ router.post('/debug/chat', async (req, res) => {
         message: 'Spurning vantar',
       });
     }
+
+    // Validate and select model (default to preview)
+    const selectedModel = requestedModel && KIMI_MODELS[requestedModel]
+      ? requestedModel
+      : KIMI_MODEL_DEFAULT;
+    const modelConfig = KIMI_MODELS[selectedModel];
 
     if (!KIMI_API_KEY) {
       return res.status(503).json({
@@ -412,6 +430,7 @@ router.post('/debug/chat', async (req, res) => {
     logger.info('Debug member assistant query', {
       operation: 'member_assistant_debug_query',
       messageLength: message.length,
+      model: selectedModel,
     });
 
     // Step 1: Generate embedding for the query
@@ -475,7 +494,7 @@ router.post('/debug/chat', async (req, res) => {
       const response = await axios.post(
         `${KIMI_API_BASE}/chat/completions`,
         {
-          model: KIMI_MODEL,
+          model: selectedModel,
           messages,
           temperature: 0.7,
           max_tokens: RAG_CONFIG.maxTokens,
@@ -485,7 +504,7 @@ router.post('/debug/chat', async (req, res) => {
             Authorization: `Bearer ${KIMI_API_KEY}`,
             'Content-Type': 'application/json',
           },
-          timeout: 60000,
+          timeout: modelConfig.timeout,
         }
       );
 
@@ -521,7 +540,8 @@ router.post('/debug/chat', async (req, res) => {
     res.json({
       reply: kimiReply,
       citations,
-      model: KIMI_MODEL,
+      model: selectedModel,
+      modelName: modelConfig.name,
       debug: true,
     });
   } catch (error) {
@@ -535,6 +555,25 @@ router.post('/debug/chat', async (req, res) => {
       message: 'Óvænt villa kom upp',
     });
   }
+});
+
+/**
+ * GET /api/member-assistant/models
+ * Get available Kimi models
+ * Public endpoint (for UI)
+ */
+router.get('/models', (req, res) => {
+  const models = Object.entries(KIMI_MODELS).map(([id, config]) => ({
+    id,
+    name: config.name,
+    timeout: config.timeout,
+    isDefault: id === KIMI_MODEL_DEFAULT
+  }));
+
+  res.json({
+    models,
+    default: KIMI_MODEL_DEFAULT
+  });
 });
 
 /**
