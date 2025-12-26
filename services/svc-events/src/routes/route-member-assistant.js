@@ -40,6 +40,25 @@ const ADMIN_EMAILS = [
   'gudrodur@gmail.com',
 ];
 
+// Cached question mappings (suggestion buttons -> question keys)
+const CACHED_QUESTIONS = {
+  'Er sósíalistaflokkurinn á móti kapitalisma?': 'kapitalísmi',
+  'Er Sósíalistaflokkurinn fyrir alla kjósendur?': 'fyrir-alla',
+  'Hver er afstaða flokksins til Evrópusambandsins?': 'esb',
+  'Er flokkurinn á móti heimsvaldastefnu?': 'heimsvaldastefna',
+  'Hver er stefna flokksins í húsnæðismálum?': 'husnaedismal',
+  'Hvað segir flokkurinn um heilbrigðismál?': 'heilbrigdismal',
+  'Hver er afstaða flokksins til skatta?': 'skattar',
+  'Hvað segir flokkurinn um loftslagsmál og umhverfisvernd?': 'umhverfismal',
+  'Hver er stefna flokksins í menntamálum?': 'menntamal',
+  'Hvað segir flokkurinn um réttindi launafólks og stéttarfélög?': 'vinnumarkadur',
+  'Hvað segir flokkurinn um velferðarkerfið og félagslegt öryggi?': 'velferd',
+  'Hvenær var flokkurinn stofnaður og af hverjum?': 'saga',
+  'Hvernig er flokkurinn skipulagður? Hvað eru sellur?': 'uppbygging',
+  'Hver er afstaða flokksins til jafnréttismála?': 'jafnretti',
+  'Hvað segir flokkurinn um málefni fatlaðs fólks?': 'fotlunarmal',
+};
+
 /**
  * Check if user is admin (excluded from logging)
  */
@@ -48,26 +67,58 @@ function isAdminUser(user) {
   return ADMIN_EMAILS.includes(user.email);
 }
 
+/**
+ * Look up cached response for a question
+ */
+async function getCachedResponse(questionText) {
+  const questionKey = CACHED_QUESTIONS[questionText];
+  if (!questionKey) return null;
+
+  try {
+    const result = await pool.query(
+      'SELECT response, citations FROM rag_cached_responses WHERE question_key = $1',
+      [questionKey]
+    );
+    if (result.rows.length > 0) {
+      logger.info('Cache hit for question', { questionKey });
+      return result.rows[0];
+    }
+  } catch (error) {
+    logger.error('Cache lookup error', { error: error.message });
+  }
+  return null;
+}
+
 // System prompt for member assistant
 const SYSTEM_PROMPT = `Þú ert aðstoðarmaður fyrir félaga í Sósíalistaflokknum.
 
-## HEIMILDAVÍSANIR (MJÖG MIKILVÆGT!)
+## FORGANGUR HEIMILDA (MJÖG MIKILVÆGT!)
+Notaðu heimildir í þessari forgangsröð:
+1. **Stefnuskjöl flokksins** (policy, kosningaáætlun) - AÐALHEIMILD
+2. **Ályktanir og yfirlýsingar** frá aðalfundum eða framkvæmdastjórn
+3. **Viðtöl og greinar** þar sem flokkurinn tjáir sig
+4. **Kosningapróf** (RÚV, Kjóstu rétt, o.fl.) - VIÐBÓTARHEIMILD, ekki aðalheimild
+
+Byrjaðu ALLTAF á stefnuskjölum ef þau eru til staðar. Kosningapróf eru góð viðbót en ættu ekki að vera eina heimild um stefnu flokksins.
+
+## HEIMILDAVÍSANIR
 Þegar þú vitnar í skoðanir eða staðhæfingar VERÐUR þú að tilgreina:
 1. HVER sagði/svaraði (flokkurinn, einstaklingur, o.s.frv.)
 2. HVENÆR (ár eða dagsetning)
-3. Í HVAÐA SAMHENGI (kosningapróf, flokksþing, viðtal, o.s.frv.)
+3. Í HVAÐA SAMHENGI (stefnuskjal, kosningapróf, flokksþing, viðtal, o.s.frv.)
 
 Dæmi á réttu formi:
-- "Í kosningaprófi RÚV 2024 svaraði Sósíalistaflokkurinn 'mjög sammála' spurningunni um hvort hækka ætti skatta á auðmenn."
-- "Samkvæmt stefnu flokksins á heimasíðu hans (desember 2025) styður flokkurinn..."
+- "Samkvæmt stefnu flokksins (2024) segir í kaflanum um utanríkismál að..."
+- "Í kosningaprófi RÚV 2024 staðfesti flokkurinn þessa afstöðu með að svara 'mjög sammála'..."
 - "Í viðtali á Samstöðinni í júní 2025 sagði STOFNANDI_B..."
 
 ## REGLUR
 1. Svaraðu AÐEINS á grundvelli heimildanna sem þú færð
-2. Tilgreindu ALLTAF hver, hvenær, hvar
-3. Ef upplýsingar vantar: "Ég hef ekki upplýsingar um þetta í mínum heimildum"
-4. Vertu hlutlaus og hlýlegur
-5. Svaraðu á íslensku
+2. BYRJAÐU á stefnuskjölum, bættu við úr kosningaprófum ef við á
+3. Tilgreindu ALLTAF hver, hvenær, hvar
+4. Ef upplýsingar vantar: "Ég hef ekki upplýsingar um þetta í mínum heimildum"
+5. Vertu hlutlaus og hlýlegur
+6. Svaraðu á íslensku
 
 ## HEIMILD
 <context>
@@ -208,6 +259,21 @@ router.post('/chat', authenticate, async (req, res) => {
       return res.status(400).json({
         error: 'Bad Request',
         message: 'Spurning vantar',
+      });
+    }
+
+    // Check for cached response (pre-computed answers for suggestion buttons)
+    const cachedResponse = await getCachedResponse(message);
+    if (cachedResponse) {
+      logger.info('Returning cached response', {
+        operation: 'member_assistant_cache_hit',
+        userId: req.user?.uid,
+      });
+      return res.json({
+        reply: cachedResponse.response,
+        citations: cachedResponse.citations || [],
+        model: 'cached',
+        cached: true,
       });
     }
 
@@ -750,6 +816,137 @@ router.get('/training/export', authenticate, async (req, res) => {
       error: error.message,
     });
     res.status(500).json({ error: 'Failed to export training data' });
+  }
+});
+
+/**
+ * POST /api/member-assistant/admin/generate-cache
+ * Generate cached responses for suggestion buttons using thinking model
+ * Admin only
+ */
+router.post('/admin/generate-cache', authenticate, async (req, res) => {
+  // Only allow admin users
+  if (!isAdminUser(req.user)) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+
+  const { questionKey } = req.body;
+  const questions = questionKey
+    ? Object.entries(CACHED_QUESTIONS).filter(([_, key]) => key === questionKey)
+    : Object.entries(CACHED_QUESTIONS);
+
+  if (questions.length === 0) {
+    return res.status(400).json({ error: 'Invalid question key' });
+  }
+
+  const results = [];
+
+  for (const [questionText, key] of questions) {
+    try {
+      logger.info('Generating cached response', { questionKey: key });
+
+      // Generate embedding
+      const queryEmbedding = await embeddingService.generateEmbedding(questionText);
+
+      // Search for relevant documents
+      const retrievedDocs = await vectorSearch.searchSimilar(queryEmbedding, {
+        limit: RAG_CONFIG.maxDocuments,
+        threshold: RAG_CONFIG.similarityThreshold,
+        boostPolicySources: true,
+        queryText: questionText,
+      });
+
+      // Format context
+      const context = formatContext(retrievedDocs);
+      const systemPromptWithContext = SYSTEM_PROMPT.replace('{{CONTEXT}}', context);
+
+      // Call Kimi with thinking model
+      const response = await axios.post(
+        `${KIMI_API_BASE}/chat/completions`,
+        {
+          model: 'kimi-k2-thinking',
+          messages: [
+            { role: 'system', content: systemPromptWithContext },
+            { role: 'user', content: questionText },
+          ],
+          temperature: 0.5,
+          max_tokens: RAG_CONFIG.maxTokens,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${KIMI_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          timeout: 180000,
+        }
+      );
+
+      const reply = response.data?.choices?.[0]?.message?.content;
+      const citations = retrievedDocs.map(doc => ({
+        title: doc.title,
+        source_type: doc.source_type,
+        citation: doc.citation,
+      }));
+
+      // Save to cache
+      await pool.query(
+        `INSERT INTO rag_cached_responses (question_key, question_text, response, citations, model, updated_at)
+         VALUES ($1, $2, $3, $4, 'kimi-k2-thinking', NOW())
+         ON CONFLICT (question_key) DO UPDATE SET
+           response = EXCLUDED.response,
+           citations = EXCLUDED.citations,
+           updated_at = NOW()`,
+        [key, questionText, reply, JSON.stringify(citations)]
+      );
+
+      results.push({ key, success: true });
+      logger.info('Cached response saved', { questionKey: key });
+
+    } catch (error) {
+      logger.error('Failed to generate cached response', {
+        questionKey: key,
+        error: error.message,
+      });
+      results.push({ key, success: false, error: error.message });
+    }
+  }
+
+  res.json({
+    message: 'Cache generation complete',
+    results,
+  });
+});
+
+/**
+ * GET /api/member-assistant/admin/cache-status
+ * Check which questions have cached responses
+ * Admin only
+ */
+router.get('/admin/cache-status', authenticate, async (req, res) => {
+  if (!isAdminUser(req.user)) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+
+  try {
+    const result = await pool.query(
+      'SELECT question_key, updated_at FROM rag_cached_responses ORDER BY question_key'
+    );
+
+    const cached = result.rows.reduce((acc, row) => {
+      acc[row.question_key] = row.updated_at;
+      return acc;
+    }, {});
+
+    const status = Object.entries(CACHED_QUESTIONS).map(([text, key]) => ({
+      key,
+      question: text.substring(0, 50) + '...',
+      cached: !!cached[key],
+      updatedAt: cached[key] || null,
+    }));
+
+    res.json({ status });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 
