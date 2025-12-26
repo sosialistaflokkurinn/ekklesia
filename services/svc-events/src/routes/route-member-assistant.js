@@ -177,8 +177,8 @@ async function saveConversation({
   try {
     await pool.query(
       `INSERT INTO rag_conversations
-       (user_id, user_name, question, response, citations, model, context_docs, response_time_ms)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+       (user_id, user_name, question, response, citations, model, context_docs, response_time_ms, assistant_type)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'member-assistant')`,
       [userId, userName, question, response, JSON.stringify(citations), model, contextDocs, responseTimeMs]
     );
     logger.info('Conversation saved for training', {

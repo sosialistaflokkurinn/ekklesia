@@ -9,6 +9,7 @@
 const express = require('express');
 const axios = require('axios');
 const logger = require('../utils/util-logger');
+const { pool } = require('../config/config-database');
 const authenticate = require('../middleware/middleware-auth');
 
 const router = express.Router();
@@ -162,11 +163,45 @@ const WEB_SEARCH_TOOL = {
 };
 
 /**
+ * Save conversation to database for usage tracking
+ */
+async function saveConversation({
+  userId,
+  userName,
+  question,
+  response,
+  model,
+  responseTimeMs,
+}) {
+  try {
+    await pool.query(
+      `INSERT INTO rag_conversations
+       (user_id, user_name, question, response, model, response_time_ms, assistant_type)
+       VALUES ($1, $2, $3, $4, $5, $6, 'party-wiki')`,
+      [userId, userName, question, response, model, responseTimeMs]
+    );
+    logger.info('Party wiki conversation saved', {
+      operation: 'save_party_wiki_conversation',
+      userId,
+      questionLength: question.length,
+    });
+  } catch (error) {
+    // Don't fail the request if saving fails
+    logger.error('Failed to save party wiki conversation', {
+      operation: 'save_party_wiki_conversation_error',
+      error: error.message,
+    });
+  }
+}
+
+/**
  * POST /api/party-wiki/chat
  * Send a message to party wiki assistant and get a response
  * Requires authentication (any member)
  */
 router.post('/chat', authenticate, async (req, res) => {
+  const startTime = Date.now();
+
   try {
     const { message, history = [], model: requestedModel } = req.body;
 
@@ -232,10 +267,23 @@ router.post('/chat', authenticate, async (req, res) => {
       throw new Error('Empty response from AI');
     }
 
+    const responseTimeMs = Date.now() - startTime;
+
     logger.info('Party wiki chat response', {
       operation: 'party_wiki_chat_response',
       userId: req.user?.uid,
-      replyLength: reply.length
+      replyLength: reply.length,
+      responseTimeMs
+    });
+
+    // Save conversation for usage tracking (async, don't wait)
+    saveConversation({
+      userId: req.user?.uid,
+      userName: req.user?.name || null,
+      question: message,
+      response: reply,
+      model: selectedModel,
+      responseTimeMs,
     });
 
     res.json({
