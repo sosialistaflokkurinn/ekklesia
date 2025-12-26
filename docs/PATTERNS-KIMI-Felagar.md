@@ -102,10 +102,10 @@ For specific query patterns, boost documents containing factual answers:
 | Query Pattern | Boost Logic |
 |---------------|-------------|
 | `fyrsti kjörni fulltrúi` | 2.5x if content contains "fyrsti kjörni" |
-| `stofnandi/stofnaði` | 3.0x for Saga doc, 2.8x for Gunnar Smári doc |
+| `stofnandi/stofnaði` | 3.0x for Saga doc, 2.8x for Jón Baldur doc |
 | `vor til vinstri` | 2.5x if content contains "vor til vinstri" |
 | `aðalfund* 2025` / `hallarbylting` | 3.0x for aðalfund+hallarbylting title |
-| `formaður framkvæmdastjórnar` | 3.0x for Gunnar Smári + formaður match |
+| `formaður framkvæmdastjórnar` | 3.0x for Jón Baldur + formaður match |
 
 ---
 
@@ -171,7 +171,7 @@ Structure for testing RAG accuracy:
 ### Expected Facts Rules
 
 1. **Use base forms** (nominative), not inflected forms
-   - `Sanna Magdalena` (correct)
+   - `Anna Björk` (correct)
    - `Sönnu Magdalenu` (wrong - dative)
 
 2. **Case-insensitive matching**

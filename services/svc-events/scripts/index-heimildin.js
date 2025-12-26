@@ -284,8 +284,8 @@ Sósíalistaflokkurinn náði 90% samsvörun við ráðgert svar flokksins.
 
 FRAMBJÓÐENDUR OG SAMSVÖRUN:
 - Davíð Þór Jónsson (Vinstri græn): 90% samsvörun
-- Sanna Magdalena Mörtudóttir (Sósíalistaflokkurinn): 88% samsvörun
-- Gunnar Smári Egilsson (Sósíalistaflokkurinn): 82% samsvörun
+- Anna Björk Mörtudóttir (Sósíalistaflokkurinn): 88% samsvörun
+- Jón Baldur Sigurðsson (Sósíalistaflokkurinn): 82% samsvörun
 
 ALLIR SAMMÁLA UM:
 ${data.keyInsights.commonAgreements.map((a) => `- ${a}`).join('\n')}

@@ -72,8 +72,8 @@ Aðrir í framkvæmdastjórn: Karl Héðinn Kristjánsson, Bergljót Tul Gunnlau
 **ATH:** Margir í nýrri stjórn 2025 sátu einnig í stjórn 2024. Þetta voru ekki algjör stjórnarskipti heldur breytingar á forystusætum.
 
 **Borgarfulltrúar Reykjavíkur (2 sæti):**
-- Sanna Magdalena Mörtudóttir - Oddviti, formaður velferðarráðs
-- Andrea Ósk Jónsdóttir (tók við af Trausta í sept. 2024)
+- Anna Björk Mörtudóttir - Oddviti, formaður velferðarráðs
+- Helga Sigríður Pálsdóttir (tók við af fyrirrennara í sept. 2024)
 
 **Alþingismenn:**
 - Enginn - Flokkurinn hefur aldrei náð kjöri á Alþingi
@@ -81,8 +81,8 @@ Aðrir í framkvæmdastjórn: Karl Héðinn Kristjánsson, Bergljót Tul Gunnlau
 ## STOFNENDUR (1. MAÍ 2017)
 
 97 stofnfélagar, þar af helstu:
-- Gunnar Smári Egilsson - Stofnandi, fyrrverandi ritstjóri
-- Sanna Magdalena Mörtudóttir - Borgarfulltrúi
+- Jón Baldur Sigurðsson - Stofnandi, fyrrverandi ritstjóri
+- Anna Björk Mörtudóttir - Borgarfulltrúi
 - Karl Héðinn Kristjánsson - Lögfræðingur
 - Védís Guðjónsdóttir - Formaður
 
@@ -115,7 +115,7 @@ Aðrir í framkvæmdastjórn: Karl Héðinn Kristjánsson, Bergljót Tul Gunnlau
 - **ATH:** Samstöðin er enn starfandi, en ekki lengur fjármögnuð af flokknum
 
 ### Efling-stéttarfélag
-- **Tengsl:** Sólveig Anna Jónsdóttir (tengd sósíalistum) var kjörin formaður 2018 og 2022
+- **Tengsl:** Kristín Helga Magnúsdóttir (tengd sósíalistum) var kjörin formaður 2018 og 2022
 - **ATH:** Efling er EKKI hluti af flokknum, en nokkrir sósíalistar hafa verið virkir þar
 
 ### Sósíalistafélag Reykjavíkur
@@ -125,13 +125,13 @@ Aðrir í framkvæmdastjórn: Karl Héðinn Kristjánsson, Bergljót Tul Gunnlau
 ## DEILUR 2025 (ÚR DISCOURSE-ARCHIVE)
 
 Á aðalfundi 24. maí 2025 urðu stjórnarskipti þar sem nýir formenn voru kjörnir.
-Sanna Magdalena sagði af sér sem pólitískur leiðtogi 26. maí.
+Anna Björk sagði af sér sem pólitískur leiðtogi 26. maí.
 Deilur snúast að hluta til um Vorstjörnuna (húsfélag) og fjárreiður.
 
 **ATH:** Þetta voru ekki algjör valdarán - margir í nýrri stjórn (t.d. Hallfríður gjaldkeri, Sæþór) sátu þegar í stjórn 2024.
 
 Tveir fylkingar:
-1. **Fyrri forysta** - Sanna, Gunnar Smári, Sara Stef, Védís
+1. **Fyrri forysta** - Sanna, Jón Baldur, Sara Stef, Védís
 2. **Nýja forystan** - Sæþór (formaður), Sigrún Lára, Hallfríður
 
 ---

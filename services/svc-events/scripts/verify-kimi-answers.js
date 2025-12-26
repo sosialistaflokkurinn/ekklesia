@@ -41,11 +41,11 @@ const VERIFICATION_TESTS = [
     id: 2,
     question: 'Hver var fyrsti kjörni fulltrúi Sósíalistaflokksins?',
     expectedFacts: [
-      { fact: 'Sanna Magdalena Mörtudóttir', required: true },
+      { fact: 'Anna Björk Mörtudóttir', required: true },
       { fact: '2018', required: true },
       { fact: 'borgarfulltrúi', required: false },
     ],
-    webSearchQuery: 'Sanna Magdalena Mörtudóttir Sósíalistaflokkur borgarfulltrúi 2018',
+    webSearchQuery: 'Anna Björk Mörtudóttir Sósíalistaflokkur borgarfulltrúi 2018',
   },
   {
     id: 3,
@@ -60,9 +60,9 @@ const VERIFICATION_TESTS = [
     id: 4,
     question: 'Hver stofnaði Sósíalistaflokkinn?',
     expectedFacts: [
-      { fact: 'Gunnar Smári Egilsson', required: true },
+      { fact: 'Jón Baldur Sigurðsson', required: true },
     ],
-    webSearchQuery: 'Gunnar Smári Egilsson Sósíalistaflokkur stofnandi',
+    webSearchQuery: 'Jón Baldur Sigurðsson Sósíalistaflokkur stofnandi',
   },
   {
     id: 5,
@@ -87,10 +87,10 @@ const VERIFICATION_TESTS = [
     id: 7,
     question: 'Hver er formaður Eflingar og hvernig tengist hann/hún flokknum?',
     expectedFacts: [
-      { fact: 'Sólveig Anna Jónsdóttir', required: true },
+      { fact: 'Kristín Helga Magnúsdóttir', required: true },
       { fact: 'frambjóðandi', required: false },
     ],
-    webSearchQuery: 'Sólveig Anna Jónsdóttir Efling Sósíalistaflokkur',
+    webSearchQuery: 'Kristín Helga Magnúsdóttir Efling Sósíalistaflokkur',
   },
   {
     id: 8,
@@ -106,7 +106,7 @@ const VERIFICATION_TESTS = [
     id: 9,
     question: 'Hver var oddviti flokksins í Reykjavík Norður í Alþingiskosningunum 2024?',
     expectedFacts: [
-      { fact: 'Gunnar Smári', required: true },
+      { fact: 'Jón Baldur', required: true },
     ],
     webSearchQuery: 'Sósíalistaflokkur Alþingiskosningar 2024 Reykjavík Norður oddviti',
   },
@@ -119,7 +119,7 @@ const VERIFICATION_TESTS = [
       { fact: '2026', required: false },
       { fact: 'borgarstjórnarkosning', required: false },
     ],
-    webSearchQuery: 'Vor til vinstri Sanna Magdalena 2026',
+    webSearchQuery: 'Vor til vinstri Anna Björk 2026',
   },
   // === NÝ PRÓF 11-20 ===
   {
@@ -144,7 +144,7 @@ const VERIFICATION_TESTS = [
     id: 13,
     question: 'Hver var oddviti flokksins í Reykjavík Suður í Alþingiskosningunum 2024?',
     expectedFacts: [
-      { fact: 'Sanna Magdalena', required: true },
+      { fact: 'Anna Björk', required: true },
     ],
     webSearchQuery: 'Sósíalistaflokkur Alþingiskosningar 2024 Reykjavík Suður oddviti',
   },
@@ -172,10 +172,10 @@ const VERIFICATION_TESTS = [
     id: 16,
     question: 'Hver var formaður framkvæmdastjórnar flokksins upphaflega?',
     expectedFacts: [
-      { fact: 'Gunnar Smári', required: true },
+      { fact: 'Jón Baldur', required: true },
       { fact: 'formaður', required: true },
     ],
-    webSearchQuery: 'Sósíalistaflokkur framkvæmdastjórn formaður Gunnar Smári',
+    webSearchQuery: 'Sósíalistaflokkur framkvæmdastjórn formaður Jón Baldur',
   },
   {
     id: 17,
@@ -191,7 +191,7 @@ const VERIFICATION_TESTS = [
     id: 18,
     question: 'Hvaða borgarfulltrúar áttu sæti fyrir flokkinn eftir kosningarnar 2022?',
     expectedFacts: [
-      { fact: 'Sanna Magdalena', required: true },
+      { fact: 'Anna Björk', required: true },
       { fact: 'Trausti', required: true },  // Trausti Breiðfjörð Magnússon
     ],
     webSearchQuery: 'Sósíalistaflokkur borgarfulltrúar 2022 Sanna Trausti',
@@ -201,20 +201,20 @@ const VERIFICATION_TESTS = [
     question: 'Hvað er B-listi Eflingar og hvernig tengist hann flokknum?',
     expectedFacts: [
       { fact: 'Efling', required: true },
-      { fact: 'Sólveig', required: false },
+      { fact: 'Kristín', required: false },
       { fact: 'stéttarfélag', required: false },
     ],
-    webSearchQuery: 'B-listi Eflingar Sósíalistaflokkur Sólveig Anna',
+    webSearchQuery: 'B-listi Eflingar Sósíalistaflokkur Kristín Helga',
   },
   {
     id: 20,
-    question: 'Hvenær tilkynnti Gunnar Smári stofnun flokksins og hvar?',
+    question: 'Hvenær tilkynnti Jón Baldur stofnun flokksins og hvar?',
     expectedFacts: [
       { fact: 'apríl 2017', required: true },
       { fact: 'Harmageddon', required: false },
       { fact: 'X-inu', required: false },
     ],
-    webSearchQuery: 'Gunnar Smári Egilsson tilkynnti stofnun Sósíalistaflokkur apríl 2017',
+    webSearchQuery: 'Jón Baldur Sigurðsson tilkynnti stofnun Sósíalistaflokkur apríl 2017',
   },
   // Tests 21-25: Fjármál flokksins og klofningur
   {
@@ -341,7 +341,7 @@ const VERIFICATION_TESTS = [
     id: 33,
     question: 'Hver var oddviti Sósíalistaflokksins í Suðvesturkjördæmi í kosningunum 2021?',
     expectedFacts: [
-      { fact: 'María Pétursdóttir', required: true },
+      { fact: 'Guðrún Helgadóttir', required: true },
       { fact: 'Suðvestur', required: false },
     ],
     webSearchQuery: 'Sósíalistaflokkur 2021 Suðvesturkjördæmi oddviti',
@@ -350,8 +350,8 @@ const VERIFICATION_TESTS = [
     id: 34,
     question: 'Hverjir voru oddvitar Sósíalistaflokksins í Reykjavík Norður og Reykjavík Suður 2021?',
     expectedFacts: [
-      { fact: 'Gunnar Smári', required: true },
-      { fact: 'Katrín Baldursdóttir', required: true },
+      { fact: 'Jón Baldur', required: true },
+      { fact: 'Sigríður Ólafsdóttir', required: true },
     ],
     webSearchQuery: 'Sósíalistaflokkur 2021 oddvitar Reykjavík Norður Suður',
   },
@@ -385,21 +385,21 @@ const VERIFICATION_TESTS = [
   // Flokkur B: Frambjóðendaupplýsingar (38-47)
   {
     id: 38,
-    question: 'Hvað er Sanna Magdalena Mörtudóttir að mennt?',
+    question: 'Hvað er Anna Björk Mörtudóttir að mennt?',
     expectedFacts: [
       { fact: 'mennt', required: true },  // Match menntun, menntað
       { fact: 'Sanna', required: false },
     ],
-    webSearchQuery: 'Sanna Magdalena Mörtudóttir menntun mannfræði',
+    webSearchQuery: 'Anna Björk Mörtudóttir menntun mannfræði',
   },
   {
     id: 39,
-    question: 'Hvað er Daníel Örn Arnarsson að starfi?',
+    question: 'Hvað er Ólafur Páll Arnarsson að starfi?',
     expectedFacts: [
       { fact: 'bílstjóri', required: true },
       { fact: 'Efling', required: false },
     ],
-    webSearchQuery: 'Daníel Örn Arnarsson Sósíalistaflokkur starf',
+    webSearchQuery: 'Ólafur Páll Arnarsson Sósíalistaflokkur starf',
   },
   {
     id: 40,
@@ -422,18 +422,18 @@ const VERIFICATION_TESTS = [
   },
   {
     id: 42,
-    question: 'Hvar vann Gunnar Smári Egilsson áður en hann stofnaði Sósíalistaflokkinn?',
+    question: 'Hvar vann Jón Baldur Sigurðsson áður en hann stofnaði Sósíalistaflokkinn?',
     expectedFacts: [
       { fact: 'Fréttatíma', required: true },  // Fréttatíminn
       { fact: 'blaðamaður', required: false },
     ],
-    webSearchQuery: 'Gunnar Smári Egilsson Fréttatíminn blaðamaður ferill',
+    webSearchQuery: 'Jón Baldur Sigurðsson Fréttatíminn blaðamaður ferill',
   },
   {
     id: 43,
     question: 'Hver var í 2. sæti á lista Sósíalistaflokksins í Reykjavík 2018?',
     expectedFacts: [
-      { fact: 'Daníel Örn', required: true },
+      { fact: 'Ólafur Páll', required: true },
       { fact: '2018', required: false },
     ],
     webSearchQuery: 'Sósíalistaflokkur 2018 Reykjavík 2. sæti Daníel',
@@ -453,7 +453,7 @@ const VERIFICATION_TESTS = [
     expectedFacts: [
       { fact: 'Sanna', required: true },
       { fact: 'Karl', required: true },  // Karl Héðinn
-      { fact: 'Sólveig', required: true },
+      { fact: 'Kristín', required: true },
     ],
     webSearchQuery: 'Sósíalistaflokkur 2024 Reykjavík Suður efstu sæti',
   },
@@ -461,8 +461,8 @@ const VERIFICATION_TESTS = [
     id: 46,
     question: 'Hverjir voru í efstu 2 sætum í Reykjavík Norður fyrir Sósíalistaflokkinn 2024?',
     expectedFacts: [
-      { fact: 'Gunnar Smári', required: true },
-      { fact: 'María Pétursdóttir', required: true },
+      { fact: 'Jón Baldur', required: true },
+      { fact: 'Guðrún Helgadóttir', required: true },
     ],
     webSearchQuery: 'Sósíalistaflokkur 2024 Reykjavík Norður efstu sæti',
   },
@@ -470,7 +470,7 @@ const VERIFICATION_TESTS = [
     id: 47,
     question: 'Hvaða frambjóðendur Sósíalistaflokksins voru tengdir Eflingu stéttarfélagi?',
     expectedFacts: [
-      { fact: 'Sólveig Anna', required: true },
+      { fact: 'Kristín Helga', required: true },
       { fact: 'Daníel', required: false },
       { fact: 'Kolbrún', required: false },
     ],
@@ -994,21 +994,21 @@ const VERIFICATION_TESTS = [
   },
   {
     id: 103,
-    question: 'Hversu mikla samsvörun fékk Gunnar Smári Egilsson við flokksstefnu í Kosningaprófi Heimildarinnar?',
+    question: 'Hversu mikla samsvörun fékk Jón Baldur Sigurðsson við flokksstefnu í Kosningaprófi Heimildarinnar?',
     expectedFacts: [
       { fact: '82%', required: true },
-      { fact: 'Gunnar Smári', required: true },
+      { fact: 'Jón Baldur', required: true },
     ],
-    webSearchQuery: 'Gunnar Smári Egilsson Heimildin kosningapróf samsvörun',
+    webSearchQuery: 'Jón Baldur Sigurðsson Heimildin kosningapróf samsvörun',
   },
   {
     id: 104,
-    question: 'Hversu mikla samsvörun fékk Sanna Magdalena Mörtudóttir við flokksstefnu í Kosningaprófi Heimildarinnar?',
+    question: 'Hversu mikla samsvörun fékk Anna Björk Mörtudóttir við flokksstefnu í Kosningaprófi Heimildarinnar?',
     expectedFacts: [
       { fact: '88%', required: true },
       { fact: 'Sanna', required: true },
     ],
-    webSearchQuery: 'Sanna Magdalena Heimildin kosningapróf samsvörun',
+    webSearchQuery: 'Anna Björk Heimildin kosningapróf samsvörun',
   },
   {
     id: 105,
@@ -1060,7 +1060,7 @@ const VERIFICATION_TESTS = [
   },
   {
     id: 110,
-    question: 'Hvar eru Gunnar Smári og Sanna ósammála um Úkraínu í Kosningaprófi Heimildarinnar?',
+    question: 'Hvar eru Jón Baldur og Sanna ósammála um Úkraínu í Kosningaprófi Heimildarinnar?',
     expectedFacts: [
       { fact: 'Úkraínu', required: true },
       { fact: 'vopn', required: false },
