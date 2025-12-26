@@ -69,9 +69,9 @@ function createChatWidget() {
         </div>
       </div>
       <div class="member-assistant__input-area">
-        <select id="member-assistant-model" class="member-assistant__model-select" title="⚡ Hraður | 🧠 Nákvæmur">
-          <option value="kimi-k2-0711-preview">⚡</option>
-          <option value="kimi-k2-thinking">🧠</option>
+        <select id="member-assistant-model" class="member-assistant__model-select" title="Hraður eða nákvæmur">
+          <option value="kimi-k2-0711-preview">Hraður</option>
+          <option value="kimi-k2-thinking">Nákvæmur</option>
         </select>
         <textarea
           id="member-assistant-input"
@@ -270,10 +270,9 @@ function addChatStyles() {
       color: var(--color-text, #333);
       font-size: 11px;
       padding: 6px 4px;
-      border-radius: 12px;
+      border-radius: 8px;
       cursor: pointer;
       outline: none;
-      width: 28px;
       flex-shrink: 0;
     }
 
