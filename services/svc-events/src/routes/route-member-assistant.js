@@ -42,21 +42,102 @@ const ADMIN_EMAILS = [
 
 // Cached question mappings (suggestion buttons -> question keys)
 const CACHED_QUESTIONS = {
+  // Kapítalismi
   'Er sósíalistaflokkurinn á móti kapitalisma?': 'kapitalísmi',
+  'Er Sósíalistaflokkurinn á móti kapitalisma?': 'kapitalísmi',
+  'Er flokkurinn á móti kapitalisma?': 'kapitalísmi',
+  'Er flokkurinn á móti kapítalisma?': 'kapitalísmi',
+  'Hvað segir flokkurinn um kapitalisma?': 'kapitalísmi',
+
+  // Fyrir alla
   'Er Sósíalistaflokkurinn fyrir alla kjósendur?': 'fyrir-alla',
+  'Er sósíalistaflokkurinn fyrir alla kjósendur?': 'fyrir-alla',
+  'Er flokkurinn fyrir alla?': 'fyrir-alla',
+  'Hverjir geta gengið í flokkinn?': 'fyrir-alla',
+
+  // ESB / Evrópusambandið
   'Hver er afstaða flokksins til Evrópusambandsins?': 'esb',
+  'Er flokkurinn á móti Evrópusambandinu?': 'esb',
+  'Er flokkurinn á móti ESB?': 'esb',
+  'Er sósíalistaflokkurinn á móti ESB?': 'esb',
+  'Er Sósíalistaflokkurinn á móti ESB?': 'esb',
+  'Er sócíallisti flokkurinn fylgjandi eða á móti Evrópusambandinu?': 'esb',
+  'Hvað segir flokkurinn um ESB?': 'esb',
+  'Hvað segir flokkurinn um Evrópusambandið?': 'esb',
+
+  // Heimsvaldastefna
   'Er flokkurinn á móti heimsvaldastefnu?': 'heimsvaldastefna',
+  'Er Sósíalistaflokkurinn á móti heimsvaldastefnu?': 'heimsvaldastefna',
+  'Er sósíalistaflokkurinn á móti heimsvaldastefnu?': 'heimsvaldastefna',
+  'Er Sósíalistaflokkurinn að móti heimsvaldastefnu?': 'heimsvaldastefna',
+  'Er sósíalistaflokkurinn að móti heimsvaldastefnu?': 'heimsvaldastefna',
+  'Hvað segir flokkurinn um NATO?': 'heimsvaldastefna',
+  'Er flokkurinn á móti NATO?': 'heimsvaldastefna',
+  'Hvað segir flokkurinn um hernaðarmál?': 'heimsvaldastefna',
+
+  // Húsnæðismál
   'Hver er stefna flokksins í húsnæðismálum?': 'husnaedismal',
+  'Hvað segir flokkurinn um húsnæðismál?': 'husnaedismal',
+  'Hver er húsnæðisstefna flokksins?': 'husnaedismal',
+
+  // Heilbrigðismál
   'Hvað segir flokkurinn um heilbrigðismál?': 'heilbrigdismal',
+  'Hver er stefna flokksins í heilbrigðismálum?': 'heilbrigdismal',
+  'Hvað segir flokkurinn um heilbrigðiskerfið?': 'heilbrigdismal',
+
+  // Skattar
   'Hver er afstaða flokksins til skatta?': 'skattar',
+  'Hvað segir flokkurinn um skatta?': 'skattar',
+  'Hver er skattastefna flokksins?': 'skattar',
+
+  // Umhverfismál
   'Hvað segir flokkurinn um loftslagsmál og umhverfisvernd?': 'umhverfismal',
+  'Hvað segir flokkurinn um umhverfismál?': 'umhverfismal',
+  'Hvað segir flokkurinn um loftslagsmál?': 'umhverfismal',
+  'Hver er stefna flokksins í umhverfismálum?': 'umhverfismal',
+
+  // Menntamál
   'Hver er stefna flokksins í menntamálum?': 'menntamal',
+  'Hvað segir flokkurinn um menntamál?': 'menntamal',
+  'Hvað segir flokkurinn um menntun?': 'menntamal',
+
+  // Vinnumarkaður
   'Hvað segir flokkurinn um réttindi launafólks og stéttarfélög?': 'vinnumarkadur',
+  'Hvað segir flokkurinn um vinnumarkaðinn?': 'vinnumarkadur',
+  'Hvað segir flokkurinn um launafólk?': 'vinnumarkadur',
+  'Hver er stefna flokksins í vinnumarkaðsmálum?': 'vinnumarkadur',
+
+  // Velferð
   'Hvað segir flokkurinn um velferðarkerfið og félagslegt öryggi?': 'velferd',
+  'Hvað segir flokkurinn um velferðarmál?': 'velferd',
+  'Hver er velferðarstefna flokksins?': 'velferd',
+
+  // Saga
   'Hvenær var flokkurinn stofnaður og af hverjum?': 'saga',
+  'Hvenær var flokkurinn stofnaður?': 'saga',
+  'Hver stofnaði flokkinn?': 'saga',
+  'Hvað er saga flokksins?': 'saga',
+
+  // Uppbygging
   'Hvernig er flokkurinn skipulagður? Hvað eru sellur?': 'uppbygging',
+  'Hvernig er flokkurinn skipulagður?': 'uppbygging',
+  'Hvað eru sellur?': 'uppbygging',
+  'Hvernig virkar flokkurinn?': 'uppbygging',
+
+  // Jafnrétti
   'Hver er afstaða flokksins til jafnréttismála?': 'jafnretti',
+  'Hvað segir flokkurinn um jafnrétti?': 'jafnretti',
+  'Hvað segir flokkurinn um jafnréttismál?': 'jafnretti',
+
+  // Fötlunarmál
   'Hvað segir flokkurinn um málefni fatlaðs fólks?': 'fotlunarmal',
+  'Hvað segir flokkurinn um fötlunarréttindi?': 'fotlunarmal',
+  'Hver er stefna flokksins í málefnum fatlaðs fólks?': 'fotlunarmal',
+
+  // Gunnar Smári
+  'Er Gunnar Smári ennþá skráður í flokkinn?': 'gunnar-smari-adild',
+  'Er Gunnar Smári ennþá skráður i flokkinn?': 'gunnar-smari-adild',
+  'Er Gunnar Smári í flokknum?': 'gunnar-smari-adild',
 };
 
 /**
