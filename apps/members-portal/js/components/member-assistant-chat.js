@@ -50,21 +50,28 @@ function createChatWidget() {
         </div>
       </div>
       <div id="member-assistant-messages" class="member-assistant__messages">
-        <div class="member-assistant__message member-assistant__message--assistant">
-          <div class="member-assistant__bubble">
-            Sæl! Ég get svarað spurningum um stefnu flokksins, sögu hans og fleira. Hvaða upplýsingar ertu að leita að?
-          </div>
-        </div>
         <div class="member-assistant__suggestions">
+          <button class="member-assistant__suggestion" data-query="Er sósíalistaflokkurinn á móti kapitalisma?">Kapítalismi</button>
+          <button class="member-assistant__suggestion" data-query="Er Sósíalistaflokkurinn fyrir alla kjósendur?">Fyrir alla?</button>
+          <button class="member-assistant__suggestion" data-query="Hver er afstaða flokksins til Evrópusambandsins?">ESB</button>
+          <button class="member-assistant__suggestion" data-query="Er flokkurinn á móti heimsvaldastefnu?">Heimsvaldastefna</button>
           <button class="member-assistant__suggestion" data-query="Hver er stefna flokksins í húsnæðismálum?">Húsnæðismál</button>
           <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um heilbrigðismál?">Heilbrigðismál</button>
           <button class="member-assistant__suggestion" data-query="Hver er afstaða flokksins til skatta?">Skattar</button>
+          <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um loftslagsmál og umhverfisvernd?">Umhverfismál</button>
+          <button class="member-assistant__suggestion" data-query="Hver er stefna flokksins í menntamálum?">Menntamál</button>
+          <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um réttindi launafólks og stéttarfélög?">Vinnumarkaður</button>
+          <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um velferðarkerfið og félagslegt öryggi?">Velferð</button>
+          <button class="member-assistant__suggestion" data-query="Hvenær var flokkurinn stofnaður og af hverjum?">Saga flokksins</button>
+          <button class="member-assistant__suggestion" data-query="Hvernig er flokkurinn skipulagður? Hvað eru sellur?">Uppbygging</button>
+          <button class="member-assistant__suggestion" data-query="Hver er afstaða flokksins til jafnréttismála?">Jafnrétti</button>
+          <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um málefni fatlaðs fólks?">Fötlunarmál</button>
         </div>
       </div>
       <div class="member-assistant__input-area">
-        <select id="member-assistant-model" class="member-assistant__model-select" title="Velja módel">
-          <option value="kimi-k2-0711-preview">⚡ Hraður</option>
-          <option value="kimi-k2-thinking">🧠 Nákvæmur (hægur)</option>
+        <select id="member-assistant-model" class="member-assistant__model-select" title="⚡ Hraður | 🧠 Nákvæmur">
+          <option value="kimi-k2-0711-preview">⚡</option>
+          <option value="kimi-k2-thinking">🧠</option>
         </select>
         <textarea
           id="member-assistant-input"
@@ -261,12 +268,13 @@ function addChatStyles() {
       background: var(--color-cream-dark, #f5e6d3);
       border: 1px solid var(--color-cream-dark, #f5e6d3);
       color: var(--color-text, #333);
-      font-size: 12px;
-      padding: 8px 10px;
-      border-radius: 20px;
+      font-size: 11px;
+      padding: 6px 4px;
+      border-radius: 12px;
       cursor: pointer;
       outline: none;
-      min-width: 100px;
+      width: 28px;
+      flex-shrink: 0;
     }
 
     .member-assistant__model-select:hover {
@@ -700,15 +708,22 @@ function clearChat() {
   if (!messagesEl) return;
 
   messagesEl.innerHTML = `
-    <div class="member-assistant__message member-assistant__message--assistant">
-      <div class="member-assistant__bubble">
-        Sæl! Ég get svarað spurningum um stefnu flokksins, sögu hans og fleira. Hvaða upplýsingar ertu að leita að?
-      </div>
-    </div>
     <div class="member-assistant__suggestions">
+      <button class="member-assistant__suggestion" data-query="Er sósíalistaflokkurinn á móti kapitalisma?">Kapítalismi</button>
+      <button class="member-assistant__suggestion" data-query="Er Sósíalistaflokkurinn fyrir alla kjósendur?">Fyrir alla?</button>
+      <button class="member-assistant__suggestion" data-query="Hver er afstaða flokksins til Evrópusambandsins?">ESB</button>
+      <button class="member-assistant__suggestion" data-query="Er flokkurinn á móti heimsvaldastefnu?">Heimsvaldastefna</button>
       <button class="member-assistant__suggestion" data-query="Hver er stefna flokksins í húsnæðismálum?">Húsnæðismál</button>
       <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um heilbrigðismál?">Heilbrigðismál</button>
       <button class="member-assistant__suggestion" data-query="Hver er afstaða flokksins til skatta?">Skattar</button>
+      <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um loftslagsmál og umhverfisvernd?">Umhverfismál</button>
+      <button class="member-assistant__suggestion" data-query="Hver er stefna flokksins í menntamálum?">Menntamál</button>
+      <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um réttindi launafólks og stéttarfélög?">Vinnumarkaður</button>
+      <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um velferðarkerfið og félagslegt öryggi?">Velferð</button>
+      <button class="member-assistant__suggestion" data-query="Hvenær var flokkurinn stofnaður og af hverjum?">Saga flokksins</button>
+      <button class="member-assistant__suggestion" data-query="Hvernig er flokkurinn skipulagður? Hvað eru sellur?">Uppbygging</button>
+      <button class="member-assistant__suggestion" data-query="Hver er afstaða flokksins til jafnréttismála?">Jafnrétti</button>
+      <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um málefni fatlaðs fólks?">Fötlunarmál</button>
     </div>
   `;
 }
