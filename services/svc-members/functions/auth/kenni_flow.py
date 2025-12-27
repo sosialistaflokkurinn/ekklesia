@@ -20,7 +20,7 @@ from shared.cors import get_allowed_origin, cors_headers_for_origin, parse_allow
 from shared.validators import normalize_kennitala, validate_kennitala, normalize_phone
 from shared.rate_limit import check_rate_limit
 from util_security import validate_auth_input
-from db_members import get_member_by_kennitala, update_member_firebase_uid
+from db_members import get_member_by_kennitala, get_member_firebase_uid, update_member_firebase_uid
 
 
 def get_kenni_is_jwks_client(issuer_url: str) -> PyJWKClient:
@@ -351,8 +351,36 @@ def handleKenniAuth_handler(req: https_fn.Request) -> https_fn.Response:
 
         # Sync firebase_uid to Django/Cloud SQL (non-blocking)
         # This enables Django admin to see which members have logged in
+        # Also handles duplicate account cleanup
         try:
-            sync_success = update_member_firebase_uid(normalized_kennitala, auth_uid)
+            # Check for existing different UID (duplicate account)
+            existing_uid = get_member_firebase_uid(normalized_kennitala)
+
+            if existing_uid and existing_uid != auth_uid:
+                # Duplicate detected! Delete old Firebase account and use new one
+                log_json("warn", "Duplicate Firebase account detected - cleaning up",
+                         kennitala=f"{normalized_kennitala[:6]}****",
+                         old_uid=existing_uid, new_uid=auth_uid,
+                         correlationId=correlation_id)
+                try:
+                    # Delete old Firebase Auth account
+                    auth.delete_user(existing_uid)
+                    log_json("info", "Deleted old duplicate Firebase account",
+                             old_uid=existing_uid, correlationId=correlation_id)
+                except auth.UserNotFoundError:
+                    log_json("debug", "Old Firebase account already deleted",
+                             old_uid=existing_uid, correlationId=correlation_id)
+                except Exception as del_err:
+                    log_json("error", "Failed to delete old Firebase account",
+                             old_uid=existing_uid, error=str(del_err),
+                             correlationId=correlation_id)
+
+                # Force update to new UID
+                sync_success = update_member_firebase_uid(normalized_kennitala, auth_uid, force=True)
+            else:
+                # Normal sync (no duplicate)
+                sync_success = update_member_firebase_uid(normalized_kennitala, auth_uid)
+
             if sync_success:
                 log_json("info", "Synced firebase_uid to Django",
                          kennitala=f"{normalized_kennitala[:6]}****",
