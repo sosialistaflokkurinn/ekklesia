@@ -397,37 +397,73 @@ def get_member_by_email(email: str) -> Optional[Dict[str, Any]]:
     }
 
 
-def update_member_firebase_uid(kennitala: str, firebase_uid: str) -> bool:
+def get_member_firebase_uid(kennitala: str) -> Optional[str]:
+    """
+    Get existing firebase_uid for a member by kennitala.
+
+    Args:
+        kennitala: 10-digit kennitala (with or without hyphen)
+
+    Returns:
+        firebase_uid if exists, None otherwise
+    """
+    kennitala = kennitala.replace("-", "").strip()
+
+    query = """
+        SELECT firebase_uid
+        FROM membership_comrade
+        WHERE ssn = %s AND firebase_uid IS NOT NULL
+    """
+
+    result = execute_query(query, params=(kennitala,), fetch_one=True)
+    if result and result.get('firebase_uid'):
+        return result['firebase_uid']
+    return None
+
+
+def update_member_firebase_uid(kennitala: str, firebase_uid: str, force: bool = False) -> bool:
     """
     Update firebase_uid for a member by kennitala.
 
     Called during login to sync Firebase UID to Django database.
-    Uses UPSERT pattern - only updates if firebase_uid is NULL or matches.
 
     Args:
         kennitala: 10-digit kennitala (with or without hyphen)
         firebase_uid: Firebase Auth UID
+        force: If True, overwrite existing UID (used after deleting duplicate)
 
     Returns:
         True if updated successfully, False otherwise
     """
     kennitala = kennitala.replace("-", "").strip()
 
-    # Only update if firebase_uid is NULL or already matches (idempotent)
-    # This prevents overwriting if there's a mismatch (should be investigated)
-    query = """
-        UPDATE membership_comrade
-        SET firebase_uid = %s
-        WHERE ssn = %s
-          AND (firebase_uid IS NULL OR firebase_uid = %s)
-    """
+    if force:
+        # Force update - used when cleaning up duplicates
+        query = """
+            UPDATE membership_comrade
+            SET firebase_uid = %s
+            WHERE ssn = %s
+        """
+        params = (firebase_uid, kennitala)
+    else:
+        # Safe update - only if NULL or matches (idempotent)
+        query = """
+            UPDATE membership_comrade
+            SET firebase_uid = %s
+            WHERE ssn = %s
+              AND (firebase_uid IS NULL OR firebase_uid = %s)
+        """
+        params = (firebase_uid, kennitala, firebase_uid)
 
     try:
-        from db import execute_query as exec_write
-        result = exec_write(query, params=(firebase_uid, kennitala, firebase_uid))
-        # execute_query returns affected rows count for UPDATE
-        logger.info(f"Updated firebase_uid for kennitala {kennitala[:6]}****")
-        return True
+        from db import execute_update
+        affected_rows = execute_update(query, params=params)
+        if affected_rows > 0:
+            logger.info(f"Updated firebase_uid for kennitala {kennitala[:6]}****")
+            return True
+        else:
+            logger.debug(f"No rows updated for kennitala {kennitala[:6]}**** (already synced or not found)")
+            return False
     except Exception as e:
         logger.error(f"Failed to update firebase_uid for kennitala {kennitala[:6]}****: {e}")
         return False
