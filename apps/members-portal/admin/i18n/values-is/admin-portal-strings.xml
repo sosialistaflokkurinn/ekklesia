@@ -178,6 +178,8 @@
   <string name="email_stats_opened">Opnað</string>
   <string name="email_stats_bounced">Skilað</string>
   <string name="email_stats_period">síðustu %d daga</string>
+  <string name="email_stats_title">Tölfræði</string>
+  <string name="email_stats_error">Gat ekki hlaðið tölfræði</string>
 
   <!-- Email Templates -->
   <string name="email_templates_title">Sniðmát</string>

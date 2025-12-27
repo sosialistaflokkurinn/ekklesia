@@ -3,10 +3,13 @@
  *
  * Displays election results with vote distribution and export options.
  * Supports both standard elections and ranked choice (raðkosning).
+ *
+ * Module cleanup not needed - page reloads on navigation.
  */
 
 import { fetchElectionResults, fetchElection } from './api/elections-admin-api.js';
 import { initAuthenticatedPage } from '../../js/page-init.js';
+import { formatDateTimeIcelandic } from '../../js/utils/util-format.js';
 
 // DOM Elements
 const elements = {
@@ -62,14 +65,7 @@ function getElectionId() {
  */
 function formatDate(dateString) {
   if (!dateString) return '-';
-  const date = new Date(dateString);
-  return date.toLocaleDateString('is-IS', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+  return formatDateTimeIcelandic(dateString);
 }
 
 /**

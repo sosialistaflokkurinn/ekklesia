@@ -1,9 +1,11 @@
 /**
  * Navigation Header Component
- * 
+ *
  * Reusable navigation component for all authenticated pages.
  * Provides consistent navigation with responsive hamburger menu.
- * 
+ *
+ * Module cleanup not needed - navigation persists for page lifetime.
+ *
  * FEATURES:
  * - Desktop: Horizontal navigation bar with links
  * - Mobile: Hamburger menu with slide-in drawer
@@ -11,7 +13,7 @@
  * - Auto-initialization with nav.js
  * - i18n string loading
  * - ARIA accessibility
- * 
+ *
  * USAGE:
  * ```javascript
  * import { createNavHeader } from '../ui/components/nav-header.js';

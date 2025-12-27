@@ -2,6 +2,8 @@
  * Architecture Diagram - SVG Interactions
  *
  * Handles the interactive SVG architecture diagram in the first tab.
+ *
+ * Module cleanup not needed - diagram persists for page lifetime.
  */
 
 import { superuserStrings } from '../i18n/superuser-strings-loader.js';

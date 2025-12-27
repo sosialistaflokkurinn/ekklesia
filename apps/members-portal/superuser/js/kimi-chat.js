@@ -2,10 +2,14 @@
  * Kimi AI Chat Widget for Superuser Dashboard
  *
  * Floating chat widget that provides AI-powered system administration help.
+ *
+ * Module cleanup not needed - widget persists for page lifetime.
+ * i18n: Strings loaded by HTML before this module - initI18n not needed here.
  */
 
 import { debug } from '../../js/utils/util-debug.js';
 import { getFirebaseAuth } from '../../firebase/app.js';
+import { R } from '../../i18n/strings-loader.js';
 
 const EVENTS_API_BASE = 'https://events-service-521240388393.europe-west1.run.app';
 
@@ -24,26 +28,26 @@ function createChatWidget() {
   const widget = document.createElement('div');
   widget.id = 'kimi-chat-widget';
   widget.innerHTML = `
-    <button id="kimi-chat-toggle" class="kimi-chat__toggle" title="Kimi aðstoð">
+    <button id="kimi-chat-toggle" class="kimi-chat__toggle" title="${R.string.kimi_chat_title}">
       <span class="kimi-chat__toggle-icon">🤖</span>
     </button>
     <div id="kimi-chat-panel" class="kimi-chat__panel kimi-chat__panel--hidden">
       <div class="kimi-chat__header">
-        <span class="kimi-chat__title">🤖 Kimi Aðstoð</span>
+        <span class="kimi-chat__title">${R.string.kimi_chat_header}</span>
         <div class="kimi-chat__header-actions">
-          <select id="kimi-chat-model" class="kimi-chat__model-select" title="Velja módel">
-            <option value="kimi-k2-0711-preview">⚡ Hraður</option>
-            <option value="kimi-k2-thinking">🧠 Nákvæmur (hægur)</option>
+          <select id="kimi-chat-model" class="kimi-chat__model-select" title="${R.string.kimi_chat_select_model}">
+            <option value="kimi-k2-0711-preview">${R.string.kimi_chat_model_fast}</option>
+            <option value="kimi-k2-thinking">${R.string.kimi_chat_model_accurate}</option>
           </select>
-          <button id="kimi-chat-clear" class="kimi-chat__clear" title="Nýtt samtal">🗑️</button>
-          <button id="kimi-chat-expand" class="kimi-chat__expand" title="Stækka">⛶</button>
-          <button id="kimi-chat-close" class="kimi-chat__close" title="Loka">&times;</button>
+          <button id="kimi-chat-clear" class="kimi-chat__clear" title="${R.string.member_assistant_new_chat}">🗑️</button>
+          <button id="kimi-chat-expand" class="kimi-chat__expand" title="${R.string.member_assistant_expand}">⛶</button>
+          <button id="kimi-chat-close" class="kimi-chat__close" title="${R.string.member_assistant_close}">&times;</button>
         </div>
       </div>
       <div id="kimi-chat-messages" class="kimi-chat__messages">
         <div class="kimi-chat__message kimi-chat__message--assistant">
           <div class="kimi-chat__bubble">
-            Hæ! Ég er Kimi, gervigreindaraðstoðarmaður fyrir Ekklesia kerfið. Hvernig get ég aðstoðað þig?
+            ${R.string.kimi_chat_welcome}
           </div>
         </div>
       </div>
@@ -51,10 +55,10 @@ function createChatWidget() {
         <textarea
           id="kimi-chat-input"
           class="kimi-chat__input"
-          placeholder="Skrifaðu spurningu..."
+          placeholder="${R.string.kimi_chat_placeholder}"
           rows="1"
         ></textarea>
-        <button id="kimi-chat-send" class="kimi-chat__send" title="Senda">
+        <button id="kimi-chat-send" class="kimi-chat__send" title="${R.string.member_assistant_send}">
           <span>➤</span>
         </button>
       </div>
@@ -422,7 +426,7 @@ function showLoading() {
   coldStartTimer = setTimeout(() => {
     const textEl = loadingEl.querySelector('.kimi-chat__loading-text');
     if (textEl) {
-      textEl.textContent = ' Kimi er að vakna...';
+      textEl.textContent = ` ${R.string.kimi_chat_waking_up}`;
     }
   }, 3000);
 
@@ -430,7 +434,7 @@ function showLoading() {
   setTimeout(() => {
     const textEl = loadingEl.querySelector('.kimi-chat__loading-text');
     if (textEl && textEl.textContent) {
-      textEl.textContent = ' Sæki gögn úr kerfinu...';
+      textEl.textContent = ` ${R.string.kimi_chat_fetching_data}`;
     }
   }, 8000);
 }
@@ -472,7 +476,7 @@ async function fetchKimiApi(url, options) {
 
     if (!response.ok) {
       // Use error message from server if available
-      const errorMsg = data.message || 'Villa kom upp';
+      const errorMsg = data.message || R.string.kimi_chat_error_generic;
       const errorType = data.error || 'unknown';
       const retryAfter = data.retryAfter || parseInt(response.headers.get('Retry-After')) || null;
 
@@ -489,7 +493,7 @@ async function fetchKimiApi(url, options) {
     // Network errors
     if (error.name === 'TypeError' && error.message.includes('fetch')) {
       throw new KimiApiError(
-        'Náði ekki sambandi við þjónustuna. Athugaðu nettengingu.',
+        R.string.kimi_chat_error_network,
         'network_error',
         null,
         0
@@ -498,7 +502,7 @@ async function fetchKimiApi(url, options) {
 
     // Other errors
     throw new KimiApiError(
-      error.message || 'Óvænt villa kom upp',
+      error.message || R.string.kimi_chat_error_unexpected,
       'unknown',
       null,
       500
@@ -531,7 +535,7 @@ async function sendMessage(message) {
     const auth = getFirebaseAuth();
     const user = auth.currentUser;
     if (!user) {
-      throw new KimiApiError('Þú þarft að skrá þig inn aftur.', 'auth_error', null, 401);
+      throw new KimiApiError(R.string.kimi_chat_error_auth, 'auth_error', null, 401);
     }
 
     const token = await user.getIdToken();
@@ -564,18 +568,18 @@ async function sendMessage(message) {
     hideLoading();
 
     // Build user-friendly error message
-    let errorMsg = error.message || 'Villa kom upp.';
+    let errorMsg = error.message || R.string.kimi_chat_error_generic;
 
     // Add retry info if available
     if (error.retryAfter) {
-      errorMsg += ` Reyndu aftur eftir ${error.retryAfter} sekúndur.`;
+      errorMsg += ` ${R.string.kimi_chat_retry_format.replace('%d', error.retryAfter)}`;
     }
 
     // Add helpful hints based on error type
     if (error.type === 'context_exceeded') {
-      errorMsg += '\n\n💡 Ábending: Smelltu á "Nýtt samtal" til að byrja upp á nýtt.';
+      errorMsg += `\n\n${R.string.kimi_chat_hint_context}`;
     } else if (error.type === 'rate_limit') {
-      errorMsg += '\n\n⏳ Of margar beiðnir sendar. Bíddu aðeins.';
+      errorMsg += `\n\n${R.string.kimi_chat_hint_rate_limit}`;
     }
 
     addMessage('assistant', errorMsg);
@@ -615,11 +619,11 @@ function toggleExpand() {
   if (isExpanded) {
     panel.classList.add('kimi-chat__panel--expanded');
     expandBtn.textContent = '⛶';
-    expandBtn.title = 'Minnka';
+    expandBtn.title = R.string.member_assistant_shrink;
   } else {
     panel.classList.remove('kimi-chat__panel--expanded');
     expandBtn.textContent = '⛶';
-    expandBtn.title = 'Stækka';
+    expandBtn.title = R.string.member_assistant_expand;
   }
 }
 
@@ -635,7 +639,7 @@ function clearChat() {
   messagesEl.innerHTML = `
     <div class="kimi-chat__message kimi-chat__message--assistant">
       <div class="kimi-chat__bubble">
-        Hæ! Ég er Kimi, gervigreindaraðstoðarmaður fyrir Ekklesia kerfið. Hvernig get ég aðstoðað þig?
+        ${R.string.kimi_chat_welcome}
       </div>
     </div>
   `;

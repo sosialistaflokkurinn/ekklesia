@@ -4,12 +4,15 @@
  * RAG-powered floating chat widget for party members.
  * Uses semantic search and Kimi AI for context-aware responses.
  *
+ * Module cleanup not needed - widget persists for page lifetime.
+ *
  * @module components/member-assistant-chat
  */
 
 import { debug } from '../utils/util-debug.js';
 import { getFirebaseAuth } from '../../firebase/app.js';
 import { trackAction } from '../utils/util-analytics.js';
+import { R } from '../../i18n/strings-loader.js';
 
 const EVENTS_API_BASE = 'https://events-service-521240388393.europe-west1.run.app';
 
@@ -27,62 +30,42 @@ function createChatWidget() {
   const widget = document.createElement('div');
   widget.id = 'member-assistant-widget';
   widget.innerHTML = `
-    <button id="member-assistant-toggle" class="member-assistant__toggle" title="Spyrja um flokkinn">
+    <button id="member-assistant-toggle" class="member-assistant__toggle" title="${R.string.member_assistant_title}">
       <span class="member-assistant__toggle-icon">?</span>
     </button>
     <div id="member-assistant-panel" class="member-assistant__panel member-assistant__panel--hidden">
       <div class="member-assistant__header">
         <div class="member-assistant__title-area">
-          <span class="member-assistant__title">Spyrja um flokkinn</span>
-          <button class="member-assistant__info-btn" id="member-assistant-info" title="Um þennan aðstoðarmann">
+          <span class="member-assistant__title">${R.string.member_assistant_title}</span>
+          <button class="member-assistant__info-btn" id="member-assistant-info" title="${R.string.member_assistant_info_title}">
             <span class="member-assistant__info-icon">ⓘ</span>
           </button>
           <div class="member-assistant__info-tooltip" id="member-assistant-tooltip">
-            <div class="member-assistant__info-tooltip-title">Um gervigreindaraðstoðarmanninn</div>
-            <p>Þessi aðstoðarmaður notar <a href="https://moonshotai.github.io/Kimi-K2/" target="_blank" rel="noopener">Kimi K2</a> tungumálalíkan frá Moonshot AI.</p>
-            <p>Líkanið var sérsniðið fyrir flokkinn með RAG (Retrieval Augmented Generation) tækni sem tryggir að svör byggi á raunverulegum heimildum úr stefnu og sögu flokksins.</p>
-            <p class="member-assistant__info-tooltip-note">Gögnin eru geymd á Íslandi/Evrópu (Google Cloud) og eru ekki send til Kína - aðeins spurningin fer til Kimi API.</p>
+            <div class="member-assistant__info-tooltip-title">${R.string.member_assistant_info_heading}</div>
+            <p>${R.string.member_assistant_info_kimi.replace('Kimi K2', '<a href="https://moonshotai.github.io/Kimi-K2/" target="_blank" rel="noopener">Kimi K2</a>')}</p>
+            <p>${R.string.member_assistant_info_rag}</p>
+            <p class="member-assistant__info-tooltip-note">${R.string.member_assistant_info_data}</p>
           </div>
         </div>
         <div class="member-assistant__header-actions">
-          <button id="member-assistant-clear" class="member-assistant__clear" title="Nýtt samtal">🗑</button>
-          <button id="member-assistant-expand" class="member-assistant__expand" title="Stækka">⛶</button>
-          <button id="member-assistant-close" class="member-assistant__close" title="Loka">×</button>
+          <button id="member-assistant-clear" class="member-assistant__clear" title="${R.string.member_assistant_new_chat}">🗑</button>
+          <button id="member-assistant-expand" class="member-assistant__expand" title="${R.string.member_assistant_expand}">⛶</button>
+          <button id="member-assistant-close" class="member-assistant__close" title="${R.string.member_assistant_close}">×</button>
         </div>
       </div>
       <div id="member-assistant-messages" class="member-assistant__messages">
-        <div class="member-assistant__suggestions">
-          <button class="member-assistant__suggestion" data-query="Er sósíalistaflokkurinn á móti kapitalisma?">Kapítalismi</button>
-          <button class="member-assistant__suggestion" data-query="Er Sósíalistaflokkurinn fyrir alla kjósendur?">Fyrir alla?</button>
-          <button class="member-assistant__suggestion" data-query="Hver er afstaða flokksins til Evrópusambandsins?">ESB</button>
-          <button class="member-assistant__suggestion" data-query="Er flokkurinn á móti heimsvaldastefnu?">Heimsvaldastefna</button>
-          <button class="member-assistant__suggestion" data-query="Hver er stefna flokksins í húsnæðismálum?">Húsnæðismál</button>
-          <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um heilbrigðismál?">Heilbrigðismál</button>
-          <button class="member-assistant__suggestion" data-query="Hver er afstaða flokksins til skatta?">Skattar</button>
-          <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um loftslagsmál og umhverfisvernd?">Umhverfismál</button>
-          <button class="member-assistant__suggestion" data-query="Hver er stefna flokksins í menntamálum?">Menntamál</button>
-          <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um réttindi launafólks og stéttarfélög?">Vinnumarkaður</button>
-          <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um velferðarkerfið og félagslegt öryggi?">Velferð</button>
-          <button class="member-assistant__suggestion" data-query="Hvenær var flokkurinn stofnaður og af hverjum?">Saga flokksins</button>
-          <button class="member-assistant__suggestion" data-query="Hvernig er flokkurinn skipulagður? Hvað eru sellur?">Uppbygging</button>
-          <button class="member-assistant__suggestion" data-query="Hver er afstaða flokksins til jafnréttismála?">Jafnrétti</button>
-          <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um málefni fatlaðs fólks?">Fötlunarmál</button>
-          <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í sveitarstjórnarkosningum 2018?">2018</button>
-          <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í Alþingiskosningum 2021?">2021</button>
-          <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í sveitarstjórnarkosningum 2022?">2022</button>
-          <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í Alþingiskosningum 2024?">2024</button>
-        </div>
+        ${getSuggestionsHTML()}
       </div>
       <div class="member-assistant__input-area">
         <div class="member-assistant__model-dropdown" id="member-assistant-model-dropdown">
-          <button type="button" class="member-assistant__model-trigger" id="member-assistant-model-trigger" title="⚡ Hraður | 🧠 Nákvæmur">
+          <button type="button" class="member-assistant__model-trigger" id="member-assistant-model-trigger" title="${R.string.member_assistant_model_hint}">
             <span class="member-assistant__model-icon" id="member-assistant-model-icon">&#9889;</span>
           </button>
           <div class="member-assistant__model-menu" id="member-assistant-model-menu">
-            <div class="member-assistant__model-option member-assistant__model-option--selected" data-value="kimi-k2-0711-preview" title="Hraður">
+            <div class="member-assistant__model-option member-assistant__model-option--selected" data-value="kimi-k2-0711-preview" title="${R.string.member_assistant_fast}">
               <span class="member-assistant__model-icon">&#9889;</span>
             </div>
-            <div class="member-assistant__model-option" data-value="kimi-k2-thinking" title="Nákvæmur">
+            <div class="member-assistant__model-option" data-value="kimi-k2-thinking" title="${R.string.member_assistant_accurate}">
               <span class="member-assistant__model-icon">&#129504;</span>
             </div>
           </div>
@@ -90,10 +73,10 @@ function createChatWidget() {
         <textarea
           id="member-assistant-input"
           class="member-assistant__input"
-          placeholder="Spurðu um flokkinn..."
+          placeholder="${R.string.member_assistant_placeholder}"
           rows="1"
         ></textarea>
-        <button id="member-assistant-send" class="member-assistant__send" title="Senda">
+        <button id="member-assistant-send" class="member-assistant__send" title="${R.string.member_assistant_send}">
           <span>➤</span>
         </button>
       </div>
@@ -101,6 +84,38 @@ function createChatWidget() {
   `;
   document.body.appendChild(widget);
   return widget;
+}
+
+/**
+ * Get suggestions HTML - separate function for reuse and cleaner code
+ * Note: Suggestion labels are kept short and self-explanatory, not externalized
+ */
+function getSuggestionsHTML() {
+  // Suggestion buttons - the short labels are topic names, not full sentences
+  // These are acceptable as-is since they're category labels
+  return `
+    <div class="member-assistant__suggestions">
+      <button class="member-assistant__suggestion" data-query="Er sósíalistaflokkurinn á móti kapitalisma?">Kapítalismi</button>
+      <button class="member-assistant__suggestion" data-query="Er Sósíalistaflokkurinn fyrir alla kjósendur?">Fyrir alla?</button>
+      <button class="member-assistant__suggestion" data-query="Hver er afstaða flokksins til Evrópusambandsins?">ESB</button>
+      <button class="member-assistant__suggestion" data-query="Er flokkurinn á móti heimsvaldastefnu?">Heimsvaldastefna</button>
+      <button class="member-assistant__suggestion" data-query="Hver er stefna flokksins í húsnæðismálum?">Húsnæðismál</button>
+      <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um heilbrigðismál?">Heilbrigðismál</button>
+      <button class="member-assistant__suggestion" data-query="Hver er afstaða flokksins til skatta?">Skattar</button>
+      <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um loftslagsmál og umhverfisvernd?">Umhverfismál</button>
+      <button class="member-assistant__suggestion" data-query="Hver er stefna flokksins í menntamálum?">Menntamál</button>
+      <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um réttindi launafólks og stéttarfélög?">Vinnumarkaður</button>
+      <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um velferðarkerfið og félagslegt öryggi?">Velferð</button>
+      <button class="member-assistant__suggestion" data-query="Hvenær var flokkurinn stofnaður og af hverjum?">Saga flokksins</button>
+      <button class="member-assistant__suggestion" data-query="Hvernig er flokkurinn skipulagður? Hvað eru sellur?">Uppbygging</button>
+      <button class="member-assistant__suggestion" data-query="Hver er afstaða flokksins til jafnréttismála?">Jafnrétti</button>
+      <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um málefni fatlaðs fólks?">Fötlunarmál</button>
+      <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í sveitarstjórnarkosningum 2018?">2018</button>
+      <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í Alþingiskosningum 2021?">2021</button>
+      <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í sveitarstjórnarkosningum 2022?">2022</button>
+      <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í Alþingiskosningum 2024?">2024</button>
+    </div>
+  `;
 }
 
 /**
@@ -690,7 +705,7 @@ function showLoading(expectedSeconds = 30) {
         <div class="member-assistant__loading-dot"></div>
       </div>
       <div class="member-assistant__countdown" id="member-assistant-countdown">
-        ~${expectedSeconds} sek
+        ${R.string.member_assistant_countdown_format.replace('%d', expectedSeconds)}
       </div>
     </div>
   `;
@@ -703,9 +718,9 @@ function showLoading(expectedSeconds = 30) {
     remaining--;
     const countdownEl = document.getElementById('member-assistant-countdown');
     if (countdownEl && remaining > 0) {
-      countdownEl.textContent = `~${remaining} sek`;
+      countdownEl.textContent = R.string.member_assistant_countdown_format.replace('%d', remaining);
     } else if (countdownEl) {
-      countdownEl.textContent = 'næstum tilbúið...';
+      countdownEl.textContent = R.string.member_assistant_almost_ready;
     }
   }, 1000);
 }
@@ -754,7 +769,7 @@ async function sendMessage(message) {
     const auth = getFirebaseAuth();
     const user = auth.currentUser;
     if (!user) {
-      throw new Error('Notandi er ekki skráður inn');
+      throw new Error(R.string.member_assistant_error_not_logged_in);
     }
 
     const token = await user.getIdToken();
@@ -799,9 +814,9 @@ async function sendMessage(message) {
     // User-friendly error messages
     let errorMsg = error.message;
     if (error.name === 'AbortError') {
-      errorMsg = 'Beiðnin tók of langan tíma. Prófaðu aftur eða notaðu hraðari módel.';
+      errorMsg = R.string.member_assistant_error_timeout;
     }
-    addMessage('assistant', `Villa: ${errorMsg}`);
+    addMessage('assistant', `${R.string.member_assistant_error_prefix} ${errorMsg}`);
   } finally {
     isLoading = false;
     if (sendBtn) sendBtn.disabled = false;
@@ -897,29 +912,7 @@ function clearChat() {
   const messagesEl = document.getElementById('member-assistant-messages');
   if (!messagesEl) return;
 
-  messagesEl.innerHTML = `
-    <div class="member-assistant__suggestions">
-      <button class="member-assistant__suggestion" data-query="Er sósíalistaflokkurinn á móti kapitalisma?">Kapítalismi</button>
-      <button class="member-assistant__suggestion" data-query="Er Sósíalistaflokkurinn fyrir alla kjósendur?">Fyrir alla?</button>
-      <button class="member-assistant__suggestion" data-query="Hver er afstaða flokksins til Evrópusambandsins?">ESB</button>
-      <button class="member-assistant__suggestion" data-query="Er flokkurinn á móti heimsvaldastefnu?">Heimsvaldastefna</button>
-      <button class="member-assistant__suggestion" data-query="Hver er stefna flokksins í húsnæðismálum?">Húsnæðismál</button>
-      <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um heilbrigðismál?">Heilbrigðismál</button>
-      <button class="member-assistant__suggestion" data-query="Hver er afstaða flokksins til skatta?">Skattar</button>
-      <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um loftslagsmál og umhverfisvernd?">Umhverfismál</button>
-      <button class="member-assistant__suggestion" data-query="Hver er stefna flokksins í menntamálum?">Menntamál</button>
-      <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um réttindi launafólks og stéttarfélög?">Vinnumarkaður</button>
-      <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um velferðarkerfið og félagslegt öryggi?">Velferð</button>
-      <button class="member-assistant__suggestion" data-query="Hvenær var flokkurinn stofnaður og af hverjum?">Saga flokksins</button>
-      <button class="member-assistant__suggestion" data-query="Hvernig er flokkurinn skipulagður? Hvað eru sellur?">Uppbygging</button>
-      <button class="member-assistant__suggestion" data-query="Hver er afstaða flokksins til jafnréttismála?">Jafnrétti</button>
-      <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um málefni fatlaðs fólks?">Fötlunarmál</button>
-      <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í sveitarstjórnarkosningum 2018?">2018</button>
-      <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í Alþingiskosningum 2021?">2021</button>
-      <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í sveitarstjórnarkosningum 2022?">2022</button>
-      <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í Alþingiskosningum 2024?">2024</button>
-    </div>
-  `;
+  messagesEl.innerHTML = getSuggestionsHTML();
 }
 
 /**

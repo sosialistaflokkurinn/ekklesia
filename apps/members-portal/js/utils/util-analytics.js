@@ -4,6 +4,8 @@
  * Tracks user activity for understanding portal usage.
  * Automatically excludes admin users on the backend.
  *
+ * Module cleanup not needed - analytics observers persist for app lifetime.
+ *
  * @module utils/util-analytics
  */
 
@@ -48,8 +50,9 @@ export async function trackEvent(eventType, eventName, eventData = null) {
       sessionId: getSessionId(),
     };
 
-    // Fire and forget - don't wait for response
-    fetch(`${EVENTS_API_BASE}/api/analytics/track`, {
+    // Fire and forget - intentionally not awaited
+    // Analytics should never block the main thread or affect user experience
+    void fetch(`${EVENTS_API_BASE}/api/analytics/track`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

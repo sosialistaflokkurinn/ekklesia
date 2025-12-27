@@ -7,6 +7,8 @@
  * - Status filtering
  * - Pagination
  * - Loading/error/empty states
+ *
+ * Module cleanup not needed - page reloads on navigation.
  */
 
 // Import from member portal public directory

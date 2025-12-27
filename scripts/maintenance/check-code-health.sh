@@ -184,7 +184,8 @@ for jsfile in $JS_FILES; do
     
     if [[ $add_count -gt 0 ]] && [[ $remove_count -eq 0 ]]; then
       # Check if it's a one-time init or module that cleans up
-      if ! grep -q "// Module cleanup not needed\|// One-time init\|// Cleanup in" "$jsfile"; then
+      # Supports both // and * (JSDoc) comment styles
+      if ! grep -qE "(//|\*) (Module cleanup not needed|One-time init|Cleanup in|Cleanup handled)" "$jsfile"; then
         echo -e "  ${YELLOW}⚠️  addEventListener without cleanup:${NC} $jsfile"
         echo -e "      ${add_count} addEventListener, ${remove_count} removeEventListener"
         ((DUPLICATE_LISTENERS++)) || true

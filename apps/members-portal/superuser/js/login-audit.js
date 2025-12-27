@@ -4,6 +4,8 @@
  * Displays user login history from Firebase Auth logs.
  * Shows successful logins and failed attempts.
  *
+ * Module cleanup not needed - page reloads on navigation.
+ *
  * Backend: Uses Firestore /users/ collection for login metadata
  */
 

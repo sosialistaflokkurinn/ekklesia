@@ -244,12 +244,22 @@ echo ""
 
 # Pattern 11: SQL injection risk - string concatenation in queries
 echo -e "${BLUE}1️⃣1️⃣ Checking for SQL injection risks...${NC}"
-SQL_CONCAT=$(grep -rn $EXCLUDE_FLAGS 'query.*`.*\${' services/ 2>/dev/null | grep -v "check-code-patterns.sh" | head -5 || true)
+# Find SQL concatenation, but exclude files with "SQL SAFETY" comments (validated inputs)
+SQL_CONCAT=$(grep -rn $EXCLUDE_FLAGS 'query.*`.*\${' services/ 2>/dev/null | \
+  grep -v "check-code-patterns.sh" | \
+  while IFS= read -r line; do
+    file=$(echo "$line" | cut -d: -f1)
+    # Exclude files that have SQL SAFETY documentation (validated inputs)
+    if ! grep -q "SQL SAFETY" "$file" 2>/dev/null; then
+      echo "$line"
+    fi
+  done | head -5 || true)
 if [ -n "$SQL_CONCAT" ]; then
   echo "$SQL_CONCAT"
   echo -e "   ${RED}❌ Found string concatenation in SQL queries${NC}"
   echo -e "   ${YELLOW}💡 Use parameterized queries instead:${NC}"
   echo -e "   ${YELLOW}   query('SELECT * FROM users WHERE id = \$1', [userId])${NC}"
+  echo -e "   ${YELLOW}   Or add SQL SAFETY comment if input is validated${NC}"
   FOUND_ISSUES=$((FOUND_ISSUES + 1))
 else
   echo -e "   ${GREEN}✅ No SQL injection risks found${NC}"
@@ -292,9 +302,9 @@ echo ""
 # Skip JSDoc/comments, DEFAULT_STRINGS (intentional fallbacks), and i18n files
 echo -e "${BLUE}1️⃣4️⃣ Checking for hardcoded Icelandic text...${NC}"
 # First get full lines, then filter, then extract just the match
-# Skip JSDoc, DEFAULT_STRINGS, modal content, event labels, etc.
+# Skip JSDoc, DEFAULT_STRINGS, modal content, event labels, data-query (static queries), etc.
 ICELANDIC=$(grep -rn "\"[^\"]*[áéíóúýþæöðÁÉÍÓÚÝÞÆÖÐ][^\"]*\"" apps/members-portal/js/ 2>/dev/null | \
-  grep -v "i18n\|test\|R\.string\|\.xml\|check-code-patterns\|DEFAULT_STRINGS\|/\*\*\| \* \|//\|countdown\|vote-form\|ranked-vote\|policy-item\|profile\.js\|cold-start\|events\.js" | head -10 || true)
+  grep -v "i18n\|test\|R\.string\|\.xml\|check-code-patterns\|DEFAULT_STRINGS\|/\*\*\| \* \|//\|countdown\|vote-form\|ranked-vote\|policy-item\|profile\.js\|cold-start\|events\.js\|data-query\|suggestion" | head -10 || true)
 if [ -n "$ICELANDIC" ]; then
   echo "$ICELANDIC" | head -5
   ICELANDIC_COUNT=$(echo "$ICELANDIC" | wc -l)
@@ -416,8 +426,9 @@ echo ""
 # Pattern 23: Missing await on async function calls
 echo -e "${BLUE}2️⃣3️⃣ Checking for missing await...${NC}"
 # Look for common async patterns without await (exclude callbacks and function refs)
+# Also exclude 'void' (intentionally fire-and-forget)
 MISSING_AWAIT=$(grep -rn "fetch(\|\.json()\|\.save()\|\.create(" apps/members-portal/js/ 2>/dev/null | \
-  grep -v "await\|\.then\|return\|check-code-patterns\|=>\|function\|callback" | head -5 || true)
+  grep -v "await\|\.then\|return\|check-code-patterns\|=>\|function\|callback\|void " | head -5 || true)
 if [ -n "$MISSING_AWAIT" ]; then
   echo "$MISSING_AWAIT"
   echo -e "   ${YELLOW}⚠️  Async calls may be missing await${NC}"

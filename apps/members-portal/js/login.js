@@ -3,6 +3,8 @@
  *
  * Handles Kenni.is OAuth authentication with PKCE flow.
  *
+ * Module cleanup not needed - page reloads on navigation.
+ *
  * @module login
  */
 

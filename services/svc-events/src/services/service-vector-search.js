@@ -231,6 +231,8 @@ async function searchSimilar(embedding, options = {}) {
         // This ensures "2018" in query matches documents with "2018" in title
         let yearBoostClause = '1.0';
         if (queryYears.length > 0) {
+          // SQL SAFETY: queryYears comes from regex /\b(20[1-3]\d)\b/ which only captures
+          // 4-digit years (2010-2039). These are validated digits, safe for SQL interpolation.
           const yearPatterns = queryYears.map(y => `title LIKE '%${y}%'`);
           yearBoostClause = `CASE WHEN ${yearPatterns.join(' OR ')} THEN 2.0 ELSE 1.0 END`;
         }
