@@ -15,6 +15,24 @@ const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
 const crypto = require('crypto');
 
 /**
+ * Admin IPs exempt from rate limiting
+ * Used for development and testing
+ */
+const EXEMPT_IPS = [
+  '46.182.187.140',  // gudrodur dev
+];
+
+/**
+ * Check if request should skip rate limiting
+ * @param {Object} req - Express request
+ * @returns {boolean} true to skip rate limiting
+ */
+function shouldSkipRateLimit(req) {
+  const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || '';
+  return EXEMPT_IPS.includes(ip);
+}
+
+/**
  * Generate a rate limit key with fingerprinting
  *
  * Uses authenticated user ID when available, otherwise falls back
@@ -66,6 +84,7 @@ const readLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 100, // 100 requests per window
   keyGenerator: fingerprintKeyGenerator,
+  skip: shouldSkipRateLimit,
   message: {
     error: 'RATE_LIMIT_EXCEEDED',
     message: 'Too many requests, please try again later.',
@@ -87,6 +106,7 @@ const writeLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 30, // 30 requests per window
   keyGenerator: fingerprintKeyGenerator,
+  skip: shouldSkipRateLimit,
   message: {
     error: 'RATE_LIMIT_EXCEEDED',
     message: 'Too many write requests, please try again later.',
@@ -107,6 +127,7 @@ const voteLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 10, // 10 requests per window (strict for security)
   keyGenerator: fingerprintKeyGenerator,
+  skip: shouldSkipRateLimit, // Admin IPs exempt
   message: {
     error: 'RATE_LIMIT_EXCEEDED',
     message: 'Too many vote attempts, please try again later.',
@@ -115,8 +136,6 @@ const voteLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   validate: false
-  // Note: Removed skip() to prevent rate limit bypass via validation errors
-  // All vote attempts now count against the rate limit
 });
 
 /**
@@ -129,6 +148,7 @@ const adminLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 60, // 60 requests per window (moderate for admin operations)
   keyGenerator: fingerprintKeyGenerator,
+  skip: shouldSkipRateLimit, // Admin IPs exempt
   message: {
     error: 'RATE_LIMIT_EXCEEDED',
     message: 'Too many admin requests, please try again later.',

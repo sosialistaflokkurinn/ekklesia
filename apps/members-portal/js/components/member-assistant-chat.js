@@ -9,6 +9,7 @@
 
 import { debug } from '../utils/util-debug.js';
 import { getFirebaseAuth } from '../../firebase/app.js';
+import { trackAction } from '../utils/util-analytics.js';
 
 const EVENTS_API_BASE = 'https://events-service-521240388393.europe-west1.run.app';
 
@@ -66,13 +67,26 @@ function createChatWidget() {
           <button class="member-assistant__suggestion" data-query="Hvernig er flokkurinn skipulagður? Hvað eru sellur?">Uppbygging</button>
           <button class="member-assistant__suggestion" data-query="Hver er afstaða flokksins til jafnréttismála?">Jafnrétti</button>
           <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um málefni fatlaðs fólks?">Fötlunarmál</button>
+          <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í sveitarstjórnarkosningum 2018?">2018</button>
+          <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í Alþingiskosningum 2021?">2021</button>
+          <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í sveitarstjórnarkosningum 2022?">2022</button>
+          <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í Alþingiskosningum 2024?">2024</button>
         </div>
       </div>
       <div class="member-assistant__input-area">
-        <select id="member-assistant-model" class="member-assistant__model-select" title="Hraður eða nákvæmur">
-          <option value="kimi-k2-0711-preview">Hraður</option>
-          <option value="kimi-k2-thinking">Nákvæmur</option>
-        </select>
+        <div class="member-assistant__model-dropdown" id="member-assistant-model-dropdown">
+          <button type="button" class="member-assistant__model-trigger" id="member-assistant-model-trigger" title="⚡ Hraður | 🧠 Nákvæmur">
+            <span class="member-assistant__model-icon" id="member-assistant-model-icon">&#9889;</span>
+          </button>
+          <div class="member-assistant__model-menu" id="member-assistant-model-menu">
+            <div class="member-assistant__model-option member-assistant__model-option--selected" data-value="kimi-k2-0711-preview" title="Hraður">
+              <span class="member-assistant__model-icon">&#9889;</span>
+            </div>
+            <div class="member-assistant__model-option" data-value="kimi-k2-thinking" title="Nákvæmur">
+              <span class="member-assistant__model-icon">&#129504;</span>
+            </div>
+          </div>
+        </div>
         <textarea
           id="member-assistant-input"
           class="member-assistant__input"
@@ -187,24 +201,26 @@ function addChatStyles() {
     }
 
     .member-assistant__info-btn {
-      background: none;
-      border: none;
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.4);
       color: inherit;
       cursor: pointer;
-      padding: 2px;
-      opacity: 0.7;
-      font-size: 14px;
+      padding: 4px 8px;
+      font-size: 12px;
       line-height: 1;
-      border-radius: 50%;
-      transition: opacity 0.2s;
+      border-radius: 12px;
+      box-shadow: 0 0 8px rgba(255,255,255,0.6);
+      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
     }
 
     .member-assistant__info-btn:hover {
-      opacity: 1;
+      background: rgba(255,255,255,0.3);
+      border-color: rgba(255,255,255,0.6);
+      box-shadow: 0 0 12px rgba(255,255,255,0.8);
     }
 
     .member-assistant__info-icon {
-      font-size: 14px;
+      font-size: 12px;
     }
 
     .member-assistant__info-tooltip {
@@ -264,29 +280,74 @@ function addChatStyles() {
       gap: 8px;
     }
 
-    .member-assistant__model-select {
-      background: var(--color-cream-dark, #f5e6d3);
-      border: 1px solid var(--color-cream-dark, #f5e6d3);
-      color: var(--color-text, #333);
-      font-size: 11px;
-      padding: 6px 4px;
-      border-radius: 8px;
-      cursor: pointer;
-      outline: none;
+    .member-assistant__model-dropdown {
+      position: relative;
       flex-shrink: 0;
     }
 
-    .member-assistant__model-select:hover {
-      border-color: var(--color-burgundy, #722f37);
+    .member-assistant__model-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--color-cream-dark, #f5e6d3);
+      border: 1px solid var(--color-cream-dark, #f5e6d3);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      outline: none;
+      box-shadow: 0 0 8px rgba(255,255,255,0.6);
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
     }
 
-    .member-assistant__model-select:focus {
+    .member-assistant__model-trigger:hover {
       border-color: var(--color-burgundy, #722f37);
+      transform: scale(1.05);
+      box-shadow: 0 0 12px rgba(255,255,255,0.8);
     }
 
-    .member-assistant__model-select option {
+    .member-assistant__model-trigger .member-assistant__model-icon {
+      font-size: 18px;
+    }
+
+    .member-assistant__model-menu {
+      display: none;
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-bottom: 4px;
       background: var(--color-surface, #fff);
-      color: var(--color-text, #333);
+      border: 1px solid var(--color-cream-dark, #f5e6d3);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 100;
+      overflow: hidden;
+    }
+
+    .member-assistant__model-menu--open {
+      display: block;
+    }
+
+    .member-assistant__model-option {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .member-assistant__model-option:hover {
+      background: var(--color-cream-dark, #f5e6d3);
+    }
+
+    .member-assistant__model-option .member-assistant__model-icon {
+      font-size: 18px;
+    }
+
+    .member-assistant__model-option--selected {
+      background: var(--color-cream-dark, #f5e6d3);
     }
 
     .member-assistant__clear,
@@ -483,6 +544,93 @@ function addChatStyles() {
       0%, 80%, 100% { transform: scale(0); }
       40% { transform: scale(1); }
     }
+
+    /* Markdown styles */
+    .member-assistant__bubble h3.member-assistant__h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin: 12px 0 8px 0;
+      color: var(--color-burgundy, #722f37);
+    }
+
+    .member-assistant__bubble h3.member-assistant__h3:first-child {
+      margin-top: 0;
+    }
+
+    .member-assistant__bubble h4.member-assistant__h4 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin: 10px 0 6px 0;
+      color: var(--color-burgundy, #722f37);
+    }
+
+    .member-assistant__bubble .member-assistant__ul,
+    .member-assistant__bubble .member-assistant__ol {
+      margin: 8px 0;
+      padding-left: 20px;
+    }
+
+    .member-assistant__bubble .member-assistant__li {
+      margin: 4px 0;
+      line-height: 1.4;
+    }
+
+    .member-assistant__bubble .member-assistant__ol {
+      list-style: none;
+      counter-reset: none;
+    }
+
+    .member-assistant__bubble .member-assistant__li--numbered {
+      list-style: none;
+    }
+
+    .member-assistant__bubble .member-assistant__li--numbered::before {
+      content: attr(data-num) ". ";
+      font-weight: 600;
+      color: var(--color-burgundy, #722f37);
+    }
+
+    .member-assistant__bubble .member-assistant__link {
+      color: var(--color-red, #d32f2f);
+      text-decoration: none;
+    }
+
+    .member-assistant__bubble .member-assistant__link:hover {
+      text-decoration: underline;
+    }
+
+    .member-assistant__bubble .member-assistant__inline-code {
+      background: rgba(114, 47, 55, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.85em;
+    }
+
+    .member-assistant__bubble .member-assistant__code-block {
+      background: rgba(114, 47, 55, 0.1);
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 0.85em;
+      overflow-x: auto;
+      margin: 8px 0;
+      white-space: pre-wrap;
+    }
+
+    .member-assistant__bubble .member-assistant__hr {
+      border: none;
+      border-top: 1px solid rgba(114, 47, 55, 0.2);
+      margin: 12px 0;
+    }
+
+    .member-assistant__bubble strong {
+      font-weight: 600;
+    }
+
+    .member-assistant__bubble em {
+      font-style: italic;
+    }
   `;
   document.head.appendChild(style);
 }
@@ -586,14 +734,16 @@ async function sendMessage(message) {
   addMessage('user', message);
   chatHistory.push({ role: 'user', content: message });
 
+  // Track message sent
+  trackAction('chat_message', { model: selectedModel });
+
   const inputEl = document.getElementById('member-assistant-input');
   const sendBtn = document.getElementById('member-assistant-send');
   if (inputEl) inputEl.value = '';
   if (sendBtn) sendBtn.disabled = true;
 
   // Get model for timeout and countdown
-  const modelSelect = document.getElementById('member-assistant-model');
-  const model = modelSelect ? modelSelect.value : selectedModel;
+  const model = selectedModel;
   const isThinking = model === 'kimi-k2-thinking';
 
   // Expected response time: thinking ~60-120s, preview ~15-30s
@@ -659,14 +809,53 @@ async function sendMessage(message) {
 }
 
 /**
- * Basic markdown formatting
+ * Markdown formatting with full support
  */
 function formatMarkdown(text) {
-  return text
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    .replace(/`(.*?)`/g, '<code>$1</code>')
-    .replace(/\n/g, '<br>');
+  // Escape HTML first
+  let html = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  // Code blocks (``` ... ```) - must be before other replacements
+  html = html.replace(/```([\s\S]*?)```/g, '<pre class="member-assistant__code-block">$1</pre>');
+
+  // Headers (## and ###)
+  html = html.replace(/^### (.+)$/gm, '<h4 class="member-assistant__h4">$1</h4>');
+  html = html.replace(/^## (.+)$/gm, '<h3 class="member-assistant__h3">$1</h3>');
+
+  // Horizontal rule
+  html = html.replace(/^---$/gm, '<hr class="member-assistant__hr">');
+
+  // Bold and italic
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+  // Inline code
+  html = html.replace(/`(.+?)`/g, '<code class="member-assistant__inline-code">$1</code>');
+
+  // Links [text](url)
+  html = html.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank" rel="noopener" class="member-assistant__link">$1</a>');
+
+  // Numbered lists (1. 2. 3. etc)
+  html = html.replace(/^(\d+)\. (.+)$/gm, '<li class="member-assistant__li member-assistant__li--numbered" data-num="$1">$2</li>');
+
+  // Bullet lists (• or - at start of line)
+  html = html.replace(/^[•\-] (.+)$/gm, '<li class="member-assistant__li">$1</li>');
+
+  // Wrap consecutive list items in <ul> or <ol>
+  html = html.replace(/((?:<li class="member-assistant__li member-assistant__li--numbered"[^>]*>.*?<\/li>\n?)+)/g, '<ol class="member-assistant__ol">$1</ol>');
+  html = html.replace(/((?:<li class="member-assistant__li">.*?<\/li>\n?)+)/g, '<ul class="member-assistant__ul">$1</ul>');
+
+  // Line breaks (but not inside lists or code blocks)
+  html = html.replace(/\n/g, '<br>');
+
+  // Clean up extra <br> after block elements
+  html = html.replace(/<\/(h3|h4|ul|ol|pre|hr)><br>/g, '</$1>');
+  html = html.replace(/<br><(h3|h4|ul|ol|pre|hr)/g, '<$1');
+
+  return html;
 }
 
 /**
@@ -684,6 +873,8 @@ function togglePanel() {
   if (isOpen) {
     const input = document.getElementById('member-assistant-input');
     if (input) input.focus();
+    // Track chat opened
+    trackAction('chat_open');
   }
 }
 
@@ -723,6 +914,10 @@ function clearChat() {
       <button class="member-assistant__suggestion" data-query="Hvernig er flokkurinn skipulagður? Hvað eru sellur?">Uppbygging</button>
       <button class="member-assistant__suggestion" data-query="Hver er afstaða flokksins til jafnréttismála?">Jafnrétti</button>
       <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um málefni fatlaðs fólks?">Fötlunarmál</button>
+      <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í sveitarstjórnarkosningum 2018?">2018</button>
+      <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í Alþingiskosningum 2021?">2021</button>
+      <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í sveitarstjórnarkosningum 2022?">2022</button>
+      <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í Alþingiskosningum 2024?">2024</button>
     </div>
   `;
 }
@@ -764,6 +959,52 @@ function setupWidget() {
   document.getElementById('member-assistant-close')?.addEventListener('click', togglePanel);
   document.getElementById('member-assistant-expand')?.addEventListener('click', toggleExpanded);
   document.getElementById('member-assistant-clear')?.addEventListener('click', clearChat);
+
+  // Model dropdown toggle
+  document.getElementById('member-assistant-model-trigger')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const menu = document.getElementById('member-assistant-model-menu');
+    if (menu) {
+      menu.classList.toggle('member-assistant__model-menu--open');
+    }
+  });
+
+  // Model dropdown option selection
+  document.querySelectorAll('.member-assistant__model-option').forEach(option => {
+    option.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const value = option.dataset.value;
+      const icon = option.querySelector('.member-assistant__model-icon')?.innerHTML;
+
+      // Update selected model
+      selectedModel = value;
+
+      // Update trigger icon
+      const triggerIcon = document.getElementById('member-assistant-model-icon');
+      if (triggerIcon && icon) triggerIcon.innerHTML = icon;
+
+      // Update selected state
+      document.querySelectorAll('.member-assistant__model-option').forEach(opt => {
+        opt.classList.remove('member-assistant__model-option--selected');
+      });
+      option.classList.add('member-assistant__model-option--selected');
+
+      // Close menu
+      const menu = document.getElementById('member-assistant-model-menu');
+      if (menu) menu.classList.remove('member-assistant__model-menu--open');
+
+      debug.log('member-assistant', 'model changed to', value);
+    });
+  });
+
+  // Close model dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    const dropdown = document.getElementById('member-assistant-model-dropdown');
+    const menu = document.getElementById('member-assistant-model-menu');
+    if (menu && dropdown && !dropdown.contains(e.target)) {
+      menu.classList.remove('member-assistant__model-menu--open');
+    }
+  });
 
   // Info tooltip toggle
   document.getElementById('member-assistant-info')?.addEventListener('click', (e) => {

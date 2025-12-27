@@ -138,3 +138,8 @@ docs/audits/
 scripts/thjodskra-results.json
 scripts/thjodskra-kennitolur.txt
 docs/internal/
+services/svc-events/scripts/verify-kimi-answers.js
+services/svc-events/scripts/add-party-history-rag.js
+services/svc-events/scripts/test-q18.js
+services/svc-events/scripts/test-search.js
+services/svc-events/scripts/test-single-question.js

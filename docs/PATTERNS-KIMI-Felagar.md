@@ -102,10 +102,10 @@ For specific query patterns, boost documents containing factual answers:
 | Query Pattern | Boost Logic |
 |---------------|-------------|
 | `fyrsti kjörni fulltrúi` | 2.5x if content contains "fyrsti kjörni" |
-| `stofnandi/stofnaði` | 3.0x for Saga doc, 2.8x for Jón Baldur doc |
+| `stofnandi/stofnaði` | 7.0x for saga-stofnun (GSE er stofnandi) |
 | `vor til vinstri` | 2.5x if content contains "vor til vinstri" |
 | `aðalfund* 2025` / `hallarbylting` | 3.0x for aðalfund+hallarbylting title |
-| `formaður framkvæmdastjórnar` | 3.0x for Jón Baldur + formaður match |
+| `formaður framkvæmdastjórnar` | 7.0x for saga-formenn (GSE fyrsti formaður) |
 
 ---
 
@@ -292,11 +292,54 @@ docs.forEach(d => console.log(`${d.similarity.toFixed(3)} - ${d.title}`));
 
 ---
 
+## Icelandic Declension Support
+
+Uses BÍN API (Beygingarlýsing íslensks nútímamáls) from Árnastofnun for Icelandic word forms.
+
+### API Endpoints
+
+| Endpoint | Purpose |
+|----------|---------|
+| `/api/ord/{word}` | Get all forms of a lemma |
+| `/api/beygingarmynd/{form}` | Find lemma from any inflected form |
+
+### Usage
+
+```javascript
+const declension = require('./src/services/service-icelandic-declension');
+
+// Get all forms of a word
+await declension.getAllForms('hestur');
+// ['hestur', 'hesturinn', 'hest', 'hestinn', 'hesti', ...]
+
+// Check if text contains word (any form)
+await declension.textContainsWord('Sönnu Magdalenu', 'Sanna');
+// true (matches 'Sönnu')
+
+// Check all terms with OR support
+await declension.textContainsAllTerms(text, ['Sanna', 'kvóta|fisk']);
+```
+
+### Pre-cached Personal Names
+
+Common names are pre-cached for speed (BÍN doesn't have all personal names):
+
+```javascript
+'sanna': ['sanna', 'sönnu']
+'kári': ['kári', 'kára']
+'gunnar': ['gunnar', 'gunnari', 'gunnars']
+'trausti': ['trausti', 'trausta']
+'sæþór': ['sæþór', 'sæþóri', 'sæþórs']
+```
+
+---
+
 ## Files Reference
 
 | File | Purpose |
 |------|---------|
 | `src/services/service-embedding.js` | Vertex AI embedding generation |
 | `src/services/service-vector-search.js` | pgvector search with boosts |
+| `src/services/service-icelandic-declension.js` | BÍN API for word forms |
 | `scripts/verify-kimi-answers.js` | 20 verification tests |
 | `scripts/index-*.js` | Document indexing scripts |

@@ -40,6 +40,24 @@ const ADMIN_EMAILS = [
   'gudrodur@gmail.com',
 ];
 
+// Admin UIDs that can query analytics
+const ADMIN_UIDS = [
+  'NE5e8GpzzBcjxuTHWGuJtTfevPD2', // Guðröður
+];
+
+// Analytics query patterns (Icelandic)
+const ANALYTICS_PATTERNS = [
+  /analytics/i,
+  /notkun/i,
+  /hvernig nota/i,
+  /hverjir nota/i,
+  /notendur/i,
+  /tölfræði/i,
+  /yfirlit.*kerfi/i,
+  /activity/i,
+  /usage/i,
+];
+
 // Cached question mappings (suggestion buttons -> question keys)
 const CACHED_QUESTIONS = {
   // Kapítalismi
@@ -138,6 +156,30 @@ const CACHED_QUESTIONS = {
   'Er Gunnar Smári ennþá skráður í flokkinn?': 'gunnar-smari-adild',
   'Er Gunnar Smári ennþá skráður i flokkinn?': 'gunnar-smari-adild',
   'Er Gunnar Smári í flokknum?': 'gunnar-smari-adild',
+
+  // Kosningar 2018
+  'Hverjir voru í framboði fyrir flokkinn í sveitarstjórnarkosningum 2018?': 'kosningar-2018',
+  'Hverjir voru í framboði 2018?': 'kosningar-2018',
+  'Frambjóðendur 2018': 'kosningar-2018',
+  '2018': 'kosningar-2018',
+
+  // Kosningar 2021
+  'Hverjir voru í framboði fyrir flokkinn í Alþingiskosningum 2021?': 'kosningar-2021',
+  'Hverjir voru í framboði 2021?': 'kosningar-2021',
+  'Frambjóðendur 2021': 'kosningar-2021',
+  '2021': 'kosningar-2021',
+
+  // Kosningar 2022
+  'Hverjir voru í framboði fyrir flokkinn í sveitarstjórnarkosningum 2022?': 'kosningar-2022',
+  'Hverjir voru í framboði 2022?': 'kosningar-2022',
+  'Frambjóðendur 2022': 'kosningar-2022',
+  '2022': 'kosningar-2022',
+
+  // Kosningar 2024
+  'Hverjir voru í framboði fyrir flokkinn í Alþingiskosningum 2024?': 'kosningar-2024',
+  'Hverjir voru í framboði 2024?': 'kosningar-2024',
+  'Frambjóðendur 2024': 'kosningar-2024',
+  '2024': 'kosningar-2024',
 };
 
 /**
@@ -146,6 +188,101 @@ const CACHED_QUESTIONS = {
 function isAdminUser(user) {
   if (!user) return false;
   return ADMIN_EMAILS.includes(user.email);
+}
+
+/**
+ * Check if message is an analytics query
+ */
+function isAnalyticsQuery(message) {
+  return ANALYTICS_PATTERNS.some(pattern => pattern.test(message));
+}
+
+/**
+ * Get analytics data and format as AI-friendly response
+ */
+async function getAnalyticsResponse(days = 7) {
+  try {
+    const [
+      totalEvents,
+      uniqueUsers,
+      pageViews,
+      topPages,
+      recentUsers,
+      chatUsage,
+      deviceStats,
+    ] = await Promise.all([
+      pool.query(
+        `SELECT COUNT(*) as count FROM user_analytics
+         WHERE created_at >= NOW() - INTERVAL '${days} days'`
+      ),
+      pool.query(
+        `SELECT COUNT(DISTINCT user_id) as count FROM user_analytics
+         WHERE created_at >= NOW() - INTERVAL '${days} days'`
+      ),
+      pool.query(
+        `SELECT COUNT(*) as count FROM user_analytics
+         WHERE event_type = 'page_view' AND created_at >= NOW() - INTERVAL '${days} days'`
+      ),
+      pool.query(
+        `SELECT event_name, COUNT(*) as views
+         FROM user_analytics
+         WHERE event_type = 'page_view' AND created_at >= NOW() - INTERVAL '${days} days'
+         GROUP BY event_name ORDER BY views DESC LIMIT 5`
+      ),
+      pool.query(
+        `SELECT DISTINCT ON (user_id) user_id, user_name, event_name, device_type, created_at
+         FROM user_analytics
+         WHERE created_at >= NOW() - INTERVAL '${days} days'
+         ORDER BY user_id, created_at DESC
+         LIMIT 10`
+      ),
+      pool.query(
+        `SELECT event_name, COUNT(*) as count
+         FROM user_analytics
+         WHERE event_type = 'action' AND created_at >= NOW() - INTERVAL '${days} days'
+         GROUP BY event_name ORDER BY count DESC`
+      ),
+      pool.query(
+        `SELECT device_type, COUNT(*) as count
+         FROM user_analytics
+         WHERE created_at >= NOW() - INTERVAL '${days} days'
+         GROUP BY device_type ORDER BY count DESC`
+      ),
+    ]);
+
+    // Format as readable summary
+    const topPagesStr = topPages.rows.map(p => `  - ${p.event_name}: ${p.views} heimsóknir`).join('\n');
+    const recentUsersStr = recentUsers.rows.map(u =>
+      `  - ${u.user_name || 'Óþekktur'} (${u.device_type}) - ${u.event_name}`
+    ).join('\n');
+    const chatStats = chatUsage.rows.find(c => c.event_name === 'chat_open');
+    const messageStats = chatUsage.rows.find(c => c.event_name === 'chat_message');
+    const deviceStr = deviceStats.rows.map(d => `${d.device_type}: ${d.count}`).join(', ');
+
+    return `## Notkun kerfisins (síðustu ${days} dagar)
+
+**Yfirlit:**
+- Heildaratburðir: ${totalEvents.rows[0].count}
+- Einstakir notendur: ${uniqueUsers.rows[0].count}
+- Síðuflettingar: ${pageViews.rows[0].count}
+
+**Vinsælustu síður:**
+${topPagesStr || '  Engar síðuflettingar enn'}
+
+**Chat notkun:**
+- Chat opnað: ${chatStats?.count || 0} sinnum
+- Skilaboð send: ${messageStats?.count || 0}
+
+**Tæki:** ${deviceStr || 'Engin gögn'}
+
+**Nýlegir notendur:**
+${recentUsersStr || '  Engir notendur enn'}
+
+*Athugið: Þú (Guðröður) ert ekki í þessum tölum.*`;
+  } catch (error) {
+    logger.error('Analytics query error', { error: error.message });
+    return 'Villa kom upp við að sækja analytics gögn: ' + error.message;
+  }
 }
 
 /**
@@ -355,6 +492,21 @@ router.post('/chat', authenticate, async (req, res) => {
         citations: cachedResponse.citations || [],
         model: 'cached',
         cached: true,
+      });
+    }
+
+    // Check for analytics query (admin only)
+    if (ADMIN_UIDS.includes(req.user?.uid) && isAnalyticsQuery(message)) {
+      logger.info('Analytics query from admin', {
+        operation: 'member_assistant_analytics',
+        userId: req.user?.uid,
+      });
+      const analyticsData = await getAnalyticsResponse(7);
+      return res.json({
+        reply: analyticsData,
+        citations: [],
+        model: 'analytics',
+        cached: false,
       });
     }
 

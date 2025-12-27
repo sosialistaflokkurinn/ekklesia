@@ -11,6 +11,11 @@ from firebase_admin import firestore
 from google.cloud import firestore as gcf
 from util_logging import log_json
 
+# Admin IPs exempt from rate limiting (development/testing)
+EXEMPT_IPS = [
+    '46.182.187.140',  # gudrodur dev
+]
+
 
 def rate_limit_bucket_id(ip_address: str, now: datetime, window_minutes: int) -> str:
     """
@@ -113,6 +118,10 @@ def check_rate_limit(ip_address: Optional[str], max_attempts: int = 5, window_mi
     if not ip_address:
         # If we can't determine IP, err on the safe side but log it.
         log_json("warn", "Missing IP address for rate limiting; allowing request")
+        return True
+
+    # Skip rate limiting for exempt IPs (admin/development)
+    if ip_address in EXEMPT_IPS:
         return True
 
     db = firestore.client()

@@ -273,6 +273,87 @@ async function searchSimilar(embedding, options = {}) {
           ELSE ${contentBoostClause} END`;
       }
 
+      // Stofnun flokksins (hvenær stofnaður, hvar)
+      const stofnunTerms = ['stofnaður', 'stofnað', 'stofnun', 'hvenær var', 'tjarnarbíó'];
+      if (stofnunTerms.some(term => queryLower.includes(term))) {
+        contentBoostClause = `CASE
+          WHEN source_type = 'curated-answer' AND chunk_id = 'saga-stofnun' THEN 7.0
+          ELSE ${contentBoostClause} END`;
+      }
+
+      // Fyrsti kjörni fulltrúi
+      if (queryLower.includes('fyrsti kjörni') || queryLower.includes('fyrsta kjörna') ||
+          queryLower.includes('fyrsti fulltrúi') || (queryLower.includes('fyrst') && queryLower.includes('kjör'))) {
+        contentBoostClause = `CASE
+          WHEN source_type = 'curated-answer' AND chunk_id = 'saga-fyrsti-kjorni' THEN 7.0
+          ELSE ${contentBoostClause} END`;
+      }
+
+      // Borgarfulltrúar 2022 - boost saga-fyrsti-kjorni which has both Sanna and Trausti
+      if ((queryLower.includes('borgarfulltrú') && queryLower.includes('2022')) ||
+          (queryLower.includes('fulltrú') && queryLower.includes('sveitarstjórn') && queryLower.includes('2022'))) {
+        contentBoostClause = `CASE
+          WHEN source_type = 'curated-answer' AND chunk_id = 'saga-fyrsti-kjorni' THEN 7.0
+          ELSE ${contentBoostClause} END`;
+      }
+
+      // Stofnandi flokksins
+      const stofnandiTerms = ['stofnaði', 'stofnandi', 'hver stofn'];
+      if (stofnandiTerms.some(term => queryLower.includes(term))) {
+        contentBoostClause = `CASE
+          WHEN source_type = 'curated-answer' AND chunk_id = 'saga-stofnun' THEN 7.0
+          ELSE ${contentBoostClause} END`;
+      }
+
+      // Formaður framkvæmdastjórnar
+      if (queryLower.includes('formaður') && (queryLower.includes('framkvæmd') || queryLower.includes('upphaflega'))) {
+        contentBoostClause = `CASE
+          WHEN source_type = 'curated-answer' AND chunk_id = 'saga-formenn' THEN 7.0
+          ELSE ${contentBoostClause} END`;
+      }
+
+      // Oddvitar 2024
+      if (queryLower.includes('oddviti') && queryLower.includes('2024')) {
+        contentBoostClause = `CASE
+          WHEN source_type = 'curated-answer' AND chunk_id = 'saga-oddvitar-2024' THEN 7.0
+          ELSE ${contentBoostClause} END`;
+      }
+
+      // Efling formaður
+      if (queryLower.includes('efling') && (queryLower.includes('formaður') || queryLower.includes('tengist'))) {
+        contentBoostClause = `CASE
+          WHEN source_type = 'curated-answer' AND chunk_id = 'saga-efling-tengsl' THEN 7.0
+          ELSE ${contentBoostClause} END`;
+      }
+
+      // Tilkynning stofnunar / Harmageddon
+      if (queryLower.includes('tilkynnti') || queryLower.includes('harmageddon')) {
+        contentBoostClause = `CASE
+          WHEN source_type = 'curated-answer' AND chunk_id = 'saga-stofnun' THEN 7.0
+          ELSE ${contentBoostClause} END`;
+      }
+
+      // RÚV kosningapróf heilbrigðismál
+      if (queryLower.includes('rúv') && (queryLower.includes('heilbrigð') || queryLower.includes('kosningapróf'))) {
+        contentBoostClause = `CASE
+          WHEN source_type = 'curated-answer' AND chunk_id = 'ruv-heilbrigdismal-2024' THEN 7.0
+          ELSE ${contentBoostClause} END`;
+      }
+
+      // RÚV kosningapróf byggingariðnaður/regluverk
+      if (queryLower.includes('rúv') && (queryLower.includes('byggin') || queryLower.includes('regluverk'))) {
+        contentBoostClause = `CASE
+          WHEN source_type = 'curated-answer' AND chunk_id = 'ruv-byggingaridn-2024' THEN 7.0
+          ELSE ${contentBoostClause} END`;
+      }
+
+      // Vor til vinstri
+      if (queryLower.includes('vor til vinstri')) {
+        contentBoostClause = `CASE
+          WHEN source_type = 'curated-answer' AND chunk_id = 'vor-til-vinstri' THEN 7.0
+          ELSE ${contentBoostClause} END`;
+      }
+
       // Historical firsts (fyrsti kjörni fulltrúi)
       if (queryLower.includes('fyrsti kjörni') || queryLower.includes('fyrsta kjörna') ||
           queryLower.includes('fyrsti fulltrúi') || queryLower.includes('fyrsta fulltrúa') ||
@@ -280,31 +361,23 @@ async function searchSimilar(embedding, options = {}) {
         contentBoostClause = `CASE WHEN LOWER(content) LIKE '%fyrsti kjörni%' OR LOWER(content) LIKE '%fyrsta kjörna%' THEN 2.5 ELSE 1.0 END`;
       }
 
-      // Founder queries (stofnandi, stofnaði)
-      if (queryLower.includes('stofnandi') || queryLower.includes('stofnaði') ||
-          (queryLower.includes('stofn') && (queryLower.includes('hver') || queryLower.includes('hvern')))) {
-        // Match: Saga (has "drifkraft" or "tilkynnti stofnun"), Jón Baldur doc, and docs with "stofnandi"
-        // Exclude Svæðisfélag docs which mention "stofnandi" but aren't about THE founder
-        contentBoostClause = `CASE
-          WHEN LOWER(title) = 'saga sósíalistaflokksins' THEN 3.0
-          WHEN LOWER(title) LIKE '%gunnar smári%' THEN 2.8
-          WHEN LOWER(content) LIKE '%drifkraft%stofnun%' OR LOWER(content) LIKE '%tilkynnti stofnun%' THEN 2.5
-          WHEN LOWER(content) LIKE '%stofnandi%' AND LOWER(title) NOT LIKE '%svæðisfélag%' AND LOWER(title) NOT LIKE '%frambjóðendur%' THEN 2.0
-          ELSE ${contentBoostClause} END`;
-      }
+      // Founder queries - REMOVED: Already handled by stofnandiTerms boost at lines 293-298
+      // which gives saga-stofnun a 7.0 boost (higher than the 2.0-3.0 boosts here)
 
       // Vor til vinstri queries
       if (queryLower.includes('vor til vinstri')) {
         contentBoostClause = `CASE WHEN LOWER(content) LIKE '%vor til vinstri%' THEN 2.5 ELSE ${contentBoostClause} END`;
       }
 
-      // Aðalfundur 2025 / hallarbylting queries
+      // Aðalfundur 2025 / hallarbylting queries - boost saga-formenn which has Sæþór info
       if ((queryLower.includes('aðalfund') && queryLower.includes('2025')) ||
           queryLower.includes('hallarbylting') ||
           (queryLower.includes('maí 2025') && queryLower.includes('fundur'))) {
         contentBoostClause = `CASE
+          WHEN source_type = 'curated-answer' AND chunk_id = 'saga-formenn' THEN 7.0
           WHEN LOWER(title) LIKE '%aðalfund%hallarbylting%' THEN 3.0
           WHEN LOWER(title) LIKE '%aðalfund%' THEN 2.5
+          WHEN LOWER(content) LIKE '%sæþór%' THEN 2.5
           WHEN LOWER(content) LIKE '%hallarbylting%' THEN 2.0
           ELSE ${contentBoostClause} END`;
       }
@@ -554,6 +627,7 @@ async function searchSimilar(embedding, options = {}) {
           citation,
           (1 - (embedding <=> $1::vector)) *
           CASE
+            WHEN source_type = 'curated-answer' THEN 3.0
             WHEN source_type = 'party-website' THEN 2.0
             WHEN source_type = 'heimildin-2024' THEN 1.3
             WHEN source_type = 'kjosturett-2024' THEN 1.3
