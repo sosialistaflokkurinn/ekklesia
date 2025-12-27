@@ -4,6 +4,7 @@
  * Displays member distribution across Iceland municipalities.
  * Uses aggregated data for privacy (never shows individual locations).
  *
+ * Module cleanup not needed - page reloads on navigation.
  * Security: Uses DOM methods to prevent XSS
  *
  * @module heatmap

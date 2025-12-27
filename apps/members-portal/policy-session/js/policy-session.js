@@ -3,6 +3,8 @@
  *
  * Manages policy session page state and component integration.
  * Handles phase transitions (discussion → break → voting → results).
+ *
+ * Module cleanup not needed - page reloads on navigation.
  */
 
 import { initAuthenticatedPage } from '../../js/page-init.js';

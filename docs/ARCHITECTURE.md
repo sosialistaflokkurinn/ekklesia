@@ -6,12 +6,28 @@
 |-------|----------|------|--------|
 | Frontend | `apps/members-portal/` | Static HTML/JS | `firebase deploy --only hosting` |
 | Elections API | `services/svc-elections/` | Node.js/Express | `./deploy.sh` |
-| Events API | `services/svc-events/` | Node.js/Express | `./deploy.sh` |
+| Events + AI | `services/svc-events/` | Node.js + Kimi (2 assistants) | `./deploy.sh` |
 | Members API | `services/svc-members/functions/` | Python/Firebase | Firebase Functions |
-| Database | Cloud SQL | PostgreSQL 15 | Managed |
+| Database | Cloud SQL | PostgreSQL 15 + pgvector | Managed |
 | Auth | Firebase + Kenni.is | OAuth PKCE | Managed |
 
 **Region:** `europe-west2` (London)
+
+---
+
+## Key Concepts
+
+| Term | Definition |
+|------|------------|
+| **Firestore** | NoSQL document database - **source of truth** for member data |
+| **Cloud SQL** | PostgreSQL database for elections/events (relational data) |
+| **Kenni.is** | Icelandic electronic ID provider (OAuth PKCE authentication) |
+| **Firebase Auth** | Manages user sessions after Kenni.is authentication |
+| **pgvector** | PostgreSQL extension for vector similarity search (AI/RAG) |
+| **RAG** | Retrieval-Augmented Generation - AI answers using indexed documents |
+| **Kimi** | Moonshot AI LLM used for Party Wiki and Member Assistant |
+| **Source of Truth** | Firestore is canonical; other DBs sync from it |
+| **Django GCP** | Interim admin interface (Cloud Run) - will be replaced |
 
 ---
 
@@ -27,7 +43,8 @@
 │  ├── Firebase Hosting (members-portal)                       │
 │  ├── Firebase Functions (svc-members)                        │
 │  ├── Cloud Run (svc-elections, svc-events)                  │
-│  └── Postmark email (planned - #323)                        │
+│  ├── SendGrid email (#323 - implemented Dec 2025)           │
+│  └── AI assistants (Party Wiki + RAG Member Assistant)      │
 │                                                              │
 │  Django GCP (INTERIM admin interface)                       │
 │  ├── Cloud Run: django-socialism                            │
@@ -92,7 +109,7 @@
 | 2 | Cloud SQL PostgreSQL | Elections, events | Active |
 | 3 | Django GCP (Cloud Run) | Admin interface | Interim |
 
-**Related issues:** #323 (Postmark email)
+**Related issues:** #323 (Amazon SES email - completed), #416 (Kimi RAG assistant)
 
 ### Member Data Model
 
@@ -172,23 +189,46 @@ svc-elections/
 ├── src/
 │   ├── routes/
 │   │   ├── route-admin.js
-│   │   └── route-elections.js
+│   │   ├── route-elections.js
+│   │   ├── route-candidates.js
+│   │   └── route-nomination.js
 │   │
 │   ├── middleware/
 │   │   ├── middleware-member-auth.js
 │   │   ├── middleware-rbac-auth.js
 │   │   ├── middleware-s2s-auth.js
-│   │   ├── middleware-rate-limiter.js
-│   │   ├── middleware-app-check.js
-│   │   └── middleware-correlation-id.js
+│   │   └── middleware-rate-limiter.js
 │   │
-│   ├── services/
-│   │   └── service-audit.js
-│   │
-│   └── config/
+│   └── services/
+│       └── service-audit.js
 │
 ├── migrations/
 ├── tests/
+└── deploy.sh
+```
+
+### services/svc-events/ (Node.js + AI)
+
+```
+svc-events/
+├── src/
+│   ├── routes/
+│   │   ├── route-events.js
+│   │   ├── route-party-wiki.js         # Static knowledge chat
+│   │   └── route-member-assistant.js   # RAG AI chat endpoint
+│   │
+│   ├── services/
+│   │   ├── service-embedding.js        # Vertex AI embeddings
+│   │   └── service-vector-search.js    # pgvector search
+│   │
+│   └── config/
+│       └── config-database.js
+│
+├── scripts/
+│   ├── verify-kimi-answers.js          # RAG verification tests
+│   └── index-*.js                      # Document indexing
+│
+├── migrations/
 └── deploy.sh
 ```
 
@@ -253,6 +293,86 @@ User → Kenni.is (PKCE) → Firebase Auth → ID Token → API Request
      └─────────────────┘          └─────────────────┘
 ```
 
+### AI Assistants (Kimi)
+
+**Two assistants with different architectures:**
+
+| | Party Wiki 📚 | Member Assistant ? |
+|---|---|---|
+| Route | `route-party-wiki.js` | `route-member-assistant.js` |
+| Frontend | `party-wiki-chat.js` | `member-assistant-chat.js` |
+| Tech | Static system prompt | RAG + pgvector |
+| Knowledge | Hardcoded facts | Dynamic document retrieval |
+| Use case | Quick facts | Deep research with citations |
+
+**Member Assistant (RAG) Flow:**
+```
+User Question → Vertex AI Embedding → pgvector Search → Context Assembly → Kimi LLM → Response
+                                           │
+                                    ┌──────┴──────┐
+                                    │ rag_documents│
+                                    │ (pgvector)   │
+                                    └─────────────┘
+```
+
+**RAG Sources indexed:**
+- party-website (xj.is)
+- kosningaprof-2024 (RÚV)
+- discourse-archive
+
+---
+
+## API Examples
+
+### Get Elections (svc-elections)
+```bash
+# Get all elections
+curl -H "Authorization: Bearer $ID_TOKEN" \
+  https://svc-elections-....run.app/api/elections
+
+# Response
+{
+  "elections": [
+    {"id": 1, "title": "Stjórnarkjör 2025", "status": "active", ...}
+  ]
+}
+```
+
+### Cast Vote (svc-elections)
+```bash
+curl -X POST \
+  -H "Authorization: Bearer $ID_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"election_id": 1, "candidate_ids": [5, 3, 8]}' \
+  https://svc-elections-....run.app/api/vote
+```
+
+### AI Chat (svc-events)
+```bash
+# Party Wiki (static knowledge)
+curl -X POST \
+  -H "Authorization: Bearer $ID_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Hver er formanni flokksins?"}' \
+  https://svc-events-....run.app/api/party-wiki/chat
+
+# Member Assistant (RAG)
+curl -X POST \
+  -H "Authorization: Bearer $ID_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Hvað segir stefnuskrá um húsnæðismál?"}' \
+  https://svc-events-....run.app/api/member-assistant/chat
+```
+
+### Update Member Profile (Firebase Function)
+```bash
+curl -X POST \
+  -H "Authorization: Bearer $ID_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"email": "new@example.com", "phone": "555-1234"}' \
+  https://europe-west2-ekklesia-prod-10-2025.cloudfunctions.net/updatememberprofile
+```
+
 ---
 
 ## Infrastructure
@@ -268,28 +388,49 @@ cloud-sql-proxy ekklesia-prod-10-2025:europe-west2:ekklesia-db \
 psql -h localhost -p 5433 -U postgres -d ekklesia
 ```
 
-### Secrets (GCP Secret Manager)
+### Environment Variables by Service
 
-| Secret Name (GCP) | Env Var (App) | Used By |
-|-------------------|---------------|---------|
-| `django-api-token` | `django-api-token` / `DJANGO_API_TOKEN` | sync functions |
-| `kenni-client-secret` | `KENNI_IS_CLIENT_SECRET` | auth |
-| `django-socialism-db-password` | `DB_PASSWORD` | all services |
+#### svc-elections (Cloud Run)
+| Env Var | Secret Name | Purpose |
+|---------|-------------|---------|
+| `DB_HOST` | - | `/cloudsql/ekklesia-prod-10-2025:europe-west2:ekklesia-db` |
+| `DB_NAME` | - | `socialism` |
+| `DB_USER` | - | `socialism` |
+| `DB_PASSWORD` | `django-socialism-db-password` | PostgreSQL password |
 
-**Note on Naming:**
-- **Secret Name:** The name in Secret Manager (usually lowercase with hyphens).
-- **Env Var:** The environment variable injected into the container.
-- **Best Practice:** Match the secret name (lowercase) for Firebase Functions, use uppercase for legacy/Docker services.
+#### svc-events (Cloud Run)
+| Env Var | Secret Name | Purpose |
+|---------|-------------|---------|
+| `DB_*` | (same as elections) | Database connection |
+| `KIMI_API_KEY` | `kimi-api-key` | Moonshot AI API |
+| `VERTEX_PROJECT` | - | GCP project for embeddings |
+
+#### svc-members (Firebase Functions)
+| Env Var | Secret Name | Purpose |
+|---------|-------------|---------|
+| `django-api-token` | `django-api-token` | Django API auth |
+| `django-socialism-db-password` | `django-socialism-db-password` | PostgreSQL |
+| `sendgrid-api-key` | `sendgrid-api-key` | Email sending |
+
+### Secrets Management
 
 ```bash
 # Read secret
 gcloud secrets versions access latest --secret="django-api-token"
 
-# Verify service secrets
+# Verify Cloud Run service secrets
 gcloud run services describe svc-elections \
   --region=europe-west2 \
   --format="json" | jq '.spec.template.spec.containers[0].env'
+
+# List all secrets
+gcloud secrets list --project=ekklesia-prod-10-2025
 ```
+
+**Naming Convention:**
+- Secret Manager: lowercase with hyphens (`django-api-token`)
+- Firebase Functions: match secret name (lowercase)
+- Cloud Run: uppercase (`DB_PASSWORD`) mapped from secret
 
 ---
 

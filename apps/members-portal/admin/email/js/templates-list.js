@@ -2,6 +2,8 @@
  * Email Templates List - Issue #323
  *
  * Manage email templates: list, create, edit, delete.
+ *
+ * Module cleanup not needed - page reloads on navigation.
  */
 
 import { initSession } from '../../../session/init.js';

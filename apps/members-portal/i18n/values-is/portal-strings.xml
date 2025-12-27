@@ -16,7 +16,7 @@
   <string name="error_missing_pkce">Vantar PKCE-sannprófara</string>
   <string name="error_authentication">Auðkenningarvilla: %s</string>
   <string name="error_csrf_title">Villa</string>
-  <string name="error_csrf_message">Öryggisvilla: CSRF-vörn virk. Vinsamlegast reyndu aftur.</string>
+  <string name="error_csrf_message">Öryggisvilla: CSRF-vörn mistókst. Vinsamlegast reyndu aftur.</string>
   <string name="nav_brand">Sósíalistaflokkurinn</string>
   <string name="nav_dashboard">Mín síða</string>
   <string name="nav_admin_overview">Yfirlit</string>
@@ -78,7 +78,7 @@
   <string name="quick_links_heatmap_label">Félagadreifing</string>
   <string name="quick_links_heatmap_desc">Skoða hvar félagar búa</string>
   <string name="quick_links_nomination_label">Uppstillingarnefnd</string>
-  <string name="quick_links_nomination_desc">Raðvalskosningu nefndar</string>
+  <string name="quick_links_nomination_desc">Raðvalskosning nefndar</string>
   <string name="page_title_heatmap">Félagadreifing - Sósíalistaflokkurinn</string>
   <string name="heatmap_title">Félagadreifing</string>
   <string name="heatmap_description">Kort sem sýnir hvar félagar búa eftir sveitarfélagi.</string>
@@ -514,4 +514,63 @@
   <string name="events_copy_link_title">Afrita hlekk</string>
   <string name="heatmap_data_load_error">Villa við að hlaða gögnum</string>
   <string name="heatmap_total_label">Samtals</string>
+
+  <!-- Member Assistant Chat -->
+  <string name="member_assistant_title">Spyrja um flokkinn</string>
+  <string name="member_assistant_info_title">Um þennan aðstoðarmann</string>
+  <string name="member_assistant_info_heading">Um gervigreindaraðstoðarmanninn</string>
+  <string name="member_assistant_info_kimi">Þessi aðstoðarmaður notar Kimi K2 tungumálalíkan frá Moonshot AI.</string>
+  <string name="member_assistant_info_rag">Líkanið var sérsniðið fyrir flokkinn með RAG (Retrieval Augmented Generation) tækni sem tryggir að svör byggi á raunverulegum heimildum úr stefnu og sögu flokksins.</string>
+  <string name="member_assistant_info_data">Gögnin eru geymd á Íslandi/Evrópu (Google Cloud) og eru ekki send til Kína - aðeins spurningin fer til Kimi API.</string>
+  <string name="member_assistant_new_chat">Nýtt samtal</string>
+  <string name="member_assistant_expand">Stækka</string>
+  <string name="member_assistant_shrink">Minnka</string>
+  <string name="member_assistant_close">Loka</string>
+  <string name="member_assistant_fast">Hraður</string>
+  <string name="member_assistant_accurate">Nákvæmur</string>
+  <string name="member_assistant_model_hint">⚡ Hraður | 🧠 Nákvæmur</string>
+  <string name="member_assistant_placeholder">Spurðu um flokkinn...</string>
+  <string name="member_assistant_send">Senda</string>
+  <string name="member_assistant_countdown_format">~%d sek</string>
+  <string name="member_assistant_almost_ready">næstum tilbúið...</string>
+  <string name="member_assistant_error_not_logged_in">Notandi er ekki skráður inn</string>
+  <string name="member_assistant_error_timeout">Beiðnin tók of langan tíma. Prófaðu aftur eða notaðu hraðari módel.</string>
+  <string name="member_assistant_error_prefix">Villa:</string>
+
+  <!-- Kimi Chat (Superuser) -->
+  <string name="kimi_chat_title">Kimi aðstoð</string>
+  <string name="kimi_chat_header">🤖 Kimi Aðstoð</string>
+  <string name="kimi_chat_select_model">Velja módel</string>
+  <string name="kimi_chat_model_fast">⚡ Hraður</string>
+  <string name="kimi_chat_model_accurate">🧠 Nákvæmur (hægur)</string>
+  <string name="kimi_chat_welcome">Hæ! Ég er Kimi, gervigreindaraðstoðarmaður fyrir Ekklesia kerfið. Hvernig get ég aðstoðað þig?</string>
+  <string name="kimi_chat_placeholder">Skrifaðu spurningu...</string>
+  <string name="kimi_chat_waking_up">Kimi er að vakna...</string>
+  <string name="kimi_chat_fetching_data">Sæki gögn úr kerfinu...</string>
+  <string name="kimi_chat_error_generic">Villa kom upp</string>
+  <string name="kimi_chat_error_network">Náði ekki sambandi við þjónustuna. Athugaðu nettengingu.</string>
+  <string name="kimi_chat_error_unexpected">Óvænt villa kom upp</string>
+  <string name="kimi_chat_error_auth">Þú þarft að skrá þig inn aftur.</string>
+  <string name="kimi_chat_retry_format">Reyndu aftur eftir %d sekúndur.</string>
+  <string name="kimi_chat_hint_context">💡 Ábending: Smelltu á "Nýtt samtal" til að byrja upp á nýtt.</string>
+  <string name="kimi_chat_hint_rate_limit">⏳ Of margar beiðnir sendar. Bíddu aðeins.</string>
+
+  <!-- Party Wiki Chat -->
+  <string name="party_wiki_title">📚 Flokkurinn</string>
+  <string name="party_wiki_welcome">Velkomin! Ég get svarað spurningum um Sósíalistaflokkinn - sögu, stefnu, uppbyggingu og fólk. Hvað viltu vita?</string>
+  <string name="party_wiki_searching">Leita í gagnagrunni...</string>
+  <string name="party_wiki_fetching">Sæki upplýsingar...</string>
+  <string name="party_wiki_error">Villa kom upp. Reyndu aftur síðar.</string>
+
+  <!-- Elections List (admin) -->
+  <string name="label_no_permission">Ekki heimild</string>
+  <string name="duration_minutes_format">%d mín</string>
+  <string name="duration_hours_format">%d klst.</string>
+  <string name="duration_hours_minutes_format">%d klst. %d mín</string>
+  <string name="share_qr_title">Deila með QR kóða</string>
+  <string name="label_error">Villa</string>
+
+  <!-- Email Dashboard -->
+  <string name="email_stats_title">Tölfræði</string>
+  <string name="email_stats_load_error">Gat ekki hlaðið tölfræði</string>
 </resources>

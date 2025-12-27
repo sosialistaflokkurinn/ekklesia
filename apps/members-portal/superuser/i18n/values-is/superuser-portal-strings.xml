@@ -95,7 +95,7 @@
   <string name="dangerous_modal_cancel">Hætta við</string>
   <string name="dangerous_modal_proceed">Halda áfram</string>
   <string name="dangerous_op_hard_delete">Eyða kosningu endanlega</string>
-  <string name="dangerous_op_anonymize">Nafnlaus gera atkvæði</string>
+  <string name="dangerous_op_anonymize">Nafnleysa atkvæði</string>
   <string name="dangerous_op_purge_user">Eyða notandagögnum (GDPR)</string>
   <string name="dangerous_op_reset_election">Endurstilla kosningu</string>
   <string name="dangerous_confirm_type">Sláðu inn "%s" til að staðfesta:</string>
@@ -195,7 +195,7 @@
   <string name="btn_check">Athuga...</string>
   <string name="btn_update">Uppfæra</string>
   <string name="status_not_checked">Ekki athugað</string>
-  <string name="status_page_loaded">Síða hlaðinn</string>
+  <string name="status_page_loaded">Síða hlaðin</string>
   <string name="status_auth_active">Auðkenning virk</string>
   <string name="status_needs_backend">Þarfnast bakenda</string>
   <string name="status_fallback_cors">Notar fallback athuganaðferð (CORS takmarkanir)</string>
@@ -446,7 +446,7 @@
   <string name="health_section_heatmap">Hitakort</string>
   <string name="health_section_heatmap_desc">Hitakort og tölfræði um félagsdreifingu.</string>
   <string name="health_section_database">Gagnagrunnar</string>
-  <string name="health_section_schema">Gagnagrunna skemu</string>
+  <string name="health_section_schema">Gagnagrunnsskemu</string>
   <string name="health_section_schema_desc">Yfirlit yfir gagnaskipan í Firestore og PostgreSQL.</string>
   <string name="health_section_firebase">Firebase innviðir</string>
 

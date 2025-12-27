@@ -15,6 +15,24 @@ const rateLimit = require('express-rate-limit');
 const crypto = require('crypto');
 
 /**
+ * Admin IPs exempt from rate limiting
+ * Used for development and testing
+ */
+const EXEMPT_IPS = [
+  '46.182.187.140',  // gudrodur dev
+];
+
+/**
+ * Check if request should skip rate limiting
+ * @param {Object} req - Express request
+ * @returns {boolean} true to skip rate limiting
+ */
+function shouldSkipRateLimit(req) {
+  const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || '';
+  return EXEMPT_IPS.includes(ip);
+}
+
+/**
  * Generate a rate limit key with fingerprinting
  *
  * Uses authenticated user ID when available, otherwise falls back
@@ -58,6 +76,7 @@ const readLimiter = rateLimit({
   standardHeaders: true, // Return rate limit info in `RateLimit-*` headers
   legacyHeaders: false, // Disable `X-RateLimit-*` headers
   keyGenerator: fingerprintKeyGenerator,
+  skip: shouldSkipRateLimit,
   // Disable validation - Cloud Run handles IPv6 via load balancer
   validate: false
 });
@@ -79,6 +98,7 @@ const writeLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: fingerprintKeyGenerator,
+  skip: shouldSkipRateLimit,
   validate: false
 });
 
@@ -99,9 +119,8 @@ const tokenLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: fingerprintKeyGenerator,
+  skip: shouldSkipRateLimit, // Admin IPs exempt
   validate: false
-  // Note: Removed skip() to prevent rate limit bypass via validation errors
-  // All attempts now count against the rate limit
 });
 
 /**
@@ -121,6 +140,7 @@ const adminLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: fingerprintKeyGenerator,
+  skip: shouldSkipRateLimit, // Admin IPs exempt
   validate: false
 });
 

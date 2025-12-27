@@ -1,0 +1,1049 @@
+/**
+ * Member Assistant Chat Widget
+ *
+ * RAG-powered floating chat widget for party members.
+ * Uses semantic search and Kimi AI for context-aware responses.
+ *
+ * Module cleanup not needed - widget persists for page lifetime.
+ *
+ * @module components/member-assistant-chat
+ */
+
+import { debug } from '../utils/util-debug.js';
+import { getFirebaseAuth } from '../../firebase/app.js';
+import { trackAction } from '../utils/util-analytics.js';
+import { R } from '../../i18n/strings-loader.js';
+
+const EVENTS_API_BASE = 'https://events-service-521240388393.europe-west1.run.app';
+
+// Chat state
+let isOpen = false;
+let isLoading = false;
+let isExpanded = false;
+let chatHistory = [];
+let selectedModel = 'kimi-k2-0711-preview';
+
+/**
+ * Create the chat widget HTML
+ */
+function createChatWidget() {
+  const widget = document.createElement('div');
+  widget.id = 'member-assistant-widget';
+  widget.innerHTML = `
+    <button id="member-assistant-toggle" class="member-assistant__toggle" title="${R.string.member_assistant_title}">
+      <span class="member-assistant__toggle-icon">?</span>
+    </button>
+    <div id="member-assistant-panel" class="member-assistant__panel member-assistant__panel--hidden">
+      <div class="member-assistant__header">
+        <div class="member-assistant__title-area">
+          <span class="member-assistant__title">${R.string.member_assistant_title}</span>
+          <button class="member-assistant__info-btn" id="member-assistant-info" title="${R.string.member_assistant_info_title}">
+            <span class="member-assistant__info-icon">ⓘ</span>
+          </button>
+          <div class="member-assistant__info-tooltip" id="member-assistant-tooltip">
+            <div class="member-assistant__info-tooltip-title">${R.string.member_assistant_info_heading}</div>
+            <p>${R.string.member_assistant_info_kimi.replace('Kimi K2', '<a href="https://moonshotai.github.io/Kimi-K2/" target="_blank" rel="noopener">Kimi K2</a>')}</p>
+            <p>${R.string.member_assistant_info_rag}</p>
+            <p class="member-assistant__info-tooltip-note">${R.string.member_assistant_info_data}</p>
+          </div>
+        </div>
+        <div class="member-assistant__header-actions">
+          <button id="member-assistant-clear" class="member-assistant__clear" title="${R.string.member_assistant_new_chat}">🗑</button>
+          <button id="member-assistant-expand" class="member-assistant__expand" title="${R.string.member_assistant_expand}">⛶</button>
+          <button id="member-assistant-close" class="member-assistant__close" title="${R.string.member_assistant_close}">×</button>
+        </div>
+      </div>
+      <div id="member-assistant-messages" class="member-assistant__messages">
+        ${getSuggestionsHTML()}
+      </div>
+      <div class="member-assistant__input-area">
+        <div class="member-assistant__model-dropdown" id="member-assistant-model-dropdown">
+          <button type="button" class="member-assistant__model-trigger" id="member-assistant-model-trigger" title="${R.string.member_assistant_model_hint}">
+            <span class="member-assistant__model-icon" id="member-assistant-model-icon">&#9889;</span>
+          </button>
+          <div class="member-assistant__model-menu" id="member-assistant-model-menu">
+            <div class="member-assistant__model-option member-assistant__model-option--selected" data-value="kimi-k2-0711-preview" title="${R.string.member_assistant_fast}">
+              <span class="member-assistant__model-icon">&#9889;</span>
+            </div>
+            <div class="member-assistant__model-option" data-value="kimi-k2-thinking" title="${R.string.member_assistant_accurate}">
+              <span class="member-assistant__model-icon">&#129504;</span>
+            </div>
+          </div>
+        </div>
+        <textarea
+          id="member-assistant-input"
+          class="member-assistant__input"
+          placeholder="${R.string.member_assistant_placeholder}"
+          rows="1"
+        ></textarea>
+        <button id="member-assistant-send" class="member-assistant__send" title="${R.string.member_assistant_send}">
+          <span>➤</span>
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(widget);
+  return widget;
+}
+
+/**
+ * Get suggestions HTML - separate function for reuse and cleaner code
+ * Note: Suggestion labels are kept short and self-explanatory, not externalized
+ */
+function getSuggestionsHTML() {
+  // Suggestion buttons - the short labels are topic names, not full sentences
+  // These are acceptable as-is since they're category labels
+  return `
+    <div class="member-assistant__suggestions">
+      <button class="member-assistant__suggestion" data-query="Er sósíalistaflokkurinn á móti kapitalisma?">Kapítalismi</button>
+      <button class="member-assistant__suggestion" data-query="Er Sósíalistaflokkurinn fyrir alla kjósendur?">Fyrir alla?</button>
+      <button class="member-assistant__suggestion" data-query="Hver er afstaða flokksins til Evrópusambandsins?">ESB</button>
+      <button class="member-assistant__suggestion" data-query="Er flokkurinn á móti heimsvaldastefnu?">Heimsvaldastefna</button>
+      <button class="member-assistant__suggestion" data-query="Hver er stefna flokksins í húsnæðismálum?">Húsnæðismál</button>
+      <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um heilbrigðismál?">Heilbrigðismál</button>
+      <button class="member-assistant__suggestion" data-query="Hver er afstaða flokksins til skatta?">Skattar</button>
+      <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um loftslagsmál og umhverfisvernd?">Umhverfismál</button>
+      <button class="member-assistant__suggestion" data-query="Hver er stefna flokksins í menntamálum?">Menntamál</button>
+      <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um réttindi launafólks og stéttarfélög?">Vinnumarkaður</button>
+      <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um velferðarkerfið og félagslegt öryggi?">Velferð</button>
+      <button class="member-assistant__suggestion" data-query="Hvenær var flokkurinn stofnaður og af hverjum?">Saga flokksins</button>
+      <button class="member-assistant__suggestion" data-query="Hvernig er flokkurinn skipulagður? Hvað eru sellur?">Uppbygging</button>
+      <button class="member-assistant__suggestion" data-query="Hver er afstaða flokksins til jafnréttismála?">Jafnrétti</button>
+      <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um málefni fatlaðs fólks?">Fötlunarmál</button>
+      <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í sveitarstjórnarkosningum 2018?">2018</button>
+      <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í Alþingiskosningum 2021?">2021</button>
+      <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í sveitarstjórnarkosningum 2022?">2022</button>
+      <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í Alþingiskosningum 2024?">2024</button>
+    </div>
+  `;
+}
+
+/**
+ * Add chat widget styles
+ */
+function addChatStyles() {
+  const style = document.createElement('style');
+  style.textContent = `
+    #member-assistant-widget {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 9999;
+      font-family: inherit;
+    }
+
+    .member-assistant__toggle {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--color-burgundy, #722f37);
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-cream, #fce9d8);
+    }
+
+    .member-assistant__toggle:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+    }
+
+    .member-assistant__toggle-icon {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .member-assistant__panel {
+      position: absolute;
+      bottom: 66px;
+      right: 0;
+      width: 360px;
+      max-width: calc(100vw - 40px);
+      height: 480px;
+      max-height: calc(100vh - 100px);
+      background: var(--color-surface, #fff);
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+
+    .member-assistant__panel--hidden {
+      opacity: 0;
+      transform: translateY(20px) scale(0.95);
+      pointer-events: none;
+    }
+
+    .member-assistant__panel--expanded {
+      width: 600px;
+      max-width: calc(100vw - 40px);
+      height: 70vh;
+      max-height: calc(100vh - 100px);
+    }
+
+    @media (min-width: 1200px) {
+      .member-assistant__panel--expanded {
+        width: 700px;
+        height: 75vh;
+      }
+    }
+
+    .member-assistant__header {
+      background: var(--color-burgundy, #722f37);
+      color: var(--color-cream, #fce9d8);
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .member-assistant__title-area {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+    }
+
+    .member-assistant__title {
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .member-assistant__info-btn {
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.4);
+      color: inherit;
+      cursor: pointer;
+      padding: 4px 8px;
+      font-size: 12px;
+      line-height: 1;
+      border-radius: 12px;
+      box-shadow: 0 0 8px rgba(255,255,255,0.6);
+      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .member-assistant__info-btn:hover {
+      background: rgba(255,255,255,0.3);
+      border-color: rgba(255,255,255,0.6);
+      box-shadow: 0 0 12px rgba(255,255,255,0.8);
+    }
+
+    .member-assistant__info-icon {
+      font-size: 12px;
+    }
+
+    .member-assistant__info-tooltip {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      margin-top: 8px;
+      width: 280px;
+      background: var(--color-surface, #fff);
+      color: var(--color-text, #333);
+      padding: 14px;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      font-size: 0.8rem;
+      line-height: 1.5;
+      z-index: 10;
+    }
+
+    .member-assistant__info-tooltip--visible {
+      display: block;
+    }
+
+    .member-assistant__info-tooltip-title {
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--color-burgundy, #722f37);
+    }
+
+    .member-assistant__info-tooltip p {
+      margin: 0 0 8px 0;
+    }
+
+    .member-assistant__info-tooltip p:last-child {
+      margin-bottom: 0;
+    }
+
+    .member-assistant__info-tooltip a {
+      color: var(--color-red, #d32f2f);
+      text-decoration: none;
+    }
+
+    .member-assistant__info-tooltip a:hover {
+      text-decoration: underline;
+    }
+
+    .member-assistant__info-tooltip-note {
+      font-size: 0.75rem;
+      color: var(--color-text-muted, #666);
+      padding-top: 8px;
+      border-top: 1px solid var(--color-cream-dark, #f5e6d3);
+    }
+
+    .member-assistant__header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .member-assistant__model-dropdown {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .member-assistant__model-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--color-cream-dark, #f5e6d3);
+      border: 1px solid var(--color-cream-dark, #f5e6d3);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      outline: none;
+      box-shadow: 0 0 8px rgba(255,255,255,0.6);
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    }
+
+    .member-assistant__model-trigger:hover {
+      border-color: var(--color-burgundy, #722f37);
+      transform: scale(1.05);
+      box-shadow: 0 0 12px rgba(255,255,255,0.8);
+    }
+
+    .member-assistant__model-trigger .member-assistant__model-icon {
+      font-size: 18px;
+    }
+
+    .member-assistant__model-menu {
+      display: none;
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-bottom: 4px;
+      background: var(--color-surface, #fff);
+      border: 1px solid var(--color-cream-dark, #f5e6d3);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 100;
+      overflow: hidden;
+    }
+
+    .member-assistant__model-menu--open {
+      display: block;
+    }
+
+    .member-assistant__model-option {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .member-assistant__model-option:hover {
+      background: var(--color-cream-dark, #f5e6d3);
+    }
+
+    .member-assistant__model-option .member-assistant__model-icon {
+      font-size: 18px;
+    }
+
+    .member-assistant__model-option--selected {
+      background: var(--color-cream-dark, #f5e6d3);
+    }
+
+    .member-assistant__clear,
+    .member-assistant__expand,
+    .member-assistant__close {
+      background: none;
+      border: none;
+      color: inherit;
+      font-size: 16px;
+      cursor: pointer;
+      padding: 4px;
+      line-height: 1;
+      opacity: 0.8;
+      border-radius: 4px;
+    }
+
+    .member-assistant__expand,
+    .member-assistant__close {
+      font-size: 20px;
+    }
+
+    .member-assistant__clear:hover,
+    .member-assistant__expand:hover,
+    .member-assistant__close:hover {
+      opacity: 1;
+      background: rgba(255,255,255,0.1);
+    }
+
+    .member-assistant__messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .member-assistant__message {
+      display: flex;
+      max-width: 90%;
+    }
+
+    .member-assistant__message--user {
+      align-self: flex-end;
+    }
+
+    .member-assistant__message--assistant {
+      align-self: flex-start;
+    }
+
+    .member-assistant__bubble {
+      padding: 10px 14px;
+      border-radius: 16px;
+      line-height: 1.5;
+      font-size: 0.9rem;
+    }
+
+    .member-assistant__message--user .member-assistant__bubble {
+      background: var(--color-burgundy, #722f37);
+      color: var(--color-cream, #fce9d8);
+      border-bottom-right-radius: 4px;
+    }
+
+    .member-assistant__message--assistant .member-assistant__bubble {
+      background: var(--color-cream-dark, #f5e6d3);
+      color: var(--color-text, #333);
+      border-bottom-left-radius: 4px;
+    }
+
+    .member-assistant__suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .member-assistant__suggestion {
+      background: var(--color-cream-dark, #f5e6d3);
+      border: 1px solid var(--color-burgundy, #722f37);
+      color: var(--color-burgundy, #722f37);
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .member-assistant__suggestion:hover {
+      background: var(--color-burgundy, #722f37);
+      color: var(--color-cream, #fce9d8);
+    }
+
+    .member-assistant__citations {
+      margin-top: 12px;
+      padding: 10px;
+      background: rgba(114, 47, 55, 0.05);
+      border-radius: 8px;
+      font-size: 0.75rem;
+      color: var(--color-text-muted, #666);
+    }
+
+    .member-assistant__citations-title {
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--color-burgundy, #722f37);
+    }
+
+    .member-assistant__citation {
+      display: block;
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .member-assistant__citation:last-child {
+      border-bottom: none;
+    }
+
+    .member-assistant__input-area {
+      padding: 12px;
+      border-top: 1px solid var(--color-cream-dark, #f5e6d3);
+      display: flex;
+      gap: 8px;
+    }
+
+    .member-assistant__input {
+      flex: 1;
+      padding: 10px 12px;
+      border: 1px solid var(--color-cream-dark, #f5e6d3);
+      border-radius: 20px;
+      resize: none;
+      font-family: inherit;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      max-height: 100px;
+      outline: none;
+    }
+
+    .member-assistant__input:focus {
+      border-color: var(--color-burgundy, #722f37);
+    }
+
+    .member-assistant__send {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--color-burgundy, #722f37);
+      border: none;
+      color: var(--color-cream, #fce9d8);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.2s;
+    }
+
+    .member-assistant__send:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .member-assistant__send:not(:disabled):hover {
+      opacity: 0.9;
+    }
+
+    .member-assistant__loading {
+      display: flex;
+      gap: 4px;
+      padding: 8px 0;
+    }
+
+    .member-assistant__loading-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--color-burgundy, #722f37);
+      border-radius: 50%;
+      animation: member-assistant-bounce 1.4s ease-in-out infinite both;
+    }
+
+    .member-assistant__loading-dot:nth-child(1) { animation-delay: -0.32s; }
+    .member-assistant__loading-dot:nth-child(2) { animation-delay: -0.16s; }
+
+    .member-assistant__countdown {
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-top: 8px;
+      padding: 5px 14px;
+      background: var(--color-burgundy, #722f37);
+      border-radius: 12px;
+      display: inline-block;
+    }
+
+    @keyframes member-assistant-bounce {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
+    }
+
+    /* Markdown styles */
+    .member-assistant__bubble h3.member-assistant__h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin: 12px 0 8px 0;
+      color: var(--color-burgundy, #722f37);
+    }
+
+    .member-assistant__bubble h3.member-assistant__h3:first-child {
+      margin-top: 0;
+    }
+
+    .member-assistant__bubble h4.member-assistant__h4 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin: 10px 0 6px 0;
+      color: var(--color-burgundy, #722f37);
+    }
+
+    .member-assistant__bubble .member-assistant__ul,
+    .member-assistant__bubble .member-assistant__ol {
+      margin: 8px 0;
+      padding-left: 20px;
+    }
+
+    .member-assistant__bubble .member-assistant__li {
+      margin: 4px 0;
+      line-height: 1.4;
+    }
+
+    .member-assistant__bubble .member-assistant__ol {
+      list-style: none;
+      counter-reset: none;
+    }
+
+    .member-assistant__bubble .member-assistant__li--numbered {
+      list-style: none;
+    }
+
+    .member-assistant__bubble .member-assistant__li--numbered::before {
+      content: attr(data-num) ". ";
+      font-weight: 600;
+      color: var(--color-burgundy, #722f37);
+    }
+
+    .member-assistant__bubble .member-assistant__link {
+      color: var(--color-red, #d32f2f);
+      text-decoration: none;
+    }
+
+    .member-assistant__bubble .member-assistant__link:hover {
+      text-decoration: underline;
+    }
+
+    .member-assistant__bubble .member-assistant__inline-code {
+      background: rgba(114, 47, 55, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.85em;
+    }
+
+    .member-assistant__bubble .member-assistant__code-block {
+      background: rgba(114, 47, 55, 0.1);
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 0.85em;
+      overflow-x: auto;
+      margin: 8px 0;
+      white-space: pre-wrap;
+    }
+
+    .member-assistant__bubble .member-assistant__hr {
+      border: none;
+      border-top: 1px solid rgba(114, 47, 55, 0.2);
+      margin: 12px 0;
+    }
+
+    .member-assistant__bubble strong {
+      font-weight: 600;
+    }
+
+    .member-assistant__bubble em {
+      font-style: italic;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+/**
+ * Format citations - disabled, citations are handled in the AI response itself
+ */
+function formatCitations(citations) {
+  // Citations removed from UI - the AI includes source references in its response text
+  return '';
+}
+
+/**
+ * Add a message to the chat
+ */
+function addMessage(role, content, citations = null) {
+  const messagesEl = document.getElementById('member-assistant-messages');
+  if (!messagesEl) return;
+
+  // Remove suggestions after first message
+  const suggestions = messagesEl.querySelector('.member-assistant__suggestions');
+  if (suggestions) {
+    suggestions.remove();
+  }
+
+  const messageDiv = document.createElement('div');
+  messageDiv.className = `member-assistant__message member-assistant__message--${role}`;
+
+  let bubbleContent = content;
+  if (role === 'assistant' && citations) {
+    bubbleContent += formatCitations(citations);
+  }
+
+  messageDiv.innerHTML = `<div class="member-assistant__bubble">${bubbleContent}</div>`;
+  messagesEl.appendChild(messageDiv);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+// Countdown timer state
+let countdownInterval = null;
+
+/**
+ * Show loading indicator with countdown
+ */
+function showLoading(expectedSeconds = 30) {
+  const messagesEl = document.getElementById('member-assistant-messages');
+  if (!messagesEl) return;
+
+  const loadingDiv = document.createElement('div');
+  loadingDiv.id = 'member-assistant-loading';
+  loadingDiv.className = 'member-assistant__message member-assistant__message--assistant';
+  loadingDiv.innerHTML = `
+    <div class="member-assistant__bubble">
+      <div class="member-assistant__loading">
+        <div class="member-assistant__loading-dot"></div>
+        <div class="member-assistant__loading-dot"></div>
+        <div class="member-assistant__loading-dot"></div>
+      </div>
+      <div class="member-assistant__countdown" id="member-assistant-countdown">
+        ${R.string.member_assistant_countdown_format.replace('%d', expectedSeconds)}
+      </div>
+    </div>
+  `;
+  messagesEl.appendChild(loadingDiv);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+
+  // Start countdown
+  let remaining = expectedSeconds;
+  countdownInterval = setInterval(() => {
+    remaining--;
+    const countdownEl = document.getElementById('member-assistant-countdown');
+    if (countdownEl && remaining > 0) {
+      countdownEl.textContent = R.string.member_assistant_countdown_format.replace('%d', remaining);
+    } else if (countdownEl) {
+      countdownEl.textContent = R.string.member_assistant_almost_ready;
+    }
+  }, 1000);
+}
+
+/**
+ * Hide loading indicator
+ */
+function hideLoading() {
+  if (countdownInterval) {
+    clearInterval(countdownInterval);
+    countdownInterval = null;
+  }
+  const loadingEl = document.getElementById('member-assistant-loading');
+  if (loadingEl) {
+    loadingEl.remove();
+  }
+}
+
+/**
+ * Send message to API
+ */
+async function sendMessage(message) {
+  if (isLoading || !message.trim()) return;
+
+  isLoading = true;
+  addMessage('user', message);
+  chatHistory.push({ role: 'user', content: message });
+
+  // Track message sent
+  trackAction('chat_message', { model: selectedModel });
+
+  const inputEl = document.getElementById('member-assistant-input');
+  const sendBtn = document.getElementById('member-assistant-send');
+  if (inputEl) inputEl.value = '';
+  if (sendBtn) sendBtn.disabled = true;
+
+  // Get model for timeout and countdown
+  const model = selectedModel;
+  const isThinking = model === 'kimi-k2-thinking';
+
+  // Expected response time: thinking ~60-120s, preview ~15-30s
+  const expectedSeconds = isThinking ? 90 : 20;
+  showLoading(expectedSeconds);
+
+  try {
+    const auth = getFirebaseAuth();
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error(R.string.member_assistant_error_not_logged_in);
+    }
+
+    const token = await user.getIdToken();
+
+    // Set timeout based on model (backend + buffer)
+    const timeoutMs = isThinking ? 210000 : 120000;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    const response = await fetch(`${EVENTS_API_BASE}/api/member-assistant/chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        message,
+        history: chatHistory.slice(-6),
+        model
+      }),
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Villa kom upp');
+    }
+
+    const data = await response.json();
+    hideLoading();
+
+    // Format markdown in reply
+    const formattedReply = formatMarkdown(data.reply);
+    addMessage('assistant', formattedReply, data.citations);
+    chatHistory.push({ role: 'assistant', content: data.reply });
+
+  } catch (error) {
+    hideLoading();
+    debug.error('member-assistant', 'Error:', error);
+    // User-friendly error messages
+    let errorMsg = error.message;
+    if (error.name === 'AbortError') {
+      errorMsg = R.string.member_assistant_error_timeout;
+    }
+    addMessage('assistant', `${R.string.member_assistant_error_prefix} ${errorMsg}`);
+  } finally {
+    isLoading = false;
+    if (sendBtn) sendBtn.disabled = false;
+  }
+}
+
+/**
+ * Markdown formatting with full support
+ */
+function formatMarkdown(text) {
+  // Escape HTML first
+  let html = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  // Code blocks (``` ... ```) - must be before other replacements
+  html = html.replace(/```([\s\S]*?)```/g, '<pre class="member-assistant__code-block">$1</pre>');
+
+  // Headers (## and ###)
+  html = html.replace(/^### (.+)$/gm, '<h4 class="member-assistant__h4">$1</h4>');
+  html = html.replace(/^## (.+)$/gm, '<h3 class="member-assistant__h3">$1</h3>');
+
+  // Horizontal rule
+  html = html.replace(/^---$/gm, '<hr class="member-assistant__hr">');
+
+  // Bold and italic
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+  // Inline code
+  html = html.replace(/`(.+?)`/g, '<code class="member-assistant__inline-code">$1</code>');
+
+  // Links [text](url)
+  html = html.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank" rel="noopener" class="member-assistant__link">$1</a>');
+
+  // Numbered lists (1. 2. 3. etc)
+  html = html.replace(/^(\d+)\. (.+)$/gm, '<li class="member-assistant__li member-assistant__li--numbered" data-num="$1">$2</li>');
+
+  // Bullet lists (• or - at start of line)
+  html = html.replace(/^[•\-] (.+)$/gm, '<li class="member-assistant__li">$1</li>');
+
+  // Wrap consecutive list items in <ul> or <ol>
+  html = html.replace(/((?:<li class="member-assistant__li member-assistant__li--numbered"[^>]*>.*?<\/li>\n?)+)/g, '<ol class="member-assistant__ol">$1</ol>');
+  html = html.replace(/((?:<li class="member-assistant__li">.*?<\/li>\n?)+)/g, '<ul class="member-assistant__ul">$1</ul>');
+
+  // Line breaks (but not inside lists or code blocks)
+  html = html.replace(/\n/g, '<br>');
+
+  // Clean up extra <br> after block elements
+  html = html.replace(/<\/(h3|h4|ul|ol|pre|hr)><br>/g, '</$1>');
+  html = html.replace(/<br><(h3|h4|ul|ol|pre|hr)/g, '<$1');
+
+  return html;
+}
+
+/**
+ * Toggle chat panel visibility
+ */
+function togglePanel() {
+  const panel = document.getElementById('member-assistant-panel');
+  const toggle = document.getElementById('member-assistant-toggle');
+  if (!panel || !toggle) return;
+
+  isOpen = !isOpen;
+  panel.classList.toggle('member-assistant__panel--hidden', !isOpen);
+  toggle.style.display = isOpen ? 'none' : 'flex';
+
+  if (isOpen) {
+    const input = document.getElementById('member-assistant-input');
+    if (input) input.focus();
+    // Track chat opened
+    trackAction('chat_open');
+  }
+}
+
+/**
+ * Toggle expanded mode
+ */
+function toggleExpanded() {
+  const panel = document.getElementById('member-assistant-panel');
+  if (!panel) return;
+
+  isExpanded = !isExpanded;
+  panel.classList.toggle('member-assistant__panel--expanded', isExpanded);
+}
+
+/**
+ * Clear chat history
+ */
+function clearChat() {
+  chatHistory = [];
+  const messagesEl = document.getElementById('member-assistant-messages');
+  if (!messagesEl) return;
+
+  messagesEl.innerHTML = getSuggestionsHTML();
+}
+
+/**
+ * Initialize the chat widget
+ */
+export function initMemberAssistantChat() {
+  // Only init if user is authenticated
+  const auth = getFirebaseAuth();
+  if (!auth.currentUser) {
+    debug.log('member-assistant', 'waiting for auth');
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        debug.log('member-assistant', 'user authenticated, initializing');
+        setupWidget();
+      }
+    });
+    return;
+  }
+
+  setupWidget();
+}
+
+/**
+ * Set up the widget DOM and event listeners
+ */
+function setupWidget() {
+  // Don't init twice
+  if (document.getElementById('member-assistant-widget')) {
+    return;
+  }
+
+  addChatStyles();
+  createChatWidget();
+
+  // Event listeners
+  document.getElementById('member-assistant-toggle')?.addEventListener('click', togglePanel);
+  document.getElementById('member-assistant-close')?.addEventListener('click', togglePanel);
+  document.getElementById('member-assistant-expand')?.addEventListener('click', toggleExpanded);
+  document.getElementById('member-assistant-clear')?.addEventListener('click', clearChat);
+
+  // Model dropdown toggle
+  document.getElementById('member-assistant-model-trigger')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const menu = document.getElementById('member-assistant-model-menu');
+    if (menu) {
+      menu.classList.toggle('member-assistant__model-menu--open');
+    }
+  });
+
+  // Model dropdown option selection
+  document.querySelectorAll('.member-assistant__model-option').forEach(option => {
+    option.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const value = option.dataset.value;
+      const icon = option.querySelector('.member-assistant__model-icon')?.innerHTML;
+
+      // Update selected model
+      selectedModel = value;
+
+      // Update trigger icon
+      const triggerIcon = document.getElementById('member-assistant-model-icon');
+      if (triggerIcon && icon) triggerIcon.innerHTML = icon;
+
+      // Update selected state
+      document.querySelectorAll('.member-assistant__model-option').forEach(opt => {
+        opt.classList.remove('member-assistant__model-option--selected');
+      });
+      option.classList.add('member-assistant__model-option--selected');
+
+      // Close menu
+      const menu = document.getElementById('member-assistant-model-menu');
+      if (menu) menu.classList.remove('member-assistant__model-menu--open');
+
+      debug.log('member-assistant', 'model changed to', value);
+    });
+  });
+
+  // Close model dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    const dropdown = document.getElementById('member-assistant-model-dropdown');
+    const menu = document.getElementById('member-assistant-model-menu');
+    if (menu && dropdown && !dropdown.contains(e.target)) {
+      menu.classList.remove('member-assistant__model-menu--open');
+    }
+  });
+
+  // Info tooltip toggle
+  document.getElementById('member-assistant-info')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const tooltip = document.getElementById('member-assistant-tooltip');
+    if (tooltip) {
+      tooltip.classList.toggle('member-assistant__info-tooltip--visible');
+    }
+  });
+
+  // Close tooltip when clicking outside
+  document.addEventListener('click', (e) => {
+    const tooltip = document.getElementById('member-assistant-tooltip');
+    const infoBtn = document.getElementById('member-assistant-info');
+    if (tooltip && !tooltip.contains(e.target) && e.target !== infoBtn) {
+      tooltip.classList.remove('member-assistant__info-tooltip--visible');
+    }
+  });
+
+  document.getElementById('member-assistant-send')?.addEventListener('click', () => {
+    const input = document.getElementById('member-assistant-input');
+    if (input) sendMessage(input.value);
+  });
+
+  document.getElementById('member-assistant-input')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage(e.target.value);
+    }
+  });
+
+  // Auto-resize textarea
+  document.getElementById('member-assistant-input')?.addEventListener('input', (e) => {
+    e.target.style.height = 'auto';
+    e.target.style.height = Math.min(e.target.scrollHeight, 100) + 'px';
+  });
+
+  // Suggestion buttons
+  document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('member-assistant__suggestion')) {
+      const query = e.target.dataset.query;
+      if (query) sendMessage(query);
+    }
+  });
+
+  debug.log('member-assistant', 'chat initialized');
+}
+
+export default { initMemberAssistantChat };

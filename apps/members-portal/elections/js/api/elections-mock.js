@@ -58,7 +58,7 @@ const MOCK_ELECTIONS = [
     eligibility: 'Öll félagsmenn með virka félagsaðild',
     answers: [
       { id: '003a', text: 'Kristín Davíðsdóttir', description: 'Hagfræðingur, félagsleg réttlæti' },
-      { id: '003b', text: 'Jón Þór Ólafsson', description: 'Umhverfissinni, endurnýjanleg orka' },
+      { id: '003b', text: 'PERSON_04 Ólafsson', description: 'Umhverfissinni, endurnýjanleg orka' },
       { id: '003c', text: 'Sigrún Magnúsdóttir', description: 'Kennari, menntamál' },
       { id: '003d', text: 'Páll Einarsson', description: 'Hjúkrunarfræðingur, heilbrigðismál' },
       { id: '003e', text: 'María Sigurðardóttir', description: 'Lögfræðingur, mannréttindi' },

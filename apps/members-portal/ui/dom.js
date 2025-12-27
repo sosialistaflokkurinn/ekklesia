@@ -4,6 +4,8 @@
  * Safe DOM manipulation helpers with validation and helpful error messages.
  * Prevents null reference errors and provides debugging context.
  *
+ * Module cleanup not needed - pure utility functions, no persistent state.
+ *
  * @module ui/dom
  */
 

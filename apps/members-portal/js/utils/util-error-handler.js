@@ -3,6 +3,8 @@
  *
  * Provides consistent error handling and display across the application.
  *
+ * Module cleanup not needed - pure utility functions, no persistent state.
+ *
  * @module utils/error-handler
  */
 

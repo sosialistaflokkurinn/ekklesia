@@ -3,6 +3,8 @@
  *
  * Floating chat widget that provides AI-powered information about the Socialist Party.
  * Uses Kimi API with party knowledge base (xj.is + discourse-archive data).
+ *
+ * Module cleanup not needed - widget persists for page lifetime.
  */
 
 import { debug } from '../utils/util-debug.js';
@@ -29,13 +31,13 @@ function createChatWidget() {
     </button>
     <div id="party-wiki-panel" class="party-wiki__panel party-wiki__panel--hidden">
       <div class="party-wiki__header">
-        <span class="party-wiki__title">📚 Flokkurinn</span>
+        <span class="party-wiki__title">${R.string.party_wiki_title}</span>
         <button id="party-wiki-close" class="party-wiki__close" title="${R.string.nav_close}">&times;</button>
       </div>
       <div id="party-wiki-messages" class="party-wiki__messages">
         <div class="party-wiki__message party-wiki__message--assistant">
           <div class="party-wiki__bubble">
-            Velkomin! Ég get svarað spurningum um Sósíalistaflokkinn - sögu, stefnu, uppbyggingu og fólk. Hvað viltu vita?
+            ${R.string.party_wiki_welcome}
           </div>
         </div>
       </div>
@@ -380,7 +382,7 @@ function showLoading() {
   coldStartTimer = setTimeout(() => {
     const textEl = loadingEl.querySelector('.party-wiki__loading-text');
     if (textEl) {
-      textEl.textContent = ' Leita í gagnagrunni...';
+      textEl.textContent = ` ${R.string.party_wiki_searching}`;
     }
   }, 3000);
 
@@ -388,7 +390,7 @@ function showLoading() {
   setTimeout(() => {
     const textEl = loadingEl.querySelector('.party-wiki__loading-text');
     if (textEl && textEl.textContent) {
-      textEl.textContent = ' Sæki upplýsingar...';
+      textEl.textContent = ` ${R.string.party_wiki_fetching}`;
     }
   }, 8000);
 }
@@ -460,7 +462,7 @@ async function sendMessage(message) {
   } catch (error) {
     debug.error('Party wiki chat error:', error);
     hideLoading();
-    addMessage('assistant', 'Villa kom upp. Reyndu aftur síðar.');
+    addMessage('assistant', R.string.party_wiki_error);
   } finally {
     isLoading = false;
     sendBtn.disabled = false;

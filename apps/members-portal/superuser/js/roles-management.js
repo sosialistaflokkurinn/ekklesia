@@ -4,6 +4,8 @@
  * Frontend for managing user roles. Superusers can search for members
  * and change their roles (member, admin, superuser).
  *
+ * Module cleanup not needed - page reloads on navigation.
+ *
  * Backend Status:
  * ✅ setUserRole - IMPLEMENTED (superuser_functions.py)
  * ✅ getUserRole - IMPLEMENTED (superuser_functions.py)

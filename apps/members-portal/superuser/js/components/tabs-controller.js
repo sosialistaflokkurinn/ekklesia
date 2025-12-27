@@ -2,6 +2,8 @@
  * Tabs Controller - Tab Switching Logic
  *
  * Reusable tab management for the system overview page.
+ *
+ * Module cleanup not needed - tab controller persists for page lifetime.
  */
 
 // Module state

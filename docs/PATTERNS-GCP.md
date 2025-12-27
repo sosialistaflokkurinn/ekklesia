@@ -46,6 +46,18 @@ gcloud secrets versions access latest --secret=django-socialism-db-password
 PGPASSWORD='Socialism2025#Db' psql -h localhost -p 5433 -U socialism -d socialism
 ```
 
+### RAG Documents Table (pgvector)
+```bash
+# Query RAG documents for AI assistant
+PGPASSWORD='Socialism2025#Db' psql -h localhost -p 5433 -U socialism -d socialism -c "
+SELECT id, source_type, title, LENGTH(content) as content_len
+FROM rag_documents ORDER BY id DESC LIMIT 10;"
+
+# Check vector index status
+PGPASSWORD='Socialism2025#Db' psql -h localhost -p 5433 -U socialism -d socialism -c "
+SELECT indexname FROM pg_indexes WHERE tablename = 'rag_documents';"
+```
+
 ### Common Queries
 ```bash
 # List tables
@@ -115,7 +127,7 @@ members/{kennitala}
 ```bash
 # Document ID IS the kennitala (without hyphen)
 curl -s -X GET \
-  "https://firestore.googleapis.com/v1/projects/ekklesia-prod-10-2025/databases/(default)/documents/members/0912546629" \
+  "https://firestore.googleapis.com/v1/projects/ekklesia-prod-10-2025/databases/(default)/documents/members/0000000000" \
   -H "Authorization: Bearer $(gcloud auth application-default print-access-token)" \
   | jq '.fields'
 ```
@@ -156,7 +168,7 @@ curl -s -X POST \
         "fieldFilter": {
           "field": {"fieldPath": "profile.kennitala"},
           "op": "EQUAL",
-          "value": {"stringValue": "0912546629"}
+          "value": {"stringValue": "0000000000"}
         }
       },
       "limit": 1
@@ -231,7 +243,7 @@ EOF
 
 # Update with multiple field paths
 curl -s -X PATCH \
-  "https://firestore.googleapis.com/v1/projects/ekklesia-prod-10-2025/databases/(default)/documents/members/1102992499?updateMask.fieldPaths=profile.addresses&updateMask.fieldPaths=dataFlags.emptyAddress" \
+  "https://firestore.googleapis.com/v1/projects/ekklesia-prod-10-2025/databases/(default)/documents/members/0000000000?updateMask.fieldPaths=profile.addresses&updateMask.fieldPaths=dataFlags.emptyAddress" \
   -H "Authorization: Bearer $(gcloud auth application-default print-access-token)" \
   -H "Content-Type: application/json" \
   -d @/tmp/update.json
@@ -338,9 +350,10 @@ gcloud secrets versions access latest --secret=SECRET_NAME
 | Secret | Usage |
 |--------|-------|
 | `django-socialism-db-password` | Cloud SQL password |
-| `django-api-token` | Django API auth |
 | `elections-s2s-api-key` | Elections service auth |
 | `kenni-client-secret` | Kenni.is OAuth |
+| `kimi-api-key` | Moonshot AI (Kimi) for RAG assistant |
+| `sendgrid-api-key` | SendGrid email |
 
 ---
 
@@ -395,9 +408,9 @@ gcloud functions list --regions=europe-west2 | grep FUNCTION_NAME
 ## Data Format Notes
 
 ### Kennitala
-- **Django**: Stored without hyphen: `0912546629`
-- **Firestore**: Stored without hyphen: `0912546629`
-- **Display**: With hyphen: `091254-6629`
+- **Django**: Stored without hyphen: `0000000000`
+- **Firestore**: Stored without hyphen: `0000000000`
+- **Display**: With hyphen: `000000-0000`
 - **Document ID**: Is the kennitala (no hyphen)
 
 ### Dates
@@ -689,7 +702,7 @@ const docRef = db.collection("nomination-candidates").doc("jon-jonsson");
 await docRef.update({
   member_info: {
     django_id: 1234,
-    kennitala: "0101011234",
+    kennitala: "0000000000",
     phone: "1234567",
     email: "jon@example.com"
   },

@@ -4,6 +4,8 @@
  * Unified view/edit page for member profiles in admin area.
  * Reads from Cloud SQL (source of truth) via Cloud Functions.
  * Uses PhoneManager and AddressManager from profile refactoring.
+ *
+ * Module cleanup not needed - page reloads on navigation.
  */
 
 import { getFirebaseAuth, httpsCallable } from '../../firebase/app.js';

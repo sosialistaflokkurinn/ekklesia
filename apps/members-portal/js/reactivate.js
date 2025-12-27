@@ -4,6 +4,8 @@
  * Handles account reactivation for soft-deleted users.
  * Users authenticate via Kenni.is and then their account is reactivated.
  *
+ * Module cleanup not needed - page reloads on navigation.
+ *
  * @module reactivate
  */
 

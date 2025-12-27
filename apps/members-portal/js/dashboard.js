@@ -26,6 +26,8 @@ import { createButton } from './components/ui-button.js';
 import { showModal } from './components/ui-modal.js';
 import { showToast } from './components/ui-toast.js';
 import { SERVICES } from './config/config.js';
+import { initMemberAssistantChat } from './components/member-assistant-chat.js';
+import { initAutoTracking, trackAction } from './utils/util-analytics.js';
 
 /**
  * Nomination committee member UIDs
@@ -639,6 +641,12 @@ async function init() {
 
     // Load featured event (non-blocking)
     loadFeaturedEvent();
+
+    // Initialize member assistant chat widget
+    initMemberAssistantChat();
+
+    // Initialize analytics tracking (excludes admins on backend)
+    initAutoTracking();
 
     // Check for profile data discrepancies between Kenni.is and Firestore
     await checkProfileDiscrepancies(userData);

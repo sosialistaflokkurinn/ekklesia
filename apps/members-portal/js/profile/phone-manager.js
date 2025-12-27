@@ -4,6 +4,8 @@
  * Handles phone number CRUD operations, rendering, and auto-save for profile page.
  * Supports multiple phone numbers with country selection and default marking.
  *
+ * Cleanup handled by PhoneManager.destroy() - callers must invoke on page unload.
+ *
  * @module profile/phone-manager
  */
 

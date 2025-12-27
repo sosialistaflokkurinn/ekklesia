@@ -9,6 +9,7 @@
 const express = require('express');
 const axios = require('axios');
 const logger = require('../utils/util-logger');
+const { pool } = require('../config/config-database');
 const authenticate = require('../middleware/middleware-auth');
 
 const router = express.Router();
@@ -16,7 +17,11 @@ const router = express.Router();
 // Kimi API Configuration
 const KIMI_API_KEY = process.env.KIMI_API_KEY;
 const KIMI_API_BASE = 'https://api.moonshot.ai/v1';
-const KIMI_MODEL = 'kimi-k2-0711-preview';
+const KIMI_MODEL_DEFAULT = 'kimi-k2-0711-preview';
+const KIMI_MODELS = {
+  'kimi-k2-0711-preview': { name: 'Preview (hraður)', timeout: 60000 },
+  'kimi-k2-thinking': { name: 'Thinking (nákvæmur)', timeout: 120000 }
+};
 
 // Party Wiki System Prompt - Contains core knowledge about the party
 const PARTY_WIKI_PROMPT = `Þú ert Wikipedia-stílaður þekkingaraðstoðarmaður um Sósíalistaflokkinn (xj.is).
@@ -68,8 +73,8 @@ Aðrir í framkvæmdastjórn: Karl Héðinn Kristjánsson, Bergljót Tul Gunnlau
 **ATH:** Margir í nýrri stjórn 2025 sátu einnig í stjórn 2024. Þetta voru ekki algjör stjórnarskipti heldur breytingar á forystusætum.
 
 **Borgarfulltrúar Reykjavíkur (2 sæti):**
-- Sanna Magdalena Mörtudóttir - Oddviti, formaður velferðarráðs
-- Andrea Ósk Jónsdóttir (tók við af Trausta í sept. 2024)
+- Anna Björk Mörtudóttir - Oddviti, formaður velferðarráðs
+- Helga Sigríður Pálsdóttir (tók við af fyrirrennara í sept. 2024)
 
 **Alþingismenn:**
 - Enginn - Flokkurinn hefur aldrei náð kjöri á Alþingi
@@ -77,8 +82,8 @@ Aðrir í framkvæmdastjórn: Karl Héðinn Kristjánsson, Bergljót Tul Gunnlau
 ## STOFNENDUR (1. MAÍ 2017)
 
 97 stofnfélagar, þar af helstu:
-- Gunnar Smári Egilsson - Stofnandi, fyrrverandi ritstjóri
-- Sanna Magdalena Mörtudóttir - Borgarfulltrúi
+- Jón Baldur Sigurðsson - Stofnandi, fyrrverandi ritstjóri
+- Anna Björk Mörtudóttir - Borgarfulltrúi
 - Karl Héðinn Kristjánsson - Lögfræðingur
 - Védís Guðjónsdóttir - Formaður
 
@@ -111,7 +116,7 @@ Aðrir í framkvæmdastjórn: Karl Héðinn Kristjánsson, Bergljót Tul Gunnlau
 - **ATH:** Samstöðin er enn starfandi, en ekki lengur fjármögnuð af flokknum
 
 ### Efling-stéttarfélag
-- **Tengsl:** Sólveig Anna Jónsdóttir (tengd sósíalistum) var kjörin formaður 2018 og 2022
+- **Tengsl:** Kristín Helga Magnúsdóttir (tengd sósíalistum) var kjörin formaður 2018 og 2022
 - **ATH:** Efling er EKKI hluti af flokknum, en nokkrir sósíalistar hafa verið virkir þar
 
 ### Sósíalistafélag Reykjavíkur
@@ -121,13 +126,13 @@ Aðrir í framkvæmdastjórn: Karl Héðinn Kristjánsson, Bergljót Tul Gunnlau
 ## DEILUR 2025 (ÚR DISCOURSE-ARCHIVE)
 
 Á aðalfundi 24. maí 2025 urðu stjórnarskipti þar sem nýir formenn voru kjörnir.
-Sanna Magdalena sagði af sér sem pólitískur leiðtogi 26. maí.
+Anna Björk sagði af sér sem pólitískur leiðtogi 26. maí.
 Deilur snúast að hluta til um Vorstjörnuna (húsfélag) og fjárreiður.
 
 **ATH:** Þetta voru ekki algjör valdarán - margir í nýrri stjórn (t.d. Hallfríður gjaldkeri, Sæþór) sátu þegar í stjórn 2024.
 
 Tveir fylkingar:
-1. **Fyrri forysta** - Sanna, Gunnar Smári, Sara Stef, Védís
+1. **Fyrri forysta** - Sanna, Jón Baldur, Sara Stef, Védís
 2. **Nýja forystan** - Sæþór (formaður), Sigrún Lára, Hallfríður
 
 ---
@@ -158,13 +163,47 @@ const WEB_SEARCH_TOOL = {
 };
 
 /**
+ * Save conversation to database for usage tracking
+ */
+async function saveConversation({
+  userId,
+  userName,
+  question,
+  response,
+  model,
+  responseTimeMs,
+}) {
+  try {
+    await pool.query(
+      `INSERT INTO rag_conversations
+       (user_id, user_name, question, response, model, response_time_ms, assistant_type)
+       VALUES ($1, $2, $3, $4, $5, $6, 'party-wiki')`,
+      [userId, userName, question, response, model, responseTimeMs]
+    );
+    logger.info('Party wiki conversation saved', {
+      operation: 'save_party_wiki_conversation',
+      userId,
+      questionLength: question.length,
+    });
+  } catch (error) {
+    // Don't fail the request if saving fails
+    logger.error('Failed to save party wiki conversation', {
+      operation: 'save_party_wiki_conversation_error',
+      error: error.message,
+    });
+  }
+}
+
+/**
  * POST /api/party-wiki/chat
  * Send a message to party wiki assistant and get a response
  * Requires authentication (any member)
  */
 router.post('/chat', authenticate, async (req, res) => {
+  const startTime = Date.now();
+
   try {
-    const { message, history = [] } = req.body;
+    const { message, history = [], model: requestedModel } = req.body;
 
     if (!message || typeof message !== 'string') {
       return res.status(400).json({
@@ -172,6 +211,12 @@ router.post('/chat', authenticate, async (req, res) => {
         message: 'Message is required'
       });
     }
+
+    // Validate and select model (default to preview)
+    const selectedModel = requestedModel && KIMI_MODELS[requestedModel]
+      ? requestedModel
+      : KIMI_MODEL_DEFAULT;
+    const modelConfig = KIMI_MODELS[selectedModel];
 
     if (!KIMI_API_KEY) {
       return res.status(503).json({
@@ -194,13 +239,14 @@ router.post('/chat', authenticate, async (req, res) => {
       operation: 'party_wiki_chat',
       userId: req.user?.uid,
       messageLength: message.length,
-      historyLength: history.length
+      historyLength: history.length,
+      model: selectedModel
     });
 
     const response = await axios.post(
       `${KIMI_API_BASE}/chat/completions`,
       {
-        model: KIMI_MODEL,
+        model: selectedModel,
         messages,
         temperature: 0.5,  // Lower temperature for more factual responses
         max_tokens: 2000,
@@ -211,7 +257,7 @@ router.post('/chat', authenticate, async (req, res) => {
           'Authorization': `Bearer ${KIMI_API_KEY}`,
           'Content-Type': 'application/json'
         },
-        timeout: 60000  // Longer timeout for web search
+        timeout: modelConfig.timeout
       }
     );
 
@@ -221,15 +267,29 @@ router.post('/chat', authenticate, async (req, res) => {
       throw new Error('Empty response from AI');
     }
 
+    const responseTimeMs = Date.now() - startTime;
+
     logger.info('Party wiki chat response', {
       operation: 'party_wiki_chat_response',
       userId: req.user?.uid,
-      replyLength: reply.length
+      replyLength: reply.length,
+      responseTimeMs
+    });
+
+    // Save conversation for usage tracking (async, don't wait)
+    saveConversation({
+      userId: req.user?.uid,
+      userName: req.user?.name || null,
+      question: message,
+      response: reply,
+      model: selectedModel,
+      responseTimeMs,
     });
 
     res.json({
       reply,
-      model: KIMI_MODEL
+      model: selectedModel,
+      modelName: modelConfig.name
     });
 
   } catch (error) {

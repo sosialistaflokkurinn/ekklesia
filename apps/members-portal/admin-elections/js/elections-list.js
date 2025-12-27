@@ -1,6 +1,8 @@
 /**
  * Admin Elections List Page
  * Displays and manages all elections with RBAC
+ *
+ * Module cleanup not needed - page reloads on navigation.
  */
 
 import { getFirebaseAuth } from '../../firebase/app.js';
@@ -65,7 +67,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         if (!electionRole) {
           await showAlert(
-            'Ekki heimild',
+            R.string.label_no_permission,
             R.string.error_not_authorized || 'Þú hefur ekki heimild til að skoða kosningar.'
           );
           window.location.href = '/members-area/';
@@ -447,7 +449,7 @@ function getActionButtons(election) {
   // Share QR button (always shown for published elections)
   if (election.status === 'published' || election.status === 'closed') {
     buttons.push(`
-      <button class="btn btn-sm btn-share" data-action="share" data-id="${election.id}" data-title="${election.title.replace(/"/g, '&quot;')}" title="Deila með QR kóða">
+      <button class="btn btn-sm btn-share" data-action="share" data-id="${election.id}" data-title="${election.title.replace(/"/g, '&quot;')}" title="${R.string.share_qr_title}">
         📱
       </button>
     `);
@@ -972,7 +974,7 @@ async function handleDeleteElection(electionId) {
   
   if (confirmation !== election.title) {
     await showAlert(
-      'Villa',
+      R.string.label_error,
       R.string.confirm_delete_title_mismatch
     );
     return;

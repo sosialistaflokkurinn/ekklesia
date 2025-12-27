@@ -5,6 +5,8 @@
  * Reads from Cloud SQL (source of truth) via getMemberSelf Cloud Function.
  * Writes via updatememberprofile Cloud Function.
  *
+ * Module cleanup not needed - page reloads on navigation.
+ *
  * @module profile
  */
 
