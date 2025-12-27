@@ -9,9 +9,11 @@ const electionRoutes = require('./routes/route-election');
 const adminRouter = require('./routes/route-admin');
 const externalEventsRouter = require('./routes/route-external-events');
 const kimiChatRouter = require('./routes/route-kimi-chat');
+const memberAssistantRouter = require('./routes/route-member-assistant');
 const partyWikiRouter = require('./routes/route-party-wiki');
 const systemHealthRouter = require('./routes/route-system-health');
 const errorsRouter = require('./routes/route-errors');
+const analyticsRouter = require('./routes/route-analytics');
 const { verifyAppCheckOptional } = require('./middleware/middleware-app-check');
 const { readLimiter, adminLimiter } = require('./middleware/middleware-rate-limiter');
 const logger = require('./utils/util-logger');
@@ -117,8 +119,12 @@ app.use('/api/external-events', externalEventsRouter);
 
 // Kimi chat needs larger body limit for conversation history
 app.use('/api/kimi', express.json({ limit: '50kb', strict: true }), kimiChatRouter);
+// Member assistant (RAG-powered) - larger limit for history
+app.use('/api/member-assistant', express.json({ limit: '50kb', strict: true }), memberAssistantRouter);
 app.use('/api/party-wiki', partyWikiRouter);
 app.use('/api/system', systemHealthRouter);
+// Analytics tracking
+app.use('/api/analytics', analyticsRouter);
 // Admin-only routes (developer testing only)
 app.use('/api/admin', adminRouter);
 

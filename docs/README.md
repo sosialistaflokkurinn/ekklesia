@@ -6,6 +6,8 @@
 |----------|---------|
 | [ARCHITECTURE.md](ARCHITECTURE.md) | System design, data flow, troubleshooting |
 | [PATTERNS.md](PATTERNS.md) | Code patterns, reusable components, best practices |
+| [PATTERNS-GCP.md](PATTERNS-GCP.md) | GCP/Firebase queries, Cloud SQL, Firestore |
+| [PATTERNS-KIMI-Felagar.md](PATTERNS-KIMI-Felagar.md) | RAG system, vector search, AI assistant |
 | [SECURITY.md](SECURITY.md) | Security rules, secrets management |
 
 ---
@@ -26,8 +28,8 @@ ekklesia/
 │
 ├── services/                     # Backend (Cloud Run)
 │   ├── svc-elections/            # Elections service (Node.js)
-│   ├── svc-events/               # Events service (Node.js)
-│   └── svc-members/              # Members service (Firebase)
+│   ├── svc-events/               # Events + RAG AI assistant (Node.js)
+│   └── svc-members/              # Members service (Firebase Functions)
 │
 ├── scripts/                      # Automation
 │   ├── database/                 # DB scripts
@@ -44,9 +46,9 @@ ekklesia/
 
 ### 1. Reuse Before Create
 Search existing code before writing new:
-- `js/components/` for UI components
-- `js/utils/` for utility functions
-- `js/api/` for API clients
+- `js/components/` for UI (ui-modal, ui-toast, member-assistant-chat, party-wiki-chat)
+- `js/utils/` for utilities (util-format, util-debounce, util-error-handler)
+- `js/api/` for API clients (api-elections, api-members, api-heatmap)
 
 ### 2. Consistency Over Cleverness
 - Follow existing patterns

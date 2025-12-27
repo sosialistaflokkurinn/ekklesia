@@ -1,6 +1,9 @@
 /**
  * Election Creation Wizard
  * Multi-step form for creating elections
+ *
+ * Module cleanup not needed - page reloads on navigation.
+ * i18n: Strings loaded by HTML before this module - initI18n not needed here.
  */
 
 import { getFirebaseAuth } from '../../firebase/app.js';
@@ -18,8 +21,6 @@ import { collectFormData, buildCreatePayload, buildUpdatePayload, populateFormFr
 import { createElection, updateElection, fetchElection, openElection } from './api/elections-admin-api.js';
 
 const auth = getFirebaseAuth();
-
-// Note: i18n strings are already loaded in create.html before this script runs
 
 // Constants
 const DOM_INIT_DELAY_MS = 100; // Time for wizard to initialize DOM elements

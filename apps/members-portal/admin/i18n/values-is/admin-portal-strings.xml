@@ -3,7 +3,7 @@
   <string name="admin_brand">Ekklesia Stjórnkerfi</string>
   <string name="nav_admin_dashboard">Yfirlit</string>
   <string name="nav_admin_sync">Samstilla félagaskrá</string>
-  <string name="nav_admin_history">Samstillingasaga</string>
+  <string name="nav_admin_history">Samstillingarsaga</string>
   <string name="nav_admin_queue">Samstillingarbiðröð</string>
   <string name="nav_back_to_member">Aftur á félagavef</string>
   <string name="nav_logout">Útskrá</string>
@@ -27,7 +27,7 @@
   <string name="sync_members_title">Samstilla félagaskrá</string>
   <string name="sync_members_subtitle">Handvirk samstilling félagaskrár úr eldra Django-kerfi</string>
   <string name="sync_trigger_title">Hefja samstillingu</string>
-  <string name="sync_trigger_description">Þetta mun samstilla félagaskrá úr eldra Django kerfi yfir í nýja Firestore gagnagrunninn.</string>
+  <string name="sync_trigger_description">Þetta mun samstilla félagaskrá úr eldra Django-kerfi yfir í nýja Firestore gagnagrunninn.</string>
   <string name="sync_trigger_btn">Keyra samstillingu</string>
   <string name="sync_trigger_confirm">Ertu viss um að þú viljir keyra samstillingu? Þetta gæti tekið 1-2 mínútur.</string>
   <string name="sync_status_title">Samstilling í gangi</string>
@@ -43,7 +43,7 @@
   <string name="stat_duration_label">Tímalengd</string>
   <string name="stat_status_label">Staða</string>
   <string name="stat_time_label">Tímalengd</string>
-  <string name="history_title">Samstillingasaga</string>
+  <string name="history_title">Samstillingarsaga</string>
   <string name="history_subtitle">Yfirlit yfir fyrri keyrslur</string>
   <string name="history_table_date">Dagsetning</string>
   <string name="history_table_status">Staða</string>
@@ -176,8 +176,10 @@
   <string name="email_stats_sent">Sent</string>
   <string name="email_stats_delivered">Afhent</string>
   <string name="email_stats_opened">Opnað</string>
-  <string name="email_stats_bounced">Skilaði</string>
+  <string name="email_stats_bounced">Skilað</string>
   <string name="email_stats_period">síðustu %d daga</string>
+  <string name="email_stats_title">Tölfræði</string>
+  <string name="email_stats_error">Gat ekki hlaðið tölfræði</string>
 
   <!-- Email Templates -->
   <string name="email_templates_title">Sniðmát</string>
@@ -250,7 +252,7 @@
   <string name="email_status_sent">Sent</string>
   <string name="email_status_delivered">Afhent</string>
   <string name="email_status_opened">Opnað</string>
-  <string name="email_status_bounced">Skilaði</string>
+  <string name="email_status_bounced">Skilað</string>
   <string name="email_status_complained">Kvörtun</string>
 
   <!-- Recipient Filter -->

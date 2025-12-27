@@ -4,6 +4,8 @@
  * Handles irreversible operations with multi-step confirmation.
  * All operations are logged to Cloud Logging for audit trail.
  *
+ * Module cleanup not needed - page reloads on navigation.
+ *
  * Backend Status:
  * ✅ hardDeleteMember - IMPLEMENTED (fn_superuser.py)
  * ✅ anonymizeMember - IMPLEMENTED (fn_superuser.py)

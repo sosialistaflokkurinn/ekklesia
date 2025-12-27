@@ -4,6 +4,8 @@
  * Handles address CRUD operations, rendering, and auto-save for profile page.
  * Supports multiple addresses with country selection and default marking.
  *
+ * Cleanup handled by AddressManager.destroy() - callers must invoke on page unload.
+ *
  * @module profile/address-manager
  */
 

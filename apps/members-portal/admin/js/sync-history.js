@@ -2,6 +2,8 @@
  * Sync History Page - Epic #43 Phase 2
  *
  * Display history of member sync operations from Firestore sync_logs collection.
+ *
+ * Module cleanup not needed - page reloads on navigation.
  */
 
 // Import from member portal public directory (two levels up from /admin/js/)

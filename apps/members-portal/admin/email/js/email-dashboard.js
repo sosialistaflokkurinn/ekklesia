@@ -19,7 +19,7 @@ function setPageText(strings) {
   document.getElementById('page-title').textContent = strings.email_dashboard_title + ' - Ekklesia';
 
   // Stats labels
-  document.getElementById('stats-title').textContent = 'Tölfræði';
+  document.getElementById('stats-title').textContent = strings.email_stats_title;
   document.getElementById('stat-sent-label').textContent = strings.email_stats_sent;
   document.getElementById('stat-delivered-label').textContent = strings.email_stats_delivered;
   document.getElementById('stat-opened-label').textContent = strings.email_stats_opened;
@@ -56,7 +56,7 @@ async function loadStats(strings) {
   } catch (error) {
     debug.warn('[EmailDashboard] Could not load stats:', error);
     // Stats loading is optional - page still works
-    document.getElementById('stats-period').textContent = 'Gat ekki hlaðið tölfræði';
+    document.getElementById('stats-period').textContent = strings.email_stats_error;
   }
 }
 

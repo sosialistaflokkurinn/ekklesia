@@ -5,6 +5,8 @@
  * Supports two modes:
  * - Template mode: Select a saved template
  * - Quick send mode: Write subject and body directly
+ *
+ * Module cleanup not needed - page reloads on navigation.
  */
 
 import { initSession } from '../../../session/init.js';

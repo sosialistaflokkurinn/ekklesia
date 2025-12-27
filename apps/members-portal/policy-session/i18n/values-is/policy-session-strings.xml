@@ -30,7 +30,7 @@
   <string name="vote_success">Atkvæði skráð!</string>
   <string name="vote_error">Ekki tókst að skrá atkvæði</string>
   <string name="vote_voting">Skrái atkvæði...</string>
-  <string name="vote_already_voted">Þegar kosið</string>
+  <string name="vote_already_voted">Búið að kjósa</string>
   <string name="results_title">Niðurstöður</string>
   <string name="results_amendments_heading">Niðurstöður breytingatillagna</string>
   <string name="results_final_policy_heading">Atkvæði um endanlega stefnu</string>
@@ -39,10 +39,10 @@
   <string name="results_rejected">Hafnað</string>
   <string name="results_approved">Samþykkt</string>
   <string name="results_not_approved">Ekki samþykkt</string>
-  <string name="results_loading">Hleð niðurstöðum...</string>
+  <string name="results_loading">Hleð niðurstöður...</string>
   <string name="results_error">Ekki tókst að sækja niðurstöður</string>
   <string name="phase_discussion_title">Umræðufasi</string>
-  <string name="phase_discussion_message">Skoðaðu drög að stefnu. Hægt verður að leggja fram breytingatillögur í hlé.</string>
+  <string name="phase_discussion_message">Skoðaðu drög að stefnu. Hægt verður að leggja fram breytingatillögur í hléi.</string>
   <string name="phase_break_title">Hlé - Senda inn breytingatillögur</string>
   <string name="phase_voting_title">Atkvæðagreiðsla</string>
   <string name="policy_items_voting_heading">Kjósa um stefnuliði</string>

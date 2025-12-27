@@ -12,17 +12,37 @@
 
 | Never | Always |
 |-------|--------|
-| Commit `.env` files | Use GCP Secret Manager |
-| Commit credentials | Use environment variables |
-| Commit PII | Mask sensitive data |
-| Use `git push --no-verify` | Let hooks run |
+| Commit `.env`, `*.key.json` | Use GCP Secret Manager |
+| Commit PII (kennitala) | Mask in logs: `kennitala[:6]****` |
+| `firebase deploy --only functions` | Specify function: `--only functions:NAME` |
+| Skip rate limiting | Add `check_uid_rate_limit()` |
+| Accept unvalidated input | Check length, format, type |
+| `git push --no-verify` | Let pre-commit hooks run |
 
 ---
 
-## Detailed Security Documentation
+## Protected Files (.gitignore)
 
-See [docs/SECURITY.md](docs/SECURITY.md) for:
-- Protected files list
-- Secrets management
-- Pre-commit hooks
-- Incident response
+```
+.env, .env.*, *.key.json, *client_secret*, *serviceAccount*.json
+*KENNITALA*.md, *.audit.json, scripts/logs/*.jsonl
+tmp/, .claude/
+```
+
+---
+
+## Critical Limits
+
+| Type | Limit |
+|------|-------|
+| Name length | 100 chars |
+| Email length | 254 chars |
+| `hard_delete` | 3/hour |
+| `send_email` | 10/min |
+| HTTP timeout | Always set (30s default) |
+
+---
+
+## Detailed Documentation
+
+See [docs/SECURITY.md](docs/SECURITY.md) for complete security patterns.

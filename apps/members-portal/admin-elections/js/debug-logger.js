@@ -2,7 +2,9 @@
  * Debug Logger for Ekklesia Election Creation Issue
  * Automatically captures console logs, network requests, and navigation events
  * for debugging user-specific issues.
- * 
+ *
+ * Module cleanup not needed - debug logger persists for page lifetime.
+ *
  * Usage: Add to page with <script src="js/debug-logger.js"></script>
  * Only activates for specific devices (LM-G710) or when debug_mode is enabled.
  */

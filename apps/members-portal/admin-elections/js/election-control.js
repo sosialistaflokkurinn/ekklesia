@@ -6,6 +6,8 @@
  * - Close election manually
  * - Preview how members see the election
  *
+ * Module cleanup not needed - page reloads on navigation.
+ *
  * Note: Elections are started/opened from the elections list page.
  */
 

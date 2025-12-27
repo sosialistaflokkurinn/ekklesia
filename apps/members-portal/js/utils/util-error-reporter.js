@@ -4,6 +4,8 @@
  * Reports JavaScript errors to a remote endpoint for production monitoring.
  * Designed to be non-blocking and fail-safe (never breaks the app).
  *
+ * Module cleanup not needed - global error handler persists for app lifetime.
+ *
  * Features:
  * - Rate limiting to prevent spam
  * - PII sanitization (removes kennitala, email, etc.)

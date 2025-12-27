@@ -3,6 +3,8 @@
  *
  * Frontend for viewing system audit logs from Cloud Logging.
  *
+ * Module cleanup not needed - page reloads on navigation.
+ *
  * Backend: Requires Cloud Function `get-audit-logs` (to be implemented)
  */
 
@@ -28,7 +30,7 @@ const MOCK_LOGS = [
     timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
     severity: 'INFO',
     service: 'sync-from-django',
-    message: 'Member synced: 2009783589',
+    message: 'Member synced: 0101902939',
     correlationId: 'xyz-456-uvw'
   },
   {

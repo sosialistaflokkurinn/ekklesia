@@ -1,6 +1,9 @@
 /**
  * Nomination Committee Vote Page Logic
  * Two-step voting: 1) Ranking, 2) Justifications
+ *
+ * Module cleanup not needed - page reloads on navigation.
+ *
  * @module nomination/vote
  */
 

@@ -3,6 +3,8 @@
  *
  * Testing interface for Events and Elections service APIs.
  *
+ * Module cleanup not needed - test page, reloads on navigation.
+ *
  * New architecture:
  * - Reuses initSession() (no code duplication)
  * - Uses ui/nav.js for navigation (shared)

@@ -8,6 +8,8 @@
  * - Vote submission with confirmation
  * - Results display (for closed elections)
  * - Already voted state
+ *
+ * Module cleanup not needed - page reloads on navigation.
  */
 
 import { initAuthenticatedPage } from '../../js/page-init.js';

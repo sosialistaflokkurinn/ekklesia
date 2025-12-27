@@ -7,6 +7,8 @@
  * - Closed elections: Results available
  *
  * Filter by status using tabs.
+ *
+ * Module cleanup not needed - page reloads on navigation.
  */
 
 import { initAuthenticatedPage } from '../../js/page-init.js';

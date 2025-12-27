@@ -1,15 +1,17 @@
 /**
  * Debounce utility
- * 
+ *
  * Delays function execution until after a specified wait time has elapsed
  * since the last time it was invoked. Useful for rate-limiting expensive
  * operations like auto-save, search queries, or resize handlers.
- * 
+ *
+ * Module cleanup not needed - utility functions, no persistent state.
+ *
  * @example
  * // Auto-save after user stops typing for 500ms
  * const debouncedSave = debounce(saveField, 500);
  * input.addEventListener('input', () => debouncedSave('name', input.value));
- * 
+ *
  * @param {Function} func - Function to debounce
  * @param {number} wait - Milliseconds to wait before executing
  * @param {boolean} [immediate=false] - Execute on leading edge instead of trailing

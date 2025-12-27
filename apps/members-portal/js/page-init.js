@@ -4,6 +4,8 @@
  * Common initialization logic for all authenticated pages.
  * Handles i18n loading, navigation setup, and auth guard.
  *
+ * Module cleanup not needed - one-time init, page reloads on navigation.
+ *
  * This module provides a single `initAuthenticatedPage()` function that:
  * 1. Loads i18n strings
  * 2. Updates navigation menu strings

@@ -1,16 +1,18 @@
 /**
  * DOM Utilities
- * 
+ *
  * Helper functions for creating and manipulating DOM elements efficiently.
  * Reduces verbosity of document.createElement patterns.
- * 
+ *
+ * Module cleanup not needed - pure utility functions, no persistent state.
+ *
  * Usage:
  *   import { el } from '../utils/util-dom.js';
- *   
- *   const btn = el('button', 'btn btn--primary', { 
- *     type: 'button', 
+ *
+ *   const btn = el('button', 'btn btn--primary', {
+ *     type: 'button',
  *     'aria-label': 'Close',
- *     onclick: handleClick 
+ *     onclick: handleClick
  *   }, 'Click Me');
  */
 

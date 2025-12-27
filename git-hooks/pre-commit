@@ -350,10 +350,14 @@ for file in $STAGED_FILES; do
       # Entry point must either:
       # 1. Call R.load() directly, OR
       # 2. Call initAuthenticatedPage() which handles i18n, OR
-      # 3. Call initI18n() which handles i18n
+      # 3. Call initI18n() which handles i18n, OR
+      # 4. Have a JSDoc comment indicating HTML loads i18n: "initI18n not needed"
       if ! grep -v "^\s*//" "$file" | grep -qE "(R\.load\s*\(|initAuthenticatedPage\s*\(|initI18n\s*\()" 2>/dev/null; then
-        echo "⚠️  $file imports R but doesn't initialize i18n (R.load/initAuthenticatedPage/initI18n)"
-        ((I18N_ISSUES++))
+        # Check for JSDoc comment indicating HTML handles i18n loading
+        if ! grep -q "initI18n not needed\|i18n.*loaded by HTML\|Strings loaded by HTML" "$file" 2>/dev/null; then
+          echo "⚠️  $file imports R but doesn't initialize i18n (R.load/initAuthenticatedPage/initI18n)"
+          ((I18N_ISSUES++))
+        fi
       fi
     fi
     
