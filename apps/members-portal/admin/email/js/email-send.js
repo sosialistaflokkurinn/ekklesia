@@ -14,7 +14,11 @@ import { debug } from '../../../js/utils/util-debug.js';
 import { adminStrings } from '../../js/i18n/admin-strings-loader.js';
 import { requireAdmin } from '../../../js/rbac.js';
 import { showToast, showError } from '../../../js/components/ui-toast.js';
+import { escapeHTML } from '../../../js/utils/util-format.js';
 import EmailAPI from './api/email-api.js';
+
+// Use centralized escapeHTML from util-format.js
+const escapeHtml = escapeHTML;
 
 let strings = {};
 let templates = [];
@@ -92,15 +96,6 @@ async function onTemplateChange(e) {
     debug.error('[EmailSend] Preview error:', error);
     previewSection.classList.add('u-hidden');
   }
-}
-
-/**
- * Escape HTML
- */
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text || '';
-  return div.innerHTML;
 }
 
 /**
