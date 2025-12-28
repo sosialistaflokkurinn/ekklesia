@@ -7,7 +7,7 @@
 
 ## Current Implementation (Firebase-based)
 
-**Production**: https://ekklesia-prod-10-2025.web.app
+**Production**: https://felagar.sosialistaflokkurinn.is
 **Technology**: [Firebase Hosting](https://firebase.google.com/docs/hosting) + [Cloud Functions](https://firebase.google.com/docs/functions) ([Python 3.11](https://www.python.org/)) + [Firebase Authentication](https://firebase.google.com/docs/auth)
 
 ### What's Running
@@ -114,7 +114,7 @@ firebase deploy --only hosting --project ekklesia-prod-10-2025
 
 ```bash
 # Test Firebase Hosting
-curl https://ekklesia-prod-10-2025.web.app/test.html
+curl https://felagar.sosialistaflokkurinn.is/test.html
 
 # Test Cloud Functions
 gcloud run services list --project=ekklesia-prod-10-2025 --region=europe-west2
@@ -222,7 +222,7 @@ KENNI_ISSUER: "https://idp.kenni.is/sosi-kosningakerfi.is"
 KENNI_AUTH_URL: "https://idp.kenni.is/oauth2/auth"
 KENNI_TOKEN_URL: "https://idp.kenni.is/oauth2/token"
 KENNI_USERINFO_URL: "https://idp.kenni.is/oauth2/userinfo"
-REDIRECT_URI: "https://ekklesia-prod-10-2025.web.app/test.html"
+REDIRECT_URI: "https://felagar.sosialistaflokkurinn.is/test.html"
 ```
 
 Secret Manager:
@@ -233,7 +233,7 @@ kenni-client-secret
 
 **CORS**:
 
-- `CORS_ALLOWED_ORIGINS`: Comma-separated list of allowed origins for Cloud Functions responses. Defaults to `https://ekklesia-prod-10-2025.web.app, https://ekklesia-prod-10-2025.firebaseapp.com, http://localhost:3000` to align with Firebase Hosting and local tooling.
+- `CORS_ALLOWED_ORIGINS`: Comma-separated list of allowed origins for Cloud Functions responses. Defaults to `https://felagar.sosialistaflokkurinn.is, https://ekklesia-prod-10-2025.web.app, http://localhost:3000` to align with Firebase Hosting and local tooling.
 
 ### Firebase Configuration
 
@@ -241,7 +241,7 @@ kenni-client-secret
 - **Region**: europe-west2 (London)
 - **Authentication**: Custom token provider
 - **Database**: Firestore (user profiles)
-- **Hosting**: ekklesia-prod-10-2025.web.app
+- **Hosting**: felagar.sosialistaflokkurinn.is
 
 ---
 
