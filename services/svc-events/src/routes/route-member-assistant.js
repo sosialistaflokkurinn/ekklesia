@@ -14,6 +14,7 @@ const logger = require('../utils/util-logger');
 const authenticate = require('../middleware/middleware-auth');
 const embeddingService = require('../services/service-embedding');
 const vectorSearch = require('../services/service-vector-search');
+const webSearch = require('../services/service-web-search');
 const { pool } = require('../config/config-database');
 
 const router = express.Router();
@@ -31,6 +32,7 @@ const KIMI_MODELS = {
 const RAG_CONFIG = {
   maxDocuments: 3,
   similarityThreshold: 0.4,
+  webSearchThreshold: 3.0, // Trigger web search if below this (scores are boosted 1-10+)
   maxTokens: 3000,
 };
 
@@ -180,6 +182,16 @@ const CACHED_QUESTIONS = {
   'Hverjir voru í framboði 2024?': 'kosningar-2024',
   'Frambjóðendur 2024': 'kosningar-2024',
   '2024': 'kosningar-2024',
+
+  // Klofningur 2025
+  'Hvað gerðist í klofningnum 2025?': 'klofningur-2025',
+  'Hvað gerðist í klofningunum 2025?': 'klofningur-2025',
+  'Klofningur 2025': 'klofningur-2025',
+  'Klofningurinn 2025': 'klofningur-2025',
+  'Hvað gerðist á aðalfundi 2025?': 'klofningur-2025',
+  'Hvað gerðist í flokknum 2025?': 'klofningur-2025',
+  'Hvers vegna sagði Sanna af sér?': 'klofningur-2025',
+  'Af hverju sagði Sanna af sér?': 'klofningur-2025',
 };
 
 /**
@@ -573,11 +585,29 @@ router.post('/chat', authenticate, async (req, res) => {
       topSimilarity: retrievedDocs[0]?.similarity,
     });
 
-    // Step 3: Format context with documents
-    const context = formatContext(retrievedDocs);
+    // Step 3: Check if we need web search (weak RAG results)
+    let webResults = [];
+    let webContext = '';
+
+    if (webSearch.isWebSearchAvailable() &&
+        webSearch.shouldTriggerWebSearch(retrievedDocs, RAG_CONFIG.webSearchThreshold)) {
+      logger.info('Triggering web search due to weak RAG results', {
+        operation: 'web_search_trigger',
+        topSimilarity: retrievedDocs[0]?.similarity,
+        threshold: RAG_CONFIG.webSearchThreshold,
+      });
+
+      const searchQuery = webSearch.buildSearchQuery(message);
+      webResults = await webSearch.searchWeb(searchQuery, { count: 3 });
+      webContext = webSearch.formatWebResultsAsContext(webResults);
+    }
+
+    // Step 4: Format context with documents and web results
+    const ragContext = formatContext(retrievedDocs);
+    const context = ragContext + webContext;
     const systemPromptWithContext = SYSTEM_PROMPT.replace('{{CONTEXT}}', context);
 
-    // Step 4: Build messages for Kimi
+    // Step 5: Build messages for Kimi
     const messages = [
       { role: 'system', content: systemPromptWithContext },
       ...history.slice(-6).map(h => ({
@@ -587,7 +617,7 @@ router.post('/chat', authenticate, async (req, res) => {
       { role: 'user', content: message },
     ];
 
-    // Step 5: Call Kimi API
+    // Step 6: Call Kimi API
     let kimiReply;
     try {
       const response = await axios.post(
@@ -633,9 +663,81 @@ router.post('/chat', authenticate, async (req, res) => {
       });
     }
 
-    // Step 6: Return response with filtered citations
+    // Step 6b: Check if response indicates no info - do web search and retry
+    if (webResults.length === 0 &&
+        webSearch.isWebSearchAvailable() &&
+        webSearch.responseIndicatesNoInfo(kimiReply)) {
+
+      logger.info('Response indicates no info, triggering web search', {
+        operation: 'web_search_retry',
+        userId: req.user?.uid,
+      });
+
+      const searchQuery = webSearch.buildSearchQuery(message);
+      webResults = await webSearch.searchWeb(searchQuery, { count: 3 });
+
+      if (webResults.length > 0) {
+        // Rebuild context with web results
+        const webContext = webSearch.formatWebResultsAsContext(webResults);
+        const enhancedContext = ragContext + webContext;
+        const enhancedPrompt = SYSTEM_PROMPT.replace('{{CONTEXT}}', enhancedContext);
+
+        // Retry Kimi with web context
+        const retryMessages = [
+          { role: 'system', content: enhancedPrompt },
+          ...history.slice(-6).map(h => ({ role: h.role, content: h.content })),
+          { role: 'user', content: message },
+        ];
+
+        try {
+          const retryResponse = await axios.post(
+            `${KIMI_API_BASE}/chat/completions`,
+            {
+              model: selectedModel,
+              messages: retryMessages,
+              temperature: 0.7,
+              max_tokens: RAG_CONFIG.maxTokens,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${KIMI_API_KEY}`,
+                'Content-Type': 'application/json',
+              },
+              timeout: modelConfig.timeout,
+            }
+          );
+
+          const retryReply = retryResponse.data?.choices?.[0]?.message?.content;
+          if (retryReply) {
+            kimiReply = retryReply;
+            logger.info('Web search retry successful', {
+              operation: 'web_search_retry_success',
+              webResultsCount: webResults.length,
+            });
+          }
+        } catch (retryErr) {
+          logger.warn('Web search retry failed, using original response', {
+            operation: 'web_search_retry_failed',
+            error: retryErr.message,
+          });
+          // Keep original kimiReply
+        }
+      }
+    }
+
+    // Step 7: Return response with filtered citations
     const filteredDocs = filterCitations(retrievedDocs, message);
     const citations = extractCitationSummary(filteredDocs);
+
+    // Add web search results to citations if used
+    const webCitations = webResults.map(result => ({
+      type: 'web-search',
+      title: result.title,
+      url: result.url,
+      source: result.source,
+    }));
+    const allCitations = [...citations, ...webCitations];
+
     const responseTimeMs = Date.now() - startTime;
 
     logger.info('Member assistant response', {
@@ -643,6 +745,8 @@ router.post('/chat', authenticate, async (req, res) => {
       userId: req.user?.uid,
       replyLength: kimiReply.length,
       citationsCount: citations.length,
+      webSearchUsed: webResults.length > 0,
+      webResultsCount: webResults.length,
       responseTimeMs,
     });
 
@@ -654,10 +758,11 @@ router.post('/chat', authenticate, async (req, res) => {
         userName: req.user?.name || req.user?.email,
         question: message,
         response: kimiReply,
-        citations,
+        citations: allCitations,
         model: selectedModel,
         contextDocs: retrievedDocs.length,
         responseTimeMs,
+        webSearchUsed: webResults.length > 0,
       });
     } else {
       logger.debug('Skipping conversation logging for admin user', {
@@ -668,9 +773,10 @@ router.post('/chat', authenticate, async (req, res) => {
 
     res.json({
       reply: kimiReply,
-      citations,
+      citations: allCitations,
       model: selectedModel,
       modelName: modelConfig.name,
+      webSearchUsed: webResults.length > 0,
     });
   } catch (error) {
     logger.error('Member assistant error', {
@@ -773,11 +879,29 @@ router.post('/debug/chat', async (req, res) => {
       topSimilarity: retrievedDocs[0]?.similarity,
     });
 
-    // Step 3: Format context with documents
-    const context = formatContext(retrievedDocs);
+    // Step 3: Check if we need web search (weak RAG results)
+    let webResults = [];
+    let webContext = '';
+
+    if (webSearch.isWebSearchAvailable() &&
+        webSearch.shouldTriggerWebSearch(retrievedDocs, RAG_CONFIG.webSearchThreshold)) {
+      logger.info('Triggering web search (debug) due to weak RAG results', {
+        operation: 'web_search_trigger_debug',
+        topSimilarity: retrievedDocs[0]?.similarity,
+        threshold: RAG_CONFIG.webSearchThreshold,
+      });
+
+      const searchQuery = webSearch.buildSearchQuery(message);
+      webResults = await webSearch.searchWeb(searchQuery, { count: 3 });
+      webContext = webSearch.formatWebResultsAsContext(webResults);
+    }
+
+    // Step 4: Format context with documents and web results
+    const ragContext = formatContext(retrievedDocs);
+    const context = ragContext + webContext;
     const systemPromptWithContext = SYSTEM_PROMPT.replace('{{CONTEXT}}', context);
 
-    // Step 4: Build messages for Kimi
+    // Step 5: Build messages for Kimi
     const messages = [
       { role: 'system', content: systemPromptWithContext },
       ...history.slice(-6).map(h => ({
@@ -787,7 +911,7 @@ router.post('/debug/chat', async (req, res) => {
       { role: 'user', content: message },
     ];
 
-    // Step 5: Call Kimi API
+    // Step 6: Call Kimi API
     let kimiReply;
     try {
       const response = await axios.post(
@@ -832,15 +956,85 @@ router.post('/debug/chat', async (req, res) => {
       });
     }
 
-    // Step 6: Return response with filtered citations
+    // Step 6b: Check if response indicates no info - do web search and retry
+    if (webResults.length === 0 &&
+        webSearch.isWebSearchAvailable() &&
+        webSearch.responseIndicatesNoInfo(kimiReply)) {
+
+      logger.info('Response indicates no info (debug), triggering web search', {
+        operation: 'web_search_retry_debug',
+      });
+
+      const searchQuery = webSearch.buildSearchQuery(message);
+      webResults = await webSearch.searchWeb(searchQuery, { count: 3 });
+
+      if (webResults.length > 0) {
+        // Rebuild context with web results
+        const webContextRetry = webSearch.formatWebResultsAsContext(webResults);
+        const enhancedContext = ragContext + webContextRetry;
+        const enhancedPrompt = SYSTEM_PROMPT.replace('{{CONTEXT}}', enhancedContext);
+
+        // Retry Kimi with web context
+        const retryMessages = [
+          { role: 'system', content: enhancedPrompt },
+          ...history.slice(-6).map(h => ({ role: h.role, content: h.content })),
+          { role: 'user', content: message },
+        ];
+
+        try {
+          const retryResponse = await axios.post(
+            `${KIMI_API_BASE}/chat/completions`,
+            {
+              model: selectedModel,
+              messages: retryMessages,
+              temperature: 0.7,
+              max_tokens: RAG_CONFIG.maxTokens,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${KIMI_API_KEY}`,
+                'Content-Type': 'application/json',
+              },
+              timeout: modelConfig.timeout,
+            }
+          );
+
+          const retryReply = retryResponse.data?.choices?.[0]?.message?.content;
+          if (retryReply) {
+            kimiReply = retryReply;
+            logger.info('Web search retry successful (debug)', {
+              operation: 'web_search_retry_success_debug',
+              webResultsCount: webResults.length,
+            });
+          }
+        } catch (retryErr) {
+          logger.warn('Web search retry failed (debug), using original response', {
+            operation: 'web_search_retry_failed_debug',
+            error: retryErr.message,
+          });
+        }
+      }
+    }
+
+    // Step 7: Return response with filtered citations
     const filteredDocs = filterCitations(retrievedDocs, message);
     const citations = extractCitationSummary(filteredDocs);
 
+    // Add web search results to citations if used
+    const webCitations = webResults.map(result => ({
+      type: 'web-search',
+      title: result.title,
+      url: result.url,
+      source: result.source,
+    }));
+    const allCitations = [...citations, ...webCitations];
+
     res.json({
       reply: kimiReply,
-      citations,
+      citations: allCitations,
       model: selectedModel,
       modelName: modelConfig.name,
+      webSearchUsed: webResults.length > 0,
       debug: true,
     });
   } catch (error) {

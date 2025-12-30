@@ -114,6 +114,7 @@ function getSuggestionsHTML() {
       <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í Alþingiskosningum 2021?">2021</button>
       <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í sveitarstjórnarkosningum 2022?">2022</button>
       <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í Alþingiskosningum 2024?">2024</button>
+      <button class="member-assistant__suggestion" data-query="Hvað gerðist í klofningnum 2025?">Klofningur 2025</button>
     </div>
   `;
 }

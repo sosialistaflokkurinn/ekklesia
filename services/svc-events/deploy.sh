@@ -58,7 +58,7 @@ gcloud run deploy ${SERVICE_NAME} \
   --port 8080 \
   --add-cloudsql-instances "$DB_CONNECTION_NAME" \
   --set-env-vars "NODE_ENV=production,FIREBASE_PROJECT_ID=ekklesia-prod-10-2025,DATABASE_HOST=/cloudsql/$DB_CONNECTION_NAME,DATABASE_PORT=5432,DATABASE_NAME=socialism,DATABASE_USER=socialism,ELECTIONS_SERVICE_URL=https://elections-service-521240388393.europe-west1.run.app,ADMIN_RESET_ENABLED=${ADMIN_RESET_ENABLED},ALLOWED_RESET_UIDS=${ALLOWED_RESET_UIDS},CORS_ORIGINS=https://ekklesia-prod-10-2025.web.app;https://ekklesia-prod-10-2025.firebaseapp.com;https://felagar.sosialistaflokkurinn.is,STORAGE_BUCKET=ekklesia-prod-10-2025.firebasestorage.app" \
-  --set-secrets "DATABASE_PASSWORD=django-socialism-db-password:latest,S2S_API_KEY=elections-s2s-api-key:latest,FB_PAGE_ACCESS_TOKEN=fb-page-access-token:latest,FB_PAGE_ID=fb-page-id:latest,KIMI_API_KEY=kimi-api-key:latest"
+  --set-secrets "DATABASE_PASSWORD=django-socialism-db-password:latest,S2S_API_KEY=elections-s2s-api-key:latest,FB_PAGE_ACCESS_TOKEN=fb-page-access-token:latest,FB_PAGE_ID=fb-page-id:latest,KIMI_API_KEY=kimi-api-key:latest,BRAVE_API_KEY=brave-api-key:latest"
 
 # Get service URL
 SERVICE_URL=$(gcloud run services describe ${SERVICE_NAME} \
