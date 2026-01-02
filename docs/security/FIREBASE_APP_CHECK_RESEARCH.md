@@ -903,7 +903,7 @@ curl -H "Host: handlekenniauth-ymzrguoifa-nw.a.run.app" https://handlekenniauth-
 3. ✅ Cost constraints drive architectural decisions (not just technical preferences)
 4. ✅ "Good enough" solutions are acceptable when perfect solutions are cost-prohibitive
 
-**Documentation**: Full investigation in [CLOUDFLARE_HOST_HEADER_INVESTIGATION.md](CLOUDFLARE_HOST_HEADER_INVESTIGATION.md)
+**Documentation**: Investigation documented above.
 
 ### 7.2 Challenge: Python Cloud Functions Deployment Failures
 

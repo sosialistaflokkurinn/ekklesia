@@ -301,8 +301,8 @@ curl -H "Authorization: Bearer $ELECTIONS_API_KEY" https://elections-service-...
 
 ## Related Documentation
 
-- [docs/security/SECURITY_DEFENSE_ANALYSIS.md](SECURITY_DEFENSE_ANALYSIS.md) - Security architecture
 - [docs/security/FIREBASE_APP_CHECK_RESEARCH.md](FIREBASE_APP_CHECK_RESEARCH.md) - App Check implementation
+- [docs/SECURITY.md](../SECURITY.md) - Security overview
 - [scripts/README.md](../../scripts/README.md) - Scripts documentation
 
 ---

@@ -230,9 +230,9 @@ cat /tmp/admin_reset_audit_logs.json | jq '.[] | {
 
 ## Test Report Update
 
-### 7. Update ADMIN_RESET_TEST_REPORT.md
+### 7. Update Test Report
 
-Copy the following information into [docs/testing/ADMIN_RESET_TEST_REPORT.md](ADMIN_RESET_TEST_REPORT.md):
+Document the test results in a file (create if needed):
 
 1. **Update test date** (line 3): Current timestamp
 2. **Update pre-test state** (lines 33-40): New election data from step 1
@@ -319,7 +319,6 @@ gcloud logging read "..." --format=json | jq '.'
 
 ## Related Documentation
 
-- [ADMIN_RESET_TEST_REPORT.md](ADMIN_RESET_TEST_REPORT.md) - Full test report with evidence
 - [AUDIT_LOGGING.md](../guides/AUDIT_LOGGING.md) - Audit logging format specification
 - [svc-events/migrations/003_seed_october_2025_election.sql](../../services/svc-events/migrations/003_seed_october_2025_election.sql) - Seed data migration
 - [svc-events/src/routes/admin.js](../../services/svc-events/src/routes/admin.js) - Admin reset endpoint implementation
