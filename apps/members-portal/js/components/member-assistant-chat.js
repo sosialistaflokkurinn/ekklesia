@@ -615,7 +615,7 @@ function addChatStyles() {
     }
 
     .member-assistant__bubble .member-assistant__li {
-      margin: 4px 0;
+      margin: 2px 0;
       line-height: 1.4;
     }
 
@@ -932,6 +932,9 @@ function formatMarkdown(text) {
   // Clean up extra <br> after block elements
   html = html.replace(/<\/(h3|h4|ul|ol|pre|hr|table)><br>/g, '</$1>');
   html = html.replace(/<br><(h3|h4|ul|ol|pre|hr|table)/g, '<$1');
+
+  // Clean up <br> between list items (causes extra spacing)
+  html = html.replace(/<\/li><br><li/g, '</li><li');
 
   return html;
 }
