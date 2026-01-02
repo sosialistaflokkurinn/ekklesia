@@ -1,7 +1,6 @@
 # Cloud SQL Migration: europe-west2 → europe-west1
 
 **Date:** 2025-12-21
-**Author:** Guðrún (via Claude Code)
 **Status:** REQUIRES ACTION
 
 ## Summary
