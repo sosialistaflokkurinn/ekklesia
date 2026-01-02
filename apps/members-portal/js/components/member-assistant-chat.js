@@ -92,26 +92,43 @@ function createChatWidget() {
  * Each has a short label and full query
  */
 const ALL_SUGGESTIONS = [
-  { label: 'Kapítalismi', query: 'Er sósíalistaflokkurinn á móti kapitalisma?' },
-  { label: 'Fyrir alla?', query: 'Er Sósíalistaflokkurinn fyrir alla kjósendur?' },
-  { label: 'ESB', query: 'Hver er afstaða flokksins til Evrópusambandsins?' },
-  { label: 'Heimsvaldastefna', query: 'Er flokkurinn á móti heimsvaldastefnu?' },
-  { label: 'Húsnæðismál', query: 'Hver er stefna flokksins í húsnæðismálum?' },
-  { label: 'Heilbrigðismál', query: 'Hvað segir flokkurinn um heilbrigðismál?' },
-  { label: 'Skattar', query: 'Hver er afstaða flokksins til skatta?' },
-  { label: 'Umhverfismál', query: 'Hvað segir flokkurinn um loftslagsmál og umhverfisvernd?' },
-  { label: 'Menntamál', query: 'Hver er stefna flokksins í menntamálum?' },
-  { label: 'Vinnumarkaður', query: 'Hvað segir flokkurinn um réttindi launafólks og stéttarfélög?' },
-  { label: 'Velferð', query: 'Hvað segir flokkurinn um velferðarkerfið og félagslegt öryggi?' },
-  { label: 'Saga flokksins', query: 'Hvenær var flokkurinn stofnaður og af hverjum?' },
-  { label: 'Uppbygging', query: 'Hvernig er flokkurinn skipulagður? Hvað eru sellur?' },
-  { label: 'Jafnrétti', query: 'Hver er afstaða flokksins til jafnréttismála?' },
-  { label: 'Fötlunarmál', query: 'Hvað segir flokkurinn um málefni fatlaðs fólks?' },
-  { label: '2018', query: 'Hverjir voru í framboði fyrir flokkinn í sveitarstjórnarkosningum 2018?' },
-  { label: '2021', query: 'Hverjir voru í framboði fyrir flokkinn í Alþingiskosningum 2021?' },
-  { label: '2022', query: 'Hverjir voru í framboði fyrir flokkinn í sveitarstjórnarkosningum 2022?' },
-  { label: '2024', query: 'Hverjir voru í framboði fyrir flokkinn í Alþingiskosningum 2024?' },
-  { label: 'Klofningur 2025', query: 'Hvað gerðist í klofningnum 2025?' },
+  // Stefnumál - Policy topics
+  { label: 'Kapítalismi', query: 'Er sósíalistaflokkurinn á móti kapitalisma? Hvernig skilgreinir flokkurinn sósíalisma og hverju vill hann breyta í núverandi hagkerfi?' },
+  { label: 'Fyrir alla?', query: 'Er Sósíalistaflokkurinn fyrir alla kjósendur eða aðeins ákveðna hópa? Hverjir eru helstu stuðningsmenn flokksins?' },
+  { label: 'ESB', query: 'Hver er afstaða flokksins til Evrópusambandsins og EES-samningsins? Er flokkurinn hlynntur aðild að ESB?' },
+  { label: 'Heimsvaldastefna', query: 'Hver er afstaða flokksins til heimsvaldastefnu, NATO-aðildar og hernaðarbandalaga? Hvernig skilgreinir flokkurinn friðarstefnu?' },
+  { label: 'Húsnæðismál', query: 'Hver er stefna flokksins í húsnæðismálum? Hvernig vill flokkurinn leysa húsnæðiskreppuna og tryggja öllum viðráðanlegt húsnæði?' },
+  { label: 'Heilbrigðismál', query: 'Hvað segir flokkurinn um heilbrigðismál? Hvernig vill flokkurinn styrkja opinbera heilbrigðisþjónustu og draga úr einkarekstri?' },
+  { label: 'Skattar', query: 'Hver er afstaða flokksins til skattamála? Hvaða breytingar vill flokkurinn gera á skattkerfinu til að auka jöfnuð?' },
+  { label: 'Umhverfismál', query: 'Hvað segir flokkurinn um loftslagsmál, umhverfisvernd og sjálfbærni? Hvernig tengist umhverfisbaráttan stéttabaráttu?' },
+  { label: 'Menntamál', query: 'Hver er stefna flokksins í menntamálum frá leikskóla til háskóla? Hvernig vill flokkurinn tryggja jafnan aðgang að menntun?' },
+  { label: 'Vinnumarkaður', query: 'Hvað segir flokkurinn um réttindi launafólks, stéttarfélög og vinnustaðalýðræði? Hvernig vill flokkurinn styrkja stöðu verkafólks?' },
+  { label: 'Velferð', query: 'Hvað segir flokkurinn um velferðarkerfið, félagslegt öryggi og bótakerfi? Hvernig vill flokkurinn uppræta fátækt á Íslandi?' },
+  { label: 'Jafnrétti', query: 'Hver er afstaða flokksins til jafnréttismála - kynjajafnréttis, hinsegin réttinda og baráttu gegn mismunun?' },
+  { label: 'Fötlunarmál', query: 'Hvað segir flokkurinn um málefni fatlaðs fólks, NPA-þjónustu og aðgengismál? Hvernig vill flokkurinn tryggja full réttindi fatlaðs fólks?' },
+
+  // Nýjar ítarlegar spurningar - New detailed questions
+  { label: 'Innflytjendur', query: 'Hver er stefna flokksins í innflytjendamálum og gagnvart flóttafólki? Hvernig vill flokkurinn tryggja réttindi innflytjenda á vinnumarkaði?' },
+  { label: 'Auðlindir', query: 'Hver er afstaða flokksins til þjóðnýtingar náttúruauðlinda? Hvernig vill flokkurinn tryggja að arður af auðlindum skili sér til þjóðarinnar?' },
+  { label: 'Sjávarútvegur', query: 'Hvað segir flokkurinn um sjávarútveg og fiskveiðistjórnun? Hver er afstaða flokksins til kvótakerfisins og sjávarauðlindarinnar?' },
+  { label: 'Landbúnaður', query: 'Hver er stefna flokksins í landbúnaðarmálum? Hvernig vill flokkurinn styðja við sjálfbæran landbúnað og fæðuöryggi?' },
+  { label: 'Sveitarfélög', query: 'Hvað segir flokkurinn um sveitarstjórnarmál og dreifbýlisþróun? Hvernig vill flokkurinn tryggja jafna þjónustu um land allt?' },
+  { label: 'Þjóðnýting', query: 'Hvað er þjóðnýting og hvernig vill flokkurinn þjóðnýta lykilinnviði samfélagsins? Hvaða fyrirtæki og þjónustu ætti að þjóðnýta?' },
+  { label: 'Alþjóðamál', query: 'Hver er afstaða flokksins til alþjóðamála, samhjálpar og Palestínumáls? Hvernig vill flokkurinn styðja réttláta baráttu þjóða?' },
+  { label: 'Barnamál', query: 'Hvað segir flokkurinn um réttindi barna, barnavernd og málefni fjölskyldna? Hvernig vill flokkurinn tryggja velferð barna?' },
+  { label: 'Eldri borgarar', query: 'Hver er stefna flokksins í öldrunarmálum? Hvernig vill flokkurinn tryggja virðingu, öryggi og lífsgæði eldri borgara?' },
+  { label: 'Lýðræði', query: 'Hvað segir flokkurinn um lýðræði og þátttöku almennings? Hvernig vill flokkurinn efla beint lýðræði og gagnsæi stjórnmála?' },
+
+  // Saga og skipulag - History and organization
+  { label: 'Saga flokksins', query: 'Hvenær var flokkurinn stofnaður, af hverjum og í hvaða tilgangi? Hver er saga sósíalistahreyfingarinnar á Íslandi?' },
+  { label: 'Uppbygging', query: 'Hvernig er flokkurinn skipulagður? Hvað eru sellur og hvernig virkar lýðræðisleg þátttaka félagsmanna innan flokksins?' },
+
+  // Kosningar - Elections
+  { label: '2018', query: 'Hverjir voru í framboði fyrir flokkinn í sveitarstjórnarkosningum 2018 og hver var árangurinn?' },
+  { label: '2021', query: 'Hverjir voru í framboði fyrir flokkinn í Alþingiskosningum 2021 og hvaða stefnumál voru höfuð höfuð á?' },
+  { label: '2022', query: 'Hverjir voru í framboði fyrir flokkinn í sveitarstjórnarkosningum 2022 og hver var árangurinn?' },
+  { label: '2024', query: 'Hverjir voru í framboði fyrir flokkinn í Alþingiskosningum 2024 og hvaða áherslur voru í kosningabaráttunni?' },
+  { label: 'Klofningur 2025', query: 'Hvað gerðist í klofningnum 2025? Hverjar voru ástæður og afleiðingar þessa aðskilnaðar?' },
 ];
 
 /**
