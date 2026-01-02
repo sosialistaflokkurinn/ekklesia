@@ -88,36 +88,46 @@ function createChatWidget() {
 }
 
 /**
- * Get suggestions HTML - separate function for reuse and cleaner code
- * Note: Suggestion labels are kept short and self-explanatory, not externalized
+ * All suggestion topics for the chat widget
+ * Each has a short label and full query
+ */
+const ALL_SUGGESTIONS = [
+  { label: 'Kapítalismi', query: 'Er sósíalistaflokkurinn á móti kapitalisma?' },
+  { label: 'Fyrir alla?', query: 'Er Sósíalistaflokkurinn fyrir alla kjósendur?' },
+  { label: 'ESB', query: 'Hver er afstaða flokksins til Evrópusambandsins?' },
+  { label: 'Heimsvaldastefna', query: 'Er flokkurinn á móti heimsvaldastefnu?' },
+  { label: 'Húsnæðismál', query: 'Hver er stefna flokksins í húsnæðismálum?' },
+  { label: 'Heilbrigðismál', query: 'Hvað segir flokkurinn um heilbrigðismál?' },
+  { label: 'Skattar', query: 'Hver er afstaða flokksins til skatta?' },
+  { label: 'Umhverfismál', query: 'Hvað segir flokkurinn um loftslagsmál og umhverfisvernd?' },
+  { label: 'Menntamál', query: 'Hver er stefna flokksins í menntamálum?' },
+  { label: 'Vinnumarkaður', query: 'Hvað segir flokkurinn um réttindi launafólks og stéttarfélög?' },
+  { label: 'Velferð', query: 'Hvað segir flokkurinn um velferðarkerfið og félagslegt öryggi?' },
+  { label: 'Saga flokksins', query: 'Hvenær var flokkurinn stofnaður og af hverjum?' },
+  { label: 'Uppbygging', query: 'Hvernig er flokkurinn skipulagður? Hvað eru sellur?' },
+  { label: 'Jafnrétti', query: 'Hver er afstaða flokksins til jafnréttismála?' },
+  { label: 'Fötlunarmál', query: 'Hvað segir flokkurinn um málefni fatlaðs fólks?' },
+  { label: '2018', query: 'Hverjir voru í framboði fyrir flokkinn í sveitarstjórnarkosningum 2018?' },
+  { label: '2021', query: 'Hverjir voru í framboði fyrir flokkinn í Alþingiskosningum 2021?' },
+  { label: '2022', query: 'Hverjir voru í framboði fyrir flokkinn í sveitarstjórnarkosningum 2022?' },
+  { label: '2024', query: 'Hverjir voru í framboði fyrir flokkinn í Alþingiskosningum 2024?' },
+  { label: 'Klofningur 2025', query: 'Hvað gerðist í klofningnum 2025?' },
+];
+
+/**
+ * Get suggestions HTML - shows 6 random suggestions from the pool
+ * Refreshes on each chat clear/page load to encourage exploration
  */
 function getSuggestionsHTML() {
-  // Suggestion buttons - the short labels are topic names, not full sentences
-  // These are acceptable as-is since they're category labels
-  return `
-    <div class="member-assistant__suggestions">
-      <button class="member-assistant__suggestion" data-query="Er sósíalistaflokkurinn á móti kapitalisma?">Kapítalismi</button>
-      <button class="member-assistant__suggestion" data-query="Er Sósíalistaflokkurinn fyrir alla kjósendur?">Fyrir alla?</button>
-      <button class="member-assistant__suggestion" data-query="Hver er afstaða flokksins til Evrópusambandsins?">ESB</button>
-      <button class="member-assistant__suggestion" data-query="Er flokkurinn á móti heimsvaldastefnu?">Heimsvaldastefna</button>
-      <button class="member-assistant__suggestion" data-query="Hver er stefna flokksins í húsnæðismálum?">Húsnæðismál</button>
-      <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um heilbrigðismál?">Heilbrigðismál</button>
-      <button class="member-assistant__suggestion" data-query="Hver er afstaða flokksins til skatta?">Skattar</button>
-      <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um loftslagsmál og umhverfisvernd?">Umhverfismál</button>
-      <button class="member-assistant__suggestion" data-query="Hver er stefna flokksins í menntamálum?">Menntamál</button>
-      <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um réttindi launafólks og stéttarfélög?">Vinnumarkaður</button>
-      <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um velferðarkerfið og félagslegt öryggi?">Velferð</button>
-      <button class="member-assistant__suggestion" data-query="Hvenær var flokkurinn stofnaður og af hverjum?">Saga flokksins</button>
-      <button class="member-assistant__suggestion" data-query="Hvernig er flokkurinn skipulagður? Hvað eru sellur?">Uppbygging</button>
-      <button class="member-assistant__suggestion" data-query="Hver er afstaða flokksins til jafnréttismála?">Jafnrétti</button>
-      <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um málefni fatlaðs fólks?">Fötlunarmál</button>
-      <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í sveitarstjórnarkosningum 2018?">2018</button>
-      <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í Alþingiskosningum 2021?">2021</button>
-      <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í sveitarstjórnarkosningum 2022?">2022</button>
-      <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í Alþingiskosningum 2024?">2024</button>
-      <button class="member-assistant__suggestion" data-query="Hvað gerðist í klofningnum 2025?">Klofningur 2025</button>
-    </div>
-  `;
+  // Shuffle and pick 6 random suggestions
+  const shuffled = [...ALL_SUGGESTIONS].sort(() => 0.5 - Math.random());
+  const selected = shuffled.slice(0, 6);
+
+  const buttons = selected.map(s =>
+    `<button class="member-assistant__suggestion" data-query="${escapeHTML(s.query)}">${escapeHTML(s.label)}</button>`
+  ).join('');
+
+  return `<div class="member-assistant__suggestions">${buttons}</div>`;
 }
 
 /**
@@ -648,6 +658,35 @@ function addChatStyles() {
     .member-assistant__bubble em {
       font-style: italic;
     }
+
+    /* Table styles */
+    .member-assistant__table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+      font-size: 0.85em;
+    }
+
+    .member-assistant__th,
+    .member-assistant__td {
+      border: 1px solid rgba(114, 47, 55, 0.2);
+      padding: 6px 10px;
+      text-align: left;
+    }
+
+    .member-assistant__th {
+      background: rgba(114, 47, 55, 0.1);
+      font-weight: 600;
+      color: var(--color-burgundy, #722f37);
+    }
+
+    .member-assistant__td {
+      background: var(--color-surface, #fff);
+    }
+
+    .member-assistant__table tr:nth-child(even) .member-assistant__td {
+      background: rgba(114, 47, 55, 0.03);
+    }
   `;
   document.head.appendChild(style);
 }
@@ -828,7 +867,7 @@ async function sendMessage(message) {
 }
 
 /**
- * Markdown formatting with full support
+ * Markdown formatting with full support including tables
  */
 function formatMarkdown(text) {
   // Escape HTML first
@@ -846,6 +885,9 @@ function formatMarkdown(text) {
 
   // Horizontal rule
   html = html.replace(/^---$/gm, '<hr class="member-assistant__hr">');
+
+  // Parse markdown tables (before other line processing)
+  html = parseMarkdownTable(html);
 
   // Bold and italic
   html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
@@ -871,9 +913,99 @@ function formatMarkdown(text) {
   html = html.replace(/\n/g, '<br>');
 
   // Clean up extra <br> after block elements
-  html = html.replace(/<\/(h3|h4|ul|ol|pre|hr)><br>/g, '</$1>');
-  html = html.replace(/<br><(h3|h4|ul|ol|pre|hr)/g, '<$1');
+  html = html.replace(/<\/(h3|h4|ul|ol|pre|hr|table)><br>/g, '</$1>');
+  html = html.replace(/<br><(h3|h4|ul|ol|pre|hr|table)/g, '<$1');
 
+  return html;
+}
+
+/**
+ * Parse markdown tables into HTML
+ * Handles: | Header1 | Header2 |
+ *          |---------|---------|
+ *          | Cell1   | Cell2   |
+ */
+function parseMarkdownTable(html) {
+  const lines = html.split('\n');
+  const result = [];
+  let inTable = false;
+  let tableRows = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+
+    // Check if line is a table row (starts and ends with |)
+    if (line.startsWith('|') && line.endsWith('|')) {
+      // Check if it's a separator row (|---|---|)
+      if (/^\|[\s\-:]+\|$/.test(line.replace(/\|/g, '|').replace(/[^|:-]/g, '-'))) {
+        // It's a separator, skip it but mark we're in a table
+        inTable = true;
+        continue;
+      }
+
+      // Parse cells
+      const cells = line.slice(1, -1).split('|').map(c => c.trim());
+
+      if (!inTable) {
+        // First row is header
+        tableRows.push({ type: 'header', cells });
+        inTable = true;
+      } else {
+        tableRows.push({ type: 'body', cells });
+      }
+    } else {
+      // Not a table row
+      if (tableRows.length > 0) {
+        // End of table, render it
+        result.push(renderTable(tableRows));
+        tableRows = [];
+        inTable = false;
+      }
+      result.push(line);
+    }
+  }
+
+  // Handle table at end of content
+  if (tableRows.length > 0) {
+    result.push(renderTable(tableRows));
+  }
+
+  return result.join('\n');
+}
+
+/**
+ * Render table rows to HTML
+ */
+function renderTable(rows) {
+  if (rows.length === 0) return '';
+
+  let html = '<table class="member-assistant__table">';
+
+  // Render header
+  const headerRow = rows.find(r => r.type === 'header');
+  if (headerRow) {
+    html += '<thead><tr>';
+    headerRow.cells.forEach(cell => {
+      html += `<th class="member-assistant__th">${cell}</th>`;
+    });
+    html += '</tr></thead>';
+  }
+
+  // Render body
+  const bodyRows = rows.filter(r => r.type === 'body');
+  if (bodyRows.length > 0) {
+    html += '<tbody>';
+    bodyRows.forEach(row => {
+      html += '<tr>';
+      row.cells.forEach(cell => {
+        html += `<td class="member-assistant__td">${cell}</td>`;
+      });
+      html += '</tr>';
+    });
+    html += '</tbody>';
+  }
+
+  html += '</table>';
   return html;
 }
 
