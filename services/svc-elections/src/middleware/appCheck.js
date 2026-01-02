@@ -10,6 +10,7 @@
  */
 
 const admin = require('firebase-admin');
+const logger = require('../utils/util-logger');
 
 /**
  * Verify Firebase App Check token (ENFORCED)
@@ -24,7 +25,7 @@ async function verifyAppCheck(req, res, next) {
 
   // Check if App Check token is present
   if (!appCheckToken) {
-    console.warn('App Check verification failed: Missing token', {
+    logger.warn('App Check verification failed: Missing token', {
       path: req.path,
       method: req.method,
       ip: req.ip,
@@ -45,14 +46,14 @@ async function verifyAppCheck(req, res, next) {
     // Token is valid, attach claims to request
     req.appCheckClaims = appCheckClaims;
 
-    console.info('App Check verification successful', {
+    logger.info('App Check verification successful', {
       appId: appCheckClaims.app_id,
       path: req.path,
     });
 
     next();
   } catch (error) {
-    console.error('App Check verification failed: Invalid token', {
+    logger.error('App Check verification failed: Invalid token', {
       error: error.message,
       path: req.path,
       method: req.method,
@@ -82,7 +83,7 @@ async function verifyAppCheckOptional(req, res, next) {
   const appCheckToken = req.header('X-Firebase-AppCheck');
 
   if (!appCheckToken) {
-    console.warn('Optional App Check: Missing token (allowed)', {
+    logger.warn('Optional App Check: Missing token (allowed)', {
       path: req.path,
       method: req.method,
       ip: req.ip,
@@ -94,12 +95,12 @@ async function verifyAppCheckOptional(req, res, next) {
     const appCheckClaims = await admin.appCheck().verifyToken(appCheckToken);
     req.appCheckClaims = appCheckClaims;
 
-    console.info('Optional App Check: Verification successful', {
+    logger.info('Optional App Check: Verification successful', {
       appId: appCheckClaims.app_id,
       path: req.path,
     });
   } catch (error) {
-    console.warn('Optional App Check: Verification failed (allowed)', {
+    logger.warn('Optional App Check: Verification failed (allowed)', {
       error: error.message,
       path: req.path,
       method: req.method,

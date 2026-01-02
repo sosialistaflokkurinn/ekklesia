@@ -5,6 +5,7 @@
  */
 
 const crypto = require('crypto');
+const logger = require('../utils/util-logger');
 
 /**
  * Get user's roles from request
@@ -68,18 +69,15 @@ function createForbiddenResponse(req, requiredRoles, mode = 'any') {
   const uid = req.user?.uid || 'unknown';
 
   // Log structured denial event
-  console.warn(JSON.stringify({
-    level: 'warn',
-    message: 'Access denied - insufficient roles',
-    correlation_id: correlationId,
-    performed_by: uid,
-    granted_roles: userRoles,
-    required_roles: requiredRoles,
-    requirement_mode: mode,
+  logger.warn('Access denied - insufficient roles', {
+    correlationId,
+    performedBy: uid,
+    grantedRoles: userRoles,
+    requiredRoles,
+    requirementMode: mode,
     path: req.path,
     method: req.method,
-    timestamp: new Date().toISOString()
-  }));
+  });
 
   return {
     error: 'Forbidden',

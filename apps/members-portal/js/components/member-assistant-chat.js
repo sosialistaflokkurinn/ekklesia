@@ -13,6 +13,7 @@ import { debug } from '../utils/util-debug.js';
 import { getFirebaseAuth } from '../../firebase/app.js';
 import { trackAction } from '../utils/util-analytics.js';
 import { R } from '../../i18n/strings-loader.js';
+import { escapeHTML } from '../utils/util-format.js';
 
 const EVENTS_API_BASE = 'https://events-service-521240388393.europe-west1.run.app';
 
@@ -675,7 +676,9 @@ function addMessage(role, content, citations = null) {
   const messageDiv = document.createElement('div');
   messageDiv.className = `member-assistant__message member-assistant__message--${role}`;
 
-  let bubbleContent = content;
+  // Escape user content to prevent XSS
+  // Assistant content is already sanitized by formatMarkdown()
+  let bubbleContent = role === 'user' ? escapeHTML(content) : content;
   if (role === 'assistant' && citations) {
     bubbleContent += formatCitations(citations);
   }
