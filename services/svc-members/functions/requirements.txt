@@ -14,7 +14,7 @@ iceaddr==0.6.1
 setuptools>=65.0.0
 
 # Cloud SQL connection (Phase 1: Firestore → Cloud SQL migration)
-cloud-sql-python-connector[pg8000]==1.16.0
+cloud-sql-python-connector[pg8000]==1.19.0
 pg8000>=1.31.0
 
 # Testing dependencies
