@@ -14,7 +14,7 @@
 │  ├── Firebase Hosting (members-portal)                       │
 │  ├── Firebase Functions (svc-members)                        │
 │  ├── Cloud Run (svc-elections, svc-events)                  │
-│  └── Amazon SES email (#323 - implemented Dec 2025)         │
+│  └── SendGrid email (#323 - implemented Dec 2025)           │
 │                                                              │
 │  Django GCP (INTERIM admin interface)                       │
 │  ├── Cloud Run: django-socialism                            │
@@ -233,7 +233,7 @@ gcloud builds submit --config cloudbuild.yaml \
 ---
 
 ## Related Issues
-- **#323** - ✅ Amazon SES email integration (implemented Dec 2025)
+- **#323** - ✅ SendGrid email integration (implemented Dec 2025)
 - **#324** - ✅ Email migration from Linode to GCP (completed Dec 2025)
 
 ---
