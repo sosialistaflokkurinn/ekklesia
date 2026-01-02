@@ -2,28 +2,27 @@
 
 ## Architecture Overview
 
-**Ekklesia is the FUTURE source of truth** for the membership system.
+**Ekklesia is the source of truth** for the membership system.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    SYSTEM ARCHITECTURE                       │
 ├─────────────────────────────────────────────────────────────┤
 │                                                              │
-│  Ekklesia (THIS PROJECT - Future source of truth)           │
+│  Ekklesia (THIS PROJECT - Source of truth)                  │
 │  ├── Firestore database (canonical member data)             │
 │  ├── Firebase Hosting (members-portal)                       │
-│  ├── Firebase Functions (svc-members)                        │
-│  ├── Cloud Run (svc-elections, svc-events)                  │
-│  └── SendGrid email (#323 - implemented Dec 2025)           │
+│  ├── Firebase Functions (svc-members, Python)               │
+│  ├── Cloud Run: svc-elections (Node.js)                     │
+│  ├── Cloud Run: svc-events (Node.js + AI assistants)        │
+│  │   ├── Kimi sysadmin chat (superuser only)                │
+│  │   └── Member assistant (RAG + web search)                │
+│  └── SendGrid email                                          │
 │                                                              │
-│  Django GCP (INTERIM admin interface)                       │
+│  Django GCP (INTERIM read-only admin)                       │
 │  ├── Cloud Run: django-socialism                            │
 │  ├── Cloud SQL PostgreSQL                                    │
-│  └── SendGrid email (temporary)                             │
 │  └── See: ~/Development/projects/django/                    │
-│                                                              │
-│  Linode (DECOMMISSIONED 2025-12-11)                         │
-│  └── Backup: ~/Development/projects/django/backups/         │
 │                                                              │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -80,7 +79,8 @@ Services read secrets from GCP Secret Manager. Key secrets:
 - `django-api-token` - Django API authentication
 - `django-socialism-db-password` - PostgreSQL password
 - `kenni-client-secret` - Kenni.is OAuth secret
-- `kimi-api-key` - Moonshot Kimi API key
+- `kimi-api-key` - Moonshot Kimi API key (sysadmin chat)
+- `brave-search-api-key` - Web search fallback for member assistant
 
 ---
 
@@ -215,20 +215,21 @@ gcloud builds submit --config cloudbuild.yaml \
 - `svc-members` uses Firebase Functions (Python) - deploy via `firebase deploy`
 - `svc-elections` and `svc-events` use Cloud Run - deploy via `./deploy.sh`
 - Never use `firebase deploy --only functions` without specifying function name (slow + risky)
-- Single function deploy: `firebase deploy --only functions:sync_from_django`
+- Single function deploy: `firebase deploy --only functions:FUNCTION_NAME`
 - Django admin: deploy via `gcloud builds submit` (see Django CLAUDE.md)
 
 ---
 
 ## Data Sources
 
-### Source of Truth Hierarchy
-1. **Firestore** - Future canonical source (Ekklesia)
-2. **Cloud SQL** - Current operational database (Django GCP)
+### Source of Truth
+- **Firestore** - Canonical member data (Ekklesia)
+- **Cloud SQL** - Elections, events, RAG documents
 
-### Sync Status
-- Members sync from Firestore → Cloud SQL (planned)
-- Django admin reads/writes to Cloud SQL
+### Django (Interim)
+- Read-only admin interface
+- No sync - Django reads from Cloud SQL
+- Will be replaced by Ekklesia admin
 
 ---
 
@@ -245,4 +246,5 @@ gcloud builds submit --config cloudbuild.yaml \
 | [docs/README.md](docs/README.md) | Overview and quick links |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design |
 | [docs/PATTERNS.md](docs/PATTERNS.md) | Code patterns, components |
+| [docs/PATTERNS-KIMI-Felagar.md](docs/PATTERNS-KIMI-Felagar.md) | AI assistants (Kimi, member chat, RAG) |
 | [docs/SECURITY.md](docs/SECURITY.md) | Security rules |

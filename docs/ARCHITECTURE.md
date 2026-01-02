@@ -26,7 +26,7 @@
 | **pgvector** | PostgreSQL extension for vector similarity search (AI/RAG) |
 | **RAG** | Retrieval-Augmented Generation - AI answers using indexed documents |
 | **Kimi** | Moonshot AI LLM used for Party Wiki and Member Assistant |
-| **Source of Truth** | Firestore is canonical; other DBs sync from it |
+| **Source of Truth** | Firestore is canonical for member data |
 | **Django GCP** | Interim admin interface (Cloud Run) - will be replaced |
 
 ---
@@ -38,21 +38,20 @@
 │                    SYSTEM ARCHITECTURE                       │
 ├─────────────────────────────────────────────────────────────┤
 │                                                              │
-│  Ekklesia (THIS PROJECT - Future source of truth)           │
+│  Ekklesia (THIS PROJECT - Source of truth)                  │
 │  ├── Firestore database (canonical member data)             │
 │  ├── Firebase Hosting (members-portal)                       │
-│  ├── Firebase Functions (svc-members)                        │
-│  ├── Cloud Run (svc-elections, svc-events)                  │
-│  ├── SendGrid email (#323 - implemented Dec 2025)           │
-│  └── AI assistants (Party Wiki + RAG Member Assistant)      │
+│  ├── Firebase Functions (svc-members, Python)               │
+│  ├── Cloud Run: svc-elections (Node.js)                     │
+│  ├── Cloud Run: svc-events (Node.js + AI assistants)        │
+│  │   ├── Kimi sysadmin chat (superuser only)                │
+│  │   └── Member assistant (RAG + web search)                │
+│  └── SendGrid email                                          │
 │                                                              │
-│  Django GCP (INTERIM admin interface)                       │
+│  Django GCP (INTERIM read-only admin)                       │
 │  ├── Cloud Run: django-socialism                            │
 │  ├── Cloud SQL PostgreSQL                                    │
-│  └── SendGrid email (temporary)                             │
-│                                                              │
-│  Linode (DECOMMISSIONED 2025-12-11)                         │
-│  └── Backup: ~/Development/projects/django/backups/         │
+│  └── See: ~/Development/projects/django/                    │
 │                                                              │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -113,15 +112,11 @@
 
 ### Member Data Model
 
-Members can exist in two states:
-1. **Firestore + Django**: Members registered via Django have `django_id` in Firestore
-2. **Firestore-only**: Members registered via Ekklesia portal have no `django_id`
+Members exist in Firestore (source of truth). Some have `django_id` for legacy tracking.
 
-The `updatememberprofile` function handles both cases:
-- With `django_id`: Updates sync to both Firestore and Django/Cloud SQL
-- Without `django_id`: Updates only in Firestore (Firestore-only members)
+The `updatememberprofile` function updates member data in Firestore.
 
-**Note:** Some members may have a `django_id` in Firestore but not exist in Cloud SQL (sync gap). The function handles this gracefully by continuing with Firestore-only updates.
+**Note:** Django admin is read-only. No sync between systems.
 
 ---
 
@@ -240,16 +235,13 @@ functions/
 ├── membership/               # Membership handlers
 ├── shared/                   # Shared utilities
 │
-├── fn_sync_members.py        # Manual sync
-├── fn_sync_from_django.py    # Webhook sync
-├── fn_get_django_token.py    # Token retrieval
 ├── fn_audit_members.py       # Audit logging
 ├── fn_validate_address.py    # Address validation
 ├── fn_search_addresses.py    # Address search
 ├── fn_superuser.py           # Superuser operations
 │
-├── util_security.py          # Security utilities
-├── util_logging.py           # Logging utilities
+├── security_utils.py         # Rate limiting, validation
+├── utils_logging.py          # Structured logging
 ├── util_jwks.py              # JWT utilities
 │
 └── main.py                   # Entry point
@@ -277,20 +269,15 @@ User → Kenni.is (PKCE) → Firebase Auth → ID Token → API Request
    └─▶ svc-elections → Validate token → Record ballot → PostgreSQL
 ```
 
-### Member Sync
+### Data Storage
 ```
-                    ┌─────────────────┐
-                    │   Firestore     │ ◄── SOURCE OF TRUTH
-                    │ (canonical data)│
-                    └────────┬────────┘
-                             │
-              ┌──────────────┴──────────────┐
-              │                             │
-              ▼                             ▼
-     ┌─────────────────┐          ┌─────────────────┐
-     │  Django GCP     │          │  PostgreSQL     │
-     │  (admin UI)     │          │  (elections)    │
-     └─────────────────┘          └─────────────────┘
+┌─────────────────┐          ┌─────────────────┐
+│   Firestore     │          │   PostgreSQL    │
+│ (member data)   │          │ (elections/RAG) │
+│ SOURCE OF TRUTH │          │   Cloud SQL     │
+└─────────────────┘          └─────────────────┘
+
+Django GCP: Read-only admin (interim) - reads from PostgreSQL
 ```
 
 ### AI Assistants (Kimi)
@@ -486,7 +473,5 @@ ORDER BY id DESC
 LIMIT 10;
 ```
 
-Members may exist in Firestore but not Cloud SQL if:
-- Registered via Ekklesia portal (Firestore-only)
-- Sync failed during Django registration
-- Member deleted from Django but not Firestore
+Members exist in Firestore (source of truth). Cloud SQL only has election-related data.
+Django admin is read-only and interim.

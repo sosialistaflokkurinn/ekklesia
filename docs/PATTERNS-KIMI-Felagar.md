@@ -334,12 +334,68 @@ Common names are pre-cached for speed (BÍN doesn't have all personal names):
 
 ---
 
+## Web Search Fallback
+
+When RAG doesn't find relevant documents, falls back to Brave Search API.
+
+### Configuration
+
+- Secret: `brave-search-api-key` in GCP Secret Manager
+- Service: `src/services/service-web-search.js`
+- Triggers: similarity score < 0.35 or no results
+
+### Flow
+
+```
+Query → RAG Search → (if low score) → Brave Search → Kimi with web results
+```
+
+### Usage
+
+```javascript
+const webSearch = require('./src/services/service-web-search');
+const results = await webSearch.search('sósíalistaflokkurinn stefna húsnæðismál');
+// Returns { snippets: [...], urls: [...] }
+```
+
+---
+
+## RAG Indexing Scripts
+
+Scripts to populate rag_documents table with policy content:
+
+| Script | Content |
+|--------|---------|
+| `scripts/add-housing-policy-rag.js` | Húsnæðisstefna |
+| `scripts/add-fiscal-policy-rag.js` | Fjármálastefna |
+| `scripts/add-fisheries-policy-rag.js` | Auðlindamál / sjávarútvegur |
+| `scripts/add-free-services-rag.js` | Þjónusta án endurgjalds |
+| `scripts/add-folkid-a-ad-rada-rag.js` | Fólkið á að ráða stefna |
+| `scripts/add-kaerleikshagkerfid-rag.js` | Kærleikshagkerfið |
+| `scripts/add-barnabatur-rag.js` | Barnabætur |
+| `scripts/check-curated-ranking.js` | Test RAG retrieval ranking |
+| `scripts/test-rag-query.js` | Test individual queries |
+
+### Running indexing
+
+```bash
+cd services/svc-events
+node scripts/add-housing-policy-rag.js   # Index húsnæðisstefna
+node scripts/check-curated-ranking.js    # Verify retrieval works
+```
+
+---
+
 ## Files Reference
 
 | File | Purpose |
 |------|---------|
+| `src/routes/route-member-assistant.js` | Member assistant API endpoint |
+| `src/routes/route-party-wiki.js` | Party wiki API endpoint |
 | `src/services/service-embedding.js` | Vertex AI embedding generation |
 | `src/services/service-vector-search.js` | pgvector search with boosts |
+| `src/services/service-web-search.js` | Brave Search fallback |
 | `src/services/service-icelandic-declension.js` | BÍN API for word forms |
 | `scripts/verify-kimi-answers.js` | 20 verification tests |
-| `scripts/index-*.js` | Document indexing scripts |
+| `scripts/add-*-rag.js` | Policy document indexing |
+| `scripts/test-*.js` | Testing utilities |
