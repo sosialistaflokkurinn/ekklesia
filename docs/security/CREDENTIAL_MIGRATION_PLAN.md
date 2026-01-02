@@ -303,7 +303,6 @@ curl -H "Authorization: Bearer $ELECTIONS_API_KEY" https://elections-service-...
 
 - [docs/security/SECURITY_DEFENSE_ANALYSIS.md](SECURITY_DEFENSE_ANALYSIS.md) - Security architecture
 - [docs/security/FIREBASE_APP_CHECK_RESEARCH.md](FIREBASE_APP_CHECK_RESEARCH.md) - App Check implementation
-- [.code-rules](../../.code-rules) - Session initialization rules
 - [scripts/README.md](../../scripts/README.md) - Scripts documentation
 
 ---

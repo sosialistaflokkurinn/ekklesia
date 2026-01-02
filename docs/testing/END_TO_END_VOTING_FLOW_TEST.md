@@ -165,13 +165,9 @@ None – all test stages passed on the first attempt.
 
 ## Next Steps
 
-1. Execute load testing for 300 votes/second spike (see docs/USAGE_CONTEXT.md).
-2. Rehearse meeting-day runbook (docs/OPERATIONAL_PROCEDURES.md).
-3. Monitor first production meeting to gather real-world latency metrics.
+1. Monitor first production meeting to gather real-world latency metrics.
 
 ## Related Documentation
 
-- [docs/USAGE_CONTEXT.md](../USAGE_CONTEXT.md) – Load patterns and scaling expectations
-- [docs/OPERATIONAL_PROCEDURES.md](../OPERATIONAL_PROCEDURES.md) – Meeting-day checklist
-- [docs/design/EVENTS_SERVICE_MVP.md](../design/EVENTS_SERVICE_MVP.md) – Events service details
-- [docs/design/ELECTIONS_SERVICE_MVP.md](../design/ELECTIONS_SERVICE_MVP.md) – Elections service details
+- [docs/ARCHITECTURE.md](../ARCHITECTURE.md) – System architecture overview
+- [docs/PATTERNS-ELECTIONS.md](../PATTERNS-ELECTIONS.md) – Elections service patterns

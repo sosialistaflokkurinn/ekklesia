@@ -566,4 +566,3 @@ gh pr edit 34 \
 ---
 
 **Last Updated**: 2025-10-14
-**Related**: [BRANCH_STRATEGY.md](../../archive/docs/docs-2025-10-13/docs/guides/BRANCH_STRATEGY.md)
