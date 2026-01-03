@@ -956,8 +956,9 @@ function parseMarkdownTable(html) {
 
     // Check if line is a table row (starts and ends with |)
     if (line.startsWith('|') && line.endsWith('|')) {
-      // Check if it's a separator row (|---|---|)
-      if (/^\|[\s\-:]+\|$/.test(line.replace(/\|/g, '|').replace(/[^|:-]/g, '-'))) {
+      // Check if it's a separator row (|---|---|---| or | :--- | :---: | ---: |)
+      // Each cell should contain only dashes, colons, and whitespace
+      if (/^\|(\s*[-:]+\s*\|)+$/.test(line)) {
         // It's a separator, skip it but mark we're in a table
         inTable = true;
         continue;
