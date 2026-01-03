@@ -2,32 +2,59 @@
 Register Member Cloud Function
 
 Handles new member registration from skraning-static frontend.
-Creates member in Firestore and assigns to cell.
+Creates member in Cloud SQL (via Django API) and assigns to cell.
 
-Usage:
-    register_member({
-        name: "Jón Jónsson",
-        ssn: "0101902939",
-        email: "jon@example.com",
-        phone: "8881234",
-        address_type: "iceland" | "foreign" | "unlocated",
-        # For Iceland address:
-        address_id: 12345,  # hnitnum from iceaddr
-        # For foreign address:
-        country_id: 45,
-        foreign_address: "123 Main Street",
-        foreign_municipality: "London",
-        foreign_postal_code: "SW1A 1AA",
-        # For unlocated:
-        cell_id: 5,
-        # Optional fields:
-        housing_situation: 2,
-        union_id: 93,
-        title_id: 14,
-        reachable: true,
-        groupable: true
-    })
-    Returns: { comrade_id: 1234, error: null }
+## Address Handling
+
+For Iceland addresses, you MUST provide `address_id` which is the `hnitnum`
+from the Icelandic address registry. Get it using:
+
+1. Frontend: Use `search_addresses` Cloud Function (autocomplete)
+2. Python: Use `iceaddr_lookup(street, number, postal_code)`
+3. Direct: Query `stadfong` table in iceaddr database
+
+See docs/ADDRESS_SYSTEM.md for full documentation.
+
+## Usage
+
+```python
+register_member({
+    # Required fields
+    "name": "Jón Jónsson",
+    "ssn": "0000000000",
+    "email": "jon@example.com",
+    "phone": "8881234",
+    "address_type": "iceland",  # or "foreign" or "unlocated"
+
+    # For Iceland address (address_type="iceland"):
+    "address_id": 2000507,  # <-- hnitnum from iceaddr (REQUIRED)
+
+    # For foreign address (address_type="foreign"):
+    "country_id": 45,
+    "foreign_address": "123 Main Street",
+    "foreign_municipality": "London",
+    "foreign_postal_code": "SW1A 1AA",
+
+    # For unlocated (address_type="unlocated"):
+    "cell_id": 5,
+
+    # Optional fields:
+    "housing_situation": 2,
+    "union_id": 93,
+    "title_id": 14,
+    "reachable": True,
+    "groupable": True
+})
+```
+
+Returns: `{ "comrade_id": 1234, "django_id": 1234, "error": null }`
+
+## Important Notes
+
+- If `address_id` is missing for Iceland addresses, the address will not
+  be linked to the map or cell assignment.
+- Use `search_addresses` Cloud Function for frontend autocomplete.
+- Shadow banned kennitalas return fake success (security feature).
 """
 
 import logging

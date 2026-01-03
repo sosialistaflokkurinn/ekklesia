@@ -1,4 +1,7 @@
-# Kimi AI Assistant - Patterns & Guide
+# Kimi Sysadmin Chat - Patterns & Guide
+
+> **Athugið:** Þetta skjal fjallar um **Kimi Sysadmin Chat** (superuser only).
+> Fyrir **Member Assistant** og **Party Wiki** (RAG), sjá [PATTERNS-KIMI-Felagar.md](PATTERNS-KIMI-Felagar.md).
 
 Þetta skjal er fyrir AI aðstoðarmenn (Claude, etc.) sem vinna með Kimi.
 

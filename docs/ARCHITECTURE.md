@@ -28,6 +28,20 @@
 | **Kimi** | Moonshot AI LLM used for Party Wiki and Member Assistant |
 | **Source of Truth** | Firestore is canonical for member data |
 | **Django GCP** | Interim admin interface (Cloud Run) - will be replaced |
+| **hnitnum** | Icelandic address registry ID from iceaddr |
+| **Soft Delete** | Setting `deleted_at` timestamp instead of hard delete |
+
+---
+
+## Documentation Index
+
+| Document | Purpose |
+|----------|---------|
+| [API_REFERENCE.md](API_REFERENCE.md) | All API endpoints in one place |
+| [ADDRESS_SYSTEM.md](ADDRESS_SYSTEM.md) | Address handling, hnitnum, iceaddr |
+| [PATTERNS.md](PATTERNS.md) | Code patterns and components |
+| [PATTERNS-KIMI-Felagar.md](PATTERNS-KIMI-Felagar.md) | AI assistants (RAG, Kimi) |
+| [SECURITY.md](SECURITY.md) | Security rules and PII guidelines |
 
 ---
 
