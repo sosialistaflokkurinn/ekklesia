@@ -2,31 +2,22 @@
  * Member Assistant Route
  *
  * RAG-powered AI assistant for party members.
- * Uses pgvector for semantic search and Moonshot AI (Kimi) for responses.
+ * Uses pgvector for semantic search and Google Gemini for responses.
  * Includes proper citation metadata in all responses.
  *
  * @module routes/route-member-assistant
  */
 
 const express = require('express');
-const axios = require('axios');
 const logger = require('../utils/util-logger');
 const authenticate = require('../middleware/middleware-auth');
 const embeddingService = require('../services/service-embedding');
 const vectorSearch = require('../services/service-vector-search');
 const webSearch = require('../services/service-web-search');
+const gemini = require('../services/service-gemini');
 const { pool } = require('../config/config-database');
 
 const router = express.Router();
-
-// Kimi API Configuration
-const KIMI_API_KEY = process.env.KIMI_API_KEY;
-const KIMI_API_BASE = 'https://api.moonshot.ai/v1';
-const KIMI_MODEL_DEFAULT = 'kimi-k2-0711-preview';
-const KIMI_MODELS = {
-  'kimi-k2-0711-preview': { name: 'Preview (hraður)', timeout: 90000 },
-  'kimi-k2-thinking': { name: 'Thinking (nákvæmur)', timeout: 180000 }
-};
 
 // RAG Configuration
 const RAG_CONFIG = {
@@ -322,43 +313,53 @@ async function getCachedResponse(questionText) {
 // System prompt for member assistant
 const SYSTEM_PROMPT = `Þú ert aðstoðarmaður fyrir félaga í Sósíalistaflokknum.
 
-## FORGANGUR HEIMILDA (MJÖG MIKILVÆGT!)
-Notaðu heimildir í þessari forgangsröð:
-1. **Stefnuskjöl flokksins** (policy, kosningaáætlun) - AÐALHEIMILD
-2. **Ályktanir og yfirlýsingar** frá aðalfundum eða framkvæmdastjórn
-3. **Viðtöl og greinar** þar sem flokkurinn tjáir sig
-4. **Kosningapróf** (RÚV, Kjóstu rétt, o.fl.) - VIÐBÓTARHEIMILD, ekki aðalheimild
+## SNIÐMÁT SVARA (MJÖG MIKILVÆGT!)
+Notaðu markdown til að gera svör skýr og læsileg:
 
-Byrjaðu ALLTAF á stefnuskjölum ef þau eru til staðar. Kosningapróf eru góð viðbót en ættu ekki að vera eina heimild um stefnu flokksins.
+### Stutt svar (1-2 setningar)
+Byrjaðu á stuttri samantekt sem svarar spurningunni beint.
 
-## HEIMILDAVÍSANIR
-Þegar þú vitnar í skoðanir eða staðhæfingar VERÐUR þú að tilgreina:
-1. HVER sagði/svaraði (flokkurinn, einstaklingur, o.s.frv.)
-2. HVENÆR (ár eða dagsetning)
-3. Í HVAÐA SAMHENGI (stefnuskjal, kosningapróf, flokksþing, viðtal, o.s.frv.)
+### Helstu atriði
+Notaðu **feitletrað** fyrir lykilhugtök og lista fyrir atriði:
+- Fyrsta atriði
+- Annað atriði
+- Þriðja atriði
 
-Dæmi á réttu formi:
-- "Samkvæmt stefnu flokksins (2024) segir í kaflanum um utanríkismál að..."
-- "Í kosningaprófi RÚV 2024 staðfesti flokkurinn þessa afstöðu með að svara 'mjög sammála'..."
-- "Í viðtali á Samstöðinni í júní 2025 sagði STOFNANDI_B..."
+### Tölur og samanburður
+Notaðu töflur þegar við á:
+
+| Atriði | Lýsing |
+|--------|--------|
+| Markmið | Lýsing á markmiði |
+| Aðgerð | Hvað á að gera |
+
+### Heimild
+Lokaðu alltaf á heimildavísun á forminu:
+*Heimild: [tegund heimilda] ([ár])*
+
+## FORGANGUR HEIMILDA
+1. **Stefna flokksins** (samþykkt á aðalfundum) - AÐALHEIMILD
+2. **Kosningaáætlun** (framboðsstefna 2024) - MIKILVÆG
+3. **Kosningapróf** (RÚV, Kjóstu rétt) - VIÐBÓT
 
 ## REGLUR
-1. Svaraðu AÐEINS á grundvelli heimildanna sem þú færð
-2. BYRJAÐU á stefnuskjölum, bættu við úr kosningaprófum ef við á
-3. Tilgreindu ALLTAF hver, hvenær, hvar
-4. Ef upplýsingar vantar: "Ég hef ekki upplýsingar um þetta í mínum heimildum"
-5. Vertu hlutlaus og hlýlegur
-6. Svaraðu á íslensku
+1. Svaraðu STUTT og HNITMIÐAÐ - ekki lengri en nauðsyn krefur
+2. Notaðu **feitletrað** fyrir lykilorð og atriði
+3. Notaðu lista (- eða 1.) fyrir atriðaskrár
+4. Notaðu töflur fyrir samanburð eða skipulagðar upplýsingar
+5. Byrjaðu á stefnu ef til staðar, síðan kosningaáætlun
+6. Ef upplýsingar vantar: "Ég hef ekki upplýsingar um þetta"
+7. Svaraðu á íslensku
 
 ## HEIMILD
 <context>
 {{CONTEXT}}
 </context>
 
-Svaraðu spurningunni byggt á ofangreindum heimildum með skýrum heimildavísunum.`;
+Svaraðu spurningunni stutt og skipulega með skýrum heimildavísunum.`;
 
 /**
- * Format retrieved documents as context for Kimi
+ * Format retrieved documents as context for AI
  */
 function formatContext(documents) {
   if (!documents || documents.length === 0) {
@@ -522,13 +523,11 @@ router.post('/chat', authenticate, async (req, res) => {
       });
     }
 
-    // Validate and select model (default to preview)
-    const selectedModel = requestedModel && KIMI_MODELS[requestedModel]
-      ? requestedModel
-      : KIMI_MODEL_DEFAULT;
-    const modelConfig = KIMI_MODELS[selectedModel];
+    // Validate and select model using Gemini
+    const selectedModel = gemini.resolveModel(requestedModel);
+    const modelConfig = gemini.getModelConfig(selectedModel);
 
-    if (!KIMI_API_KEY) {
+    if (!gemini.isAvailable()) {
       return res.status(503).json({
         error: 'Service Unavailable',
         message: 'AI þjónusta er ekki stillt',
@@ -607,50 +606,30 @@ router.post('/chat', authenticate, async (req, res) => {
     const context = ragContext + webContext;
     const systemPromptWithContext = SYSTEM_PROMPT.replace('{{CONTEXT}}', context);
 
-    // Step 5: Build messages for Kimi
-    const messages = [
-      { role: 'system', content: systemPromptWithContext },
-      ...history.slice(-6).map(h => ({
-        role: h.role,
-        content: h.content,
-      })),
-      { role: 'user', content: message },
-    ];
-
-    // Step 6: Call Kimi API
-    let kimiReply;
+    // Step 5: Call Gemini API
+    let aiReply;
     try {
-      const response = await axios.post(
-        `${KIMI_API_BASE}/chat/completions`,
-        {
-          model: selectedModel,
-          messages,
-          temperature: 0.7,
-          max_tokens: RAG_CONFIG.maxTokens,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${KIMI_API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          timeout: modelConfig.timeout,
-        }
-      );
+      const geminiResult = await gemini.generateChatCompletion({
+        systemPrompt: systemPromptWithContext,
+        message,
+        history: history.slice(-6),
+        model: requestedModel,
+      });
 
-      kimiReply = response.data?.choices?.[0]?.message?.content;
+      aiReply = geminiResult.reply;
 
-      if (!kimiReply) {
-        throw new Error('Empty response from Kimi');
+      if (!aiReply) {
+        throw new Error('Empty response from Gemini');
       }
-    } catch (kimiErr) {
-      logger.error('Kimi API call failed', {
-        operation: 'member_assistant_kimi_error',
-        error: kimiErr.message,
-        status: kimiErr.response?.status,
+    } catch (aiErr) {
+      logger.error('Gemini API call failed', {
+        operation: 'member_assistant_gemini_error',
+        error: aiErr.message,
+        status: aiErr.status,
       });
 
       // Return user-friendly error messages
-      if (kimiErr.response?.status === 429) {
+      if (aiErr.status === 429) {
         return res.status(429).json({
           error: 'Rate Limited',
           message: 'Of margar beiðnir. Reyndu aftur eftir smá stund.',
@@ -663,10 +642,10 @@ router.post('/chat', authenticate, async (req, res) => {
       });
     }
 
-    // Step 6b: Check if response indicates no info - do web search and retry
+    // Step 6: Check if response indicates no info - do web search and retry
     if (webResults.length === 0 &&
         webSearch.isWebSearchAvailable() &&
-        webSearch.responseIndicatesNoInfo(kimiReply)) {
+        webSearch.responseIndicatesNoInfo(aiReply)) {
 
       logger.info('Response indicates no info, triggering web search', {
         operation: 'web_search_retry',
@@ -678,38 +657,21 @@ router.post('/chat', authenticate, async (req, res) => {
 
       if (webResults.length > 0) {
         // Rebuild context with web results
-        const webContext = webSearch.formatWebResultsAsContext(webResults);
-        const enhancedContext = ragContext + webContext;
+        const webContextRetry = webSearch.formatWebResultsAsContext(webResults);
+        const enhancedContext = ragContext + webContextRetry;
         const enhancedPrompt = SYSTEM_PROMPT.replace('{{CONTEXT}}', enhancedContext);
 
-        // Retry Kimi with web context
-        const retryMessages = [
-          { role: 'system', content: enhancedPrompt },
-          ...history.slice(-6).map(h => ({ role: h.role, content: h.content })),
-          { role: 'user', content: message },
-        ];
-
+        // Retry Gemini with web context
         try {
-          const retryResponse = await axios.post(
-            `${KIMI_API_BASE}/chat/completions`,
-            {
-              model: selectedModel,
-              messages: retryMessages,
-              temperature: 0.7,
-              max_tokens: RAG_CONFIG.maxTokens,
-            },
-            {
-              headers: {
-                Authorization: `Bearer ${KIMI_API_KEY}`,
-                'Content-Type': 'application/json',
-              },
-              timeout: modelConfig.timeout,
-            }
-          );
+          const retryResult = await gemini.generateChatCompletion({
+            systemPrompt: enhancedPrompt,
+            message,
+            history: history.slice(-6),
+            model: requestedModel,
+          });
 
-          const retryReply = retryResponse.data?.choices?.[0]?.message?.content;
-          if (retryReply) {
-            kimiReply = retryReply;
+          if (retryResult.reply) {
+            aiReply = retryResult.reply;
             logger.info('Web search retry successful', {
               operation: 'web_search_retry_success',
               webResultsCount: webResults.length,
@@ -720,7 +682,7 @@ router.post('/chat', authenticate, async (req, res) => {
             operation: 'web_search_retry_failed',
             error: retryErr.message,
           });
-          // Keep original kimiReply
+          // Keep original aiReply
         }
       }
     }
@@ -743,7 +705,7 @@ router.post('/chat', authenticate, async (req, res) => {
     logger.info('Member assistant response', {
       operation: 'member_assistant_response',
       userId: req.user?.uid,
-      replyLength: kimiReply.length,
+      replyLength: aiReply.length,
       citationsCount: citations.length,
       webSearchUsed: webResults.length > 0,
       webResultsCount: webResults.length,
@@ -757,7 +719,7 @@ router.post('/chat', authenticate, async (req, res) => {
         userId: req.user?.uid,
         userName: req.user?.name || req.user?.email,
         question: message,
-        response: kimiReply,
+        response: aiReply,
         citations: allCitations,
         model: selectedModel,
         contextDocs: retrievedDocs.length,
@@ -772,7 +734,7 @@ router.post('/chat', authenticate, async (req, res) => {
     }
 
     res.json({
-      reply: kimiReply,
+      reply: aiReply,
       citations: allCitations,
       model: selectedModel,
       modelName: modelConfig.name,
@@ -819,13 +781,11 @@ router.post('/debug/chat', async (req, res) => {
       });
     }
 
-    // Validate and select model (default to preview)
-    const selectedModel = requestedModel && KIMI_MODELS[requestedModel]
-      ? requestedModel
-      : KIMI_MODEL_DEFAULT;
-    const modelConfig = KIMI_MODELS[selectedModel];
+    // Validate and select model using Gemini
+    const selectedModel = gemini.resolveModel(requestedModel);
+    const modelConfig = gemini.getModelConfig(selectedModel);
 
-    if (!KIMI_API_KEY) {
+    if (!gemini.isAvailable()) {
       return res.status(503).json({
         error: 'Service Unavailable',
         message: 'AI þjónusta er ekki stillt',
@@ -901,49 +861,29 @@ router.post('/debug/chat', async (req, res) => {
     const context = ragContext + webContext;
     const systemPromptWithContext = SYSTEM_PROMPT.replace('{{CONTEXT}}', context);
 
-    // Step 5: Build messages for Kimi
-    const messages = [
-      { role: 'system', content: systemPromptWithContext },
-      ...history.slice(-6).map(h => ({
-        role: h.role,
-        content: h.content,
-      })),
-      { role: 'user', content: message },
-    ];
-
-    // Step 6: Call Kimi API
-    let kimiReply;
+    // Step 5: Call Gemini API
+    let aiReply;
     try {
-      const response = await axios.post(
-        `${KIMI_API_BASE}/chat/completions`,
-        {
-          model: selectedModel,
-          messages,
-          temperature: 0.7,
-          max_tokens: RAG_CONFIG.maxTokens,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${KIMI_API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          timeout: modelConfig.timeout,
-        }
-      );
-
-      kimiReply = response.data?.choices?.[0]?.message?.content;
-
-      if (!kimiReply) {
-        throw new Error('Empty response from Kimi');
-      }
-    } catch (kimiErr) {
-      logger.error('Kimi API call failed', {
-        operation: 'member_assistant_kimi_error',
-        error: kimiErr.message,
-        status: kimiErr.response?.status,
+      const geminiResult = await gemini.generateChatCompletion({
+        systemPrompt: systemPromptWithContext,
+        message,
+        history: history.slice(-6),
+        model: requestedModel,
       });
 
-      if (kimiErr.response?.status === 429) {
+      aiReply = geminiResult.reply;
+
+      if (!aiReply) {
+        throw new Error('Empty response from Gemini');
+      }
+    } catch (aiErr) {
+      logger.error('Gemini API call failed', {
+        operation: 'member_assistant_gemini_error',
+        error: aiErr.message,
+        status: aiErr.status,
+      });
+
+      if (aiErr.status === 429) {
         return res.status(429).json({
           error: 'Rate Limited',
           message: 'Of margar beiðnir. Reyndu aftur eftir smá stund.',
@@ -956,10 +896,10 @@ router.post('/debug/chat', async (req, res) => {
       });
     }
 
-    // Step 6b: Check if response indicates no info - do web search and retry
+    // Step 6: Check if response indicates no info - do web search and retry
     if (webResults.length === 0 &&
         webSearch.isWebSearchAvailable() &&
-        webSearch.responseIndicatesNoInfo(kimiReply)) {
+        webSearch.responseIndicatesNoInfo(aiReply)) {
 
       logger.info('Response indicates no info (debug), triggering web search', {
         operation: 'web_search_retry_debug',
@@ -974,34 +914,17 @@ router.post('/debug/chat', async (req, res) => {
         const enhancedContext = ragContext + webContextRetry;
         const enhancedPrompt = SYSTEM_PROMPT.replace('{{CONTEXT}}', enhancedContext);
 
-        // Retry Kimi with web context
-        const retryMessages = [
-          { role: 'system', content: enhancedPrompt },
-          ...history.slice(-6).map(h => ({ role: h.role, content: h.content })),
-          { role: 'user', content: message },
-        ];
-
+        // Retry Gemini with web context
         try {
-          const retryResponse = await axios.post(
-            `${KIMI_API_BASE}/chat/completions`,
-            {
-              model: selectedModel,
-              messages: retryMessages,
-              temperature: 0.7,
-              max_tokens: RAG_CONFIG.maxTokens,
-            },
-            {
-              headers: {
-                Authorization: `Bearer ${KIMI_API_KEY}`,
-                'Content-Type': 'application/json',
-              },
-              timeout: modelConfig.timeout,
-            }
-          );
+          const retryResult = await gemini.generateChatCompletion({
+            systemPrompt: enhancedPrompt,
+            message,
+            history: history.slice(-6),
+            model: requestedModel,
+          });
 
-          const retryReply = retryResponse.data?.choices?.[0]?.message?.content;
-          if (retryReply) {
-            kimiReply = retryReply;
+          if (retryResult.reply) {
+            aiReply = retryResult.reply;
             logger.info('Web search retry successful (debug)', {
               operation: 'web_search_retry_success_debug',
               webResultsCount: webResults.length,
@@ -1030,7 +953,7 @@ router.post('/debug/chat', async (req, res) => {
     const allCitations = [...citations, ...webCitations];
 
     res.json({
-      reply: kimiReply,
+      reply: aiReply,
       citations: allCitations,
       model: selectedModel,
       modelName: modelConfig.name,
@@ -1052,20 +975,15 @@ router.post('/debug/chat', async (req, res) => {
 
 /**
  * GET /api/member-assistant/models
- * Get available Kimi models
+ * Get available Gemini models
  * Public endpoint (for UI)
  */
 router.get('/models', (req, res) => {
-  const models = Object.entries(KIMI_MODELS).map(([id, config]) => ({
-    id,
-    name: config.name,
-    timeout: config.timeout,
-    isDefault: id === KIMI_MODEL_DEFAULT
-  }));
+  const models = gemini.getAvailableModels();
 
   res.json({
     models,
-    default: KIMI_MODEL_DEFAULT
+    default: gemini.DEFAULT_MODEL
   });
 });
 
@@ -1287,28 +1205,15 @@ router.post('/admin/generate-cache', authenticate, async (req, res) => {
       const context = formatContext(retrievedDocs);
       const systemPromptWithContext = SYSTEM_PROMPT.replace('{{CONTEXT}}', context);
 
-      // Call Kimi with thinking model
-      const response = await axios.post(
-        `${KIMI_API_BASE}/chat/completions`,
-        {
-          model: 'kimi-k2-thinking',
-          messages: [
-            { role: 'system', content: systemPromptWithContext },
-            { role: 'user', content: questionText },
-          ],
-          temperature: 0.5,
-          max_tokens: RAG_CONFIG.maxTokens,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${KIMI_API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          timeout: 180000,
-        }
-      );
+      // Call Gemini with thinking model
+      const geminiResult = await gemini.generateChatCompletion({
+        systemPrompt: systemPromptWithContext,
+        message: questionText,
+        history: [],
+        model: 'gemini-2.0-flash-thinking-exp-01-21',
+      });
 
-      const reply = response.data?.choices?.[0]?.message?.content;
+      const reply = geminiResult.reply;
       const citations = retrievedDocs.map(doc => ({
         title: doc.title,
         source_type: doc.source_type,
@@ -1318,7 +1223,7 @@ router.post('/admin/generate-cache', authenticate, async (req, res) => {
       // Save to cache
       await pool.query(
         `INSERT INTO rag_cached_responses (question_key, question_text, response, citations, model, updated_at)
-         VALUES ($1, $2, $3, $4, 'kimi-k2-thinking', NOW())
+         VALUES ($1, $2, $3, $4, 'gemini-2.0-flash-thinking', NOW())
          ON CONFLICT (question_key) DO UPDATE SET
            response = EXCLUDED.response,
            citations = EXCLUDED.citations,
