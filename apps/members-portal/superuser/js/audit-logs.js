@@ -15,6 +15,10 @@ import { requireSuperuser } from '../../js/rbac.js';
 import { showToast } from '../../js/components/ui-toast.js';
 import { R } from '../../i18n/strings-loader.js';
 import { superuserStrings } from './i18n/superuser-strings-loader.js';
+import { escapeHTML } from '../../js/utils/util-format.js';
+
+// Use centralized escapeHTML from util-format.js
+const escapeHtml = escapeHTML;
 
 // Mock data for demonstration (until Cloud Function is implemented)
 const MOCK_LOGS = [
@@ -83,19 +87,6 @@ function getSeverityClass(severity) {
     case 'DEBUG': return 'log-level--debug';
     default: return '';
   }
-}
-
-/**
- * Escape HTML to prevent XSS
- */
-function escapeHtml(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
 }
 
 /**

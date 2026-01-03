@@ -11,8 +11,12 @@ import { debug } from '../../../js/utils/util-debug.js';
 import { adminStrings } from '../../js/i18n/admin-strings-loader.js';
 import { requireAdmin } from '../../../js/rbac.js';
 import { showToast, showError } from '../../../js/components/ui-toast.js';
+import { escapeHTML } from '../../../js/utils/util-format.js';
 // Note: showModal not used here - this page uses its own inline modal
 import EmailAPI from './api/email-api.js';
+
+// Use centralized escapeHTML from util-format.js
+const escapeHtml = escapeHTML;
 
 let strings = {};
 
@@ -106,15 +110,6 @@ async function loadTemplates() {
     debug.error('[TemplatesList] Load error:', error);
     showError(`Villa: ${error.message}`);
   }
-}
-
-/**
- * Escape HTML to prevent XSS
- */
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text || '';
-  return div.innerHTML;
 }
 
 /**

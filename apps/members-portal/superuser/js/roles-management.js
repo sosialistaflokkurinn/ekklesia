@@ -31,6 +31,11 @@ import { showToast } from '../../js/components/ui-toast.js';
 import { showModal } from '../../js/components/ui-modal.js';
 import { R } from '../../i18n/strings-loader.js';
 import { superuserStrings } from '../../i18n/superuser-strings.js';
+import { escapeHTML, formatKennitala as formatKennitalaUtil } from '../../js/utils/util-format.js';
+
+// Use centralized functions from util-format.js
+const escapeHtml = escapeHTML;
+const formatKennitala = (kt) => formatKennitalaUtil(kt) || '-';
 
 const db = getFirebaseFirestore();
 
@@ -275,18 +280,6 @@ async function selectMember(member) {
 
   // Reset role selector
   resetRoleSelector();
-}
-
-/**
- * Format kennitala with hyphen
- */
-function formatKennitala(kt) {
-  if (!kt) return '-';
-  const clean = kt.replace(/-/g, '');
-  if (clean.length === 10) {
-    return `${clean.slice(0, 6)}-${clean.slice(6)}`;
-  }
-  return kt;
 }
 
 /**
@@ -706,18 +699,6 @@ function formatDjangoFlags(flags) {
   if (flags.is_staff) parts.push('staff');
   if (flags.is_admin) parts.push('admin');
   return parts.length > 0 ? `(${parts.join(', ')})` : '';
-}
-
-/**
- * Escape HTML to prevent XSS
- */
-function escapeHtml(str) {
-  if (!str) return '';
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
 }
 
 /**

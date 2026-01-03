@@ -9,6 +9,8 @@ Kimi AI assistants in svc-events. Two distinct architectures:
 | Tech | Static system prompt | RAG + pgvector + embeddings |
 | Knowledge | Hardcoded facts | Dynamic document retrieval |
 | Use case | Quick facts | Deep research with citations |
+| Suggestions | None | 6 random from 30 topics |
+| Model selection | No | Yes (fast/thinking) |
 
 ---
 
@@ -25,6 +27,27 @@ Query → Vertex AI Embedding → pgvector Search → Context Assembly → Kimi 
 | Embedding | `src/services/service-embedding.js` | Vertex AI text-embedding-004 (768 dim) |
 | Vector Search | `src/services/service-vector-search.js` | pgvector cosine similarity with boosts |
 | Verification | `scripts/verify-kimi-answers.js` | 20 tests, expected facts validation |
+
+### Frontend Features (`member-assistant-chat.js`)
+
+| Feature | Description |
+|---------|-------------|
+| **Random suggestions** | Shows 6 random from 30 topic prompts on each load/clear |
+| **Model selection** | Fast (kimi-k2-0711-preview) or Thinking (kimi-k2-thinking) |
+| **Countdown timer** | Shows expected wait time (20s fast, 90s thinking) |
+| **Markdown parsing** | Headers, lists, bold, italic, links, code blocks, tables |
+| **Table parsing** | Full markdown table → HTML with styled headers/rows |
+| **XSS protection** | User input escaped via `escapeHTML()` |
+| **Expandable panel** | Larger view for reading responses |
+| **Analytics** | `trackAction('chat_message', { model })` |
+
+### Suggestion Topics (30 total)
+
+Categories:
+- **Stefnumál** (13): Kapítalismi, ESB, húsnæði, heilbrigði, skattar, umhverfi, menntun, vinnumarkaður, velferð, jafnrétti, fötlunarmál...
+- **Nýjar** (10): Innflytjendur, auðlindir, sjávarútvegur, landbúnaður, sveitarfélög, þjóðnýting, alþjóðamál, barnamál, eldri borgarar, lýðræði
+- **Saga** (2): Saga flokksins, uppbygging
+- **Kosningar** (5): 2018, 2021, 2022, 2024, klofningur 2025
 
 ---
 
@@ -334,12 +357,79 @@ Common names are pre-cached for speed (BÍN doesn't have all personal names):
 
 ---
 
+## Web Search Fallback
+
+When RAG doesn't find relevant documents, falls back to Brave Search API.
+
+### Configuration
+
+- Secret: `brave-search-api-key` in GCP Secret Manager
+- Service: `src/services/service-web-search.js`
+- Triggers: similarity score < 0.35 or no results
+
+### Flow
+
+```
+Query → RAG Search → (if low score) → Brave Search → Kimi with web results
+```
+
+### Usage
+
+```javascript
+const webSearch = require('./src/services/service-web-search');
+const results = await webSearch.search('sósíalistaflokkurinn stefna húsnæðismál');
+// Returns { snippets: [...], urls: [...] }
+```
+
+---
+
+## RAG Indexing Scripts
+
+Scripts to populate rag_documents table with policy content:
+
+| Script | Content |
+|--------|---------|
+| `scripts/add-housing-policy-rag.js` | Húsnæðisstefna |
+| `scripts/add-fiscal-policy-rag.js` | Fjármálastefna |
+| `scripts/add-fisheries-policy-rag.js` | Auðlindamál / sjávarútvegur |
+| `scripts/add-free-services-rag.js` | Þjónusta án endurgjalds |
+| `scripts/add-folkid-a-ad-rada-rag.js` | Fólkið á að ráða stefna |
+| `scripts/add-kaerleikshagkerfid-rag.js` | Kærleikshagkerfið |
+| `scripts/add-barnabatur-rag.js` | Barnabætur |
+| `scripts/check-curated-ranking.js` | Test RAG retrieval ranking |
+| `scripts/test-rag-query.js` | Test individual queries |
+
+### Running indexing
+
+```bash
+cd services/svc-events
+node scripts/add-housing-policy-rag.js   # Index húsnæðisstefna
+node scripts/check-curated-ranking.js    # Verify retrieval works
+```
+
+---
+
 ## Files Reference
+
+### Backend (svc-events)
 
 | File | Purpose |
 |------|---------|
+| `src/routes/route-member-assistant.js` | Member assistant API endpoint |
+| `src/routes/route-party-wiki.js` | Party wiki API endpoint |
 | `src/services/service-embedding.js` | Vertex AI embedding generation |
 | `src/services/service-vector-search.js` | pgvector search with boosts |
+| `src/services/service-web-search.js` | Brave Search fallback |
 | `src/services/service-icelandic-declension.js` | BÍN API for word forms |
 | `scripts/verify-kimi-answers.js` | 20 verification tests |
-| `scripts/index-*.js` | Document indexing scripts |
+| `scripts/add-*-rag.js` | Policy document indexing |
+| `scripts/test-*.js` | Testing utilities |
+
+### Frontend (members-portal)
+
+| File | Purpose |
+|------|---------|
+| `js/components/member-assistant-chat.js` | RAG chat widget (30 suggestions, table parsing) |
+| `js/components/party-wiki-chat.js` | Static knowledge chat widget |
+| `js/utils/util-format.js` | `escapeHTML()` for XSS protection |
+| `js/utils/util-analytics.js` | `trackAction()` for usage tracking |

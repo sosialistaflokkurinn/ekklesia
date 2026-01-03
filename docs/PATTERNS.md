@@ -105,6 +105,9 @@ cloud-sql-proxy PROJECT:REGION:INSTANCE --port 5433
 | Badge | `import { createBadge } from '/js/components/ui-badge.js'` | `createBadge('Active', 'success')` |
 | Card | `import { createCard } from '/js/components/ui-card.js'` | `createCard(title, content)` |
 | Error | `import { showError } from '/js/components/ui-error.js'` | `showError(message)` |
+| Iceland Map | `import { initIcelandMap } from '/js/components/iceland-map.js'` | `initIcelandMap(container, data)` |
+| Member Chat | `import { initMemberAssistant } from '/js/components/member-assistant-chat.js'` | RAG-based Q&A for members |
+| Party Wiki | `import { initPartyWiki } from '/js/components/party-wiki-chat.js'` | Policy/party info chat |
 
 ### Utilities (js/utils/)
 

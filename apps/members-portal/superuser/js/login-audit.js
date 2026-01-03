@@ -16,6 +16,10 @@ import { requireSuperuser } from '../../js/rbac.js';
 import { showToast } from '../../js/components/ui-toast.js';
 import { R } from '../../i18n/strings-loader.js';
 import { superuserStrings } from './i18n/superuser-strings-loader.js';
+import { escapeHTML } from '../../js/utils/util-format.js';
+
+// Use centralized escapeHTML from util-format.js
+const escapeHtml = escapeHTML;
 
 /**
  * Parse user agent string to friendly browser/OS name
@@ -132,19 +136,6 @@ function formatRelativeTime(isoString) {
 
   const diffDays = Math.floor(diffHours / 24);
   return superuserStrings.get('time_days_ago').replace('%s', diffDays);
-}
-
-/**
- * Escape HTML to prevent XSS
- */
-function escapeHtml(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
 }
 
 /**

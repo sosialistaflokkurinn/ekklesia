@@ -800,8 +800,17 @@ async function indexPage(page, metadata) {
       }
     }
 
+    // Determine source type based on page content
+    // - 'stefna' for official policy documents (samþykkt á aðalfundum)
+    // - 'party-website' for general info pages
+    const isPolicy = page.title.startsWith('Stefna -') ||
+                     page.content.includes('samþykkt') ||
+                     page.content.includes('stefnuatriði') ||
+                     page.content.includes('KJARNASTEFNA');
+    const sourceType = page.sourceType || (isPolicy ? 'stefna' : 'party-website');
+
     await vectorSearch.upsertDocument({
-      sourceType: 'party-website',
+      sourceType,
       sourceUrl: page.url,
       sourceDate: `${metadata.lastUpdated}-01`,
       chunkId,
