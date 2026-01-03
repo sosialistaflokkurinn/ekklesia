@@ -9,6 +9,7 @@
 
 const { query } = require('../config/config-database');
 const logger = require('../utils/util-logger');
+const boostConfig = require('../config/config-rag-boost');
 
 /**
  * Search for similar documents using cosine similarity
@@ -44,7 +45,7 @@ async function searchSimilar(embedding, options = {}) {
     if (queryText) {
       // Extract significant words (>4 chars, lowercase, remove common Icelandic words)
       // Exclude short question words that appear inside other words (e.g., 'hver' inside 'Umhverfis')
-      const commonWords = ['hvað', 'segir', 'flokkurinn', 'stefna', 'flokksins', 'afstaða', 'er', 'um', 'til', 'að', 'og', 'eða', 'með', 'móti', 'styður', 'vill', 'hver', 'fyrst', 'fyrsti'];
+      const commonWords = boostConfig.commonWords;
 
       // Normalize Icelandic accents for matching (á→a, é→e, etc.)
       const normalizeAccents = (w) => w
@@ -615,8 +616,18 @@ async function searchSimilar(embedding, options = {}) {
       }
     }
 
+    // Build source type boost CASE statement from config
+    const sourceBoostCases = Object.entries(boostConfig.sourceTypeBoosts)
+      .filter(([key]) => key !== 'default' && !key.endsWith('*'))
+      .map(([type, boost]) => `WHEN source_type = '${type}' THEN ${boost}`)
+      .join('\n            ');
+    const sourceBoostClause = `CASE
+            ${sourceBoostCases}
+            ELSE ${boostConfig.sourceTypeBoosts.default || 1.0}
+          END`;
+
     if (boostPolicySources) {
-      // Boost policy sources - party-website (stefna) is PRIMARY, kosningaprof is secondary
+      // Boost policy sources using config - stefna/kosningaaetlun are PRIMARY
       // Also boost if title matches query keywords
       sql = `
         SELECT
@@ -628,17 +639,7 @@ async function searchSimilar(embedding, options = {}) {
           content,
           citation,
           (1 - (embedding <=> $1::vector)) *
-          CASE
-            WHEN source_type = 'curated-answer' THEN 3.0
-            WHEN source_type = 'party-website' THEN 2.0
-            WHEN source_type = 'heimildin-2024' THEN 1.3
-            WHEN source_type = 'kjosturett-2024' THEN 1.3
-            WHEN source_type = 'kosningaprof-2024' THEN 1.2
-            WHEN source_type = 'vidskiptarad-2024' THEN 1.1
-            WHEN source_type = 'discourse-archive' THEN 1.0
-            WHEN source_type = 'discourse-person' THEN 0.5
-            ELSE 1.0
-          END *
+          ${sourceBoostClause} *
           ${titleBoostClause} *
           ${contentBoostClause} AS similarity
         FROM rag_documents
