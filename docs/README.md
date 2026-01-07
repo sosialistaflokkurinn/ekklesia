@@ -8,6 +8,7 @@
 | [PATTERNS.md](PATTERNS.md) | Code patterns, reusable components, best practices |
 | [PATTERNS-GCP.md](PATTERNS-GCP.md) | GCP/Firebase queries, Cloud SQL, Firestore |
 | [PATTERNS-KIMI-Felagar.md](PATTERNS-KIMI-Felagar.md) | RAG system, vector search, AI assistant |
+| [REGISTRATION-SYSTEM.md](REGISTRATION-SYSTEM.md) | Member registration flow, address handling |
 | [SECURITY.md](SECURITY.md) | Security rules, secrets management |
 
 ---

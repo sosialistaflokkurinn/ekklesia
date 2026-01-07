@@ -59,21 +59,21 @@ def verifyMembership(req: https_fn.CallableRequest) -> dict:
     """Verify membership - delegates to handler (reads from Cloud SQL)"""
     return verifyMembership_handler(req)
 
-@https_fn.on_call(timeout_sec=30, memory=256, secrets=["django-api-token"])
+@https_fn.on_call(timeout_sec=30, memory=256, secrets=["django-socialism-db-password", "django-api-token"])
 def updatememberprofile(req: https_fn.CallableRequest):
-    """Update member profile - delegates to handler"""
+    """Update member profile - delegates to handler (Cloud SQL + Django for addresses)"""
     return updatememberprofile_handler(req)
 
 # Note: cleanupauditlogs removed - /members_audit_log no longer used (Cloud SQL is source of truth)
 
-@https_fn.on_call(timeout_sec=30, memory=256, secrets=["django-api-token"])
+@https_fn.on_call(timeout_sec=30, memory=256, secrets=["django-socialism-db-password"])
 def softDeleteSelf(req: https_fn.CallableRequest) -> dict:
-    """User soft-deletes their own membership - delegates to handler"""
+    """User soft-deletes their own membership - updates Cloud SQL directly"""
     return soft_delete_self_handler(req)
 
-@https_fn.on_call(timeout_sec=30, memory=256, secrets=["django-api-token"])
+@https_fn.on_call(timeout_sec=30, memory=256, secrets=["django-socialism-db-password"])
 def reactivateSelf(req: https_fn.CallableRequest) -> dict:
-    """User reactivates their soft-deleted membership - delegates to handler"""
+    """User reactivates their soft-deleted membership - updates Cloud SQL directly"""
     return reactivate_self_handler(req)
 
 # ==============================================================================
@@ -193,7 +193,8 @@ from fn_admin_members import (
     list_members_handler,
     get_member_handler,
     get_member_stats_handler,
-    get_member_self_handler  # Self-service: member gets own data
+    get_member_self_handler,  # Self-service: member gets own data
+    soft_delete_admin_handler  # Admin: soft delete a member
 )
 
 # Define decorated functions for admin member operations
@@ -223,6 +224,15 @@ def getMember(req: https_fn.CallableRequest) -> dict:
 def getMemberStats(req: https_fn.CallableRequest) -> dict:
     """Get member statistics from Cloud SQL - requires admin"""
     return get_member_stats_handler(req)
+
+@https_fn.on_call(
+    timeout_sec=60,
+    memory=options.MemoryOption.MB_256,
+    secrets=["django-socialism-db-password"]
+)
+def softDeleteAdmin(req: https_fn.CallableRequest) -> dict:
+    """Soft delete a member by admin - updates Cloud SQL directly"""
+    return soft_delete_admin_handler(req)
 
 # ==============================================================================
 # SELF-SERVICE MEMBER FUNCTIONS (Cloud SQL source of truth)
@@ -392,6 +402,7 @@ __all__ = [
     'listMembers',
     'getMember',
     'getMemberStats',
+    'softDeleteAdmin',
     # Self-service member functions (Cloud SQL)
     'getMemberSelf',
 ]

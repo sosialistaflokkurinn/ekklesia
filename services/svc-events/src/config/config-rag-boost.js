@@ -10,19 +10,20 @@
 /**
  * Source Type Boosts
  *
- * Priority order for document sources:
- * 1. stefna - Official party policy (samþykkt á aðalfundum)
- * 2. kosningaaetlun - Election manifesto (kosningastefna)
- * 3. alyktan - Resolutions from party congress
- * 4. kosningaprof - Election quizzes (supplementary)
- * 5. discourse - Forum discussions (lowest priority)
+ * Priority order for document sources (STEFNA ALWAYS FIRST):
+ * 1. stefna - Official party policy (samþykkt á aðalfundum) - 3.5x
+ * 2. curated-answer - Manually verified answers - 2.8x
+ * 3. kosningaaetlun - Election manifesto (kosningastefna) - 2.2x
+ * 4. alyktan - Resolutions from party congress - 2.0x
+ * 5. kosningaprof - Election quizzes (supplementary) - 1.1-1.3x
+ * 6. discourse - Forum discussions (lowest priority) - 0.5-1.0x
  */
 const sourceTypeBoosts = {
-  // Curated answers - manually verified, highest priority
-  'curated-answer': 3.0,
+  // Primary policy sources - ALWAYS cite first
+  'stefna': 3.5,              // Party policy (samþykkt á aðalfundum) - HIGHEST PRIORITY
 
-  // Primary policy sources
-  'stefna': 2.5,              // Party policy (samþykkt á aðalfundum)
+  // Curated answers - manually verified, but AFTER stefna
+  'curated-answer': 2.8,
   'kosningaaetlun': 2.2,      // Election manifesto 2024
   'alyktan': 2.0,             // Resolutions from aðalfundur
 
@@ -198,6 +199,48 @@ const curatedAnswerMappings = {
   'efling-tengsl': {
     patterns: ['efling formaður', 'efling tengist'],
     chunkId: 'saga-efling-tengsl',
+    boost: 7.0,
+  },
+
+  // Constitution
+  'stjornarskra': {
+    patterns: ['stjórnarskr', 'ný stjórnarskrá', '2012 stjórnarskr', 'þjóðkjörnu stjórnarskr'],
+    chunkId: 'stefna-stjornarskra',
+    boost: 7.0,
+  },
+
+  // Drug policy
+  'fikniefni': {
+    patterns: ['fíkniefn', 'afglæpavæ', 'neysluskammt', 'vímuefn', 'kannabis'],
+    chunkId: 'stefna-fikniefni',
+    boost: 7.0,
+  },
+
+  // Immigration/refugees
+  'innflytjendur': {
+    patterns: ['innflytjend', 'flóttaman', 'flóttamenn', 'hælisleit', 'útlending', 'aðlögun innflytjenda'],
+    chunkId: 'stefna-innflytjendur',
+    boost: 7.0,
+  },
+
+  // Power plants/highland
+  'virkjanir': {
+    patterns: ['virkj', 'hálend', 'orkufyrirtæk', 'vatnsafl', 'einkavæð orku', 'náttúruvernd'],
+    chunkId: 'stefna-virkjanir',
+    boost: 7.0,
+  },
+
+  // State bank
+  'rikisbanki': {
+    patterns: ['ríkisbank', 'samfélagsbank', 'banka', 'ríkið eigi bank'],
+    chunkId: 'stefna-rikisbanki',
+    boost: 7.0,
+  },
+
+  // Road tolls
+  'vegatoll': {
+    patterns: ['vegatoll', 'veggjald', 'samgöngusáttmál', 'fjármagna vega'],
+    chunkId: 'stefna-vegatoll',
     boost: 7.0,
   },
 };

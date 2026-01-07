@@ -13,6 +13,7 @@ import { R } from '../../i18n/strings-loader.js';
 import { adminStrings } from './i18n/admin-strings-loader.js';
 import { showToast } from '../../js/components/ui-toast.js';
 import { showStatus } from '../../js/components/ui-status.js';
+import { showModal } from '../../js/components/ui-modal.js';
 import { debug } from '../../js/utils/util-debug.js';
 import { debounce } from '../../js/utils/util-debounce.js';
 import { initSearchableSelects } from '../../js/components/ui-searchable-select.js';
@@ -31,6 +32,7 @@ const auth = getFirebaseAuth();
 // Cloud Functions
 const REGION = 'europe-west2';
 const updateMemberProfileFunction = httpsCallable('updatememberprofile', REGION);
+const softDeleteAdminFunction = httpsCallable('softDeleteAdmin', REGION);
 
 // Constants
 const SEARCHABLE_SELECT_INIT_DELAY = 100; // ms to wait for DOM ready before initializing SearchableSelect
@@ -408,6 +410,9 @@ async function renderProfile() {
   // Setup field listeners for auto-save
   setupFieldListeners();
 
+  // Initialize delete button for admin
+  initDeleteButton();
+
   // Initialize SearchableSelects after DOM is ready, then set gender value
   setTimeout(() => {
     initSearchableSelects({
@@ -498,10 +503,11 @@ async function renderMembershipDetails() {
     }
   }
 
-  // Housing situation - select current value
+  // Housing situation - select current value (check multiple locations)
   const housingSelect = document.getElementById('input-housing');
-  if (housingSelect && profile.housing_situation !== undefined) {
-    housingSelect.value = profile.housing_situation;
+  const housingSituation = memberData.housing_situation ?? profile.housing_situation;
+  if (housingSelect && housingSituation !== undefined && housingSituation !== null) {
+    housingSelect.value = housingSituation;
   }
 
   debug.log('✅ Membership details rendered');
@@ -731,6 +737,159 @@ async function saveMembershipField(fieldName, value, statusElement) {
     debug.error(`❌ Error saving membership.${fieldName}:`, error);
     showStatus(statusElement, 'error', { baseClass: 'profile-field__status' });
     showToast(R.string.save_error || 'Villa við vistun', 'error');
+  }
+}
+
+/**
+ * Initialize delete button
+ * Hides the button if member is already soft-deleted
+ */
+function initDeleteButton() {
+  const deleteBtn = document.getElementById('btn-delete-member');
+  const adminActionsCard = document.getElementById('admin-actions-card');
+
+  if (!deleteBtn || !adminActionsCard) return;
+
+  // Hide admin actions if member is already deleted
+  const membership = memberData.membership || {};
+  if (memberData.deleted_at || membership.deleted_at) {
+    adminActionsCard.style.display = 'none';
+    return;
+  }
+
+  deleteBtn.addEventListener('click', () => {
+    showDeleteConfirmModal();
+  });
+}
+
+/**
+ * Show delete confirmation modal
+ * Uses the same pattern as self-service profile delete
+ */
+function showDeleteConfirmModal() {
+  const memberName = memberData.profile?.name || memberData.name || 'Óþekktur';
+  let modal = null;
+
+  const content = document.createElement('div');
+  content.innerHTML = `
+    <div class="modal__message">
+      <p><strong>Ertu viss um að þú viljir eyða ${memberName}?</strong></p>
+      <ul style="margin: 1rem 0; padding-left: 1.5rem; color: var(--color-text-muted);">
+        <li>Félaginn verður ekki lengur sýnilegur í félagaskrá</li>
+        <li>Félaginn getur ekki tekið þátt í kosningum</li>
+        <li>Hægt er að endurvirkja félagann seinna</li>
+      </ul>
+      <p style="margin-top: 1rem;"><strong>Skrifaðu "EYÐA" til að staðfesta:</strong></p>
+      <input type="text" id="confirm-delete-input" class="profile-field__input" placeholder="EYÐA" style="margin-top: 0.5rem; width: 100%;">
+    </div>
+  `;
+
+  modal = showModal({
+    title: '🗑️ Eyða félaga',
+    content,
+    size: 'md',
+    buttons: [
+      {
+        text: 'Hætta við',
+        onClick: () => modal.close()
+      },
+      {
+        text: 'Eyða félaga',
+        primary: false,
+        onClick: async () => {
+          await handleDeleteMember(modal);
+        }
+      }
+    ]
+  });
+
+  // Setup confirmation input validation
+  setTimeout(() => {
+    const confirmInput = document.getElementById('confirm-delete-input');
+    const buttons = modal.element.querySelectorAll('.modal__footer .btn');
+    const confirmBtn = buttons[buttons.length - 1];
+
+    if (confirmBtn) {
+      confirmBtn.classList.remove('btn--secondary');
+      confirmBtn.classList.add('btn--danger');
+      confirmBtn.disabled = true;
+    }
+
+    if (confirmInput) {
+      confirmInput.addEventListener('input', () => {
+        const isValid = confirmInput.value.toUpperCase() === 'EYÐA';
+        if (confirmBtn) confirmBtn.disabled = !isValid;
+      });
+      confirmInput.focus();
+    }
+  }, 100);
+}
+
+/**
+ * Handle member deletion
+ * Calls softDeleteAdmin Cloud Function
+ */
+async function handleDeleteMember(modal) {
+  const confirmInput = document.getElementById('confirm-delete-input');
+  if (!confirmInput || confirmInput.value.toUpperCase() !== 'EYÐA') {
+    showToast('Vinsamlegast sláðu inn "EYÐA" til að staðfesta', 'error');
+    return;
+  }
+
+  const djangoId = memberData.django_id || memberData.metadata?.django_id;
+  if (!djangoId) {
+    showToast('Django ID vantar - ekki hægt að eyða', 'error');
+    return;
+  }
+
+  const buttons = modal.element.querySelectorAll('.modal__footer .btn');
+  const cancelBtn = buttons[0];
+  const confirmBtn = buttons[1];
+  const originalText = confirmBtn?.textContent;
+
+  try {
+    debug.log('🗑️ Initiating admin soft delete...', { djangoId });
+
+    if (confirmBtn) {
+      confirmBtn.disabled = true;
+      confirmBtn.innerHTML = `<span class="spinner spinner--small"></span> Eyði...`;
+    }
+    if (cancelBtn) cancelBtn.disabled = true;
+    if (confirmInput) confirmInput.disabled = true;
+
+    const result = await softDeleteAdminFunction({
+      django_id: djangoId,
+      confirmation: 'EYÐA'
+    });
+
+    debug.log('✅ Soft delete successful:', result);
+
+    if (confirmBtn) {
+      confirmBtn.innerHTML = `✅ Eytt`;
+      confirmBtn.classList.remove('btn--danger');
+      confirmBtn.classList.add('btn--success');
+    }
+
+    showToast(result.data.message || 'Félaga hefur verið eytt', 'success');
+
+    // Update UI to show deleted status
+    setTimeout(() => {
+      modal.close();
+      // Reload page to show updated status
+      window.location.reload();
+    }, 1500);
+
+  } catch (error) {
+    debug.error('❌ Soft delete failed:', error);
+
+    if (confirmBtn) {
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = originalText;
+    }
+    if (cancelBtn) cancelBtn.disabled = false;
+    if (confirmInput) confirmInput.disabled = false;
+
+    showToast(error.message || 'Villa við eyðingu', 'error');
   }
 }
 

@@ -18,7 +18,8 @@ from shared.rate_limit import check_uid_rate_limit
 from db_members import (
     get_member_by_kennitala,
     get_member_by_email,
-    get_deleted_member_count
+    get_deleted_member_count,
+    get_deleted_members
 )
 import requests
 import time
@@ -1238,20 +1239,23 @@ def get_login_audit_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
 
 def get_deleted_counts_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     """
-    Get counts of soft-deleted members and votes.
+    Get counts and details of soft-deleted members and votes.
 
     Members queried from Cloud SQL (source of truth).
     Votes queried from Firestore (elections service).
 
     Returns:
-        Dict with counts of deleted members and votes.
+        Dict with:
+            - counts: { members, votes }
+            - deleted_members: List of { id, name, kennitala_masked, deleted_at }
     """
     # Verify superuser access
     require_superuser(req)
 
     try:
-        # Count members from Cloud SQL (source of truth)
-        deleted_members = get_deleted_member_count()
+        # Count and list members from Cloud SQL (source of truth)
+        deleted_member_count = get_deleted_member_count()
+        deleted_member_list = get_deleted_members(limit=50)
 
         # Count votes with deletedAt != null (if votes collection exists)
         deleted_votes = 0
@@ -1265,9 +1269,10 @@ def get_deleted_counts_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
         return {
             "success": True,
             "counts": {
-                "members": deleted_members,
+                "members": deleted_member_count,
                 "votes": deleted_votes
-            }
+            },
+            "deleted_members": deleted_member_list
         }
 
     except Exception as e:

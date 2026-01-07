@@ -16,6 +16,7 @@ from util_logging import log_json
 from shared.validators import normalize_kennitala, normalize_phone
 from shared.rate_limit import check_uid_rate_limit
 from db_members import get_member_by_kennitala
+from db import execute_update
 
 # Security: Input validation limits
 MAX_NAME_LENGTH = 100
@@ -24,10 +25,8 @@ MAX_PHONE_LENGTH = 20
 MAX_ADDRESS_FIELD_LENGTH = 200
 MAX_ADDRESSES = 5
 from django_api import (
-    update_django_member, update_django_address,
-    get_django_api_token, DJANGO_API_BASE_URL
+    update_django_member, update_django_address
 )
-import requests
 
 
 def verifyMembership_handler(req: https_fn.CallableRequest) -> dict:
@@ -474,10 +473,9 @@ def soft_delete_self_handler(req: https_fn.CallableRequest) -> dict:
     Soft delete the authenticated user's own membership.
 
     This allows a member to deactivate their own account:
-    1. Sets membership.status to 'inactive' in Firestore
-    2. Sets metadata.deleted_at timestamp
-    3. Disables Firebase Auth account
-    4. Syncs soft delete to Django backend
+    1. Disables Firebase Auth account
+    2. Sets deleted_at in Cloud SQL (source of truth)
+    3. Updates custom claims
 
     The member can later reactivate their account via reactivate_self.
 
@@ -545,38 +543,38 @@ def soft_delete_self_handler(req: https_fn.CallableRequest) -> dict:
             log_json("error", "Failed to disable Firebase Auth",
                      uid=uid,
                      error=str(auth_error))
-            # Continue anyway - Firestore is source of truth
+            # Continue anyway - Cloud SQL update is main goal
 
-        # 3. Sync to Django
+        # 3. Update Cloud SQL directly (source of truth)
         try:
-            django_token = get_django_api_token()
-            response = requests.post(
-                f"{DJANGO_API_BASE_URL}/api/sync/soft-delete/",
-                json={
-                    'kennitala': kennitala_normalized,
-                    'deleted_at': deleted_at.isoformat()
-                },
-                headers={
-                    'Authorization': f'Token {django_token}',
-                    'Content-Type': 'application/json'
-                },
-                timeout=30
+            django_id = member_data.get('id')
+            affected_rows = execute_update(
+                "UPDATE membership_comrade SET deleted_at = %s WHERE id = %s",
+                params=(deleted_at, django_id)
             )
 
-            if response.status_code == 200:
-                log_json("info", "Django soft delete sync successful",
+            if affected_rows == 0:
+                log_json("error", "Cloud SQL update affected 0 rows",
                          uid=uid,
-                         kennitala=f"{kennitala_normalized[:6]}****")
-            else:
-                log_json("warn", "Django soft delete sync failed",
-                         uid=uid,
-                         status_code=response.status_code,
-                         response=response.text[:200])
-        except Exception as django_error:
-            log_json("error", "Django sync failed for soft delete",
+                         django_id=django_id)
+                raise https_fn.HttpsError(
+                    code=https_fn.FunctionsErrorCode.INTERNAL,
+                    message="Database update failed"
+                )
+
+            log_json("info", "Cloud SQL soft delete successful",
                      uid=uid,
-                     error=str(django_error))
-            # Continue - Firestore update succeeded
+                     kennitala=f"{kennitala_normalized[:6]}****")
+        except https_fn.HttpsError:
+            raise
+        except Exception as db_error:
+            log_json("error", "Cloud SQL update failed for soft delete",
+                     uid=uid,
+                     error=str(db_error))
+            raise https_fn.HttpsError(
+                code=https_fn.FunctionsErrorCode.INTERNAL,
+                message=f"Database update failed: {str(db_error)}"
+            )
 
         # 4. Update custom claims to reflect inactive status
         try:
@@ -659,7 +657,7 @@ def reactivate_self_handler(req: https_fn.CallableRequest) -> dict:
             )
 
         # Verify member was soft-deleted (check Cloud SQL deleted_at)
-        deleted_at = member_data.get('membership', {}).get('deleted_at')
+        deleted_at = member_data.get('deleted_at')
         if not deleted_at:
             raise https_fn.HttpsError(
                 code=https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
@@ -694,34 +692,33 @@ def reactivate_self_handler(req: https_fn.CallableRequest) -> dict:
                 message="Failed to re-enable account"
             )
 
-        # Note: Firestore /members no longer exists - Cloud SQL is source of truth
-        log_json("info", "Proceeding with Django reactivation",
-                 kennitala=f"{kennitala_normalized[:6]}****")
-
-        # 3. Sync to Django
+        # 2. Update Cloud SQL directly (source of truth)
         try:
-            django_token = get_django_api_token()
-            response = requests.post(
-                f"{DJANGO_API_BASE_URL}/api/sync/reactivate/",
-                json={'kennitala': kennitala_normalized},
-                headers={
-                    'Authorization': f'Token {django_token}',
-                    'Content-Type': 'application/json'
-                },
-                timeout=30
+            django_id = member_data.get('id')
+            affected_rows = execute_update(
+                "UPDATE membership_comrade SET deleted_at = NULL WHERE id = %s",
+                params=(django_id,)
             )
 
-            if response.status_code == 200:
-                log_json("info", "Django reactivation sync successful",
-                         kennitala=f"{kennitala_normalized[:6]}****")
-            else:
-                log_json("warn", "Django reactivation sync failed",
-                         status_code=response.status_code,
-                         response=response.text[:200])
-        except Exception as django_error:
-            log_json("error", "Django sync failed for reactivation",
-                     error=str(django_error))
-            # Continue - Firestore and Auth updates succeeded
+            if affected_rows == 0:
+                log_json("error", "Cloud SQL update affected 0 rows",
+                         django_id=django_id)
+                raise https_fn.HttpsError(
+                    code=https_fn.FunctionsErrorCode.INTERNAL,
+                    message="Database update failed"
+                )
+
+            log_json("info", "Cloud SQL reactivation successful",
+                     kennitala=f"{kennitala_normalized[:6]}****")
+        except https_fn.HttpsError:
+            raise
+        except Exception as db_error:
+            log_json("error", "Cloud SQL update failed for reactivation",
+                     error=str(db_error))
+            raise https_fn.HttpsError(
+                code=https_fn.FunctionsErrorCode.INTERNAL,
+                message=f"Database update failed: {str(db_error)}"
+            )
 
         # 4. Update custom claims
         try:

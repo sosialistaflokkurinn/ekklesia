@@ -21,6 +21,7 @@ import { requireSuperuser } from '../../js/rbac.js';
 import { showToast } from '../../js/components/ui-toast.js';
 import { R } from '../../i18n/strings-loader.js';
 import { superuserStrings } from './i18n/superuser-strings-loader.js';
+import { formatDateOnlyIcelandic } from '../../js/utils/util-format.js';
 
 // State
 let currentOperation = null;
@@ -262,12 +263,61 @@ async function loadDeletedCounts() {
     const totalDeleted = counts.members + counts.votes;
     document.getElementById('purge-deleted-btn').disabled = totalDeleted === 0;
 
+    // Populate deleted members table
+    const deletedMembers = result.data.deleted_members || [];
+    populateDeletedMembersTable(deletedMembers);
+
   } catch (error) {
     debug.error('Failed to load deleted counts:', error);
     document.getElementById('deleted-members-count').textContent = '?';
     document.getElementById('deleted-votes-count').textContent = '?';
     document.getElementById('purge-deleted-btn').disabled = true;
+    document.getElementById('deleted-members-section').style.display = 'none';
   }
+}
+
+/**
+ * Populate the deleted members table
+ */
+function populateDeletedMembersTable(members) {
+  const section = document.getElementById('deleted-members-section');
+  const tbody = document.getElementById('deleted-members-tbody');
+
+  // Clear existing rows
+  tbody.textContent = '';
+
+  if (!members || members.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+
+  // Show section and populate table
+  section.style.display = 'block';
+
+  members.forEach(member => {
+    const row = document.createElement('tr');
+
+    // Name cell
+    const nameCell = document.createElement('td');
+    nameCell.textContent = member.name || '-';
+    row.appendChild(nameCell);
+
+    // Kennitala cell (masked)
+    const ktCell = document.createElement('td');
+    ktCell.textContent = member.kennitala_masked || '-';
+    row.appendChild(ktCell);
+
+    // Deleted at cell
+    const dateCell = document.createElement('td');
+    if (member.deleted_at) {
+      dateCell.textContent = formatDateOnlyIcelandic(member.deleted_at);
+    } else {
+      dateCell.textContent = '-';
+    }
+    row.appendChild(dateCell);
+
+    tbody.appendChild(row);
+  });
 }
 
 /**
