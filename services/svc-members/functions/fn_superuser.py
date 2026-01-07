@@ -17,6 +17,7 @@ from util_logging import log_json
 from shared.rate_limit import check_uid_rate_limit
 from db_members import (
     get_member_by_kennitala,
+    get_member_by_django_id,
     get_member_by_email,
     get_deleted_member_count,
     get_deleted_members
@@ -840,7 +841,7 @@ def hard_delete_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     Permanently delete a member from all systems.
 
     Required data:
-        - kennitala: The member's kennitala (SSN)
+        - member_id: The member's Cloud SQL ID
         - confirmation: Must be "EYÐA VARANLEGA"
 
     Returns:
@@ -858,13 +859,13 @@ def hard_delete_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
         )
 
     data = req.data or {}
-    kennitala = data.get("kennitala")
+    member_id = data.get("member_id")
     confirmation = data.get("confirmation")
 
-    if not kennitala or len(kennitala) != 10:
+    if not member_id:
         raise https_fn.HttpsError(
             code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
-            message="Valid 10-digit kennitala required"
+            message="member_id is required"
         )
 
     if confirmation != "EYÐA VARANLEGA":
@@ -879,13 +880,15 @@ def hard_delete_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
 
     try:
         # 1. Verify member exists in Cloud SQL (source of truth)
-        member = get_member_by_kennitala(kennitala)
+        member = get_member_by_django_id(int(member_id))
 
         if not member:
             raise https_fn.HttpsError(
                 code=https_fn.FunctionsErrorCode.NOT_FOUND,
-                message=f"Member not found: {kennitala}"
+                message=f"Member not found: {member_id}"
             )
+
+        kennitala = member.get("kennitala")
 
         # 2. Find firebase_uid by querying /users collection
         firebase_uid = None
@@ -945,7 +948,7 @@ def anonymize_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     Used for GDPR requests where deletion is not possible.
 
     Required data:
-        - kennitala: The member's kennitala (SSN)
+        - member_id: The member's Cloud SQL ID
         - confirmation: Must be "NAFNHREINSA"
 
     Returns:
@@ -963,13 +966,13 @@ def anonymize_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
         )
 
     data = req.data or {}
-    kennitala = data.get("kennitala")
+    member_id = data.get("member_id")
     confirmation = data.get("confirmation")
 
-    if not kennitala or len(kennitala) != 10:
+    if not member_id:
         raise https_fn.HttpsError(
             code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
-            message="Valid 10-digit kennitala required"
+            message="member_id is required"
         )
 
     if confirmation != "NAFNHREINSA":
@@ -982,13 +985,15 @@ def anonymize_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
 
     try:
         # 1. Verify member exists in Cloud SQL (source of truth)
-        member = get_member_by_kennitala(kennitala)
+        member = get_member_by_django_id(int(member_id))
 
         if not member:
             raise https_fn.HttpsError(
                 code=https_fn.FunctionsErrorCode.NOT_FOUND,
-                message=f"Member not found: {kennitala}"
+                message=f"Member not found: {member_id}"
             )
+
+        kennitala = member.get("kennitala")
 
         # 2. Find firebase_uid by querying /users collection
         firebase_uid = None

@@ -70,7 +70,7 @@
   <!-- Dangerous operations (HTML) -->
   <string name="dangerous_page_title">Hættulegar aðgerðir - Kerfisstjórn</string>
   <string name="dangerous_ops_title">Hættulegar aðgerðir</string>
-  <string name="dangerous_ops_warning">Aðgerðir á þessari síðu eru &lt;strong&gt;óafturkræfar&lt;/strong&gt;. Þær geta eytt gögnum varanlega eða gert það ómögulegt að endurheimta upplýsingar. Vinsamlegast farðu varlega.</string>
+  <string name="dangerous_ops_warning">Aðgerðir á þessari síðu eru ÓAFTURKRÆFAR. Þær geta eytt gögnum varanlega eða gert það ómögulegt að endurheimta upplýsingar. Vinsamlegast farðu varlega.</string>
   <string name="dangerous_delete_title">Eyða félaga varanlega</string>
   <string name="dangerous_delete_desc">Eyðir félaga algjörlega úr kerfinu. Þetta fjarlægir öll gögn úr Firestore, Firebase Auth og tengdar skrár. Ekki er hægt að afturkalla þessa aðgerð.</string>
   <string name="dangerous_delete_label">Kennitala félaga</string>
@@ -103,10 +103,10 @@
   
   <!-- Dangerous operations (JS) -->
   <string name="dangerous_delete_member_title">Eyða félaga varanlega</string>
-  <string name="dangerous_delete_member_desc">Þú ert að fara að eyða félaga með kennitölu &lt;strong&gt;%s&lt;/strong&gt; varanlega. Þessi aðgerð er óafturkræf.</string>
+  <string name="dangerous_delete_member_desc">Þú ert að fara að eyða félaga með kennitölu %s varanlega. Þessi aðgerð er óafturkræf.</string>
   <string name="dangerous_delete_member_phrase">EYÐA VARANLEGA</string>
   <string name="dangerous_anonymize_member_title">Nafnhreinsa félaga</string>
-  <string name="dangerous_anonymize_member_desc">Þú ert að fara að fjarlægja persónuupplýsingar félaga með kennitölu &lt;strong&gt;%s&lt;/strong&gt;. Tölfræðileg gögn verða varðveitt.</string>
+  <string name="dangerous_anonymize_member_desc">Þú ert að fara að fjarlægja persónuupplýsingar félaga með kennitölu %s. Tölfræðileg gögn verða varðveitt.</string>
   <string name="dangerous_anonymize_member_phrase">NAFNHREINSA</string>
   <string name="dangerous_purge_deleted_title">Hreinsa eydd gögn</string>
   <string name="dangerous_purge_deleted_desc">Þú ert að fara að eyða öllum gögnum sem eru merkt sem eydd. Þessi aðgerð er óafturkræf.</string>

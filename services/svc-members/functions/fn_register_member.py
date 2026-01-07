@@ -21,7 +21,7 @@ See docs/ADDRESS_SYSTEM.md for full documentation.
 register_member({
     # Required fields
     "name": "Jón Jónsson",
-    "ssn": "0000000000",
+    "kennitala": "0000000000",  # Also accepts "ssn" for backwards compat
     "email": "jon@example.com",
     "phone": "8881234",
     "address_type": "iceland",  # or "foreign" or "unlocated"
@@ -269,7 +269,13 @@ def register_member(req: https_fn.CallableRequest) -> dict[str, Any]:
 
         # Extract required fields
         name = (data.get('comrade-name') or data.get('name', '')).strip()
-        ssn = (data.get('comrade-ssn') or data.get('ssn', '')).strip()
+        # Accept both 'kennitala' and 'ssn' for backwards compatibility with external forms
+        kennitala_raw = (
+            data.get('comrade-kennitala') or
+            data.get('comrade-ssn') or
+            data.get('kennitala') or
+            data.get('ssn', '')
+        ).strip()
         email = (data.get('contact_info-email') or data.get('email', '')).strip()
         phone = (data.get('contact_info-phone') or data.get('phone', '')).strip()
 
@@ -279,8 +285,8 @@ def register_member(req: https_fn.CallableRequest) -> dict[str, Any]:
         if not name or len(name) < 3:
             errors['name'] = 'Nafn verður að vera að minnsta kosti 3 stafir'
 
-        if not ssn or not validate_kennitala(ssn):
-            errors['ssn'] = 'Þetta er ekki gild kennitala'
+        if not kennitala_raw or not validate_kennitala(kennitala_raw):
+            errors['kennitala'] = 'Þetta er ekki gild kennitala'
 
         if not email or not validate_email(email):
             errors['email'] = 'Þetta er ekki gilt netfang'
@@ -295,7 +301,7 @@ def register_member(req: https_fn.CallableRequest) -> dict[str, Any]:
             return {'comrade_id': None, 'error': errors}
 
         # Normalize inputs
-        normalized_kennitala = normalize_kennitala(ssn)
+        normalized_kennitala = normalize_kennitala(kennitala_raw)
         normalized_phone = normalize_phone(phone)
         birthday = parse_birthday_from_kennitala(normalized_kennitala)
 
@@ -345,7 +351,7 @@ def register_member(req: https_fn.CallableRequest) -> dict[str, Any]:
                      kennitala=f"{normalized_kennitala[:6]}****")
             return {
                 'comrade_id': None,
-                'error': {'ssn': 'Þessi kennitala er þegar skráð'}
+                'error': {'kennitala': 'Þessi kennitala er þegar skráð'}
             }
 
         # Initialize Firestore (only for audit logging)

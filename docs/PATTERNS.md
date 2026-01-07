@@ -303,6 +303,37 @@ async function init() {
 
 ---
 
+## Naming Convention: `kennitala` (not `ssn`)
+
+**Standard:** Always use `kennitala` for the Icelandic national ID number.
+
+| Context | Correct | Incorrect |
+|---------|---------|-----------|
+| Python variables | `kennitala`, `kennitala_raw` | `ssn` |
+| Dict keys | `{'kennitala': '...'}` | `{'ssn': '...'}` |
+| API parameters | `data.get('kennitala')` | `data.get('ssn')` |
+| Error keys | `errors['kennitala']` | `errors['ssn']` |
+| JavaScript | `member.kennitala` | `member.ssn` |
+
+**Exception:** The Cloud SQL database column is named `ssn` (Django legacy). SQL queries alias it:
+```sql
+SELECT c.ssn as kennitala FROM membership_comrade
+```
+
+**Why this matters:**
+A bug in December 2025 cost hours of debugging because `fn_superuser.py` used `member.get("ssn")` but `db_members.py` returned `{'kennitala': ...}`. The mismatch caused `None` values and 500 errors.
+
+**Backwards compatibility:**
+When accepting form input, support both for transition period:
+```python
+kennitala_raw = (
+    data.get('kennitala') or
+    data.get('ssn', '')
+).strip()
+```
+
+---
+
 ## JSDoc Style
 
 ```javascript

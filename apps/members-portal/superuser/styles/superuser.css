@@ -1981,3 +1981,375 @@ body.superuser {
     font-size: 0.875rem;
   }
 }
+
+/* ============================================
+   DANGEROUS OPS - TABS & LAYOUT
+   ============================================ */
+
+.dangerous-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--color-border, #e5e7eb);
+  padding-bottom: 0;
+}
+
+.dangerous-tabs__tab {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--color-text-muted, #6b7280);
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9375rem;
+  transition: all 0.2s ease;
+  position: relative;
+  bottom: -2px;
+}
+
+.dangerous-tabs__tab:hover {
+  color: var(--color-text, #1a202c);
+  background: var(--color-surface, #f9fafb);
+}
+
+.dangerous-tabs__tab--active {
+  color: var(--color-error, #ef4444);
+  border-bottom-color: var(--color-error, #ef4444);
+  font-weight: 600;
+}
+
+.dangerous-tabs__icon {
+  font-size: 1.125rem;
+}
+
+.dangerous-tabs__content {
+  display: none;
+}
+
+.dangerous-tabs__content--active {
+  display: block;
+  animation: fadeIn 0.2s ease;
+}
+
+/* Two-column layout for delete/anonymize tabs */
+.dangerous-ops__layout {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 2rem;
+  align-items: start;
+}
+
+.dangerous-ops__table-section {
+  min-width: 0;
+}
+
+.dangerous-ops__section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: var(--color-text, #1a202c);
+}
+
+.dangerous-ops__section-desc {
+  font-size: 0.875rem;
+  color: var(--color-text-muted, #6b7280);
+  margin-bottom: 1rem;
+}
+
+.dangerous-ops__stats {
+  display: flex;
+  gap: 1.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-surface, #f9fafb);
+  border-radius: var(--radius-md, 0.5rem);
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+.dangerous-ops__empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: var(--color-text-muted, #6b7280);
+  background: var(--color-surface, #f9fafb);
+  border-radius: var(--radius-md, 0.5rem);
+}
+
+.dangerous-ops__action-section {
+  position: sticky;
+  top: 1rem;
+}
+
+/* ============================================
+   DANGEROUS OPS - PREVIEW PANEL
+   ============================================ */
+
+.dangerous-ops__preview {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: rgba(239, 68, 68, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--radius-md, 0.5rem);
+}
+
+.dangerous-ops__preview-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text, #1a202c);
+  margin-bottom: 0.75rem;
+}
+
+.dangerous-ops__preview-data {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.375rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+.dangerous-ops__preview-data dt {
+  color: var(--color-text-muted, #6b7280);
+  font-weight: 500;
+}
+
+.dangerous-ops__preview-data dd {
+  color: var(--color-text, #1a202c);
+  margin: 0;
+}
+
+.dangerous-ops__preview-warning {
+  padding: 0.75rem;
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: var(--radius-sm, 0.25rem);
+  font-size: 0.8125rem;
+}
+
+.dangerous-ops__preview-warning strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--color-error, #ef4444);
+}
+
+.dangerous-ops__preview-warning ul {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: var(--color-text, #1a202c);
+}
+
+.dangerous-ops__preview-warning ul li {
+  margin-bottom: 0.25rem;
+}
+
+.dangerous-ops__preview-warning--info {
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.dangerous-ops__preview-warning--info strong {
+  color: var(--color-info, #3b82f6);
+}
+
+/* ============================================
+   DANGEROUS OPS - SELECTABLE TABLE ROWS
+   ============================================ */
+
+.data-table--selectable tbody tr {
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.data-table--selectable tbody tr:hover {
+  background: var(--color-surface-hover, #f3f4f6);
+}
+
+.data-table--selectable tbody tr.selected {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Checkbox column */
+.data-table__th--checkbox,
+.data-table__td--checkbox {
+  width: 40px;
+  text-align: center;
+  padding-left: 0.75rem;
+  padding-right: 0.25rem;
+}
+
+.data-table__checkbox {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--color-border, #d1d5db);
+  border-radius: 4px;
+  background: white;
+  transition: all 0.15s ease;
+}
+
+.data-table--selectable tbody tr:hover .data-table__checkbox {
+  border-color: var(--color-text-muted, #6b7280);
+}
+
+.data-table--selectable tbody tr.selected .data-table__checkbox {
+  background: var(--color-error, #ef4444);
+  border-color: var(--color-error, #ef4444);
+  position: relative;
+}
+
+.data-table--selectable tbody tr.selected .data-table__checkbox::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* ============================================
+   DANGEROUS OPS - CARD VARIANTS
+   ============================================ */
+
+.card--danger {
+  border: 2px solid var(--color-error, #ef4444);
+  background: rgba(239, 68, 68, 0.02);
+}
+
+.card--danger .card__title {
+  color: var(--color-error, #ef4444);
+}
+
+.card--warning {
+  border: 2px solid var(--color-warning, #f59e0b);
+  background: rgba(245, 158, 11, 0.02);
+}
+
+.card--warning .card__title {
+  color: var(--color-warning-dark, #856404);
+}
+
+/* ============================================
+   DANGEROUS OPS - PURGE STATS
+   ============================================ */
+
+.dangerous-ops__purge-stats {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.dangerous-ops__purge-stat {
+  text-align: center;
+}
+
+.dangerous-ops__purge-stat-value {
+  display: block;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--color-error, #ef4444);
+  line-height: 1;
+}
+
+.dangerous-ops__purge-stat-label {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--color-text-muted, #6b7280);
+  margin-top: 0.25rem;
+}
+
+.dangerous-ops__purge-warning {
+  padding: 1rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--radius-md, 0.5rem);
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+}
+
+.dangerous-ops__members-list {
+  margin-bottom: 1.5rem;
+}
+
+.dangerous-ops__list-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: var(--color-text, #1a202c);
+}
+
+/* ============================================
+   DANGEROUS OPS - RESPONSIVE
+   ============================================ */
+
+@media (max-width: 1024px) {
+  .dangerous-ops__layout {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .dangerous-ops__action-section {
+    position: static;
+  }
+}
+
+@media (max-width: 768px) {
+  .dangerous-tabs {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  .dangerous-tabs__tab {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  .dangerous-ops__purge-stats {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+/* ============================================
+   MODAL VISIBILITY FIX
+   The bundle.css uses .modal-overlay--show but
+   dangerous-ops.js uses .modal--open class.
+   ============================================ */
+
+.modal.modal--open {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+.modal.modal--open .modal__container {
+  transform: scale(1);
+  opacity: 1;
+  background: var(--color-bg-card, white);
+  border-radius: var(--radius-lg, 0.75rem);
+  box-shadow: var(--shadow-2xl, 0 25px 50px -12px rgba(0, 0, 0, 0.25));
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow: auto;
+}
+
+.modal.modal--open .modal__backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+}
