@@ -1,9 +1,12 @@
 /**
- * Kimi AI Chat Route
+ * Sysadmin AI Chat Route
  *
  * Provides a chat endpoint for superuser system administration assistance.
- * Uses Moonshot AI (Kimi) k2-0711-preview model.
+ * Uses Google Gemini with tool calling for GitHub repository access.
  * Includes real-time system health data for context-aware responses.
+ *
+ * NOTE: This route was originally built for Moonshot AI (Kimi) but now uses Gemini.
+ * The endpoint path /api/kimi/* is kept for backwards compatibility.
  */
 
 const express = require('express');
@@ -13,17 +16,9 @@ const logger = require('../utils/util-logger');
 const { pool, query } = require('../config/config-database');
 const authenticate = require('../middleware/middleware-auth');
 const { requireRole } = require('../middleware/middleware-roles');
+const gemini = require('../services/service-gemini');
 
 const router = express.Router();
-
-// Kimi API Configuration
-const KIMI_API_KEY = process.env.KIMI_API_KEY;
-const KIMI_API_BASE = 'https://api.moonshot.ai/v1';
-const KIMI_MODEL_DEFAULT = 'kimi-k2-0711-preview';
-const KIMI_MODELS = {
-  'kimi-k2-0711-preview': { name: 'Preview (hraður)', timeout: 90000 },
-  'kimi-k2-thinking': { name: 'Thinking (nákvæmur)', timeout: 180000 }  // Longer timeout for thinking
-};
 
 // Error handling configuration
 const RETRY_CONFIG = {
@@ -85,7 +80,7 @@ function recordSuccess() {
  * Classify error type and get user-friendly message
  */
 function classifyError(error) {
-  const status = error.response?.status;
+  const status = error.response?.status || error.status;
   const code = error.code;
 
   // Rate limiting
@@ -94,7 +89,7 @@ function classifyError(error) {
       type: 'rate_limit',
       retryable: true,
       retryAfter: parseInt(error.response?.headers?.['retry-after']) || 60,
-      message: 'Kimi API er of álagið. Reyndu aftur eftir smá stund.',
+      message: 'AI þjónustan er of álagið. Reyndu aftur eftir smá stund.',
       logLevel: 'warn'
     };
   }
@@ -104,7 +99,7 @@ function classifyError(error) {
     return {
       type: 'auth_error',
       retryable: false,
-      message: 'Villa við auðkenningu við Kimi API.',
+      message: 'Villa við auðkenningu við AI þjónustuna.',
       logLevel: 'error'
     };
   }
@@ -114,7 +109,7 @@ function classifyError(error) {
     return {
       type: 'server_error',
       retryable: true,
-      message: 'Kimi þjónustan er tímabundið óaðgengileg.',
+      message: 'AI þjónustan er tímabundið óaðgengileg.',
       logLevel: 'warn'
     };
   }
@@ -124,7 +119,7 @@ function classifyError(error) {
     return {
       type: 'timeout',
       retryable: true,
-      message: 'Kimi svaraði ekki í tíma. Reyndu aftur.',
+      message: 'AI þjónustan svaraði ekki í tíma. Reyndu aftur.',
       logLevel: 'warn'
     };
   }
@@ -134,7 +129,7 @@ function classifyError(error) {
     return {
       type: 'network_error',
       retryable: true,
-      message: 'Ekki náðist samband við Kimi. Athugaðu nettengingu.',
+      message: 'Ekki náðist samband við AI þjónustuna. Athugaðu nettengingu.',
       logLevel: 'error'
     };
   }
@@ -144,13 +139,13 @@ function classifyError(error) {
     return {
       type: 'bad_request',
       retryable: false,
-      message: 'Ógild beiðni send til Kimi.',
+      message: 'Ógild beiðni send til AI þjónustunnar.',
       logLevel: 'error'
     };
   }
 
   // Context length exceeded
-  if (error.response?.data?.error?.code === 'context_length_exceeded') {
+  if (error.message?.includes('context') || error.message?.includes('token')) {
     return {
       type: 'context_exceeded',
       retryable: false,
@@ -163,7 +158,7 @@ function classifyError(error) {
   return {
     type: 'unknown',
     retryable: false,
-    message: 'Óvænt villa kom upp við samskipti við Kimi.',
+    message: 'Óvænt villa kom upp við samskipti við AI þjónustuna.',
     logLevel: 'error'
   };
 }
@@ -286,55 +281,45 @@ async function listGitHubDirectory(path = '') {
   }
 }
 
-// Tool definitions for Kimi
-const KIMI_TOOLS = [
+// Tool definitions for Gemini (simplified format)
+const SYSADMIN_TOOLS = [
   {
-    type: 'function',
-    function: {
-      name: 'read_file',
-      description: 'Lesa skrá úr Ekklesia GitHub repo-inu. Notaðu þetta til að skoða kóða, stillingar eða skjölun.',
-      parameters: {
-        type: 'object',
-        properties: {
-          path: {
-            type: 'string',
-            description: 'Slóð á skrá í repo-inu, t.d. "apps/members-portal/superuser/js/kimi-chat.js" eða "services/svc-events/src/routes/route-kimi-chat.js"'
-          }
-        },
-        required: ['path']
-      }
+    name: 'read_file',
+    description: 'Lesa skrá úr Ekklesia GitHub repo-inu. Notaðu þetta til að skoða kóða, stillingar eða skjölun.',
+    parameters: {
+      type: 'object',
+      properties: {
+        path: {
+          type: 'string',
+          description: 'Slóð á skrá í repo-inu, t.d. "apps/members-portal/superuser/js/kimi-chat.js" eða "services/svc-events/src/routes/route-kimi-chat.js"'
+        }
+      },
+      required: ['path']
     }
   },
   {
-    type: 'function',
-    function: {
-      name: 'list_directory',
-      description: 'Sýna innihald möppu í Ekklesia GitHub repo-inu. Notaðu þetta til að kanna strúktúr kóðagrunnsins.',
-      parameters: {
-        type: 'object',
-        properties: {
-          path: {
-            type: 'string',
-            description: 'Slóð á möppu í repo-inu, t.d. "apps/members-portal/js" eða "services/svc-events/src". Tómt fyrir rót.'
-          }
-        },
-        required: []
-      }
+    name: 'list_directory',
+    description: 'Sýna innihald möppu í Ekklesia GitHub repo-inu. Notaðu þetta til að kanna strúktúr kóðagrunnsins.',
+    parameters: {
+      type: 'object',
+      properties: {
+        path: {
+          type: 'string',
+          description: 'Slóð á möppu í repo-inu, t.d. "apps/members-portal/js" eða "services/svc-events/src". Tómt fyrir rót.'
+        }
+      },
+      required: []
     }
   }
 ];
 
 /**
- * Execute a tool call from Kimi
+ * Execute a tool call from Gemini
+ * @param {object} toolCall - { name, arguments }
+ * @returns {Promise<string>} - Tool result
  */
 async function executeToolCall(toolCall) {
-  const { name, arguments: argsStr } = toolCall.function;
-  let args;
-  try {
-    args = JSON.parse(argsStr);
-  } catch {
-    return `Villa: Ógild færibreytur fyrir ${name}`;
-  }
+  const { name, arguments: args } = toolCall;
 
   switch (name) {
     case 'read_file':
@@ -347,7 +332,7 @@ async function executeToolCall(toolCall) {
 }
 
 // Base system prompt
-const BASE_SYSTEM_PROMPT = `Þú ert Kimi, kerfisstjórnunaraðstoðarmaður og sérfræðingur í Ekklesia kóðagrunni.
+const BASE_SYSTEM_PROMPT = `Þú ert kerfisstjórnunaraðstoðarmaður og sérfræðingur í Ekklesia kóðagrunni.
 
 ## TÓLANOTKUNARREGLUR - MJÖG MIKILVÆGT!
 
@@ -648,9 +633,11 @@ async function getSystemHealthContext() {
 
 /**
  * POST /api/kimi/chat
- * Send a message to Kimi and get a response
+ * Send a message to the sysadmin AI assistant and get a response
  * Supports tool calling for GitHub repository access
  * Requires superuser role
+ *
+ * NOTE: Uses Gemini but keeps /api/kimi/* path for backwards compatibility
  */
 router.post('/chat', authenticate, requireRole('superuser'), async (req, res) => {
   try {
@@ -663,28 +650,23 @@ router.post('/chat', authenticate, requireRole('superuser'), async (req, res) =>
       });
     }
 
-    // Validate and select model (default to preview)
-    const selectedModel = requestedModel && KIMI_MODELS[requestedModel]
-      ? requestedModel
-      : KIMI_MODEL_DEFAULT;
-    const modelConfig = KIMI_MODELS[selectedModel];
-
-    if (!KIMI_API_KEY) {
+    // Check if Gemini is available
+    if (!gemini.isAvailable()) {
       return res.status(503).json({
         error: 'Service Unavailable',
-        message: 'Kimi API er ekki stillt'
+        message: 'AI þjónusta er ekki stillt'
       });
     }
 
     // Check circuit breaker
     if (checkCircuitBreaker()) {
-      logger.warn('Kimi request rejected by circuit breaker', {
-        operation: 'kimi_circuit_breaker',
+      logger.warn('Sysadmin chat request rejected by circuit breaker', {
+        operation: 'sysadmin_circuit_breaker',
         userId: req.user?.uid
       });
       return res.status(503).json({
         error: 'Service Temporarily Unavailable',
-        message: 'Kimi er tímabundið óaðgengilegur vegna endurtekinna villna. Reyndu aftur eftir mínútu.',
+        message: 'AI þjónustan er tímabundið óaðgengileg vegna endurtekinna villna. Reyndu aftur eftir mínútu.',
         retryAfter: Math.ceil((circuitBreaker.resetTimeMs - (Date.now() - circuitBreaker.lastFailure)) / 1000)
       });
     }
@@ -693,180 +675,62 @@ router.post('/chat', authenticate, requireRole('superuser'), async (req, res) =>
     const healthContext = await getSystemHealthContext();
     const systemPromptWithHealth = BASE_SYSTEM_PROMPT + healthContext;
 
-    // Build messages array with history
-    const messages = [
-      { role: 'system', content: systemPromptWithHealth },
-      ...history.slice(-10).map(h => ({
-        role: h.role,
-        content: h.content
-      })),
-      { role: 'user', content: message }
-    ];
-
-    logger.info('Kimi chat request', {
-      operation: 'kimi_chat',
+    logger.info('Sysadmin chat request', {
+      operation: 'sysadmin_chat',
       userId: req.user?.uid,
       messageLength: message.length,
       historyLength: history.length,
-      model: selectedModel
+      model: requestedModel
     });
 
-    // Maximum tool call iterations to prevent infinite loops
-    const MAX_TOOL_ITERATIONS = 5;
-    let iterations = 0;
-    let finalReply = null;
+    try {
+      // Call Gemini with tool support
+      const result = await gemini.generateChatWithTools({
+        systemPrompt: systemPromptWithHealth,
+        message,
+        history: history.slice(-10),
+        model: requestedModel,
+        tools: SYSADMIN_TOOLS,
+        executeToolCall,
+        maxIterations: 5,
+      });
 
-    /**
-     * Make API call with retry logic
-     */
-    async function callKimiWithRetry(requestMessages) {
-      let lastError = null;
+      // Success - reset circuit breaker
+      recordSuccess();
 
-      for (let attempt = 0; attempt <= RETRY_CONFIG.maxRetries; attempt++) {
-        try {
-          const response = await axios.post(
-            `${KIMI_API_BASE}/chat/completions`,
-            {
-              model: selectedModel,
-              messages: requestMessages,
-              tools: KIMI_TOOLS,
-              tool_choice: 'auto',
-              temperature: 0.7,
-              max_tokens: 4000
-            },
-            {
-              headers: {
-                'Authorization': `Bearer ${KIMI_API_KEY}`,
-                'Content-Type': 'application/json'
-              },
-              timeout: modelConfig.timeout
-            }
-          );
+      logger.info('Sysadmin chat response', {
+        operation: 'sysadmin_chat_response',
+        userId: req.user?.uid,
+        replyLength: result.reply.length,
+        toolIterations: result.toolIterations,
+        model: result.model
+      });
 
-          // Success - reset circuit breaker
-          recordSuccess();
-          return response;
+      res.json({
+        reply: result.reply,
+        model: result.model,
+        modelName: result.modelName
+      });
 
-        } catch (error) {
-          lastError = error;
-          const errorInfo = classifyError(error);
-
-          logger[errorInfo.logLevel]('Kimi API call failed', {
-            operation: 'kimi_api_error',
-            attempt: attempt + 1,
-            maxRetries: RETRY_CONFIG.maxRetries,
-            errorType: errorInfo.type,
-            retryable: errorInfo.retryable,
-            status: error.response?.status,
-            error: error.message
-          });
-
-          // Don't retry if not retryable
-          if (!errorInfo.retryable) {
-            recordFailure(error);
-            throw error;
-          }
-
-          // Don't retry if this was the last attempt
-          if (attempt >= RETRY_CONFIG.maxRetries) {
-            recordFailure(error);
-            throw error;
-          }
-
-          // Calculate delay (use retryAfter for rate limits)
-          const delay = errorInfo.type === 'rate_limit'
-            ? errorInfo.retryAfter * 1000
-            : getRetryDelay(attempt);
-
-          logger.info('Retrying Kimi API call', {
-            operation: 'kimi_retry',
-            attempt: attempt + 1,
-            delayMs: delay,
-            errorType: errorInfo.type
-          });
-
-          await sleep(delay);
-        }
-      }
-
-      throw lastError;
+    } catch (apiError) {
+      // Record failure for circuit breaker
+      recordFailure(apiError);
+      throw apiError;
     }
-
-    while (iterations < MAX_TOOL_ITERATIONS) {
-      iterations++;
-
-      const response = await callKimiWithRetry(messages);
-
-      const choice = response.data?.choices?.[0];
-      const assistantMessage = choice?.message;
-
-      if (!assistantMessage) {
-        throw new Error('Empty response from Kimi');
-      }
-
-      // Check if Kimi wants to call tools
-      if (assistantMessage.tool_calls && assistantMessage.tool_calls.length > 0) {
-        // Add assistant message with tool calls to conversation
-        messages.push(assistantMessage);
-
-        // Execute each tool call
-        for (const toolCall of assistantMessage.tool_calls) {
-          logger.info('Kimi tool call', {
-            operation: 'kimi_tool_call',
-            tool: toolCall.function.name,
-            args: toolCall.function.arguments
-          });
-
-          const toolResult = await executeToolCall(toolCall);
-
-          // Add tool result to conversation
-          messages.push({
-            role: 'tool',
-            tool_call_id: toolCall.id,
-            content: toolResult
-          });
-        }
-
-        // Continue loop to get Kimi's response after tool execution
-        continue;
-      }
-
-      // No tool calls - we have the final response
-      finalReply = assistantMessage.content;
-      break;
-    }
-
-    if (!finalReply) {
-      throw new Error('No final response from Kimi after tool calls');
-    }
-
-    logger.info('Kimi chat response', {
-      operation: 'kimi_chat_response',
-      userId: req.user?.uid,
-      replyLength: finalReply.length,
-      toolIterations: iterations
-    });
-
-    res.json({
-      reply: finalReply,
-      model: selectedModel,
-      modelName: modelConfig.name
-    });
 
   } catch (error) {
     const errorInfo = classifyError(error);
 
-    logger[errorInfo.logLevel]('Kimi chat error', {
-      operation: 'kimi_chat_error',
+    logger[errorInfo.logLevel]('Sysadmin chat error', {
+      operation: 'sysadmin_chat_error',
       errorType: errorInfo.type,
       error: error.message,
-      status: error.response?.status,
-      response: error.response?.data
+      status: error.response?.status || error.status
     });
 
     // Return appropriate status code based on error type
     let statusCode = 500;
-    if (errorInfo.type === 'rate_limit') statusCode = 429;
+    if (errorInfo.type === 'rate_limit' || error.status === 429) statusCode = 429;
     else if (errorInfo.type === 'auth_error') statusCode = 503;
     else if (errorInfo.type === 'bad_request') statusCode = 400;
     else if (errorInfo.type === 'context_exceeded') statusCode = 413;
@@ -888,20 +752,15 @@ router.post('/chat', authenticate, requireRole('superuser'), async (req, res) =>
 
 /**
  * GET /api/kimi/models
- * Get available Kimi models
+ * Get available AI models
  * Public endpoint (for UI)
  */
 router.get('/models', (req, res) => {
-  const models = Object.entries(KIMI_MODELS).map(([id, config]) => ({
-    id,
-    name: config.name,
-    timeout: config.timeout,
-    isDefault: id === KIMI_MODEL_DEFAULT
-  }));
+  const models = gemini.getAvailableModels();
 
   res.json({
     models,
-    default: KIMI_MODEL_DEFAULT
+    default: gemini.DEFAULT_MODEL
   });
 });
 
