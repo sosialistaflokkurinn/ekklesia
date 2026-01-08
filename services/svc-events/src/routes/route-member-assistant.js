@@ -762,8 +762,9 @@ router.post('/chat', authenticate, async (req, res) => {
  * POST /api/member-assistant/debug/chat
  * Debug endpoint for testing RAG without Firebase auth
  * Requires X-Debug-Key header (for authorized testing only)
+ * Set RAG_DEBUG_KEY env var to enable (no default for security)
  */
-const DEBUG_KEY = process.env.RAG_DEBUG_KEY || 'rag-test-2025-secret';
+const DEBUG_KEY = process.env.RAG_DEBUG_KEY;
 
 router.post('/debug/chat', async (req, res) => {
   // Verify debug key

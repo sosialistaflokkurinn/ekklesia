@@ -68,7 +68,7 @@ firebase serve --only hosting --port 5000
 ### Database Access
 ```bash
 # Start Cloud SQL proxy (ALWAYS use --gcloud-auth)
-cloud-sql-proxy ekklesia-prod-10-2025:europe-west2:ekklesia-db --port 5433 --gcloud-auth
+cloud-sql-proxy ekklesia-prod-10-2025:europe-west1:ekklesia-db-eu1 --port 5433 --gcloud-auth
 
 # Connect to PostgreSQL
 PGPASSWORD='Socialism2025#Db' psql -h localhost -p 5433 -U socialism -d socialism

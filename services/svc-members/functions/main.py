@@ -7,7 +7,7 @@ Firebase Functions discovers functions by scanning this file.
 
 import firebase_admin
 from firebase_admin import initialize_app
-from firebase_functions import options
+from firebase_functions import options, pubsub_fn
 
 # Initialize Firebase Admin SDK
 if not firebase_admin._apps:
@@ -337,6 +337,17 @@ def updateEmailPreferences(req: https_fn.CallableRequest) -> dict:
 # Note: ses_webhook removed - now using Resend, not AWS SES
 
 # ==============================================================================
+# SECRET ROTATION (Pub/Sub triggered)
+# ==============================================================================
+
+from fn_rotate_secret import rotate_secret_handler
+
+@pubsub_fn.on_message_published(topic="secret-rotation")
+def rotate_secret(event: pubsub_fn.CloudEvent[pubsub_fn.MessagePublishedData]) -> None:
+    """Rotate internal secrets when triggered by Secret Manager"""
+    return rotate_secret_handler(event)
+
+# ==============================================================================
 # EXPORTS
 # ==============================================================================
 
@@ -405,4 +416,6 @@ __all__ = [
     'softDeleteAdmin',
     # Self-service member functions (Cloud SQL)
     'getMemberSelf',
+    # Secret rotation (Pub/Sub triggered)
+    'rotate_secret',
 ]

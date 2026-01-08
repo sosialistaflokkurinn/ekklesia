@@ -50,8 +50,18 @@ SENDGRID_SENDER = os.environ.get('SENDGRID_SENDER_EMAIL', 'xj@xj.is')
 # Base URL for unsubscribe links
 BASE_URL = os.environ.get('BASE_URL', 'https://felagar.sosialistaflokkurinn.is')
 
-# Secret for signing unsubscribe tokens (use a dedicated secret in production)
-UNSUBSCRIBE_SECRET = os.environ.get('unsubscribe-secret', 'ekklesia-unsubscribe-default-secret')
+# Secret for signing unsubscribe tokens (required - no fallback for security)
+# Loaded lazily to allow module import during deployment analysis
+_UNSUBSCRIBE_SECRET = None
+
+def _get_unsubscribe_secret() -> str:
+    """Get unsubscribe secret, raising error if not configured."""
+    global _UNSUBSCRIBE_SECRET
+    if _UNSUBSCRIBE_SECRET is None:
+        _UNSUBSCRIBE_SECRET = os.environ.get('unsubscribe-secret')
+        if not _UNSUBSCRIBE_SECRET:
+            raise ValueError("unsubscribe-secret environment variable is required for token security")
+    return _UNSUBSCRIBE_SECRET
 
 
 def generate_unsubscribe_token(member_id: str) -> str:
@@ -62,9 +72,10 @@ def generate_unsubscribe_token(member_id: str) -> str:
     Args:
         member_id: Django ID of the member (all synced members have this)
     """
+    secret = _get_unsubscribe_secret()
     message = f"unsubscribe:{member_id}".encode('utf-8')
     signature = hmac.new(
-        UNSUBSCRIBE_SECRET.encode('utf-8'),
+        secret.encode('utf-8'),
         message,
         hashlib.sha256
     ).digest()

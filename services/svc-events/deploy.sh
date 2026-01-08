@@ -35,9 +35,14 @@ echo -e "\n${YELLOW}Setting GCP project to ${PROJECT_ID}...${NC}"
 gcloud config set project ${PROJECT_ID}
 
 # Admin configuration (for developer reset endpoint)
-# Firebase UID for Jón Jónsson (jon.jonsson@example.com)
+# Set ALLOWED_RESET_UIDS in environment before running this script
 ADMIN_RESET_ENABLED="true"
-ALLOWED_RESET_UIDS="abc123XYZ789ExampleUserUID456"  # Comma-separated UIDs for multiple developers
+if [ -z "${ALLOWED_RESET_UIDS}" ]; then
+  echo -e "${RED}ERROR: ALLOWED_RESET_UIDS environment variable is required${NC}"
+  echo "Set it to a comma-separated list of Firebase UIDs for developers"
+  echo "Example: export ALLOWED_RESET_UIDS='uid1,uid2'"
+  exit 1
+fi
 
 # Build and push image to Container Registry
 echo -e "\n${YELLOW}Building and pushing Docker image...${NC}"

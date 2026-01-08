@@ -2,6 +2,13 @@
 
 Tests rate limiting, input validation, and authentication security measures.
 Run with: pytest test_security.py -v
+
+TODO: Additional test coverage needed (see health check 2025-01)
+- fn_register_member.py: registration flow, kennitala validation, rate limiting
+- fn_admin_members.py: admin operations, RBAC checks
+- fn_email.py: email sending, unsubscribe token generation/verification
+- db.py: database connection handling, error cases
+- shared/validators.py: phone/kennitala normalization edge cases
 """
 
 from datetime import datetime, timezone

@@ -16,11 +16,13 @@ const crypto = require('crypto');
 
 /**
  * Admin IPs exempt from rate limiting
- * Used for development and testing
+ * Configure via EXEMPT_IPS env var as comma-separated list
+ * e.g., EXEMPT_IPS="46.182.187.140,192.168.1.1"
  */
-const EXEMPT_IPS = [
-  '46.182.187.140',  // gudrodur dev
-];
+const EXEMPT_IPS = (process.env.EXEMPT_IPS || '')
+  .split(',')
+  .map(ip => ip.trim())
+  .filter(Boolean);
 
 /**
  * Check if request should skip rate limiting
