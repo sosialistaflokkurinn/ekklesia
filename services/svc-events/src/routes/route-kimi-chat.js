@@ -17,6 +17,7 @@ const { pool, query } = require('../config/config-database');
 const authenticate = require('../middleware/middleware-auth');
 const { requireRole } = require('../middleware/middleware-roles');
 const gemini = require('../services/service-gemini');
+const admin = require('../config/config-firebase');
 
 const router = express.Router();
 
@@ -281,6 +282,217 @@ async function listGitHubDirectory(path = '') {
   }
 }
 
+// =============================================================================
+// GCP TOOLS - Database, Firestore, Service Health
+// =============================================================================
+
+/**
+ * Execute a read-only SQL query on Cloud SQL
+ * Security: Only SELECT statements allowed, results limited
+ */
+async function queryDatabase(sqlQuery, params = []) {
+  try {
+    // Security: Only allow SELECT statements
+    const normalizedQuery = sqlQuery.trim().toUpperCase();
+    if (!normalizedQuery.startsWith('SELECT')) {
+      return 'Villa: Aðeins SELECT fyrirspurnir eru leyfðar.';
+    }
+
+    // Security: Block dangerous keywords
+    const dangerousKeywords = ['INSERT', 'UPDATE', 'DELETE', 'DROP', 'TRUNCATE', 'ALTER', 'CREATE', 'GRANT', 'REVOKE'];
+    for (const keyword of dangerousKeywords) {
+      if (normalizedQuery.includes(keyword)) {
+        return `Villa: ${keyword} er ekki leyft.`;
+      }
+    }
+
+    // Add LIMIT if not present to prevent huge result sets
+    let safeQuery = sqlQuery.trim();
+    if (!normalizedQuery.includes('LIMIT')) {
+      safeQuery = safeQuery.replace(/;?\s*$/, '') + ' LIMIT 100';
+    }
+
+    const result = await query(safeQuery, params);
+
+    if (result.rows.length === 0) {
+      return 'Engar niðurstöður fundust.';
+    }
+
+    // Format results as readable text
+    const columns = Object.keys(result.rows[0]);
+    let output = `Niðurstöður (${result.rows.length} raðir):\n\n`;
+
+    // Header
+    output += columns.join(' | ') + '\n';
+    output += columns.map(() => '---').join(' | ') + '\n';
+
+    // Rows (limit to 50 for readability)
+    const displayRows = result.rows.slice(0, 50);
+    for (const row of displayRows) {
+      output += columns.map(col => {
+        const val = row[col];
+        if (val === null) return 'NULL';
+        if (val instanceof Date) return val.toISOString().split('T')[0];
+        return String(val).substring(0, 50);
+      }).join(' | ') + '\n';
+    }
+
+    if (result.rows.length > 50) {
+      output += `\n... og ${result.rows.length - 50} raðir í viðbót`;
+    }
+
+    return output;
+  } catch (error) {
+    return `Villa við SQL fyrirspurn: ${error.message}`;
+  }
+}
+
+/**
+ * Get user activity from Firestore
+ */
+async function getUserActivity(uid, email) {
+  try {
+    const db = admin.firestore();
+    let userDoc = null;
+
+    if (uid) {
+      // Direct lookup by UID
+      const doc = await db.collection('users').doc(uid).get();
+      if (doc.exists) {
+        userDoc = { id: doc.id, ...doc.data() };
+      }
+    } else if (email) {
+      // Search by email
+      const snapshot = await db.collection('users')
+        .where('email', '==', email)
+        .limit(1)
+        .get();
+      if (!snapshot.empty) {
+        const doc = snapshot.docs[0];
+        userDoc = { id: doc.id, ...doc.data() };
+      }
+    }
+
+    if (!userDoc) {
+      return `Notandi fannst ekki${uid ? ` (uid: ${uid})` : ''}${email ? ` (email: ${email})` : ''}.`;
+    }
+
+    // Format user info
+    const lines = [`## Notandi: ${userDoc.displayName || userDoc.email || userDoc.id}`];
+    lines.push('');
+    lines.push(`- **UID:** ${userDoc.id}`);
+    if (userDoc.email) lines.push(`- **Email:** ${userDoc.email}`);
+    if (userDoc.role) lines.push(`- **Hlutverk:** ${userDoc.role}`);
+    if (userDoc.loginCount) lines.push(`- **Innskráningar:** ${userDoc.loginCount}`);
+
+    if (userDoc.lastLoginAt) {
+      const lastLogin = userDoc.lastLoginAt.toDate ? userDoc.lastLoginAt.toDate() : new Date(userDoc.lastLoginAt);
+      lines.push(`- **Síðasta innskráning:** ${lastLogin.toLocaleString('is-IS')}`);
+    }
+
+    if (userDoc.createdAt) {
+      const created = userDoc.createdAt.toDate ? userDoc.createdAt.toDate() : new Date(userDoc.createdAt);
+      lines.push(`- **Stofnaður:** ${created.toLocaleString('is-IS')}`);
+    }
+
+    return lines.join('\n');
+  } catch (error) {
+    return `Villa við að sækja notandaupplýsingar: ${error.message}`;
+  }
+}
+
+/**
+ * Get recent logins from Firestore
+ */
+async function getRecentLogins(limit = 20, hours = 24) {
+  try {
+    const db = admin.firestore();
+    const cutoffTime = new Date(Date.now() - hours * 60 * 60 * 1000);
+
+    const snapshot = await db.collection('users')
+      .where('lastLoginAt', '>=', cutoffTime)
+      .orderBy('lastLoginAt', 'desc')
+      .limit(limit)
+      .get();
+
+    if (snapshot.empty) {
+      return `Engar innskráningar síðustu ${hours} klukkustundir.`;
+    }
+
+    const lines = [`## Nýlegar innskráningar (síðustu ${hours} klst)`];
+    lines.push('');
+    lines.push('| Notandi | Hlutverk | Innskráning |');
+    lines.push('|---------|----------|-------------|');
+
+    snapshot.docs.forEach(doc => {
+      const data = doc.data();
+      const name = data.displayName || data.email || doc.id.substring(0, 8);
+      const role = data.role || 'member';
+      const lastLogin = data.lastLoginAt?.toDate ? data.lastLoginAt.toDate() : new Date(data.lastLoginAt);
+      const timeStr = lastLogin.toLocaleString('is-IS', { dateStyle: 'short', timeStyle: 'short' });
+      lines.push(`| ${name} | ${role} | ${timeStr} |`);
+    });
+
+    return lines.join('\n');
+  } catch (error) {
+    return `Villa við að sækja innskráningar: ${error.message}`;
+  }
+}
+
+/**
+ * Get health status from all services
+ */
+async function getServiceHealth() {
+  const services = [
+    { name: 'svc-events', url: 'https://events-service-521240388393.europe-west1.run.app/health' },
+    { name: 'svc-elections', url: 'https://elections-service-521240388393.europe-west1.run.app/health' },
+    { name: 'svc-members', url: 'https://europe-west2-ekklesia-prod-10-2025.cloudfunctions.net/membersHealthProbe' },
+    { name: 'Django', url: 'https://starf.sosialistaflokkurinn.is/health/' },
+  ];
+
+  const results = await Promise.all(services.map(async (svc) => {
+    try {
+      const start = Date.now();
+      const response = await axios.get(svc.url, { timeout: 10000 });
+      const latency = Date.now() - start;
+      return {
+        name: svc.name,
+        status: '✅',
+        latency: `${latency}ms`,
+        details: response.data?.status || 'healthy'
+      };
+    } catch (error) {
+      return {
+        name: svc.name,
+        status: '❌',
+        latency: '-',
+        details: error.message.substring(0, 30)
+      };
+    }
+  }));
+
+  // Add database check
+  try {
+    const start = Date.now();
+    await query('SELECT 1');
+    const latency = Date.now() - start;
+    results.push({ name: 'Cloud SQL', status: '✅', latency: `${latency}ms`, details: 'connected' });
+  } catch (error) {
+    results.push({ name: 'Cloud SQL', status: '❌', latency: '-', details: error.message.substring(0, 30) });
+  }
+
+  const lines = ['## Heilsa þjónusta'];
+  lines.push('');
+  lines.push('| Þjónusta | Staða | Latency | Athugasemd |');
+  lines.push('|----------|-------|---------|------------|');
+
+  results.forEach(r => {
+    lines.push(`| ${r.name} | ${r.status} | ${r.latency} | ${r.details} |`);
+  });
+
+  return lines.join('\n');
+}
+
 // Tool definitions for Gemini (simplified format)
 const SYSADMIN_TOOLS = [
   {
@@ -310,6 +522,65 @@ const SYSADMIN_TOOLS = [
       },
       required: []
     }
+  },
+  {
+    name: 'query_database',
+    description: 'Keyra read-only SQL fyrirspurn á Cloud SQL gagnagrunninn (PostgreSQL). Aðeins SELECT er leyft.',
+    parameters: {
+      type: 'object',
+      properties: {
+        query: {
+          type: 'string',
+          description: 'SQL SELECT fyrirspurn, t.d. "SELECT COUNT(*) FROM membership_member WHERE is_paying = true"'
+        }
+      },
+      required: ['query']
+    }
+  },
+  {
+    name: 'get_user_activity',
+    description: 'Sækja upplýsingar um notanda - innskráningar, hlutverk, síðasta heimsókn. Leita eftir uid eða email.',
+    parameters: {
+      type: 'object',
+      properties: {
+        uid: {
+          type: 'string',
+          description: 'Firebase UID notanda'
+        },
+        email: {
+          type: 'string',
+          description: 'Email notanda'
+        }
+      },
+      required: []
+    }
+  },
+  {
+    name: 'get_recent_logins',
+    description: 'Sýna nýlegar innskráningar í kerfið.',
+    parameters: {
+      type: 'object',
+      properties: {
+        limit: {
+          type: 'number',
+          description: 'Hámarksfjöldi (default 20)'
+        },
+        hours: {
+          type: 'number',
+          description: 'Síðustu X klukkustundir (default 24)'
+        }
+      },
+      required: []
+    }
+  },
+  {
+    name: 'get_service_health',
+    description: 'Athuga heilsu allra þjónusta (svc-events, svc-elections, svc-members, Django, Cloud SQL).',
+    parameters: {
+      type: 'object',
+      properties: {},
+      required: []
+    }
   }
 ];
 
@@ -326,6 +597,14 @@ async function executeToolCall(toolCall) {
       return await readGitHubFile(args.path);
     case 'list_directory':
       return await listGitHubDirectory(args.path || '');
+    case 'query_database':
+      return await queryDatabase(args.query);
+    case 'get_user_activity':
+      return await getUserActivity(args.uid, args.email);
+    case 'get_recent_logins':
+      return await getRecentLogins(args.limit || 20, args.hours || 24);
+    case 'get_service_health':
+      return await getServiceHealth();
     default:
       return `Villa: Óþekkt tól '${name}'`;
   }
@@ -355,9 +634,22 @@ const BASE_SYSTEM_PROMPT = `Þú ert kerfisstjórnunaraðstoðarmaður og sérfr
 ## GitHub Repository
 Ekklesia kóðinn er opinn á: https://github.com/sosialistaflokkurinn/ekklesia
 
-Tól:
-- \`read_file\`: Lesa skrá (path t.d. "services/svc-events/src/index.js")
+## Tól sem þú hefur aðgang að
+
+### GitHub Repository
+- \`read_file\`: Lesa skrá úr repo (path t.d. "services/svc-events/src/index.js")
 - \`list_directory\`: Sjá innihald möppu (path t.d. "services/svc-events/src" eða "" fyrir rót)
+
+### Gagnagrunnur og kerfisupplýsingar
+- \`query_database\`: Keyra read-only SQL á Cloud SQL (aðeins SELECT leyft)
+  - Dæmi: "SELECT COUNT(*) FROM membership_member WHERE is_paying = true"
+  - Dæmi: "SELECT name, email FROM membership_member LIMIT 10"
+- \`get_user_activity\`: Sækja upplýsingar um notanda úr Firestore (uid eða email)
+  - Sýnir: innskráningar, hlutverk, síðasta heimsókn
+- \`get_recent_logins\`: Sýna nýlegar innskráningar í kerfið
+  - Getur takmarkað við X klst og Y fjölda
+- \`get_service_health\`: Athuga heilsu allra þjónusta
+  - Athugar: svc-events, svc-elections, svc-members, Django, Cloud SQL
 
 ## Kerfisarkitektúr
 \`\`\`
