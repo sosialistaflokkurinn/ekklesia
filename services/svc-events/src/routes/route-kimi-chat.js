@@ -440,6 +440,62 @@ async function getRecentLogins(limit = 20, hours = 24) {
 }
 
 /**
+ * List users by role from Firebase Auth custom claims
+ */
+async function listUsersByRole(role, limit = 50) {
+  try {
+    const users = [];
+    let nextPageToken;
+
+    // Iterate through all users (Firebase Auth doesn't support filtering by claims)
+    do {
+      const listResult = await admin.auth().listUsers(1000, nextPageToken);
+
+      for (const userRecord of listResult.users) {
+        const claims = userRecord.customClaims || {};
+        const roles = claims.roles || [];
+
+        // Check if user has the requested role
+        if (roles.includes(role)) {
+          users.push({
+            uid: userRecord.uid,
+            email: userRecord.email || '-',
+            displayName: userRecord.displayName || '-',
+            lastSignIn: userRecord.metadata.lastSignInTime
+          });
+
+          if (users.length >= limit) break;
+        }
+      }
+
+      nextPageToken = listResult.pageToken;
+    } while (nextPageToken && users.length < limit);
+
+    if (users.length === 0) {
+      return `Engir notendur með hlutverk '${role}'.`;
+    }
+
+    const lines = [`## Notendur með hlutverk: ${role}`];
+    lines.push('');
+    lines.push(`Fjöldi: ${users.length}`);
+    lines.push('');
+    lines.push('| Nafn | Email | Síðasta innskráning |');
+    lines.push('|------|-------|---------------------|');
+
+    users.forEach(user => {
+      const lastLogin = user.lastSignIn
+        ? new Date(user.lastSignIn).toLocaleString('is-IS', { dateStyle: 'short', timeStyle: 'short' })
+        : '-';
+      lines.push(`| ${user.displayName} | ${user.email} | ${lastLogin} |`);
+    });
+
+    return lines.join('\n');
+  } catch (error) {
+    return `Villa við að sækja notendur: ${error.message}`;
+  }
+}
+
+/**
  * Get health status from all services
  */
 async function getServiceHealth() {
@@ -581,6 +637,24 @@ const SYSADMIN_TOOLS = [
       properties: {},
       required: []
     }
+  },
+  {
+    name: 'list_users_by_role',
+    description: 'Lista notendur eftir hlutverki (superuser, admin, member). Notaðu til að sjá hvaða notendur hafa ákveðið hlutverk.',
+    parameters: {
+      type: 'object',
+      properties: {
+        role: {
+          type: 'string',
+          description: 'Hlutverk til að leita að (t.d. "superuser", "admin", "member")'
+        },
+        limit: {
+          type: 'number',
+          description: 'Hámarksfjöldi (default 50)'
+        }
+      },
+      required: ['role']
+    }
   }
 ];
 
@@ -605,6 +679,8 @@ async function executeToolCall(toolCall) {
       return await getRecentLogins(args.limit || 20, args.hours || 24);
     case 'get_service_health':
       return await getServiceHealth();
+    case 'list_users_by_role':
+      return await listUsersByRole(args.role, args.limit || 50);
     default:
       return `Villa: Óþekkt tól '${name}'`;
   }
@@ -625,9 +701,11 @@ const BASE_SYSTEM_PROMPT = `Þú ert kerfisstjórnunaraðstoðarmaður og sérfr
    - "Hvað margir greiða?" → Keyrðu SQL strax
    Dæmi: \`query_database\` með "SELECT COUNT(*) FROM membership_comrade WHERE deleted_at IS NULL"
 
-2. **Notendaupplýsingar** → Notaðu \`get_user_activity\` eða \`get_recent_logins\` STRAX
+2. **Notendaupplýsingar** → Notaðu \`get_user_activity\`, \`get_recent_logins\` eða \`list_users_by_role\` STRAX
    - "Hver skráði sig síðast inn?" → Keyrðu strax
    - "Hvað hefur X verið að gera?" → Sæktu upplýsingar strax
+   - "Hvaða superusers eru til?" → Notaðu \`list_users_by_role\` með role="superuser"
+   - "Hverjir eru admins?" → Notaðu \`list_users_by_role\` með role="admin"
 
 3. **Kerfisheilsa** → Notaðu \`get_service_health\` STRAX
    - "Hver er staðan á kerfinu?" → Athugaðu heilsu strax
@@ -665,6 +743,9 @@ Ekklesia kóðinn er opinn á: https://github.com/sosialistaflokkurinn/ekklesia
   - Getur takmarkað við X klst og Y fjölda
 - \`get_service_health\`: Athuga heilsu allra þjónusta
   - Athugar: svc-events, svc-elections, svc-members, Django, Cloud SQL
+- \`list_users_by_role\`: Lista notendur eftir hlutverki
+  - Dæmi: role="superuser" til að sjá alla superusers
+  - Dæmi: role="admin" til að sjá alla admins
 
 ## Kerfisarkitektúr
 \`\`\`
