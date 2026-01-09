@@ -15,7 +15,7 @@ const EVENTS_API_BASE = 'https://events-service-521240388393.europe-west1.run.ap
 
 // Quick action prompts (Icelandic) - focus on formatting, not changing words
 const QUICK_ACTIONS = {
-  socialist: 'Sníðið þennan texta í sérmerkt Sósíalistaflokkssniði. Notaðu: brandlit #722f37 (dökkrautt) á fyrirsagnir, border-left á h2, áherslur með <strong>, skipulagða lista, og enda á "Með sósíalískri kveðju, Sósíalistaflokkurinn" í dökkrauðu. EKKI breyta orðunum. Skilaðu BARA HTML.',
+  socialist: 'Sníðið þennan texta í sérmerkt Sósíalistaflokkssniði. Notaðu: brandlit #722f37 (dökkrautt) á fyrirsagnir, border-left á h2, áherslur með <strong>, skipulagða lista. EKKI bæta við undirskrift eða kveðju - haltu textanum eins og hann er. EKKI breyta orðunum. Skilaðu BARA HTML.',
   format: 'Sníðið þennan texta með fallegu HTML útliti. Notaðu fyrirsagnir, áherslur og skipulag - EN BREYTTU EKKI orðunum. Skilaðu BARA HTML kóðanum, engar útskýringar, engin ``` merki.',
   list: 'Breyttu þessu í fallegan HTML lista (<ul> eða <ol>) ef það á við. EKKI breyta orðunum. Skilaðu BARA HTML, engar útskýringar.',
   variables: 'Útskýrðu stuttlega hvaða breytur eru tiltækar ({{ member.name }} o.s.frv.) og hvernig ég nota þær.',
