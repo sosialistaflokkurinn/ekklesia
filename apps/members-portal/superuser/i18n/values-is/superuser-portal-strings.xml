@@ -486,4 +486,8 @@
   <string name="schema_ballot_key">id (auto)</string>
   <string name="schema_votingtoken_desc">One-time voting tokens</string>
   <string name="schema_votingtoken_key">token (UUID)</string>
+
+  <!-- Database Schema Tab (system-overview.html) -->
+  <string name="database_schema_title">Gagnagrunna skemu</string>
+  <string name="database_schema_desc">Yfirlit yfir gagnaskipan í Firestore og PostgreSQL.</string>
 </resources>

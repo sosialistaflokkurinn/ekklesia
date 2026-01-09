@@ -16,7 +16,7 @@
 
 // GCP Regions
 export const REGIONS = {
-  EU_WEST1: 'europe-west1',  // London - Cloud Run (elections, events, django)
+  EU_WEST1: 'europe-west1',  // Belgium - Cloud Run (elections, events, django)
   EU_WEST2: 'europe-west2',  // London - Firebase Functions
   EUR3: 'eur3',              // Europe multi-region - Firestore
   GLOBAL: 'global'           // Firebase Auth, Hosting
