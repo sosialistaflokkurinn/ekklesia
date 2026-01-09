@@ -19,7 +19,11 @@ const QUICK_ACTIONS = {
 
 1. YTRI WRAPPER: <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
 
-2. HEADER (ef fyrirsögn er í textanum): <div style="background-color: #c41e3a; padding: 25px; text-align: center; border-radius: 8px 8px 0 0;"><h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 600;">FYRIRSÖGN</h1></div>
+2. HEADER - ALLTAF nota rauðan borða. Veldu fyrirsögn:
+   - Ef "F.h. Sósíalistafélag [Sveitarfélag]" er í textanum → notaðu það nafn (t.d. "Sósíalistafélag Kópavogs")
+   - Ef "svæðisfélag" eða staðarheiti (Kópavogur, Akureyri, o.s.frv.) er nefnt → notaðu "Sósíalistafélag [Staður]"
+   - Annars → notaðu "Sósíalistaflokkurinn"
+   <div style="background-color: #c41e3a; padding: 25px; text-align: center; border-radius: 8px 8px 0 0;"><h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 600;">FYRIRSÖGN</h1></div>
 
 3. EFNISSVÆÐI: <div style="padding: 30px; background-color: #f9f9f9; border: 1px solid #e0e0e0; border-top: none;">
 
