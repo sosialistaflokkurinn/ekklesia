@@ -15,11 +15,17 @@ import { showToast, showError } from '../../../js/components/ui-toast.js';
 import { escapeHTML } from '../../../js/utils/util-format.js';
 // Note: showModal not used here - this page uses its own inline modal
 import EmailAPI from './api/email-api.js';
+import { TemplatePreview } from './template-editor-preview.js?v=20260109j';
+import { TemplateEditorAssistant } from './template-editor-assistant.js?v=20260109j';
 
 // Use centralized escapeHTML from util-format.js
 const escapeHtml = escapeHTML;
 
 let strings = {};
+
+// Editor components (initialized when modal opens)
+let previewComponent = null;
+let assistantComponent = null;
 
 /**
  * Set page text from admin strings
@@ -114,6 +120,114 @@ async function loadTemplates() {
 }
 
 /**
+ * Initialize editor components (preview and AI assistant)
+ */
+function initEditorComponents() {
+  // Clean up any existing instances
+  destroyEditorComponents();
+
+  // Initialize live preview
+  const previewIframe = document.getElementById('preview-iframe');
+  const bodyTextarea = document.getElementById('template-body');
+  const subjectInput = document.getElementById('template-subject');
+
+  if (previewIframe && bodyTextarea) {
+    previewComponent = new TemplatePreview({
+      iframe: previewIframe,
+      bodyTextarea,
+      subjectInput,
+      debounceMs: 300
+    });
+    debug.log('[TemplatesList] Preview component initialized');
+  }
+
+  // Initialize AI assistant
+  const messagesContainer = document.getElementById('assistant-messages');
+  const inputField = document.getElementById('assistant-input');
+  const sendButton = document.getElementById('assistant-send');
+  const quickActionsContainer = document.getElementById('assistant-quick-actions');
+
+  if (messagesContainer && inputField && bodyTextarea) {
+    assistantComponent = new TemplateEditorAssistant({
+      messagesContainer,
+      inputField,
+      sendButton,
+      quickActionsContainer,
+      templateTextarea: bodyTextarea
+    });
+    debug.log('[TemplatesList] Assistant component initialized');
+  }
+}
+
+/**
+ * Destroy editor components on modal close
+ */
+function destroyEditorComponents() {
+  if (previewComponent) {
+    previewComponent.destroy();
+    previewComponent = null;
+  }
+  if (assistantComponent) {
+    assistantComponent.destroy();
+    assistantComponent = null;
+  }
+}
+
+/**
+ * Setup toggle buttons for collapsing panels
+ * Called once at page init - uses event delegation on modal
+ */
+function setupModalEventDelegation() {
+  const modalEl = document.getElementById('template-modal');
+  if (!modalEl) return;
+
+  modalEl.addEventListener('click', (e) => {
+    const target = e.target;
+
+    // AI Assistant toggle
+    if (target.id === 'assistant-toggle') {
+      const assistantPanel = document.getElementById('ai-assistant');
+      if (assistantPanel) {
+        assistantPanel.classList.toggle('template-editor__assistant--collapsed');
+        target.textContent = assistantPanel.classList.contains('template-editor__assistant--collapsed') ? '+' : '−';
+      }
+      return;
+    }
+
+    // Preview toggle
+    if (target.id === 'preview-toggle') {
+      const previewPanel = document.getElementById('template-preview');
+      if (previewPanel) {
+        previewPanel.classList.toggle('template-editor__preview--collapsed');
+        target.textContent = previewPanel.classList.contains('template-editor__preview--collapsed') ? '+' : '−';
+      }
+      return;
+    }
+
+    // Open preview in new window
+    if (target.id === 'preview-open-window') {
+      if (previewComponent) {
+        previewComponent.openInNewWindow();
+      }
+      return;
+    }
+
+    // Fullscreen toggle
+    if (target.id === 'modal-fullscreen') {
+      const modal = modalEl.querySelector('.modal');
+      if (modal) {
+        modal.classList.toggle('modal--fullscreen');
+        modalEl.classList.toggle('modal-overlay--fullscreen');
+        target.title = modal.classList.contains('modal--fullscreen') ? 'Hætta fullskjá' : 'Fullskjár';
+      }
+      return;
+    }
+  });
+
+  debug.log('[TemplatesList] Modal event delegation setup');
+}
+
+/**
  * Open modal for creating new template
  */
 function openCreateModal() {
@@ -125,7 +239,14 @@ function openCreateModal() {
   document.getElementById('template-language').value = 'is';
   document.getElementById('template-body').value = '';
 
-  document.getElementById('template-modal').classList.remove('u-hidden');
+  const modal = document.getElementById('template-modal');
+  modal.classList.remove('u-hidden');
+  // Use requestAnimationFrame to ensure the transition plays
+  requestAnimationFrame(() => {
+    modal.classList.add('modal-overlay--show');
+    // Initialize editor components after modal is visible
+    initEditorComponents();
+  });
 }
 
 /**
@@ -143,7 +264,14 @@ async function editTemplate(templateId) {
     document.getElementById('template-language').value = template.language || 'is';
     document.getElementById('template-body').value = template.body_html || '';
 
-    document.getElementById('template-modal').classList.remove('u-hidden');
+    const modal = document.getElementById('template-modal');
+    modal.classList.remove('u-hidden');
+    // Use requestAnimationFrame to ensure the transition plays
+    requestAnimationFrame(() => {
+      modal.classList.add('modal-overlay--show');
+      // Initialize editor components after modal is visible
+      initEditorComponents();
+    });
 
   } catch (error) {
     debug.error('[TemplatesList] Edit error:', error);
@@ -211,7 +339,18 @@ async function deleteTemplate(templateId) {
  * Close modal
  */
 function closeModal() {
-  document.getElementById('template-modal').classList.add('u-hidden');
+  const modalOverlay = document.getElementById('template-modal');
+  const modal = modalOverlay.querySelector('.modal');
+  modalOverlay.classList.remove('modal-overlay--show');
+  // Wait for transition to complete before hiding
+  setTimeout(() => {
+    modalOverlay.classList.add('u-hidden');
+    // Reset fullscreen mode
+    modal?.classList.remove('modal--fullscreen');
+    modalOverlay.classList.remove('modal-overlay--fullscreen');
+    // Clean up editor components
+    destroyEditorComponents();
+  }, 200);
 }
 
 /**
@@ -244,8 +383,13 @@ async function init() {
     document.getElementById('modal-cancel').addEventListener('click', closeModal);
     document.getElementById('modal-save').addEventListener('click', saveTemplate);
 
-    // Close modal on backdrop click
-    document.querySelector('.modal__backdrop').addEventListener('click', closeModal);
+    // 7. Setup modal event delegation for toggle buttons
+    setupModalEventDelegation();
+
+    // Close modal on backdrop click (clicking the overlay, not the modal content)
+    document.getElementById('template-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'template-modal') closeModal();
+    });
 
     // Close modal on Escape key
     document.addEventListener('keydown', (e) => {

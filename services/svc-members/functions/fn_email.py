@@ -28,7 +28,7 @@ import hmac
 import base64
 
 # Cloud SQL member queries
-from db_members import get_member_by_kennitala, get_member_by_django_id, get_members_for_email, get_member_by_email
+from db_members import get_member_by_kennitala, get_member_by_django_id, get_members_for_email, get_member_by_email, get_member_municipalities
 
 # Security: Maximum limits
 MAX_TEMPLATE_SIZE = 100000  # 100KB max template size
@@ -975,6 +975,51 @@ def list_email_campaigns_handler(req: https_fn.CallableRequest) -> Dict[str, Any
         })
 
     return {"campaigns": campaigns, "count": len(campaigns)}
+
+
+def get_municipalities_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
+    """
+    Get list of municipalities with member counts.
+    Used for admin dropdowns and filters.
+
+    Returns:
+        List of municipalities with counts.
+    """
+    require_admin(req)
+
+    municipalities = get_member_municipalities()
+
+    return {
+        "municipalities": [
+            {"name": m["name"], "count": m["count"]}
+            for m in municipalities
+            if m["count"] > 0  # Only include municipalities with members
+        ]
+    }
+
+
+def preview_recipient_count_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
+    """
+    Preview how many recipients match a filter without creating a campaign.
+
+    Optional data:
+        - recipient_filter: { status, districts[], municipalities[] }
+
+    Returns:
+        Recipient count.
+    """
+    require_admin(req)
+
+    data = req.data or {}
+    recipient_filter = data.get("recipient_filter", {"status": "active"})
+
+    # Get count
+    members = get_filtered_members_sql(recipient_filter)
+
+    return {
+        "count": len(members),
+        "filter": recipient_filter
+    }
 
 
 def create_email_campaign_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:

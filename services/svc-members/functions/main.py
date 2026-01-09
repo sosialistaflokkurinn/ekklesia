@@ -265,7 +265,9 @@ from fn_email import (
     list_email_logs_handler,
     unsubscribe_handler,
     get_email_preferences_handler,
-    update_email_preferences_handler
+    update_email_preferences_handler,
+    get_municipalities_handler,
+    preview_recipient_count_handler
 )
 
 # Define decorated functions for email operations
@@ -298,6 +300,16 @@ def sendEmail(req: https_fn.CallableRequest) -> dict:
 def listEmailCampaigns(req: https_fn.CallableRequest) -> dict:
     """List email campaigns - requires admin"""
     return list_email_campaigns_handler(req)
+
+@https_fn.on_call(timeout_sec=30, memory=256)
+def getMunicipalities(req: https_fn.CallableRequest) -> dict:
+    """Get municipalities with member counts - requires admin"""
+    return get_municipalities_handler(req)
+
+@https_fn.on_call(timeout_sec=30, memory=256)
+def previewRecipientCount(req: https_fn.CallableRequest) -> dict:
+    """Preview recipient count for a filter - requires admin"""
+    return preview_recipient_count_handler(req)
 
 @https_fn.on_call(timeout_sec=30, memory=256)
 def createEmailCampaign(req: https_fn.CallableRequest) -> dict:
@@ -401,6 +413,8 @@ __all__ = [
     'deleteEmailTemplate',
     'sendEmail',
     'listEmailCampaigns',
+    'getMunicipalities',
+    'previewRecipientCount',
     'createEmailCampaign',
     'sendCampaign',
     'getEmailStats',
