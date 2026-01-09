@@ -6,7 +6,7 @@
  * Module cleanup not needed - page reloads on navigation.
  */
 
-import { initSession } from '../../../session/init.js';
+import { initSession, showAuthenticatedContent } from '../../../session/init.js';
 import { debug } from '../../../js/utils/util-debug.js';
 import { adminStrings } from '../../js/i18n/admin-strings-loader.js';
 import { requireAdmin } from '../../../js/rbac.js';
@@ -226,6 +226,9 @@ async function init() {
 
     // 3. Check admin access
     await requireAdmin();
+
+    // Auth verified - show page content
+    showAuthenticatedContent();
 
     // 4. Set page text
     setPageText(s);

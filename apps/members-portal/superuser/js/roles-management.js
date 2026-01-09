@@ -12,7 +12,7 @@
  * ✅ loadElevatedUsers - Uses Firestore /users/ collection query
  */
 
-import { initSession } from '../../session/init.js';
+import { initSession, showAuthenticatedContent } from '../../session/init.js';
 import { debug } from '../../js/utils/util-debug.js';
 import {
   getFirebaseFirestore,
@@ -752,6 +752,9 @@ async function init() {
 
     // Check superuser access
     await requireSuperuser();
+
+    // Auth verified - show page content
+    showAuthenticatedContent();
 
     // Initialize components
     initSearch();

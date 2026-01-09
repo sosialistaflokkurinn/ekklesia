@@ -6,7 +6,7 @@
  */
 
 // Import from member portal public directory
-import { initSession } from '../../session/init.js';
+import { initSession, showAuthenticatedContent } from '../../session/init.js';
 import { debug } from '../../js/utils/util-debug.js';
 import { getFirebaseAuth, httpsCallable } from '../../firebase/app.js';
 import { superuserStrings } from './i18n/superuser-strings-loader.js';
@@ -158,6 +158,9 @@ async function init() {
 
     // 3. Check superuser access using unified RBAC (requires superuser only)
     await requireSuperuser();
+
+    // Auth verified - show page content
+    showAuthenticatedContent();
 
     // 4. Set page text (with personalized greeting)
     setPageText(strings, userData);

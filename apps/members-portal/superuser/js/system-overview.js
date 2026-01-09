@@ -16,7 +16,7 @@
  * - components/health-summary.js - Header status
  */
 
-import { initSession } from '../../session/init.js';
+import { initSession, showAuthenticatedContent } from '../../session/init.js';
 import { debug } from '../../js/utils/util-debug.js';
 import { requireSuperuser } from '../../js/rbac.js';
 import { showToast } from '../../js/components/ui-toast.js';
@@ -134,6 +134,9 @@ async function init() {
     // Session and authentication
     await initSession();
     await requireSuperuser();
+
+    // Auth verified - show page content
+    showAuthenticatedContent();
 
     // Setup components
     setupTabListeners({ onSwitch: hideGroupDetails });

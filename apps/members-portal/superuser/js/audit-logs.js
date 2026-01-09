@@ -8,7 +8,7 @@
  * Backend: Requires Cloud Function `get-audit-logs` (to be implemented)
  */
 
-import { initSession } from '../../session/init.js';
+import { initSession, showAuthenticatedContent } from '../../session/init.js';
 import { debug } from '../../js/utils/util-debug.js';
 import { httpsCallable } from '../../firebase/app.js';
 import { requireSuperuser } from '../../js/rbac.js';
@@ -227,6 +227,9 @@ async function init() {
     superuserStrings.translatePage();  // Translate data-i18n elements
     await initSession();
     await requireSuperuser();
+
+    // Auth verified - show page content
+    showAuthenticatedContent();
 
     initFilters();
 

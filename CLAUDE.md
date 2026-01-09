@@ -124,6 +124,7 @@ Services read secrets from GCP Secret Manager. Key secrets:
 | Search existing code first | `js/components/`, `js/utils/` have reusable patterns |
 | Follow naming conventions | See docs/PATTERNS.md for `[domain]-[name].js` pattern |
 | Run `./scripts/build-css-bundle.sh` | CSS changes need bundle rebuild before deploy |
+| Run `./scripts/check-css-versions.sh` | Prevents CSS cache issues (auto-runs on deploy) |
 | Verify secrets after deploy | `gcloud run services describe` confirms secret mounting |
 | Use `--gcloud-auth` for proxy | Avoids ADC auth issues with cloud-sql-proxy |
 | Add rate limiting to writes | `check_uid_rate_limit()` prevents abuse |

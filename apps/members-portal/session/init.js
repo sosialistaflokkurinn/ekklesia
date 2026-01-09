@@ -66,3 +66,21 @@ export async function initSession(locale = 'is') {
     strings: R.string
   };
 }
+
+/**
+ * Mark page as authenticated - shows hidden content
+ *
+ * Call this AFTER successful authentication and role checks.
+ * Adds 'auth-verified' class to body, which CSS uses to reveal content.
+ *
+ * This prevents flash of protected content before auth is verified.
+ * CSS rule: body.authenticated:not(.auth-verified) .page__container { display: none }
+ *
+ * @example
+ * await initSession();
+ * await requireSuperuser();
+ * showAuthenticatedContent(); // Now safe to show content
+ */
+export function showAuthenticatedContent() {
+  document.body.classList.add('auth-verified');
+}

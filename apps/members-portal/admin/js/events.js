@@ -5,7 +5,7 @@
  * Only users with 'admin' or 'superuser' role can access.
  */
 
-import { initSession } from '../../session/init.js';
+import { initSession, showAuthenticatedContent } from '../../session/init.js';
 import { debug } from '../../js/utils/util-debug.js';
 import { requireAdmin } from '../../js/rbac.js';
 
@@ -19,6 +19,9 @@ async function init() {
 
     // 2. Check admin access
     await requireAdmin();
+
+    // Auth verified - show page content
+    showAuthenticatedContent();
 
     debug.log('✓ Events page initialized');
 

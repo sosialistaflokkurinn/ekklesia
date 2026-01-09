@@ -6,7 +6,7 @@
  */
 
 // Import from member portal public directory (two levels up from /admin/js/)
-import { initSession } from '../../session/init.js';
+import { initSession, showAuthenticatedContent } from '../../session/init.js';
 import { initNavigation } from '../../js/nav-interactions.js';
 import { debug } from '../../js/utils/util-debug.js';
 import { getFirebaseAuth, getFirebaseFirestore, collection, getDocs } from '../../firebase/app.js';
@@ -216,6 +216,9 @@ async function init() {
 
     // 3. Check admin access using unified RBAC (requires admin or superuser)
     await requireAdmin();
+
+    // Auth verified - show page content
+    showAuthenticatedContent();
 
     // 4. Note: Navigation now initialized by nav-header component
 

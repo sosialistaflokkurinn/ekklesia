@@ -19,6 +19,7 @@
     {
       "site": "ekklesia-prod-10-2025",
       "public": "public",
+      "predeploy": ["../../scripts/check-css-versions.sh"],
       "ignore": [
         "firebase.json",
         "**/.*",
@@ -86,6 +87,7 @@
     {
       "site": "felagar-site",
       "public": "public",
+      "predeploy": ["../../scripts/check-css-versions.sh"],
       "ignore": [
         "firebase.json",
         "**/.*",
