@@ -15,8 +15,8 @@ import { showToast, showError } from '../../../js/components/ui-toast.js';
 import { escapeHTML } from '../../../js/utils/util-format.js';
 // Note: showModal not used here - this page uses its own inline modal
 import EmailAPI from './api/email-api.js';
-import { TemplatePreview } from './template-editor-preview.js?v=20260109k';
-import { TemplateEditorAssistant } from './template-editor-assistant.js?v=20260109k';
+import { TemplatePreview } from './template-editor-preview.js?v=20260109n';
+import { TemplateEditorAssistant } from './template-editor-assistant.js?v=20260109n';
 
 // Use centralized escapeHTML from util-format.js
 const escapeHtml = escapeHTML;

@@ -15,7 +15,29 @@ const EVENTS_API_BASE = 'https://events-service-521240388393.europe-west1.run.ap
 
 // Quick action prompts (Icelandic) - focus on formatting, not changing words
 const QUICK_ACTIONS = {
-  socialist: 'Sníðið þennan texta í sérmerkt Sósíalistaflokkssniði. Notaðu: brandlit #722f37 (dökkrautt) á fyrirsagnir, border-left á h2, áherslur með <strong>, skipulagða lista. EKKI bæta við undirskrift eða kveðju - haltu textanum eins og hann er. EKKI breyta orðunum. Skilaðu BARA HTML.',
+  socialist: `Sníðið þennan texta sem fallegan HTML tölvupóst í Sósíalistaflokksstíl. Notaðu NÁKVÆMLEGA þessa uppbyggingu:
+
+1. YTRI WRAPPER: <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
+
+2. HEADER (ef fyrirsögn er í textanum): <div style="background-color: #c41e3a; padding: 25px; text-align: center; border-radius: 8px 8px 0 0;"><h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 600;">FYRIRSÖGN</h1></div>
+
+3. EFNISSVÆÐI: <div style="padding: 30px; background-color: #f9f9f9; border: 1px solid #e0e0e0; border-top: none;">
+
+4. UPPLÝSINGAKASSI (fyrir dagsetningu, tíma, stað): <div style="background-color: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; margin: 20px 0;">
+   <p style="margin: 8px 0; font-size: 15px; color: #444;"><strong style="color: #c41e3a;">📅 Dagsetning:</strong> 14. janúar 2026</p>
+   <p style="margin: 8px 0; font-size: 15px; color: #444;"><strong style="color: #c41e3a;">🕐 Tími:</strong> 18:00</p>
+   <p style="margin: 8px 0; font-size: 15px; color: #444;"><strong style="color: #c41e3a;">📍 Staður:</strong> Félagsheimilið, Reykjavík</p>
+</div>
+
+5. UNDIRFYRIRSAGNIR: <h2 style="color: #c41e3a; font-size: 20px; margin: 25px 0 15px 0; border-left: 4px solid #c41e3a; padding-left: 15px;">
+
+6. MÁLSGREINAR: <p style="font-size: 16px; color: #444; line-height: 1.6;">
+
+7. LISTAR: <ul style="font-size: 15px; color: #444; line-height: 1.8; padding-left: 20px;">
+
+8. TENGLAR: <a href="..." style="color: #c41e3a; font-weight: 600;">
+
+EKKI breyta orðunum. Skilaðu BARA HTML.`,
   format: 'Sníðið þennan texta með fallegu HTML útliti. Notaðu fyrirsagnir, áherslur og skipulag - EN BREYTTU EKKI orðunum. Skilaðu BARA HTML kóðanum, engar útskýringar, engin ``` merki.',
   list: 'Breyttu þessu í fallegan HTML lista (<ul> eða <ol>) ef það á við. EKKI breyta orðunum. Skilaðu BARA HTML, engar útskýringar.',
   variables: 'Útskýrðu stuttlega hvaða breytur eru tiltækar ({{ member.name }} o.s.frv.) og hvernig ég nota þær.',
