@@ -172,6 +172,7 @@
   <string name="events_loading">Sæki viðburði...</string>
   <string name="events_empty">Engir viðburðir fundust</string>
   <string name="events_error">Villa kom upp</string>
+  <string name="events_hide_images">Fela myndir</string>
   <string name="test_events_title">🚀 Prófunarkosning 2025</string>
   <string name="test_auth_title">Auðkenning</string>
   <string name="test_auth_authenticated">✓ Auðkennd/ur</string>

@@ -24,6 +24,27 @@ const EVENTS_API_BASE = SERVICES.EVENTS;
 const CACHE_KEY = 'events_cache';
 const CACHE_MAX_AGE_MS = 5 * 60 * 1000; // 5 minutes
 
+// ============================================================================
+// USER PREFERENCES - Stored in localStorage (UI preferences, no PII)
+// ============================================================================
+const PREF_HIDE_IMAGES = 'events_hide_images';
+
+/**
+ * Get hide images preference
+ * @returns {boolean} True if images should be hidden
+ */
+function getHideImagesPreference() {
+  return localStorage.getItem(PREF_HIDE_IMAGES) === 'true';
+}
+
+/**
+ * Set hide images preference
+ * @param {boolean} hide - True to hide images
+ */
+function setHideImagesPreference(hide) {
+  localStorage.setItem(PREF_HIDE_IMAGES, hide ? 'true' : 'false');
+}
+
 /**
  * Get cached data from localStorage
  * Safe to use localStorage here - events are public Facebook data, no PII.
@@ -186,6 +207,8 @@ function renderEventsList(events) {
     return '';
   }
 
+  const hideImages = getHideImagesPreference();
+
   return events.map(event => {
     // Extract video conference links from description
     const { links: videoLinks, cleanedText: cleanDescription } = extractVideoLinks(event.description);
@@ -264,7 +287,7 @@ function renderEventsList(events) {
 
     return `
       <div class="card" id="${eventId}">
-        ${event.imageUrl ? `<img src="${event.imageUrl}" alt="${event.title}" width="600" height="315" style="width: 100%; height: auto; display: block; border-radius: 0.5rem 0.5rem 0 0;" onerror="this.style.display='none'">` : ''}
+        ${!hideImages && event.imageUrl ? `<img src="${event.imageUrl}" alt="${event.title}" width="600" height="315" style="width: 100%; height: auto; display: block; border-radius: 0.5rem 0.5rem 0 0;" onerror="this.style.display='none'">` : ''}
         <div class="card__content">
           <h2 class="card__title">${event.title}${ongoingBadge}</h2>
           ${dateHtml}
@@ -489,6 +512,39 @@ function setupFilters() {
     // Append new button instances
     buttonGroup.appendChild(tabUpcomingButton.element);
     buttonGroup.appendChild(tabPastButton.element);
+
+    // Add hide images checkbox (pushed to right side)
+    const spacer = document.createElement('div');
+    spacer.style.flexGrow = '1';
+    buttonGroup.appendChild(spacer);
+
+    const hideImagesLabel = document.createElement('label');
+    hideImagesLabel.style.display = 'flex';
+    hideImagesLabel.style.alignItems = 'center';
+    hideImagesLabel.style.gap = '0.5rem';
+    hideImagesLabel.style.cursor = 'pointer';
+    hideImagesLabel.style.fontSize = '0.875rem';
+    hideImagesLabel.style.color = 'var(--color-text-muted)';
+
+    const hideImagesCheckbox = document.createElement('input');
+    hideImagesCheckbox.type = 'checkbox';
+    hideImagesCheckbox.id = 'hide-images-checkbox';
+    hideImagesCheckbox.checked = getHideImagesPreference();
+    hideImagesCheckbox.addEventListener('change', (e) => {
+      setHideImagesPreference(e.target.checked);
+      // Re-render events with new preference
+      const cached = getCache();
+      if (cached?.data) {
+        displayEventsFromData(cached.data, currentFilter);
+      }
+    });
+
+    const hideImagesText = document.createElement('span');
+    hideImagesText.textContent = R.string.events_hide_images || 'Fela myndir';
+
+    hideImagesLabel.appendChild(hideImagesCheckbox);
+    hideImagesLabel.appendChild(hideImagesText);
+    buttonGroup.appendChild(hideImagesLabel);
   }
 }
 
