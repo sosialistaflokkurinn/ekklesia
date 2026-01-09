@@ -849,11 +849,29 @@ def send_email_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
 
     # Add unsubscribe URL for broadcast emails (using django_id for privacy)
     # Check both metadata.django_id (Firestore) and top-level django_id (Cloud SQL lookup)
+    # Fallback to email hash if no django_id (for new members not yet synced)
     django_id = None
     if member_data:
         django_id = member_data.get("metadata", {}).get("django_id") or member_data.get("django_id")
-    if django_id and email_type == "broadcast":
-        variables["unsubscribe_url"] = generate_unsubscribe_url(django_id)
+    if email_type == "broadcast":
+        if django_id:
+            try:
+                variables["unsubscribe_url"] = generate_unsubscribe_url(django_id)
+                log_json("debug", "Generated unsubscribe URL with django_id",
+                         django_id=django_id, url_prefix=variables["unsubscribe_url"][:50])
+            except Exception as e:
+                # Fall back to email hash if token generation fails
+                log_json("error", "Failed to generate unsubscribe token, using email hash fallback",
+                         error=str(e), django_id=django_id)
+                if recipient_email:
+                    email_hash = hashlib.sha256(recipient_email.lower().encode()).hexdigest()[:16]
+                    variables["unsubscribe_url"] = f"{BASE_URL}/unsubscribe.html?e={email_hash}"
+        elif recipient_email:
+            # Fallback: use email hash for members without django_id
+            email_hash = hashlib.sha256(recipient_email.lower().encode()).hexdigest()[:16]
+            variables["unsubscribe_url"] = f"{BASE_URL}/unsubscribe.html?e={email_hash}"
+            log_json("warning", "Using email hash for unsubscribe (no django_id)",
+                     email=recipient_email[:3] + "***")
 
     # Render template
     rendered_subject = render_template(template_subject, variables)
@@ -863,8 +881,9 @@ def send_email_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     # Auto-append unsubscribe footer for broadcast emails
     if email_type == "broadcast" and variables.get("unsubscribe_url"):
         unsubscribe_url = variables["unsubscribe_url"]
-        # Only add if not already present in template
-        if "unsubscribe" not in rendered_html.lower():
+        # Only add if not already present in template (check both English and Icelandic)
+        html_lower = rendered_html.lower()
+        if "unsubscribe" not in html_lower and "afþakka" not in html_lower:
             rendered_html += f'''
 <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0 15px 0;">
 <p style="font-size: 12px; color: #999; text-align: center;">
@@ -1219,10 +1238,14 @@ def send_campaign_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             if member.get("membership", {}).get("cell"):
                 variables["cell"] = {"name": member.get("membership", {}).get("cell", "")}
 
-            # Add unsubscribe URL (using django_id for privacy)
+            # Add unsubscribe URL (using django_id for privacy, email hash as fallback)
             django_id = member.get("metadata", {}).get("django_id")
             if django_id:
                 variables["unsubscribe_url"] = generate_unsubscribe_url(django_id)
+            elif email:
+                # Fallback: use email hash for members without django_id
+                email_hash = hashlib.sha256(email.lower().encode()).hexdigest()[:16]
+                variables["unsubscribe_url"] = f"{BASE_URL}/unsubscribe.html?e={email_hash}"
 
             # Render template
             rendered_subject = render_template(template.get("subject", ""), variables)
@@ -1230,8 +1253,10 @@ def send_campaign_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             rendered_text = render_template(template.get("body_text", ""), variables)
 
             # Auto-append unsubscribe footer for broadcast campaigns
+            # Check both English and Icelandic terms
             unsubscribe_url = variables.get("unsubscribe_url")
-            if unsubscribe_url and "unsubscribe" not in rendered_html.lower():
+            html_lower = rendered_html.lower()
+            if unsubscribe_url and "unsubscribe" not in html_lower and "afþakka" not in html_lower:
                 rendered_html += '''
 <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0 15px 0;">
 <p style="font-size: 12px; color: #999; text-align: center;">
@@ -1436,6 +1461,38 @@ def list_email_logs_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
 # UNSUBSCRIBE
 # ==============================================================================
 
+def _find_member_by_email_hash(email_hash: str) -> Optional[Dict[str, Any]]:
+    """
+    Find a member by matching their email's SHA256 hash prefix.
+
+    Used as fallback for unsubscribe when member doesn't have django_id.
+    Less secure than token-based verification but acceptable for unsubscribe.
+
+    Args:
+        email_hash: First 16 chars of SHA256(email.lower())
+
+    Returns:
+        Member data dict or None
+    """
+    if not email_hash or len(email_hash) < 16:
+        return None
+
+    # Search Firestore users collection
+    db = firestore.client()
+    users = db.collection("users").stream()
+
+    for user_doc in users:
+        user_data = user_doc.to_dict()
+        email = user_data.get("profile", {}).get("email", "").lower()
+        if email:
+            computed_hash = hashlib.sha256(email.encode()).hexdigest()[:16]
+            if computed_hash == email_hash:
+                # Add doc reference for later update
+                user_data["_doc_ref"] = user_doc.reference
+                return user_data
+
+    return None
+
 def unsubscribe_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     """
     Handle email unsubscribe request.
@@ -1443,9 +1500,9 @@ def unsubscribe_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     This function does NOT require authentication - it uses a signed token
     to verify the request is legitimate.
 
-    Required data:
-        - member_id: Django ID of the member
-        - token: Signed unsubscribe token
+    Required data (one of):
+        - member_id + token: Django ID with signed token (preferred)
+        - email_hash: SHA256 hash prefix for fallback (less secure, for members without django_id)
 
     Returns:
         Success status.
@@ -1453,23 +1510,37 @@ def unsubscribe_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     data = req.data or {}
     member_id = data.get("member_id")
     token = data.get("token")
+    email_hash = data.get("email_hash")
 
-    if not member_id or not token:
+    member = None
+
+    # Method 1: member_id + token (preferred, secure)
+    if member_id and token:
+        # Verify the token
+        if not verify_unsubscribe_token(str(member_id), token):
+            log_json("warning", "Invalid unsubscribe token", member_id=member_id)
+            raise https_fn.HttpsError(
+                code=https_fn.FunctionsErrorCode.PERMISSION_DENIED,
+                message="Ógildur afþökkunarhlekkur"
+            )
+        # Look up member by django_id from Cloud SQL
+        member = get_member_by_django_id(int(member_id))
+
+    # Method 2: email_hash fallback (for members without django_id)
+    elif email_hash:
+        # Look up member by matching email hash
+        # This is less secure but acceptable for unsubscribe action
+        member = _find_member_by_email_hash(email_hash)
+        if member:
+            log_json("info", "Unsubscribe via email hash fallback",
+                     email_hash=email_hash[:8])
+
+    else:
         raise https_fn.HttpsError(
             code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
-            message="member_id and token are required"
+            message="member_id/token or email_hash required"
         )
 
-    # Verify the token
-    if not verify_unsubscribe_token(str(member_id), token):
-        log_json("warning", "Invalid unsubscribe token", member_id=member_id)
-        raise https_fn.HttpsError(
-            code=https_fn.FunctionsErrorCode.PERMISSION_DENIED,
-            message="Ógildur afþökkunarhlekkur"
-        )
-
-    # Look up member by django_id from Cloud SQL
-    member = get_member_by_django_id(int(member_id))
     if not member:
         raise https_fn.HttpsError(
             code=https_fn.FunctionsErrorCode.NOT_FOUND,
@@ -1477,30 +1548,38 @@ def unsubscribe_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
         )
 
     # Store unsubscribe preference in /users collection
-    # Find user by kennitala
     db = firestore.client()
-    kennitala = member.get("kennitala")
 
-    users = db.collection("users").where("kennitala", "==", kennitala).limit(1).stream()
-    user_list = list(users)
-
-    if user_list:
-        # Update existing user doc
-        user_list[0].reference.update({
+    # If member was found via email hash, we already have the doc reference
+    if member.get("_doc_ref"):
+        member["_doc_ref"].update({
             "preferences.email_marketing": False,
             "preferences.email_marketing_updated_at": datetime.utcnow()
         })
+        log_json("info", "Member unsubscribed via email hash", email_hash=email_hash[:8] if email_hash else None)
     else:
-        # Create user preferences doc keyed by django_id
-        db.collection("users").document(f"django_{member_id}").set({
-            "kennitala": kennitala,
-            "preferences": {
-                "email_marketing": False,
-                "email_marketing_updated_at": datetime.utcnow()
-            }
-        }, merge=True)
+        # Find user by kennitala (normal flow with member_id + token)
+        kennitala = member.get("kennitala")
+        users = db.collection("users").where("kennitala", "==", kennitala).limit(1).stream()
+        user_list = list(users)
 
-    log_json("info", "Member unsubscribed from marketing emails", member_id=member_id, kennitala=f"{kennitala[:6]}****" if kennitala else None)
+        if user_list:
+            # Update existing user doc
+            user_list[0].reference.update({
+                "preferences.email_marketing": False,
+                "preferences.email_marketing_updated_at": datetime.utcnow()
+            })
+        else:
+            # Create user preferences doc keyed by django_id
+            db.collection("users").document(f"django_{member_id}").set({
+                "kennitala": kennitala,
+                "preferences": {
+                    "email_marketing": False,
+                    "email_marketing_updated_at": datetime.utcnow()
+                }
+            }, merge=True)
+
+        log_json("info", "Member unsubscribed from marketing emails", member_id=member_id, kennitala=f"{kennitala[:6]}****" if kennitala else None)
 
     return {
         "success": True,

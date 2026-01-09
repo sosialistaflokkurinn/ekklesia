@@ -316,7 +316,7 @@ def createEmailCampaign(req: https_fn.CallableRequest) -> dict:
     """Create a new email campaign - requires admin"""
     return create_email_campaign_handler(req)
 
-@https_fn.on_call(timeout_sec=540, memory=512, secrets=["sendgrid-api-key", "resend-api-key"])
+@https_fn.on_call(timeout_sec=540, memory=512, secrets=["sendgrid-api-key", "resend-api-key", "unsubscribe-secret"])
 def sendCampaign(req: https_fn.CallableRequest) -> dict:
     """Send campaign via SendGrid (primary) or Resend (backup) - requires admin"""
     return send_campaign_handler(req)
