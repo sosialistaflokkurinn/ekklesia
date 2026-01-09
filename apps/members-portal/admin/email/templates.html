@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="/admin/styles/admin.css?v=20260109a">
 
   <!-- Template editor styles -->
-  <link rel="stylesheet" href="/styles/components/template-editor.css?v=20260109d">
+  <link rel="stylesheet" href="/styles/components/template-editor.css?v=20260109q">
 </head>
 <body class="authenticated admin">
   <!-- Navigation component inserted here -->
@@ -70,7 +70,7 @@
 
       <div class="modal__body template-editor">
         <div class="template-editor__main">
-          <!-- Left: Form -->
+          <!-- Form -->
           <div class="template-editor__form">
             <form id="template-form">
               <input type="hidden" id="template-id">
@@ -111,29 +111,6 @@
               </div>
             </form>
           </div>
-
-          <!-- Right: AI Assistant -->
-          <div class="template-editor__assistant" id="ai-assistant">
-            <div class="assistant__header">
-              <h3>AI Aðstoð</h3>
-              <button class="assistant__toggle" id="assistant-toggle" title="Fela/Sýna">−</button>
-            </div>
-            <div class="assistant__quick-actions" id="assistant-quick-actions">
-              <button type="button" class="assistant__quick-btn" data-action="socialist">✊ Sósíalistasnið</button>
-              <button type="button" class="assistant__quick-btn" data-action="format">🎨 Sníða</button>
-              <button type="button" class="assistant__quick-btn" data-action="list">📋 Listi</button>
-              <button type="button" class="assistant__quick-btn" data-action="variables">❓ Breytur</button>
-            </div>
-            <div class="assistant__messages" id="assistant-messages">
-              <div class="assistant__message assistant__message--assistant">
-                Hæ! Ég get hjálpað þér að <strong>sníða</strong> textann með fallegu HTML útliti. Ég breyti ekki orðunum - bara skipulaginu og útlitinu.
-              </div>
-            </div>
-            <div class="assistant__input">
-              <input type="text" id="assistant-input" placeholder="Spurðu AI..." autocomplete="off">
-              <button type="button" id="assistant-send">Senda</button>
-            </div>
-          </div>
         </div>
 
         <!-- Bottom: Preview -->
@@ -148,6 +125,32 @@
             <iframe id="preview-iframe" sandbox="allow-same-origin" title="Forskoðun"></iframe>
           </div>
         </div>
+
+        <!-- Floating AI Assistant Toggle Button -->
+        <button class="assistant__fab" id="assistant-fab" title="AI Aðstoð">✨</button>
+
+        <!-- Floating AI Assistant Panel -->
+        <div class="template-editor__assistant template-editor__assistant--hidden" id="ai-assistant">
+          <div class="assistant__header">
+            <h3>AI Aðstoð</h3>
+            <button class="assistant__toggle" id="assistant-toggle" title="Loka">×</button>
+          </div>
+          <div class="assistant__quick-actions" id="assistant-quick-actions">
+            <button type="button" class="assistant__quick-btn" data-action="socialist">✊ Sósíalistasnið</button>
+            <button type="button" class="assistant__quick-btn" data-action="format">🎨 Sníða</button>
+            <button type="button" class="assistant__quick-btn" data-action="list">📋 Listi</button>
+            <button type="button" class="assistant__quick-btn" data-action="variables">❓ Breytur</button>
+          </div>
+          <div class="assistant__messages" id="assistant-messages">
+            <div class="assistant__message assistant__message--assistant">
+              Hæ! Ég get hjálpað þér að <strong>sníða</strong> textann með fallegu HTML útliti. Ég breyti ekki orðunum - bara skipulaginu og útlitinu.
+            </div>
+          </div>
+          <div class="assistant__input">
+            <input type="text" id="assistant-input" placeholder="Spurðu AI..." autocomplete="off">
+            <button type="button" id="assistant-send">Senda</button>
+          </div>
+        </div>
       </div>
 
       <div class="modal__footer">
@@ -157,7 +160,7 @@
     </div>
   </div>
 
-  <script type="module" src="/admin/email/js/templates-list.js?v=20260109o"></script>
+  <script type="module" src="/admin/email/js/templates-list.js?v=20260109p"></script>
 
   <!-- Initialize Navigation Component -->
   <script type="module">

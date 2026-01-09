@@ -15,8 +15,8 @@ import { showToast, showError } from '../../../js/components/ui-toast.js';
 import { escapeHTML } from '../../../js/utils/util-format.js';
 // Note: showModal not used here - this page uses its own inline modal
 import EmailAPI from './api/email-api.js';
-import { TemplatePreview } from './template-editor-preview.js?v=20260109o';
-import { TemplateEditorAssistant } from './template-editor-assistant.js?v=20260109o';
+import { TemplatePreview } from './template-editor-preview.js?v=20260109p';
+import { TemplateEditorAssistant } from './template-editor-assistant.js?v=20260109p';
 
 // Use centralized escapeHTML from util-format.js
 const escapeHtml = escapeHTML;
@@ -174,6 +174,28 @@ function destroyEditorComponents() {
 }
 
 /**
+ * Toggle floating AI assistant visibility
+ */
+function toggleAssistant(show) {
+  const assistantPanel = document.getElementById('ai-assistant');
+  const fabButton = document.getElementById('assistant-fab');
+
+  if (!assistantPanel || !fabButton) return;
+
+  if (show === undefined) {
+    show = assistantPanel.classList.contains('template-editor__assistant--hidden');
+  }
+
+  if (show) {
+    assistantPanel.classList.remove('template-editor__assistant--hidden');
+    fabButton.classList.add('assistant__fab--hidden');
+  } else {
+    assistantPanel.classList.add('template-editor__assistant--hidden');
+    fabButton.classList.remove('assistant__fab--hidden');
+  }
+}
+
+/**
  * Setup toggle buttons for collapsing panels
  * Called once at page init - uses event delegation on modal
  */
@@ -184,13 +206,15 @@ function setupModalEventDelegation() {
   modalEl.addEventListener('click', (e) => {
     const target = e.target;
 
-    // AI Assistant toggle
+    // AI Assistant FAB button - open assistant
+    if (target.id === 'assistant-fab') {
+      toggleAssistant(true);
+      return;
+    }
+
+    // AI Assistant close button
     if (target.id === 'assistant-toggle') {
-      const assistantPanel = document.getElementById('ai-assistant');
-      if (assistantPanel) {
-        assistantPanel.classList.toggle('template-editor__assistant--collapsed');
-        target.textContent = assistantPanel.classList.contains('template-editor__assistant--collapsed') ? '+' : '−';
-      }
+      toggleAssistant(false);
       return;
     }
 
