@@ -323,7 +323,7 @@ function validateEventData(event) {
     start_time: event.start_time || null,
     end_time: event.end_time || null,
     is_online: Boolean(event.is_online),
-    cover: event.cover?.source ? safeString(event.cover.source, 500) : null,
+    cover: event.cover?.source ? safeString(event.cover.source, 1000) : null,
     place: event.place || {}
   };
 }

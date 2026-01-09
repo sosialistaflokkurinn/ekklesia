@@ -68,7 +68,7 @@ async function cacheEventImage(sourceUrl, eventId) {
       metadata: {
         contentType: contentType,
         metadata: {
-          sourceUrl: sourceUrl.substring(0, 500), // Store original URL for reference
+          sourceUrl: sourceUrl.substring(0, 1000), // Store original URL for reference
           cachedAt: new Date().toISOString(),
           eventId: eventId
         }
