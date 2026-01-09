@@ -13,6 +13,7 @@
  */
 
 import { initSession, showAuthenticatedContent } from '../../session/init.js';
+import { AuthenticationError } from '../../session/auth.js';
 import { debug } from '../../js/utils/util-debug.js';
 import {
   getFirebaseFirestore,
@@ -778,7 +779,13 @@ async function init() {
   } catch (error) {
     debug.error('Failed to initialize role management:', error);
 
-    if (error.message.includes('Superuser role required')) {
+    // Auth error - redirect to login
+    if (error instanceof AuthenticationError) {
+      window.location.href = '/';
+      return;
+    }
+
+    if (error.message?.includes('Superuser role required')) {
       return; // requireSuperuser already redirects
     }
 

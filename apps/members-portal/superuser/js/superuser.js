@@ -7,6 +7,7 @@
 
 // Import from member portal public directory
 import { initSession, showAuthenticatedContent } from '../../session/init.js';
+import { AuthenticationError } from '../../session/auth.js';
 import { debug } from '../../js/utils/util-debug.js';
 import { getFirebaseAuth, httpsCallable } from '../../firebase/app.js';
 import { superuserStrings } from './i18n/superuser-strings-loader.js';
@@ -176,22 +177,20 @@ async function init() {
   } catch (error) {
     debug.error('Failed to initialize superuser dashboard:', error);
 
-    // Check if unauthorized (requireSuperuser already redirects, but handle edge cases)
-    if (error.message.includes('Unauthorized') || error.message.includes('Superuser role required')) {
-      alert(superuserStrings.get('error_unauthorized_superuser'));
-      window.location.href = '/members-area/';
+    // Auth error - redirect to login
+    if (error instanceof AuthenticationError) {
+      window.location.href = '/';
       return;
     }
 
-    // Check if not authenticated
-    if (error.message.includes('Not authenticated')) {
-      window.location.href = '/';
+    // Check if unauthorized (requireSuperuser already redirects, but handle edge cases)
+    if (error.message?.includes('Unauthorized') || error.message?.includes('Superuser role required')) {
       return;
     }
 
     // Other errors
     debug.error('Error loading superuser dashboard:', error);
-    alert(superuserStrings.get('error_page_load').replace('%s', error.message));
+    alert(superuserStrings.get('error_page_load')?.replace('%s', error.message) || error.message);
   }
 }
 

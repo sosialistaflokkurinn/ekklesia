@@ -17,6 +17,7 @@
  */
 
 import { initSession, showAuthenticatedContent } from '../../session/init.js';
+import { AuthenticationError } from '../../session/auth.js';
 import { debug } from '../../js/utils/util-debug.js';
 import { requireSuperuser } from '../../js/rbac.js';
 import { showToast } from '../../js/components/ui-toast.js';
@@ -149,6 +150,12 @@ async function init() {
 
   } catch (error) {
     debug.error('Failed to initialize system overview:', error);
+
+    // Auth error - redirect to login
+    if (error instanceof AuthenticationError) {
+      window.location.href = '/';
+      return;
+    }
 
     // Superuser check handles its own redirect
     if (error.message?.includes('Superuser role required')) {

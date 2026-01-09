@@ -15,6 +15,7 @@
  */
 
 import { initSession, showAuthenticatedContent } from '../../session/init.js';
+import { AuthenticationError } from '../../session/auth.js';
 import { debug } from '../../js/utils/util-debug.js';
 import { httpsCallable } from '../../firebase/app.js';
 import { requireSuperuser } from '../../js/rbac.js';
@@ -669,11 +670,17 @@ async function init() {
   } catch (error) {
     debug.error('Failed to initialize dangerous ops:', error);
 
-    if (error.message.includes('Superuser role required')) {
+    // Auth error - redirect to login
+    if (error instanceof AuthenticationError) {
+      window.location.href = '/';
       return;
     }
 
-    showToast(superuserStrings.get('dangerous_op_error').replace('%s', error.message), 'error');
+    if (error.message?.includes('Superuser role required')) {
+      return;
+    }
+
+    showToast(superuserStrings.get('dangerous_op_error')?.replace('%s', error.message) || error.message, 'error');
   }
 }
 
