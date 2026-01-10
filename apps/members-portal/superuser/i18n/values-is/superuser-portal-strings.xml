@@ -158,7 +158,13 @@
   <string name="service_name_reactivateself">Endurvirkja aðild</string>
   <string name="service_name_getdeletedcounts">Fjöldi eyddra gagna</string>
 
-  <!-- Email services (Amazon SES) -->
+  <!-- Admin member operations -->
+  <string name="service_name_listmembers">Lista félaga</string>
+  <string name="service_name_getmember">Sækja félaga</string>
+  <string name="service_name_getmemberstats">Tölfræði félaga</string>
+  <string name="service_name_getmemberself">Sækja eigin gögn</string>
+
+  <!-- Email services (SendGrid) -->
   <string name="service_name_listemailtemplates">Lista póstsniðmát</string>
   <string name="service_name_getemailtemplate">Sækja póstsniðmát</string>
   <string name="service_name_saveemailtemplate">Vista póstsniðmát</string>

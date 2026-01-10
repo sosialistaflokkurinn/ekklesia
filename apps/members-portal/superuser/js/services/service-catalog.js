@@ -95,6 +95,14 @@ export const SERVICES = [
   { id: 'reactivateself', nameKey: 'service_name_reactivateself', group: GROUPS.MEMBER, category: CATEGORIES.MEMBER, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
 
   // ==========================================================================
+  // FIREBASE FUNCTIONS - Admin Member Operations
+  // ==========================================================================
+  { id: 'listmembers', nameKey: 'service_name_listmembers', group: GROUPS.MEMBER, category: CATEGORIES.MEMBER, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
+  { id: 'getmember', nameKey: 'service_name_getmember', group: GROUPS.MEMBER, category: CATEGORIES.MEMBER, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
+  { id: 'getmemberstats', nameKey: 'service_name_getmemberstats', group: GROUPS.MEMBER, category: CATEGORIES.MEMBER, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
+  { id: 'getmemberself', nameKey: 'service_name_getmemberself', group: GROUPS.MEMBER, category: CATEGORIES.MEMBER, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
+
+  // ==========================================================================
   // FIREBASE FUNCTIONS - Address Validation
   // ==========================================================================
   { id: 'search-addresses', nameKey: 'service_name_search_addresses', group: GROUPS.ADDRESS, category: CATEGORIES.ADDRESS, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2, registrationUsage: 'Heimilisfangaleit' },
