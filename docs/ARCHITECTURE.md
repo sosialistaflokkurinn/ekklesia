@@ -6,7 +6,7 @@
 |-------|----------|------|--------|
 | Frontend | `apps/members-portal/` | Static HTML/JS | `firebase deploy --only hosting` |
 | Elections API | `services/svc-elections/` | Node.js/Express | `./deploy.sh` |
-| Events + AI | `services/svc-events/` | Node.js + Kimi (2 assistants) | `./deploy.sh` |
+| Events + AI | `services/svc-events/` | Node.js + Gemini (3 assistants) | `./deploy.sh` |
 | Members API | `services/svc-members/functions/` | Python/Firebase | Firebase Functions |
 | Database | Cloud SQL | PostgreSQL 15 + pgvector | Managed |
 | Auth | Firebase + Kenni.is | OAuth PKCE | Managed |
@@ -25,7 +25,8 @@
 | **Firebase Auth** | Manages user sessions after Kenni.is authentication |
 | **pgvector** | PostgreSQL extension for vector similarity search (AI/RAG) |
 | **RAG** | Retrieval-Augmented Generation - AI answers using indexed documents |
-| **Kimi** | Moonshot AI LLM used for Party Wiki and Member Assistant |
+| **Gemini** | Google AI LLM used for Sysadmin Chat, Member Assistant, Email Editor |
+| **Kimi** | Moonshot AI LLM used for Party Wiki only |
 | **Source of Truth** | Firestore is canonical for member data |
 | **Django GCP** | Interim admin interface (Cloud Run) - will be replaced |
 | **hnitnum** | Icelandic address registry ID from iceaddr |
@@ -37,11 +38,13 @@
 
 | Document | Purpose |
 |----------|---------|
-| [API_REFERENCE.md](API_REFERENCE.md) | All API endpoints in one place |
-| [ADDRESS_SYSTEM.md](ADDRESS_SYSTEM.md) | Address handling, hnitnum, iceaddr |
+| [API_REFERENCE.md](API_REFERENCE.md) | All API endpoints |
 | [PATTERNS.md](PATTERNS.md) | Code patterns and components |
-| [PATTERNS-KIMI-Felagar.md](PATTERNS-KIMI-Felagar.md) | AI assistants (RAG, Kimi) |
 | [SECURITY.md](SECURITY.md) | Security rules and PII guidelines |
+| [AI-ASSISTANTS.md](AI-ASSISTANTS.md) | AI assistants (Gemini, Kimi, RAG) |
+| [ADDRESSES.md](ADDRESSES.md) | Address handling, hnitnum, iceaddr |
+| [ELECTIONS.md](ELECTIONS.md) | Elections and nomination committee |
+| [DEPLOYMENT.md](DEPLOYMENT.md) | Deployment procedures |
 
 ---
 
@@ -58,8 +61,9 @@
 │  ├── Firebase Functions (svc-members, Python)               │
 │  ├── Cloud Run: svc-elections (Node.js)                     │
 │  ├── Cloud Run: svc-events (Node.js + AI assistants)        │
-│  │   ├── Kimi sysadmin chat (superuser only)                │
-│  │   └── Member assistant (RAG + web search)                │
+│  │   ├── Sysadmin chat - Gemini (superuser only)            │
+│  │   ├── Member assistant - Gemini (RAG + web search)       │
+│  │   └── Email template editor - Gemini                     │
 │  └── SendGrid email                                          │
 │                                                              │
 │  Django GCP (INTERIM read-only admin)                       │

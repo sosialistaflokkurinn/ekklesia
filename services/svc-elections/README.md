@@ -387,8 +387,7 @@ ORDER BY timestamp DESC;
 
 ## Related Documentation
 
-- **[docs/development/guides/workflows/USAGE_CONTEXT.md](../../docs/development/guides/workflows/USAGE_CONTEXT.md)** - **CRITICAL: Load patterns (300 votes/sec)**
-- **[docs/operations/OPERATIONAL_PROCEDURES.md](../../docs/operations/OPERATIONAL_PROCEDURES.md)** - Meeting day operations
+- **[docs/DEPLOYMENT.md](../../docs/DEPLOYMENT.md)** - Deployment and operational procedures
 - [migrations/README.md](migrations/README.md) - Database migrations
 
 ---

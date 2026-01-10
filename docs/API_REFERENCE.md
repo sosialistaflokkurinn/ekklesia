@@ -383,7 +383,8 @@ Standard error format:
 
 ## Related Documentation
 
-- [ADDRESS_SYSTEM.md](ADDRESS_SYSTEM.md) - Heimilisfangakerfi og hnitnum
+- [ADDRESSES.md](ADDRESSES.md) - Heimilisfangakerfi og hnitnum
 - [ARCHITECTURE.md](ARCHITECTURE.md) - Kerfisarkitektúr
+- [ELECTIONS.md](ELECTIONS.md) - Elections patterns
 - [svc-elections README](../services/svc-elections/README.md) - Elections þjónusta
 - [svc-events README](../services/svc-events/README.md) - Events þjónusta

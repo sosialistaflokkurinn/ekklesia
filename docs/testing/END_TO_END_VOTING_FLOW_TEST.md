@@ -170,4 +170,4 @@ None – all test stages passed on the first attempt.
 ## Related Documentation
 
 - [docs/ARCHITECTURE.md](../ARCHITECTURE.md) – System architecture overview
-- [docs/PATTERNS-ELECTIONS.md](../PATTERNS-ELECTIONS.md) – Elections service patterns
+- [docs/ELECTIONS.md](../ELECTIONS.md) – Elections system documentation

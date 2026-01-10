@@ -15,8 +15,9 @@
 │  ├── Firebase Functions (svc-members, Python)               │
 │  ├── Cloud Run: svc-elections (Node.js)                     │
 │  ├── Cloud Run: svc-events (Node.js + AI assistants)        │
-│  │   ├── Kimi sysadmin chat (superuser only)                │
-│  │   └── Member assistant (RAG + web search)                │
+│  │   ├── Sysadmin chat - Gemini (superuser only)            │
+│  │   ├── Member assistant - Gemini (RAG + web search)       │
+│  │   └── Email template editor - Gemini                     │
 │  └── SendGrid email                                          │
 │                                                              │
 │  Django GCP (INTERIM read-only admin)                       │
@@ -79,7 +80,8 @@ Services read secrets from GCP Secret Manager. Key secrets:
 - `django-api-token` - Django API authentication
 - `django-socialism-db-password` - PostgreSQL password
 - `kenni-client-secret` - Kenni.is OAuth secret
-- `kimi-api-key` - Moonshot Kimi API key (sysadmin chat)
+- `GEMINI_API_KEY` - Google Gemini AI (sysadmin chat, member assistant, email editor)
+- `kimi-api-key` - Moonshot Kimi API key (Party Wiki only)
 - `brave-search-api-key` - Web search fallback for member assistant
 
 ---
@@ -247,5 +249,7 @@ gcloud builds submit --config cloudbuild.yaml \
 | [docs/README.md](docs/README.md) | Overview and quick links |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design |
 | [docs/PATTERNS.md](docs/PATTERNS.md) | Code patterns, components |
-| [docs/PATTERNS-KIMI-Felagar.md](docs/PATTERNS-KIMI-Felagar.md) | AI assistants (Kimi, member chat, RAG) |
+| [docs/AI-ASSISTANTS.md](docs/AI-ASSISTANTS.md) | AI assistants (Gemini, RAG, vector search) |
+| [docs/ELECTIONS.md](docs/ELECTIONS.md) | Elections and nomination committee |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Deployment procedures |
 | [docs/SECURITY.md](docs/SECURITY.md) | Security rules |

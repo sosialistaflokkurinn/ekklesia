@@ -178,6 +178,42 @@ gcloud run services describe SERVICE \
   --format="json" | jq '.spec.template.spec.containers[0].env'
 ```
 
+### Secret Rotation
+
+Use the rotation script for database passwords:
+
+```bash
+./scripts/maintenance/rotate-db-password.sh
+```
+
+**Manual rotation:**
+
+1. **Create new secret version:**
+   ```bash
+   gcloud secrets versions add SECRET_NAME --data-file=./new-secret.txt
+   ```
+
+2. **Verify new version:**
+   ```bash
+   gcloud secrets versions list SECRET_NAME
+   ```
+
+3. **Redeploy affected services:**
+   ```bash
+   cd services/svc-events && ./deploy.sh
+   cd services/svc-elections && ./deploy.sh
+   ```
+
+4. **Disable old version (after verification):**
+   ```bash
+   gcloud secrets versions disable SECRET_NAME --version=OLD_VERSION_ID
+   ```
+
+**Rotation schedule:**
+- Database passwords: Every 90 days
+- API keys: When compromised or annually
+- OAuth secrets: When IdP requires
+
 ---
 
 ## Pre-commit Hooks

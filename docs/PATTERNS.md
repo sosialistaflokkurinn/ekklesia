@@ -29,10 +29,9 @@
 | Document | Topics |
 |----------|--------|
 | [PATTERNS-GCP.md](PATTERNS-GCP.md) | GCP/Firebase auth, CLI commands, Cloud Run, Firestore queries |
-| [PATTERNS-ELECTIONS.md](PATTERNS-ELECTIONS.md) | Election types, voting systems, admin elections |
-| [PATTERNS-NominationCommittee.md](PATTERNS-NominationCommittee.md) | Nomination committee, ranked voting, restricted access |
-| [PATTERNS_DATA_DEBUGGING.md](PATTERNS_DATA_DEBUGGING.md) | Data sync issues, debugging data loss, iceaddr, webhook debugging |
-| [PATTERNS-KIMI-Felagar.md](PATTERNS-KIMI-Felagar.md) | RAG system, vector search, Kimi LLM, verification tests |
+| [ELECTIONS.md](ELECTIONS.md) | Election types, voting systems, nomination committee |
+| [AI-ASSISTANTS.md](AI-ASSISTANTS.md) | RAG system, Gemini AI, vector search, verification tests |
+| [ADDRESSES.md](ADDRESSES.md) | Address system, iceaddr debugging, data sync |
 
 ---
 
@@ -1025,3 +1024,71 @@ def get_items_by_key(req):
 - Cache empty results too (prevents repeated queries for missing data)
 - Log cache hits for monitoring
 - Cold starts still query Firestore (first request after deploy or scale-up)
+
+---
+
+## Email Template Editor
+
+AI-powered email template editor with live preview and quick actions.
+
+### Files
+
+| File | Purpose |
+|------|---------|
+| `admin/email/js/template-editor-assistant.js` | AI assistant widget |
+| `admin/email/js/template-editor-preview.js` | Live preview component |
+| `services/svc-events/src/routes/route-email-template-assistant.js` | Backend API |
+
+### Quick Actions
+
+The editor provides AI-powered quick actions:
+
+| Action | Description |
+|--------|-------------|
+| `Sósíalistasnið` | Apply socialist party tone/style |
+| `Sniða` | Improve text clarity |
+| `Listi` | Convert to bullet list |
+| `Breytur` | Add template variables |
+
+### Usage Pattern
+
+```javascript
+// In template-editor-assistant.js
+import { initTemplateAssistant } from './template-editor-assistant.js';
+
+// Initialize with container and callbacks
+const assistant = initTemplateAssistant({
+  container: document.getElementById('assistant-container'),
+  onApply: (newText) => updateEditor(newText),
+  getSelectedText: () => editor.getSelection()
+});
+```
+
+### API Endpoint
+
+```javascript
+// POST /api/email-template/assist
+{
+  "action": "sosialistasnid",  // or "snida", "listi", "breytur"
+  "text": "Selected text to improve",
+  "context": "Optional surrounding context"
+}
+
+// Response
+{
+  "result": "Improved text with socialist party style..."
+}
+```
+
+### Template Variables
+
+Available variables for email templates:
+
+| Variable | Description |
+|----------|-------------|
+| `{{ member.first_name }}` | Member's first name |
+| `{{ member.name }}` | Full name |
+| `{{ member.email }}` | Email address |
+| `{{unsubscribe_url}}` | Unsubscribe link |
+
+See [EMAIL-TEMPLATES-GUIDE.md](EMAIL-TEMPLATES-GUIDE.md) for full user guide.
