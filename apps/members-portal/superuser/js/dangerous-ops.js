@@ -14,18 +14,23 @@
  * ✅ getAuditLogs - IMPLEMENTED (fn_superuser.py) - Query Cloud Logging
  */
 
-import { initSession } from '../../session/init.js';
+import { initSession, showAuthenticatedContent } from '../../session/init.js';
+import { AuthenticationError } from '../../session/auth.js';
 import { debug } from '../../js/utils/util-debug.js';
 import { httpsCallable } from '../../firebase/app.js';
 import { requireSuperuser } from '../../js/rbac.js';
 import { showToast } from '../../js/components/ui-toast.js';
 import { R } from '../../i18n/strings-loader.js';
 import { superuserStrings } from './i18n/superuser-strings-loader.js';
+import { formatDateOnlyIcelandic } from '../../js/utils/util-format.js';
 
 // State
 let currentOperation = null;
 let confirmationStep = 1;
 let countdownTimer = null;
+let deletedMembersList = []; // Cached list of deleted members
+let selectedMember = null; // Currently selected member for preview
+let initialized = false; // Guard against multiple init calls
 
 /**
  * Validate kennitala format (10 digits)
@@ -35,7 +40,112 @@ function isValidKennitala(kt) {
 }
 
 /**
+ * Setup tab switching
+ */
+function setupTabs() {
+  const tabs = document.querySelectorAll('.dangerous-tabs__tab');
+  const contents = document.querySelectorAll('.dangerous-tabs__content');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const targetId = `tab-${tab.dataset.tab}`;
+
+      // Update tab buttons
+      tabs.forEach(t => t.classList.remove('dangerous-tabs__tab--active'));
+      tab.classList.add('dangerous-tabs__tab--active');
+
+      // Update content panels
+      contents.forEach(c => c.classList.remove('dangerous-tabs__content--active'));
+      document.getElementById(targetId).classList.add('dangerous-tabs__content--active');
+
+      // Clear selection when switching tabs
+      clearSelection();
+    });
+  });
+}
+
+/**
+ * Clear member selection
+ */
+function clearSelection() {
+  selectedMember = null;
+
+  // Clear all selected rows
+  document.querySelectorAll('.data-table--selectable tr.selected').forEach(row => {
+    row.classList.remove('selected');
+  });
+
+  // Hide all preview panels
+  document.querySelectorAll('.dangerous-ops__preview').forEach(panel => {
+    panel.style.display = 'none';
+  });
+
+  // Clear inputs
+  const deleteInput = document.getElementById('delete-member-id');
+  const anonymizeInput = document.getElementById('anonymize-member-id');
+  if (deleteInput) deleteInput.value = '';
+  if (anonymizeInput) anonymizeInput.value = '';
+
+  // Disable buttons
+  const deleteBtn = document.getElementById('delete-member-btn');
+  const anonymizeBtn = document.getElementById('anonymize-member-btn');
+  if (deleteBtn) deleteBtn.disabled = true;
+  if (anonymizeBtn) anonymizeBtn.disabled = true;
+}
+
+/**
+ * Select a member and show preview
+ */
+function selectMember(member, tabType) {
+  selectedMember = member;
+
+  // Clear previous selections in this tab
+  document.querySelectorAll(`#deleted-members-tbody-${tabType} tr.selected`).forEach(row => {
+    row.classList.remove('selected');
+  });
+
+  // Highlight the clicked row
+  const rows = document.querySelectorAll(`#deleted-members-tbody-${tabType} tr`);
+  rows.forEach(row => {
+    if (row.dataset.memberId === String(member.id)) {
+      row.classList.add('selected');
+      debug.log('Row selected:', row);
+    }
+  });
+
+  // Show preview panel
+  const previewPanel = document.getElementById(`preview-${tabType}`);
+  if (previewPanel) {
+    previewPanel.style.display = 'block';
+
+    // Update preview content
+    document.getElementById(`preview-name-${tabType}`).textContent = member.name || '-';
+    document.getElementById(`preview-kt-${tabType}`).textContent = member.kennitala_masked || '-';
+    document.getElementById(`preview-date-${tabType}`).textContent =
+      member.deleted_at ? formatDateOnlyIcelandic(member.deleted_at) : '-';
+  }
+
+  // Enable the action button since member is selected from table
+  // We'll use member.id for the backend call
+  const btnId = tabType === 'delete' ? 'delete-member-btn' : 'anonymize-member-btn';
+  const btn = document.getElementById(btnId);
+  if (btn) {
+    btn.disabled = false;
+  }
+
+  // Update input to show masked kennitala (for display only)
+  const inputId = tabType === 'delete' ? 'delete-member-id' : 'anonymize-member-id';
+  const input = document.getElementById(inputId);
+  if (input) {
+    input.value = member.kennitala_masked || '';
+    input.dataset.memberId = String(member.id);
+  }
+}
+
+/**
  * Enable/disable buttons based on input validation
+ * Note: When a member is selected from the table, the button should stay enabled
+ * even if the displayed kennitala is masked. We check for selectedMember first.
  */
 function setupInputValidation() {
   const deleteInput = document.getElementById('delete-member-id');
@@ -43,13 +153,47 @@ function setupInputValidation() {
   const anonymizeInput = document.getElementById('anonymize-member-id');
   const anonymizeBtn = document.getElementById('anonymize-member-btn');
 
-  deleteInput.addEventListener('input', () => {
-    deleteBtn.disabled = !isValidKennitala(deleteInput.value);
-  });
+  if (deleteInput && deleteBtn) {
+    deleteInput.addEventListener('input', (e) => {
+      // If member was selected from table, keep button enabled
+      // Only validate manual input (when no member is selected)
+      if (selectedMember) {
+        // Check if user is typing manually (cleared the selection)
+        const typedValue = deleteInput.value;
+        if (typedValue !== selectedMember.kennitala_masked) {
+          // User is typing manually, clear selection
+          selectedMember = null;
+          document.querySelectorAll('#deleted-members-tbody-delete tr.selected').forEach(row => {
+            row.classList.remove('selected');
+          });
+          document.getElementById('preview-delete').style.display = 'none';
+          deleteBtn.disabled = !isValidKennitala(typedValue);
+        }
+        // Otherwise keep button enabled (selection is valid)
+      } else {
+        deleteBtn.disabled = !isValidKennitala(deleteInput.value);
+      }
+    });
+  }
 
-  anonymizeInput.addEventListener('input', () => {
-    anonymizeBtn.disabled = !isValidKennitala(anonymizeInput.value);
-  });
+  if (anonymizeInput && anonymizeBtn) {
+    anonymizeInput.addEventListener('input', (e) => {
+      // If member was selected from table, keep button enabled
+      if (selectedMember) {
+        const typedValue = anonymizeInput.value;
+        if (typedValue !== selectedMember.kennitala_masked) {
+          selectedMember = null;
+          document.querySelectorAll('#deleted-members-tbody-anonymize tr.selected').forEach(row => {
+            row.classList.remove('selected');
+          });
+          document.getElementById('preview-anonymize').style.display = 'none';
+          anonymizeBtn.disabled = !isValidKennitala(typedValue);
+        }
+      } else {
+        anonymizeBtn.disabled = !isValidKennitala(anonymizeInput.value);
+      }
+    });
+  }
 }
 
 /**
@@ -65,8 +209,6 @@ function openConfirmModal(operation) {
   const phrase = document.getElementById('confirm-phrase');
 
   // Set modal content based on operation
-  // Note: Using textContent for security - kennitala is user input
-  // Even though validated as digits-only, we avoid innerHTML with user data
   switch (operation.type) {
     case 'delete-member':
       title.textContent = superuserStrings.get('dangerous_delete_member_title');
@@ -93,6 +235,7 @@ function openConfirmModal(operation) {
   document.getElementById('confirm-step-3').classList.add('u-hidden');
   document.getElementById('confirm-proceed-btn').disabled = true;
   document.getElementById('confirm-input').value = '';
+  document.getElementById('confirm-input').classList.remove('confirmation-input--valid');
 
   // Show modal
   modal.setAttribute('aria-hidden', 'false');
@@ -194,7 +337,7 @@ async function executeOperation() {
       case 'delete-member': {
         const hardDeleteMember = httpsCallable('hardDeleteMember', 'europe-west2');
         result = await hardDeleteMember({
-          kennitala: currentOperation.kennitala,
+          member_id: currentOperation.memberId,
           confirmation: 'EYÐA VARANLEGA'
         });
         break;
@@ -203,8 +346,8 @@ async function executeOperation() {
       case 'anonymize-member': {
         const anonymizeMember = httpsCallable('anonymizeMember', 'europe-west2');
         result = await anonymizeMember({
-          kennitala: currentOperation.kennitala,
-          confirmation: 'NAFNLAUSA'
+          member_id: currentOperation.memberId,
+          confirmation: 'NAFNHREINSA'
         });
         break;
       }
@@ -228,14 +371,10 @@ async function executeOperation() {
     }
 
     closeConfirmModal();
+    clearSelection();
 
-    // Clear input fields
-    document.getElementById('delete-member-id').value = '';
-    document.getElementById('anonymize-member-id').value = '';
-    document.getElementById('delete-member-btn').disabled = true;
-    document.getElementById('anonymize-member-btn').disabled = true;
-
-    // Refresh audit trail
+    // Refresh data
+    loadDeletedCounts();
     loadRecentOperations();
 
   } catch (error) {
@@ -255,12 +394,24 @@ async function loadDeletedCounts() {
     const result = await getDeletedCounts();
 
     const counts = result.data.counts || { members: 0, votes: 0 };
+
+    // Update purge tab counts
     document.getElementById('deleted-members-count').textContent = String(counts.members);
     document.getElementById('deleted-votes-count').textContent = String(counts.votes);
+
+    // Update counts in delete/anonymize tabs
+    const deleteCount = document.getElementById('deleted-count-delete');
+    const anonymizeCount = document.getElementById('deleted-count-anonymize');
+    if (deleteCount) deleteCount.textContent = String(counts.members);
+    if (anonymizeCount) anonymizeCount.textContent = String(counts.members);
 
     // Enable purge button if there are deleted records
     const totalDeleted = counts.members + counts.votes;
     document.getElementById('purge-deleted-btn').disabled = totalDeleted === 0;
+
+    // Cache and populate deleted members tables
+    deletedMembersList = result.data.deleted_members || [];
+    populateDeletedMembersTables(deletedMembersList);
 
   } catch (error) {
     debug.error('Failed to load deleted counts:', error);
@@ -268,6 +419,90 @@ async function loadDeletedCounts() {
     document.getElementById('deleted-votes-count').textContent = '?';
     document.getElementById('purge-deleted-btn').disabled = true;
   }
+}
+
+/**
+ * Populate deleted members tables in all tabs
+ */
+function populateDeletedMembersTables(members) {
+  // Tables to populate
+  const tableConfigs = [
+    { tbodyId: 'deleted-members-tbody-delete', emptyId: 'no-deleted-delete', type: 'delete', selectable: true },
+    { tbodyId: 'deleted-members-tbody-anonymize', emptyId: 'no-deleted-anonymize', type: 'anonymize', selectable: true },
+    { tbodyId: 'deleted-members-tbody', emptyId: null, type: 'purge', selectable: false }
+  ];
+
+  tableConfigs.forEach(config => {
+    const tbody = document.getElementById(config.tbodyId);
+    if (!tbody) return;
+
+    // Clear existing rows
+    tbody.textContent = '';
+
+    if (!members || members.length === 0) {
+      if (config.emptyId) {
+        document.getElementById(config.emptyId).style.display = 'block';
+      }
+      const section = document.getElementById('deleted-members-section');
+      if (section && config.type === 'purge') {
+        section.style.display = 'none';
+      }
+      return;
+    }
+
+    // Hide empty state
+    if (config.emptyId) {
+      document.getElementById(config.emptyId).style.display = 'none';
+    }
+
+    // Show purge section
+    if (config.type === 'purge') {
+      const section = document.getElementById('deleted-members-section');
+      if (section) section.style.display = 'block';
+    }
+
+    // Populate table
+    members.forEach(member => {
+      const row = document.createElement('tr');
+      row.dataset.memberId = String(member.id);
+
+      if (config.selectable) {
+        row.classList.add('data-table__row--clickable');
+        row.addEventListener('click', () => {
+          selectMember(member, config.type);
+        });
+
+        // Checkbox cell
+        const checkCell = document.createElement('td');
+        checkCell.className = 'data-table__td--checkbox';
+        const checkbox = document.createElement('span');
+        checkbox.className = 'data-table__checkbox';
+        checkCell.appendChild(checkbox);
+        row.appendChild(checkCell);
+      }
+
+      // Name cell
+      const nameCell = document.createElement('td');
+      nameCell.textContent = member.name || '-';
+      row.appendChild(nameCell);
+
+      // Kennitala cell (masked)
+      const ktCell = document.createElement('td');
+      ktCell.textContent = member.kennitala_masked || '-';
+      row.appendChild(ktCell);
+
+      // Deleted at cell
+      const dateCell = document.createElement('td');
+      if (member.deleted_at) {
+        dateCell.textContent = formatDateOnlyIcelandic(member.deleted_at);
+      } else {
+        dateCell.textContent = '-';
+      }
+      row.appendChild(dateCell);
+
+      tbody.appendChild(row);
+    });
+  });
 }
 
 /**
@@ -327,8 +562,7 @@ async function loadRecentOperations() {
 
       const timeCell = document.createElement('td');
       if (log.timestamp) {
-        const date = new Date(log.timestamp);
-        timeCell.textContent = date.toLocaleString('is-IS', { dateStyle: 'short', timeStyle: 'short' });
+        timeCell.textContent = formatDateOnlyIcelandic(log.timestamp);
       } else {
         timeCell.textContent = '-';
       }
@@ -364,14 +598,24 @@ async function loadRecentOperations() {
 function setupEventListeners() {
   // Delete member button
   document.getElementById('delete-member-btn').addEventListener('click', () => {
-    const kennitala = document.getElementById('delete-member-id').value;
-    openConfirmModal({ type: 'delete-member', kennitala });
+    if (!selectedMember) return;
+    openConfirmModal({
+      type: 'delete-member',
+      memberId: selectedMember.id,
+      memberName: selectedMember.name,
+      kennitala: selectedMember.kennitala_masked
+    });
   });
 
   // Anonymize member button
   document.getElementById('anonymize-member-btn').addEventListener('click', () => {
-    const kennitala = document.getElementById('anonymize-member-id').value;
-    openConfirmModal({ type: 'anonymize-member', kennitala });
+    if (!selectedMember) return;
+    openConfirmModal({
+      type: 'anonymize-member',
+      memberId: selectedMember.id,
+      memberName: selectedMember.name,
+      kennitala: selectedMember.kennitala_masked
+    });
   });
 
   // Purge deleted button
@@ -403,28 +647,40 @@ function setupEventListeners() {
  * Initialize page
  */
 async function init() {
+  // Prevent multiple initializations (module can be loaded multiple times)
+  if (initialized) return;
+  initialized = true;
+
   try {
     await R.load('is');
     await superuserStrings.load();
-    superuserStrings.translatePage();  // Translate data-i18n elements
+    superuserStrings.translatePage();
     await initSession();
     await requireSuperuser();
 
+    // Auth verified - show page content
+    showAuthenticatedContent();
+
+    setupTabs();
     setupInputValidation();
     setupEventListeners();
     loadDeletedCounts();
     loadRecentOperations();
 
-    debug.log('Dangerous operations page initialized');
-
   } catch (error) {
     debug.error('Failed to initialize dangerous ops:', error);
 
-    if (error.message.includes('Superuser role required')) {
+    // Auth error - redirect to login
+    if (error instanceof AuthenticationError) {
+      window.location.href = '/';
       return;
     }
 
-    showToast(superuserStrings.get('dangerous_op_error').replace('%s', error.message), 'error');
+    if (error.message?.includes('Superuser role required')) {
+      return;
+    }
+
+    showToast(superuserStrings.get('dangerous_op_error')?.replace('%s', error.message) || error.message, 'error');
   }
 }
 

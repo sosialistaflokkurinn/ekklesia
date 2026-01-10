@@ -35,9 +35,14 @@ echo -e "\n${YELLOW}Setting GCP project to ${PROJECT_ID}...${NC}"
 gcloud config set project ${PROJECT_ID}
 
 # Admin configuration (for developer reset endpoint)
-# Firebase UID for Jón Jónsson (jon.jonsson@example.com)
+# Set ALLOWED_RESET_UIDS in environment before running this script
 ADMIN_RESET_ENABLED="true"
-ALLOWED_RESET_UIDS="abc123XYZ789ExampleUserUID456"  # Comma-separated UIDs for multiple developers
+if [ -z "${ALLOWED_RESET_UIDS}" ]; then
+  echo -e "${RED}ERROR: ALLOWED_RESET_UIDS environment variable is required${NC}"
+  echo "Set it to a comma-separated list of Firebase UIDs for developers"
+  echo "Example: export ALLOWED_RESET_UIDS='uid1,uid2'"
+  exit 1
+fi
 
 # Build and push image to Container Registry
 echo -e "\n${YELLOW}Building and pushing Docker image...${NC}"
@@ -58,7 +63,7 @@ gcloud run deploy ${SERVICE_NAME} \
   --port 8080 \
   --add-cloudsql-instances "$DB_CONNECTION_NAME" \
   --set-env-vars "NODE_ENV=production,FIREBASE_PROJECT_ID=ekklesia-prod-10-2025,DATABASE_HOST=/cloudsql/$DB_CONNECTION_NAME,DATABASE_PORT=5432,DATABASE_NAME=socialism,DATABASE_USER=socialism,ELECTIONS_SERVICE_URL=https://elections-service-521240388393.europe-west1.run.app,ADMIN_RESET_ENABLED=${ADMIN_RESET_ENABLED},ALLOWED_RESET_UIDS=${ALLOWED_RESET_UIDS},CORS_ORIGINS=https://ekklesia-prod-10-2025.web.app;https://ekklesia-prod-10-2025.firebaseapp.com;https://felagar.sosialistaflokkurinn.is,STORAGE_BUCKET=ekklesia-prod-10-2025.firebasestorage.app" \
-  --set-secrets "DATABASE_PASSWORD=django-socialism-db-password:latest,S2S_API_KEY=elections-s2s-api-key:latest,FB_PAGE_ACCESS_TOKEN=fb-page-access-token:latest,FB_PAGE_ID=fb-page-id:latest,KIMI_API_KEY=kimi-api-key:latest"
+  --set-secrets "DATABASE_PASSWORD=django-socialism-db-password:latest,S2S_API_KEY=elections-s2s-api-key:latest,FB_PAGE_ACCESS_TOKEN=fb-page-access-token:latest,FB_PAGE_ID=fb-page-id:latest,GEMINI_API_KEY=gemini-api-key:latest,BRAVE_API_KEY=brave-api-key:latest"
 
 # Get service URL
 SERVICE_URL=$(gcloud run services describe ${SERVICE_NAME} \

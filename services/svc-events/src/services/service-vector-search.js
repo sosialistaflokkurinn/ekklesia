@@ -9,6 +9,7 @@
 
 const { query } = require('../config/config-database');
 const logger = require('../utils/util-logger');
+const boostConfig = require('../config/config-rag-boost');
 
 /**
  * Search for similar documents using cosine similarity
@@ -44,7 +45,7 @@ async function searchSimilar(embedding, options = {}) {
     if (queryText) {
       // Extract significant words (>4 chars, lowercase, remove common Icelandic words)
       // Exclude short question words that appear inside other words (e.g., 'hver' inside 'Umhverfis')
-      const commonWords = ['hvað', 'segir', 'flokkurinn', 'stefna', 'flokksins', 'afstaða', 'er', 'um', 'til', 'að', 'og', 'eða', 'með', 'móti', 'styður', 'vill', 'hver', 'fyrst', 'fyrsti'];
+      const commonWords = boostConfig.commonWords;
 
       // Normalize Icelandic accents for matching (á→a, é→e, etc.)
       const normalizeAccents = (w) => w
@@ -275,6 +276,54 @@ async function searchSimilar(embedding, options = {}) {
           ELSE ${contentBoostClause} END`;
       }
 
+      // Stjórnarskrá (nýja stjórnarskráin frá 2012)
+      const stjornarskraTerms = ['stjórnarskr', 'ný stjórnarskrá', '2012 stjórnarskr'];
+      if (stjornarskraTerms.some(term => queryLower.includes(term))) {
+        contentBoostClause = `CASE
+          WHEN source_type = 'curated-answer' AND chunk_id = 'stefna-stjornarskra' THEN 7.0
+          ELSE ${contentBoostClause} END`;
+      }
+
+      // Fíkniefni (afglæpavæðing)
+      const fikniefniTerms = ['fíkniefn', 'afglæpavæ', 'neysluskammt', 'vímuefn', 'kannabis'];
+      if (fikniefniTerms.some(term => queryLower.includes(term))) {
+        contentBoostClause = `CASE
+          WHEN source_type = 'curated-answer' AND chunk_id = 'stefna-fikniefni' THEN 7.0
+          ELSE ${contentBoostClause} END`;
+      }
+
+      // Innflytjendur og flóttamenn
+      const innflytjendurTerms = ['innflytjend', 'flóttaman', 'flóttamenn', 'hælisleit', 'útlending'];
+      if (innflytjendurTerms.some(term => queryLower.includes(term))) {
+        contentBoostClause = `CASE
+          WHEN source_type = 'curated-answer' AND chunk_id = 'stefna-innflytjendur' THEN 7.0
+          ELSE ${contentBoostClause} END`;
+      }
+
+      // Virkjanir og hálendisvernd
+      const virkjanirTerms = ['virkj', 'hálend', 'orkufyrirtæk', 'vatnsafl', 'náttúruvernd'];
+      if (virkjanirTerms.some(term => queryLower.includes(term))) {
+        contentBoostClause = `CASE
+          WHEN source_type = 'curated-answer' AND chunk_id = 'stefna-virkjanir' THEN 7.0
+          ELSE ${contentBoostClause} END`;
+      }
+
+      // Ríkisbanki / samfélagsbanki
+      const rikisbankiTerms = ['ríkisbank', 'samfélagsbank', 'ríkið eigi bank'];
+      if (rikisbankiTerms.some(term => queryLower.includes(term))) {
+        contentBoostClause = `CASE
+          WHEN source_type = 'curated-answer' AND chunk_id = 'stefna-rikisbanki' THEN 7.0
+          ELSE ${contentBoostClause} END`;
+      }
+
+      // Vegatoll / veggjöld / samgöngumál
+      const vegatollTerms = ['vegatoll', 'veggjald', 'samgöngusáttmál'];
+      if (vegatollTerms.some(term => queryLower.includes(term))) {
+        contentBoostClause = `CASE
+          WHEN source_type = 'curated-answer' AND chunk_id = 'stefna-vegatoll' THEN 7.0
+          ELSE ${contentBoostClause} END`;
+      }
+
       // Stofnun flokksins (hvenær stofnaður, hvar)
       const stofnunTerms = ['stofnaður', 'stofnað', 'stofnun', 'hvenær var', 'tjarnarbíó'];
       if (stofnunTerms.some(term => queryLower.includes(term))) {
@@ -319,6 +368,37 @@ async function searchSimilar(embedding, options = {}) {
         contentBoostClause = `CASE
           WHEN source_type = 'curated-answer' AND chunk_id = 'saga-oddvitar-2024' THEN 7.0
           ELSE ${contentBoostClause} END`;
+      }
+
+      // Frambjóðendur - öll kosningaár (8.0x boost - same as curated answers)
+      // Include both Icelandic (ð) and ASCII (d) variations for robust matching
+      const frambjodendurTerms = [
+        'framboð', 'frambod',          // framboð
+        'frambjóðend', 'frambjodend',  // frambjóðendur
+        'kosning',
+        'buðu fram', 'budu fram',      // buðu/budu fram
+        'bauð fram', 'baud fram',      // bauð/baud fram
+        'hverjir buðu', 'hverjir budu' // hverjir buðu/budu
+      ];
+      if (frambjodendurTerms.some(term => queryLower.includes(term))) {
+        // Check for specific years - use high boost (8.0) to ensure these are found
+        if (queryLower.includes('2024')) {
+          contentBoostClause = `CASE
+            WHEN chunk_id = 'frambjodendur-2024' THEN 8.0
+            ELSE ${contentBoostClause} END`;
+        } else if (queryLower.includes('2022') || queryLower.includes('sveitarstjórn')) {
+          contentBoostClause = `CASE
+            WHEN chunk_id = 'frambjodendur-2022' THEN 8.0
+            ELSE ${contentBoostClause} END`;
+        } else if (queryLower.includes('2021')) {
+          contentBoostClause = `CASE
+            WHEN chunk_id = 'frambjodendur-2021' THEN 8.0
+            ELSE ${contentBoostClause} END`;
+        } else if (queryLower.includes('2018')) {
+          contentBoostClause = `CASE
+            WHEN chunk_id = 'frambjodendur-2018' THEN 8.0
+            ELSE ${contentBoostClause} END`;
+        }
       }
 
       // Efling formaður
@@ -615,8 +695,18 @@ async function searchSimilar(embedding, options = {}) {
       }
     }
 
+    // Build source type boost CASE statement from config
+    const sourceBoostCases = Object.entries(boostConfig.sourceTypeBoosts)
+      .filter(([key]) => key !== 'default' && !key.endsWith('*'))
+      .map(([type, boost]) => `WHEN source_type = '${type}' THEN ${boost}`)
+      .join('\n            ');
+    const sourceBoostClause = `CASE
+            ${sourceBoostCases}
+            ELSE ${boostConfig.sourceTypeBoosts.default || 1.0}
+          END`;
+
     if (boostPolicySources) {
-      // Boost policy sources - party-website (stefna) is PRIMARY, kosningaprof is secondary
+      // Boost policy sources using config - stefna/kosningaaetlun are PRIMARY
       // Also boost if title matches query keywords
       sql = `
         SELECT
@@ -628,17 +718,7 @@ async function searchSimilar(embedding, options = {}) {
           content,
           citation,
           (1 - (embedding <=> $1::vector)) *
-          CASE
-            WHEN source_type = 'curated-answer' THEN 3.0
-            WHEN source_type = 'party-website' THEN 2.0
-            WHEN source_type = 'heimildin-2024' THEN 1.3
-            WHEN source_type = 'kjosturett-2024' THEN 1.3
-            WHEN source_type = 'kosningaprof-2024' THEN 1.2
-            WHEN source_type = 'vidskiptarad-2024' THEN 1.1
-            WHEN source_type = 'discourse-archive' THEN 1.0
-            WHEN source_type = 'discourse-person' THEN 0.5
-            ELSE 1.0
-          END *
+          ${sourceBoostClause} *
           ${titleBoostClause} *
           ${contentBoostClause} AS similarity
         FROM rag_documents

@@ -2,13 +2,25 @@
 
 ## Quick Links
 
+### Core Documentation
 | Document | Purpose |
 |----------|---------|
 | [ARCHITECTURE.md](ARCHITECTURE.md) | System design, data flow, troubleshooting |
 | [PATTERNS.md](PATTERNS.md) | Code patterns, reusable components, best practices |
 | [PATTERNS-GCP.md](PATTERNS-GCP.md) | GCP/Firebase queries, Cloud SQL, Firestore |
-| [PATTERNS-KIMI-Felagar.md](PATTERNS-KIMI-Felagar.md) | RAG system, vector search, AI assistant |
 | [SECURITY.md](SECURITY.md) | Security rules, secrets management |
+| [API_REFERENCE.md](API_REFERENCE.md) | All API endpoints |
+
+### Systems & Features
+| Document | Purpose |
+|----------|---------|
+| [AI-ASSISTANTS.md](AI-ASSISTANTS.md) | Gemini/Kimi AI assistants, RAG, vector search |
+| [ELECTIONS.md](ELECTIONS.md) | Elections and nomination committee |
+| [ADDRESSES.md](ADDRESSES.md) | Address system, hnitnum, iceaddr |
+| [REGISTRATION.md](REGISTRATION.md) | Member registration flow |
+| [DEPLOYMENT.md](DEPLOYMENT.md) | Deployment procedures |
+| [AUTHENTICATION.md](AUTHENTICATION.md) | OAuth troubleshooting, MFA |
+| [EMAIL-TEMPLATES-GUIDE.md](EMAIL-TEMPLATES-GUIDE.md) | Email template guide |
 
 ---
 

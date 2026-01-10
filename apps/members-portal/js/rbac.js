@@ -407,10 +407,10 @@ export function canPerformAction(userRole, action) {
 /**
  * Require member role to access page
  * Redirects to login if not authenticated or not a member
- * @param {string} redirectUrl - URL to redirect to if unauthorized (default: /session/login.html)
+ * @param {string} redirectUrl - URL to redirect to if unauthorized (default: /)
  * @throws {Error} If user is not a member
  */
-export async function requireMember(redirectUrl = '/session/login.html') {
+export async function requireMember(redirectUrl = '/') {
   const user = auth.currentUser;
   if (!user) {
     console.warn('[RBAC] No authenticated user, redirecting to login');
@@ -438,7 +438,7 @@ export async function requireAdmin(redirectUrl = '/members-area/') {
   const user = auth.currentUser;
   if (!user) {
     console.warn('[RBAC] No authenticated user, redirecting to login');
-    window.location.href = '/session/login.html';
+    window.location.href = '/';
     throw new Error('Not authenticated');
   }
   
@@ -464,7 +464,7 @@ export async function requireSuperuser(redirectUrl = '/members-area/') {
   const user = auth.currentUser;
   if (!user) {
     console.warn('[RBAC] No authenticated user, redirecting to login');
-    window.location.href = '/session/login.html';
+    window.location.href = '/';
     throw new Error('Not authenticated');
   }
   

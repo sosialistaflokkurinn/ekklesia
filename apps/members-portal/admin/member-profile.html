@@ -11,9 +11,9 @@
 
   <!-- Reuse member portal styles -->
   <link rel="stylesheet" href="/styles/bundle.css?v=20251217k">
-  <link rel="stylesheet" href="/styles/components/profile-edit.css?v=20251105">
-  <link rel="stylesheet" href="/styles/components/address-autocomplete.css?v=20251125">
-  <link rel="stylesheet" href="/styles/components/searchable-select.css?v=20251105">
+  <link rel="stylesheet" href="/styles/components/profile-edit.css?v=20260109a">
+  <link rel="stylesheet" href="/styles/components/address-autocomplete.css?v=20260109a">
+  <link rel="stylesheet" href="/styles/components/searchable-select.css?v=20260109a">
 
   <!-- Admin-specific styles -->
   <link rel="stylesheet" href="/admin/styles/admin.css">
@@ -291,6 +291,19 @@
               <div class="info-grid__label" id="label-uid">Firebase UID</div>
               <div class="info-grid__value" id="value-uid">-</div>
             </div>
+          </div>
+        </div>
+
+        <!-- Admin Actions (hidden if member is already deleted) -->
+        <div class="card" id="admin-actions-card">
+          <h3 class="card__title" id="section-admin-actions">Stjórnunaraðgerðir</h3>
+          <div class="card__content">
+            <p class="card__description" id="admin-actions-description">
+              Aðgerðir sem aðeins stjórnendur geta framkvæmt.
+            </p>
+            <button type="button" class="btn btn--danger" id="btn-delete-member">
+              🗑️ Eyða félaga
+            </button>
           </div>
         </div>
       </div>

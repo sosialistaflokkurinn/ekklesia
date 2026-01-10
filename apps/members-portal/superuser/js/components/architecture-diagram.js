@@ -91,12 +91,22 @@ function updateStatusIndicator(element, status) {
  * Animate data flow lines based on service status
  */
 function animateDataFlows() {
-  const firestoreToDjango = document.getElementById('flow-firestore-django');
-  const updateStatus = getServiceStatus('updatememberprofile');
+  // Cloud Run → Cloud SQL flow (based on Django service health)
+  const cloudrunToSql = document.getElementById('flow-cloudrun-sql');
+  const djangoStatus = getDjangoStatus();
 
-  if (firestoreToDjango) {
-    const isActive = updateStatus === 'healthy' || updateStatus === 'available';
-    firestoreToDjango.classList.toggle('architecture-edge--active', isActive);
+  if (cloudrunToSql) {
+    const isActive = djangoStatus === 'healthy' || djangoStatus === 'available';
+    cloudrunToSql.classList.toggle('architecture-edge--active', isActive);
+  }
+
+  // Kenni.is → Auth flow (based on handlekenniauth service health)
+  const kenniFlow = document.getElementById('flow-kenni');
+  const kenniStatus = getServiceStatus('handlekenniauth');
+
+  if (kenniFlow) {
+    const isActive = kenniStatus === 'healthy' || kenniStatus === 'available';
+    kenniFlow.classList.toggle('architecture-edge--active', isActive);
   }
 }
 

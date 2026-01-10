@@ -12,9 +12,10 @@ from google.cloud import firestore as gcf
 from util_logging import log_json
 
 # Admin IPs exempt from rate limiting (development/testing)
-EXEMPT_IPS = [
-    '46.182.187.140',  # gudrodur dev
-]
+# Configure via EXEMPT_IPS env var as comma-separated list
+import os
+_exempt_ips_str = os.environ.get('EXEMPT_IPS', '')
+EXEMPT_IPS = [ip.strip() for ip in _exempt_ips_str.split(',') if ip.strip()]
 
 
 def rate_limit_bucket_id(ip_address: str, now: datetime, window_minutes: int) -> str:

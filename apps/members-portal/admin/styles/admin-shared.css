@@ -5,6 +5,48 @@
  */
 
 /* ===========================
+   AUTH LOADING STATE
+   Hide content until authentication is verified.
+   Prevents flash of protected content.
+   =========================== */
+
+/* Hide main content by default on authenticated pages */
+body.authenticated:not(.auth-verified) .page__container {
+  display: none !important;
+}
+
+/* Show loading spinner while checking auth */
+body.authenticated:not(.auth-verified)::before {
+  content: '';
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  border: 3px solid var(--color-border, #e5e7eb);
+  border-top-color: var(--color-primary, #e63946);
+  border-radius: 50%;
+  animation: authSpinner 0.8s linear infinite;
+  z-index: 9999;
+}
+
+body.authenticated:not(.auth-verified)::after {
+  content: 'Athuga aðgang...';
+  position: fixed;
+  top: calc(50% + 35px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.875rem;
+  color: var(--color-text-muted, #6b7280);
+  z-index: 9999;
+}
+
+@keyframes authSpinner {
+  to { transform: rotate(360deg); }
+}
+
+/* ===========================
    Back Navigation
    =========================== */
 .admin-back {

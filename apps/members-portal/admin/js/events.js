@@ -5,7 +5,8 @@
  * Only users with 'admin' or 'superuser' role can access.
  */
 
-import { initSession } from '../../session/init.js';
+import { initSession, showAuthenticatedContent } from '../../session/init.js';
+import { AuthenticationError } from '../../session/auth.js';
 import { debug } from '../../js/utils/util-debug.js';
 import { requireAdmin } from '../../js/rbac.js';
 
@@ -20,21 +21,22 @@ async function init() {
     // 2. Check admin access
     await requireAdmin();
 
+    // Auth verified - show page content
+    showAuthenticatedContent();
+
     debug.log('✓ Events page initialized');
 
   } catch (error) {
     debug.error('Failed to initialize events page:', error);
 
-    // Check if unauthorized
-    if (error.message.includes('Unauthorized') || error.message.includes('Admin role required')) {
-      alert('Þú hefur ekki aðgang.');
-      window.location.href = '/members-area/';
+    // Auth error - redirect to login
+    if (error instanceof AuthenticationError) {
+      window.location.href = '/';
       return;
     }
 
-    // Check if not authenticated
-    if (error.message.includes('Not authenticated')) {
-      window.location.href = '/';
+    // Check if unauthorized
+    if (error.message?.includes('Unauthorized') || error.message?.includes('Admin role required')) {
       return;
     }
 

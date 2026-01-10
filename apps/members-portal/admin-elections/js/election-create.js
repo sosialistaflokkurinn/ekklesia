@@ -14,6 +14,7 @@ import { getAdminElectionById } from '../../js/api/api-elections.js';
 import { formatDateTime, formatDateOnly, formatTimeInput } from './date-utils.js';
 import { showModal } from '../../js/components/ui-modal.js';
 import { el } from '../../js/utils/util-dom.js';
+import { escapeHTML } from '../../js/utils/util-format.js';
 
 // Refactored modules (Phase 2)
 import { validateBasicInfo, validateAnswerOptions, validateSchedule, validateStep } from './validation/election-validation.js';
@@ -591,8 +592,8 @@ function updateReview() {
   // Basic Info
   document.getElementById('review-title').textContent = formData.title || '-';
   document.getElementById('review-question').textContent = formData.question || '-';
-  document.getElementById('review-description').innerHTML = formData.description 
-    ? formData.description 
+  document.getElementById('review-description').innerHTML = formData.description
+    ? escapeHTML(formData.description)
     : `<em>${R.string.review_no_description}</em>`;
 
   // Answer Options

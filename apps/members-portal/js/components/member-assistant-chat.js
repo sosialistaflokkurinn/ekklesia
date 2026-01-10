@@ -13,6 +13,7 @@ import { debug } from '../utils/util-debug.js';
 import { getFirebaseAuth } from '../../firebase/app.js';
 import { trackAction } from '../utils/util-analytics.js';
 import { R } from '../../i18n/strings-loader.js';
+import { escapeHTML } from '../utils/util-format.js';
 
 const EVENTS_API_BASE = 'https://events-service-521240388393.europe-west1.run.app';
 
@@ -87,35 +88,63 @@ function createChatWidget() {
 }
 
 /**
- * Get suggestions HTML - separate function for reuse and cleaner code
- * Note: Suggestion labels are kept short and self-explanatory, not externalized
+ * All suggestion topics for the chat widget
+ * Each has a short label and full query
+ */
+const ALL_SUGGESTIONS = [
+  // Stefnumál - Policy topics
+  { label: 'Kapítalismi', query: 'Er sósíalistaflokkurinn á móti kapitalisma? Hvernig skilgreinir flokkurinn sósíalisma og hverju vill hann breyta í núverandi hagkerfi?' },
+  { label: 'Fyrir alla?', query: 'Er Sósíalistaflokkurinn fyrir alla kjósendur eða aðeins ákveðna hópa? Hverjir eru helstu stuðningsmenn flokksins?' },
+  { label: 'ESB', query: 'Hver er afstaða flokksins til Evrópusambandsins og EES-samningsins? Er flokkurinn hlynntur aðild að ESB?' },
+  { label: 'Heimsvaldastefna', query: 'Hver er afstaða flokksins til heimsvaldastefnu, NATO-aðildar og hernaðarbandalaga? Hvernig skilgreinir flokkurinn friðarstefnu?' },
+  { label: 'Húsnæðismál', query: 'Hver er stefna flokksins í húsnæðismálum? Hvernig vill flokkurinn leysa húsnæðiskreppuna og tryggja öllum viðráðanlegt húsnæði?' },
+  { label: 'Heilbrigðismál', query: 'Hvað segir flokkurinn um heilbrigðismál? Hvernig vill flokkurinn styrkja opinbera heilbrigðisþjónustu og draga úr einkarekstri?' },
+  { label: 'Skattar', query: 'Hver er afstaða flokksins til skattamála? Hvaða breytingar vill flokkurinn gera á skattkerfinu til að auka jöfnuð?' },
+  { label: 'Umhverfismál', query: 'Hvað segir flokkurinn um loftslagsmál, umhverfisvernd og sjálfbærni? Hvernig tengist umhverfisbaráttan stéttabaráttu?' },
+  { label: 'Menntamál', query: 'Hver er stefna flokksins í menntamálum frá leikskóla til háskóla? Hvernig vill flokkurinn tryggja jafnan aðgang að menntun?' },
+  { label: 'Vinnumarkaður', query: 'Hvað segir flokkurinn um réttindi launafólks, stéttarfélög og vinnustaðalýðræði? Hvernig vill flokkurinn styrkja stöðu verkafólks?' },
+  { label: 'Velferð', query: 'Hvað segir flokkurinn um velferðarkerfið, félagslegt öryggi og bótakerfi? Hvernig vill flokkurinn uppræta fátækt á Íslandi?' },
+  { label: 'Jafnrétti', query: 'Hver er afstaða flokksins til jafnréttismála - kynjajafnréttis, hinsegin réttinda og baráttu gegn mismunun?' },
+  { label: 'Fötlunarmál', query: 'Hvað segir flokkurinn um málefni fatlaðs fólks, NPA-þjónustu og aðgengismál? Hvernig vill flokkurinn tryggja full réttindi fatlaðs fólks?' },
+
+  // Nýjar ítarlegar spurningar - New detailed questions
+  { label: 'Innflytjendur', query: 'Hver er stefna flokksins í innflytjendamálum og gagnvart flóttafólki? Hvernig vill flokkurinn tryggja réttindi innflytjenda á vinnumarkaði?' },
+  { label: 'Auðlindir', query: 'Hver er afstaða flokksins til þjóðnýtingar náttúruauðlinda? Hvernig vill flokkurinn tryggja að arður af auðlindum skili sér til þjóðarinnar?' },
+  { label: 'Sjávarútvegur', query: 'Hvað segir flokkurinn um sjávarútveg og fiskveiðistjórnun? Hver er afstaða flokksins til kvótakerfisins og sjávarauðlindarinnar?' },
+  { label: 'Landbúnaður', query: 'Hver er stefna flokksins í landbúnaðarmálum? Hvernig vill flokkurinn styðja við sjálfbæran landbúnað og fæðuöryggi?' },
+  { label: 'Sveitarfélög', query: 'Hvað segir flokkurinn um sveitarstjórnarmál og dreifbýlisþróun? Hvernig vill flokkurinn tryggja jafna þjónustu um land allt?' },
+  { label: 'Þjóðnýting', query: 'Hvað er þjóðnýting og hvernig vill flokkurinn þjóðnýta lykilinnviði samfélagsins? Hvaða fyrirtæki og þjónustu ætti að þjóðnýta?' },
+  { label: 'Alþjóðamál', query: 'Hver er afstaða flokksins til alþjóðamála, samhjálpar og Palestínumáls? Hvernig vill flokkurinn styðja réttláta baráttu þjóða?' },
+  { label: 'Barnamál', query: 'Hvað segir flokkurinn um réttindi barna, barnavernd og málefni fjölskyldna? Hvernig vill flokkurinn tryggja velferð barna?' },
+  { label: 'Eldri borgarar', query: 'Hver er stefna flokksins í öldrunarmálum? Hvernig vill flokkurinn tryggja virðingu, öryggi og lífsgæði eldri borgara?' },
+  { label: 'Lýðræði', query: 'Hvað segir flokkurinn um lýðræði og þátttöku almennings? Hvernig vill flokkurinn efla beint lýðræði og gagnsæi stjórnmála?' },
+
+  // Saga og skipulag - History and organization
+  { label: 'Saga flokksins', query: 'Hvenær var flokkurinn stofnaður, af hverjum og í hvaða tilgangi? Hver er saga sósíalistahreyfingarinnar á Íslandi?' },
+  { label: 'Uppbygging', query: 'Hvernig er flokkurinn skipulagður? Hvað eru sellur og hvernig virkar lýðræðisleg þátttaka félagsmanna innan flokksins?' },
+
+  // Kosningar - Elections
+  { label: '2018', query: 'Hverjir voru í framboði fyrir flokkinn í sveitarstjórnarkosningum 2018 og hver var árangurinn?' },
+  { label: '2021', query: 'Hverjir voru í framboði fyrir flokkinn í Alþingiskosningum 2021 og hvaða stefnumál voru höfuð höfuð á?' },
+  { label: '2022', query: 'Hverjir voru í framboði fyrir flokkinn í sveitarstjórnarkosningum 2022 og hver var árangurinn?' },
+  { label: '2024', query: 'Hverjir voru í framboði fyrir flokkinn í Alþingiskosningum 2024 og hvaða áherslur voru í kosningabaráttunni?' },
+  { label: 'Klofningur 2025', query: 'Hvað gerðist í klofningnum 2025? Hverjar voru ástæður og afleiðingar þessa aðskilnaðar?' },
+];
+
+/**
+ * Get suggestions HTML - shows 6 random suggestions from the pool
+ * Refreshes on each chat clear/page load to encourage exploration
  */
 function getSuggestionsHTML() {
-  // Suggestion buttons - the short labels are topic names, not full sentences
-  // These are acceptable as-is since they're category labels
-  return `
-    <div class="member-assistant__suggestions">
-      <button class="member-assistant__suggestion" data-query="Er sósíalistaflokkurinn á móti kapitalisma?">Kapítalismi</button>
-      <button class="member-assistant__suggestion" data-query="Er Sósíalistaflokkurinn fyrir alla kjósendur?">Fyrir alla?</button>
-      <button class="member-assistant__suggestion" data-query="Hver er afstaða flokksins til Evrópusambandsins?">ESB</button>
-      <button class="member-assistant__suggestion" data-query="Er flokkurinn á móti heimsvaldastefnu?">Heimsvaldastefna</button>
-      <button class="member-assistant__suggestion" data-query="Hver er stefna flokksins í húsnæðismálum?">Húsnæðismál</button>
-      <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um heilbrigðismál?">Heilbrigðismál</button>
-      <button class="member-assistant__suggestion" data-query="Hver er afstaða flokksins til skatta?">Skattar</button>
-      <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um loftslagsmál og umhverfisvernd?">Umhverfismál</button>
-      <button class="member-assistant__suggestion" data-query="Hver er stefna flokksins í menntamálum?">Menntamál</button>
-      <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um réttindi launafólks og stéttarfélög?">Vinnumarkaður</button>
-      <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um velferðarkerfið og félagslegt öryggi?">Velferð</button>
-      <button class="member-assistant__suggestion" data-query="Hvenær var flokkurinn stofnaður og af hverjum?">Saga flokksins</button>
-      <button class="member-assistant__suggestion" data-query="Hvernig er flokkurinn skipulagður? Hvað eru sellur?">Uppbygging</button>
-      <button class="member-assistant__suggestion" data-query="Hver er afstaða flokksins til jafnréttismála?">Jafnrétti</button>
-      <button class="member-assistant__suggestion" data-query="Hvað segir flokkurinn um málefni fatlaðs fólks?">Fötlunarmál</button>
-      <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í sveitarstjórnarkosningum 2018?">2018</button>
-      <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í Alþingiskosningum 2021?">2021</button>
-      <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í sveitarstjórnarkosningum 2022?">2022</button>
-      <button class="member-assistant__suggestion" data-query="Hverjir voru í framboði fyrir flokkinn í Alþingiskosningum 2024?">2024</button>
-    </div>
-  `;
+  // Shuffle and pick 6 random suggestions
+  const shuffled = [...ALL_SUGGESTIONS].sort(() => 0.5 - Math.random());
+  const selected = shuffled.slice(0, 6);
+
+  const buttons = selected.map(s =>
+    `<button class="member-assistant__suggestion" data-query="${escapeHTML(s.query)}">${escapeHTML(s.label)}</button>`
+  ).join('');
+
+  return `<div class="member-assistant__suggestions">${buttons}</div>`;
 }
 
 /**
@@ -586,7 +615,7 @@ function addChatStyles() {
     }
 
     .member-assistant__bubble .member-assistant__li {
-      margin: 4px 0;
+      margin: 2px 0;
       line-height: 1.4;
     }
 
@@ -646,6 +675,35 @@ function addChatStyles() {
     .member-assistant__bubble em {
       font-style: italic;
     }
+
+    /* Table styles */
+    .member-assistant__table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+      font-size: 0.85em;
+    }
+
+    .member-assistant__th,
+    .member-assistant__td {
+      border: 1px solid rgba(114, 47, 55, 0.2);
+      padding: 6px 10px;
+      text-align: left;
+    }
+
+    .member-assistant__th {
+      background: rgba(114, 47, 55, 0.1);
+      font-weight: 600;
+      color: var(--color-burgundy, #722f37);
+    }
+
+    .member-assistant__td {
+      background: var(--color-surface, #fff);
+    }
+
+    .member-assistant__table tr:nth-child(even) .member-assistant__td {
+      background: rgba(114, 47, 55, 0.03);
+    }
   `;
   document.head.appendChild(style);
 }
@@ -674,7 +732,9 @@ function addMessage(role, content, citations = null) {
   const messageDiv = document.createElement('div');
   messageDiv.className = `member-assistant__message member-assistant__message--${role}`;
 
-  let bubbleContent = content;
+  // Escape user content to prevent XSS
+  // Assistant content is already sanitized by formatMarkdown()
+  let bubbleContent = role === 'user' ? escapeHTML(content) : content;
   if (role === 'assistant' && citations) {
     bubbleContent += formatCitations(citations);
   }
@@ -824,7 +884,7 @@ async function sendMessage(message) {
 }
 
 /**
- * Markdown formatting with full support
+ * Markdown formatting with full support including tables
  */
 function formatMarkdown(text) {
   // Escape HTML first
@@ -842,6 +902,9 @@ function formatMarkdown(text) {
 
   // Horizontal rule
   html = html.replace(/^---$/gm, '<hr class="member-assistant__hr">');
+
+  // Parse markdown tables (before other line processing)
+  html = parseMarkdownTable(html);
 
   // Bold and italic
   html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
@@ -867,9 +930,103 @@ function formatMarkdown(text) {
   html = html.replace(/\n/g, '<br>');
 
   // Clean up extra <br> after block elements
-  html = html.replace(/<\/(h3|h4|ul|ol|pre|hr)><br>/g, '</$1>');
-  html = html.replace(/<br><(h3|h4|ul|ol|pre|hr)/g, '<$1');
+  html = html.replace(/<\/(h3|h4|ul|ol|pre|hr|table)><br>/g, '</$1>');
+  html = html.replace(/<br><(h3|h4|ul|ol|pre|hr|table)/g, '<$1');
 
+  // Clean up <br> between list items (causes extra spacing)
+  html = html.replace(/<\/li><br><li/g, '</li><li');
+
+  return html;
+}
+
+/**
+ * Parse markdown tables into HTML
+ * Handles: | Header1 | Header2 |
+ *          |---------|---------|
+ *          | Cell1   | Cell2   |
+ */
+function parseMarkdownTable(html) {
+  const lines = html.split('\n');
+  const result = [];
+  let inTable = false;
+  let tableRows = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+
+    // Check if line is a table row (starts and ends with |)
+    if (line.startsWith('|') && line.endsWith('|')) {
+      // Check if it's a separator row (|---|---|---| or | :--- | :---: | ---: |)
+      // Each cell should contain only dashes, colons, and whitespace
+      if (/^\|(\s*[-:]+\s*\|)+$/.test(line)) {
+        // It's a separator, skip it but mark we're in a table
+        inTable = true;
+        continue;
+      }
+
+      // Parse cells
+      const cells = line.slice(1, -1).split('|').map(c => c.trim());
+
+      if (!inTable) {
+        // First row is header
+        tableRows.push({ type: 'header', cells });
+        inTable = true;
+      } else {
+        tableRows.push({ type: 'body', cells });
+      }
+    } else {
+      // Not a table row
+      if (tableRows.length > 0) {
+        // End of table, render it
+        result.push(renderTable(tableRows));
+        tableRows = [];
+        inTable = false;
+      }
+      result.push(line);
+    }
+  }
+
+  // Handle table at end of content
+  if (tableRows.length > 0) {
+    result.push(renderTable(tableRows));
+  }
+
+  return result.join('\n');
+}
+
+/**
+ * Render table rows to HTML
+ */
+function renderTable(rows) {
+  if (rows.length === 0) return '';
+
+  let html = '<table class="member-assistant__table">';
+
+  // Render header
+  const headerRow = rows.find(r => r.type === 'header');
+  if (headerRow) {
+    html += '<thead><tr>';
+    headerRow.cells.forEach(cell => {
+      html += `<th class="member-assistant__th">${cell}</th>`;
+    });
+    html += '</tr></thead>';
+  }
+
+  // Render body
+  const bodyRows = rows.filter(r => r.type === 'body');
+  if (bodyRows.length > 0) {
+    html += '<tbody>';
+    bodyRows.forEach(row => {
+      html += '<tr>';
+      row.cells.forEach(cell => {
+        html += `<td class="member-assistant__td">${cell}</td>`;
+      });
+      html += '</tr>';
+    });
+    html += '</tbody>';
+  }
+
+  html += '</table>';
   return html;
 }
 

@@ -10,6 +10,7 @@ const adminRouter = require('./routes/route-admin');
 const externalEventsRouter = require('./routes/route-external-events');
 const kimiChatRouter = require('./routes/route-kimi-chat');
 const memberAssistantRouter = require('./routes/route-member-assistant');
+const emailTemplateAssistantRouter = require('./routes/route-email-template-assistant');
 const partyWikiRouter = require('./routes/route-party-wiki');
 const systemHealthRouter = require('./routes/route-system-health');
 const errorsRouter = require('./routes/route-errors');
@@ -53,10 +54,14 @@ app.use(cors({
 }));
 
 // Body parser with size limit (prevent DoS attacks)
-app.use(express.json({
-  limit: '5kb',
-  strict: true
-}));
+// Skip for routes that need larger limits (they have their own parsers)
+const largeBodyRoutes = ['/api/kimi', '/api/member-assistant', '/api/email-template-assistant'];
+app.use((req, res, next) => {
+  if (largeBodyRoutes.some(route => req.path.startsWith(route))) {
+    return next(); // Skip global parser, use route-specific one
+  }
+  express.json({ limit: '5kb', strict: true })(req, res, next);
+});
 
 // Request logging
 app.use((req, res, next) => {
@@ -118,9 +123,11 @@ app.use('/api', electionRoutes);
 app.use('/api/external-events', externalEventsRouter);
 
 // Kimi chat needs larger body limit for conversation history
-app.use('/api/kimi', express.json({ limit: '50kb', strict: true }), kimiChatRouter);
-// Member assistant (RAG-powered) - larger limit for history
-app.use('/api/member-assistant', express.json({ limit: '50kb', strict: true }), memberAssistantRouter);
+app.use('/api/kimi', express.json({ limit: '100kb', strict: true }), kimiChatRouter);
+// Member assistant (RAG-powered) - larger limit for history + web search context
+app.use('/api/member-assistant', express.json({ limit: '100kb', strict: true }), memberAssistantRouter);
+// Email template assistant - helps admins write email templates
+app.use('/api/email-template-assistant', express.json({ limit: '50kb', strict: true }), emailTemplateAssistantRouter);
 app.use('/api/party-wiki', partyWikiRouter);
 app.use('/api/system', systemHealthRouter);
 // Analytics tracking
@@ -142,7 +149,7 @@ app.use((err, req, res, next) => {
   if (err.type === 'entity.too.large') {
     return res.status(413).json({
       error: 'Payload Too Large',
-      message: 'Request body too large (limit: 5kb for most routes, 50kb for /api/kimi)'
+      message: 'Request body too large (limit: 5kb for most routes, 50-100kb for AI routes)'
     });
   }
 

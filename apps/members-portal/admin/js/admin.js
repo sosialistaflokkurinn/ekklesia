@@ -6,7 +6,8 @@
  */
 
 // Import from member portal public directory (two levels up from /admin/js/)
-import { initSession } from '../../session/init.js';
+import { initSession, showAuthenticatedContent } from '../../session/init.js';
+import { AuthenticationError } from '../../session/auth.js';
 import { initNavigation } from '../../js/nav-interactions.js';
 import { debug } from '../../js/utils/util-debug.js';
 import { getFirebaseAuth, getFirebaseFirestore, collection, getDocs } from '../../firebase/app.js';
@@ -217,6 +218,9 @@ async function init() {
     // 3. Check admin access using unified RBAC (requires admin or superuser)
     await requireAdmin();
 
+    // Auth verified - show page content
+    showAuthenticatedContent();
+
     // 4. Note: Navigation now initialized by nav-header component
 
     // 5. Set page text (with personalized greeting)
@@ -230,16 +234,14 @@ async function init() {
   } catch (error) {
     debug.error('Failed to initialize admin dashboard:', error);
 
-    // Check if unauthorized (requireAdmin already redirects, but handle edge cases)
-    if (error.message.includes('Unauthorized') || error.message.includes('Admin role required')) {
-      alert(adminStrings.get('error_unauthorized_developer') || 'Þú hefur ekki aðgang.');
-      window.location.href = '/members-area/';
+    // Auth error - redirect to login
+    if (error instanceof AuthenticationError) {
+      window.location.href = '/';
       return;
     }
 
-    // Check if not authenticated
-    if (error.message.includes('Not authenticated')) {
-      window.location.href = '/';
+    // Check if unauthorized (requireAdmin already redirects, but handle edge cases)
+    if (error.message?.includes('Unauthorized') || error.message?.includes('Admin role required')) {
       return;
     }
 

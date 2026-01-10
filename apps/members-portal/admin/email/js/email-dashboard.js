@@ -4,7 +4,8 @@
  * Main email admin page with stats and quick actions.
  */
 
-import { initSession } from '../../../session/init.js';
+import { initSession, showAuthenticatedContent } from '../../../session/init.js';
+import { AuthenticationError } from '../../../session/auth.js';
 import { debug } from '../../../js/utils/util-debug.js';
 import { adminStrings } from '../../js/i18n/admin-strings-loader.js';
 import { requireAdmin } from '../../../js/rbac.js';
@@ -74,6 +75,9 @@ async function init() {
     // 3. Check admin access
     await requireAdmin();
 
+    // Auth verified - show page content
+    showAuthenticatedContent();
+
     // 4. Set page text
     setPageText(strings);
 
@@ -85,13 +89,13 @@ async function init() {
   } catch (error) {
     debug.error('[EmailDashboard] Init failed:', error);
 
-    if (error.message.includes('Unauthorized') || error.message.includes('Admin role required')) {
-      window.location.href = '/members-area/';
+    // Auth error - redirect to login
+    if (error instanceof AuthenticationError) {
+      window.location.href = '/';
       return;
     }
 
-    if (error.message.includes('Not authenticated')) {
-      window.location.href = '/';
+    if (error.message?.includes('Unauthorized') || error.message?.includes('Admin role required')) {
       return;
     }
 

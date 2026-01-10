@@ -1,9 +1,12 @@
 /**
- * Kimi AI Chat Route
+ * Sysadmin AI Chat Route
  *
  * Provides a chat endpoint for superuser system administration assistance.
- * Uses Moonshot AI (Kimi) k2-0711-preview model.
+ * Uses Google Gemini with tool calling for GitHub repository access.
  * Includes real-time system health data for context-aware responses.
+ *
+ * NOTE: This route was originally built for Moonshot AI (Kimi) but now uses Gemini.
+ * The endpoint path /api/kimi/* is kept for backwards compatibility.
  */
 
 const express = require('express');
@@ -13,17 +16,10 @@ const logger = require('../utils/util-logger');
 const { pool, query } = require('../config/config-database');
 const authenticate = require('../middleware/middleware-auth');
 const { requireRole } = require('../middleware/middleware-roles');
+const gemini = require('../services/service-gemini');
+const admin = require('../config/config-firebase');
 
 const router = express.Router();
-
-// Kimi API Configuration
-const KIMI_API_KEY = process.env.KIMI_API_KEY;
-const KIMI_API_BASE = 'https://api.moonshot.ai/v1';
-const KIMI_MODEL_DEFAULT = 'kimi-k2-0711-preview';
-const KIMI_MODELS = {
-  'kimi-k2-0711-preview': { name: 'Preview (hraður)', timeout: 90000 },
-  'kimi-k2-thinking': { name: 'Thinking (nákvæmur)', timeout: 180000 }  // Longer timeout for thinking
-};
 
 // Error handling configuration
 const RETRY_CONFIG = {
@@ -85,7 +81,7 @@ function recordSuccess() {
  * Classify error type and get user-friendly message
  */
 function classifyError(error) {
-  const status = error.response?.status;
+  const status = error.response?.status || error.status;
   const code = error.code;
 
   // Rate limiting
@@ -94,7 +90,7 @@ function classifyError(error) {
       type: 'rate_limit',
       retryable: true,
       retryAfter: parseInt(error.response?.headers?.['retry-after']) || 60,
-      message: 'Kimi API er of álagið. Reyndu aftur eftir smá stund.',
+      message: 'AI þjónustan er of álagið. Reyndu aftur eftir smá stund.',
       logLevel: 'warn'
     };
   }
@@ -104,7 +100,7 @@ function classifyError(error) {
     return {
       type: 'auth_error',
       retryable: false,
-      message: 'Villa við auðkenningu við Kimi API.',
+      message: 'Villa við auðkenningu við AI þjónustuna.',
       logLevel: 'error'
     };
   }
@@ -114,7 +110,7 @@ function classifyError(error) {
     return {
       type: 'server_error',
       retryable: true,
-      message: 'Kimi þjónustan er tímabundið óaðgengileg.',
+      message: 'AI þjónustan er tímabundið óaðgengileg.',
       logLevel: 'warn'
     };
   }
@@ -124,7 +120,7 @@ function classifyError(error) {
     return {
       type: 'timeout',
       retryable: true,
-      message: 'Kimi svaraði ekki í tíma. Reyndu aftur.',
+      message: 'AI þjónustan svaraði ekki í tíma. Reyndu aftur.',
       logLevel: 'warn'
     };
   }
@@ -134,7 +130,7 @@ function classifyError(error) {
     return {
       type: 'network_error',
       retryable: true,
-      message: 'Ekki náðist samband við Kimi. Athugaðu nettengingu.',
+      message: 'Ekki náðist samband við AI þjónustuna. Athugaðu nettengingu.',
       logLevel: 'error'
     };
   }
@@ -144,13 +140,13 @@ function classifyError(error) {
     return {
       type: 'bad_request',
       retryable: false,
-      message: 'Ógild beiðni send til Kimi.',
+      message: 'Ógild beiðni send til AI þjónustunnar.',
       logLevel: 'error'
     };
   }
 
   // Context length exceeded
-  if (error.response?.data?.error?.code === 'context_length_exceeded') {
+  if (error.message?.includes('context') || error.message?.includes('token')) {
     return {
       type: 'context_exceeded',
       retryable: false,
@@ -163,7 +159,7 @@ function classifyError(error) {
   return {
     type: 'unknown',
     retryable: false,
-    message: 'Óvænt villa kom upp við samskipti við Kimi.',
+    message: 'Óvænt villa kom upp við samskipti við AI þjónustuna.',
     logLevel: 'error'
   };
 }
@@ -286,93 +282,470 @@ async function listGitHubDirectory(path = '') {
   }
 }
 
-// Tool definitions for Kimi
-const KIMI_TOOLS = [
-  {
-    type: 'function',
-    function: {
-      name: 'read_file',
-      description: 'Lesa skrá úr Ekklesia GitHub repo-inu. Notaðu þetta til að skoða kóða, stillingar eða skjölun.',
-      parameters: {
-        type: 'object',
-        properties: {
-          path: {
-            type: 'string',
-            description: 'Slóð á skrá í repo-inu, t.d. "apps/members-portal/superuser/js/kimi-chat.js" eða "services/svc-events/src/routes/route-kimi-chat.js"'
-          }
-        },
-        required: ['path']
+// =============================================================================
+// GCP TOOLS - Database, Firestore, Service Health
+// =============================================================================
+
+/**
+ * Execute a read-only SQL query on Cloud SQL
+ * Security: Only SELECT statements allowed, results limited
+ */
+async function queryDatabase(sqlQuery, params = []) {
+  try {
+    // Security: Only allow SELECT statements
+    const normalizedQuery = sqlQuery.trim().toUpperCase();
+    if (!normalizedQuery.startsWith('SELECT')) {
+      return 'Villa: Aðeins SELECT fyrirspurnir eru leyfðar.';
+    }
+
+    // Security: Block dangerous keywords
+    const dangerousKeywords = ['INSERT', 'UPDATE', 'DELETE', 'DROP', 'TRUNCATE', 'ALTER', 'CREATE', 'GRANT', 'REVOKE'];
+    for (const keyword of dangerousKeywords) {
+      if (normalizedQuery.includes(keyword)) {
+        return `Villa: ${keyword} er ekki leyft.`;
       }
+    }
+
+    // Add LIMIT if not present to prevent huge result sets
+    let safeQuery = sqlQuery.trim();
+    if (!normalizedQuery.includes('LIMIT')) {
+      safeQuery = safeQuery.replace(/;?\s*$/, '') + ' LIMIT 100';
+    }
+
+    const result = await query(safeQuery, params);
+
+    if (result.rows.length === 0) {
+      return 'Engar niðurstöður fundust.';
+    }
+
+    // Format results as readable text
+    const columns = Object.keys(result.rows[0]);
+    let output = `Niðurstöður (${result.rows.length} raðir):\n\n`;
+
+    // Header
+    output += columns.join(' | ') + '\n';
+    output += columns.map(() => '---').join(' | ') + '\n';
+
+    // Rows (limit to 50 for readability)
+    const displayRows = result.rows.slice(0, 50);
+    for (const row of displayRows) {
+      output += columns.map(col => {
+        const val = row[col];
+        if (val === null) return 'NULL';
+        if (val instanceof Date) return val.toISOString().split('T')[0];
+        return String(val).substring(0, 50);
+      }).join(' | ') + '\n';
+    }
+
+    if (result.rows.length > 50) {
+      output += `\n... og ${result.rows.length - 50} raðir í viðbót`;
+    }
+
+    return output;
+  } catch (error) {
+    return `Villa við SQL fyrirspurn: ${error.message}`;
+  }
+}
+
+/**
+ * Get user activity from Firestore
+ */
+async function getUserActivity(uid, email) {
+  try {
+    const db = admin.firestore();
+    let userDoc = null;
+
+    if (uid) {
+      // Direct lookup by UID
+      const doc = await db.collection('users').doc(uid).get();
+      if (doc.exists) {
+        userDoc = { id: doc.id, ...doc.data() };
+      }
+    } else if (email) {
+      // Search by email
+      const snapshot = await db.collection('users')
+        .where('email', '==', email)
+        .limit(1)
+        .get();
+      if (!snapshot.empty) {
+        const doc = snapshot.docs[0];
+        userDoc = { id: doc.id, ...doc.data() };
+      }
+    }
+
+    if (!userDoc) {
+      return `Notandi fannst ekki${uid ? ` (uid: ${uid})` : ''}${email ? ` (email: ${email})` : ''}.`;
+    }
+
+    // Format user info
+    const lines = [`## Notandi: ${userDoc.displayName || userDoc.email || userDoc.id}`];
+    lines.push('');
+    lines.push(`- **UID:** ${userDoc.id}`);
+    if (userDoc.email) lines.push(`- **Email:** ${userDoc.email}`);
+    if (userDoc.role) lines.push(`- **Hlutverk:** ${userDoc.role}`);
+    if (userDoc.loginCount) lines.push(`- **Innskráningar:** ${userDoc.loginCount}`);
+
+    if (userDoc.lastLoginAt) {
+      const lastLogin = userDoc.lastLoginAt.toDate ? userDoc.lastLoginAt.toDate() : new Date(userDoc.lastLoginAt);
+      lines.push(`- **Síðasta innskráning:** ${lastLogin.toLocaleString('is-IS')}`);
+    }
+
+    if (userDoc.createdAt) {
+      const created = userDoc.createdAt.toDate ? userDoc.createdAt.toDate() : new Date(userDoc.createdAt);
+      lines.push(`- **Stofnaður:** ${created.toLocaleString('is-IS')}`);
+    }
+
+    return lines.join('\n');
+  } catch (error) {
+    return `Villa við að sækja notandaupplýsingar: ${error.message}`;
+  }
+}
+
+/**
+ * Get recent logins from Firestore
+ */
+async function getRecentLogins(limit = 20, hours = 24) {
+  try {
+    const db = admin.firestore();
+    const cutoffTime = new Date(Date.now() - hours * 60 * 60 * 1000);
+
+    const snapshot = await db.collection('users')
+      .where('lastLoginAt', '>=', cutoffTime)
+      .orderBy('lastLoginAt', 'desc')
+      .limit(limit)
+      .get();
+
+    if (snapshot.empty) {
+      return `Engar innskráningar síðustu ${hours} klukkustundir.`;
+    }
+
+    const lines = [`## Nýlegar innskráningar (síðustu ${hours} klst)`];
+    lines.push('');
+    lines.push('| Notandi | Hlutverk | Innskráning |');
+    lines.push('|---------|----------|-------------|');
+
+    snapshot.docs.forEach(doc => {
+      const data = doc.data();
+      const name = data.displayName || data.email || doc.id.substring(0, 8);
+      const role = data.role || 'member';
+      const lastLogin = data.lastLoginAt?.toDate ? data.lastLoginAt.toDate() : new Date(data.lastLoginAt);
+      const timeStr = lastLogin.toLocaleString('is-IS', { dateStyle: 'short', timeStyle: 'short' });
+      lines.push(`| ${name} | ${role} | ${timeStr} |`);
+    });
+
+    return lines.join('\n');
+  } catch (error) {
+    return `Villa við að sækja innskráningar: ${error.message}`;
+  }
+}
+
+/**
+ * List users by role from Firebase Auth custom claims
+ */
+async function listUsersByRole(role, limit = 50) {
+  try {
+    const users = [];
+    let nextPageToken;
+
+    // Iterate through all users (Firebase Auth doesn't support filtering by claims)
+    do {
+      const listResult = await admin.auth().listUsers(1000, nextPageToken);
+
+      for (const userRecord of listResult.users) {
+        const claims = userRecord.customClaims || {};
+        const roles = claims.roles || [];
+
+        // Check if user has the requested role
+        if (roles.includes(role)) {
+          users.push({
+            uid: userRecord.uid,
+            email: userRecord.email || '-',
+            displayName: userRecord.displayName || '-',
+            lastSignIn: userRecord.metadata.lastSignInTime
+          });
+
+          if (users.length >= limit) break;
+        }
+      }
+
+      nextPageToken = listResult.pageToken;
+    } while (nextPageToken && users.length < limit);
+
+    if (users.length === 0) {
+      return `Engir notendur með hlutverk '${role}'.`;
+    }
+
+    const lines = [`## Notendur með hlutverk: ${role}`];
+    lines.push('');
+    lines.push(`Fjöldi: ${users.length}`);
+    lines.push('');
+    lines.push('| Nafn | Email | Síðasta innskráning |');
+    lines.push('|------|-------|---------------------|');
+
+    users.forEach(user => {
+      const lastLogin = user.lastSignIn
+        ? new Date(user.lastSignIn).toLocaleString('is-IS', { dateStyle: 'short', timeStyle: 'short' })
+        : '-';
+      lines.push(`| ${user.displayName} | ${user.email} | ${lastLogin} |`);
+    });
+
+    return lines.join('\n');
+  } catch (error) {
+    return `Villa við að sækja notendur: ${error.message}`;
+  }
+}
+
+/**
+ * Get health status from all services
+ */
+async function getServiceHealth() {
+  const services = [
+    { name: 'svc-events', url: 'https://events-service-521240388393.europe-west1.run.app/health' },
+    { name: 'svc-elections', url: 'https://elections-service-521240388393.europe-west1.run.app/health' },
+    { name: 'svc-members', url: 'https://europe-west2-ekklesia-prod-10-2025.cloudfunctions.net/membersHealthProbe' },
+    { name: 'Django', url: 'https://starf.sosialistaflokkurinn.is/health/' },
+  ];
+
+  const results = await Promise.all(services.map(async (svc) => {
+    try {
+      const start = Date.now();
+      const response = await axios.get(svc.url, { timeout: 10000 });
+      const latency = Date.now() - start;
+      return {
+        name: svc.name,
+        status: '✅',
+        latency: `${latency}ms`,
+        details: response.data?.status || 'healthy'
+      };
+    } catch (error) {
+      return {
+        name: svc.name,
+        status: '❌',
+        latency: '-',
+        details: error.message.substring(0, 30)
+      };
+    }
+  }));
+
+  // Add database check
+  try {
+    const start = Date.now();
+    await query('SELECT 1');
+    const latency = Date.now() - start;
+    results.push({ name: 'Cloud SQL', status: '✅', latency: `${latency}ms`, details: 'connected' });
+  } catch (error) {
+    results.push({ name: 'Cloud SQL', status: '❌', latency: '-', details: error.message.substring(0, 30) });
+  }
+
+  const lines = ['## Heilsa þjónusta'];
+  lines.push('');
+  lines.push('| Þjónusta | Staða | Latency | Athugasemd |');
+  lines.push('|----------|-------|---------|------------|');
+
+  results.forEach(r => {
+    lines.push(`| ${r.name} | ${r.status} | ${r.latency} | ${r.details} |`);
+  });
+
+  return lines.join('\n');
+}
+
+// Tool definitions for Gemini (simplified format)
+const SYSADMIN_TOOLS = [
+  {
+    name: 'read_file',
+    description: 'Lesa skrá úr Ekklesia GitHub repo-inu. Notaðu þetta til að skoða kóða, stillingar eða skjölun.',
+    parameters: {
+      type: 'object',
+      properties: {
+        path: {
+          type: 'string',
+          description: 'Slóð á skrá í repo-inu, t.d. "apps/members-portal/superuser/js/kimi-chat.js" eða "services/svc-events/src/routes/route-kimi-chat.js"'
+        }
+      },
+      required: ['path']
     }
   },
   {
-    type: 'function',
-    function: {
-      name: 'list_directory',
-      description: 'Sýna innihald möppu í Ekklesia GitHub repo-inu. Notaðu þetta til að kanna strúktúr kóðagrunnsins.',
-      parameters: {
-        type: 'object',
-        properties: {
-          path: {
-            type: 'string',
-            description: 'Slóð á möppu í repo-inu, t.d. "apps/members-portal/js" eða "services/svc-events/src". Tómt fyrir rót.'
-          }
+    name: 'list_directory',
+    description: 'Sýna innihald möppu í Ekklesia GitHub repo-inu. Notaðu þetta til að kanna strúktúr kóðagrunnsins.',
+    parameters: {
+      type: 'object',
+      properties: {
+        path: {
+          type: 'string',
+          description: 'Slóð á möppu í repo-inu, t.d. "apps/members-portal/js" eða "services/svc-events/src". Tómt fyrir rót.'
+        }
+      },
+      required: []
+    }
+  },
+  {
+    name: 'query_database',
+    description: 'Keyra read-only SQL fyrirspurn á Cloud SQL gagnagrunninn (PostgreSQL). Aðeins SELECT er leyft.',
+    parameters: {
+      type: 'object',
+      properties: {
+        query: {
+          type: 'string',
+          description: 'SQL SELECT fyrirspurn, t.d. "SELECT COUNT(*) FROM membership_member WHERE is_paying = true"'
+        }
+      },
+      required: ['query']
+    }
+  },
+  {
+    name: 'get_user_activity',
+    description: 'Sækja upplýsingar um notanda - innskráningar, hlutverk, síðasta heimsókn. Leita eftir uid eða email.',
+    parameters: {
+      type: 'object',
+      properties: {
+        uid: {
+          type: 'string',
+          description: 'Firebase UID notanda'
         },
-        required: []
-      }
+        email: {
+          type: 'string',
+          description: 'Email notanda'
+        }
+      },
+      required: []
+    }
+  },
+  {
+    name: 'get_recent_logins',
+    description: 'Sýna nýlegar innskráningar í kerfið.',
+    parameters: {
+      type: 'object',
+      properties: {
+        limit: {
+          type: 'number',
+          description: 'Hámarksfjöldi (default 20)'
+        },
+        hours: {
+          type: 'number',
+          description: 'Síðustu X klukkustundir (default 24)'
+        }
+      },
+      required: []
+    }
+  },
+  {
+    name: 'get_service_health',
+    description: 'Athuga heilsu allra þjónusta (svc-events, svc-elections, svc-members, Django, Cloud SQL).',
+    parameters: {
+      type: 'object',
+      properties: {},
+      required: []
+    }
+  },
+  {
+    name: 'list_users_by_role',
+    description: 'Lista notendur eftir hlutverki (superuser, admin, member). Notaðu til að sjá hvaða notendur hafa ákveðið hlutverk.',
+    parameters: {
+      type: 'object',
+      properties: {
+        role: {
+          type: 'string',
+          description: 'Hlutverk til að leita að (t.d. "superuser", "admin", "member")'
+        },
+        limit: {
+          type: 'number',
+          description: 'Hámarksfjöldi (default 50)'
+        }
+      },
+      required: ['role']
     }
   }
 ];
 
 /**
- * Execute a tool call from Kimi
+ * Execute a tool call from Gemini
+ * @param {object} toolCall - { name, arguments }
+ * @returns {Promise<string>} - Tool result
  */
 async function executeToolCall(toolCall) {
-  const { name, arguments: argsStr } = toolCall.function;
-  let args;
-  try {
-    args = JSON.parse(argsStr);
-  } catch {
-    return `Villa: Ógild færibreytur fyrir ${name}`;
-  }
+  const { name, arguments: args } = toolCall;
 
   switch (name) {
     case 'read_file':
       return await readGitHubFile(args.path);
     case 'list_directory':
       return await listGitHubDirectory(args.path || '');
+    case 'query_database':
+      return await queryDatabase(args.query);
+    case 'get_user_activity':
+      return await getUserActivity(args.uid, args.email);
+    case 'get_recent_logins':
+      return await getRecentLogins(args.limit || 20, args.hours || 24);
+    case 'get_service_health':
+      return await getServiceHealth();
+    case 'list_users_by_role':
+      return await listUsersByRole(args.role, args.limit || 50);
     default:
       return `Villa: Óþekkt tól '${name}'`;
   }
 }
 
 // Base system prompt
-const BASE_SYSTEM_PROMPT = `Þú ert Kimi, kerfisstjórnunaraðstoðarmaður og sérfræðingur í Ekklesia kóðagrunni.
+const BASE_SYSTEM_PROMPT = `Þú ert kerfisstjórnunaraðstoðarmaður og sérfræðingur í Ekklesia kóðagrunni.
 
 ## TÓLANOTKUNARREGLUR - MJÖG MIKILVÆGT!
 
+**MIKILVÆGT:** Notaðu tólin STRAX - ALDREI spyrja um leyfi! Þú hefur heimild til að nota öll tól.
+
 Þú VERÐUR að nota tólin í eftirfarandi tilfellum - ALDREI svara án þeirra:
 
-1. **Spurningar um kóða** → Notaðu \`list_directory\` og \`read_file\`
+1. **Tölfræði/fjöldi spurningar** → Notaðu \`query_database\` STRAX
+   - "Hversu margir félagar?" → Keyrðu SQL strax, ekki spyrja
+   - "Hversu margir eru virkir?" → Keyrðu SQL strax
+   - "Hvað margir greiða?" → Keyrðu SQL strax
+   Dæmi: \`query_database\` með "SELECT COUNT(*) FROM membership_comrade WHERE deleted_at IS NULL"
+
+2. **Notendaupplýsingar** → Notaðu \`get_user_activity\`, \`get_recent_logins\` eða \`list_users_by_role\` STRAX
+   - "Hver skráði sig síðast inn?" → Keyrðu strax
+   - "Hvað hefur X verið að gera?" → Sæktu upplýsingar strax
+   - "Hvaða superusers eru til?" → Notaðu \`list_users_by_role\` með role="superuser"
+   - "Hverjir eru admins?" → Notaðu \`list_users_by_role\` með role="admin"
+
+3. **Kerfisheilsa** → Notaðu \`get_service_health\` STRAX
+   - "Hver er staðan á kerfinu?" → Athugaðu heilsu strax
+   - "Er allt í lagi?" → Athugaðu heilsu strax
+
+4. **Spurningar um kóða** → Notaðu \`list_directory\` og \`read_file\`
    - "Hvernig virkar X?" → Lestu kóðann fyrst
    - "Hvar er Y útfært?" → Finndu skrána og lestu hana
-   - "Sýndu mér Z" → Sæktu kóðann
 
-2. **Bestunar/umbóta spurningar** → Lestu viðeigandi skrár ÁÐUR en þú svarar
-   - "Hvað mætti bæta?" → Lestu kóðann fyrst, svo tillögur
-   - "Eru villur?" → Skoðaðu kóðann fyrst
+5. **Skjölun/útskýringar** → Lestu CLAUDE.md eða viðeigandi docs/
 
-3. **Skjölun/útskýringar** → Lestu CLAUDE.md eða viðeigandi docs/
-
-**ALDREI** svara spurningum um kóðann án þess að lesa hann fyrst með tólunum!
-**ALDREI** segja "Ég skoða..." og síðan ekki nota tólin - NOTAÐU þau strax!
+**ALDREI** spyrja "Viltu að ég geri það?" - GERÐU það bara!
+**ALDREI** sýna SQL án þess að keyra hana - KEYRÐU hana!
+**ALDREI** svara án þess að nota tólin þegar þau eiga við!
 
 ## GitHub Repository
 Ekklesia kóðinn er opinn á: https://github.com/sosialistaflokkurinn/ekklesia
 
-Tól:
-- \`read_file\`: Lesa skrá (path t.d. "services/svc-events/src/index.js")
+## Tól sem þú hefur aðgang að
+
+### GitHub Repository
+- \`read_file\`: Lesa skrá úr repo (path t.d. "services/svc-events/src/index.js")
 - \`list_directory\`: Sjá innihald möppu (path t.d. "services/svc-events/src" eða "" fyrir rót)
+
+### Gagnagrunnur og kerfisupplýsingar
+- \`query_database\`: Keyra read-only SQL á Cloud SQL (aðeins SELECT leyft)
+  - Félagatafla: \`membership_comrade\` (dálkar: id, name, ssn, date_joined, deleted_at, firebase_uid)
+  - Greiðslur: \`billing_membershipfee\` (year, date_paid, comrade_id)
+  - Dæmi: "SELECT COUNT(*) FROM membership_comrade WHERE deleted_at IS NULL" (virkir félagar)
+  - Dæmi: "SELECT name FROM membership_comrade WHERE deleted_at IS NULL LIMIT 10"
+  - Dæmi: "SELECT COUNT(*) FROM billing_membershipfee WHERE year = 2025 AND date_paid IS NOT NULL" (greiddir 2025)
+- \`get_user_activity\`: Sækja upplýsingar um notanda úr Firestore (uid eða email)
+  - Sýnir: innskráningar, hlutverk, síðasta heimsókn
+- \`get_recent_logins\`: Sýna nýlegar innskráningar í kerfið
+  - Getur takmarkað við X klst og Y fjölda
+- \`get_service_health\`: Athuga heilsu allra þjónusta
+  - Athugar: svc-events, svc-elections, svc-members, Django, Cloud SQL
+- \`list_users_by_role\`: Lista notendur eftir hlutverki
+  - Dæmi: role="superuser" til að sjá alla superusers
+  - Dæmi: role="admin" til að sjá alla admins
 
 ## Kerfisarkitektúr
 \`\`\`
@@ -648,9 +1021,11 @@ async function getSystemHealthContext() {
 
 /**
  * POST /api/kimi/chat
- * Send a message to Kimi and get a response
+ * Send a message to the sysadmin AI assistant and get a response
  * Supports tool calling for GitHub repository access
  * Requires superuser role
+ *
+ * NOTE: Uses Gemini but keeps /api/kimi/* path for backwards compatibility
  */
 router.post('/chat', authenticate, requireRole('superuser'), async (req, res) => {
   try {
@@ -663,28 +1038,23 @@ router.post('/chat', authenticate, requireRole('superuser'), async (req, res) =>
       });
     }
 
-    // Validate and select model (default to preview)
-    const selectedModel = requestedModel && KIMI_MODELS[requestedModel]
-      ? requestedModel
-      : KIMI_MODEL_DEFAULT;
-    const modelConfig = KIMI_MODELS[selectedModel];
-
-    if (!KIMI_API_KEY) {
+    // Check if Gemini is available
+    if (!gemini.isAvailable()) {
       return res.status(503).json({
         error: 'Service Unavailable',
-        message: 'Kimi API er ekki stillt'
+        message: 'AI þjónusta er ekki stillt'
       });
     }
 
     // Check circuit breaker
     if (checkCircuitBreaker()) {
-      logger.warn('Kimi request rejected by circuit breaker', {
-        operation: 'kimi_circuit_breaker',
+      logger.warn('Sysadmin chat request rejected by circuit breaker', {
+        operation: 'sysadmin_circuit_breaker',
         userId: req.user?.uid
       });
       return res.status(503).json({
         error: 'Service Temporarily Unavailable',
-        message: 'Kimi er tímabundið óaðgengilegur vegna endurtekinna villna. Reyndu aftur eftir mínútu.',
+        message: 'AI þjónustan er tímabundið óaðgengileg vegna endurtekinna villna. Reyndu aftur eftir mínútu.',
         retryAfter: Math.ceil((circuitBreaker.resetTimeMs - (Date.now() - circuitBreaker.lastFailure)) / 1000)
       });
     }
@@ -693,180 +1063,62 @@ router.post('/chat', authenticate, requireRole('superuser'), async (req, res) =>
     const healthContext = await getSystemHealthContext();
     const systemPromptWithHealth = BASE_SYSTEM_PROMPT + healthContext;
 
-    // Build messages array with history
-    const messages = [
-      { role: 'system', content: systemPromptWithHealth },
-      ...history.slice(-10).map(h => ({
-        role: h.role,
-        content: h.content
-      })),
-      { role: 'user', content: message }
-    ];
-
-    logger.info('Kimi chat request', {
-      operation: 'kimi_chat',
+    logger.info('Sysadmin chat request', {
+      operation: 'sysadmin_chat',
       userId: req.user?.uid,
       messageLength: message.length,
       historyLength: history.length,
-      model: selectedModel
+      model: requestedModel
     });
 
-    // Maximum tool call iterations to prevent infinite loops
-    const MAX_TOOL_ITERATIONS = 5;
-    let iterations = 0;
-    let finalReply = null;
+    try {
+      // Call Gemini with tool support
+      const result = await gemini.generateChatWithTools({
+        systemPrompt: systemPromptWithHealth,
+        message,
+        history: history.slice(-10),
+        model: requestedModel,
+        tools: SYSADMIN_TOOLS,
+        executeToolCall,
+        maxIterations: 5,
+      });
 
-    /**
-     * Make API call with retry logic
-     */
-    async function callKimiWithRetry(requestMessages) {
-      let lastError = null;
+      // Success - reset circuit breaker
+      recordSuccess();
 
-      for (let attempt = 0; attempt <= RETRY_CONFIG.maxRetries; attempt++) {
-        try {
-          const response = await axios.post(
-            `${KIMI_API_BASE}/chat/completions`,
-            {
-              model: selectedModel,
-              messages: requestMessages,
-              tools: KIMI_TOOLS,
-              tool_choice: 'auto',
-              temperature: 0.7,
-              max_tokens: 4000
-            },
-            {
-              headers: {
-                'Authorization': `Bearer ${KIMI_API_KEY}`,
-                'Content-Type': 'application/json'
-              },
-              timeout: modelConfig.timeout
-            }
-          );
+      logger.info('Sysadmin chat response', {
+        operation: 'sysadmin_chat_response',
+        userId: req.user?.uid,
+        replyLength: result.reply.length,
+        toolIterations: result.toolIterations,
+        model: result.model
+      });
 
-          // Success - reset circuit breaker
-          recordSuccess();
-          return response;
+      res.json({
+        reply: result.reply,
+        model: result.model,
+        modelName: result.modelName
+      });
 
-        } catch (error) {
-          lastError = error;
-          const errorInfo = classifyError(error);
-
-          logger[errorInfo.logLevel]('Kimi API call failed', {
-            operation: 'kimi_api_error',
-            attempt: attempt + 1,
-            maxRetries: RETRY_CONFIG.maxRetries,
-            errorType: errorInfo.type,
-            retryable: errorInfo.retryable,
-            status: error.response?.status,
-            error: error.message
-          });
-
-          // Don't retry if not retryable
-          if (!errorInfo.retryable) {
-            recordFailure(error);
-            throw error;
-          }
-
-          // Don't retry if this was the last attempt
-          if (attempt >= RETRY_CONFIG.maxRetries) {
-            recordFailure(error);
-            throw error;
-          }
-
-          // Calculate delay (use retryAfter for rate limits)
-          const delay = errorInfo.type === 'rate_limit'
-            ? errorInfo.retryAfter * 1000
-            : getRetryDelay(attempt);
-
-          logger.info('Retrying Kimi API call', {
-            operation: 'kimi_retry',
-            attempt: attempt + 1,
-            delayMs: delay,
-            errorType: errorInfo.type
-          });
-
-          await sleep(delay);
-        }
-      }
-
-      throw lastError;
+    } catch (apiError) {
+      // Record failure for circuit breaker
+      recordFailure(apiError);
+      throw apiError;
     }
-
-    while (iterations < MAX_TOOL_ITERATIONS) {
-      iterations++;
-
-      const response = await callKimiWithRetry(messages);
-
-      const choice = response.data?.choices?.[0];
-      const assistantMessage = choice?.message;
-
-      if (!assistantMessage) {
-        throw new Error('Empty response from Kimi');
-      }
-
-      // Check if Kimi wants to call tools
-      if (assistantMessage.tool_calls && assistantMessage.tool_calls.length > 0) {
-        // Add assistant message with tool calls to conversation
-        messages.push(assistantMessage);
-
-        // Execute each tool call
-        for (const toolCall of assistantMessage.tool_calls) {
-          logger.info('Kimi tool call', {
-            operation: 'kimi_tool_call',
-            tool: toolCall.function.name,
-            args: toolCall.function.arguments
-          });
-
-          const toolResult = await executeToolCall(toolCall);
-
-          // Add tool result to conversation
-          messages.push({
-            role: 'tool',
-            tool_call_id: toolCall.id,
-            content: toolResult
-          });
-        }
-
-        // Continue loop to get Kimi's response after tool execution
-        continue;
-      }
-
-      // No tool calls - we have the final response
-      finalReply = assistantMessage.content;
-      break;
-    }
-
-    if (!finalReply) {
-      throw new Error('No final response from Kimi after tool calls');
-    }
-
-    logger.info('Kimi chat response', {
-      operation: 'kimi_chat_response',
-      userId: req.user?.uid,
-      replyLength: finalReply.length,
-      toolIterations: iterations
-    });
-
-    res.json({
-      reply: finalReply,
-      model: selectedModel,
-      modelName: modelConfig.name
-    });
 
   } catch (error) {
     const errorInfo = classifyError(error);
 
-    logger[errorInfo.logLevel]('Kimi chat error', {
-      operation: 'kimi_chat_error',
+    logger[errorInfo.logLevel]('Sysadmin chat error', {
+      operation: 'sysadmin_chat_error',
       errorType: errorInfo.type,
       error: error.message,
-      status: error.response?.status,
-      response: error.response?.data
+      status: error.response?.status || error.status
     });
 
     // Return appropriate status code based on error type
     let statusCode = 500;
-    if (errorInfo.type === 'rate_limit') statusCode = 429;
+    if (errorInfo.type === 'rate_limit' || error.status === 429) statusCode = 429;
     else if (errorInfo.type === 'auth_error') statusCode = 503;
     else if (errorInfo.type === 'bad_request') statusCode = 400;
     else if (errorInfo.type === 'context_exceeded') statusCode = 413;
@@ -888,20 +1140,15 @@ router.post('/chat', authenticate, requireRole('superuser'), async (req, res) =>
 
 /**
  * GET /api/kimi/models
- * Get available Kimi models
+ * Get available AI models
  * Public endpoint (for UI)
  */
 router.get('/models', (req, res) => {
-  const models = Object.entries(KIMI_MODELS).map(([id, config]) => ({
-    id,
-    name: config.name,
-    timeout: config.timeout,
-    isDefault: id === KIMI_MODEL_DEFAULT
-  }));
+  const models = gemini.getAvailableModels();
 
   res.json({
     models,
-    default: KIMI_MODEL_DEFAULT
+    default: gemini.DEFAULT_MODEL
   });
 });
 

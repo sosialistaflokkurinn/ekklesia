@@ -2,38 +2,63 @@
 Register Member Cloud Function
 
 Handles new member registration from skraning-static frontend.
-Creates member in Firestore and assigns to cell.
+Creates member in Cloud SQL (via Django API) and assigns to cell.
 
-Usage:
-    register_member({
-        name: "Jón Jónsson",
-        ssn: "0101902939",
-        email: "jon@example.com",
-        phone: "8881234",
-        address_type: "iceland" | "foreign" | "unlocated",
-        # For Iceland address:
-        address_id: 12345,  # hnitnum from iceaddr
-        # For foreign address:
-        country_id: 45,
-        foreign_address: "123 Main Street",
-        foreign_municipality: "London",
-        foreign_postal_code: "SW1A 1AA",
-        # For unlocated:
-        cell_id: 5,
-        # Optional fields:
-        housing_situation: 2,
-        union_id: 93,
-        title_id: 14,
-        reachable: true,
-        groupable: true
-    })
-    Returns: { comrade_id: 1234, error: null }
+## Address Handling
+
+For Iceland addresses, you MUST provide `address_id` which is the `hnitnum`
+from the Icelandic address registry. Get it using:
+
+1. Frontend: Use `search_addresses` Cloud Function (autocomplete)
+2. Python: Use `iceaddr_lookup(street, number, postal_code)`
+3. Direct: Query `stadfong` table in iceaddr database
+
+See docs/ADDRESS_SYSTEM.md for full documentation.
+
+## Usage
+
+```python
+register_member({
+    # Required fields
+    "name": "Jón Jónsson",
+    "kennitala": "0000000000",  # Also accepts "ssn" for backwards compat
+    "email": "jon@example.com",
+    "phone": "8881234",
+    "address_type": "iceland",  # or "foreign" or "unlocated"
+
+    # For Iceland address (address_type="iceland"):
+    "address_id": 2000507,  # <-- hnitnum from iceaddr (REQUIRED)
+
+    # For foreign address (address_type="foreign"):
+    "country_id": 45,
+    "foreign_address": "123 Main Street",
+    "foreign_municipality": "London",
+    "foreign_postal_code": "SW1A 1AA",
+
+    # For unlocated (address_type="unlocated"):
+    "cell_id": 5,
+
+    # Optional fields:
+    "housing_situation": 2,
+    "union_id": 93,
+    "title_id": 14,
+    "reachable": True,
+    "groupable": True
+})
+```
+
+Returns: `{ "comrade_id": 1234, "django_id": 1234, "error": null }`
+
+## Important Notes
+
+- If `address_id` is missing for Iceland addresses, the address will not
+  be linked to the map or cell assignment.
+- Use `search_addresses` Cloud Function for frontend autocomplete.
+- Shadow banned kennitalas return fake success (security feature).
 """
 
 import logging
-import os
 import re
-import requests
 import random
 from datetime import datetime, timezone
 from typing import Any
@@ -45,6 +70,7 @@ from shared.validators import normalize_kennitala, normalize_phone, validate_ken
 from shared.rate_limit import check_rate_limit
 from util_logging import log_json
 from db_members import is_kennitala_banned, member_exists
+from db_registration import create_member_in_cloudsql
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -52,75 +78,6 @@ logger = logging.getLogger(__name__)
 
 # Iceland country ID
 ICELAND_COUNTRY_ID = 109
-
-# Django API for creating members
-# 2025-12-21: Using custom domain (more stable than Cloud Run URL)
-DJANGO_API_BASE_URL = os.environ.get(
-    'DJANGO_API_BASE_URL',
-    'https://starf.sosialistaflokkurinn.is/felagar'
-)
-
-
-def get_django_api_token() -> str:
-    """Get Django API token from environment variable."""
-    token = os.environ.get('django-api-token') or os.environ.get('DJANGO_API_TOKEN')
-    if not token:
-        raise ValueError("Django API token not found")
-    return token
-
-
-def sync_member_to_django(member_data: dict) -> dict | None:
-    """
-    Create member in Django via API.
-
-    Args:
-        member_data: Dict with member data to sync
-
-    Returns:
-        Dict with django_id if successful, None if failed
-    """
-    try:
-        token = get_django_api_token()
-
-        response = requests.post(
-            f"{DJANGO_API_BASE_URL}/api/sync/create-member/",
-            json=member_data,
-            headers={
-                'Authorization': f'Token {token}',
-                'Content-Type': 'application/json'
-            },
-            timeout=15
-        )
-
-        if response.status_code == 200:
-            result = response.json()
-            if result.get('success'):
-                log_json('INFO', 'Member synced to Django',
-                         event='django_sync_success',
-                         django_id=result.get('django_id'),
-                         already_existed=result.get('already_existed', False))
-                return result
-            else:
-                log_json('ERROR', 'Django sync failed',
-                         event='django_sync_failed',
-                         error=result.get('error'))
-                return None
-        else:
-            log_json('ERROR', 'Django API error',
-                     event='django_api_error',
-                     status_code=response.status_code,
-                     response=response.text[:200])
-            return None
-
-    except requests.exceptions.Timeout:
-        log_json('ERROR', 'Django API timeout',
-                 event='django_sync_timeout')
-        return None
-    except Exception as e:
-        log_json('ERROR', 'Django sync exception',
-                 event='django_sync_exception',
-                 error=str(e))
-        return None
 
 
 def validate_email(email: str) -> bool:
@@ -279,7 +236,7 @@ def get_postal_code_id_from_code(db: firestore.Client, postal_code: str) -> int 
     region="europe-west2",
     memory=options.MemoryOption.MB_512,
     timeout_sec=60,
-    secrets=["django-api-token"],
+    secrets=["django-socialism-db-password"],  # Cloud SQL direct instead of Django API
 )
 def register_member(req: https_fn.CallableRequest) -> dict[str, Any]:
     """
@@ -312,7 +269,13 @@ def register_member(req: https_fn.CallableRequest) -> dict[str, Any]:
 
         # Extract required fields
         name = (data.get('comrade-name') or data.get('name', '')).strip()
-        ssn = (data.get('comrade-ssn') or data.get('ssn', '')).strip()
+        # Accept both 'kennitala' and 'ssn' for backwards compatibility with external forms
+        kennitala_raw = (
+            data.get('comrade-kennitala') or
+            data.get('comrade-ssn') or
+            data.get('kennitala') or
+            data.get('ssn', '')
+        ).strip()
         email = (data.get('contact_info-email') or data.get('email', '')).strip()
         phone = (data.get('contact_info-phone') or data.get('phone', '')).strip()
 
@@ -322,8 +285,8 @@ def register_member(req: https_fn.CallableRequest) -> dict[str, Any]:
         if not name or len(name) < 3:
             errors['name'] = 'Nafn verður að vera að minnsta kosti 3 stafir'
 
-        if not ssn or not validate_kennitala(ssn):
-            errors['ssn'] = 'Þetta er ekki gild kennitala'
+        if not kennitala_raw or not validate_kennitala(kennitala_raw):
+            errors['kennitala'] = 'Þetta er ekki gild kennitala'
 
         if not email or not validate_email(email):
             errors['email'] = 'Þetta er ekki gilt netfang'
@@ -338,7 +301,7 @@ def register_member(req: https_fn.CallableRequest) -> dict[str, Any]:
             return {'comrade_id': None, 'error': errors}
 
         # Normalize inputs
-        normalized_kennitala = normalize_kennitala(ssn)
+        normalized_kennitala = normalize_kennitala(kennitala_raw)
         normalized_phone = normalize_phone(phone)
         birthday = parse_birthday_from_kennitala(normalized_kennitala)
 
@@ -388,7 +351,7 @@ def register_member(req: https_fn.CallableRequest) -> dict[str, Any]:
                      kennitala=f"{normalized_kennitala[:6]}****")
             return {
                 'comrade_id': None,
-                'error': {'ssn': 'Þessi kennitala er þegar skráð'}
+                'error': {'kennitala': 'Þessi kennitala er þegar skráð'}
             }
 
         # Initialize Firestore (only for audit logging)
@@ -483,8 +446,8 @@ def register_member(req: https_fn.CallableRequest) -> dict[str, Any]:
                 'cell_id': cell.get('id')
             }
 
-        # Create member in Django (Cloud SQL is source of truth)
-        django_data = {
+        # Create member directly in Cloud SQL (source of truth)
+        member_data = {
             'kennitala': normalized_kennitala,
             'name': name,
             'email': email.lower(),
@@ -498,28 +461,40 @@ def register_member(req: https_fn.CallableRequest) -> dict[str, Any]:
             'title_name': title_name
         }
 
-        django_result = sync_member_to_django(django_data)
+        try:
+            result = create_member_in_cloudsql(member_data)
 
-        if not django_result or not django_result.get('django_id'):
-            log_json('ERROR', 'Django registration failed - no django_id returned',
-                     event='register_member_django_failed',
-                     kennitala=f"{normalized_kennitala[:6]}****")
+            if not result.get('success') or not result.get('django_id'):
+                log_json('ERROR', 'Cloud SQL registration failed',
+                         event='register_member_cloudsql_failed',
+                         kennitala=f"{normalized_kennitala[:6]}****",
+                         error=result.get('error'))
+                return {
+                    'comrade_id': None,
+                    'error': 'Villa kom upp við skráningu. Reyndu aftur.'
+                }
+
+            django_id = result['django_id']
+
+            log_json('INFO', 'Member registered successfully in Cloud SQL',
+                     event='register_member_success',
+                     django_id=django_id,
+                     kennitala=f"{normalized_kennitala[:6]}****",
+                     has_address=len(addresses) > 0,
+                     has_cell=cell is not None)
+
+            # Return django_id as comrade_id (they are now the same)
+            return {'comrade_id': django_id, 'django_id': django_id, 'error': None}
+
+        except Exception as e:
+            log_json('ERROR', 'Cloud SQL registration exception',
+                     event='register_member_cloudsql_exception',
+                     kennitala=f"{normalized_kennitala[:6]}****",
+                     error=str(e))
             return {
                 'comrade_id': None,
                 'error': 'Villa kom upp við skráningu. Reyndu aftur.'
             }
-
-        django_id = django_result['django_id']
-
-        log_json('INFO', 'Member registered successfully in Django (Cloud SQL)',
-                 event='register_member_success',
-                 django_id=django_id,
-                 kennitala=f"{normalized_kennitala[:6]}****",
-                 has_address=len(addresses) > 0,
-                 has_cell=cell is not None)
-
-        # Return django_id as comrade_id (they are now the same)
-        return {'comrade_id': django_id, 'django_id': django_id, 'error': None}
 
     except Exception as e:
         logger.error(f"Registration failed: {e}")

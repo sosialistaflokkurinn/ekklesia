@@ -9,13 +9,18 @@
  * Backend: Uses Firestore /users/ collection for login metadata
  */
 
-import { initSession } from '../../session/init.js';
+import { initSession, showAuthenticatedContent } from '../../session/init.js';
+import { AuthenticationError } from '../../session/auth.js';
 import { debug } from '../../js/utils/util-debug.js';
 import { httpsCallable } from '../../firebase/app.js';
 import { requireSuperuser } from '../../js/rbac.js';
 import { showToast } from '../../js/components/ui-toast.js';
 import { R } from '../../i18n/strings-loader.js';
 import { superuserStrings } from './i18n/superuser-strings-loader.js';
+import { escapeHTML } from '../../js/utils/util-format.js';
+
+// Use centralized escapeHTML from util-format.js
+const escapeHtml = escapeHTML;
 
 /**
  * Parse user agent string to friendly browser/OS name
@@ -132,19 +137,6 @@ function formatRelativeTime(isoString) {
 
   const diffDays = Math.floor(diffHours / 24);
   return superuserStrings.get('time_days_ago').replace('%s', diffDays);
-}
-
-/**
- * Escape HTML to prevent XSS
- */
-function escapeHtml(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
 }
 
 /**
@@ -324,6 +316,9 @@ async function init() {
     await initSession();
     await requireSuperuser();
 
+    // Auth verified - show page content
+    showAuthenticatedContent();
+
     setupEventListeners();
 
     debug.log('Login audit page initialized');
@@ -331,11 +326,17 @@ async function init() {
   } catch (error) {
     debug.error('Failed to initialize login audit:', error);
 
-    if (error.message.includes('Superuser role required')) {
+    // Auth error - redirect to login
+    if (error instanceof AuthenticationError) {
+      window.location.href = '/';
       return;
     }
 
-    showToast(superuserStrings.get('dangerous_op_error').replace('%s', error.message), 'error');
+    if (error.message?.includes('Superuser role required')) {
+      return;
+    }
+
+    showToast(superuserStrings.get('dangerous_op_error')?.replace('%s', error.message) || error.message, 'error');
   }
 }
 

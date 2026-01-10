@@ -353,6 +353,47 @@ def get_deleted_member_count() -> int:
     return result['count'] if result else 0
 
 
+def get_deleted_members(limit: int = 50) -> List[Dict[str, Any]]:
+    """
+    Get list of soft-deleted members with details.
+
+    Used by superuser dashboard to preview which members will be purged.
+    Kennitala is masked for privacy (only first 6 digits shown).
+
+    Args:
+        limit: Maximum number of results (default 50)
+
+    Returns:
+        List of dicts with id, name, kennitala_masked, deleted_at
+    """
+    query = """
+        SELECT
+            c.id,
+            c.name,
+            CONCAT(LEFT(c.ssn, 6), '****') as kennitala_masked,
+            c.deleted_at
+        FROM membership_comrade c
+        WHERE c.deleted_at IS NOT NULL
+          AND c.ssn NOT LIKE '9999%%'
+        ORDER BY c.deleted_at DESC
+        LIMIT %s
+    """
+
+    rows = execute_query(query, params=(limit,))
+    if not rows:
+        return []
+
+    return [
+        {
+            'id': row['id'],
+            'name': row['name'],
+            'kennitala_masked': row['kennitala_masked'],
+            'deleted_at': row['deleted_at'].isoformat() if row['deleted_at'] else None
+        }
+        for row in rows
+    ]
+
+
 def get_member_by_email(email: str) -> Optional[Dict[str, Any]]:
     """
     Get a member by email address.

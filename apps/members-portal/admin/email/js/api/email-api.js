@@ -168,6 +168,40 @@ const EmailAPI = {
   },
 
   /**
+   * Get municipalities with member counts
+   * @returns {Promise<{municipalities: Array<{name: string, count: number}>}>}
+   */
+  async getMunicipalities() {
+    try {
+      const getMunicipalities = httpsCallable('getMunicipalities', REGION);
+      const result = await getMunicipalities({});
+      debug.log('[EmailAPI] getMunicipalities:', result.data);
+      return result.data;
+    } catch (error) {
+      debug.error('[EmailAPI] getMunicipalities error:', error);
+      throw new Error(`Failed to get municipalities: ${error.message}`);
+    }
+  },
+
+  /**
+   * Preview recipient count for a filter
+   * @param {Object} options - Filter options
+   * @param {Object} options.recipient_filter - { status, districts[], municipalities[] }
+   * @returns {Promise<{count: number, filter: Object}>}
+   */
+  async previewRecipientCount({ recipient_filter }) {
+    try {
+      const previewRecipientCount = httpsCallable('previewRecipientCount', REGION);
+      const result = await previewRecipientCount({ recipient_filter });
+      debug.log('[EmailAPI] previewRecipientCount:', result.data);
+      return result.data;
+    } catch (error) {
+      debug.error('[EmailAPI] previewRecipientCount error:', error);
+      throw new Error(`Failed to preview recipient count: ${error.message}`);
+    }
+  },
+
+  /**
    * Create a new campaign
    * @param {Object} campaignData - Campaign data
    * @param {string} campaignData.name - Campaign name

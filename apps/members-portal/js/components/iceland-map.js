@@ -42,18 +42,6 @@ const VIEWBOX = {
 const listenerRegistry = new WeakMap();
 
 /**
- * Escape HTML to prevent XSS
- * @param {string} str - String to escape
- * @returns {string} Escaped string
- */
-function escapeHtml(str) {
-  if (str === null || str === undefined) return '';
-  const div = document.createElement('div');
-  div.textContent = String(str);
-  return div.innerHTML;
-}
-
-/**
  * Validate municipality data
  * @param {Array} data - Municipality data array
  * @returns {boolean} True if valid

@@ -13,7 +13,10 @@
   <link rel="stylesheet" href="/styles/bundle.css?v=20251217k">
 
   <!-- Admin-specific styles -->
-  <link rel="stylesheet" href="/admin/styles/admin.css?v=20251222b">
+  <link rel="stylesheet" href="/admin/styles/admin.css?v=20260109a">
+
+  <!-- Template editor styles -->
+  <link rel="stylesheet" href="/styles/components/template-editor.css?v=20260109q">
 </head>
 <body class="authenticated admin">
   <!-- Navigation component inserted here -->
@@ -54,52 +57,102 @@
     </div>
   </div>
 
-  <!-- Template Editor Modal -->
-  <div class="modal u-hidden" id="template-modal">
-    <div class="modal__backdrop"></div>
-    <div class="modal__content modal__content--large">
+  <!-- Template Editor Modal (Enhanced with AI + Preview) -->
+  <div class="modal-overlay u-hidden" id="template-modal">
+    <div class="modal modal--xxl">
       <div class="modal__header">
         <h2 class="modal__title" id="modal-title">Loading...</h2>
-        <button class="modal__close" id="modal-close">&times;</button>
+        <div class="modal__header-actions">
+          <button class="modal__fullscreen" id="modal-fullscreen" title="Fullskjár">⛶</button>
+          <button class="modal__close" id="modal-close">&times;</button>
+        </div>
       </div>
-      <div class="modal__body">
-        <form id="template-form">
-          <input type="hidden" id="template-id">
 
-          <div class="form-group">
-            <label for="template-name" id="label-name">Loading...</label>
-            <input type="text" id="template-name" class="form-input" required>
+      <div class="modal__body template-editor">
+        <div class="template-editor__main">
+          <!-- Form -->
+          <div class="template-editor__form">
+            <form id="template-form">
+              <input type="hidden" id="template-id">
+
+              <div class="form-group">
+                <label for="template-name" id="label-name">Loading...</label>
+                <input type="text" id="template-name" class="form-input" required>
+              </div>
+
+              <div class="form-group">
+                <label for="template-subject" id="label-subject">Loading...</label>
+                <input type="text" id="template-subject" class="form-input" required>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group form-group--half">
+                  <label for="template-type" id="label-type">Loading...</label>
+                  <select id="template-type" class="form-select" required>
+                    <option value="transactional" id="opt-transactional">Loading...</option>
+                    <option value="broadcast" id="opt-broadcast">Loading...</option>
+                  </select>
+                </div>
+                <div class="form-group form-group--half">
+                  <label for="template-language" id="label-language">Loading...</label>
+                  <select id="template-language" class="form-select" required>
+                    <option value="is" id="opt-lang-is">Loading...</option>
+                    <option value="en" id="opt-lang-en">Loading...</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group template-editor__body-group">
+                <label for="template-body" id="label-body">Loading...</label>
+                <textarea id="template-body" class="form-textarea" required></textarea>
+                <div class="template-editor__variables-hint">
+                  Breytur: <code>{{ member.name }}</code>, <code>{{ member.first_name }}</code>, <code>{{ member.email }}</code>, <code>{{unsubscribe_url}}</code>
+                </div>
+              </div>
+            </form>
           </div>
+        </div>
 
-          <div class="form-group">
-            <label for="template-subject" id="label-subject">Loading...</label>
-            <input type="text" id="template-subject" class="form-input" required>
+        <!-- Bottom: Preview -->
+        <div class="template-editor__preview" id="template-preview">
+          <div class="preview__header">
+            <h4>Forskoðun</h4>
+            <span class="preview__note">Breytur sýndar með sýnidögnum</span>
+            <button class="preview__open-window" id="preview-open-window" title="Opna í nýjum glugga">⧉</button>
+            <button class="preview__toggle" id="preview-toggle" title="Fela/Sýna">−</button>
           </div>
+          <div class="preview__content">
+            <iframe id="preview-iframe" sandbox="allow-same-origin" title="Forskoðun"></iframe>
+          </div>
+        </div>
 
-          <div class="form-row">
-            <div class="form-group form-group--half">
-              <label for="template-type" id="label-type">Loading...</label>
-              <select id="template-type" class="form-select" required>
-                <option value="transactional" id="opt-transactional">Loading...</option>
-                <option value="broadcast" id="opt-broadcast">Loading...</option>
-              </select>
+        <!-- Floating AI Assistant Toggle Button -->
+        <button class="assistant__fab" id="assistant-fab" title="AI Aðstoð">✨</button>
+
+        <!-- Floating AI Assistant Panel -->
+        <div class="template-editor__assistant template-editor__assistant--hidden" id="ai-assistant">
+          <div class="assistant__header">
+            <h3>AI Aðstoð</h3>
+            <button class="assistant__toggle" id="assistant-toggle" title="Loka">×</button>
+          </div>
+          <div class="assistant__quick-actions" id="assistant-quick-actions">
+            <button type="button" class="assistant__quick-btn" data-action="socialist">✊ Sósíalistasnið</button>
+            <button type="button" class="assistant__quick-btn" data-action="format">🎨 Sníða</button>
+            <button type="button" class="assistant__quick-btn" data-action="list">📋 Listi</button>
+            <button type="button" class="assistant__quick-btn" data-action="variables">❓ Breytur</button>
+          </div>
+          <div class="assistant__messages" id="assistant-messages">
+            <div class="assistant__message assistant__message--assistant">
+              Hæ! Ég get hjálpað þér að <strong>sníða</strong> textann með fallegu HTML útliti. Ég breyti ekki orðunum - bara skipulaginu og útlitinu.
             </div>
-            <div class="form-group form-group--half">
-              <label for="template-language" id="label-language">Loading...</label>
-              <select id="template-language" class="form-select" required>
-                <option value="is" id="opt-lang-is">Loading...</option>
-                <option value="en" id="opt-lang-en">Loading...</option>
-              </select>
-            </div>
           </div>
-
-          <div class="form-group">
-            <label for="template-body" id="label-body">Loading...</label>
-            <textarea id="template-body" class="form-textarea" rows="15" required></textarea>
-            <p class="form-help">Notaðu {{ member.name }}, {{ member.email }}, {{ cell.name }} o.fl.</p>
+          <div class="assistant__input">
+            <input type="text" id="assistant-input" placeholder="Spurðu AI..." autocomplete="off">
+            <button type="button" id="assistant-send">Senda</button>
           </div>
-        </form>
+        </div>
       </div>
+
       <div class="modal__footer">
         <button class="btn btn--secondary" id="modal-cancel">Loading...</button>
         <button class="btn btn--primary" id="modal-save">Loading...</button>
@@ -107,7 +160,7 @@
     </div>
   </div>
 
-  <script type="module" src="/admin/email/js/templates-list.js?v=20251222b"></script>
+  <script type="module" src="/admin/email/js/templates-list.js?v=20260109p"></script>
 
   <!-- Initialize Navigation Component -->
   <script type="module">

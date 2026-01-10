@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="/styles/bundle.css?v=20251217k">
 
   <!-- Superuser-specific styles -->
-  <link rel="stylesheet" href="/superuser/styles/superuser.css?v=20251201d">
+  <link rel="stylesheet" href="/superuser/styles/superuser.css?v=20260109a">
 </head>
 <body class="authenticated superuser">
   <!-- Navigation component inserted here -->
@@ -23,75 +23,239 @@
     <!-- Warning Card -->
     <div class="card dangerous-ops-warning">
       <div class="dangerous-ops-warning__icon">⚠️</div>
-      <!-- Note: h1 title removed - nav brand shows "Hættulegar aðgerðir" -->
       <p class="card__description" data-i18n="dangerous_ops_warning">
-        Aðgerðir á þessari síðu eru <strong>óafturkræfar</strong>. Þær geta eyðt gögnum varanlega
+        Aðgerðir á þessari síðu eru ÓAFTURKRÆFAR. Þær geta eytt gögnum varanlega
         eða gert það ómögulegt að endurheimta upplýsingar. Vinsamlegast farðu varlega.
       </p>
     </div>
 
-    <!-- Hard Delete Member -->
-    <div class="card">
-      <h2 class="card__title" data-i18n="dangerous_delete_title">Eyða félaga varanlega</h2>
-      <p class="card__description" data-i18n="dangerous_delete_desc">
-        Eyðir félaga algjörlega úr kerfinu. Þetta fjarlægir öll gögn úr Firestore, Firebase Auth
-        og tengdar skrár. Ekki er hægt að afturkalla þessa aðgerð.
-      </p>
-
-      <div class="dangerous-ops__form">
-        <div class="form__group">
-          <label class="form__label" for="delete-member-id" data-i18n="dangerous_delete_label">Kennitölu félaga</label>
-          <input type="text" id="delete-member-id" class="form__input"
-                 data-i18n-placeholder="dangerous_delete_placeholder" placeholder="t.d. 1234567890" maxlength="10" pattern="[0-9]{10}">
-          <span class="form__hint" data-i18n="dangerous_delete_hint">Sláðu inn 10 stafa kennitölu félaga sem á að eyða.</span>
-        </div>
-
-        <button type="button" class="btn btn--danger" id="delete-member-btn" disabled data-i18n="dangerous_delete_btn">
-          Eyða félaga
-        </button>
-      </div>
-    </div>    <!-- Anonymize Member -->
-    <div class="card">
-      <h2 class="card__title" data-i18n="dangerous_anon_title">Nafnhreinsa félaga (GDPR)</h2>
-      <p class="card__description" data-i18n="dangerous_anon_desc">
-        Fjarlægir persónugreinanlegar upplýsingar en heldur tölfræðilegum gögnum.
-        Notað fyrir GDPR beiðnir þar sem eyðing er ekki möguleg vegna lagaskyldu.
-      </p>
-
-      <div class="dangerous-ops__form">
-        <div class="form__group">
-          <label class="form__label" for="anonymize-member-id" data-i18n="dangerous_delete_label">Kennitölu félaga</label>
-          <input type="text" id="anonymize-member-id" class="form__input"
-                 data-i18n-placeholder="dangerous_delete_placeholder" placeholder="t.d. 1234567890" maxlength="10" pattern="[0-9]{10}">
-          <span class="form__hint" data-i18n="dangerous_anon_hint">Persónuupplýsingum verður skipt út fyrir gervigögn og kennitölu eyðt.</span>
-        </div>
-
-        <button type="button" class="btn btn--warning" id="anonymize-member-btn" disabled data-i18n="dangerous_anon_btn">
-          Nafnhreinsa félaga
-        </button>
-      </div>
-    </div>    <!-- Purge Soft-Deleted Records -->
-    <div class="card">
-      <h2 class="card__title" data-i18n="dangerous_purge_title">Hreinsa eydd gögn</h2>
-      <p class="card__description" data-i18n="dangerous_purge_desc">
-        Fjarlægir varanlega öll gögn sem hafa verið merkt sem eydd (soft-deleted).
-        Eftir þessa aðgerð er ekki lengur hægt að endurheimta þessi gögn.
-      </p>
-
-      <div class="dangerous-ops__info">
-        <div class="dangerous-ops__stat">
-          <span class="dangerous-ops__stat-label" data-i18n="dangerous_purge_members_label">Eyddir félagar:</span>
-          <span class="dangerous-ops__stat-value" id="deleted-members-count">-</span>
-        </div>
-        <div class="dangerous-ops__stat">
-          <span class="dangerous-ops__stat-label" data-i18n="dangerous_purge_votes_label">Eydd atkvæði:</span>
-          <span class="dangerous-ops__stat-value" id="deleted-votes-count">-</span>
-        </div>
-      </div>
-
-      <button type="button" class="btn btn--danger" id="purge-deleted-btn" disabled data-i18n="dangerous_purge_btn">
-        Hreinsa eytt gögn
+    <!-- Tab Navigation -->
+    <div class="dangerous-tabs">
+      <button class="dangerous-tabs__tab dangerous-tabs__tab--active" data-tab="delete" type="button">
+        <span class="dangerous-tabs__icon">🗑️</span>
+        Eyða félaga
       </button>
+      <button class="dangerous-tabs__tab" data-tab="anonymize" type="button">
+        <span class="dangerous-tabs__icon">👤</span>
+        Nafnhreinsa
+      </button>
+      <button class="dangerous-tabs__tab" data-tab="purge" type="button">
+        <span class="dangerous-tabs__icon">🧹</span>
+        Hreinsa eydd gögn
+      </button>
+    </div>
+
+    <!-- Tab Content: Delete Member -->
+    <div class="dangerous-tabs__content dangerous-tabs__content--active" id="tab-delete">
+      <div class="dangerous-ops__layout">
+        <!-- Left: Deleted Members Table -->
+        <div class="dangerous-ops__table-section">
+          <h3 class="dangerous-ops__section-title">Eyddir félagar (soft-deleted)</h3>
+          <p class="dangerous-ops__section-desc">Smelltu á röð til að velja félaga</p>
+
+          <div class="dangerous-ops__stats">
+            <span class="dangerous-ops__stat">
+              <strong id="deleted-count-delete">0</strong> félagar
+            </span>
+          </div>
+
+          <div class="table-container">
+            <table class="data-table data-table--compact data-table--selectable">
+              <thead>
+                <tr>
+                  <th class="data-table__th--checkbox"></th>
+                  <th>Nafn</th>
+                  <th>Kennitala</th>
+                  <th>Eytt þann</th>
+                </tr>
+              </thead>
+              <tbody id="deleted-members-tbody-delete">
+                <!-- Populated by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+          <p class="dangerous-ops__empty-state" id="no-deleted-delete" style="display: none;">
+            Engir eyddir félagar fundust.
+          </p>
+        </div>
+
+        <!-- Right: Action Panel -->
+        <div class="dangerous-ops__action-section">
+          <div class="card card--danger">
+            <h3 class="card__title" data-i18n="dangerous_delete_title">Eyða félaga varanlega</h3>
+            <p class="card__description" data-i18n="dangerous_delete_desc">
+              Eyðir félaga algjörlega úr kerfinu. Þetta fjarlægir öll gögn úr Firestore, Firebase Auth
+              og tengdar skrár. Ekki er hægt að afturkalla þessa aðgerð.
+            </p>
+
+            <!-- Preview Panel -->
+            <div class="dangerous-ops__preview" id="preview-delete" style="display: none;">
+              <h4 class="dangerous-ops__preview-title">Valinn félagi</h4>
+              <dl class="dangerous-ops__preview-data">
+                <dt>Nafn</dt>
+                <dd id="preview-name-delete">-</dd>
+                <dt>Kennitala</dt>
+                <dd id="preview-kt-delete">-</dd>
+                <dt>Eytt þann</dt>
+                <dd id="preview-date-delete">-</dd>
+              </dl>
+              <div class="dangerous-ops__preview-warning">
+                <strong>Verður eytt varanlega:</strong>
+                <ul>
+                  <li>Firebase Auth account</li>
+                  <li>Firestore /users document</li>
+                  <li>Cloud SQL record</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="dangerous-ops__form">
+              <div class="form__group">
+                <label class="form__label" for="delete-member-id">Kennitala félaga</label>
+                <input type="text" id="delete-member-id" class="form__input"
+                       placeholder="Veldu úr töflu eða sláðu inn" maxlength="10" pattern="[0-9]{10}">
+                <span class="form__hint">10 stafa kennitala</span>
+              </div>
+
+              <button type="button" class="btn btn--danger btn--full" id="delete-member-btn" disabled>
+                🗑️ Eyða félaga varanlega
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Content: Anonymize Member -->
+    <div class="dangerous-tabs__content" id="tab-anonymize">
+      <div class="dangerous-ops__layout">
+        <!-- Left: Deleted Members Table -->
+        <div class="dangerous-ops__table-section">
+          <h3 class="dangerous-ops__section-title">Eyddir félagar (soft-deleted)</h3>
+          <p class="dangerous-ops__section-desc">Smelltu á röð til að velja félaga</p>
+
+          <div class="dangerous-ops__stats">
+            <span class="dangerous-ops__stat">
+              <strong id="deleted-count-anonymize">0</strong> félagar
+            </span>
+          </div>
+
+          <div class="table-container">
+            <table class="data-table data-table--compact data-table--selectable">
+              <thead>
+                <tr>
+                  <th class="data-table__th--checkbox"></th>
+                  <th>Nafn</th>
+                  <th>Kennitala</th>
+                  <th>Eytt þann</th>
+                </tr>
+              </thead>
+              <tbody id="deleted-members-tbody-anonymize">
+                <!-- Populated by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+          <p class="dangerous-ops__empty-state" id="no-deleted-anonymize" style="display: none;">
+            Engir eyddir félagar fundust.
+          </p>
+        </div>
+
+        <!-- Right: Action Panel -->
+        <div class="dangerous-ops__action-section">
+          <div class="card card--warning">
+            <h3 class="card__title" data-i18n="dangerous_anon_title">Nafnhreinsa félaga (GDPR)</h3>
+            <p class="card__description" data-i18n="dangerous_anon_desc">
+              Fjarlægir persónugreinanlegar upplýsingar en heldur tölfræðilegum gögnum.
+              Notað fyrir GDPR beiðnir þar sem eyðing er ekki möguleg vegna lagaskyldu.
+            </p>
+
+            <!-- Preview Panel -->
+            <div class="dangerous-ops__preview" id="preview-anonymize" style="display: none;">
+              <h4 class="dangerous-ops__preview-title">Valinn félagi</h4>
+              <dl class="dangerous-ops__preview-data">
+                <dt>Nafn</dt>
+                <dd id="preview-name-anonymize">-</dd>
+                <dt>Kennitala</dt>
+                <dd id="preview-kt-anonymize">-</dd>
+                <dt>Eytt þann</dt>
+                <dd id="preview-date-anonymize">-</dd>
+              </dl>
+              <div class="dangerous-ops__preview-warning dangerous-ops__preview-warning--info">
+                <strong>Verður nafnhreinsað:</strong>
+                <ul>
+                  <li>Nafn → ANON-xxxxx</li>
+                  <li>Netfang → anon@anonymized.local</li>
+                  <li>Kennitala eytt</li>
+                  <li>Tölfræðileg gögn varðveitt</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="dangerous-ops__form">
+              <div class="form__group">
+                <label class="form__label" for="anonymize-member-id">Kennitala félaga</label>
+                <input type="text" id="anonymize-member-id" class="form__input"
+                       placeholder="Veldu úr töflu eða sláðu inn" maxlength="10" pattern="[0-9]{10}">
+                <span class="form__hint">10 stafa kennitala</span>
+              </div>
+
+              <button type="button" class="btn btn--warning btn--full" id="anonymize-member-btn" disabled>
+                👤 Nafnhreinsa félaga
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Content: Purge Deleted -->
+    <div class="dangerous-tabs__content" id="tab-purge">
+      <div class="card card--danger">
+        <h3 class="card__title" data-i18n="dangerous_purge_title">Hreinsa eydd gögn</h3>
+        <p class="card__description" data-i18n="dangerous_purge_desc">
+          Fjarlægir varanlega öll gögn sem hafa verið merkt sem eydd (soft-deleted).
+          Eftir þessa aðgerð er ekki lengur hægt að endurheimta þessi gögn.
+        </p>
+
+        <div class="dangerous-ops__purge-stats">
+          <div class="dangerous-ops__purge-stat">
+            <span class="dangerous-ops__purge-stat-value" id="deleted-members-count">-</span>
+            <span class="dangerous-ops__purge-stat-label">Eyddir félagar</span>
+          </div>
+          <div class="dangerous-ops__purge-stat">
+            <span class="dangerous-ops__purge-stat-value" id="deleted-votes-count">-</span>
+            <span class="dangerous-ops__purge-stat-label">Eydd atkvæði</span>
+          </div>
+        </div>
+
+        <!-- Deleted Members Preview Table -->
+        <div class="dangerous-ops__members-list" id="deleted-members-section">
+          <h4 class="dangerous-ops__list-title">Félagar sem verður eytt:</h4>
+          <div class="table-container">
+            <table class="data-table data-table--compact">
+              <thead>
+                <tr>
+                  <th>Nafn</th>
+                  <th>Kennitala</th>
+                  <th>Eytt þann</th>
+                </tr>
+              </thead>
+              <tbody id="deleted-members-tbody">
+                <!-- Populated by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="dangerous-ops__purge-warning">
+          <strong>⚠️ Athugið:</strong> Þessi aðgerð eyðir ÖLLUM soft-deleted gögnum í einu.
+          Þetta er ekki hægt að afturkalla.
+        </div>
+
+        <button type="button" class="btn btn--danger btn--full" id="purge-deleted-btn" disabled>
+          🧹 Hreinsa öll eydd gögn
+        </button>
+      </div>
     </div>
 
     <!-- Audit Trail -->
@@ -103,7 +267,7 @@
     </div>
   </div>
 
-    <!-- Confirmation Modal -->
+  <!-- Confirmation Modal -->
   <div class="modal" id="confirm-modal" aria-hidden="true">
     <div class="modal__backdrop"></div>
     <div class="modal__container modal__container--danger">
@@ -139,7 +303,7 @@
     </div>
   </div>
 
-  <script type="module" src="/superuser/js/dangerous-ops.js?v=20251201"></script>
+  <script type="module" src="/superuser/js/dangerous-ops.js?v=20260107j"></script>
 
   <!-- Initialize Navigation Component -->
   <script type="module">

@@ -1,19 +1,94 @@
 #!/bin/bash
 # =============================================================================
-# Ekklesia Pre-Push Hook
+# Ekklesia Pre-Push Hook - STRANGAR REGLUR
 # =============================================================================
-# Simple sanity check before pushing - warns about potential issues
-# Does NOT block pushes (gitignore handles sensitive files)
+# Hindrar push á main og athugar commit stærð
 # =============================================================================
 
+RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+BOLD='\033[1m'
 NC='\033[0m'
 
-echo -e "${GREEN}Running pre-push checks...${NC}"
+# Get the current branch
+current_branch=$(git symbolic-ref --short HEAD 2>/dev/null)
 
-# Everything sensitive is in .gitignore, so this hook just does sanity checks
-# The .gitignore ensures sensitive files are never tracked
+# Get the remote and branch being pushed to
+while read local_ref local_sha remote_ref remote_sha; do
+    remote_branch=$(echo "$remote_ref" | sed 's|refs/heads/||')
 
-echo -e "${GREEN}Pre-push checks complete${NC}"
+    # ==========================================================================
+    # RULE 1: Block direct push to main
+    # ==========================================================================
+    if [[ "$remote_branch" == "main" ]]; then
+        echo ""
+        echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+        echo -e "${RED}${BOLD}  ⛔ BLOCKED: Push to main not allowed${NC}"
+        echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+        echo ""
+        echo -e "  ${YELLOW}Allar breytingar á main VERÐA að fara í gegnum PR.${NC}"
+        echo ""
+        echo -e "  Rétt aðferð:"
+        echo -e "    1. git checkout -b feature/nafn"
+        echo -e "    2. git push -u origin feature/nafn"
+        echo -e "    3. gh pr create --base main"
+        echo -e "    4. gh pr merge --squash"
+        echo ""
+        echo -e "  Sjá: .github/CONTRIBUTING.md"
+        echo ""
+
+        # Allow with explicit override (for emergencies only)
+        if [[ "$EKKLESIA_FORCE_PUSH_MAIN" == "1" ]]; then
+            echo -e "${YELLOW}  ⚠️  OVERRIDE: EKKLESIA_FORCE_PUSH_MAIN=1 detected${NC}"
+            echo -e "${YELLOW}  Proceeding with push to main...${NC}"
+            echo ""
+        else
+            echo -e "  ${RED}Til að fara framhjá (AÐEINS NEYÐARTILFELLI):${NC}"
+            echo -e "    EKKLESIA_FORCE_PUSH_MAIN=1 git push origin main"
+            echo ""
+            exit 1
+        fi
+    fi
+
+    # ==========================================================================
+    # RULE 2: Check commit size (warn if too small for main-bound branches)
+    # ==========================================================================
+    if [[ "$remote_branch" == "main" ]] || [[ "$current_branch" =~ ^(feature|fix|refactor)/ ]]; then
+        # Count lines changed in commits being pushed
+        if [[ "$remote_sha" == "0000000000000000000000000000000000000000" ]]; then
+            # New branch - count all commits from main
+            lines_changed=$(git diff --stat main..."$local_sha" 2>/dev/null | tail -1 | grep -oE '[0-9]+ insertion|[0-9]+ deletion' | grep -oE '[0-9]+' | paste -sd+ | bc 2>/dev/null || echo "0")
+            files_changed=$(git diff --name-only main..."$local_sha" 2>/dev/null | wc -l)
+        else
+            # Existing branch - count new commits
+            lines_changed=$(git diff --stat "$remote_sha".."$local_sha" 2>/dev/null | tail -1 | grep -oE '[0-9]+ insertion|[0-9]+ deletion' | grep -oE '[0-9]+' | paste -sd+ | bc 2>/dev/null || echo "0")
+            files_changed=$(git diff --name-only "$remote_sha".."$local_sha" 2>/dev/null | wc -l)
+        fi
+
+        # Default to 0 if empty
+        lines_changed=${lines_changed:-0}
+        files_changed=${files_changed:-0}
+
+        echo -e "${GREEN}📊 Commit stats: ${lines_changed} lines, ${files_changed} files${NC}"
+
+        # Warn if too small (but don't block - that's for PR review)
+        if [[ "$lines_changed" -lt 50 ]] && [[ "$files_changed" -lt 3 ]]; then
+            echo ""
+            echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+            echo -e "${YELLOW}  ⚠️  WARNING: Smáar breytingar${NC}"
+            echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+            echo ""
+            echo -e "  Þessar breytingar eru undir lágmarkskröfum:"
+            echo -e "    • ${lines_changed} línur (þarf ≥50)"
+            echo -e "    • ${files_changed} skrár (þarf ≥3)"
+            echo ""
+            echo -e "  Íhugaðu að sameina við aðrar breytingar í einn PR."
+            echo -e "  Undanþágur: security fixes, critical bugs"
+            echo ""
+        fi
+    fi
+done
+
+echo -e "${GREEN}✓ Pre-push checks passed${NC}"
 exit 0

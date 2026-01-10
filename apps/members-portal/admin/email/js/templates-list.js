@@ -6,15 +6,26 @@
  * Module cleanup not needed - page reloads on navigation.
  */
 
-import { initSession } from '../../../session/init.js';
+import { initSession, showAuthenticatedContent } from '../../../session/init.js';
+import { AuthenticationError } from '../../../session/auth.js';
 import { debug } from '../../../js/utils/util-debug.js';
 import { adminStrings } from '../../js/i18n/admin-strings-loader.js';
 import { requireAdmin } from '../../../js/rbac.js';
 import { showToast, showError } from '../../../js/components/ui-toast.js';
+import { escapeHTML } from '../../../js/utils/util-format.js';
 // Note: showModal not used here - this page uses its own inline modal
 import EmailAPI from './api/email-api.js';
+import { TemplatePreview } from './template-editor-preview.js?v=20260109p';
+import { TemplateEditorAssistant } from './template-editor-assistant.js?v=20260109p';
+
+// Use centralized escapeHTML from util-format.js
+const escapeHtml = escapeHTML;
 
 let strings = {};
+
+// Editor components (initialized when modal opens)
+let previewComponent = null;
+let assistantComponent = null;
 
 /**
  * Set page text from admin strings
@@ -109,12 +120,135 @@ async function loadTemplates() {
 }
 
 /**
- * Escape HTML to prevent XSS
+ * Initialize editor components (preview and AI assistant)
  */
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text || '';
-  return div.innerHTML;
+function initEditorComponents() {
+  // Clean up any existing instances
+  destroyEditorComponents();
+
+  // Initialize live preview
+  const previewIframe = document.getElementById('preview-iframe');
+  const bodyTextarea = document.getElementById('template-body');
+  const subjectInput = document.getElementById('template-subject');
+
+  if (previewIframe && bodyTextarea) {
+    previewComponent = new TemplatePreview({
+      iframe: previewIframe,
+      bodyTextarea,
+      subjectInput,
+      debounceMs: 300
+    });
+    debug.log('[TemplatesList] Preview component initialized');
+  }
+
+  // Initialize AI assistant
+  const messagesContainer = document.getElementById('assistant-messages');
+  const inputField = document.getElementById('assistant-input');
+  const sendButton = document.getElementById('assistant-send');
+  const quickActionsContainer = document.getElementById('assistant-quick-actions');
+
+  if (messagesContainer && inputField && bodyTextarea) {
+    assistantComponent = new TemplateEditorAssistant({
+      messagesContainer,
+      inputField,
+      sendButton,
+      quickActionsContainer,
+      templateTextarea: bodyTextarea
+    });
+    debug.log('[TemplatesList] Assistant component initialized');
+  }
+}
+
+/**
+ * Destroy editor components on modal close
+ */
+function destroyEditorComponents() {
+  if (previewComponent) {
+    previewComponent.destroy();
+    previewComponent = null;
+  }
+  if (assistantComponent) {
+    assistantComponent.destroy();
+    assistantComponent = null;
+  }
+}
+
+/**
+ * Toggle floating AI assistant visibility
+ */
+function toggleAssistant(show) {
+  const assistantPanel = document.getElementById('ai-assistant');
+  const fabButton = document.getElementById('assistant-fab');
+
+  if (!assistantPanel || !fabButton) return;
+
+  if (show === undefined) {
+    show = assistantPanel.classList.contains('template-editor__assistant--hidden');
+  }
+
+  if (show) {
+    assistantPanel.classList.remove('template-editor__assistant--hidden');
+    fabButton.classList.add('assistant__fab--hidden');
+  } else {
+    assistantPanel.classList.add('template-editor__assistant--hidden');
+    fabButton.classList.remove('assistant__fab--hidden');
+  }
+}
+
+/**
+ * Setup toggle buttons for collapsing panels
+ * Called once at page init - uses event delegation on modal
+ */
+function setupModalEventDelegation() {
+  const modalEl = document.getElementById('template-modal');
+  if (!modalEl) return;
+
+  modalEl.addEventListener('click', (e) => {
+    const target = e.target;
+
+    // AI Assistant FAB button - open assistant
+    if (target.id === 'assistant-fab') {
+      toggleAssistant(true);
+      return;
+    }
+
+    // AI Assistant close button
+    if (target.id === 'assistant-toggle') {
+      toggleAssistant(false);
+      return;
+    }
+
+    // Preview toggle
+    if (target.id === 'preview-toggle') {
+      const previewPanel = document.getElementById('template-preview');
+      if (previewPanel) {
+        previewPanel.classList.toggle('template-editor__preview--collapsed');
+        target.textContent = previewPanel.classList.contains('template-editor__preview--collapsed') ? '+' : '−';
+      }
+      return;
+    }
+
+    // Open preview in new window
+    if (target.id === 'preview-open-window') {
+      if (previewComponent) {
+        previewComponent.openInNewWindow();
+      }
+      return;
+    }
+
+    // Fullscreen toggle
+    if (target.id === 'modal-fullscreen') {
+      const modal = modalEl.querySelector('.modal');
+      if (modal) {
+        modal.classList.toggle('modal--fullscreen');
+        modalEl.classList.toggle('modal-overlay--fullscreen');
+        target.title = modal.classList.contains('modal--fullscreen') ? 'Hætta fullskjá' : 'Fullskjár';
+      }
+      return;
+    }
+  });
+
+  debug.log('[TemplatesList] Modal event delegation setup');
 }
 
 /**
@@ -129,7 +263,14 @@ function openCreateModal() {
   document.getElementById('template-language').value = 'is';
   document.getElementById('template-body').value = '';
 
-  document.getElementById('template-modal').classList.remove('u-hidden');
+  const modal = document.getElementById('template-modal');
+  modal.classList.remove('u-hidden');
+  // Use requestAnimationFrame to ensure the transition plays
+  requestAnimationFrame(() => {
+    modal.classList.add('modal-overlay--show');
+    // Initialize editor components after modal is visible
+    initEditorComponents();
+  });
 }
 
 /**
@@ -147,7 +288,14 @@ async function editTemplate(templateId) {
     document.getElementById('template-language').value = template.language || 'is';
     document.getElementById('template-body').value = template.body_html || '';
 
-    document.getElementById('template-modal').classList.remove('u-hidden');
+    const modal = document.getElementById('template-modal');
+    modal.classList.remove('u-hidden');
+    // Use requestAnimationFrame to ensure the transition plays
+    requestAnimationFrame(() => {
+      modal.classList.add('modal-overlay--show');
+      // Initialize editor components after modal is visible
+      initEditorComponents();
+    });
 
   } catch (error) {
     debug.error('[TemplatesList] Edit error:', error);
@@ -215,7 +363,18 @@ async function deleteTemplate(templateId) {
  * Close modal
  */
 function closeModal() {
-  document.getElementById('template-modal').classList.add('u-hidden');
+  const modalOverlay = document.getElementById('template-modal');
+  const modal = modalOverlay.querySelector('.modal');
+  modalOverlay.classList.remove('modal-overlay--show');
+  // Wait for transition to complete before hiding
+  setTimeout(() => {
+    modalOverlay.classList.add('u-hidden');
+    // Reset fullscreen mode
+    modal?.classList.remove('modal--fullscreen');
+    modalOverlay.classList.remove('modal-overlay--fullscreen');
+    // Clean up editor components
+    destroyEditorComponents();
+  }, 200);
 }
 
 /**
@@ -232,6 +391,9 @@ async function init() {
     // 3. Check admin access
     await requireAdmin();
 
+    // Auth verified - show page content
+    showAuthenticatedContent();
+
     // 4. Set page text
     setPageText(s);
 
@@ -245,8 +407,13 @@ async function init() {
     document.getElementById('modal-cancel').addEventListener('click', closeModal);
     document.getElementById('modal-save').addEventListener('click', saveTemplate);
 
-    // Close modal on backdrop click
-    document.querySelector('.modal__backdrop').addEventListener('click', closeModal);
+    // 7. Setup modal event delegation for toggle buttons
+    setupModalEventDelegation();
+
+    // Close modal on backdrop click (clicking the overlay, not the modal content)
+    document.getElementById('template-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'template-modal') closeModal();
+    });
 
     // Close modal on Escape key
     document.addEventListener('keydown', (e) => {
@@ -258,13 +425,13 @@ async function init() {
   } catch (error) {
     debug.error('[TemplatesList] Init failed:', error);
 
-    if (error.message.includes('Unauthorized') || error.message.includes('Admin role required')) {
-      window.location.href = '/members-area/';
+    // Auth error - redirect to login
+    if (error instanceof AuthenticationError) {
+      window.location.href = '/';
       return;
     }
 
-    if (error.message.includes('Not authenticated')) {
-      window.location.href = '/';
+    if (error.message?.includes('Unauthorized') || error.message?.includes('Admin role required')) {
       return;
     }
 

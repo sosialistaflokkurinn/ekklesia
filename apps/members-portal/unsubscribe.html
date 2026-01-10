@@ -143,18 +143,22 @@
       const params = new URLSearchParams(window.location.search);
       const member_id = params.get('m');
       const token = params.get('t');
+      const email_hash = params.get('e');
 
-      // Check if parameters are present
-      if (!member_id || !token) {
+      // Check if parameters are present (either m+t or e)
+      if ((!member_id || !token) && !email_hash) {
         loadingState.classList.add('u-hidden');
         invalidState.classList.remove('u-hidden');
         return;
       }
 
       try {
-        // Call unsubscribe function
+        // Call unsubscribe function with appropriate parameters
         const unsubscribeFn = httpsCallable('unsubscribe', REGION);
-        const result = await unsubscribeFn({ member_id, token });
+        const payload = email_hash
+          ? { email_hash }
+          : { member_id, token };
+        const result = await unsubscribeFn(payload);
 
         if (result.data.success) {
           loadingState.classList.add('u-hidden');

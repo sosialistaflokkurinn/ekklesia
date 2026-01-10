@@ -7,7 +7,7 @@ Firebase Functions discovers functions by scanning this file.
 
 import firebase_admin
 from firebase_admin import initialize_app
-from firebase_functions import options
+from firebase_functions import options, pubsub_fn
 
 # Initialize Firebase Admin SDK
 if not firebase_admin._apps:
@@ -59,21 +59,21 @@ def verifyMembership(req: https_fn.CallableRequest) -> dict:
     """Verify membership - delegates to handler (reads from Cloud SQL)"""
     return verifyMembership_handler(req)
 
-@https_fn.on_call(timeout_sec=30, memory=256, secrets=["django-api-token"])
+@https_fn.on_call(timeout_sec=30, memory=256, secrets=["django-socialism-db-password", "django-api-token"])
 def updatememberprofile(req: https_fn.CallableRequest):
-    """Update member profile - delegates to handler"""
+    """Update member profile - delegates to handler (Cloud SQL + Django for addresses)"""
     return updatememberprofile_handler(req)
 
 # Note: cleanupauditlogs removed - /members_audit_log no longer used (Cloud SQL is source of truth)
 
-@https_fn.on_call(timeout_sec=30, memory=256, secrets=["django-api-token"])
+@https_fn.on_call(timeout_sec=30, memory=256, secrets=["django-socialism-db-password"])
 def softDeleteSelf(req: https_fn.CallableRequest) -> dict:
-    """User soft-deletes their own membership - delegates to handler"""
+    """User soft-deletes their own membership - updates Cloud SQL directly"""
     return soft_delete_self_handler(req)
 
-@https_fn.on_call(timeout_sec=30, memory=256, secrets=["django-api-token"])
+@https_fn.on_call(timeout_sec=30, memory=256, secrets=["django-socialism-db-password"])
 def reactivateSelf(req: https_fn.CallableRequest) -> dict:
-    """User reactivates their soft-deleted membership - delegates to handler"""
+    """User reactivates their soft-deleted membership - updates Cloud SQL directly"""
     return reactivate_self_handler(req)
 
 # ==============================================================================
@@ -193,7 +193,8 @@ from fn_admin_members import (
     list_members_handler,
     get_member_handler,
     get_member_stats_handler,
-    get_member_self_handler  # Self-service: member gets own data
+    get_member_self_handler,  # Self-service: member gets own data
+    soft_delete_admin_handler  # Admin: soft delete a member
 )
 
 # Define decorated functions for admin member operations
@@ -223,6 +224,15 @@ def getMember(req: https_fn.CallableRequest) -> dict:
 def getMemberStats(req: https_fn.CallableRequest) -> dict:
     """Get member statistics from Cloud SQL - requires admin"""
     return get_member_stats_handler(req)
+
+@https_fn.on_call(
+    timeout_sec=60,
+    memory=options.MemoryOption.MB_256,
+    secrets=["django-socialism-db-password"]
+)
+def softDeleteAdmin(req: https_fn.CallableRequest) -> dict:
+    """Soft delete a member by admin - updates Cloud SQL directly"""
+    return soft_delete_admin_handler(req)
 
 # ==============================================================================
 # SELF-SERVICE MEMBER FUNCTIONS (Cloud SQL source of truth)
@@ -255,7 +265,9 @@ from fn_email import (
     list_email_logs_handler,
     unsubscribe_handler,
     get_email_preferences_handler,
-    update_email_preferences_handler
+    update_email_preferences_handler,
+    get_municipalities_handler,
+    preview_recipient_count_handler
 )
 
 # Define decorated functions for email operations
@@ -290,11 +302,21 @@ def listEmailCampaigns(req: https_fn.CallableRequest) -> dict:
     return list_email_campaigns_handler(req)
 
 @https_fn.on_call(timeout_sec=30, memory=256)
+def getMunicipalities(req: https_fn.CallableRequest) -> dict:
+    """Get municipalities with member counts - requires admin"""
+    return get_municipalities_handler(req)
+
+@https_fn.on_call(timeout_sec=30, memory=256)
+def previewRecipientCount(req: https_fn.CallableRequest) -> dict:
+    """Preview recipient count for a filter - requires admin"""
+    return preview_recipient_count_handler(req)
+
+@https_fn.on_call(timeout_sec=30, memory=256)
 def createEmailCampaign(req: https_fn.CallableRequest) -> dict:
     """Create a new email campaign - requires admin"""
     return create_email_campaign_handler(req)
 
-@https_fn.on_call(timeout_sec=540, memory=512, secrets=["sendgrid-api-key", "resend-api-key"])
+@https_fn.on_call(timeout_sec=540, memory=512, secrets=["sendgrid-api-key", "resend-api-key", "unsubscribe-secret"])
 def sendCampaign(req: https_fn.CallableRequest) -> dict:
     """Send campaign via SendGrid (primary) or Resend (backup) - requires admin"""
     return send_campaign_handler(req)
@@ -325,6 +347,17 @@ def updateEmailPreferences(req: https_fn.CallableRequest) -> dict:
     return update_email_preferences_handler(req)
 
 # Note: ses_webhook removed - now using Resend, not AWS SES
+
+# ==============================================================================
+# SECRET ROTATION (Pub/Sub triggered)
+# ==============================================================================
+
+from fn_rotate_secret import rotate_secret_handler
+
+@pubsub_fn.on_message_published(topic="secret-rotation")
+def rotate_secret(event: pubsub_fn.CloudEvent[pubsub_fn.MessagePublishedData]) -> None:
+    """Rotate internal secrets when triggered by Secret Manager"""
+    return rotate_secret_handler(event)
 
 # ==============================================================================
 # EXPORTS
@@ -380,6 +413,8 @@ __all__ = [
     'deleteEmailTemplate',
     'sendEmail',
     'listEmailCampaigns',
+    'getMunicipalities',
+    'previewRecipientCount',
     'createEmailCampaign',
     'sendCampaign',
     'getEmailStats',
@@ -392,6 +427,9 @@ __all__ = [
     'listMembers',
     'getMember',
     'getMemberStats',
+    'softDeleteAdmin',
     # Self-service member functions (Cloud SQL)
     'getMemberSelf',
+    # Secret rotation (Pub/Sub triggered)
+    'rotate_secret',
 ]

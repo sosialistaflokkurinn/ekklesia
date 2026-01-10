@@ -2,28 +2,28 @@
 
 ## Architecture Overview
 
-**Ekklesia is the FUTURE source of truth** for the membership system.
+**Ekklesia is the source of truth** for the membership system.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    SYSTEM ARCHITECTURE                       │
 ├─────────────────────────────────────────────────────────────┤
 │                                                              │
-│  Ekklesia (THIS PROJECT - Future source of truth)           │
+│  Ekklesia (THIS PROJECT - Source of truth)                  │
 │  ├── Firestore database (canonical member data)             │
 │  ├── Firebase Hosting (members-portal)                       │
-│  ├── Firebase Functions (svc-members)                        │
-│  ├── Cloud Run (svc-elections, svc-events)                  │
-│  └── Amazon SES email (#323 - implemented Dec 2025)         │
+│  ├── Firebase Functions (svc-members, Python)               │
+│  ├── Cloud Run: svc-elections (Node.js)                     │
+│  ├── Cloud Run: svc-events (Node.js + AI assistants)        │
+│  │   ├── Sysadmin chat - Gemini (superuser only)            │
+│  │   ├── Member assistant - Gemini (RAG + web search)       │
+│  │   └── Email template editor - Gemini                     │
+│  └── SendGrid email                                          │
 │                                                              │
-│  Django GCP (INTERIM admin interface)                       │
+│  Django GCP (INTERIM read-only admin)                       │
 │  ├── Cloud Run: django-socialism                            │
 │  ├── Cloud SQL PostgreSQL                                    │
-│  └── SendGrid email (temporary)                             │
 │  └── See: ~/Development/projects/django/                    │
-│                                                              │
-│  Linode (DECOMMISSIONED 2025-12-11)                         │
-│  └── Backup: ~/Development/projects/django/backups/         │
 │                                                              │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -69,7 +69,7 @@ firebase serve --only hosting --port 5000
 ### Database Access
 ```bash
 # Start Cloud SQL proxy (ALWAYS use --gcloud-auth)
-cloud-sql-proxy ekklesia-prod-10-2025:europe-west2:ekklesia-db --port 5433 --gcloud-auth
+cloud-sql-proxy ekklesia-prod-10-2025:europe-west1:ekklesia-db-eu1 --port 5433 --gcloud-auth
 
 # Connect to PostgreSQL
 PGPASSWORD='Socialism2025#Db' psql -h localhost -p 5433 -U socialism -d socialism
@@ -80,7 +80,9 @@ Services read secrets from GCP Secret Manager. Key secrets:
 - `django-api-token` - Django API authentication
 - `django-socialism-db-password` - PostgreSQL password
 - `kenni-client-secret` - Kenni.is OAuth secret
-- `kimi-api-key` - Moonshot Kimi API key
+- `GEMINI_API_KEY` - Google Gemini AI (sysadmin chat, member assistant, email editor)
+- `kimi-api-key` - Moonshot Kimi API key (Party Wiki only)
+- `brave-search-api-key` - Web search fallback for member assistant
 
 ---
 
@@ -124,6 +126,7 @@ Services read secrets from GCP Secret Manager. Key secrets:
 | Search existing code first | `js/components/`, `js/utils/` have reusable patterns |
 | Follow naming conventions | See docs/PATTERNS.md for `[domain]-[name].js` pattern |
 | Run `./scripts/build-css-bundle.sh` | CSS changes need bundle rebuild before deploy |
+| Run `./scripts/check-css-versions.sh` | Prevents CSS cache issues (auto-runs on deploy) |
 | Verify secrets after deploy | `gcloud run services describe` confirms secret mounting |
 | Use `--gcloud-auth` for proxy | Avoids ADC auth issues with cloud-sql-proxy |
 | Add rate limiting to writes | `check_uid_rate_limit()` prevents abuse |
@@ -215,25 +218,26 @@ gcloud builds submit --config cloudbuild.yaml \
 - `svc-members` uses Firebase Functions (Python) - deploy via `firebase deploy`
 - `svc-elections` and `svc-events` use Cloud Run - deploy via `./deploy.sh`
 - Never use `firebase deploy --only functions` without specifying function name (slow + risky)
-- Single function deploy: `firebase deploy --only functions:sync_from_django`
+- Single function deploy: `firebase deploy --only functions:FUNCTION_NAME`
 - Django admin: deploy via `gcloud builds submit` (see Django CLAUDE.md)
 
 ---
 
 ## Data Sources
 
-### Source of Truth Hierarchy
-1. **Firestore** - Future canonical source (Ekklesia)
-2. **Cloud SQL** - Current operational database (Django GCP)
+### Source of Truth
+- **Firestore** - Canonical member data (Ekklesia)
+- **Cloud SQL** - Elections, events, RAG documents
 
-### Sync Status
-- Members sync from Firestore → Cloud SQL (planned)
-- Django admin reads/writes to Cloud SQL
+### Django (Interim)
+- Read-only admin interface
+- No sync - Django reads from Cloud SQL
+- Will be replaced by Ekklesia admin
 
 ---
 
 ## Related Issues
-- **#323** - ✅ Amazon SES email integration (implemented Dec 2025)
+- **#323** - ✅ SendGrid email integration (implemented Dec 2025)
 - **#324** - ✅ Email migration from Linode to GCP (completed Dec 2025)
 
 ---
@@ -245,4 +249,7 @@ gcloud builds submit --config cloudbuild.yaml \
 | [docs/README.md](docs/README.md) | Overview and quick links |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design |
 | [docs/PATTERNS.md](docs/PATTERNS.md) | Code patterns, components |
+| [docs/AI-ASSISTANTS.md](docs/AI-ASSISTANTS.md) | AI assistants (Gemini, RAG, vector search) |
+| [docs/ELECTIONS.md](docs/ELECTIONS.md) | Elections and nomination committee |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Deployment procedures |
 | [docs/SECURITY.md](docs/SECURITY.md) | Security rules |

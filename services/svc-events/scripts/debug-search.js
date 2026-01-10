@@ -8,11 +8,11 @@ process.env.DATABASE_PASSWORD = 'Socialism2025#Db';
 
 const { Pool } = require('pg');
 const pool = new Pool({
-  host: 'localhost',
-  port: 5433,
-  database: 'socialism',
-  user: 'socialism',
-  password: 'Socialism2025#Db',
+  host: process.env.DATABASE_HOST || 'localhost',
+  port: parseInt(process.env.DATABASE_PORT) || 5433,
+  database: process.env.DATABASE_NAME || 'socialism',
+  user: process.env.DATABASE_USER || 'socialism',
+  password: process.env.DATABASE_PASSWORD,
 });
 
 const embeddingService = require('/home/gudro/Development/projects/ekklesia/services/svc-events/src/services/service-embedding');

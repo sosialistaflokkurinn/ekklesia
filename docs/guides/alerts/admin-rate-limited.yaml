@@ -1,0 +1,14 @@
+displayName: "NOTICE: Admin reset rate-limited"
+combiner: OR
+enabled: true
+notificationChannels:
+  - projects/PROJECT_ID/notificationChannels/CHANNEL_ID_1
+  - projects/PROJECT_ID/notificationChannels/CHANNEL_ID_2
+alertStrategy:
+  notificationRateLimit:
+    period: 3600s
+conditions:
+  - displayName: "Rate-limit log match"
+    conditionMatchedLog:
+      filter: |
+        resource.type="cloud_run_revision" AND jsonPayload.message="Admin reset rate-limited"

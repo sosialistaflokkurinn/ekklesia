@@ -360,7 +360,7 @@ router.post('/elections', requireElectionManager, async (req, res) => {
     `,
       [
         title.trim(),
-        description.trim(),
+        (description || '').trim(),
         question.trim(),
         JSON.stringify(answers),
         voting_type,

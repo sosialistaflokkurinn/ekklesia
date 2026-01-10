@@ -122,7 +122,7 @@ export function getOverallCloudRunStatus() {
 export function getCloudSqlStatus() {
   if (!healthData) return 'unknown';
   const service = (healthData.services || []).find(s => s.id === 'cloudsql');
-  return service?.status || 'healthy';
+  return service?.status || 'unknown';
 }
 
 /**

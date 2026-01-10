@@ -8,9 +8,11 @@ Issue: Migrate admin pages from Firestore to Cloud SQL
 """
 
 from typing import Dict, Any, List, Optional
+from datetime import datetime, timezone
 from firebase_functions import https_fn
+from firebase_admin import auth
 from util_logging import log_json
-from db import execute_query
+from db import execute_query, execute_update
 from shared.rate_limit import check_uid_rate_limit
 from shared.validators import normalize_kennitala
 
@@ -251,6 +253,8 @@ def get_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             c.deleted_at,
             c.reachable,
             c.groupable,
+            c.housing_situation,
+            c.gender,
             ci.email,
             ci.phone,
             (
@@ -272,7 +276,25 @@ def get_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
                 LEFT JOIN map_postalcode pc ON s.postal_code_id = pc.id
                 WHERE la.comrade_id = c.id AND nca.current = true
                 LIMIT 1
-            ) as address
+            ) as address,
+            (
+                SELECT json_agg(json_build_object(
+                    'id', u.id,
+                    'name', u.name
+                ))
+                FROM membership_unionmembership um
+                JOIN membership_union u ON um.union_id = u.id
+                WHERE um.comrade_id = c.id
+            ) as unions,
+            (
+                SELECT json_agg(json_build_object(
+                    'id', t.id,
+                    'name', t.name
+                ))
+                FROM membership_comradetitle ct
+                JOIN membership_title t ON ct.title_id = t.id
+                WHERE ct.comrade_id = c.id
+            ) as titles
         FROM membership_comrade c
         LEFT JOIN membership_contactinfo ci ON ci.comrade_id = c.id
         WHERE {condition}
@@ -286,11 +308,19 @@ def get_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             message="Member not found"
         )
 
-    # Parse address JSON if present
+    # Parse JSON fields
+    import json
     address = result['address'] or {}
     if isinstance(address, str):
-        import json
         address = json.loads(address)
+
+    unions = result['unions'] or []
+    if isinstance(unions, str):
+        unions = json.loads(unions)
+
+    titles = result['titles'] or []
+    if isinstance(titles, str):
+        titles = json.loads(titles)
 
     member = {
         'id': str(result['django_id']),
@@ -305,7 +335,11 @@ def get_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
         'deleted_at': str(result['deleted_at']) if result['deleted_at'] else None,
         'reachable': result['reachable'],
         'groupable': result['groupable'],
+        'housing_situation': result['housing_situation'],
+        'gender': result['gender'],
         'address': address,
+        'unions': unions or [],
+        'titles': titles or [],
         'metadata': {
             'django_id': result['django_id']
         },
@@ -314,12 +348,16 @@ def get_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             'email': result['email'] or '',
             'phone': result['phone'] or '',
             'birthday': str(result['birthday']) if result['birthday'] else None,
+            'housing_situation': result['housing_situation'],
+            'gender': result['gender'],
             'addresses': [address] if address else []
         },
         'membership': {
             'date_joined': str(result['date_joined']) if result['date_joined'] else None,
             'deleted_at': str(result['deleted_at']) if result['deleted_at'] else None,
             'status': 'deleted' if result['deleted_at'] else 'active',
+            'unions': unions or [],
+            'titles': titles or [],
         }
     }
 
@@ -552,3 +590,139 @@ def get_member_self_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
              uid=req.auth.uid)
 
     return {'member': member}
+
+
+def soft_delete_admin_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
+    """
+    Soft delete a member by admin.
+
+    Allows admins to deactivate a member's account:
+    1. Disables Firebase Auth account
+    2. Sets deleted_at in Cloud SQL (source of truth)
+
+    The member can later be reactivated.
+
+    Requires admin or superuser role.
+
+    Args:
+        req.data: {
+            'django_id': int - The member's Django ID
+            'confirmation': str - Must be 'EYÐA' to confirm
+        }
+
+    Returns:
+        Dict with success status and member name
+    """
+    require_admin(req)
+    check_uid_rate_limit(req.auth.uid, "soft_delete_admin", max_attempts=20, window_minutes=10)
+
+    data = req.data or {}
+    django_id = data.get('django_id')
+    confirmation = data.get('confirmation', '')
+
+    if not django_id:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+            message="django_id is required"
+        )
+
+    if confirmation != 'EYÐA':
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+            message="Confirmation text must be 'EYÐA'"
+        )
+
+    # Get member from Cloud SQL
+    query = """
+        SELECT c.id, c.name, c.ssn as kennitala, c.firebase_uid, c.deleted_at
+        FROM membership_comrade c
+        WHERE c.id = %s
+    """
+    result = execute_query(query, params=(int(django_id),), fetch_one=True)
+
+    if not result:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.NOT_FOUND,
+            message="Member not found"
+        )
+
+    if result['deleted_at']:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
+            message="Member is already deleted"
+        )
+
+    member_name = result['name']
+    kennitala = result['kennitala']
+    firebase_uid = result['firebase_uid']
+    deleted_at = datetime.now(timezone.utc)
+
+    log_json("info", "Admin soft delete initiated",
+             admin_uid=req.auth.uid,
+             target_django_id=django_id,
+             target_kennitala=f"{kennitala[:6]}****" if kennitala else None)
+
+    # 1. Disable Firebase Auth account (if UID exists)
+    if firebase_uid:
+        try:
+            auth.update_user(firebase_uid, disabled=True)
+            log_json("info", "Firebase Auth disabled by admin",
+                     admin_uid=req.auth.uid,
+                     target_uid=firebase_uid)
+
+            # Update custom claims
+            try:
+                existing_claims = auth.get_user(firebase_uid).custom_claims or {}
+                merged_claims = {**existing_claims, 'isMember': False}
+                auth.set_custom_user_claims(firebase_uid, merged_claims)
+            except Exception as claims_error:
+                log_json("warn", "Failed to update custom claims",
+                         target_uid=firebase_uid,
+                         error=str(claims_error))
+
+        except Exception as auth_error:
+            log_json("warn", "Failed to disable Firebase Auth",
+                     target_uid=firebase_uid,
+                     error=str(auth_error))
+            # Continue anyway - Cloud SQL update is main goal
+
+    # 2. Update Cloud SQL directly (source of truth)
+    try:
+        affected_rows = execute_update(
+            "UPDATE membership_comrade SET deleted_at = %s WHERE id = %s",
+            params=(deleted_at, int(django_id))
+        )
+
+        if affected_rows == 0:
+            log_json("error", "Cloud SQL update affected 0 rows",
+                     admin_uid=req.auth.uid,
+                     target_django_id=django_id)
+            raise https_fn.HttpsError(
+                code=https_fn.FunctionsErrorCode.INTERNAL,
+                message="Database update failed"
+            )
+
+        log_json("info", "Cloud SQL soft delete successful",
+                 admin_uid=req.auth.uid,
+                 target_django_id=django_id)
+
+    except Exception as db_error:
+        log_json("error", "Cloud SQL update failed",
+                 admin_uid=req.auth.uid,
+                 error=str(db_error))
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INTERNAL,
+            message=f"Database update failed: {str(db_error)}"
+        )
+
+    log_json("info", "Admin soft delete completed successfully",
+             admin_uid=req.auth.uid,
+             target_django_id=django_id,
+             target_name=member_name)
+
+    return {
+        'success': True,
+        'message': f'Félaga {member_name} hefur verið eytt',
+        'name': member_name,
+        'deleted_at': deleted_at.isoformat()
+    }

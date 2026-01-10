@@ -104,18 +104,6 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // Sync queue collection (Bi-directional sync: Firestore ↔ Django)
-    match /sync_queue/{queueId} {
-      // Read: Only admins and superusers can view sync queue
-      allow read: if hasAdminAccess();
-
-      // Create: Only admins can add to sync queue
-      allow create: if hasAdminAccess();
-
-      // Update/Delete: Only Cloud Functions (process queue, mark as synced)
-      allow update, delete: if false;
-    }
-
     // Nomination candidates metadata collection
     // Contains biographical information about candidates for nomination committee voting
     // ACCESS: Only via svc-elections API (Admin SDK) - no direct frontend access
@@ -155,7 +143,8 @@ service cloud.firestore {
       allow read: if hasAdminAccess();
 
       // Write: Only Cloud Functions (via Admin SDK)
-      // Logs are written by Cloud Functions and Postmark webhooks
+      // Note: Email webhooks (Postmark/Resend) call Cloud Functions which use Admin SDK
+      // Client-side writes are blocked for security
       allow write: if false;
     }
 

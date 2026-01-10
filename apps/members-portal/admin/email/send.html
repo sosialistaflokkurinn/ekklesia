@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="/styles/bundle.css?v=20251217k">
 
   <!-- Admin-specific styles -->
-  <link rel="stylesheet" href="/admin/styles/admin.css?v=20251222b">
+  <link rel="stylesheet" href="/admin/styles/admin.css?v=20260109a">
 </head>
 <body class="authenticated admin">
   <!-- Navigation component inserted here -->
@@ -32,13 +32,43 @@
             <button type="button" class="toggle-btn" id="mode-quick" data-mode="quick">
               Fljótpóstur
             </button>
+            <button type="button" class="toggle-btn" id="mode-campaign" data-mode="campaign">
+              Fjöldapóstur
+            </button>
           </div>
         </div>
 
-        <div class="form-group">
+        <!-- Single recipient field (template and quick modes) -->
+        <div class="form-group" id="single-recipient-section">
           <label for="recipient" id="label-recipient">Loading...</label>
           <input type="text" id="recipient" class="form-input" placeholder="" required>
           <p class="form-help" id="recipient-help">Netfang eða kennitala félaga</p>
+        </div>
+
+        <!-- Campaign Mode Fields (bulk send) -->
+        <div id="campaign-mode-fields" class="u-hidden">
+          <div class="form-group">
+            <label for="campaign-name">Heiti herferðar</label>
+            <input type="text" id="campaign-name" class="form-input" placeholder="t.d. Kópavogur sveitarstjórnarkosningar 2026">
+          </div>
+
+          <div class="form-group">
+            <label for="municipality-select">Sveitarfélag</label>
+            <select id="municipality-select" class="form-select">
+              <option value="">Allir félagar</option>
+              <!-- Populated dynamically -->
+            </select>
+            <p class="form-help">Veldu sveitarfélag til að sía viðtakendur</p>
+          </div>
+
+          <!-- Recipient count preview -->
+          <div class="form-group">
+            <div class="recipient-count-box" id="recipient-count-box">
+              <span class="recipient-count-label">Fjöldi viðtakenda:</span>
+              <span class="recipient-count-value" id="recipient-count">-</span>
+              <button type="button" class="btn btn--small btn--secondary" id="refresh-count-btn">Uppfæra</button>
+            </div>
+          </div>
         </div>
 
         <!-- Template Mode Fields -->
@@ -74,7 +104,7 @@
         </div>
 
         <!-- Include unsubscribe link option -->
-        <div class="form-group">
+        <div class="form-group" id="unsubscribe-section">
           <label class="checkbox-label">
             <input type="checkbox" id="include-unsubscribe">
             <span>Bæta við afþakka hlekk (fjöldapóstur)</span>
@@ -94,7 +124,7 @@
     </div>
   </div>
 
-  <script type="module" src="/admin/email/js/email-send.js?v=20251222"></script>
+  <script type="module" src="/admin/email/js/email-send.js?v=20260109a"></script>
 
   <!-- Initialize Navigation Component -->
   <script type="module">

@@ -1,25 +1,31 @@
 /**
  * Send Email Page - Issue #323
  *
- * Send a single email to a member or email address.
- * Supports two modes:
- * - Template mode: Select a saved template
- * - Quick send mode: Write subject and body directly
+ * Send emails to members. Supports three modes:
+ * - Template mode: Select a saved template, send to single recipient
+ * - Quick send mode: Write subject and body directly, send to single recipient
+ * - Campaign mode: Send to multiple recipients filtered by municipality
  *
  * Module cleanup not needed - page reloads on navigation.
  */
 
-import { initSession } from '../../../session/init.js';
+import { initSession, showAuthenticatedContent } from '../../../session/init.js';
+import { AuthenticationError } from '../../../session/auth.js';
 import { debug } from '../../../js/utils/util-debug.js';
 import { adminStrings } from '../../js/i18n/admin-strings-loader.js';
 import { requireAdmin } from '../../../js/rbac.js';
 import { showToast, showError } from '../../../js/components/ui-toast.js';
+import { escapeHTML } from '../../../js/utils/util-format.js';
 import EmailAPI from './api/email-api.js';
+
+// Use centralized escapeHTML from util-format.js
+const escapeHtml = escapeHTML;
 
 let strings = {};
 let templates = [];
 let selectedTemplate = null;
-let currentMode = 'template';  // 'template' or 'quick'
+let currentMode = 'template';  // 'template', 'quick', or 'campaign'
+let municipalities = [];
 
 /**
  * Set page text from admin strings
@@ -64,6 +70,31 @@ async function loadTemplates() {
 }
 
 /**
+ * Load municipalities for select dropdown
+ */
+async function loadMunicipalities() {
+  try {
+    const { municipalities: municipalityList } = await EmailAPI.getMunicipalities();
+    municipalities = municipalityList;
+
+    const select = document.getElementById('municipality-select');
+
+    municipalities.forEach(m => {
+      const option = document.createElement('option');
+      option.value = m.name;
+      option.textContent = `${m.name} (${m.count} félagar)`;
+      select.appendChild(option);
+    });
+
+    debug.log('[EmailSend] Loaded municipalities:', municipalities.length);
+
+  } catch (error) {
+    debug.error('[EmailSend] Failed to load municipalities:', error);
+    // Non-critical - campaign mode still works with "all members"
+  }
+}
+
+/**
  * Show template preview when selected
  */
 async function onTemplateChange(e) {
@@ -95,12 +126,38 @@ async function onTemplateChange(e) {
 }
 
 /**
- * Escape HTML
+ * Update recipient count preview based on current filter
  */
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text || '';
-  return div.innerHTML;
+async function updateRecipientCount() {
+  const countEl = document.getElementById('recipient-count');
+  const refreshBtn = document.getElementById('refresh-count-btn');
+
+  countEl.textContent = '...';
+  countEl.classList.add('loading');
+  refreshBtn.disabled = true;
+
+  try {
+    const municipality = document.getElementById('municipality-select').value;
+    const filter = { status: 'active' };
+
+    if (municipality) {
+      filter.municipalities = [municipality];
+    }
+
+    const { count } = await EmailAPI.previewRecipientCount({ recipient_filter: filter });
+
+    countEl.textContent = count;
+    countEl.classList.remove('loading');
+
+    debug.log('[EmailSend] Recipient count:', count);
+
+  } catch (error) {
+    debug.error('[EmailSend] Failed to get recipient count:', error);
+    countEl.textContent = '?';
+    countEl.classList.remove('loading');
+  } finally {
+    refreshBtn.disabled = false;
+  }
 }
 
 /**
@@ -109,8 +166,13 @@ function escapeHtml(text) {
 function setupModeToggle() {
   const templateBtn = document.getElementById('mode-template');
   const quickBtn = document.getElementById('mode-quick');
+  const campaignBtn = document.getElementById('mode-campaign');
   const templateFields = document.getElementById('template-mode-fields');
   const quickFields = document.getElementById('quick-mode-fields');
+  const campaignFields = document.getElementById('campaign-mode-fields');
+  const singleRecipientSection = document.getElementById('single-recipient-section');
+  const unsubscribeSection = document.getElementById('unsubscribe-section');
+  const recipientInput = document.getElementById('recipient');
 
   function setMode(mode) {
     currentMode = mode;
@@ -118,22 +180,152 @@ function setupModeToggle() {
     // Update button states
     templateBtn.classList.toggle('active', mode === 'template');
     quickBtn.classList.toggle('active', mode === 'quick');
+    campaignBtn.classList.toggle('active', mode === 'campaign');
 
     // Show/hide appropriate fields
     templateFields.classList.toggle('u-hidden', mode === 'quick');
-    quickFields.classList.toggle('u-hidden', mode === 'template');
+    quickFields.classList.toggle('u-hidden', mode !== 'quick');
+    campaignFields.classList.toggle('u-hidden', mode !== 'campaign');
+    singleRecipientSection.classList.toggle('u-hidden', mode === 'campaign');
+
+    // In campaign mode: auto-check unsubscribe, hide section
+    if (mode === 'campaign') {
+      document.getElementById('include-unsubscribe').checked = true;
+      unsubscribeSection.classList.add('u-hidden');
+      recipientInput.removeAttribute('required');
+      // Update recipient count on mode switch
+      updateRecipientCount();
+    } else {
+      unsubscribeSection.classList.remove('u-hidden');
+      recipientInput.setAttribute('required', '');
+    }
+
+    // Update send button text
+    const sendBtn = document.getElementById('send-btn');
+    if (mode === 'campaign') {
+      sendBtn.textContent = 'Senda fjöldapóst';
+    } else {
+      sendBtn.textContent = strings.email_send_btn || 'Senda';
+    }
 
     debug.log('[EmailSend] Mode changed to:', mode);
   }
 
   templateBtn.addEventListener('click', () => setMode('template'));
   quickBtn.addEventListener('click', () => setMode('quick'));
+  campaignBtn.addEventListener('click', () => setMode('campaign'));
 }
 
 /**
- * Send email
+ * Send single email (template or quick mode)
  */
-async function sendEmail(e) {
+async function sendSingleEmail() {
+  const recipient = document.getElementById('recipient').value.trim();
+
+  if (!recipient) {
+    throw new Error('Vinsamlega sláðu inn viðtakanda');
+  }
+
+  // Build send data based on mode
+  const sendData = {};
+
+  // Check if unsubscribe link should be included (broadcast mode)
+  const includeUnsubscribe = document.getElementById('include-unsubscribe').checked;
+  if (includeUnsubscribe) {
+    sendData.email_type = 'broadcast';
+  }
+
+  if (currentMode === 'template') {
+    const templateId = document.getElementById('template-select').value;
+    if (!templateId) {
+      throw new Error('Vinsamlega veldu sniðmát');
+    }
+    sendData.template_id = templateId;
+  } else {
+    // Quick send mode
+    const subject = document.getElementById('quick-subject').value.trim();
+    const body = document.getElementById('quick-body').value.trim();
+
+    if (!subject || !body) {
+      throw new Error('Vinsamlega fylltu út efnislínu og meginmál');
+    }
+
+    sendData.subject = subject;
+    sendData.body_html = body;
+  }
+
+  // Determine if recipient is email or kennitala
+  const isEmail = recipient.includes('@');
+  if (isEmail) {
+    sendData.recipient_email = recipient;
+  } else {
+    // Assume kennitala
+    sendData.recipient_kennitala = recipient.replace(/-/g, '');
+  }
+
+  const result = await EmailAPI.sendEmail(sendData);
+
+  return {
+    type: 'single',
+    recipient: result.recipient,
+    message_id: result.message_id
+  };
+}
+
+/**
+ * Send campaign (bulk mode)
+ */
+async function sendCampaign() {
+  const campaignName = document.getElementById('campaign-name').value.trim();
+  const templateId = document.getElementById('template-select').value;
+  const municipality = document.getElementById('municipality-select').value;
+
+  if (!campaignName) {
+    throw new Error('Vinsamlega sláðu inn heiti herferðar');
+  }
+
+  if (!templateId) {
+    throw new Error('Vinsamlega veldu sniðmát');
+  }
+
+  // Build recipient filter
+  const recipientFilter = { status: 'active' };
+  if (municipality) {
+    recipientFilter.municipalities = [municipality];
+  }
+
+  // Create campaign
+  const createResult = await EmailAPI.createCampaign({
+    name: campaignName,
+    template_id: templateId,
+    recipient_filter: recipientFilter
+  });
+
+  debug.log('[EmailSend] Campaign created:', createResult);
+
+  // Confirm before sending
+  const recipientCount = createResult.recipient_count;
+  const confirmed = confirm(`Ertu viss um að þú viljir senda til ${recipientCount} viðtakenda?`);
+
+  if (!confirmed) {
+    throw new Error('Hætt við að senda');
+  }
+
+  // Send campaign
+  const sendResult = await EmailAPI.sendCampaign(createResult.campaign_id);
+
+  return {
+    type: 'campaign',
+    campaign_id: createResult.campaign_id,
+    sent_count: sendResult.sent_count,
+    failed_count: sendResult.failed_count
+  };
+}
+
+/**
+ * Handle form submission
+ */
+async function handleSubmit(e) {
   e.preventDefault();
 
   const sendBtn = document.getElementById('send-btn');
@@ -145,71 +337,53 @@ async function sendEmail(e) {
   resultCard.classList.add('u-hidden');
 
   try {
-    const recipient = document.getElementById('recipient').value.trim();
+    let result;
 
-    if (!recipient) {
-      throw new Error('Vinsamlega sláðu inn viðtakanda');
-    }
-
-    // Build send data based on mode
-    const sendData = {};
-
-    // Check if unsubscribe link should be included (broadcast mode)
-    const includeUnsubscribe = document.getElementById('include-unsubscribe').checked;
-    if (includeUnsubscribe) {
-      sendData.email_type = 'broadcast';
-    }
-
-    if (currentMode === 'template') {
-      const templateId = document.getElementById('template-select').value;
-      if (!templateId) {
-        throw new Error('Vinsamlega veldu sniðmát');
-      }
-      sendData.template_id = templateId;
+    if (currentMode === 'campaign') {
+      result = await sendCampaign();
     } else {
-      // Quick send mode
-      const subject = document.getElementById('quick-subject').value.trim();
-      const body = document.getElementById('quick-body').value.trim();
-
-      if (!subject || !body) {
-        throw new Error('Vinsamlega fylltu út efnislínu og meginmál');
-      }
-
-      sendData.subject = subject;
-      sendData.body_html = body;
+      result = await sendSingleEmail();
     }
-
-    // Determine if recipient is email or kennitala
-    const isEmail = recipient.includes('@');
-    if (isEmail) {
-      sendData.recipient_email = recipient;
-    } else {
-      // Assume kennitala
-      sendData.recipient_kennitala = recipient.replace(/-/g, '');
-    }
-
-    const result = await EmailAPI.sendEmail(sendData);
 
     // Show success
     resultCard.classList.remove('u-hidden');
-    document.getElementById('result-content').innerHTML = `
-      <div class="alert alert--success">
-        <strong>${strings.email_send_success}</strong>
-        <p>Póstur sendur til ${escapeHtml(result.recipient)}</p>
-        <p class="text-muted">Message ID: ${result.message_id}</p>
-      </div>
-    `;
 
-    showToast(strings.email_send_success, 'success');
+    if (result.type === 'campaign') {
+      document.getElementById('result-content').innerHTML = `
+        <div class="alert alert--success">
+          <strong>Fjöldapóstur sendur!</strong>
+          <p>Sent til ${result.sent_count} viðtakenda.</p>
+          ${result.failed_count > 0 ? `<p class="text-muted">Mistókst: ${result.failed_count}</p>` : ''}
+        </div>
+      `;
+      showToast(`Fjöldapóstur sendur til ${result.sent_count} viðtakenda`, 'success');
 
-    // Clear form
-    document.getElementById('recipient').value = '';
-    if (currentMode === 'template') {
+      // Clear campaign form
+      document.getElementById('campaign-name').value = '';
+      document.getElementById('municipality-select').value = '';
       document.getElementById('template-select').value = '';
       document.getElementById('preview-section').classList.add('u-hidden');
+      updateRecipientCount();
+
     } else {
-      document.getElementById('quick-subject').value = '';
-      document.getElementById('quick-body').value = '';
+      document.getElementById('result-content').innerHTML = `
+        <div class="alert alert--success">
+          <strong>${strings.email_send_success}</strong>
+          <p>Póstur sendur til ${escapeHtml(result.recipient)}</p>
+          <p class="text-muted">Message ID: ${result.message_id}</p>
+        </div>
+      `;
+      showToast(strings.email_send_success, 'success');
+
+      // Clear single recipient form
+      document.getElementById('recipient').value = '';
+      if (currentMode === 'template') {
+        document.getElementById('template-select').value = '';
+        document.getElementById('preview-section').classList.add('u-hidden');
+      } else {
+        document.getElementById('quick-subject').value = '';
+        document.getElementById('quick-body').value = '';
+      }
     }
 
   } catch (error) {
@@ -218,7 +392,7 @@ async function sendEmail(e) {
     resultCard.classList.remove('u-hidden');
     document.getElementById('result-content').innerHTML = `
       <div class="alert alert--error">
-        <strong>${strings.email_send_error}</strong>
+        <strong>${strings.email_send_error || 'Villa'}</strong>
         <p>${escapeHtml(error.message)}</p>
       </div>
     `;
@@ -245,31 +419,39 @@ async function init() {
     // 3. Check admin access
     await requireAdmin();
 
+    // Auth verified - show page content
+    showAuthenticatedContent();
+
     // 4. Set page text
     setPageText(s);
 
-    // 5. Load templates
-    await loadTemplates();
+    // 5. Load templates and municipalities in parallel
+    await Promise.all([
+      loadTemplates(),
+      loadMunicipalities()
+    ]);
 
     // 6. Setup mode toggle
     setupModeToggle();
 
     // 7. Setup event handlers
     document.getElementById('template-select').addEventListener('change', onTemplateChange);
-    document.getElementById('send-form').addEventListener('submit', sendEmail);
+    document.getElementById('send-form').addEventListener('submit', handleSubmit);
+    document.getElementById('municipality-select').addEventListener('change', updateRecipientCount);
+    document.getElementById('refresh-count-btn').addEventListener('click', updateRecipientCount);
 
     debug.log('[EmailSend] Initialized');
 
   } catch (error) {
     debug.error('[EmailSend] Init failed:', error);
 
-    if (error.message.includes('Unauthorized') || error.message.includes('Admin role required')) {
-      window.location.href = '/members-area/';
+    // Auth error - redirect to login
+    if (error instanceof AuthenticationError) {
+      window.location.href = '/';
       return;
     }
 
-    if (error.message.includes('Not authenticated')) {
-      window.location.href = '/';
+    if (error.message?.includes('Unauthorized') || error.message?.includes('Admin role required')) {
       return;
     }
 
