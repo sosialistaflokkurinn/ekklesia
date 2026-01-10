@@ -45,9 +45,13 @@ export class TemplatePreview {
    * Initialize event listeners
    */
   init() {
+    // Store bound handlers for cleanup
+    this._handleBodyInput = () => this.scheduleUpdate();
+    this._handleSubjectInput = () => this.scheduleUpdate();
+
     // Listen for input changes
-    this.bodyEl?.addEventListener('input', () => this.scheduleUpdate());
-    this.subjectEl?.addEventListener('input', () => this.scheduleUpdate());
+    this.bodyEl?.addEventListener('input', this._handleBodyInput);
+    this.subjectEl?.addEventListener('input', this._handleSubjectInput);
 
     // Initial render
     this.update();
@@ -221,6 +225,10 @@ export class TemplatePreview {
    */
   destroy() {
     clearTimeout(this.debounceTimer);
+
+    // Remove event listeners
+    this.bodyEl?.removeEventListener('input', this._handleBodyInput);
+    this.subjectEl?.removeEventListener('input', this._handleSubjectInput);
   }
 }
 
