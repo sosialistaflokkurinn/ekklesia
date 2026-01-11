@@ -448,7 +448,7 @@
   <string name="health_section_registration">Skráningarþjónustur</string>
   <string name="health_section_registration_desc">Þjónustur fyrir skráningu nýrra félaga.</string>
   <string name="health_section_email">Tölvupóstur</string>
-  <string name="health_section_email_desc">Amazon SES tölvupóstþjónustur fyrir sniðmát, herferðir og sendingar.</string>
+  <string name="health_section_email_desc">SendGrid tölvupóstþjónustur fyrir sniðmát, herferðir og sendingar.</string>
   <string name="health_section_heatmap">Hitakort</string>
   <string name="health_section_heatmap_desc">Hitakort og tölfræði um félagsdreifingu.</string>
   <string name="health_section_database">Gagnagrunnar</string>
