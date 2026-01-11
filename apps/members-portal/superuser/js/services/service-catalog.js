@@ -101,6 +101,7 @@ export const SERVICES = [
   { id: 'getmember', nameKey: 'service_name_getmember', group: GROUPS.MEMBER, category: CATEGORIES.MEMBER, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
   { id: 'getmemberstats', nameKey: 'service_name_getmemberstats', group: GROUPS.MEMBER, category: CATEGORIES.MEMBER, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
   { id: 'getmemberself', nameKey: 'service_name_getmemberself', group: GROUPS.MEMBER, category: CATEGORIES.MEMBER, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
+  { id: 'softdeleteadmin', nameKey: 'service_name_softdeleteadmin', group: GROUPS.MEMBER, category: CATEGORIES.MEMBER, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
 
   // ==========================================================================
   // FIREBASE FUNCTIONS - Address Validation
@@ -153,6 +154,8 @@ export const SERVICES = [
   { id: 'getemailpreferences', nameKey: 'service_name_getemailpreferences', group: GROUPS.EMAIL, category: CATEGORIES.EMAIL, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
   { id: 'updateemailpreferences', nameKey: 'service_name_updateemailpreferences', group: GROUPS.EMAIL, category: CATEGORIES.EMAIL, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
   { id: 'unsubscribe', nameKey: 'service_name_unsubscribe', group: GROUPS.EMAIL, category: CATEGORIES.EMAIL, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
+  { id: 'getmunicipalities', nameKey: 'service_name_getmunicipalities', group: GROUPS.EMAIL, category: CATEGORIES.EMAIL, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
+  { id: 'previewrecipientcount', nameKey: 'service_name_previewrecipientcount', group: GROUPS.EMAIL, category: CATEGORIES.EMAIL, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
 
   // ==========================================================================
   // FIREBASE FUNCTIONS - Heatmap/Analytics
