@@ -158,7 +158,14 @@
   <string name="service_name_reactivateself">Endurvirkja aðild</string>
   <string name="service_name_getdeletedcounts">Fjöldi eyddra gagna</string>
 
-  <!-- Email services (Amazon SES) -->
+  <!-- Admin member operations -->
+  <string name="service_name_listmembers">Lista félaga</string>
+  <string name="service_name_getmember">Sækja félaga</string>
+  <string name="service_name_getmemberstats">Tölfræði félaga</string>
+  <string name="service_name_getmemberself">Sækja eigin gögn</string>
+  <string name="service_name_softdeleteadmin">Afskrá félaga (admin)</string>
+
+  <!-- Email services (SendGrid) -->
   <string name="service_name_listemailtemplates">Lista póstsniðmát</string>
   <string name="service_name_getemailtemplate">Sækja póstsniðmát</string>
   <string name="service_name_saveemailtemplate">Vista póstsniðmát</string>
@@ -173,6 +180,8 @@
   <string name="service_name_getemailpreferences">Sækja póstkjörstillingar</string>
   <string name="service_name_updateemailpreferences">Uppfæra póstkjörstillingar</string>
   <string name="service_name_unsubscribe">Afskráning af póstlista</string>
+  <string name="service_name_getmunicipalities">Sækja sveitarfélög</string>
+  <string name="service_name_previewrecipientcount">Forskoðun viðtakendafjölda</string>
 
   <!-- Heatmap services -->
   <string name="service_name_compute_heatmap_stats">Reikna hitakortsgögn</string>
@@ -442,7 +451,7 @@
   <string name="health_section_registration">Skráningarþjónustur</string>
   <string name="health_section_registration_desc">Þjónustur fyrir skráningu nýrra félaga.</string>
   <string name="health_section_email">Tölvupóstur</string>
-  <string name="health_section_email_desc">Amazon SES tölvupóstþjónustur fyrir sniðmát, herferðir og sendingar.</string>
+  <string name="health_section_email_desc">SendGrid tölvupóstþjónustur fyrir sniðmát, herferðir og sendingar.</string>
   <string name="health_section_heatmap">Hitakort</string>
   <string name="health_section_heatmap_desc">Hitakort og tölfræði um félagsdreifingu.</string>
   <string name="health_section_database">Gagnagrunnar</string>

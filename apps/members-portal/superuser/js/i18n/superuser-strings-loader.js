@@ -22,7 +22,7 @@ class SuperuserStringsLoader {
     if (this.loaded) return this.strings;
 
     try {
-      const response = await fetch('/superuser/i18n/values-is/superuser-portal-strings.xml');
+      const response = await fetch('/superuser/i18n/values-is/superuser-portal-strings.xml?v=20260111b');
       if (!response.ok) {
         throw new Error(`Failed to load superuser strings: ${response.statusText}`);
       }

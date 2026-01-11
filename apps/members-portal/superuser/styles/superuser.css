@@ -2360,6 +2360,12 @@ body.superuser {
    dangerous-ops.js uses .modal--open class.
    ============================================ */
 
+/* Base state: hidden by default */
+.modal {
+  display: none;
+}
+
+/* Open state: visible and centered */
 .modal.modal--open {
   position: fixed !important;
   top: 0;

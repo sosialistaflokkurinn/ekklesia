@@ -83,7 +83,7 @@ export const SERVICES = [
   { id: 'elections-service', nameKey: 'service_name_elections', group: GROUPS.CLOUDRUN, category: CATEGORIES.CORE, type: SERVICE_TYPES.CLOUDRUN, region: REGIONS.EU_WEST1 },
   { id: 'events-service', nameKey: 'service_name_events', group: GROUPS.CLOUDRUN, category: CATEGORIES.CORE, type: SERVICE_TYPES.CLOUDRUN, region: REGIONS.EU_WEST1 },
   { id: 'healthz', nameKey: 'service_name_healthz', group: GROUPS.AUDIT, category: CATEGORIES.CORE, type: SERVICE_TYPES.CLOUDRUN, region: REGIONS.EU_WEST2 },
-  { id: 'django-socialism', nameKey: 'service_name_django_socialism', group: GROUPS.CLOUDRUN, category: CATEGORIES.CORE, type: SERVICE_TYPES.CLOUDRUN, region: REGIONS.EU_WEST1, registrationUsage: 'Django API sync' },
+  { id: 'django-socialism', nameKey: 'service_name_django_socialism', group: GROUPS.CLOUDRUN, category: CATEGORIES.CORE, type: SERVICE_TYPES.CLOUDRUN, region: REGIONS.EU_WEST1 },
 
   // ==========================================================================
   // FIREBASE FUNCTIONS - Member Operations
@@ -93,6 +93,15 @@ export const SERVICES = [
   { id: 'updatememberprofile', nameKey: 'service_name_updatememberprofile', group: GROUPS.MEMBER, category: CATEGORIES.MEMBER, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
   { id: 'softdeleteself', nameKey: 'service_name_softdeleteself', group: GROUPS.MEMBER, category: CATEGORIES.MEMBER, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
   { id: 'reactivateself', nameKey: 'service_name_reactivateself', group: GROUPS.MEMBER, category: CATEGORIES.MEMBER, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
+
+  // ==========================================================================
+  // FIREBASE FUNCTIONS - Admin Member Operations
+  // ==========================================================================
+  { id: 'listmembers', nameKey: 'service_name_listmembers', group: GROUPS.MEMBER, category: CATEGORIES.MEMBER, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
+  { id: 'getmember', nameKey: 'service_name_getmember', group: GROUPS.MEMBER, category: CATEGORIES.MEMBER, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
+  { id: 'getmemberstats', nameKey: 'service_name_getmemberstats', group: GROUPS.MEMBER, category: CATEGORIES.MEMBER, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
+  { id: 'getmemberself', nameKey: 'service_name_getmemberself', group: GROUPS.MEMBER, category: CATEGORIES.MEMBER, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
+  { id: 'softdeleteadmin', nameKey: 'service_name_softdeleteadmin', group: GROUPS.MEMBER, category: CATEGORIES.MEMBER, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
 
   // ==========================================================================
   // FIREBASE FUNCTIONS - Address Validation
@@ -145,6 +154,8 @@ export const SERVICES = [
   { id: 'getemailpreferences', nameKey: 'service_name_getemailpreferences', group: GROUPS.EMAIL, category: CATEGORIES.EMAIL, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
   { id: 'updateemailpreferences', nameKey: 'service_name_updateemailpreferences', group: GROUPS.EMAIL, category: CATEGORIES.EMAIL, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
   { id: 'unsubscribe', nameKey: 'service_name_unsubscribe', group: GROUPS.EMAIL, category: CATEGORIES.EMAIL, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
+  { id: 'getmunicipalities', nameKey: 'service_name_getmunicipalities', group: GROUPS.EMAIL, category: CATEGORIES.EMAIL, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
+  { id: 'previewrecipientcount', nameKey: 'service_name_previewrecipientcount', group: GROUPS.EMAIL, category: CATEGORIES.EMAIL, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
 
   // ==========================================================================
   // FIREBASE FUNCTIONS - Heatmap/Analytics

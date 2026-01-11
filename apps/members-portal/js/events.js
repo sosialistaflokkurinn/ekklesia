@@ -530,6 +530,7 @@ function setupFilters() {
     hideImagesCheckbox.type = 'checkbox';
     hideImagesCheckbox.id = 'hide-images-checkbox';
     hideImagesCheckbox.checked = getHideImagesPreference();
+    // Note: No removeEventListener needed - page reloads on navigation (see module header)
     hideImagesCheckbox.addEventListener('change', (e) => {
       setHideImagesPreference(e.target.checked);
       // Re-render events with new preference

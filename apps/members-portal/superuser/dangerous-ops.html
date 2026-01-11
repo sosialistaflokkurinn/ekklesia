@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="/styles/bundle.css?v=20251217k">
 
   <!-- Superuser-specific styles -->
-  <link rel="stylesheet" href="/superuser/styles/superuser.css?v=20260110a">
+  <link rel="stylesheet" href="/superuser/styles/superuser.css?v=20260110c">
 </head>
 <body class="authenticated superuser">
   <!-- Navigation component inserted here -->
@@ -38,10 +38,6 @@
       <button class="dangerous-tabs__tab" data-tab="anonymize" type="button">
         <span class="dangerous-tabs__icon">👤</span>
         Nafnhreinsa
-      </button>
-      <button class="dangerous-tabs__tab" data-tab="purge" type="button">
-        <span class="dangerous-tabs__icon">🧹</span>
-        Hreinsa eydd gögn
       </button>
     </div>
 
@@ -208,56 +204,6 @@
       </div>
     </div>
 
-    <!-- Tab Content: Purge Deleted -->
-    <div class="dangerous-tabs__content" id="tab-purge">
-      <div class="card card--danger">
-        <h3 class="card__title" data-i18n="dangerous_purge_title">Hreinsa eydd gögn</h3>
-        <p class="card__description" data-i18n="dangerous_purge_desc">
-          Fjarlægir varanlega öll gögn sem hafa verið merkt sem eydd (soft-deleted).
-          Eftir þessa aðgerð er ekki lengur hægt að endurheimta þessi gögn.
-        </p>
-
-        <div class="dangerous-ops__purge-stats">
-          <div class="dangerous-ops__purge-stat">
-            <span class="dangerous-ops__purge-stat-value" id="deleted-members-count">-</span>
-            <span class="dangerous-ops__purge-stat-label">Eyddir félagar</span>
-          </div>
-          <div class="dangerous-ops__purge-stat">
-            <span class="dangerous-ops__purge-stat-value" id="deleted-votes-count">-</span>
-            <span class="dangerous-ops__purge-stat-label">Eydd atkvæði</span>
-          </div>
-        </div>
-
-        <!-- Deleted Members Preview Table -->
-        <div class="dangerous-ops__members-list" id="deleted-members-section">
-          <h4 class="dangerous-ops__list-title">Félagar sem verður eytt:</h4>
-          <div class="table-container">
-            <table class="data-table data-table--compact">
-              <thead>
-                <tr>
-                  <th>Nafn</th>
-                  <th>Kennitala</th>
-                  <th>Eytt þann</th>
-                </tr>
-              </thead>
-              <tbody id="deleted-members-tbody">
-                <!-- Populated by JavaScript -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="dangerous-ops__purge-warning">
-          <strong>⚠️ Athugið:</strong> Þessi aðgerð eyðir ÖLLUM soft-deleted gögnum í einu.
-          Þetta er ekki hægt að afturkalla.
-        </div>
-
-        <button type="button" class="btn btn--danger btn--full" id="purge-deleted-btn" disabled>
-          🧹 Hreinsa öll eydd gögn
-        </button>
-      </div>
-    </div>
-
     <!-- Audit Trail -->
     <div class="card">
       <h2 class="card__title" data-i18n="dangerous_recent_title">Nýlegar hættulegar aðgerðir</h2>
@@ -303,7 +249,7 @@
     </div>
   </div>
 
-  <script type="module" src="/superuser/js/dangerous-ops.js?v=20260107j"></script>
+  <script type="module" src="/superuser/js/dangerous-ops.js?v=20260110b"></script>
 
   <!-- Initialize Navigation Component -->
   <script type="module">

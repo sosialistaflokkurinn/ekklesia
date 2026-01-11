@@ -9,7 +9,6 @@
  * Backend Status:
  * ✅ hardDeleteMember - IMPLEMENTED (fn_superuser.py)
  * ✅ anonymizeMember - IMPLEMENTED (fn_superuser.py)
- * ✅ purgeDeleted - IMPLEMENTED (fn_superuser.py) - Purges soft-deleted records
  * ✅ getDeletedCounts - IMPLEMENTED (fn_superuser.py) - Counts soft-deleted records
  * ✅ getAuditLogs - IMPLEMENTED (fn_superuser.py) - Query Cloud Logging
  */
@@ -221,12 +220,6 @@ function openConfirmModal(operation) {
       description.textContent = superuserStrings.get('dangerous_anonymize_member_desc').replace('%s', operation.kennitala);
       phrase.textContent = superuserStrings.get('dangerous_anonymize_member_phrase');
       break;
-
-    case 'purge-deleted':
-      title.textContent = superuserStrings.get('dangerous_purge_deleted_title');
-      description.textContent = superuserStrings.get('dangerous_purge_deleted_desc');
-      phrase.textContent = superuserStrings.get('dangerous_purge_deleted_phrase');
-      break;
   }
 
   // Reset steps
@@ -259,6 +252,25 @@ function closeConfirmModal() {
   }
 
   currentOperation = null;
+  confirmationStep = 1;
+
+  // Reset modal UI to initial state
+  const step1 = document.getElementById('confirm-step-1');
+  const step2 = document.getElementById('confirm-step-2');
+  const step3 = document.getElementById('confirm-step-3');
+  const countdown = document.getElementById('confirm-countdown');
+  const input = document.getElementById('confirm-input');
+  const proceedBtn = document.getElementById('confirm-proceed-btn');
+
+  if (step1) step1.classList.remove('u-hidden');
+  if (step2) step2.classList.add('u-hidden');
+  if (step3) step3.classList.add('u-hidden');
+  if (countdown) countdown.textContent = '5';
+  if (input) {
+    input.value = '';
+    input.classList.remove('confirmation-input--valid');
+  }
+  if (proceedBtn) proceedBtn.disabled = true;
 }
 
 /**
@@ -352,12 +364,6 @@ async function executeOperation() {
         break;
       }
 
-      case 'purge-deleted': {
-        const purgeDeleted = httpsCallable('purgedeleted', 'europe-west2');
-        result = await purgeDeleted();
-        break;
-      }
-
       default:
         throw new Error(superuserStrings.get('dangerous_unknown_op'));
     }
@@ -395,19 +401,11 @@ async function loadDeletedCounts() {
 
     const counts = result.data.counts || { members: 0, votes: 0 };
 
-    // Update purge tab counts
-    document.getElementById('deleted-members-count').textContent = String(counts.members);
-    document.getElementById('deleted-votes-count').textContent = String(counts.votes);
-
     // Update counts in delete/anonymize tabs
     const deleteCount = document.getElementById('deleted-count-delete');
     const anonymizeCount = document.getElementById('deleted-count-anonymize');
     if (deleteCount) deleteCount.textContent = String(counts.members);
     if (anonymizeCount) anonymizeCount.textContent = String(counts.members);
-
-    // Enable purge button if there are deleted records
-    const totalDeleted = counts.members + counts.votes;
-    document.getElementById('purge-deleted-btn').disabled = totalDeleted === 0;
 
     // Cache and populate deleted members tables
     deletedMembersList = result.data.deleted_members || [];
@@ -415,9 +413,6 @@ async function loadDeletedCounts() {
 
   } catch (error) {
     debug.error('Failed to load deleted counts:', error);
-    document.getElementById('deleted-members-count').textContent = '?';
-    document.getElementById('deleted-votes-count').textContent = '?';
-    document.getElementById('purge-deleted-btn').disabled = true;
   }
 }
 
@@ -428,8 +423,7 @@ function populateDeletedMembersTables(members) {
   // Tables to populate
   const tableConfigs = [
     { tbodyId: 'deleted-members-tbody-delete', emptyId: 'no-deleted-delete', type: 'delete', selectable: true },
-    { tbodyId: 'deleted-members-tbody-anonymize', emptyId: 'no-deleted-anonymize', type: 'anonymize', selectable: true },
-    { tbodyId: 'deleted-members-tbody', emptyId: null, type: 'purge', selectable: false }
+    { tbodyId: 'deleted-members-tbody-anonymize', emptyId: 'no-deleted-anonymize', type: 'anonymize', selectable: true }
   ];
 
   tableConfigs.forEach(config => {
@@ -443,22 +437,12 @@ function populateDeletedMembersTables(members) {
       if (config.emptyId) {
         document.getElementById(config.emptyId).style.display = 'block';
       }
-      const section = document.getElementById('deleted-members-section');
-      if (section && config.type === 'purge') {
-        section.style.display = 'none';
-      }
       return;
     }
 
     // Hide empty state
     if (config.emptyId) {
       document.getElementById(config.emptyId).style.display = 'none';
-    }
-
-    // Show purge section
-    if (config.type === 'purge') {
-      const section = document.getElementById('deleted-members-section');
-      if (section) section.style.display = 'block';
     }
 
     // Populate table
@@ -618,11 +602,6 @@ function setupEventListeners() {
     });
   });
 
-  // Purge deleted button
-  document.getElementById('purge-deleted-btn').addEventListener('click', () => {
-    openConfirmModal({ type: 'purge-deleted' });
-  });
-
   // Modal cancel button
   document.getElementById('confirm-cancel-btn').addEventListener('click', closeConfirmModal);
 
@@ -660,6 +639,9 @@ async function init() {
 
     // Auth verified - show page content
     showAuthenticatedContent();
+
+    // Reset modal to ensure clean state (in case of stale browser state)
+    closeConfirmModal();
 
     setupTabs();
     setupInputValidation();

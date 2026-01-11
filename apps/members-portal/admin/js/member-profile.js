@@ -18,6 +18,7 @@ import { debug } from '../../js/utils/util-debug.js';
 import { debounce } from '../../js/utils/util-debounce.js';
 import { initSearchableSelects } from '../../js/components/ui-searchable-select.js';
 import { requireAdmin } from '../../js/rbac.js';
+import { showAuthenticatedContent } from '../../session/init.js';
 // Note: initNavigation import removed - now handled by nav-header component
 import { PhoneManager } from '../../js/profile/phone-manager.js';
 import { AddressManager } from '../../js/profile/address-manager.js';
@@ -218,6 +219,9 @@ async function init() {
       window.location.href = '/';
       return;
     }
+
+    // Show content now that auth is verified
+    showAuthenticatedContent();
 
     // Load member data
     await loadMemberData();

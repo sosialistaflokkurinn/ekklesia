@@ -82,25 +82,32 @@ export class TemplateEditorAssistant {
    * Initialize event listeners
    */
   init() {
-    // Send button click
-    this.sendBtn?.addEventListener('click', () => this.handleSend());
-
-    // Enter key to send
-    this.inputEl?.addEventListener('keydown', (e) => {
+    // Store bound handlers for cleanup
+    this._handleSendClick = () => this.handleSend();
+    this._handleKeydown = (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         this.handleSend();
       }
-    });
+    };
 
-    // Quick action buttons
+    // Send button click
+    this.sendBtn?.addEventListener('click', this._handleSendClick);
+
+    // Enter key to send
+    this.inputEl?.addEventListener('keydown', this._handleKeydown);
+
+    // Quick action buttons - store handlers in a Map for cleanup
+    this._quickActionHandlers = new Map();
     this.quickActionsEl?.querySelectorAll('.assistant__quick-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
+      const handler = () => {
         const action = btn.dataset.action;
         if (action && QUICK_ACTIONS[action]) {
           this.sendMessage(QUICK_ACTIONS[action]);
         }
-      });
+      };
+      this._quickActionHandlers.set(btn, handler);
+      btn.addEventListener('click', handler);
     });
 
     debug.log('[TemplateAssistant] Initialized');
@@ -360,6 +367,16 @@ export class TemplateEditorAssistant {
    * Clean up resources
    */
   destroy() {
+    // Remove event listeners
+    this.sendBtn?.removeEventListener('click', this._handleSendClick);
+    this.inputEl?.removeEventListener('keydown', this._handleKeydown);
+
+    // Remove quick action handlers
+    this._quickActionHandlers?.forEach((handler, btn) => {
+      btn.removeEventListener('click', handler);
+    });
+    this._quickActionHandlers?.clear();
+
     this.chatHistory = [];
   }
 }
