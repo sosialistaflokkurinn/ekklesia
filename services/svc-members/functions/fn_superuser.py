@@ -135,6 +135,8 @@ EMAIL_FUNCTIONS = [
     {"id": "getemailpreferences", "name": "Sækja póstkjörstillingar"},
     {"id": "updateemailpreferences", "name": "Uppfæra póstkjörstillingar"},
     {"id": "unsubscribe", "name": "Afskráning af póstlista"},
+    {"id": "getmunicipalities", "name": "Sækja sveitarfélög"},
+    {"id": "previewrecipientcount", "name": "Forskoðun viðtakendafjölda"},
 ]
 
 # Firebase Functions - Heatmap/Analytics
@@ -149,6 +151,7 @@ ADMIN_MEMBER_FUNCTIONS = [
     {"id": "getmember", "name": "Sækja félaga"},
     {"id": "getmemberstats", "name": "Tölfræði félaga"},
     {"id": "getmemberself", "name": "Sækja eigin gögn"},
+    {"id": "softdeleteadmin", "name": "Afskrá félaga (admin)"},
 ]
 
 # Combined list for backward compatibility
@@ -593,6 +596,20 @@ def check_system_health_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
             "status": "unknown",
             "message": str(e)[:50]
         })
+
+    # Add Firebase infrastructure (always available - no health endpoint)
+    results.append({
+        "id": "firebase-auth",
+        "name": "Firebase Auth",
+        "status": "available",
+        "message": "Tilbúið"
+    })
+    results.append({
+        "id": "firebase-hosting",
+        "name": "Firebase Hosting",
+        "status": "available",
+        "message": "Tilbúið"
+    })
 
     # Summary - count "available" as healthy (Firebase Functions without health endpoint)
     healthy_count = sum(1 for r in results if r["status"] in ("healthy", "available"))
