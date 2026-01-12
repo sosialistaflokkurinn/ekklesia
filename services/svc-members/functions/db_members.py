@@ -47,6 +47,8 @@ def get_member_by_kennitala(kennitala: str) -> Optional[Dict[str, Any]]:
             c.deleted_at,
             c.reachable,
             c.groupable,
+            c.email_marketing,
+            c.email_marketing_updated_at,
             ci.email,
             ci.phone
         FROM membership_comrade c
@@ -76,6 +78,8 @@ def get_member_by_kennitala(kennitala: str) -> Optional[Dict[str, Any]]:
         },
         'reachable': result['reachable'],
         'groupable': result['groupable'],
+        'email_marketing': result['email_marketing'] if result['email_marketing'] is not None else True,
+        'email_marketing_updated_at': str(result['email_marketing_updated_at']) if result['email_marketing_updated_at'] else None,
     }
 
 
@@ -99,6 +103,8 @@ def get_member_by_django_id(django_id: int) -> Optional[Dict[str, Any]]:
             c.deleted_at,
             c.reachable,
             c.groupable,
+            c.email_marketing,
+            c.email_marketing_updated_at,
             ci.email,
             ci.phone
         FROM membership_comrade c
@@ -127,6 +133,63 @@ def get_member_by_django_id(django_id: int) -> Optional[Dict[str, Any]]:
         },
         'reachable': result['reachable'],
         'groupable': result['groupable'],
+        'email_marketing': result['email_marketing'] if result['email_marketing'] is not None else True,
+        'email_marketing_updated_at': str(result['email_marketing_updated_at']) if result['email_marketing_updated_at'] else None,
+    }
+
+
+def get_member_by_firebase_uid(firebase_uid: str) -> Optional[Dict[str, Any]]:
+    """
+    Get a member by Firebase UID.
+
+    Args:
+        firebase_uid: Firebase Auth UID
+
+    Returns:
+        Dict with member data or None if not found
+    """
+    query = """
+        SELECT
+            c.id,
+            c.name,
+            c.ssn as kennitala,
+            c.birthday,
+            c.date_joined,
+            c.deleted_at,
+            c.reachable,
+            c.groupable,
+            c.email_marketing,
+            c.email_marketing_updated_at,
+            ci.email,
+            ci.phone
+        FROM membership_comrade c
+        LEFT JOIN membership_contactinfo ci ON ci.comrade_id = c.id
+        WHERE c.firebase_uid = %s
+    """
+
+    result = execute_query(query, params=(firebase_uid,), fetch_one=True)
+    if not result:
+        return None
+
+    return {
+        'id': result['id'],
+        'django_id': result['id'],
+        'kennitala': result['kennitala'],
+        'profile': {
+            'name': result['name'],
+            'email': result['email'],
+            'phone': result['phone'],
+            'birthday': str(result['birthday']) if result['birthday'] else None,
+        },
+        'membership': {
+            'date_joined': str(result['date_joined']) if result['date_joined'] else None,
+            'deleted_at': str(result['deleted_at']) if result['deleted_at'] else None,
+            'status': 'deleted' if result['deleted_at'] else 'active',
+        },
+        'reachable': result['reachable'],
+        'groupable': result['groupable'],
+        'email_marketing': result['email_marketing'] if result['email_marketing'] is not None else True,
+        'email_marketing_updated_at': str(result['email_marketing_updated_at']) if result['email_marketing_updated_at'] else None,
     }
 
 
@@ -476,6 +539,36 @@ def update_member_firebase_uid(kennitala: str, firebase_uid: str) -> bool:
         return True
     except Exception as e:
         logger.error(f"Failed to update firebase_uid for kennitala {kennitala[:6]}****: {e}")
+        return False
+
+
+def update_email_marketing(member_id: int, email_marketing: bool) -> bool:
+    """
+    Update email_marketing preference for a member.
+
+    Args:
+        member_id: Django member ID
+        email_marketing: True to receive marketing emails, False to unsubscribe
+
+    Returns:
+        True if updated successfully, False otherwise
+    """
+    from datetime import datetime
+
+    query = """
+        UPDATE membership_comrade
+        SET email_marketing = %s,
+            email_marketing_updated_at = %s
+        WHERE id = %s
+    """
+
+    try:
+        from db import execute_update
+        affected = execute_update(query, params=(email_marketing, datetime.utcnow(), member_id))
+        logger.info(f"Updated email_marketing={email_marketing} for member_id {member_id}, rows affected: {affected}")
+        return affected > 0
+    except Exception as e:
+        logger.error(f"Failed to update email_marketing for member_id {member_id}: {e}")
         return False
 
 

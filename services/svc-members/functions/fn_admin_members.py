@@ -470,6 +470,8 @@ def get_member_self_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             c.deleted_at,
             c.reachable,
             c.groupable,
+            c.email_marketing,
+            c.email_marketing_updated_at,
             c.gender,
             c.housing_situation,
             ci.email,
@@ -582,6 +584,10 @@ def get_member_self_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             'status': 'deleted' if result['deleted_at'] else 'active',
             'unions': unions or [],
             'titles': titles or []
+        },
+        'preferences': {
+            'email_marketing': result['email_marketing'] if result['email_marketing'] is not None else True,
+            'email_marketing_updated_at': str(result['email_marketing_updated_at']) if result['email_marketing_updated_at'] else None
         }
     }
 

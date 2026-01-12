@@ -1547,39 +1547,26 @@ def unsubscribe_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             message="Félaginn fannst ekki"
         )
 
-    # Store unsubscribe preference in /users collection
-    db = firestore.client()
+    # Update email_marketing preference in Cloud SQL
+    from db_members import update_email_marketing
 
-    # If member was found via email hash, we already have the doc reference
-    if member.get("_doc_ref"):
-        member["_doc_ref"].update({
-            "preferences.email_marketing": False,
-            "preferences.email_marketing_updated_at": datetime.utcnow()
-        })
-        log_json("info", "Member unsubscribed via email hash", email_hash=email_hash[:8] if email_hash else None)
-    else:
-        # Find user by kennitala (normal flow with member_id + token)
-        kennitala = member.get("kennitala")
-        users = db.collection("users").where("kennitala", "==", kennitala).limit(1).stream()
-        user_list = list(users)
+    # Get member_id - either from parameter or from member lookup
+    db_member_id = member_id or member.get("django_id")
+    if not db_member_id:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INTERNAL,
+            message="Could not find member ID"
+        )
 
-        if user_list:
-            # Update existing user doc
-            user_list[0].reference.update({
-                "preferences.email_marketing": False,
-                "preferences.email_marketing_updated_at": datetime.utcnow()
-            })
-        else:
-            # Create user preferences doc keyed by django_id
-            db.collection("users").document(f"django_{member_id}").set({
-                "kennitala": kennitala,
-                "preferences": {
-                    "email_marketing": False,
-                    "email_marketing_updated_at": datetime.utcnow()
-                }
-            }, merge=True)
+    success = update_email_marketing(int(db_member_id), False)
+    if not success:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INTERNAL,
+            message="Failed to update preferences"
+        )
 
-        log_json("info", "Member unsubscribed from marketing emails", member_id=member_id, kennitala=f"{kennitala[:6]}****" if kennitala else None)
+    kennitala = member.get("kennitala")
+    log_json("info", "Member unsubscribed from marketing emails", member_id=db_member_id, kennitala=f"{kennitala[:6]}****" if kennitala else None)
 
     return {
         "success": True,
@@ -1591,7 +1578,7 @@ def get_email_preferences_handler(req: https_fn.CallableRequest) -> Dict[str, An
     """
     Get email preferences for the current authenticated user.
 
-    Preferences stored in /users/{uid} collection (not /members).
+    Preferences stored in Cloud SQL (membership_comrade table).
 
     Returns:
         Email preference settings.
@@ -1602,24 +1589,20 @@ def get_email_preferences_handler(req: https_fn.CallableRequest) -> Dict[str, An
             message="Authentication required"
         )
 
-    db = firestore.client()
+    # Get member from Cloud SQL by firebase_uid
+    from db_members import get_member_by_firebase_uid
+    member = get_member_by_firebase_uid(req.auth.uid)
 
-    # Get user preferences from /users collection
-    user_doc = db.collection("users").document(req.auth.uid).get()
-
-    if not user_doc.exists:
-        # User document doesn't exist yet - return defaults
+    if not member:
+        # Member not found - return defaults
         return {
             "email_marketing": True,  # Default to True
             "email_marketing_updated_at": None
         }
 
-    user_data = user_doc.to_dict()
-    preferences = user_data.get("preferences", {})
-
     return {
-        "email_marketing": preferences.get("email_marketing", True),  # Default to True
-        "email_marketing_updated_at": preferences.get("email_marketing_updated_at").isoformat() if preferences.get("email_marketing_updated_at") else None
+        "email_marketing": member.get("email_marketing", True),  # Default to True
+        "email_marketing_updated_at": member.get("email_marketing_updated_at")
     }
 
 
@@ -1627,7 +1610,7 @@ def update_email_preferences_handler(req: https_fn.CallableRequest) -> Dict[str,
     """
     Update email preferences for the current authenticated user.
 
-    Preferences stored in /users/{uid} collection (not /members).
+    Preferences stored in Cloud SQL (membership_comrade table).
 
     Required data:
         - email_marketing: Boolean (true to receive marketing emails)
@@ -1650,19 +1633,27 @@ def update_email_preferences_handler(req: https_fn.CallableRequest) -> Dict[str,
             message="email_marketing is required"
         )
 
-    db = firestore.client()
+    # Get member from Cloud SQL by firebase_uid
+    from db_members import get_member_by_firebase_uid, update_email_marketing
+    member = get_member_by_firebase_uid(req.auth.uid)
 
-    # Update user preferences in /users collection (merge to create if doesn't exist)
-    user_ref = db.collection("users").document(req.auth.uid)
-    user_ref.set({
-        "preferences": {
-            "email_marketing": bool(email_marketing),
-            "email_marketing_updated_at": datetime.utcnow()
-        }
-    }, merge=True)
+    if not member:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.NOT_FOUND,
+            message="Member not found"
+        )
+
+    # Update in Cloud SQL
+    success = update_email_marketing(member['django_id'], bool(email_marketing))
+    if not success:
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INTERNAL,
+            message="Failed to update preferences"
+        )
 
     log_json("info", "Member updated email preferences",
              uid=req.auth.uid,
+             member_id=member['django_id'],
              email_marketing=email_marketing)
 
     return {
