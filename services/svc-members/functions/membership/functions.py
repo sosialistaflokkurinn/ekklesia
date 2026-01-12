@@ -296,22 +296,19 @@ def updatememberprofile_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
                  kennitala=f"{kennitala_no_hyphen[:6]}****")
 
         # Build Django update payload
+        # Note: email and phone are top-level keys (not nested) for django_api.update_django_member
         django_updates = {}
         if 'name' in updates:
             django_updates['name'] = updates['name']
         if 'email' in updates:
-            # Email is in contact_info nested object
-            django_updates['contact_info'] = {'email': updates['email']}
+            django_updates['email'] = updates['email']
         if 'phone' in updates:
-            # Phone is in contact_info nested object
-            # IMPORTANT: Django expects phone WITHOUT hyphen (7 digits only)
+            # IMPORTANT: Cloud SQL expects phone WITHOUT hyphen (7 digits only)
             phone_digits = ''.join(c for c in updates['phone'] if c.isdigit())
             # Remove country code if present
             if phone_digits.startswith('354') and len(phone_digits) == 10:
                 phone_digits = phone_digits[3:]  # Keep only 7 local digits
-            if 'contact_info' not in django_updates:
-                django_updates['contact_info'] = {}
-            django_updates['contact_info']['phone'] = phone_digits
+            django_updates['phone'] = phone_digits
 
         # Handle reachable/groupable preferences
         if 'reachable' in updates:
