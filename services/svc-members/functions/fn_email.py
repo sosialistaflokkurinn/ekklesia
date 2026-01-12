@@ -33,7 +33,7 @@ from db_members import get_member_by_kennitala, get_member_by_django_id, get_mem
 # Security: Maximum limits
 MAX_TEMPLATE_SIZE = 100000  # 100KB max template size
 MAX_VARIABLE_COUNT = 50  # Max variables in template
-MAX_RECIPIENTS_PER_BATCH = 1000  # Max recipients per campaign batch
+MAX_RECIPIENTS_PER_BATCH = 5000  # Max recipients per campaign batch
 
 # Lazy-load email clients to avoid import issues when credentials not available
 _resend_client = None

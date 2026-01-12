@@ -134,7 +134,7 @@ def get_members_for_email(
     status: Optional[str] = None,
     municipalities: Optional[List[str]] = None,
     cells: Optional[List[str]] = None,
-    max_results: int = 1000
+    max_results: int = 5000
 ) -> List[Dict[str, Any]]:
     """
     Get members for email campaigns with optional filters.
@@ -149,7 +149,12 @@ def get_members_for_email(
         List of member dicts with email info
     """
     # Build query with filters
-    conditions = ["c.ssn NOT LIKE '9999%%'"]
+    # IMPORTANT: Email filter must be in SQL, not Python, so LIMIT works correctly
+    conditions = [
+        "c.ssn NOT LIKE '9999%%'",
+        "ci.email IS NOT NULL",
+        "ci.email != ''"
+    ]
     params = []
 
     if status == "active":
@@ -195,7 +200,7 @@ def get_members_for_email(
             ci.email,
             c.reachable
         FROM membership_comrade c
-        LEFT JOIN membership_contactinfo ci ON ci.comrade_id = c.id
+        JOIN membership_contactinfo ci ON ci.comrade_id = c.id
         WHERE {where_clause}
         ORDER BY c.id
         LIMIT %s
@@ -204,6 +209,7 @@ def get_members_for_email(
 
     rows = execute_query(query, params=tuple(params))
 
+    # Email filter is now in SQL WHERE clause, no need to filter here
     return [
         {
             'django_id': row['django_id'],
@@ -215,7 +221,6 @@ def get_members_for_email(
             'reachable': row['reachable'],
         }
         for row in rows
-        if row['email']  # Only include members with email
     ]
 
 
