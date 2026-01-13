@@ -522,10 +522,18 @@ async function fetchFeaturedEvent() {
     const allEventsResponse = await fetch(`${EVENTS_API_BASE}/api/external-events`);
     if (allEventsResponse.ok) {
       const events = await allEventsResponse.json();
-      // Filter for upcoming or ongoing events, sort by start time
+      // Filter for upcoming or ongoing events, sort by next relevant date
+      // For ongoing recurring events, use next occurrence; for upcoming, use startTime
+      const getRelevantDate = (e) => {
+        if (e.isOngoing) {
+          const nextOccurrence = getNextRecurringOccurrence(e);
+          if (nextOccurrence) return nextOccurrence;
+        }
+        return new Date(e.startTime);
+      };
       const upcomingOrOngoing = events
         .filter(e => e.isUpcoming || e.isOngoing)
-        .sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+        .sort((a, b) => getRelevantDate(a) - getRelevantDate(b));
 
       if (upcomingOrOngoing.length > 0) {
         event = upcomingOrOngoing[0];
