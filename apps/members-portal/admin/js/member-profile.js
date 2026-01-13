@@ -33,6 +33,7 @@ const auth = getFirebaseAuth();
 // Cloud Functions
 const REGION = 'europe-west2';
 const updateMemberProfileFunction = httpsCallable('updatememberprofile', REGION);
+const updateEmailPreferencesFunction = httpsCallable('updateEmailPreferences', REGION);
 const softDeleteAdminFunction = httpsCallable('softDeleteAdmin', REGION);
 
 // Constants
@@ -113,16 +114,6 @@ function setI18nStrings() {
   const labelUid = document.getElementById('label-uid');
   if (labelUid) labelUid.textContent = R.string.label_uid || 'Firebase UID';
 
-  // Gender options
-  const optionGenderNone = document.getElementById('option-gender-none');
-  if (optionGenderNone) optionGenderNone.textContent = R.string.option_gender_none || 'Veldu...';
-
-  const optionGenderM = document.getElementById('option-gender-m');
-  if (optionGenderM) optionGenderM.textContent = R.string.option_gender_m || 'Karl';
-
-  const optionGenderF = document.getElementById('option-gender-f');
-  if (optionGenderF) optionGenderF.textContent = R.string.option_gender_f || 'Kona';
-
   // Phone numbers section
   const phoneNumbersTitle = document.getElementById('phone-numbers-title');
   if (phoneNumbersTitle) phoneNumbersTitle.textContent = R.string.phone_numbers_title || 'Símanúmer';
@@ -152,6 +143,12 @@ function setI18nStrings() {
 
   const labelGroupableDescription = document.getElementById('label-groupable-description');
   if (labelGroupableDescription) labelGroupableDescription.textContent = R.string.label_groupable_description || 'Leyfir flokknum að bæta þér í vinnuhópa og póstlista';
+
+  const labelEmailMarketing = document.getElementById('label-email-marketing');
+  if (labelEmailMarketing) labelEmailMarketing.textContent = R.string.label_email_marketing || 'Fá fjöldapóst';
+
+  const labelEmailMarketingDescription = document.getElementById('label-email-marketing-description');
+  if (labelEmailMarketingDescription) labelEmailMarketingDescription.textContent = R.string.label_email_marketing_description || 'Fá tölvupóst um fréttir, viðburði og atkvæðagreiðslur';
 
   // Email placeholder
   const inputEmail = document.getElementById('input-email');
@@ -314,8 +311,12 @@ async function renderProfile() {
   document.getElementById('input-email').value = profile.email || memberData.email || '';
   document.getElementById('input-birthday').value = profile.birthday || memberData.birthday || '';
 
-  // Gender will be set after SearchableSelect initializes
+  // Gender - simple select (not SearchableSelect)
   const genderValue = profile.gender !== undefined ? profile.gender : (memberData.gender !== undefined ? memberData.gender : '');
+  const genderSelect = document.getElementById('input-gender');
+  if (genderSelect && genderValue !== '') {
+    genderSelect.value = genderValue;
+  }
 
   // Membership info (readonly)
   const membership = memberData.membership || {};
@@ -374,11 +375,13 @@ async function renderProfile() {
   }
 
   // Firebase UID - shows if member has logged into the system
-  const uid = memberData.uid || metadata.firebase_uid || '';
-  if (uid) {
-    document.getElementById('value-uid').textContent = uid;
+  // Check metadata.firebase_uid first (from Cloud SQL), then memberData.firebase_uid (if available)
+  const firebaseUid = metadata.firebase_uid || memberData.firebase_uid || '';
+  if (firebaseUid) {
+    document.getElementById('value-uid').textContent = firebaseUid;
   } else {
-    document.getElementById('value-uid').textContent = R.string.member_not_logged_in || 'Ekki skráð/ur inn';
+    // Member hasn't logged in yet (no Firebase account linked)
+    document.getElementById('value-uid').textContent = 'Ekki skráð/ur inn';
   }
 
   // Initialize Phone Manager with data from Cloud SQL
@@ -408,6 +411,13 @@ async function renderProfile() {
     groupableInput.checked = memberData.groupable !== false;
   }
 
+  // Email marketing preference
+  const emailMarketingInput = document.getElementById('input-email-marketing');
+  if (emailMarketingInput) {
+    // Default to true if not set
+    emailMarketingInput.checked = memberData.email_marketing !== false;
+  }
+
   // Membership details: cell, union, title, housing
   await renderMembershipDetails();
 
@@ -417,20 +427,12 @@ async function renderProfile() {
   // Initialize delete button for admin
   initDeleteButton();
 
-  // Initialize SearchableSelects after DOM is ready, then set gender value
+  // Initialize SearchableSelects after DOM is ready (for country selectors, etc.)
   setTimeout(() => {
     initSearchableSelects({
       searchPlaceholder: R.string.search_country,
       noResultsText: R.string.no_results
     });
-
-    // Set gender value after SearchableSelect has initialized
-    if (genderValue !== '') {
-      const genderSelect = document.getElementById('input-gender');
-      genderSelect.value = genderValue;
-      // Trigger change event to update SearchableSelect display
-      genderSelect.dispatchEvent(new Event('change', { bubbles: true }));
-    }
   }, SEARCHABLE_SELECT_INIT_DELAY);
 }
 
@@ -611,6 +613,30 @@ function setupFieldListeners() {
       const newGroupable = e.target.checked;
       await saveField('groupable', newGroupable, groupableStatus);
       showToast(R.string.profile_preferences_saved || 'Stillingar vistaðar', 'success');
+    });
+  }
+
+  // Email marketing (immediate save on change via dedicated function)
+  const emailMarketingInput = document.getElementById('input-email-marketing');
+  const emailMarketingStatus = document.getElementById('status-email-marketing');
+  if (emailMarketingInput) {
+    emailMarketingInput.addEventListener('change', async (e) => {
+      const newValue = e.target.checked;
+      debug.log(`📧 Email marketing changed: ${newValue}`);
+      showStatus(emailMarketingStatus, 'loading', { baseClass: 'profile-field__status' });
+      try {
+        await updateEmailPreferencesFunction({
+          email_marketing: newValue
+        });
+        memberData.email_marketing = newValue;
+        showStatus(emailMarketingStatus, 'success', { baseClass: 'profile-field__status' });
+        showToast(R.string.profile_preferences_saved || 'Stillingar vistaðar', 'success');
+      } catch (error) {
+        debug.error('Failed to save email marketing preference:', error);
+        showStatus(emailMarketingStatus, 'error', { baseClass: 'profile-field__status' });
+        emailMarketingInput.checked = !newValue;
+        showToast(R.string.save_error || 'Villa við vistun', 'error');
+      }
     });
   }
 

@@ -155,6 +155,7 @@ const MembersAPI = {
         profile: member.profile || {},
         reachable: member.reachable,
         groupable: member.groupable,
+        firebase_uid: member.firebase_uid,
         titles: member.titles || [],
         unions: member.unions || []
       };

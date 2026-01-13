@@ -119,12 +119,12 @@
 
             <!-- Gender -->
             <div class="info-grid__item">
-              <div class="info-grid__label" id="label-gender"></div>
+              <div class="info-grid__label" id="label-gender">Kyn</div>
               <div class="profile-field">
-                <select id="input-gender" name="gender" class="profile-field__input" data-searchable>
-                  <option value="" id="option-gender-none"></option>
-                  <option value="0" id="option-gender-m"></option>
-                  <option value="1" id="option-gender-f"></option>
+                <select id="input-gender" name="gender" class="profile-field__input">
+                  <option value="">Veldu...</option>
+                  <option value="0">Karl</option>
+                  <option value="1">Kona</option>
                 </select>
                 <span class="profile-field__status" id="status-gender" aria-live="polite" aria-atomic="true"></span>
                 <span class="profile-field__error" id="error-gender" role="alert"></span>
@@ -204,6 +204,21 @@
                   </span>
                 </label>
                 <span class="profile-field__status" id="status-groupable" aria-live="polite" aria-atomic="true"></span>
+              </div>
+            </div>
+
+            <!-- Email marketing toggle -->
+            <div class="info-grid__item info-grid__item--full">
+              <div class="profile-field profile-field--toggle">
+                <label class="toggle-field">
+                  <input type="checkbox" id="input-email-marketing" name="email_marketing" class="toggle-field__input">
+                  <span class="toggle-field__switch"></span>
+                  <span class="toggle-field__label">
+                    <span id="label-email-marketing"></span>
+                    <span class="toggle-field__description" id="label-email-marketing-description"></span>
+                  </span>
+                </label>
+                <span class="profile-field__status" id="status-email-marketing" aria-live="polite" aria-atomic="true"></span>
               </div>
             </div>
           </div>
@@ -311,7 +326,7 @@
   </main>
 
   <!-- Scripts -->
-  <script type="module" src="/admin/js/member-profile.js?v=20260110a"></script>
+  <script type="module" src="/admin/js/member-profile.js?v=20260113d"></script>
 
   <!-- Initialize Navigation Component -->
   <script type="module">

@@ -89,6 +89,23 @@ def verifyMembership_handler(req: https_fn.CallableRequest) -> dict:
             'membershipVerifiedAt': firestore.SERVER_TIMESTAMP
         })
 
+        # Save Firebase UID to Cloud SQL if member exists and is verified
+        # This links the Firebase Auth account to the Cloud SQL member record
+        if is_member and member_status.get('django_id'):
+            try:
+                execute_update(
+                    "UPDATE membership_comrade SET firebase_uid = %s WHERE id = %s AND (firebase_uid IS NULL OR firebase_uid != %s)",
+                    params=(req.auth.uid, member_status['django_id'], req.auth.uid)
+                )
+                log_json("debug", "Firebase UID saved to Cloud SQL",
+                         uid=req.auth.uid,
+                         django_id=member_status['django_id'])
+            except Exception as uid_save_error:
+                # Non-fatal - log but don't fail the verification
+                log_json("warn", "Failed to save Firebase UID to Cloud SQL",
+                         uid=req.auth.uid,
+                         error=str(uid_save_error))
+
         # Update custom claims while preserving roles and other attributes
         try:
             existing_custom_claims = auth.get_user(req.auth.uid).custom_claims or {}

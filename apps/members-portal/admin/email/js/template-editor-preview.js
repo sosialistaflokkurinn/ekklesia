@@ -14,6 +14,7 @@ const SAMPLE_DATA = {
   'member.name': 'Jón Jónsson',
   'member.first_name': 'Jón',
   'member.email': 'jon@example.com',
+  'member.kennitala': '010190-2939',
   'cell.name': 'Sella Reykjavíkur',
   'party.name': 'Sósíalistaflokkurinn',
   'unsubscribe_url': '#afthakka',

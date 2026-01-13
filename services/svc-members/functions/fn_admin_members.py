@@ -255,6 +255,7 @@ def get_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             c.groupable,
             c.housing_situation,
             c.gender,
+            c.firebase_uid,
             ci.email,
             ci.phone,
             (
@@ -337,11 +338,13 @@ def get_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
         'groupable': result['groupable'],
         'housing_situation': result['housing_situation'],
         'gender': result['gender'],
+        'firebase_uid': result['firebase_uid'],
         'address': address,
         'unions': unions or [],
         'titles': titles or [],
         'metadata': {
-            'django_id': result['django_id']
+            'django_id': result['django_id'],
+            'firebase_uid': result['firebase_uid']
         },
         'profile': {
             'name': result['name'] or '',
