@@ -219,6 +219,7 @@
   <string name="profile_update_confirm">Já, uppfæra upplýsingar</string>
   <string name="profile_updating">Uppfæri...</string>
   <string name="profile_updated_success">Upplýsingar þínar hafa verið uppfærðar!</string>
+  <string name="profile_update_suppress">Ekki spyrja aftur í 90 daga</string>
   <string name="profile_update_error">Ekki tókst að uppfæra upplýsingar:\n%s\n\nVinsamlegast reyndu aftur.</string>
   <string name="profile_empty_value">(tómt)</string>
   <string name="profile_phone_label">Símanúmer</string>
