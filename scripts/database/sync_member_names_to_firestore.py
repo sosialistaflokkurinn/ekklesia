@@ -209,14 +209,8 @@ def sync_names(
     logger.info(f"Found {len(to_update)} members to update")
 
     if dry_run:
-        logger.info("[DRY RUN] Would update the following members:")
-        for i, m in enumerate(to_update[:20]):  # Show first 20
-            # Mask PII for privacy
-            masked_kt = f"****{m['kennitala'][-4:]}"
-            masked_name = f"{m['name'][0]}***" if m['name'] else "***"
-            logger.info(f"  {masked_kt}: {masked_name}")
-        if len(to_update) > 20:
-            logger.info(f"  ... and {len(to_update) - 20} more")
+        logger.info(f"[DRY RUN] Would update {len(to_update)} members")
+        # Note: No PII logging - CodeQL flags even masked kennitalas
         return {
             'would_update': len(to_update),
             'firestore_needing_names': len(firestore_members),
@@ -242,11 +236,7 @@ def sync_names(
                 'name_sync_date': firestore.SERVER_TIMESTAMP
             })
 
-            if verbose:
-                # Mask kennitala and name for privacy (only show last 4 digits and first letter)
-                masked_kt = f"****{item['kennitala'][-4:]}"
-                masked_name = f"{item['name'][0]}***" if item['name'] else "***"
-                logger.info(f"  Updating {masked_kt}: {masked_name}")
+            # Note: No PII logging - CodeQL flags even masked kennitalas
 
         try:
             batch.commit()
