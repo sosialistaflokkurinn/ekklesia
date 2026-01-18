@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Senda SMS - Ekklesia</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+  <!-- Reuse member portal styles -->
+  <link rel="stylesheet" href="/styles/bundle.css?v=20251217k">
+
+  <!-- Admin-specific styles -->
+  <link rel="stylesheet" href="/admin/styles/admin.css?v=20260112a">
+</head>
+<body class="authenticated admin">
+  <!-- Navigation component inserted here -->
+
+  <!-- Page Content -->
+  <div class="page__container">
+    <!-- Back to SMS Dashboard -->
+    <a href="/admin/sms/" class="back-link">&larr; Til baka í SMS</a>
+
+    <!-- Send SMS Form -->
+    <div class="card">
+      <h2 class="card__title">Senda SMS</h2>
+
+      <form id="sms-form">
+        <!-- Mode Toggle -->
+        <div class="form-group">
+          <label>Aðferð</label>
+          <div class="toggle-buttons">
+            <button type="button" class="toggle-btn active" data-mode="template">Sniðmát</button>
+            <button type="button" class="toggle-btn" data-mode="quick">Fljótlegt</button>
+          </div>
+        </div>
+
+        <!-- Recipient Type -->
+        <div class="form-group">
+          <label>Viðtakandi</label>
+          <div class="toggle-buttons">
+            <button type="button" class="toggle-btn active" data-recipient="single">Einn</button>
+            <button type="button" class="toggle-btn" data-recipient="bulk">Margir (Herferð)</button>
+          </div>
+        </div>
+
+        <!-- Single Recipient -->
+        <div id="single-recipient-section">
+          <div class="form-group">
+            <label for="recipient-input">Símanúmer eða kennitala</label>
+            <input type="text" id="recipient-input" class="form-input"
+              placeholder="7758493 eða 010190-2939">
+            <div class="form-hint">Sláðu inn símanúmer eða kennitala til að fletta upp félaga.</div>
+          </div>
+        </div>
+
+        <!-- Bulk Recipients (Campaign) -->
+        <div id="bulk-recipient-section" class="u-hidden">
+          <div class="form-group">
+            <label for="campaign-name">Nafn herferðar</label>
+            <input type="text" id="campaign-name" class="form-input"
+              placeholder="t.d. Áminningu um fund 15. jan">
+          </div>
+
+          <div class="form-group">
+            <label for="municipality-select">Sveitarfélag (valfrjálst)</label>
+            <select id="municipality-select" class="form-select">
+              <option value="">Öll sveitarfélög</option>
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+
+          <div class="recipient-count-box">
+            <span class="recipient-count-label">Viðtakendur með símanúmer:</span>
+            <span class="recipient-count-value" id="recipient-count">-</span>
+          </div>
+
+          <div class="cost-estimate-box">
+            <span class="cost-estimate-label">Áætlaður kostnaður:</span>
+            <span class="cost-estimate-value" id="cost-estimate">-</span>
+          </div>
+        </div>
+
+        <!-- Template Mode -->
+        <div id="template-fields">
+          <div class="form-group">
+            <label for="template-select">Sniðmát</label>
+            <select id="template-select" class="form-select">
+              <option value="">Veldu sniðmát...</option>
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+        </div>
+
+        <!-- Quick Send Mode -->
+        <div id="quick-fields" class="u-hidden">
+          <div class="form-group">
+            <label for="sms-body">Skilaboð</label>
+            <textarea id="sms-body" class="form-textarea" rows="4" maxlength="1600"
+              placeholder="Sláðu inn skilaboðin hér..."></textarea>
+            <div class="form-hint">
+              <span id="char-count">0</span>/160 stafir
+            </div>
+          </div>
+        </div>
+
+        <!-- SMS Type -->
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="broadcast-checkbox">
+            Markaðspóstur (athuga samþykki)
+          </label>
+          <div class="form-hint">Ef hakað er hér verður athugað hvort viðtakandi hafi samþykkt SMS.</div>
+        </div>
+
+        <!-- Submit -->
+        <div class="form-group">
+          <button type="submit" class="btn btn--primary" id="send-btn">Senda SMS</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Result Card -->
+    <div class="card u-hidden" id="result-card">
+      <h3 class="card__title" id="result-title">Niðurstaða</h3>
+      <div id="result-content"></div>
+    </div>
+  </div>
+
+  <style>
+    .recipient-count-box,
+    .cost-estimate-box {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.75rem;
+      background: var(--color-gray-50);
+      border-radius: 4px;
+      margin-bottom: 1rem;
+    }
+    .recipient-count-value,
+    .cost-estimate-value {
+      font-weight: 600;
+    }
+  </style>
+
+  <script type="module" src="/admin/sms/js/sms-send.js?v=20260115"></script>
+
+  <!-- Initialize Navigation Component -->
+  <script type="module">
+    import { initNavHeader, NAV_CONFIGS } from '../../../ui/components/navigation-bar.js?v=20260115';
+    await initNavHeader(NAV_CONFIGS.adminSms);
+  </script>
+
+</body>
+</html>

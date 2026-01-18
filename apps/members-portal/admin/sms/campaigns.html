@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SMS Herferðir - Ekklesia</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+  <!-- Reuse member portal styles -->
+  <link rel="stylesheet" href="/styles/bundle.css?v=20251217k">
+
+  <!-- Admin-specific styles -->
+  <link rel="stylesheet" href="/admin/styles/admin.css?v=20260112a">
+</head>
+<body class="authenticated admin">
+  <!-- Navigation component inserted here -->
+
+  <!-- Page Content -->
+  <div class="page__container">
+    <!-- Back to SMS Dashboard -->
+    <a href="/admin/sms/" class="back-link">&larr; Til baka í SMS</a>
+
+    <!-- Campaigns List -->
+    <div class="card">
+      <div class="card__header">
+        <h2 class="card__title">SMS Herferðir</h2>
+        <a href="/admin/sms/send.html" class="btn btn--primary">+ Ný herferð</a>
+      </div>
+
+      <div id="campaigns-loading" class="loading-state">
+        <div class="loading-spinner"></div>
+        <p>Hleð herferðum...</p>
+      </div>
+
+      <div id="campaigns-empty" class="empty-state u-hidden">
+        <p>Engar herferðir fundust.</p>
+        <a href="/admin/sms/send.html" class="btn btn--primary">Búa til herferð</a>
+      </div>
+
+      <table class="data-table u-hidden" id="campaigns-table">
+        <thead>
+          <tr>
+            <th>Nafn</th>
+            <th>Staða</th>
+            <th>Viðtakendur</th>
+            <th>Sent</th>
+            <th>Kostnaður</th>
+            <th>Aðgerðir</th>
+          </tr>
+        </thead>
+        <tbody id="campaigns-tbody">
+          <!-- Campaigns will be inserted here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initSession, showAuthenticatedContent } from '../../../session/init.js';
+    import { AuthenticationError } from '../../../session/auth.js';
+    import { debug } from '../../../js/utils/util-debug.js';
+    import { requireAdmin } from '../../../js/rbac.js';
+    import { showToast, showError } from '../../../js/components/ui-toast.js';
+    import { escapeHTML } from '../../../js/utils/util-format.js';
+    import SmsAPI from './js/api/sms-api.js';
+
+    const loadingEl = document.getElementById('campaigns-loading');
+    const emptyEl = document.getElementById('campaigns-empty');
+    const tableEl = document.getElementById('campaigns-table');
+    const tbodyEl = document.getElementById('campaigns-tbody');
+
+    const statusLabels = {
+      draft: 'Drög',
+      scheduled: 'Áætluð',
+      sending: 'Sendi...',
+      sent: 'Sent',
+      cancelled: 'Hætt við'
+    };
+
+    const statusBadges = {
+      draft: 'badge--default',
+      scheduled: 'badge--warning',
+      sending: 'badge--info',
+      sent: 'badge--success',
+      cancelled: 'badge--error'
+    };
+
+    async function loadCampaigns() {
+      loadingEl.classList.remove('u-hidden');
+      emptyEl.classList.add('u-hidden');
+      tableEl.classList.add('u-hidden');
+
+      try {
+        const result = await SmsAPI.listCampaigns();
+        const campaigns = result.campaigns || [];
+
+        loadingEl.classList.add('u-hidden');
+
+        if (campaigns.length === 0) {
+          emptyEl.classList.remove('u-hidden');
+        } else {
+          renderCampaigns(campaigns);
+          tableEl.classList.remove('u-hidden');
+        }
+      } catch (error) {
+        debug.error('[SmsCampaigns] Load error:', error);
+        loadingEl.classList.add('u-hidden');
+        showError(`Villa: ${error.message}`);
+      }
+    }
+
+    function renderCampaigns(campaigns) {
+      tbodyEl.innerHTML = campaigns.map(c => {
+        const statusLabel = statusLabels[c.status] || c.status;
+        const statusBadge = statusBadges[c.status] || 'badge--default';
+        const canSend = c.status === 'draft' || c.status === 'scheduled';
+
+        return `
+          <tr data-id="${escapeHTML(c.id)}">
+            <td>${escapeHTML(c.name)}</td>
+            <td><span class="badge ${statusBadge}">${statusLabel}</span></td>
+            <td>${c.recipient_count || 0}</td>
+            <td>${c.sent_count || 0}</td>
+            <td>$${c.estimated_cost || c.actual_cost || 0}</td>
+            <td class="table-actions">
+              ${canSend ? `<button class="btn btn--small btn--primary send-btn">Senda</button>` : ''}
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      // Attach send handlers
+      tbodyEl.querySelectorAll('.send-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const row = e.target.closest('tr');
+          const campaignId = row.dataset.id;
+
+          if (!confirm('Ertu viss um að þú viljir senda þessa herferð?')) return;
+
+          btn.disabled = true;
+          btn.textContent = 'Sendi...';
+
+          try {
+            const result = await SmsAPI.sendCampaign(campaignId);
+            showToast(`Sent! ${result.sent_count} skilaboð, $${result.total_cost}`, 'success');
+            await loadCampaigns();
+          } catch (error) {
+            debug.error('[SmsCampaigns] Send error:', error);
+            showError(`Villa: ${error.message}`);
+            btn.disabled = false;
+            btn.textContent = 'Senda';
+          }
+        });
+      });
+    }
+
+    async function init() {
+      try {
+        await initSession();
+        await requireAdmin();
+        showAuthenticatedContent();
+        await loadCampaigns();
+        debug.log('[SmsCampaigns] Initialized');
+      } catch (error) {
+        debug.error('[SmsCampaigns] Init failed:', error);
+        if (error instanceof AuthenticationError) {
+          window.location.href = '/';
+          return;
+        }
+        if (!error.message?.includes('Admin role required')) {
+          showError(`Villa: ${error.message}`);
+        }
+      }
+    }
+
+    init();
+  </script>
+
+  <!-- Initialize Navigation Component -->
+  <script type="module">
+    import { initNavHeader, NAV_CONFIGS } from '../../../ui/components/navigation-bar.js?v=20260115';
+    await initNavHeader(NAV_CONFIGS.adminSms);
+  </script>
+
+</body>
+</html>

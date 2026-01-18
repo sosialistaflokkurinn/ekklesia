@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SMS Sniðmát - Ekklesia</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+  <!-- Reuse member portal styles -->
+  <link rel="stylesheet" href="/styles/bundle.css?v=20251217k">
+
+  <!-- Admin-specific styles -->
+  <link rel="stylesheet" href="/admin/styles/admin.css?v=20260112a">
+</head>
+<body class="authenticated admin">
+  <!-- Navigation component inserted here -->
+
+  <!-- Page Content -->
+  <div class="page__container">
+    <!-- Back to SMS Dashboard -->
+    <a href="/admin/sms/" class="back-link">&larr; Til baka í SMS</a>
+
+    <!-- Templates List -->
+    <div class="card">
+      <div class="card__header">
+        <h2 class="card__title">SMS Sniðmát</h2>
+        <button class="btn btn--primary" id="create-template-btn">+ Nýtt sniðmát</button>
+      </div>
+
+      <div id="templates-loading" class="loading-state">
+        <div class="loading-spinner"></div>
+        <p>Hleð sniðmátum...</p>
+      </div>
+
+      <div id="templates-empty" class="empty-state u-hidden">
+        <p>Engin sniðmát fundust. Búðu til fyrsta sniðmátið!</p>
+        <button class="btn btn--primary" id="create-first-template-btn">+ Búa til sniðmát</button>
+      </div>
+
+      <table class="data-table u-hidden" id="templates-table">
+        <thead>
+          <tr>
+            <th>Heiti</th>
+            <th>Tegund</th>
+            <th>Stafir</th>
+            <th>Aðgerðir</th>
+          </tr>
+        </thead>
+        <tbody id="templates-tbody">
+          <!-- Templates will be inserted here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Template Editor Modal (Simple - SMS is plain text) -->
+  <div class="modal-overlay u-hidden" id="template-modal">
+    <div class="modal">
+      <div class="modal__header">
+        <h2 class="modal__title" id="modal-title">Nýtt SMS sniðmát</h2>
+        <button class="modal__close" id="modal-close">&times;</button>
+      </div>
+
+      <div class="modal__body">
+        <form id="template-form">
+          <input type="hidden" id="template-id">
+
+          <div class="form-group">
+            <label for="template-name">Heiti sniðmáts</label>
+            <input type="text" id="template-name" class="form-input" required placeholder="t.d. Viðburðaáminningu">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group form-group--half">
+              <label for="template-type">Tegund</label>
+              <select id="template-type" class="form-select" required>
+                <option value="transactional">Transactional (áminningar)</option>
+                <option value="broadcast">Broadcast (herferðir)</option>
+              </select>
+            </div>
+            <div class="form-group form-group--half">
+              <label for="template-language">Tungumál</label>
+              <select id="template-language" class="form-select" required>
+                <option value="is">Íslenska</option>
+                <option value="en">English</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="template-body">Skilaboð</label>
+            <textarea id="template-body" class="form-textarea" rows="6" required maxlength="1600"
+              placeholder="Sláðu inn SMS skilaboðin hér..."></textarea>
+            <div class="form-hint">
+              <span id="char-count">0</span>/160 stafir (1 hlutur).
+              <span id="segment-info">Lengri skilaboð skiptast í marga hluta.</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Breytur</label>
+            <div class="variables-box">
+              <code>{{ member.name }}</code>
+              <code>{{ member.first_name }}</code>
+              <code>{{ cell.name }}</code>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal__footer">
+        <button class="btn btn--secondary" id="modal-cancel">Hætta við</button>
+        <button class="btn btn--danger u-hidden" id="modal-delete">Eyða</button>
+        <button class="btn btn--primary" id="modal-save">Vista</button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .variables-box {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      background: var(--color-gray-50);
+      border-radius: 4px;
+    }
+    .variables-box code {
+      background: var(--color-gray-200);
+      padding: 0.25rem 0.5rem;
+      border-radius: 3px;
+      font-size: 0.85rem;
+    }
+    .form-hint {
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+    }
+    #char-count {
+      font-weight: 600;
+    }
+    .char-count--warning {
+      color: var(--color-warning);
+    }
+    .char-count--danger {
+      color: var(--color-error);
+    }
+  </style>
+
+  <script type="module" src="/admin/sms/js/templates-list.js?v=20260115"></script>
+
+  <!-- Initialize Navigation Component -->
+  <script type="module">
+    import { initNavHeader, NAV_CONFIGS } from '../../../ui/components/navigation-bar.js?v=20260115';
+    await initNavHeader(NAV_CONFIGS.adminSms);
+  </script>
+
+</body>
+</html>
