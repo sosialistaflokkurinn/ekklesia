@@ -12,7 +12,7 @@ SMS provider: Twilio
 All functions require admin or superuser role.
 """
 
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, List
 from firebase_admin import firestore
 from firebase_functions import https_fn
 from util_logging import log_json

@@ -92,7 +92,7 @@ def parse_address(heimili: str, postnumer: str) -> Optional[Dict[str, Any]]:
 
     street = match.group(1)
     number = int(match.group(2))
-    letter = match.group(3) or ''
+    _letter = match.group(3) or ''  # Currently unused, kept for future use
 
     try:
         postal_code = int(postnumer)

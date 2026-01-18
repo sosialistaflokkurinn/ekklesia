@@ -225,7 +225,7 @@ async function saveTemplate() {
   saveBtn.textContent = 'Vista...';
 
   try {
-    const result = await SmsAPI.saveTemplate(templateData);
+    await SmsAPI.saveTemplate(templateData);
     showToast('Sniðmát vistað', 'success');
     hideModal();
     await loadTemplates();

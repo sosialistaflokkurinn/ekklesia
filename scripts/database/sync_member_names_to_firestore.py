@@ -36,8 +36,7 @@ Before running:
 import argparse
 import logging
 import os
-import sys
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any
 
 import pg8000
 import firebase_admin
