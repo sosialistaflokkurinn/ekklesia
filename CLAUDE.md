@@ -1,255 +1,165 @@
 # Ekklesia - AI Assistant Guide
 
-## Architecture Overview
+**Last Updated:** 2026-01-16
+
+## Before You Code
+
+1. **Read this file** - Architecture, quick rules
+2. **Read domain docs** - See "When to Read What" below
+3. **Search existing code** - `js/components/`, `js/utils/`, `js/api/`
+
+---
+
+## Architecture
 
 **Ekklesia is the source of truth** for the membership system.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    SYSTEM ARCHITECTURE                       │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  Ekklesia (THIS PROJECT - Source of truth)                  │
-│  ├── Firestore database (canonical member data)             │
-│  ├── Firebase Hosting (members-portal)                       │
+│  Ekklesia (THIS PROJECT)                                    │
+│  ├── Firestore (canonical member data)                      │
+│  ├── Firebase Hosting (members-portal)                      │
 │  ├── Firebase Functions (svc-members, Python)               │
 │  ├── Cloud Run: svc-elections (Node.js)                     │
 │  ├── Cloud Run: svc-events (Node.js + AI assistants)        │
-│  │   ├── Sysadmin chat - Gemini (superuser only)            │
-│  │   ├── Member assistant - Gemini (RAG + web search)       │
-│  │   └── Email template editor - Gemini                     │
-│  └── SendGrid email                                          │
-│                                                              │
+│  └── SendGrid email                                         │
+├─────────────────────────────────────────────────────────────┤
 │  Django GCP (INTERIM read-only admin)                       │
 │  ├── Cloud Run: django-socialism                            │
-│  ├── Cloud SQL PostgreSQL                                    │
-│  └── See: ~/Development/projects/django/                    │
-│                                                              │
+│  └── Cloud SQL PostgreSQL                                   │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+---
 
 ## Quick Reference
 
 | What | Where |
 |------|-------|
-| Frontend | `apps/members-portal/` → Firebase Hosting |
-| Cloud Functions | `services/svc-members/functions/` → Firebase Functions |
-| Elections/Events | `services/svc-elections/`, `svc-events/` → Cloud Run |
-| Database (future) | **Firestore** (source of truth) |
-| Database (interim) | Cloud SQL PostgreSQL (europe-west1: ekklesia-db-eu1) |
-| Django Admin | `~/Development/projects/django/` → Cloud Run (interim) |
-| Deploy frontend | `cd services/svc-members && firebase deploy --only hosting` |
-| Deploy function | `cd services/svc-members && firebase deploy --only functions:NAME` |
-| Deploy Cloud Run | `cd services/svc-elections && ./deploy.sh` |
-| Deploy Django | See Django CLAUDE.md for `gcloud builds submit` |
+| Frontend | `apps/members-portal/` |
+| Functions | `services/svc-members/functions/` |
+| Elections | `services/svc-elections/` |
+| Events | `services/svc-events/` |
 
-## Live URLs
+| Deploy | Command |
+|--------|---------|
+| Frontend | `firebase deploy --only hosting` |
+| Function | `firebase deploy --only functions:NAME` |
+| Cloud Run | `./deploy.sh` |
 
-| Environment | URL |
-|-------------|-----|
-| **Production** | https://felagar.sosialistaflokkurinn.is/ |
-| Hitakort | https://felagar.sosialistaflokkurinn.is/members-area/heatmap.html |
-| Firebase (backup) | https://ekklesia-prod-10-2025.web.app |
+| URL | Purpose |
+|-----|---------|
+| https://felagar.sosialistaflokkurinn.is/ | Production |
+| https://ekklesia-prod-10-2025.web.app | Firebase backup |
 
-**Detailed docs:** [docs/README.md](docs/README.md)
+**Full quick reference:** [docs/QUICK-REFERENCE.md](docs/QUICK-REFERENCE.md)
+
+---
+
+## Critical Rules (Summary)
+
+**NEVER:**
+- `firebase deploy --only functions` - deploys ALL, slow, wipes secrets
+- Hardcode Icelandic text - use `i18n/values-is/*.xml`
+- Commit `.env` or credentials - use GCP Secret Manager
+- Create duplicate code - search existing first
+
+**ALWAYS:**
+- Run `./scripts/build-css-bundle.sh` after CSS changes
+- Use `--gcloud-auth` with cloud-sql-proxy
+- Add rate limiting: `check_uid_rate_limit()`
+- Add input validation: length, format, type
+
+**Full rules:** [docs/CRITICAL-RULES.md](docs/CRITICAL-RULES.md)
+
+---
+
+## When to Read What
+
+| Working On | Read These |
+|------------|------------|
+| **Any code change** | This file (CLAUDE.md) |
+| Elections, voting | [docs/ELECTIONS.md](docs/ELECTIONS.md) |
+| Auth, login, Kenni.is | [docs/AUTHENTICATION.md](docs/AUTHENTICATION.md) |
+| Email, templates | [docs/EMAIL-TEMPLATES-GUIDE.md](docs/EMAIL-TEMPLATES-GUIDE.md) |
+| Addresses, Thjodskra | [docs/ADDRESSES.md](docs/ADDRESSES.md) |
+| AI, RAG, Gemini | [docs/AI-ASSISTANTS.md](docs/AI-ASSISTANTS.md) |
+| Security, rate limits | [docs/SECURITY.md](docs/SECURITY.md) |
+| Deployment | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) |
+| JS patterns | [docs/PATTERNS.md](docs/PATTERNS.md) |
+| GCP patterns | [docs/PATTERNS-GCP.md](docs/PATTERNS-GCP.md) |
+
+---
+
+## File Map by Domain
+
+### Frontend (`apps/members-portal/`)
+```
+js/
+├── components/     # Reusable UI (toast, modal, table, etc.)
+├── utils/          # Helpers (format, escapeHTML, debounce)
+├── api/            # API clients (firestore, elections, events)
+├── session/        # Auth (auth.js, requireAuth)
+├── profile/        # Member profile pages
+├── admin/          # Admin pages
+└── superuser/      # Superuser pages
+
+styles/
+├── bundle.css      # Built CSS (commit this)
+├── components/     # Component styles
+└── global.css      # Base styles
+
+i18n/
+├── values-is/      # Icelandic strings
+└── strings-loader.js
+```
+
+### Functions (`services/svc-members/functions/`)
+```
+fn_*.py             # Individual functions
+shared/
+├── rate_limit.py   # Rate limiting
+├── validation.py   # Input validation
+└── email.py        # SendGrid integration
+```
+
+### Services
+```
+services/svc-elections/   # Elections (Cloud Run)
+services/svc-events/      # Events + AI (Cloud Run)
+```
 
 ---
 
 ## Development Setup
 
-### Local Testing
 ```bash
-# Frontend with Firebase emulators (recommended)
+# Frontend with emulators
 cd services/svc-members && firebase emulators:start --only hosting
 
-# Or use Firebase serve
-firebase serve --only hosting --port 5000
-```
-
-### Database Access
-```bash
-# Start Cloud SQL proxy (ALWAYS use --gcloud-auth)
+# Database access
 cloud-sql-proxy ekklesia-prod-10-2025:europe-west1:ekklesia-db-eu1 --port 5433 --gcloud-auth
-
-# Connect to PostgreSQL
 PGPASSWORD='Socialism2025#Db' psql -h localhost -p 5433 -U socialism -d socialism
 ```
-
-### Environment Variables
-Services read secrets from GCP Secret Manager. Key secrets:
-- `django-api-token` - Django API authentication
-- `django-socialism-db-password` - PostgreSQL password
-- `kenni-client-secret` - Kenni.is OAuth secret
-- `GEMINI_API_KEY` - Google Gemini AI (sysadmin chat, member assistant, email editor)
-- `kimi-api-key` - Moonshot Kimi API key (Party Wiki only)
-- `brave-search-api-key` - Web search fallback for member assistant
-
----
-
-## Database Structure
-
-### Firestore Collections (Source of Truth)
-| Collection | Purpose | Key Fields |
-|------------|---------|------------|
-| `members` | Member profiles | `uid`, `kennitala`, `name`, `email`, `django_id` |
-| `cells` | Local chapters | `name`, `postal_codes[]`, `region` |
-| `audit_log` | Activity tracking | `action`, `uid`, `timestamp` |
-
-### Cloud SQL Tables (Elections/Events)
-| Table | Purpose |
-|-------|---------|
-| `elections` | Election definitions |
-| `ballots` | Cast votes |
-| `candidates` | Election candidates |
-| `rag_documents` | AI assistant knowledge base (pgvector) |
-
----
-
-## Critical Rules
-
-### Never (and Why)
-
-| Command | Why It's Banned |
-|---------|-----------------|
-| `firebase deploy --only functions` | Redeploys ALL functions (~130MB), wipes secrets from containers not in deploy |
-| `python3 -m http.server` | CORS blocks Firebase Auth; use `firebase serve` instead |
-| `git push --no-verify` | Bypasses pre-commit hooks that catch secrets/PII leaks |
-| Hardcode Icelandic text | Breaks i18n; add strings to `i18n/values-is/*.xml` |
-| Commit `.env` or credentials | Secrets belong in GCP Secret Manager, not git |
-| Create duplicate code | Check `js/components/`, `js/utils/` first - reuse existing |
-| Mix annotation/env secrets | Use only `valueFrom.secretKeyRef` in YAML, not annotations |
-
-### Always
-
-| Action | Why |
-|--------|-----|
-| Search existing code first | `js/components/`, `js/utils/` have reusable patterns |
-| Follow naming conventions | See docs/PATTERNS.md for `[domain]-[name].js` pattern |
-| Run `./scripts/build-css-bundle.sh` | CSS changes need bundle rebuild before deploy |
-| Run `./scripts/check-css-versions.sh` | Prevents CSS cache issues (auto-runs on deploy) |
-| Verify secrets after deploy | `gcloud run services describe` confirms secret mounting |
-| Use `--gcloud-auth` for proxy | Avoids ADC auth issues with cloud-sql-proxy |
-| Add rate limiting to writes | `check_uid_rate_limit()` prevents abuse |
-| Add input validation | Length/format checks prevent injection attacks |
-| Add timeout to HTTP requests | `timeout=30` prevents hanging connections |
 
 ---
 
 ## Code Principles
 
-### 1. Reuse Before Create
-Before writing new code:
-- Check `js/components/` for UI components
-- Check `js/utils/` for utilities
-- Check sibling files for patterns
-
-### 2. Consistency Over Cleverness
-- Match existing patterns
-- Follow naming conventions
-- Same error handling approach
-
-### 3. Simple Over Complex
-- Minimum code needed
-- No premature abstractions
-- No over-engineering
+1. **Reuse Before Create** - Check existing components/utils
+2. **Consistency Over Cleverness** - Match existing patterns
+3. **Simple Over Complex** - Minimum needed, no over-engineering
 
 ---
 
-## Project Structure
-
-```
-ekklesia/
-├── apps/members-portal/     # Frontend (Firebase Hosting)
-│   ├── js/components/       # Reusable UI components
-│   ├── js/utils/            # Utility functions
-│   ├── js/api/              # API clients
-│   ├── styles/              # CSS (bundle)
-│   └── i18n/                # Translations
-├── services/
-│   ├── svc-members/         # Firebase Functions (Python)
-│   ├── svc-elections/       # Cloud Run (Node.js)
-│   └── svc-events/          # Cloud Run (Node.js)
-├── scripts/                 # Automation
-└── docs/                    # Documentation
-```
-
----
-
-## Common Tasks
-
-### Add New Feature
-1. Search for similar existing code
-2. Reuse components from `js/components/`
-3. Follow naming: `[domain]-[name].js`
-4. Add i18n strings to XML files
-5. Test: no console errors, no 404s
-
-### Fix Bug
-1. Understand root cause
-2. Check if fix can reuse existing utilities
-3. Test edge cases
-4. Verify in browser console
-
-### Deploy
-
-```bash
-# Frontend (HTML/JS/CSS)
-cd services/svc-members && firebase deploy --only hosting
-
-# Cloud Functions - single function (preferred)
-cd services/svc-members && firebase deploy --only functions:FUNCTION_NAME
-
-# Cloud Functions - all (note: large upload ~130MB)
-cd services/svc-members && firebase deploy --only functions
-
-# Elections service (Cloud Run)
-cd services/svc-elections && ./deploy.sh
-
-# Events service (Cloud Run)
-cd services/svc-events && ./deploy.sh
-
-# Django Admin (Cloud Run) - see Django CLAUDE.md
-cd ~/Development/projects/django
-gcloud builds submit --config cloudbuild.yaml \
-  --substitutions="_REGION=europe-west2,_SERVICE_NAME=django-socialism,..."
-```
-
-**Important deploy notes:**
-- `svc-members` uses Firebase Functions (Python) - deploy via `firebase deploy`
-- `svc-elections` and `svc-events` use Cloud Run - deploy via `./deploy.sh`
-- Never use `firebase deploy --only functions` without specifying function name (slow + risky)
-- Single function deploy: `firebase deploy --only functions:FUNCTION_NAME`
-- Django admin: deploy via `gcloud builds submit` (see Django CLAUDE.md)
-
----
-
-## Data Sources
-
-### Source of Truth
-- **Firestore** - Canonical member data (Ekklesia)
-- **Cloud SQL** - Elections, events, RAG documents
-
-### Django (Interim)
-- Read-only admin interface
-- No sync - Django reads from Cloud SQL
-- Will be replaced by Ekklesia admin
-
----
-
-## Related Issues
-- **#323** - ✅ SendGrid email integration (implemented Dec 2025)
-- **#324** - ✅ Email migration from Linode to GCP (completed Dec 2025)
-
----
-
-## Documentation
+## Documentation Index
 
 | Doc | Purpose |
 |-----|---------|
-| [docs/README.md](docs/README.md) | Overview and quick links |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design |
+| [docs/QUICK-REFERENCE.md](docs/QUICK-REFERENCE.md) | All tables in one place |
+| [docs/CRITICAL-RULES.md](docs/CRITICAL-RULES.md) | All rules consolidated |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design details |
 | [docs/PATTERNS.md](docs/PATTERNS.md) | Code patterns, components |
-| [docs/AI-ASSISTANTS.md](docs/AI-ASSISTANTS.md) | AI assistants (Gemini, RAG, vector search) |
-| [docs/ELECTIONS.md](docs/ELECTIONS.md) | Elections and nomination committee |
-| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Deployment procedures |
-| [docs/SECURITY.md](docs/SECURITY.md) | Security rules |
+| [docs/SECURITY.md](docs/SECURITY.md) | Security implementation |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Deploy procedures |
+| [docs/README.md](docs/README.md) | Documentation overview |

@@ -1,5 +1,7 @@
 # Deployment Guide
 
+**Last Updated:** 2026-01-16
+
 Deployment procedures for all Ekklesia services.
 
 ---
@@ -52,6 +54,20 @@ curl -s https://felagar.sosialistaflokkurinn.is/version.json
 ## Firebase Functions
 
 Functions are Python-based and run on Firebase Functions (Gen 2).
+
+### Environment Variables
+
+| Variable | Purpose | Default | Recommended |
+|----------|---------|---------|-------------|
+| `JWKS_CACHE_TTL_SECONDS` | TTL for cached JWKS clients | 3600 | Prod: 3600, Dev: 300 |
+| `CORS_ALLOWED_ORIGINS` | Comma-separated CORS allowlist | `*` | Explicit domains in prod |
+
+Deploy with environment variables:
+```bash
+gcloud functions deploy FUNCTION_NAME \
+  --gen2 --runtime=python311 --region=europe-west2 \
+  --set-env-vars JWKS_CACHE_TTL_SECONDS=3600,CORS_ALLOWED_ORIGINS="https://felagar.sosialistaflokkurinn.is"
+```
 
 ### Deploy Single Function (Preferred)
 
@@ -262,7 +278,33 @@ See `docs/guides/ADMIN_ALERTS.md` for alert configuration.
 
 ---
 
+## Observability
+
+### Structured Logs
+
+Functions emit JSON logs with correlation IDs:
+- Supported headers: `X-Correlation-ID`, `X-Request-ID` (UUID generated if missing)
+- Sensitive fields (tokens/secrets) are masked
+
+### Key Log Messages
+
+| Message | Meaning |
+|---------|---------|
+| `Exchanging authorization code` | Kenni.is auth flow started |
+| `JWKS cache expired, refreshing` | Security key rotation |
+| `Auth rate limited` | Rate limit exceeded |
+
+---
+
 ## Troubleshooting
+
+### Function-Specific Errors
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| 502: Token exchange failed | Invalid code or Kenni.is issue | Check correlation ID in logs |
+| 429: Too many attempts | Rate limit exceeded | Wait and retry |
+| 400: Invalid JSON | Missing Content-Type or fields | Ensure `Content-Type: application/json` |
 
 ### "Permission denied" on deploy
 
