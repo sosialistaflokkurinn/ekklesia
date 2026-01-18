@@ -211,7 +211,10 @@ def sync_names(
     if dry_run:
         logger.info("[DRY RUN] Would update the following members:")
         for i, m in enumerate(to_update[:20]):  # Show first 20
-            logger.info(f"  {m['kennitala']}: {m['name']}")
+            # Mask PII for privacy
+            masked_kt = f"****{m['kennitala'][-4:]}"
+            masked_name = f"{m['name'][0]}***" if m['name'] else "***"
+            logger.info(f"  {masked_kt}: {masked_name}")
         if len(to_update) > 20:
             logger.info(f"  ... and {len(to_update) - 20} more")
         return {
@@ -240,7 +243,10 @@ def sync_names(
             })
 
             if verbose:
-                logger.info(f"  Updating {item['kennitala']}: {item['name']}")
+                # Mask kennitala and name for privacy (only show last 4 digits and first letter)
+                masked_kt = f"****{item['kennitala'][-4:]}"
+                masked_name = f"{item['name'][0]}***" if item['name'] else "***"
+                logger.info(f"  Updating {masked_kt}: {masked_name}")
 
         try:
             batch.commit()
