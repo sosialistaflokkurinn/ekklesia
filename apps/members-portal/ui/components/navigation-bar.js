@@ -478,6 +478,7 @@ export const NAV_CONFIGS = {
       { href: '/admin/members.html', textKey: 'nav_admin_members' },
       { href: '/admin/events.html', textKey: 'nav_admin_events' },
       { href: '/admin/email/', textKey: 'nav_admin_email' },
+      { href: '/admin/sms/', textKey: 'nav_admin_sms' },
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
@@ -497,6 +498,7 @@ export const NAV_CONFIGS = {
       { href: '/admin/members.html', textKey: 'nav_admin_members' },
       { href: '/admin/events.html', textKey: 'nav_admin_events' },
       { href: '/admin/email/', textKey: 'nav_admin_email' },
+      { href: '/admin/sms/', textKey: 'nav_admin_sms' },
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
@@ -516,6 +518,7 @@ export const NAV_CONFIGS = {
       { href: '/admin/members.html', textKey: 'nav_admin_members' },
       { href: '/admin/events.html', textKey: 'nav_admin_events' },
       { href: '/admin/email/', textKey: 'nav_admin_email' },
+      { href: '/admin/sms/', textKey: 'nav_admin_sms' },
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
@@ -535,6 +538,7 @@ export const NAV_CONFIGS = {
       { href: '/admin/members.html', textKey: 'nav_admin_members' },
       { href: '/admin/events.html', textKey: 'nav_admin_events' },
       { href: '/admin/email/', textKey: 'nav_admin_email' },
+      { href: '/admin/sms/', textKey: 'nav_admin_sms' },
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
@@ -554,6 +558,27 @@ export const NAV_CONFIGS = {
       { href: '/admin/members.html', textKey: 'nav_admin_members' },
       { href: '/admin/events.html', textKey: 'nav_admin_events' },
       { href: '/admin/email/', textKey: 'nav_admin_email' },
+      { href: '/admin/sms/', textKey: 'nav_admin_sms' },
+      { href: '/admin-elections/', textKey: 'nav_admin_elections' },
+      { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
+    ]
+  },
+
+  /**
+   * Admin SMS
+   * Shows "SMS" for context
+   */
+  adminSms: {
+    brand: {
+      href: '/admin/',
+      textKey: 'nav_admin_sms'  // "SMS"
+    },
+    links: [
+      { href: '/admin/', textKey: 'nav_admin_overview' },
+      { href: '/admin/members.html', textKey: 'nav_admin_members' },
+      { href: '/admin/events.html', textKey: 'nav_admin_events' },
+      { href: '/admin/email/', textKey: 'nav_admin_email' },
+      { href: '/admin/sms/', textKey: 'nav_admin_sms' },
       { href: '/admin-elections/', textKey: 'nav_admin_elections' },
       { href: '/members-area/dashboard.html', textKey: 'nav_back_to_member' }
     ]
