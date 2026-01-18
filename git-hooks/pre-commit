@@ -760,6 +760,68 @@ if [ "$AUTH_ISSUES" -gt 0 ]; then
   echo ""
 fi
 
+# --- 17. Check documentation freshness (warning only) ---
+echo "📚 Checking documentation freshness..."
+
+# Key documentation files
+DOC_FILES=(
+  "CLAUDE.md"
+  "docs/CRITICAL-RULES.md"
+  "docs/QUICK-REFERENCE.md"
+  "docs/DEPLOYMENT.md"
+  "docs/SECURITY.md"
+)
+
+# Check if any code files were modified
+CODE_CHANGED=false
+for file in $STAGED_FILES; do
+  if echo "$file" | grep -qE '\.(py|js|ts|tsx|jsx)$'; then
+    CODE_CHANGED=true
+    break
+  fi
+done
+
+if [ "$CODE_CHANGED" = true ]; then
+  # Check doc freshness - warn if docs are >14 days old and code is changing
+  STALE_DOCS=()
+  NOW=$(date +%s)
+  FOURTEEN_DAYS=$((14 * 24 * 60 * 60))
+
+  for doc in "${DOC_FILES[@]}"; do
+    if [ -f "$doc" ]; then
+      DOC_MTIME=$(stat -c %Y "$doc" 2>/dev/null || stat -f %m "$doc" 2>/dev/null)
+      if [ -n "$DOC_MTIME" ]; then
+        AGE=$((NOW - DOC_MTIME))
+        if [ "$AGE" -gt "$FOURTEEN_DAYS" ]; then
+          DAYS_OLD=$((AGE / 86400))
+          STALE_DOCS+=("$doc ($DAYS_OLD days old)")
+        fi
+      fi
+    fi
+  done
+
+  if [ ${#STALE_DOCS[@]} -gt 0 ]; then
+    echo ""
+    echo "⚠️  Documentation may be stale (>14 days since update):"
+    for stale in "${STALE_DOCS[@]}"; do
+      echo "   - $stale"
+    done
+    echo ""
+    echo "   💡 Consider updating docs if your changes affect:"
+    echo "   - Architecture or service structure"
+    echo "   - Deployment procedures"
+    echo "   - Security rules or patterns"
+    echo "   - Critical rules or best practices"
+    echo ""
+    echo "   (This is a warning only - commit will proceed)"
+    echo ""
+  else
+    echo "✅ Documentation freshness check passed"
+  fi
+else
+  echo "✅ No code changes - skipping doc freshness check"
+fi
+
 # --- Final summary ---
 echo ""
 echo "🏴 Checking commit message for political identity..."

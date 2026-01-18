@@ -2,6 +2,13 @@
  * Admin Elections Dashboard Styles
  */
 
+/* Local Variables */
+:root {
+  --color-btn-neutral: #e8e8e8;
+  --color-btn-neutral-hover: #d8d8d8;
+  --color-btn-neutral-border: #d0d0d0;
+}
+
 /* Container */
 .admin-container {
   max-width: 1400px;
@@ -334,24 +341,16 @@
   background: var(--color-primary-dark);
 }
 
-.btn-view {
-  background: var(--color-burgundy);
-  color: white;
-}
-
-.btn-view:hover {
-  background: var(--color-burgundy-dark);
-  box-shadow: var(--shadow-burgundy);
-}
-
+.btn-view,
 .btn-edit {
-  background: var(--color-burgundy-light);
-  color: white;
+  background: var(--color-btn-neutral);
+  color: var(--color-text);
+  border: 1px solid var(--color-btn-neutral-border);
 }
 
+.btn-view:hover,
 .btn-edit:hover {
-  background: var(--color-burgundy);
-  box-shadow: var(--shadow-burgundy);
+  background: var(--color-btn-neutral-hover);
 }
 
 .btn-hide {

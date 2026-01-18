@@ -20,7 +20,9 @@ from db_members import (
     get_member_by_django_id,
     get_member_by_email,
     get_deleted_member_count,
-    get_deleted_members
+    get_deleted_members,
+    hard_delete_member_sql,
+    anonymize_member_sql
 )
 import requests
 import time
@@ -133,6 +135,8 @@ EMAIL_FUNCTIONS = [
     {"id": "getemailpreferences", "name": "Sækja póstkjörstillingar"},
     {"id": "updateemailpreferences", "name": "Uppfæra póstkjörstillingar"},
     {"id": "unsubscribe", "name": "Afskráning af póstlista"},
+    {"id": "getmunicipalities", "name": "Sækja sveitarfélög"},
+    {"id": "previewrecipientcount", "name": "Forskoðun viðtakendafjölda"},
 ]
 
 # Firebase Functions - Heatmap/Analytics
@@ -147,6 +151,7 @@ ADMIN_MEMBER_FUNCTIONS = [
     {"id": "getmember", "name": "Sækja félaga"},
     {"id": "getmemberstats", "name": "Tölfræði félaga"},
     {"id": "getmemberself", "name": "Sækja eigin gögn"},
+    {"id": "softdeleteadmin", "name": "Afskrá félaga (admin)"},
 ]
 
 # Combined list for backward compatibility
@@ -592,6 +597,20 @@ def check_system_health_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
             "message": str(e)[:50]
         })
 
+    # Add Firebase infrastructure (always available - no health endpoint)
+    results.append({
+        "id": "firebase-auth",
+        "name": "Firebase Auth",
+        "status": "available",
+        "message": "Tilbúið"
+    })
+    results.append({
+        "id": "firebase-hosting",
+        "name": "Firebase Hosting",
+        "status": "available",
+        "message": "Tilbúið"
+    })
+
     # Summary - count "available" as healthy (Firebase Functions without health endpoint)
     healthy_count = sum(1 for r in results if r["status"] in ("healthy", "available"))
     degraded_count = sum(1 for r in results if r["status"] == "degraded")
@@ -608,57 +627,6 @@ def check_system_health_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     }
 
-
-# ==============================================================================
-# HEALTH PROBE (No auth required - for service-to-service calls)
-# ==============================================================================
-
-def members_health_probe_handler(req: https_fn.Request) -> https_fn.Response:
-    """
-    Simple health probe for svc-members Firebase Functions.
-    No authentication required - designed for Kimi and other services.
-
-    Returns summary of function status without detailed checks.
-    """
-    import json
-    from flask import Response
-
-    # Quick Firestore connectivity test
-    try:
-        db = firestore.client()
-        db.collection("_health").document("probe").get()
-        firestore_ok = True
-    except Exception:
-        firestore_ok = False
-
-    # Count deployed functions (static list - update when adding functions)
-    total_functions = 47  # Current count from service catalog
-
-    status = "healthy" if firestore_ok else "degraded"
-
-    result = {
-        "status": status,
-        "service": "svc-members",
-        "type": "Firebase Functions",
-        "region": "europe-west2",
-        "firestore": "connected" if firestore_ok else "error",
-        "functions": {
-            "total": total_functions,
-            "note": "Use checkSystemHealth for detailed status (requires superuser)"
-        },
-        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-    }
-
-    return Response(
-        json.dumps(result),
-        status=200,
-        mimetype="application/json",
-        headers={
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type"
-        }
-    )
 
 # ==============================================================================
 # AUDIT LOGS
@@ -915,9 +883,15 @@ def hard_delete_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             except Exception as e:
                 errors.append(f"Firestore /users/: {str(e)}")
 
-        # Note: Cloud SQL deletion handled in Django admin
+        # 5. Delete from Cloud SQL (source of truth)
+        sql_result = hard_delete_member_sql(int(member_id))
+        if sql_result["success"]:
+            deleted_items.append("Cloud SQL member record")
+            deleted_items.extend(sql_result.get("deleted_tables", []))
+        else:
+            errors.extend(sql_result.get("errors", []))
 
-        # 5. Log the action
+        # 6. Log the action
         log_json("warning", "DANGEROUS: Member hard deleted",
                  action="hard_delete_member",
                  caller_uid=caller_uid,
@@ -1030,6 +1004,15 @@ def anonymize_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
                 log_json("warning", "Could not delete /users document",
                          error=str(e), uid=firebase_uid)
 
+        # 5. Anonymize in Cloud SQL (source of truth)
+        sql_result = anonymize_member_sql(int(member_id), anon_id)
+        if sql_result["success"]:
+            anonymized_items.append("Cloud SQL member record")
+            anonymized_items.extend(sql_result.get("anonymized_fields", []))
+        else:
+            log_json("warning", "Cloud SQL anonymization had errors",
+                     errors=sql_result.get("errors"))
+
         # Log the action
         log_json("warning", "DANGEROUS: Member anonymized (GDPR)",
                  action="anonymize_member",
@@ -1042,7 +1025,7 @@ def anonymize_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             "success": True,
             "anon_id": anon_id,
             "anonymized": anonymized_items,
-            "message": f"Firebase Auth anonymized as {anon_id}. Complete anonymization in Django Admin."
+            "message": f"Member anonymized as {anon_id} in Firebase and Cloud SQL."
         }
 
     except https_fn.HttpsError:
@@ -1291,19 +1274,22 @@ def get_deleted_counts_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
 @https_fn.on_call(region="europe-west2")
 def purgedeleted(req: https_fn.CallableRequest) -> Dict[str, Any]:
     """
-    Permanently delete members marked as 'deleted'.
+    Permanently delete all soft-deleted members.
 
-    This is a dangerous operation that removes data from Firestore.
-    It does NOT remove the user from Firebase Auth (that should be handled separately).
+    This is a DANGEROUS bulk operation that removes data from:
+    - Cloud SQL (source of truth)
+    - Firebase Auth
+    - Firestore /users collection
 
     Returns:
-        Dict with count of deleted documents.
+        Dict with count of deleted members and any errors.
     """
     # Verify superuser access
     require_superuser(req)
+    caller_uid = req.auth.uid
 
     # Security: Rate limit bulk purge operations (1 per hour)
-    if not check_uid_rate_limit(req.auth.uid, "purge_deleted", max_attempts=1, window_minutes=60):
+    if not check_uid_rate_limit(caller_uid, "purge_deleted", max_attempts=1, window_minutes=60):
         raise https_fn.HttpsError(
             code=https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED,
             message="Rate limit exceeded. Maximum 1 purge per hour."
@@ -1311,39 +1297,80 @@ def purgedeleted(req: https_fn.CallableRequest) -> Dict[str, Any]:
 
     try:
         db = firestore.client()
-        
-        # Query for soft-deleted members
-        # Assuming 'deleted' field is boolean true or 'status' is 'deleted'
-        # Based on typical patterns, let's check both or adjust based on schema
-        # For now, we'll assume a 'deleted' boolean flag based on common soft-delete patterns
-        
-        # Option A: status == 'deleted'
-        docs = db.collection("users").where("status", "==", "deleted").stream()
-        
+
+        # 1. Get all soft-deleted members from Cloud SQL (source of truth)
+        deleted_members = get_deleted_members(limit=1000)  # Get up to 1000
+
+        if not deleted_members:
+            return {
+                "success": True,
+                "count": 0,
+                "message": "No soft-deleted members to purge."
+            }
+
         deleted_count = 0
-        batch = db.batch()
-        batch_size = 0
-        MAX_BATCH_SIZE = 400  # Firestore limit is 500
-        
-        for doc in docs:
-            batch.delete(doc.reference)
-            deleted_count += 1
-            batch_size += 1
-            
-            if batch_size >= MAX_BATCH_SIZE:
-                batch.commit()
-                batch = db.batch()
-                batch_size = 0
-        
-        if batch_size > 0:
-            batch.commit()
-            
-        log_json("info", "Purged deleted members", count=deleted_count, admin=req.auth.uid)
-        
+        errors = []
+
+        # 2. Process each soft-deleted member
+        for member in deleted_members:
+            member_id = member.get("id")
+            kennitala = member.get("kennitala")
+            member_name = member.get("name", "Unknown")
+
+            try:
+                # 2a. Find Firebase UID by kennitala
+                firebase_uid = None
+                if kennitala:
+                    users_query = db.collection("users").where(
+                        "kennitala", "==", kennitala
+                    ).limit(1).stream()
+                    for user_doc in users_query:
+                        firebase_uid = user_doc.id
+                        break
+
+                # 2b. Delete Firebase Auth user
+                if firebase_uid:
+                    try:
+                        auth.delete_user(firebase_uid)
+                    except auth.UserNotFoundError:
+                        pass  # Already deleted
+                    except Exception as e:
+                        log_json("warning", "Could not delete Firebase Auth",
+                                 error=str(e), member_id=member_id)
+
+                    # 2c. Delete Firestore /users document
+                    try:
+                        db.collection("users").document(firebase_uid).delete()
+                    except Exception as e:
+                        log_json("warning", "Could not delete /users doc",
+                                 error=str(e), member_id=member_id)
+
+                # 2d. Delete from Cloud SQL (source of truth)
+                sql_result = hard_delete_member_sql(int(member_id))
+                if sql_result["success"]:
+                    deleted_count += 1
+                else:
+                    errors.append(f"{member_name}: {sql_result.get('errors', ['Unknown error'])}")
+
+            except Exception as e:
+                errors.append(f"{member_name}: {str(e)}")
+                log_json("warning", "Failed to purge member",
+                         error=str(e), member_id=member_id)
+
+        # 3. Log the bulk operation
+        log_json("warning", "DANGEROUS: Bulk purge of deleted members",
+                 action="purge_deleted",
+                 caller_uid=caller_uid,
+                 deleted_count=deleted_count,
+                 error_count=len(errors))
+
         return {
-            "success": True,
+            "success": len(errors) == 0,
             "count": deleted_count,
-            "message": f"Permanently deleted {deleted_count} records."
+            "errors": errors if errors else None,
+            "message": f"Permanently deleted {deleted_count} members." + (
+                f" {len(errors)} errors occurred." if errors else ""
+            )
         }
 
     except Exception as e:

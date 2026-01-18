@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="/styles/bundle.css?v=20251217k">
 
   <!-- Admin-specific styles -->
-  <link rel="stylesheet" href="/admin/styles/admin.css?v=20260110a">
+  <link rel="stylesheet" href="/admin/styles/admin.css?v=20260112a">
 </head>
 <body class="authenticated admin">
   <!-- Navigation component inserted here -->
@@ -38,20 +38,28 @@
           </div>
         </div>
 
-        <!-- Single recipient field (template and quick modes) -->
+        <!-- Recipient Type Toggle (Single vs Bulk) -->
+        <div class="form-group" id="recipient-type-section">
+          <label>Viðtakendur</label>
+          <div class="toggle-buttons toggle-buttons--small">
+            <button type="button" class="toggle-btn active" id="recipient-single" data-recipient-type="single">
+              Einn viðtakandi
+            </button>
+            <button type="button" class="toggle-btn" id="recipient-bulk" data-recipient-type="bulk">
+              Margir viðtakendur
+            </button>
+          </div>
+        </div>
+
+        <!-- Single recipient field -->
         <div class="form-group" id="single-recipient-section">
           <label for="recipient" id="label-recipient">Loading...</label>
           <input type="text" id="recipient" class="form-input" placeholder="" required>
           <p class="form-help" id="recipient-help">Netfang eða kennitala félaga</p>
         </div>
 
-        <!-- Campaign Mode Fields (bulk send) -->
-        <div id="campaign-mode-fields" class="u-hidden">
-          <div class="form-group">
-            <label for="campaign-name">Heiti herferðar</label>
-            <input type="text" id="campaign-name" class="form-input" placeholder="t.d. Kópavogur sveitarstjórnarkosningar 2026">
-          </div>
-
+        <!-- Bulk recipient fields (municipality filter) -->
+        <div id="bulk-recipient-section" class="u-hidden">
           <div class="form-group">
             <label for="municipality-select">Sveitarfélag</label>
             <select id="municipality-select" class="form-select">
@@ -68,6 +76,14 @@
               <span class="recipient-count-value" id="recipient-count">-</span>
               <button type="button" class="btn btn--small btn--secondary" id="refresh-count-btn">Uppfæra</button>
             </div>
+          </div>
+        </div>
+
+        <!-- Campaign name (only for campaign mode) -->
+        <div id="campaign-mode-fields" class="u-hidden">
+          <div class="form-group">
+            <label for="campaign-name">Heiti herferðar</label>
+            <input type="text" id="campaign-name" class="form-input" placeholder="t.d. Kópavogur sveitarstjórnarkosningar 2026">
           </div>
         </div>
 
@@ -124,7 +140,7 @@
     </div>
   </div>
 
-  <script type="module" src="/admin/email/js/email-send.js?v=20260109a"></script>
+  <script type="module" src="/admin/email/js/email-send.js?v=20260112a"></script>
 
   <!-- Initialize Navigation Component -->
   <script type="module">

@@ -10,13 +10,16 @@
  */
 
 import { R } from '../../i18n/strings-loader.js';
-import { getFirebaseFirestore, doc, updateDoc } from '../../firebase/app.js';
+import { getFirebaseFirestore, doc, updateDoc, httpsCallable } from '../../firebase/app.js';
 import { getCountriesSorted, getCountryFlag, getCountryCallingCode } from '../utils/util-countries.js';
 import { debug } from '../utils/util-debug.js';
 import { showToast } from '../components/ui-toast.js';
 import { showStatus, createStatusIcon } from '../components/ui-status.js';
 import { SearchableSelect } from '../components/ui-searchable-select.js';
 import { el } from '../utils/util-dom.js';
+
+// Cloud Function region
+const REGION = 'europe-west2';
 
 /**
  * Expand collapsible section helper
@@ -332,11 +335,11 @@ export class PhoneManager {
   }
 
   /**
-   * Save phone numbers to Firestore
+   * Save phone numbers to Firestore and sync default phone to Cloud SQL
    */
   async save() {
     debug.log(
-      `💾 Saving phone numbers to Firestore: count=${this.phoneNumbers.length}, countryCodes=[${this.phoneNumbers.map(pn => pn.country_code || 'N/A').join(', ')}]`
+      `💾 Saving phone numbers: count=${this.phoneNumbers.length}, countryCodes=[${this.phoneNumbers.map(pn => pn.country || 'N/A').join(', ')}]`
     );
 
     const statusIcon = document.getElementById('status-phone-numbers');
@@ -347,6 +350,7 @@ export class PhoneManager {
         debug.log('⏳ Showing loading spinner...');
       }
 
+      // 1. Save phone_numbers array to Firestore (for multi-phone support)
       const db = getFirebaseFirestore();
       const kennitalaKey = this.currentUserData.kennitala.replace(/-/g, '');
       const memberDocRef = doc(db, 'members', kennitalaKey);
@@ -358,7 +362,30 @@ export class PhoneManager {
         'profile.updated_at': new Date()
       });
 
-      debug.log('✅ Phone numbers saved successfully to Firestore');
+      debug.log('✅ Phone numbers saved to Firestore');
+
+      // 2. Sync default phone to Cloud SQL (source of truth for single phone)
+      const defaultPhone = this.phoneNumbers.find(p => p.is_default);
+      if (defaultPhone && defaultPhone.number) {
+        const callingCode = getCountryCallingCode(defaultPhone.country);
+        // Format: country code + number (e.g., +354 7758493)
+        const fullPhoneNumber = `${callingCode} ${defaultPhone.number}`.trim();
+
+        debug.log(`📱 Syncing default phone to Cloud SQL: ${fullPhoneNumber}`);
+
+        try {
+          // Create Cloud Function reference here (not at module level)
+          const updateMemberProfileFn = httpsCallable('updatememberprofile', REGION);
+          await updateMemberProfileFn({
+            kennitala: this.currentUserData.kennitala,
+            updates: { phone: fullPhoneNumber }
+          });
+          debug.log('✅ Default phone synced to Cloud SQL');
+        } catch (sqlError) {
+          // Log but don't fail - Firestore save succeeded
+          debug.error('⚠️ Failed to sync phone to Cloud SQL:', sqlError);
+        }
+      }
 
       if (statusIcon) {
         statusIcon.className = 'profile-field__status profile-field__status--success';

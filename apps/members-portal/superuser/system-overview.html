@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="/styles/bundle.css?v=20251217k">
 
   <!-- Superuser-specific styles -->
-  <link rel="stylesheet" href="/superuser/styles/superuser.css?v=20260110a">
+  <link rel="stylesheet" href="/superuser/styles/superuser.css?v=20260110b">
 </head>
 <body class="authenticated superuser">
   <!-- Navigation component inserted here -->
@@ -153,7 +153,7 @@
               <g class="architecture-group architecture-group--clickable" id="group-member" data-group="member">
                 <rect x="50" y="310" width="115" height="55" rx="6" class="architecture-node architecture-node--group" />
                 <text x="107" y="332" text-anchor="middle" class="architecture-node__label">Félagar</text>
-                <text x="107" y="350" text-anchor="middle" class="architecture-node__count">3 þjónustur</text>
+                <text x="107" y="350" text-anchor="middle" class="architecture-node__count">8 þjónustur</text>
                 <circle cx="145" cy="322" r="5" class="architecture-status" id="status-member" />
               </g>
 
@@ -204,7 +204,7 @@
               <g class="architecture-group architecture-group--clickable" id="group-email" data-group="email">
                 <rect x="175" y="375" width="115" height="55" rx="6" class="architecture-node architecture-node--group" />
                 <text x="232" y="397" text-anchor="middle" class="architecture-node__label">Tölvupóstur</text>
-                <text x="232" y="415" text-anchor="middle" class="architecture-node__count">14 þjónustur</text>
+                <text x="232" y="415" text-anchor="middle" class="architecture-node__count">15 þjónustur</text>
                 <circle cx="270" cy="387" r="5" class="architecture-status" id="status-email" />
               </g>
 
@@ -446,6 +446,35 @@
                 <span class="schema-col schema-col--desc">Frambjóðendur í uppstillingarnefnd</span>
                 <span class="schema-col schema-col--key"><span class="badge badge--success">svc-elections</span></span>
               </div>
+              <!-- Audit - registration tracking -->
+              <div class="schema-row">
+                <span class="schema-col schema-col--name"><code>/audit_log/{id}</code></span>
+                <span class="schema-col schema-col--desc">Aðgerðaskrá nýskráninga</span>
+                <span class="schema-col schema-col--key"><span class="badge badge--info">Eftirlit</span></span>
+              </div>
+              <!-- Lookup tables -->
+              <div class="schema-row">
+                <span class="schema-col schema-col--name"><code>/postal_code_cells/{postalCode}</code></span>
+                <span class="schema-col schema-col--desc">Póstnúmer → sella uppfletting</span>
+                <span class="schema-col schema-col--key"><span class="badge badge--info">Uppfletting</span></span>
+              </div>
+              <div class="schema-row">
+                <span class="schema-col schema-col--name"><code>/lookup_postal_codes/{id}</code></span>
+                <span class="schema-col schema-col--desc">Póstnúmeralisti</span>
+                <span class="schema-col schema-col--key"><span class="badge badge--info">Uppfletting</span></span>
+              </div>
+              <!-- Soft-deleted votes tracking -->
+              <div class="schema-row">
+                <span class="schema-col schema-col--name"><code>/votes/{id}</code></span>
+                <span class="schema-col schema-col--desc">Atkvæði (mjúk eyðing)</span>
+                <span class="schema-col schema-col--key"><span class="badge badge--warning">Mætti flytja</span></span>
+              </div>
+              <!-- Health check -->
+              <div class="schema-row">
+                <span class="schema-col schema-col--name"><code>/_health/ping</code></span>
+                <span class="schema-col schema-col--desc">Heilsuskoðun Firestore</span>
+                <span class="schema-col schema-col--key"><span class="badge badge--muted">Innra</span></span>
+              </div>
             </div>
             <p class="u-text-muted u-margin-top-sm" style="font-size: 0.85rem;">
               <strong>Mætti flytja:</strong> Gæti farið í Django/Cloud SQL seinna.
@@ -483,14 +512,15 @@
                 <span class="schema-col schema-col--desc">Aðgerðaskrá (engin persónugreinanleg gögn)</span>
                 <span class="schema-col schema-col--key">id</span>
               </div>
+              <!-- External Events (Facebook sync) -->
               <div class="schema-row">
                 <span class="schema-col schema-col--name"><code>external_events</code></span>
-                <span class="schema-col schema-col--desc">Facebook viðburðir frá síðu flokksins</span>
+                <span class="schema-col schema-col--desc">Facebook viðburðir (samstilltir á 6 klst. fresti)</span>
                 <span class="schema-col schema-col--key">id</span>
               </div>
               <div class="schema-row">
                 <span class="schema-col schema-col--name"><code>external_events_sync_log</code></span>
-                <span class="schema-col schema-col--desc">Samstillingarstaða viðburða</span>
+                <span class="schema-col schema-col--desc">Staða samstillingar (monitoring)</span>
                 <span class="schema-col schema-col--key">id</span>
               </div>
             </div>
@@ -672,7 +702,7 @@
 
   </div>
 
-  <script type="module" src="/superuser/js/system-overview.js?v=20251223"></script>
+  <script type="module" src="/superuser/js/system-overview.js?v=20260111f"></script>
 
   <!-- Django tables toggle -->
   <script>
@@ -695,7 +725,7 @@
 
   <!-- Initialize Navigation Component -->
   <script type="module">
-    import { initNavHeader, NAV_CONFIGS } from '../ui/components/navigation-bar.js?v=20251212';
+    import { initNavHeader, NAV_CONFIGS } from '../ui/components/navigation-bar.js?v=20260110';
     await initNavHeader(NAV_CONFIGS.superuserSystemOverview);
   </script>
 

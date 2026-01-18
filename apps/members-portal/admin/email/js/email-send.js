@@ -25,6 +25,7 @@ let strings = {};
 let templates = [];
 let selectedTemplate = null;
 let currentMode = 'template';  // 'template', 'quick', or 'campaign'
+let recipientType = 'single';  // 'single' or 'bulk'
 let municipalities = [];
 
 /**
@@ -161,6 +162,63 @@ async function updateRecipientCount() {
 }
 
 /**
+ * Setup recipient type toggle (single vs bulk)
+ */
+function setupRecipientTypeToggle() {
+  const singleBtn = document.getElementById('recipient-single');
+  const bulkBtn = document.getElementById('recipient-bulk');
+  const singleSection = document.getElementById('single-recipient-section');
+  const bulkSection = document.getElementById('bulk-recipient-section');
+  const recipientInput = document.getElementById('recipient');
+  const unsubscribeSection = document.getElementById('unsubscribe-section');
+
+  function setRecipientType(type) {
+    recipientType = type;
+
+    // Update button states
+    singleBtn.classList.toggle('active', type === 'single');
+    bulkBtn.classList.toggle('active', type === 'bulk');
+
+    // Show/hide appropriate sections
+    singleSection.classList.toggle('u-hidden', type === 'bulk');
+    bulkSection.classList.toggle('u-hidden', type === 'single');
+
+    // Update required attribute
+    if (type === 'single') {
+      recipientInput.setAttribute('required', '');
+      unsubscribeSection.classList.remove('u-hidden');
+    } else {
+      recipientInput.removeAttribute('required');
+      // Auto-check unsubscribe for bulk sends
+      document.getElementById('include-unsubscribe').checked = true;
+      unsubscribeSection.classList.add('u-hidden');
+      // Update recipient count
+      updateRecipientCount();
+    }
+
+    // Update send button text
+    updateSendButtonText();
+
+    debug.log('[EmailSend] Recipient type changed to:', type);
+  }
+
+  singleBtn.addEventListener('click', () => setRecipientType('single'));
+  bulkBtn.addEventListener('click', () => setRecipientType('bulk'));
+}
+
+/**
+ * Update send button text based on mode and recipient type
+ */
+function updateSendButtonText() {
+  const sendBtn = document.getElementById('send-btn');
+  if (recipientType === 'bulk' || currentMode === 'campaign') {
+    sendBtn.textContent = 'Senda fjöldapóst';
+  } else {
+    sendBtn.textContent = strings.email_send_btn || 'Senda póst';
+  }
+}
+
+/**
  * Setup mode toggle buttons
  */
 function setupModeToggle() {
@@ -170,9 +228,7 @@ function setupModeToggle() {
   const templateFields = document.getElementById('template-mode-fields');
   const quickFields = document.getElementById('quick-mode-fields');
   const campaignFields = document.getElementById('campaign-mode-fields');
-  const singleRecipientSection = document.getElementById('single-recipient-section');
-  const unsubscribeSection = document.getElementById('unsubscribe-section');
-  const recipientInput = document.getElementById('recipient');
+  const recipientTypeSection = document.getElementById('recipient-type-section');
 
   function setMode(mode) {
     currentMode = mode;
@@ -186,27 +242,18 @@ function setupModeToggle() {
     templateFields.classList.toggle('u-hidden', mode === 'quick');
     quickFields.classList.toggle('u-hidden', mode !== 'quick');
     campaignFields.classList.toggle('u-hidden', mode !== 'campaign');
-    singleRecipientSection.classList.toggle('u-hidden', mode === 'campaign');
 
-    // In campaign mode: auto-check unsubscribe, hide section
+    // In campaign mode: hide recipient type toggle, force bulk mode
     if (mode === 'campaign') {
-      document.getElementById('include-unsubscribe').checked = true;
-      unsubscribeSection.classList.add('u-hidden');
-      recipientInput.removeAttribute('required');
-      // Update recipient count on mode switch
-      updateRecipientCount();
+      recipientTypeSection.classList.add('u-hidden');
+      // Force bulk recipient mode
+      document.getElementById('recipient-bulk').click();
     } else {
-      unsubscribeSection.classList.remove('u-hidden');
-      recipientInput.setAttribute('required', '');
+      recipientTypeSection.classList.remove('u-hidden');
     }
 
     // Update send button text
-    const sendBtn = document.getElementById('send-btn');
-    if (mode === 'campaign') {
-      sendBtn.textContent = 'Senda fjöldapóst';
-    } else {
-      sendBtn.textContent = strings.email_send_btn || 'Senda';
-    }
+    updateSendButtonText();
 
     debug.log('[EmailSend] Mode changed to:', mode);
   }
@@ -273,25 +320,41 @@ async function sendSingleEmail() {
 }
 
 /**
- * Send campaign (bulk mode)
+ * Send bulk email (campaign mode, or template/quick mode with bulk recipients)
  */
-async function sendCampaign() {
-  const campaignName = document.getElementById('campaign-name').value.trim();
+async function sendBulkEmail() {
   const templateId = document.getElementById('template-select').value;
   const municipality = document.getElementById('municipality-select').value;
 
-  if (!campaignName) {
-    throw new Error('Vinsamlega sláðu inn heiti herferðar');
-  }
-
+  // Validate template selection (required for bulk sends)
   if (!templateId) {
     throw new Error('Vinsamlega veldu sniðmát');
+  }
+
+  // Quick send mode doesn't support bulk yet
+  if (currentMode === 'quick') {
+    throw new Error('Fljótpóstur styður ekki marga viðtakendur ennþá. Notaðu sniðmát.');
   }
 
   // Build recipient filter
   const recipientFilter = { status: 'active' };
   if (municipality) {
     recipientFilter.municipalities = [municipality];
+  }
+
+  // Campaign name: use provided name in campaign mode, auto-generate otherwise
+  let campaignName;
+  if (currentMode === 'campaign') {
+    campaignName = document.getElementById('campaign-name').value.trim();
+    if (!campaignName) {
+      throw new Error('Vinsamlega sláðu inn heiti herferðar');
+    }
+  } else {
+    // Auto-generate name for template mode bulk sends
+    const timestamp = new Date().toLocaleString('is-IS', {
+      day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+    campaignName = `${selectedTemplate?.name || 'Sniðmát'} - ${timestamp}`;
   }
 
   // Create campaign
@@ -339,8 +402,9 @@ async function handleSubmit(e) {
   try {
     let result;
 
-    if (currentMode === 'campaign') {
-      result = await sendCampaign();
+    // Determine send type based on mode and recipient type
+    if (currentMode === 'campaign' || recipientType === 'bulk') {
+      result = await sendBulkEmail();
     } else {
       result = await sendSingleEmail();
     }
@@ -358,7 +422,7 @@ async function handleSubmit(e) {
       `;
       showToast(`Fjöldapóstur sendur til ${result.sent_count} viðtakenda`, 'success');
 
-      // Clear campaign form
+      // Clear form
       document.getElementById('campaign-name').value = '';
       document.getElementById('municipality-select').value = '';
       document.getElementById('template-select').value = '';
@@ -431,8 +495,9 @@ async function init() {
       loadMunicipalities()
     ]);
 
-    // 6. Setup mode toggle
+    // 6. Setup toggles
     setupModeToggle();
+    setupRecipientTypeToggle();
 
     // 7. Setup event handlers
     document.getElementById('template-select').addEventListener('change', onTemplateChange);

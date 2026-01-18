@@ -89,6 +89,23 @@ def verifyMembership_handler(req: https_fn.CallableRequest) -> dict:
             'membershipVerifiedAt': firestore.SERVER_TIMESTAMP
         })
 
+        # Save Firebase UID to Cloud SQL if member exists and is verified
+        # This links the Firebase Auth account to the Cloud SQL member record
+        if is_member and member_status.get('django_id'):
+            try:
+                execute_update(
+                    "UPDATE membership_comrade SET firebase_uid = %s WHERE id = %s AND (firebase_uid IS NULL OR firebase_uid != %s)",
+                    params=(req.auth.uid, member_status['django_id'], req.auth.uid)
+                )
+                log_json("debug", "Firebase UID saved to Cloud SQL",
+                         uid=req.auth.uid,
+                         django_id=member_status['django_id'])
+            except Exception as uid_save_error:
+                # Non-fatal - log but don't fail the verification
+                log_json("warn", "Failed to save Firebase UID to Cloud SQL",
+                         uid=req.auth.uid,
+                         error=str(uid_save_error))
+
         # Update custom claims while preserving roles and other attributes
         try:
             existing_custom_claims = auth.get_user(req.auth.uid).custom_claims or {}
@@ -296,22 +313,19 @@ def updatememberprofile_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
                  kennitala=f"{kennitala_no_hyphen[:6]}****")
 
         # Build Django update payload
+        # Note: email and phone are top-level keys (not nested) for django_api.update_django_member
         django_updates = {}
         if 'name' in updates:
             django_updates['name'] = updates['name']
         if 'email' in updates:
-            # Email is in contact_info nested object
-            django_updates['contact_info'] = {'email': updates['email']}
+            django_updates['email'] = updates['email']
         if 'phone' in updates:
-            # Phone is in contact_info nested object
-            # IMPORTANT: Django expects phone WITHOUT hyphen (7 digits only)
+            # IMPORTANT: Cloud SQL expects phone WITHOUT hyphen (7 digits only)
             phone_digits = ''.join(c for c in updates['phone'] if c.isdigit())
             # Remove country code if present
             if phone_digits.startswith('354') and len(phone_digits) == 10:
                 phone_digits = phone_digits[3:]  # Keep only 7 local digits
-            if 'contact_info' not in django_updates:
-                django_updates['contact_info'] = {}
-            django_updates['contact_info']['phone'] = phone_digits
+            django_updates['phone'] = phone_digits
 
         # Handle reachable/groupable preferences
         if 'reachable' in updates:

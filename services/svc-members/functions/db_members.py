@@ -47,6 +47,8 @@ def get_member_by_kennitala(kennitala: str) -> Optional[Dict[str, Any]]:
             c.deleted_at,
             c.reachable,
             c.groupable,
+            c.email_marketing,
+            c.email_marketing_updated_at,
             ci.email,
             ci.phone
         FROM membership_comrade c
@@ -76,6 +78,8 @@ def get_member_by_kennitala(kennitala: str) -> Optional[Dict[str, Any]]:
         },
         'reachable': result['reachable'],
         'groupable': result['groupable'],
+        'email_marketing': result['email_marketing'] if result['email_marketing'] is not None else True,
+        'email_marketing_updated_at': str(result['email_marketing_updated_at']) if result['email_marketing_updated_at'] else None,
     }
 
 
@@ -99,6 +103,8 @@ def get_member_by_django_id(django_id: int) -> Optional[Dict[str, Any]]:
             c.deleted_at,
             c.reachable,
             c.groupable,
+            c.email_marketing,
+            c.email_marketing_updated_at,
             ci.email,
             ci.phone
         FROM membership_comrade c
@@ -127,6 +133,63 @@ def get_member_by_django_id(django_id: int) -> Optional[Dict[str, Any]]:
         },
         'reachable': result['reachable'],
         'groupable': result['groupable'],
+        'email_marketing': result['email_marketing'] if result['email_marketing'] is not None else True,
+        'email_marketing_updated_at': str(result['email_marketing_updated_at']) if result['email_marketing_updated_at'] else None,
+    }
+
+
+def get_member_by_firebase_uid(firebase_uid: str) -> Optional[Dict[str, Any]]:
+    """
+    Get a member by Firebase UID.
+
+    Args:
+        firebase_uid: Firebase Auth UID
+
+    Returns:
+        Dict with member data or None if not found
+    """
+    query = """
+        SELECT
+            c.id,
+            c.name,
+            c.ssn as kennitala,
+            c.birthday,
+            c.date_joined,
+            c.deleted_at,
+            c.reachable,
+            c.groupable,
+            c.email_marketing,
+            c.email_marketing_updated_at,
+            ci.email,
+            ci.phone
+        FROM membership_comrade c
+        LEFT JOIN membership_contactinfo ci ON ci.comrade_id = c.id
+        WHERE c.firebase_uid = %s
+    """
+
+    result = execute_query(query, params=(firebase_uid,), fetch_one=True)
+    if not result:
+        return None
+
+    return {
+        'id': result['id'],
+        'django_id': result['id'],
+        'kennitala': result['kennitala'],
+        'profile': {
+            'name': result['name'],
+            'email': result['email'],
+            'phone': result['phone'],
+            'birthday': str(result['birthday']) if result['birthday'] else None,
+        },
+        'membership': {
+            'date_joined': str(result['date_joined']) if result['date_joined'] else None,
+            'deleted_at': str(result['deleted_at']) if result['deleted_at'] else None,
+            'status': 'deleted' if result['deleted_at'] else 'active',
+        },
+        'reachable': result['reachable'],
+        'groupable': result['groupable'],
+        'email_marketing': result['email_marketing'] if result['email_marketing'] is not None else True,
+        'email_marketing_updated_at': str(result['email_marketing_updated_at']) if result['email_marketing_updated_at'] else None,
     }
 
 
@@ -134,7 +197,7 @@ def get_members_for_email(
     status: Optional[str] = None,
     municipalities: Optional[List[str]] = None,
     cells: Optional[List[str]] = None,
-    max_results: int = 1000
+    max_results: int = 5000
 ) -> List[Dict[str, Any]]:
     """
     Get members for email campaigns with optional filters.
@@ -149,7 +212,12 @@ def get_members_for_email(
         List of member dicts with email info
     """
     # Build query with filters
-    conditions = ["c.ssn NOT LIKE '9999%%'"]
+    # IMPORTANT: Email filter must be in SQL, not Python, so LIMIT works correctly
+    conditions = [
+        "c.ssn NOT LIKE '9999%%'",
+        "ci.email IS NOT NULL",
+        "ci.email != ''"
+    ]
     params = []
 
     if status == "active":
@@ -193,9 +261,12 @@ def get_members_for_email(
             c.name,
             c.ssn as kennitala,
             ci.email,
-            c.reachable
+            ci.phone,
+            c.reachable,
+            c.email_marketing,
+            c.sms_marketing
         FROM membership_comrade c
-        LEFT JOIN membership_contactinfo ci ON ci.comrade_id = c.id
+        JOIN membership_contactinfo ci ON ci.comrade_id = c.id
         WHERE {where_clause}
         ORDER BY c.id
         LIMIT %s
@@ -204,6 +275,7 @@ def get_members_for_email(
 
     rows = execute_query(query, params=tuple(params))
 
+    # Email filter is now in SQL WHERE clause, no need to filter here
     return [
         {
             'django_id': row['django_id'],
@@ -211,11 +283,15 @@ def get_members_for_email(
             'profile': {
                 'name': row['name'],
                 'email': row['email'],
+                'phone': row['phone'],
             },
             'reachable': row['reachable'],
+            'preferences': {
+                'email_marketing': row['email_marketing'] if row['email_marketing'] is not None else True,
+                'sms_marketing': row['sms_marketing'] if row['sms_marketing'] is not None else True,
+            },
         }
         for row in rows
-        if row['email']  # Only include members with email
     ]
 
 
@@ -472,3 +548,450 @@ def update_member_firebase_uid(kennitala: str, firebase_uid: str) -> bool:
     except Exception as e:
         logger.error(f"Failed to update firebase_uid for kennitala {kennitala[:6]}****: {e}")
         return False
+
+
+def update_email_marketing(member_id: int, email_marketing: bool) -> bool:
+    """
+    Update email_marketing preference for a member.
+
+    Args:
+        member_id: Django member ID
+        email_marketing: True to receive marketing emails, False to unsubscribe
+
+    Returns:
+        True if updated successfully, False otherwise
+    """
+    from datetime import datetime
+
+    query = """
+        UPDATE membership_comrade
+        SET email_marketing = %s,
+            email_marketing_updated_at = %s
+        WHERE id = %s
+    """
+
+    try:
+        from db import execute_update
+        affected = execute_update(query, params=(email_marketing, datetime.utcnow(), member_id))
+        logger.info(f"Updated email_marketing={email_marketing} for member_id {member_id}, rows affected: {affected}")
+        return affected > 0
+    except Exception as e:
+        logger.error(f"Failed to update email_marketing for member_id {member_id}: {e}")
+        return False
+
+
+def update_sms_marketing(member_id: int, sms_marketing: bool) -> bool:
+    """
+    Update sms_marketing preference for a member.
+
+    Args:
+        member_id: Django member ID
+        sms_marketing: True to receive marketing SMS, False to unsubscribe
+
+    Returns:
+        True if updated successfully, False otherwise
+    """
+    from datetime import datetime
+
+    query = """
+        UPDATE membership_comrade
+        SET sms_marketing = %s,
+            sms_marketing_updated_at = %s
+        WHERE id = %s
+    """
+
+    try:
+        from db import execute_update
+        affected = execute_update(query, params=(sms_marketing, datetime.utcnow(), member_id))
+        logger.info(f"Updated sms_marketing={sms_marketing} for member_id {member_id}, rows affected: {affected}")
+        return affected > 0
+    except Exception as e:
+        logger.error(f"Failed to update sms_marketing for member_id {member_id}: {e}")
+        return False
+
+
+def hard_delete_member_sql(member_id: int) -> Dict[str, Any]:
+    """
+    Permanently delete a member from Cloud SQL.
+
+    This is a DANGEROUS operation that removes all member data from the database.
+    Only soft-deleted members should be hard deleted.
+
+    Deletes from tables in order (respecting foreign key constraints):
+    1. membership_contactinfo (contact details)
+    2. membership_newlocaladdress / membership_newcomradeaddress (local addresses)
+    3. billing_membershipfee (fee records)
+    4. cells_cell_coordinators / cells_cellgroup_coordinators (if coordinator)
+    5. groups_comradegroupmembership (group memberships)
+    6. communication_sentemail (sent email records)
+    7. membership_unionmembership (union memberships)
+    8. membership_comradetitle (titles)
+    9. membership_activation (activation records)
+    10. membership_newforeignaddress (foreign addresses)
+    11. communication_conversation (conversations - nullify done_by, delete as subject)
+    12. issues_invitation (issue invitations)
+    13. issues_unabletoattend (unable to attend records)
+    14. groups_eventinvitation (event invitations - nullify invited_by, delete as invitee)
+    15. groups_post (posts by member)
+    16. membership_comrade (main member record)
+
+    Note: Django's ON DELETE CASCADE is ORM-level only, raw SQL needs explicit DELETE.
+
+    Args:
+        member_id: Django database ID of the member
+
+    Returns:
+        Dict with success status and deleted table counts
+    """
+    from db import execute_query, execute_update
+
+    deleted_tables = []
+    errors = []
+
+    try:
+        # 1. Delete contact info
+        try:
+            execute_update(
+                "DELETE FROM membership_contactinfo WHERE comrade_id = %s",
+                params=(member_id,)
+            )
+            deleted_tables.append("membership_contactinfo")
+        except Exception as e:
+            errors.append(f"membership_contactinfo: {str(e)}")
+
+        # 2. Delete addresses (need to delete local addresses first, then base)
+        try:
+            # Get address IDs first (use execute_query for SELECT)
+            addr_ids = execute_query(
+                """SELECT newcomradeaddress_ptr_id FROM membership_newlocaladdress
+                   WHERE comrade_id = %s""",
+                params=(member_id,)
+            )
+            addr_id_list = [row['newcomradeaddress_ptr_id'] for row in (addr_ids or [])]
+
+            # Delete local addresses
+            execute_update(
+                "DELETE FROM membership_newlocaladdress WHERE comrade_id = %s",
+                params=(member_id,)
+            )
+            deleted_tables.append("membership_newlocaladdress")
+
+            # Delete base address records
+            if addr_id_list:
+                placeholders = ", ".join(["%s"] * len(addr_id_list))
+                execute_update(
+                    f"DELETE FROM membership_newcomradeaddress WHERE id IN ({placeholders})",
+                    params=tuple(addr_id_list)
+                )
+                deleted_tables.append("membership_newcomradeaddress")
+        except Exception as e:
+            errors.append(f"addresses: {str(e)}")
+
+        # 3. Delete billing/fee records
+        try:
+            execute_update(
+                "DELETE FROM billing_membershipfee WHERE comrade_id = %s",
+                params=(member_id,)
+            )
+            deleted_tables.append("billing_membershipfee")
+        except Exception as e:
+            logger.warning(f"Could not delete from billing_membershipfee: {e}")
+            errors.append(f"billing_membershipfee: {str(e)}")
+
+        # 4. Delete cell coordinator records (if any)
+        try:
+            execute_update(
+                "DELETE FROM cells_cell_coordinators WHERE comrade_id = %s",
+                params=(member_id,)
+            )
+            deleted_tables.append("cells_cell_coordinators")
+        except Exception as e:
+            logger.warning(f"Could not delete from cells_cell_coordinators: {e}")
+            errors.append(f"cells_cell_coordinators: {str(e)}")
+
+        try:
+            execute_update(
+                "DELETE FROM cells_cellgroup_coordinators WHERE comrade_id = %s",
+                params=(member_id,)
+            )
+            deleted_tables.append("cells_cellgroup_coordinators")
+        except Exception as e:
+            logger.warning(f"Could not delete from cells_cellgroup_coordinators: {e}")
+            errors.append(f"cells_cellgroup_coordinators: {str(e)}")
+
+        # 5. Delete group memberships (if any)
+        try:
+            execute_update(
+                "DELETE FROM groups_comradegroupmembership WHERE comrade_id = %s",
+                params=(member_id,)
+            )
+            deleted_tables.append("groups_comradegroupmembership")
+        except Exception as e:
+            logger.warning(f"Could not delete from groups_comradegroupmembership: {e}")
+            errors.append(f"groups_comradegroupmembership: {str(e)}")
+
+        # 6. Delete sent email records (if any)
+        try:
+            execute_update(
+                "DELETE FROM communication_sentemail WHERE comrade_id = %s",
+                params=(member_id,)
+            )
+            deleted_tables.append("communication_sentemail")
+        except Exception as e:
+            logger.warning(f"Could not delete from communication_sentemail: {e}")
+            errors.append(f"communication_sentemail: {str(e)}")
+
+        # 7. Delete union memberships
+        try:
+            execute_update(
+                "DELETE FROM membership_unionmembership WHERE comrade_id = %s",
+                params=(member_id,)
+            )
+            deleted_tables.append("membership_unionmembership")
+        except Exception as e:
+            logger.warning(f"Could not delete from membership_unionmembership: {e}")
+            errors.append(f"membership_unionmembership: {str(e)}")
+
+        # 8. Delete comrade titles
+        try:
+            execute_update(
+                "DELETE FROM membership_comradetitle WHERE comrade_id = %s",
+                params=(member_id,)
+            )
+            deleted_tables.append("membership_comradetitle")
+        except Exception as e:
+            logger.warning(f"Could not delete from membership_comradetitle: {e}")
+            errors.append(f"membership_comradetitle: {str(e)}")
+
+        # 9. Delete activation records
+        try:
+            execute_update(
+                "DELETE FROM membership_activation WHERE comrade_id = %s",
+                params=(member_id,)
+            )
+            deleted_tables.append("membership_activation")
+        except Exception as e:
+            logger.warning(f"Could not delete from membership_activation: {e}")
+            errors.append(f"membership_activation: {str(e)}")
+
+        # 10. Delete foreign addresses
+        try:
+            # Get foreign address IDs first
+            foreign_addr_ids = execute_query(
+                """SELECT newcomradeaddress_ptr_id FROM membership_newforeignaddress
+                   WHERE comrade_id = %s""",
+                params=(member_id,)
+            )
+            foreign_addr_id_list = [row['newcomradeaddress_ptr_id'] for row in (foreign_addr_ids or [])]
+
+            execute_update(
+                "DELETE FROM membership_newforeignaddress WHERE comrade_id = %s",
+                params=(member_id,)
+            )
+            deleted_tables.append("membership_newforeignaddress")
+
+            # Delete base address records for foreign addresses
+            if foreign_addr_id_list:
+                placeholders = ", ".join(["%s"] * len(foreign_addr_id_list))
+                execute_update(
+                    f"DELETE FROM membership_newcomradeaddress WHERE id IN ({placeholders})",
+                    params=tuple(foreign_addr_id_list)
+                )
+        except Exception as e:
+            logger.warning(f"Could not delete from membership_newforeignaddress: {e}")
+            errors.append(f"membership_newforeignaddress: {str(e)}")
+
+        # 11. Delete conversations (both as subject and done_by)
+        try:
+            # First nullify done_by references
+            execute_update(
+                "UPDATE communication_conversation SET done_by_id = NULL WHERE done_by_id = %s",
+                params=(member_id,)
+            )
+            # Then delete conversations where member is subject
+            execute_update(
+                "DELETE FROM communication_conversation WHERE comrade_id = %s",
+                params=(member_id,)
+            )
+            deleted_tables.append("communication_conversation")
+        except Exception as e:
+            logger.warning(f"Could not delete from communication_conversation: {e}")
+            errors.append(f"communication_conversation: {str(e)}")
+
+        # 12. Delete issues invitations
+        try:
+            execute_update(
+                "DELETE FROM issues_invitation WHERE comrade_id = %s",
+                params=(member_id,)
+            )
+            deleted_tables.append("issues_invitation")
+        except Exception as e:
+            logger.warning(f"Could not delete from issues_invitation: {e}")
+            errors.append(f"issues_invitation: {str(e)}")
+
+        # 13. Delete unable to attend records
+        try:
+            execute_update(
+                "DELETE FROM issues_unabletoattend WHERE comrade_id = %s",
+                params=(member_id,)
+            )
+            deleted_tables.append("issues_unabletoattend")
+        except Exception as e:
+            logger.warning(f"Could not delete from issues_unabletoattend: {e}")
+            errors.append(f"issues_unabletoattend: {str(e)}")
+
+        # 14. Delete event invitations (both as invitee and inviter)
+        try:
+            # First nullify invited_by references
+            execute_update(
+                "UPDATE groups_eventinvitation SET invited_by_id = NULL WHERE invited_by_id = %s",
+                params=(member_id,)
+            )
+            # Then delete invitations where member is invitee
+            execute_update(
+                "DELETE FROM groups_eventinvitation WHERE comrade_id = %s",
+                params=(member_id,)
+            )
+            deleted_tables.append("groups_eventinvitation")
+        except Exception as e:
+            logger.warning(f"Could not delete from groups_eventinvitation: {e}")
+            errors.append(f"groups_eventinvitation: {str(e)}")
+
+        # 15. Delete posts
+        try:
+            execute_update(
+                "DELETE FROM groups_post WHERE author_id = %s",
+                params=(member_id,)
+            )
+            deleted_tables.append("groups_post")
+        except Exception as e:
+            logger.warning(f"Could not delete from groups_post: {e}")
+            errors.append(f"groups_post: {str(e)}")
+
+        # 16. Finally, delete the member record
+        try:
+            rows_deleted = execute_update(
+                "DELETE FROM membership_comrade WHERE id = %s",
+                params=(member_id,)
+            )
+            if rows_deleted > 0:
+                deleted_tables.append("membership_comrade")
+            else:
+                errors.append("membership_comrade: No rows deleted (record not found)")
+        except Exception as e:
+            errors.append(f"membership_comrade: {str(e)}")
+
+        success = "membership_comrade" in deleted_tables
+        return {
+            "success": success,
+            "deleted_tables": deleted_tables,
+            "errors": errors if errors else None
+        }
+
+    except Exception as e:
+        logger.error(f"Hard delete failed for member {member_id}: {e}")
+        return {
+            "success": False,
+            "deleted_tables": deleted_tables,
+            "errors": [str(e)]
+        }
+
+
+def anonymize_member_sql(member_id: int, anon_id: str) -> Dict[str, Any]:
+    """
+    Anonymize a member's PII in Cloud SQL while keeping statistical data.
+
+    This is used for GDPR requests where deletion is not possible.
+    Anonymizes personal information but preserves:
+    - date_joined (for membership statistics)
+    - birthday (for age demographics)
+    - gender (for demographics)
+    - housing_situation (for demographics)
+
+    Args:
+        member_id: Django database ID of the member
+        anon_id: The anonymized ID to use (e.g., "ANON-389BDB78")
+
+    Returns:
+        Dict with success status and anonymized fields
+    """
+    from db import execute_query, execute_update
+
+    anonymized_fields = []
+    errors = []
+
+    # Generate unique SSN for anonymization (ssn has unique constraint)
+    # Use format: ANON + 6 digits from member_id (padded)
+    anon_ssn = f"ANON{member_id:06d}"
+
+    try:
+        # 1. Delete contact info (phone, email, facebook)
+        try:
+            execute_update(
+                "DELETE FROM membership_contactinfo WHERE comrade_id = %s",
+                params=(member_id,)
+            )
+            anonymized_fields.append("contact_info_deleted")
+        except Exception as e:
+            logger.warning(f"Could not delete contact info: {e}")
+
+        # 2. Delete addresses
+        try:
+            # Get address IDs first
+            addr_ids = execute_query(
+                """SELECT newcomradeaddress_ptr_id FROM membership_newlocaladdress
+                   WHERE comrade_id = %s""",
+                params=(member_id,)
+            )
+            addr_id_list = [row['newcomradeaddress_ptr_id'] for row in (addr_ids or [])]
+
+            # Delete local addresses
+            execute_update(
+                "DELETE FROM membership_newlocaladdress WHERE comrade_id = %s",
+                params=(member_id,)
+            )
+            anonymized_fields.append("addresses_deleted")
+
+            # Delete base address records
+            if addr_id_list:
+                placeholders = ", ".join(["%s"] * len(addr_id_list))
+                execute_update(
+                    f"DELETE FROM membership_newcomradeaddress WHERE id IN ({placeholders})",
+                    params=tuple(addr_id_list)
+                )
+        except Exception as e:
+            logger.warning(f"Could not delete addresses: {e}")
+
+        # 3. Anonymize member record
+        try:
+            execute_update(
+                """UPDATE membership_comrade
+                   SET name = %s,
+                       ssn = %s,
+                       firebase_uid = NULL,
+                       reachable = FALSE,
+                       groupable = FALSE
+                   WHERE id = %s""",
+                params=(anon_id, anon_ssn, member_id)
+            )
+            anonymized_fields.extend(["name", "ssn", "firebase_uid", "reachable", "groupable"])
+        except Exception as e:
+            errors.append(f"membership_comrade: {str(e)}")
+
+        success = "name" in anonymized_fields
+        return {
+            "success": success,
+            "anon_id": anon_id,
+            "anon_ssn": anon_ssn,
+            "anonymized_fields": anonymized_fields,
+            "errors": errors if errors else None
+        }
+
+    except Exception as e:
+        logger.error(f"Anonymization failed for member {member_id}: {e}")
+        return {
+            "success": False,
+            "anon_id": anon_id,
+            "anonymized_fields": anonymized_fields,
+            "errors": [str(e)]
+        }

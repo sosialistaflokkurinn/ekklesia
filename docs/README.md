@@ -2,6 +2,12 @@
 
 ## Quick Links
 
+### Quick Reference (AI-Optimized)
+| Document | Purpose |
+|----------|---------|
+| [CRITICAL-RULES.md](CRITICAL-RULES.md) | All rules consolidated (single source of truth) |
+| [QUICK-REFERENCE.md](QUICK-REFERENCE.md) | All tables and commands in one place |
+
 ### Core Documentation
 | Document | Purpose |
 |----------|---------|
@@ -101,8 +107,8 @@ firebase deploy --only functions:FUNCTION_NAME
 
 ### Database Access
 ```bash
-cloud-sql-proxy ekklesia-prod-10-2025:europe-west2:ekklesia-db --port 5433 --gcloud-auth
-psql -h localhost -p 5433 -U postgres -d ekklesia
+cloud-sql-proxy ekklesia-prod-10-2025:europe-west1:ekklesia-db-eu1 --port 5433 --gcloud-auth
+PGPASSWORD='Socialism2025#Db' psql -h localhost -p 5433 -U socialism -d socialism
 ```
 
 ### Check Function Logs
@@ -114,12 +120,13 @@ gcloud functions logs read FUNCTION_NAME --region=europe-west2 --limit=50
 
 ## Critical Rules
 
+See [CRITICAL-RULES.md](CRITICAL-RULES.md) for the complete rules list.
+
 | Never | Always |
 |-------|--------|
 | `firebase deploy --only functions` (all) | `firebase deploy --only functions:NAME` |
 | Hardcode Icelandic text | Use i18n system |
 | Commit `.env` files | Use GCP Secret Manager |
-| `git push --no-verify` | Let hooks run |
 | Create duplicate code | Reuse existing components |
 
 ---

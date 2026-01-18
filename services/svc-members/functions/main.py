@@ -25,7 +25,7 @@ from auth.kenni_flow import healthz_handler, handleKenniAuth_handler
 from firebase_functions import https_fn
 
 # Define decorated functions in main.py (required by Firebase Functions SDK)
-@https_fn.on_request()
+@https_fn.on_request(memory=options.MemoryOption.MB_256)
 def healthz(req: https_fn.Request) -> https_fn.Response:
     """Health check endpoint - delegates to handler"""
     return healthz_handler(req)
@@ -115,7 +115,6 @@ from fn_superuser import (
     get_login_audit_handler,
     get_deleted_counts_handler,
     purgedeleted,  # Decorated function - import directly
-    members_health_probe_handler  # HTTP health probe (no auth)
 )
 
 # Define decorated functions for superuser operations
@@ -133,11 +132,6 @@ def getUserRole(req: https_fn.CallableRequest) -> dict:
 def checkSystemHealth(req: https_fn.CallableRequest) -> dict:
     """Check health of all Cloud Run services - requires superuser"""
     return check_system_health_handler(req)
-
-@https_fn.on_request(timeout_sec=10, memory=128)
-def membersHealthProbe(req: https_fn.Request) -> https_fn.Response:
-    """Simple health probe for svc-members - no auth required (for Kimi/service calls)"""
-    return members_health_probe_handler(req)
 
 @https_fn.on_call(timeout_sec=60, memory=512)
 def getAuditLogs(req: https_fn.CallableRequest) -> dict:
@@ -349,6 +343,81 @@ def updateEmailPreferences(req: https_fn.CallableRequest) -> dict:
 # Note: ses_webhook removed - now using Resend, not AWS SES
 
 # ==============================================================================
+# SMS FUNCTIONS (Twilio Integration)
+# ==============================================================================
+
+# Import SMS handlers
+from fn_sms import (
+    list_sms_templates_handler,
+    get_sms_template_handler,
+    save_sms_template_handler,
+    delete_sms_template_handler,
+    send_sms_handler,
+    list_sms_campaigns_handler,
+    create_sms_campaign_handler,
+    send_sms_campaign_handler,
+    get_sms_stats_handler,
+    list_sms_logs_handler,
+    preview_sms_recipient_count_handler
+)
+
+# Define decorated functions for SMS operations
+@https_fn.on_call(timeout_sec=30, memory=256)
+def listSmsTemplates(req: https_fn.CallableRequest) -> dict:
+    """List all SMS templates - requires admin"""
+    return list_sms_templates_handler(req)
+
+@https_fn.on_call(timeout_sec=30, memory=256)
+def getSmsTemplate(req: https_fn.CallableRequest) -> dict:
+    """Get a single SMS template - requires admin"""
+    return get_sms_template_handler(req)
+
+@https_fn.on_call(timeout_sec=30, memory=256)
+def saveSmsTemplate(req: https_fn.CallableRequest) -> dict:
+    """Create or update an SMS template - requires admin"""
+    return save_sms_template_handler(req)
+
+@https_fn.on_call(timeout_sec=30, memory=256)
+def deleteSmsTemplate(req: https_fn.CallableRequest) -> dict:
+    """Delete an SMS template - requires admin"""
+    return delete_sms_template_handler(req)
+
+@https_fn.on_call(timeout_sec=60, memory=256, secrets=["twilio-account-sid", "twilio-auth-token", "twilio-messaging-service-sid"])
+def sendSms(req: https_fn.CallableRequest) -> dict:
+    """Send a single SMS via Twilio - requires admin"""
+    return send_sms_handler(req)
+
+@https_fn.on_call(timeout_sec=30, memory=256)
+def listSmsCampaigns(req: https_fn.CallableRequest) -> dict:
+    """List SMS campaigns - requires admin"""
+    return list_sms_campaigns_handler(req)
+
+@https_fn.on_call(timeout_sec=30, memory=256)
+def previewSmsRecipientCount(req: https_fn.CallableRequest) -> dict:
+    """Preview SMS recipient count for a filter - requires admin"""
+    return preview_sms_recipient_count_handler(req)
+
+@https_fn.on_call(timeout_sec=30, memory=256)
+def createSmsCampaign(req: https_fn.CallableRequest) -> dict:
+    """Create a new SMS campaign - requires admin"""
+    return create_sms_campaign_handler(req)
+
+@https_fn.on_call(timeout_sec=540, memory=512, secrets=["twilio-account-sid", "twilio-auth-token", "twilio-messaging-service-sid"])
+def sendSmsCampaign(req: https_fn.CallableRequest) -> dict:
+    """Send SMS campaign via Twilio - requires admin"""
+    return send_sms_campaign_handler(req)
+
+@https_fn.on_call(timeout_sec=30, memory=256)
+def getSmsStats(req: https_fn.CallableRequest) -> dict:
+    """Get SMS sending statistics - requires admin"""
+    return get_sms_stats_handler(req)
+
+@https_fn.on_call(timeout_sec=30, memory=256)
+def listSmsLogs(req: https_fn.CallableRequest) -> dict:
+    """List SMS send logs - requires admin"""
+    return list_sms_logs_handler(req)
+
+# ==============================================================================
 # SECRET ROTATION (Pub/Sub triggered)
 # ==============================================================================
 
@@ -423,6 +492,18 @@ __all__ = [
     'getEmailPreferences',
     'updateEmailPreferences',
     # Note: ses_webhook removed - now using Resend
+    # SMS functions (Twilio)
+    'listSmsTemplates',
+    'getSmsTemplate',
+    'saveSmsTemplate',
+    'deleteSmsTemplate',
+    'sendSms',
+    'listSmsCampaigns',
+    'previewSmsRecipientCount',
+    'createSmsCampaign',
+    'sendSmsCampaign',
+    'getSmsStats',
+    'listSmsLogs',
     # Admin member functions (Cloud SQL)
     'listMembers',
     'getMember',

@@ -255,6 +255,7 @@ def get_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             c.groupable,
             c.housing_situation,
             c.gender,
+            c.firebase_uid,
             ci.email,
             ci.phone,
             (
@@ -337,11 +338,13 @@ def get_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
         'groupable': result['groupable'],
         'housing_situation': result['housing_situation'],
         'gender': result['gender'],
+        'firebase_uid': result['firebase_uid'],
         'address': address,
         'unions': unions or [],
         'titles': titles or [],
         'metadata': {
-            'django_id': result['django_id']
+            'django_id': result['django_id'],
+            'firebase_uid': result['firebase_uid']
         },
         'profile': {
             'name': result['name'] or '',
@@ -470,6 +473,8 @@ def get_member_self_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             c.deleted_at,
             c.reachable,
             c.groupable,
+            c.email_marketing,
+            c.email_marketing_updated_at,
             c.gender,
             c.housing_situation,
             ci.email,
@@ -582,6 +587,10 @@ def get_member_self_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             'status': 'deleted' if result['deleted_at'] else 'active',
             'unions': unions or [],
             'titles': titles or []
+        },
+        'preferences': {
+            'email_marketing': result['email_marketing'] if result['email_marketing'] is not None else True,
+            'email_marketing_updated_at': str(result['email_marketing_updated_at']) if result['email_marketing_updated_at'] else None
         }
     }
 

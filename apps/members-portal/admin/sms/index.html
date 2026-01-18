@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SMS - Ekklesia</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+  <!-- Reuse member portal styles -->
+  <link rel="stylesheet" href="/styles/bundle.css?v=20251217k">
+
+  <!-- Admin-specific styles -->
+  <link rel="stylesheet" href="/admin/styles/admin.css?v=20260112a">
+</head>
+<body class="authenticated admin">
+  <!-- Navigation component inserted here -->
+
+  <!-- Page Content -->
+  <div class="page__container">
+    <!-- Quick Actions -->
+    <div class="card">
+      <h2 class="card__title">Aðgerðir</h2>
+      <div class="info-grid">
+        <a href="/admin/sms/send.html" class="info-grid__item u-clickable">
+          <div class="info-grid__label">Senda SMS</div>
+          <div class="info-grid__value">Senda stök SMS eða herferð</div>
+        </a>
+        <a href="/admin/sms/templates.html" class="info-grid__item u-clickable">
+          <div class="info-grid__label">Sniðmát</div>
+          <div class="info-grid__value">Búa til og breyta SMS sniðmátum</div>
+        </a>
+        <a href="/admin/sms/campaigns.html" class="info-grid__item u-clickable">
+          <div class="info-grid__label">Herferðir</div>
+          <div class="info-grid__value">Senda bulk SMS til félaga</div>
+        </a>
+        <a href="/admin/sms/logs.html" class="info-grid__item u-clickable">
+          <div class="info-grid__label">Annáll</div>
+          <div class="info-grid__value">Skoða sendingarsögu</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Stats Card -->
+    <div class="card">
+      <h2 class="card__title">Tölfræði (30 dagar)</h2>
+      <div class="info-grid" id="stats-grid">
+        <div class="info-grid__item">
+          <div class="info-grid__label">Sent</div>
+          <div class="info-grid__value" id="stat-sent-value">-</div>
+        </div>
+        <div class="info-grid__item">
+          <div class="info-grid__label">Hlutir</div>
+          <div class="info-grid__value" id="stat-segments-value">-</div>
+        </div>
+        <div class="info-grid__item">
+          <div class="info-grid__label">Misheppnaðist</div>
+          <div class="info-grid__value" id="stat-failed-value">-</div>
+        </div>
+        <div class="info-grid__item">
+          <div class="info-grid__label">Kostnaður</div>
+          <div class="info-grid__value" id="stat-cost-value">-</div>
+        </div>
+      </div>
+      <p class="card__note" id="stats-period"></p>
+    </div>
+
+    <!-- Cost Info -->
+    <div class="card">
+      <h2 class="card__title">Verðupplýsingar</h2>
+      <p class="card__text">
+        SMS til Íslands: ~$0.08 per hluta (160 stafir).<br>
+        Lengri skilaboð skiptast í marga hluta.
+      </p>
+    </div>
+
+  </div>
+
+  <script type="module" src="/admin/sms/js/sms-dashboard.js?v=20260115"></script>
+
+  <!-- Initialize Navigation Component -->
+  <script type="module">
+    import { initNavHeader, NAV_CONFIGS } from '../../../ui/components/navigation-bar.js?v=20260115';
+    await initNavHeader(NAV_CONFIGS.adminSms);
+  </script>
+
+</body>
+</html>

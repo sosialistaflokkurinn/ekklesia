@@ -38,6 +38,7 @@ const SUCCESS_MESSAGE_AUTO_HIDE_MS = 5000;
 // Cloud Functions
 const getMemberSelfFn = httpsCallable('getMemberSelf', REGION);
 const updateMemberProfileFn = httpsCallable('updatememberprofile', REGION);
+const updateEmailPreferencesFn = httpsCallable('updateEmailPreferences', REGION);
 
 /**
  * Required DOM elements for profile page
@@ -609,10 +610,9 @@ function initCommunicationPreferences() {
 
       showStatus(emailMarketingStatus, 'loading', { baseClass: 'profile-field__status' });
       try {
-        // Email marketing is stored separately - use Cloud Function
-        await updateMemberProfileFn({
-          kennitala: currentUserData.kennitala,
-          updates: { email_marketing: newValue }
+        // Email marketing is stored in Cloud SQL via dedicated function
+        await updateEmailPreferencesFn({
+          email_marketing: newValue
         });
 
         if (!currentUserData.preferences) currentUserData.preferences = {};

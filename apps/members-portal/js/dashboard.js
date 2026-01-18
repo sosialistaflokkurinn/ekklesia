@@ -218,33 +218,66 @@ function updateNominationLink(uid) {
 }
 
 /**
- * Check for discrepancies between Kenni.is data (userData) and Firestore /members/ collection
+ * localStorage key for suppressing profile discrepancy check
+ */
+const PROFILE_CHECK_SUPPRESSED_KEY = 'profile_discrepancy_suppressed_until';
+const SUPPRESS_DURATION_DAYS = 90;
+
+/**
+ * Check if profile discrepancy check is suppressed
+ * @returns {boolean} True if check should be skipped
+ */
+function isProfileCheckSuppressed() {
+  const suppressedUntil = localStorage.getItem(PROFILE_CHECK_SUPPRESSED_KEY);
+  if (!suppressedUntil) return false;
+
+  const suppressedDate = new Date(suppressedUntil);
+  if (isNaN(suppressedDate.getTime())) return false;
+
+  return new Date() < suppressedDate;
+}
+
+/**
+ * Suppress profile discrepancy check for N days
+ */
+function suppressProfileCheck() {
+  const suppressUntil = new Date();
+  suppressUntil.setDate(suppressUntil.getDate() + SUPPRESS_DURATION_DAYS);
+  localStorage.setItem(PROFILE_CHECK_SUPPRESSED_KEY, suppressUntil.toISOString());
+  debug.log(`Profile check suppressed until ${suppressUntil.toISOString()}`);
+}
+
+/**
+ * Check for discrepancies between Kenni.is data (userData) and Cloud SQL member data
  *
  * Compares:
  * - Full name
  * - Email
  * - Phone number
  *
- * If differences found, prompts user to update both Firestore and Django backend.
+ * If differences found, prompts user to update Cloud SQL (source of truth).
  *
  * @param {Object} userData - User data from Firebase Auth token (Kenni.is claims)
  * @returns {Promise<void>}
  */
 async function checkProfileDiscrepancies(userData) {
   try {
-    // Get member data from Firestore /members/ collection
-    const db = getFirebaseFirestore();
-    const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-
-    const memberDocRef = doc(db, 'members', userData.kennitala.replace(/-/g, ''));
-    const memberDoc = await getDoc(memberDocRef);
-
-    if (!memberDoc.exists()) {
-      debug.log('No member document found - skipping profile check');
+    // Check if user has suppressed this check
+    if (isProfileCheckSuppressed()) {
+      debug.log('Profile discrepancy check suppressed by user');
       return;
     }
 
-    const memberData = memberDoc.data();
+    // Get member data from Cloud SQL via getMemberSelf Cloud Function
+    const getMemberSelfFn = httpsCallable('getMemberSelf', 'europe-west2');
+    const result = await getMemberSelfFn();
+
+    if (!result.data?.member) {
+      debug.log('No member data returned from SQL - skipping profile check');
+      return;
+    }
+
+    const memberData = result.data.member;
     const memberProfile = memberData.profile || {};
 
     // Compare fields
@@ -306,7 +339,8 @@ async function checkProfileDiscrepancies(userData) {
  * @returns {Promise<boolean>} Whether user confirmed update
  */
 async function showProfileUpdateModal(discrepancies, userData, memberData) {
-  // Build discrepancies list HTML
+  // Build discrepancies list HTML with suppress checkbox
+  const suppressLabel = R.string.profile_update_suppress;
   const discrepanciesHtml = `
     <p>${R.string.profile_update_description}</p>
     <div class="profile-discrepancies">
@@ -324,6 +358,10 @@ async function showProfileUpdateModal(discrepancies, userData, memberData) {
         </div>
       `).join('')}
     </div>
+    <label class="profile-suppress-checkbox">
+      <input type="checkbox" id="suppress-profile-check" />
+      <span>${suppressLabel}</span>
+    </label>
   `;
 
   // Return promise that resolves when user makes choice
@@ -341,6 +379,11 @@ async function showProfileUpdateModal(discrepancies, userData, memberData) {
           text: R.string.profile_update_cancel,
           onClick: () => {
             if (!isUpdating) {
+              // Check if user wants to suppress future checks
+              const suppressCheckbox = document.getElementById('suppress-profile-check');
+              if (suppressCheckbox?.checked) {
+                suppressProfileCheck();
+              }
               modal.close();
               resolve(false);
             }
@@ -522,10 +565,18 @@ async function fetchFeaturedEvent() {
     const allEventsResponse = await fetch(`${EVENTS_API_BASE}/api/external-events`);
     if (allEventsResponse.ok) {
       const events = await allEventsResponse.json();
-      // Filter for upcoming or ongoing events, sort by start time
+      // Filter for upcoming or ongoing events, sort by next relevant date
+      // For ongoing recurring events, use next occurrence; for upcoming, use startTime
+      const getRelevantDate = (e) => {
+        if (e.isOngoing) {
+          const nextOccurrence = getNextRecurringOccurrence(e);
+          if (nextOccurrence) return nextOccurrence;
+        }
+        return new Date(e.startTime);
+      };
       const upcomingOrOngoing = events
         .filter(e => e.isUpcoming || e.isOngoing)
-        .sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+        .sort((a, b) => getRelevantDate(a) - getRelevantDate(b));
 
       if (upcomingOrOngoing.length > 0) {
         event = upcomingOrOngoing[0];

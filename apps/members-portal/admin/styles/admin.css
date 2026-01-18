@@ -587,6 +587,12 @@ body.admin .members-count {
   color: white;
 }
 
+/* Small toggle buttons variant */
+.toggle-buttons--small .toggle-btn {
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: var(--font-size-xs);
+}
+
 /* ========================================== */
 /* FORM TEXTAREA */
 /* ========================================== */
