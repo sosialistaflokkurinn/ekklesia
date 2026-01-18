@@ -62,6 +62,7 @@
   <string name="nav_admin_sync_short">Samstilling</string>
   <string name="nav_missing_addresses">Vantar heimilisfang</string>
   <string name="nav_admin_email">Tölvupóstur</string>
+  <string name="nav_admin_sms">SMS</string>
   <string name="nav_admin_elections_results">Niðurstöður</string>
   <string name="dashboard_welcome_male">Sæll, félagi %s!</string>
   <string name="dashboard_welcome_female">Sæl, félagi %s!</string>
@@ -402,6 +403,7 @@
   <string name="ranked_reset_button">Núllstilla röðun</string>
 
   <!-- Login status strings -->
+  <string name="status_not_member">Innskráning tókst ekki. Vinsamlegast reyndu aftur síðar.</string>
   <string name="login_status_inactive">Aðgangur þinn er óvirkur...</string>
   <string name="login_status_reactivating">Endurvekur aðgang...</string>
   <string name="login_status_reactivate_error">Villa við endurvöknun: %s</string>
