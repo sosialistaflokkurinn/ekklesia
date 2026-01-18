@@ -28,7 +28,7 @@ const auth = getFirebaseAuth();
 
 let elections = [];
 let filteredElections = [];
-let currentFilter = 'published';
+let currentFilter = 'draft'; // Default to drafts
 let searchQuery = '';
 let currentUserRole = null; // Store user role for RBAC checks
 
@@ -166,7 +166,14 @@ async function loadElections() {
  */
 function setupFilters() {
   const filterButtons = document.querySelectorAll('.filter-btn');
-  
+
+  // Set initial active state based on currentFilter
+  const defaultFilterBtn = document.querySelector(`.filter-btn[data-filter="${currentFilter}"]`);
+  if (defaultFilterBtn) {
+    defaultFilterBtn.classList.add('active');
+    defaultFilterBtn.setAttribute('aria-pressed', 'true');
+  }
+
   filterButtons.forEach(btn => {
     btn.addEventListener('click', () => {
       // Remove active class and update aria-pressed on all buttons

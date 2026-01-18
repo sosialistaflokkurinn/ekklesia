@@ -283,9 +283,8 @@ async function loadElectionForEdit(electionId) {
       addAnswerOption();
     }
     
-    // Set duration
-    document.getElementById('duration-minutes').value = formData.duration_minutes;
-    
+    // Note: duration-minutes field removed - schedule is now configured when opening election
+
     // Disable core fields if election is not draft
     if (!isDraft) {
       debug.log('[Create Election] Election is', electionStatus, '- disabling core fields');
