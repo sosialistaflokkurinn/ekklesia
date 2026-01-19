@@ -199,6 +199,7 @@
   <string name="service_name_getsmsstats">SMS tölfræði</string>
   <string name="service_name_listsmslogs">SMS sendingarskrá</string>
   <string name="service_name_getsmslogs">Sækja SMS loga</string>
+  <string name="service_name_previewsmsrecipientcount">Forskoðun SMS viðtakenda</string>
 
   <!-- Infrastructure services -->
   <string name="service_name_warmup">Upphitunarþjónusta</string>
