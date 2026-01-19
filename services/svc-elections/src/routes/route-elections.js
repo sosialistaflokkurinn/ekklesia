@@ -4,6 +4,7 @@ const pool = require('../config/config-database');
 const authenticateS2S = require('../middleware/middleware-s2s-auth');
 const { verifyAppCheck } = require('../middleware/middleware-app-check');
 const { logAudit } = require('../services/service-audit');
+const { getCircuitBreaker } = require('../services/service-circuit-breaker');
 const logger = require('../utils/util-logger');
 const { hashUidForLogging } = require('../utils/util-hash-uid');
 const {
@@ -18,6 +19,85 @@ const {
 const { readLimiter, voteLimiter, writeLimiter } = require('../middleware/middleware-rate-limiter');
 
 const router = express.Router();
+
+// =====================================================
+// CIRCUIT BREAKER FOR VOTE PROCESSING
+// =====================================================
+// Prevents cascade failures during database issues
+// See: Issue #338
+
+/**
+ * Process vote in database transaction
+ * This function is wrapped by circuit breaker for resilience
+ *
+ * @param {Object} params - Vote parameters
+ * @param {string} params.tokenHash - SHA-256 hash of voting token
+ * @param {string} params.answer - Vote answer (yes/no/abstain)
+ * @param {string} params.correlationId - Request correlation ID
+ * @returns {Promise<{success: boolean, ballotId?: number, error?: string, code?: string}>}
+ */
+async function processVoteTransaction({ tokenHash, answer, correlationId }) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    // Check token exists and not used (with row lock for concurrent votes)
+    const tokenResult = await client.query(
+      'SELECT used FROM voting_tokens WHERE token_hash = $1 FOR UPDATE NOWAIT',
+      [tokenHash]
+    );
+
+    if (tokenResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return { success: false, error: 'Token not registered', code: 'TOKEN_NOT_FOUND' };
+    }
+
+    if (tokenResult.rows[0].used) {
+      await client.query('ROLLBACK');
+      return { success: false, error: 'Token already used', code: 'TOKEN_ALREADY_USED' };
+    }
+
+    // Insert ballot (timestamp rounded to nearest minute for anonymity)
+    const ballotResult = await client.query(`
+      INSERT INTO ballots (token_hash, answer, submitted_at)
+      VALUES ($1, $2, date_trunc('minute', NOW()))
+      RETURNING id
+    `, [tokenHash, answer]);
+
+    const ballotId = ballotResult.rows[0].id;
+
+    // Mark token as used
+    await client.query(
+      'UPDATE voting_tokens SET used = TRUE, used_at = NOW() WHERE token_hash = $1',
+      [tokenHash]
+    );
+
+    await client.query('COMMIT');
+    return { success: true, ballotId };
+
+  } catch (error) {
+    await client.query('ROLLBACK');
+
+    // Check if lock timeout (FOR UPDATE NOWAIT failed)
+    if (error.code === '55P03') {
+      return { success: false, error: 'Lock contention', code: 'LOCK_CONTENTION' };
+    }
+
+    // Re-throw for circuit breaker to handle
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+// Initialize circuit breaker for vote processing
+// Opens after 50% failure rate, resets after 10 seconds
+const voteCircuitBreaker = getCircuitBreaker('vote-processing', processVoteTransaction, {
+  timeout: 5000,                // 5 second timeout
+  errorThresholdPercentage: 50, // Open at 50% errors
+  resetTimeout: 10000,          // Try again after 10 seconds
+  volumeThreshold: 5,           // Need 5 requests before circuit can open
+});
 
 // =====================================================
 // MEMBER-FACING ENDPOINTS
@@ -933,6 +1013,7 @@ router.get('/s2s/results', readLimiter, authenticateS2S, async (req, res) => {
 // Body: { answer: 'yes' | 'no' | 'abstain' }
 //
 // Security: Firebase App Check verification (ENFORCED)
+// Resilience: Circuit breaker prevents cascade failures (Issue #338)
 
 router.post('/vote', voteLimiter, verifyAppCheck, async (req, res) => {
   const startTime = Date.now();
@@ -963,99 +1044,125 @@ router.post('/vote', voteLimiter, verifyAppCheck, async (req, res) => {
   // Hash token (SHA-256)
   const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
 
-  // Database transaction (atomic ballot submission)
-  const client = await pool.connect();
   try {
-    await client.query('BEGIN');
-
-    // Check token exists and not used (with row lock for concurrent votes)
-    const tokenResult = await client.query(
-      'SELECT used FROM voting_tokens WHERE token_hash = $1 FOR UPDATE NOWAIT',
-      [tokenHash]
-    );
-
-    if (tokenResult.rows.length === 0) {
-      await client.query('ROLLBACK');
-      const duration = Date.now() - startTime;
-      logAudit('record_ballot', false, { error: 'Token not registered', correlation_id, duration_ms: duration });
-      return res.status(404).json({
-        error: 'Not Found',
-        message: 'Token not registered'
-      });
-    }
-
-    if (tokenResult.rows[0].used) {
-      await client.query('ROLLBACK');
-      const duration = Date.now() - startTime;
-      logAudit('record_ballot', false, { error: 'Token already used', correlation_id, duration_ms: duration });
-      return res.status(409).json({
-        error: 'Conflict',
-        message: 'Token already used'
-      });
-    }
-
-    // Insert ballot (timestamp rounded to nearest minute for anonymity)
-    const ballotResult = await client.query(`
-      INSERT INTO ballots (token_hash, answer, submitted_at)
-      VALUES ($1, $2, date_trunc('minute', NOW()))
-      RETURNING id
-    `, [tokenHash, answer]);
-
-    const ballotId = ballotResult.rows[0].id;
-
-    // Mark token as used
-    await client.query(
-      'UPDATE voting_tokens SET used = TRUE, used_at = NOW() WHERE token_hash = $1',
-      [tokenHash]
-    );
-
-    await client.query('COMMIT');
+    // Use circuit breaker for database operation
+    // Fast-fails if service is degraded, preventing queue buildup
+    const result = await voteCircuitBreaker.fire({
+      tokenHash,
+      answer,
+      correlationId: correlation_id,
+    });
 
     const duration = Date.now() - startTime;
+
+    // Handle business logic errors (not circuit breaker errors)
+    if (!result.success) {
+      logAudit('record_ballot', false, {
+        error: result.error,
+        correlation_id,
+        duration_ms: duration,
+      });
+
+      if (result.code === 'TOKEN_NOT_FOUND') {
+        return res.status(404).json({
+          error: 'Not Found',
+          message: 'Token not registered',
+        });
+      }
+
+      if (result.code === 'TOKEN_ALREADY_USED') {
+        return res.status(409).json({
+          error: 'Conflict',
+          message: 'Token already used',
+        });
+      }
+
+      if (result.code === 'LOCK_CONTENTION') {
+        logger.warn('Lock contention detected on vote', {
+          operation: 'record_ballot',
+          correlation_id,
+          duration_ms: duration,
+        });
+        return res.status(503).json({
+          error: 'Service Temporarily Unavailable',
+          message: 'Please retry in a moment',
+          retryAfter: 1,
+        });
+      }
+
+      // Unknown error
+      return res.status(500).json({
+        error: 'Internal Server Error',
+        message: 'Failed to record vote',
+      });
+    }
+
+    // Success
     logAudit('record_ballot', true, { answer, correlation_id, duration_ms: duration });
 
     res.status(201).json({
       success: true,
-      ballot_id: ballotId,
-      message: 'Vote recorded successfully'
+      ballot_id: result.ballotId,
+      message: 'Vote recorded successfully',
     });
 
   } catch (error) {
-    await client.query('ROLLBACK');
     const duration = Date.now() - startTime;
 
-    // Check if lock timeout (FOR UPDATE NOWAIT failed)
-    if (error.code === '55P03') { // Lock not available
-      logger.warn('Lock contention detected on vote', {
+    // Check if circuit breaker rejected the request (circuit open)
+    if (error.message && error.message.includes('Breaker is open')) {
+      logger.warn('Vote rejected by circuit breaker (service degraded)', {
         operation: 'record_ballot',
-        errorCode: '55P03',
+        circuit: 'vote-processing',
         correlation_id,
-        duration_ms: duration
+        duration_ms: duration,
       });
-      logAudit('record_ballot', false, { error: 'Lock contention', correlation_id, duration_ms: duration });
+      logAudit('record_ballot', false, {
+        error: 'Circuit breaker open',
+        correlation_id,
+        duration_ms: duration,
+      });
       return res.status(503).json({
         error: 'Service Temporarily Unavailable',
-        message: 'Please retry in a moment',
-        retryAfter: 1  // seconds
+        message: 'Voting service is temporarily unavailable. Please try again in a few seconds.',
+        retryAfter: 10,
       });
     }
 
+    // Check if circuit breaker timeout
+    if (error.message && error.message.includes('Timed out')) {
+      logger.warn('Vote timed out via circuit breaker', {
+        operation: 'record_ballot',
+        circuit: 'vote-processing',
+        correlation_id,
+        duration_ms: duration,
+      });
+      logAudit('record_ballot', false, {
+        error: 'Operation timeout',
+        correlation_id,
+        duration_ms: duration,
+      });
+      return res.status(504).json({
+        error: 'Gateway Timeout',
+        message: 'Vote processing timed out. Please try again.',
+        retryAfter: 5,
+      });
+    }
+
+    // Other errors
     logger.error('Ballot submission failed', {
       operation: 'record_ballot',
       error: error.message,
       stack: error.stack,
       correlation_id,
-      duration_ms: duration
+      duration_ms: duration,
     });
     logAudit('record_ballot', false, { error: error.message, correlation_id, duration_ms: duration });
 
     res.status(500).json({
       error: 'Internal Server Error',
-      message: 'Failed to record vote'
+      message: 'Failed to record vote',
     });
-
-  } finally {
-    client.release();
   }
 });
 
