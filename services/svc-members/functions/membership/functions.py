@@ -671,7 +671,8 @@ def reactivate_self_handler(req: https_fn.CallableRequest) -> dict:
             )
 
         # Verify member was soft-deleted (check Cloud SQL deleted_at)
-        deleted_at = member_data.get('deleted_at')
+        # deleted_at is nested inside 'membership' dict (see db_members.py)
+        deleted_at = member_data.get('membership', {}).get('deleted_at')
         if not deleted_at:
             raise https_fn.HttpsError(
                 code=https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
