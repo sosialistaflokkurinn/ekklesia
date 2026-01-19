@@ -15,6 +15,7 @@ Deployment procedures for all Ekklesia services.
 | **All Functions** | `firebase deploy --only functions` | `services/svc-members/` |
 | **Elections** | `./deploy.sh` | `services/svc-elections/` |
 | **Events** | `./deploy.sh` | `services/svc-events/` |
+| **Warmup** | `gcloud functions deploy warmup ...` | `services/svc-warmup/` |
 | **Django** | See Django CLAUDE.md | `~/Development/projects/django/` |
 
 ---
@@ -126,6 +127,62 @@ gcloud run services describe SERVICE_NAME --region europe-west1 \
 
 # View logs
 gcloud run services logs read SERVICE_NAME --region europe-west1 --limit 50
+```
+
+---
+
+## Warmup Service (svc-warmup)
+
+Keeps Cloud Run services warm to avoid cold starts. Single Cloud Function pings all services every 5 minutes.
+
+**Endpoints warmed:**
+- `xj-next` (sosialistaflokkurinn.is frontend)
+- `xj-strapi` (CMS backend)
+- `django` (starf.sosialistaflokkurinn.is)
+
+### Deploy
+
+```bash
+cd ~/Development/projects/ekklesia/services/svc-warmup
+gcloud functions deploy warmup \
+  --gen2 \
+  --runtime=python312 \
+  --region=europe-west1 \
+  --source=. \
+  --entry-point=warmup \
+  --trigger-http \
+  --allow-unauthenticated \
+  --memory=128Mi \
+  --timeout=60s \
+  --project=ekklesia-prod-10-2025
+```
+
+### Test
+
+```bash
+curl https://europe-west1-ekklesia-prod-10-2025.cloudfunctions.net/warmup
+```
+
+### Scheduler
+
+Cloud Scheduler job `warmup-all-services` triggers this function every 5 minutes.
+
+```bash
+# View scheduler job
+gcloud scheduler jobs describe warmup-all-services \
+  --location=europe-west1 --project=ekklesia-prod-10-2025
+
+# Trigger manually
+gcloud scheduler jobs run warmup-all-services \
+  --location=europe-west1 --project=ekklesia-prod-10-2025
+```
+
+### Add New Endpoint
+
+Edit `services/svc-warmup/main.py` and add to the `ENDPOINTS` list:
+
+```python
+{"url": "https://new-service.run.app/health", "method": "GET"},
 ```
 
 ---
