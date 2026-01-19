@@ -19,7 +19,7 @@
   "author": "Sósíalistaflokkur Íslands (Socialist Party of Iceland)",
   "license": "UNLICENSED",
   "dependencies": {
-    "@google-cloud/aiplatform": "^6.0.0",
+    "@google-cloud/aiplatform": "^6.1.0",
     "@google-cloud/logging-winston": "^6.0.0",
     "@google/generative-ai": "^0.24.1",
     "axios": "^1.13.2",
