@@ -40,6 +40,7 @@ export const CATEGORIES = {
   REGISTRATION: 'registration',
   SUPERUSER: 'superuser',
   EMAIL: 'email',
+  SMS: 'sms',
   HEATMAP: 'heatmap',
   DATABASE: 'database',
   FIREBASE: 'firebase'
@@ -57,6 +58,7 @@ export const GROUPS = {
   LOOKUP: 'lookup',
   REGISTRATION: 'registration',
   EMAIL: 'email',
+  SMS: 'sms',
   HEATMAP: 'heatmap'
 };
 
@@ -72,6 +74,7 @@ export const GROUP_NAME_KEYS = {
   [GROUPS.LOOKUP]: 'architecture_group_lookup',
   [GROUPS.REGISTRATION]: 'architecture_group_registration',
   [GROUPS.EMAIL]: 'architecture_group_email',
+  [GROUPS.SMS]: 'architecture_group_sms',
   [GROUPS.HEATMAP]: 'architecture_group_heatmap'
 };
 
@@ -84,6 +87,7 @@ export const SERVICES = [
   { id: 'events-service', nameKey: 'service_name_events', group: GROUPS.CLOUDRUN, category: CATEGORIES.CORE, type: SERVICE_TYPES.CLOUDRUN, region: REGIONS.EU_WEST1 },
   { id: 'healthz', nameKey: 'service_name_healthz', group: GROUPS.AUDIT, category: CATEGORIES.CORE, type: SERVICE_TYPES.CLOUDRUN, region: REGIONS.EU_WEST2 },
   { id: 'django-socialism', nameKey: 'service_name_django_socialism', group: GROUPS.CLOUDRUN, category: CATEGORIES.CORE, type: SERVICE_TYPES.CLOUDRUN, region: REGIONS.EU_WEST1 },
+  { id: 'warmup', nameKey: 'service_name_warmup', group: GROUPS.CLOUDRUN, category: CATEGORIES.CORE, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST1 },
 
   // ==========================================================================
   // FIREBASE FUNCTIONS - Member Operations
@@ -137,6 +141,7 @@ export const SERVICES = [
   { id: 'listelevatedusers', nameKey: 'service_name_listelevatedusers', group: GROUPS.SUPERUSER, category: CATEGORIES.SUPERUSER, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
   { id: 'purgedeleted', nameKey: 'service_name_purgedeleted', group: GROUPS.SUPERUSER, category: CATEGORIES.SUPERUSER, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
   { id: 'getdeletedcounts', nameKey: 'service_name_getdeletedcounts', group: GROUPS.SUPERUSER, category: CATEGORIES.SUPERUSER, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
+  { id: 'rotate-secret', nameKey: 'service_name_rotate_secret', group: GROUPS.SUPERUSER, category: CATEGORIES.SUPERUSER, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
 
   // ==========================================================================
   // FIREBASE FUNCTIONS - Email (Issue #323)
@@ -156,6 +161,21 @@ export const SERVICES = [
   { id: 'unsubscribe', nameKey: 'service_name_unsubscribe', group: GROUPS.EMAIL, category: CATEGORIES.EMAIL, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
   { id: 'getmunicipalities', nameKey: 'service_name_getmunicipalities', group: GROUPS.EMAIL, category: CATEGORIES.EMAIL, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
   { id: 'previewrecipientcount', nameKey: 'service_name_previewrecipientcount', group: GROUPS.EMAIL, category: CATEGORIES.EMAIL, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
+
+  // ==========================================================================
+  // FIREBASE FUNCTIONS - SMS
+  // ==========================================================================
+  { id: 'listsmstemplates', nameKey: 'service_name_listsmstemplates', group: GROUPS.SMS, category: CATEGORIES.SMS, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
+  { id: 'getsmstemplate', nameKey: 'service_name_getsmstemplate', group: GROUPS.SMS, category: CATEGORIES.SMS, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
+  { id: 'savesmstemplate', nameKey: 'service_name_savesmstemplate', group: GROUPS.SMS, category: CATEGORIES.SMS, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
+  { id: 'deletesmstemplate', nameKey: 'service_name_deletesmstemplate', group: GROUPS.SMS, category: CATEGORIES.SMS, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
+  { id: 'sendsms', nameKey: 'service_name_sendsms', group: GROUPS.SMS, category: CATEGORIES.SMS, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
+  { id: 'listsmscampaigns', nameKey: 'service_name_listsmscampaigns', group: GROUPS.SMS, category: CATEGORIES.SMS, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
+  { id: 'createsmscampaign', nameKey: 'service_name_createsmscampaign', group: GROUPS.SMS, category: CATEGORIES.SMS, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
+  { id: 'sendsmscampaign', nameKey: 'service_name_sendsmscampaign', group: GROUPS.SMS, category: CATEGORIES.SMS, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
+  { id: 'getsmsstats', nameKey: 'service_name_getsmsstats', group: GROUPS.SMS, category: CATEGORIES.SMS, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
+  { id: 'listsmslogs', nameKey: 'service_name_listsmslogs', group: GROUPS.SMS, category: CATEGORIES.SMS, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
+  { id: 'previewsmsrecipientcount', nameKey: 'service_name_previewsmsrecipientcount', group: GROUPS.SMS, category: CATEGORIES.SMS, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
 
   // ==========================================================================
   // FIREBASE FUNCTIONS - Heatmap/Analytics
@@ -235,6 +255,7 @@ export function getServiceCounts() {
       CATEGORIES.REGISTRATION,
       CATEGORIES.SUPERUSER,
       CATEGORIES.EMAIL,
+      CATEGORIES.SMS,
       CATEGORIES.HEATMAP
     ].reduce((sum, cat) => sum + getServicesByCategory(cat).length, 0),
     database: getServicesByCategory(CATEGORIES.DATABASE).length,

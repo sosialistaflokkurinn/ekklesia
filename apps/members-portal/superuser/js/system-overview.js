@@ -70,6 +70,7 @@ function updateServicesTab() {
     { category: CATEGORIES.REGISTRATION, containerId: 'registration-functions' },
     { category: CATEGORIES.SUPERUSER, containerId: 'superuser-functions' },
     { category: CATEGORIES.EMAIL, containerId: 'email-functions' },
+    { category: CATEGORIES.SMS, containerId: 'sms-functions' },
     { category: CATEGORIES.HEATMAP, containerId: 'heatmap-functions' },
     { category: CATEGORIES.DATABASE, containerId: 'database-services' },
     { category: CATEGORIES.FIREBASE, containerId: 'firebase-services' }
