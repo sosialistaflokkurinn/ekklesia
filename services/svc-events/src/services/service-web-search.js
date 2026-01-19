@@ -19,7 +19,7 @@ const WEB_SEARCH_CONFIG = {
   maxResults: 5,
   freshness: 'py', // Past year
   country: 'ALL',  // Iceland not supported, use ALL
-  searchLang: 'is', // Icelandic
+  // Note: Removed search_lang as it causes issues with Icelandic queries
   timeout: 10000,  // 10 seconds
 };
 
@@ -66,7 +66,6 @@ async function searchWeb(query, options = {}) {
         count,
         freshness,
         country: WEB_SEARCH_CONFIG.country,
-        search_lang: WEB_SEARCH_CONFIG.searchLang,
         text_decorations: false,
         result_filter: 'web',
       },
@@ -179,36 +178,81 @@ function responseIndicatesNoInfo(response) {
 }
 
 /**
+ * Transliterate Icelandic characters to ASCII equivalents
+ * This is needed because Brave Search API has issues with Icelandic characters
+ *
+ * @param {string} text - Text with Icelandic characters
+ * @returns {string} Text with ASCII equivalents
+ */
+function transliterateIcelandic(text) {
+  const charMap = {
+    'á': 'a', 'Á': 'A',
+    'ð': 'd', 'Ð': 'D',
+    'é': 'e', 'É': 'E',
+    'í': 'i', 'Í': 'I',
+    'ó': 'o', 'Ó': 'O',
+    'ú': 'u', 'Ú': 'U',
+    'ý': 'y', 'Ý': 'Y',
+    'þ': 'th', 'Þ': 'Th',
+    'æ': 'ae', 'Æ': 'Ae',
+    'ö': 'o', 'Ö': 'O',
+  };
+
+  return text.replace(/[áÁðÐéÉíÍóÓúÚýÝþÞæÆöÖ]/g, char => charMap[char] || char);
+}
+
+/**
  * Build a search query optimized for web search
- * Adds context to get better Icelandic political results
+ * Transliterates Icelandic characters and adds context for better results
  *
  * @param {string} userQuery - Original user query
- * @returns {string} Optimized search query
+ * @returns {string} Optimized search query (ASCII-safe)
  */
 function buildSearchQuery(userQuery) {
-  // Add party context for better results
-  const partyContext = 'Sósíalistaflokkurinn Íslands';
+  // Transliterate Icelandic characters for Brave Search API compatibility
+  let query = transliterateIcelandic(userQuery);
+
+  // Party identifiers for search
+  const partyTerms = {
+    ascii: 'Sosialistaflokkurinn',
+    english: 'Socialist Party Iceland',
+    shortDomain: 'xj.is',
+  };
 
   // Check if query already mentions the party
-  if (/sósíalist/i.test(userQuery)) {
-    return userQuery;
+  const mentionsParty = /s[oó]s[ií]alist|xj\.is/i.test(userQuery);
+
+  if (mentionsParty) {
+    // Query already has party context, add English for broader results
+    return `${query} OR "${partyTerms.english}" site:*.is`;
   }
 
-  // Add party context for political queries
+  // Keywords that indicate political/news context (transliterated)
   const politicalKeywords = [
-    'kosning', 'þingmaður', 'flokkur', 'stefn', 'borgarstjórn',
-    'sveitarstjórn', 'framboð', 'kjör', 'alþingi',
+    'kosning', 'thingmadur', 'flokkur', 'stefn', 'borgarstjorn',
+    'sveitarstjorn', 'frambod', 'kjor', 'althingi', 'formadur',
+    'adalfund', 'felagi', 'reykjavik',
   ];
 
-  const isPolitical = politicalKeywords.some(kw =>
-    userQuery.toLowerCase().includes(kw)
-  );
+  const newsKeywords = ['frett', 'frettir', 'news', 'nyjast', 'sidust', 'viku'];
 
-  if (isPolitical) {
-    return `${userQuery} ${partyContext}`;
+  const queryLower = query.toLowerCase();
+  const isPolitical = politicalKeywords.some(kw => queryLower.includes(kw));
+  const isNews = newsKeywords.some(kw => queryLower.includes(kw));
+
+  // Build optimized query
+  if (isNews) {
+    // News query: search Icelandic news sites
+    return `${query} (${partyTerms.ascii} OR "${partyTerms.english}") site:*.is`;
   }
 
-  return userQuery;
+  if (isPolitical) {
+    // Political query: add party context
+    return `${query} ${partyTerms.ascii} Iceland`;
+  }
+
+  // Default: add party context with domain hint
+  return `${query} ${partyTerms.ascii} site:*.is OR ${partyTerms.shortDomain}`;
 }
 
 module.exports = {
@@ -218,4 +262,5 @@ module.exports = {
   shouldTriggerWebSearch,
   responseIndicatesNoInfo,
   buildSearchQuery,
+  transliterateIcelandic,
 };
