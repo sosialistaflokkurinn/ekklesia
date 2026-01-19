@@ -16,7 +16,7 @@ const systemHealthRouter = require('./routes/route-system-health');
 const errorsRouter = require('./routes/route-errors');
 const analyticsRouter = require('./routes/route-analytics');
 const { verifyAppCheck } = require('./middleware/middleware-app-check');
-const { readLimiter, adminLimiter } = require('./middleware/middleware-rate-limiter');
+const { readLimiter, adminLimiter, healthLimiter } = require('./middleware/middleware-rate-limiter');
 const logger = require('./utils/util-logger');
 const { pool } = require('./config/config-database');
 
@@ -84,7 +84,8 @@ app.get('/health', (req, res) => {
 });
 
 // Readiness probe - checks database connectivity
-app.get('/health/ready', async (req, res) => {
+// Rate limited to prevent abuse (CodeQL: Missing rate limiting fix)
+app.get('/health/ready', healthLimiter, async (req, res) => {
   try {
     await pool.query('SELECT 1');
     res.json({
