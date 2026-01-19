@@ -8,10 +8,84 @@
  *
  * Based on: Issue #192 - Admin Elections Dashboard
  * Security: Firebase custom claims for role management
+ *
+ * Defense-in-depth: Elevated roles are verified against Firestore
+ * to prevent privilege escalation from compromised token claims.
+ * See: Issue #394
  */
 
 const admin = require('../firebase'); // Use initialized Firebase Admin SDK
 const logger = require('../utils/util-logger');
+
+// Firestore instance for role verification
+const db = admin.firestore();
+
+/**
+ * Verify elevated role claims against Firestore database
+ * Defense-in-depth: Ensures token claims match database source of truth
+ *
+ * @param {string} uid - Firebase UID
+ * @param {string} claimedRole - Role from token claims (superadmin or election-manager)
+ * @returns {Promise<{verified: boolean, dbRoles: string[]}>}
+ */
+async function verifyRoleAgainstDatabase(uid, claimedRole) {
+  try {
+    const userDoc = await db.collection('users').doc(uid).get();
+
+    if (!userDoc.exists) {
+      // No Firestore document - could be legacy user or data inconsistency
+      logger.warn('RBAC: No Firestore document for elevated user', {
+        uid,
+        claimedRole,
+      });
+      return { verified: false, dbRoles: [] };
+    }
+
+    const userData = userDoc.data();
+    const dbRoles = userData.roles || ['member'];
+
+    // Map claimed role back to Firestore role format for comparison
+    // election-manager -> admin, superadmin -> superuser
+    let expectedDbRole;
+    if (claimedRole === 'superadmin') {
+      expectedDbRole = 'superuser';
+    } else if (claimedRole === 'election-manager') {
+      expectedDbRole = 'admin';
+    } else {
+      // Fail closed explicitly for unexpected claimed roles
+      // This should never happen as caller filters elevatedRoles, but defense-in-depth
+      logger.error('RBAC: Unexpected claimed role during database verification', {
+        uid,
+        claimedRole,
+        dbRoles,
+        security: 'UNEXPECTED_ROLE',
+      });
+      return { verified: false, dbRoles };
+    }
+
+    const verified = dbRoles.includes(expectedDbRole);
+
+    if (!verified) {
+      logger.error('RBAC: Role claim does not match database', {
+        uid,
+        claimedRole,
+        expectedDbRole,
+        dbRoles,
+        security: 'ROLE_MISMATCH',
+      });
+    }
+
+    return { verified, dbRoles };
+  } catch (error) {
+    logger.error('RBAC: Database role verification failed', {
+      uid,
+      claimedRole,
+      error: error.message,
+    });
+    // Fail closed - deny access on verification error
+    return { verified: false, dbRoles: [] };
+  }
+}
 
 /**
  * Verify Firebase ID token and extract user claims
@@ -63,6 +137,38 @@ async function verifyFirebaseToken(req, res, next) {
       } else if (decodedToken.roles.includes('admin')) {
         userRole = 'election-manager'; // Map admin -> election-manager
       }
+    }
+
+    // Defense-in-depth: Verify elevated roles against Firestore database
+    // This prevents privilege escalation from compromised token claims
+    const elevatedRoles = ['superadmin', 'election-manager'];
+    if (userRole && elevatedRoles.includes(userRole)) {
+      const { verified, dbRoles } = await verifyRoleAgainstDatabase(
+        decodedToken.uid,
+        userRole
+      );
+
+      if (!verified) {
+        logger.error('RBAC: Elevated role verification failed', {
+          uid: decodedToken.uid,
+          claimedRole: userRole,
+          dbRoles,
+          path: req.path,
+          security: 'ROLE_VERIFICATION_FAILED',
+        });
+
+        return res.status(403).json({
+          error: 'Forbidden',
+          message: 'Role verification failed',
+          code: 'ROLE_VERIFICATION_FAILED',
+        });
+      }
+
+      logger.info('RBAC: Elevated role verified against database', {
+        uid: decodedToken.uid,
+        role: userRole,
+        dbRoles,
+      });
     }
 
     // Attach user info to request

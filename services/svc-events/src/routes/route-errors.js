@@ -6,25 +6,55 @@
  *
  * Features:
  * - Rate limiting per IP to prevent abuse
+ * - Error fingerprint deduplication (reduces log spam during outages)
+ * - Volume-based throttling (samples errors during high volume)
  * - Validation of error payload structure
  * - Additional server-side PII sanitization
  * - No authentication required (errors can occur before login)
+ *
+ * Note: Rate limiting is per-instance (not distributed across Cloud Run instances).
+ * This is acceptable for MVP. For true distributed rate limiting, use Redis.
+ * See: Issue #402
  */
 
 const express = require('express');
+const crypto = require('crypto');
 const logger = require('../utils/util-logger');
 
 const router = express.Router();
 
 /**
  * In-memory rate limiting per IP
- * Simple implementation - resets on service restart
+ * Note: Per-instance only, not distributed across Cloud Run instances
  */
 const rateLimitState = new Map();
 const RATE_LIMIT = {
-  maxRequests: 20,      // Max requests per window
+  maxRequests: 10,      // Max requests per window (reduced from 20)
   windowMs: 60 * 1000,  // 1 minute window
   cleanupMs: 5 * 60 * 1000  // Cleanup old entries every 5 minutes
+};
+
+/**
+ * Error fingerprint deduplication
+ * Prevents logging the same error multiple times during outages
+ */
+const errorFingerprints = new Map();
+const DEDUP_CONFIG = {
+  windowMs: 5 * 60 * 1000,  // 5 minute dedup window
+  maxFingerprints: 1000,    // Max fingerprints to track (FIFO-style cleanup)
+};
+
+/**
+ * Volume-based throttling
+ * Reduces logging when error volume is high (during outages)
+ */
+const volumeState = {
+  count: 0,
+  windowStart: Date.now(),
+  windowMs: 60 * 1000,      // 1 minute window
+  normalThreshold: 50,      // Below this, log all errors
+  highThreshold: 200,       // Above this, sample at 10%
+  samplingRate: 0.1,        // 10% sampling during high volume
 };
 
 // Cleanup old rate limit entries periodically
@@ -34,6 +64,17 @@ setInterval(() => {
     if (now - data.windowStart > RATE_LIMIT.windowMs * 2) {
       rateLimitState.delete(ip);
     }
+  }
+  // Also cleanup old fingerprints
+  for (const [fp, data] of errorFingerprints.entries()) {
+    if (now - data.firstSeen > DEDUP_CONFIG.windowMs) {
+      errorFingerprints.delete(fp);
+    }
+  }
+  // Reset volume counter
+  if (now - volumeState.windowStart > volumeState.windowMs) {
+    volumeState.count = 0;
+    volumeState.windowStart = now;
   }
 }, RATE_LIMIT.cleanupMs);
 
@@ -59,6 +100,83 @@ function checkRateLimit(ip) {
 
   data.count++;
   return true;
+}
+
+/**
+ * Generate fingerprint for error deduplication
+ * Uses hash of error message + first line of stack trace
+ *
+ * @param {Object} error - Error object
+ * @returns {string} Fingerprint hash
+ */
+function generateErrorFingerprint(error) {
+  const message = error.message || '';
+  // Use first line of stack trace (usually the error location)
+  const stackFirstLine = (error.stack || '').split('\n')[1] || '';
+  const fingerprintData = `${message}|${stackFirstLine}`;
+  return crypto.createHash('md5').update(fingerprintData).digest('hex').substring(0, 16);
+}
+
+/**
+ * Check if error is duplicate and should be deduplicated
+ * Returns true if this is a NEW error, false if duplicate
+ *
+ * @param {string} fingerprint - Error fingerprint
+ * @returns {{isNew: boolean, count: number}} Dedup result
+ */
+function checkErrorDedup(fingerprint) {
+  const now = Date.now();
+  const existing = errorFingerprints.get(fingerprint);
+
+  if (!existing || now - existing.firstSeen > DEDUP_CONFIG.windowMs) {
+    // New error or expired
+    errorFingerprints.set(fingerprint, { firstSeen: now, count: 1 });
+
+    // FIFO cleanup if too many fingerprints (Map maintains insertion order)
+    if (errorFingerprints.size > DEDUP_CONFIG.maxFingerprints) {
+      const oldestKey = errorFingerprints.keys().next().value;
+      errorFingerprints.delete(oldestKey);
+    }
+
+    return { isNew: true, count: 1 };
+  }
+
+  // Duplicate - increment count but don't log
+  existing.count++;
+  return { isNew: false, count: existing.count };
+}
+
+/**
+ * Check volume-based throttling
+ * During high error volume, only sample a percentage of errors
+ *
+ * @returns {{shouldLog: boolean, volume: string}} Throttle result
+ */
+function checkVolumeThrottle() {
+  const now = Date.now();
+
+  // Reset window if expired
+  if (now - volumeState.windowStart > volumeState.windowMs) {
+    volumeState.count = 0;
+    volumeState.windowStart = now;
+  }
+
+  volumeState.count++;
+
+  // Below normal threshold - log all
+  if (volumeState.count <= volumeState.normalThreshold) {
+    return { shouldLog: true, volume: 'normal' };
+  }
+
+  // Between normal and high - log 50%
+  if (volumeState.count <= volumeState.highThreshold) {
+    const shouldLog = Math.random() < 0.5;
+    return { shouldLog, volume: 'elevated' };
+  }
+
+  // Above high threshold - sample at configured rate
+  const shouldLog = Math.random() < volumeState.samplingRate;
+  return { shouldLog, volume: 'high' };
 }
 
 /**
@@ -191,10 +309,32 @@ router.post('/', (req, res) => {
     });
   }
 
+  // Volume throttling check (prevents log spam during outages)
+  const volumeCheck = checkVolumeThrottle();
+
   // Sanitize and log each error
   const { errors, clientTimestamp, userAgent, url } = req.body;
+  let loggedCount = 0;
+  let dedupedCount = 0;
+  let throttledCount = 0;
 
   for (const error of errors) {
+    // Generate fingerprint for deduplication
+    const fingerprint = generateErrorFingerprint(error);
+    const dedupCheck = checkErrorDedup(fingerprint);
+
+    // Skip duplicates (but count them)
+    if (!dedupCheck.isNew) {
+      dedupedCount++;
+      continue;
+    }
+
+    // Skip if volume throttled (but count them)
+    if (!volumeCheck.shouldLog) {
+      throttledCount++;
+      continue;
+    }
+
     // Apply server-side sanitization as backup
     const sanitizedError = sanitizeObject(error);
     const sanitizedUrl = sanitizePII(url || '');
@@ -212,20 +352,32 @@ router.post('/', (req, res) => {
       errorStack: sanitizedError.stack?.substring(0, 2000),  // Limit length
       errorPage: sanitizedError.page,
       errorContext: sanitizedError.context,
-      severity: sanitizedError.context?.severity || 'error'
+      severity: sanitizedError.context?.severity || 'error',
+      fingerprint,
+      volumeLevel: volumeCheck.volume,
     });
+
+    loggedCount++;
   }
 
+  // Log batch summary (always, for monitoring)
   logger.info('Error batch received', {
     operation: 'error_batch_received',
     errorCount: errors.length,
-    clientIp
+    loggedCount,
+    dedupedCount,
+    throttledCount,
+    volumeLevel: volumeCheck.volume,
+    clientIp,
   });
 
   // Return success (202 Accepted - async processing implied)
   res.status(202).json({
     received: true,
-    count: errors.length
+    count: errors.length,
+    logged: loggedCount,
+    deduped: dedupedCount,
+    throttled: throttledCount,
   });
 });
 
@@ -235,16 +387,38 @@ router.post('/', (req, res) => {
  * Note: In production, this would query stored errors
  */
 router.get('/stats', (req, res) => {
-  // For now, just return rate limit state info
-  const activeIps = rateLimitState.size;
+  const now = Date.now();
+
+  // Determine volume level
+  let volumeLevel = 'normal';
+  if (volumeState.count > volumeState.highThreshold) {
+    volumeLevel = 'high';
+  } else if (volumeState.count > volumeState.normalThreshold) {
+    volumeLevel = 'elevated';
+  }
 
   res.json({
     status: 'operational',
     rateLimiting: {
-      activeIps,
-      maxRequestsPerMinute: RATE_LIMIT.maxRequests
+      activeIps: rateLimitState.size,
+      maxRequestsPerMinute: RATE_LIMIT.maxRequests,
     },
-    note: 'Errors are logged to Cloud Logging. Use GCP Console to view.'
+    deduplication: {
+      trackedFingerprints: errorFingerprints.size,
+      maxFingerprints: DEDUP_CONFIG.maxFingerprints,
+      windowMinutes: DEDUP_CONFIG.windowMs / 60000,
+    },
+    volumeThrottling: {
+      currentCount: volumeState.count,
+      volumeLevel,
+      windowAgeMs: now - volumeState.windowStart,
+      thresholds: {
+        normal: volumeState.normalThreshold,
+        high: volumeState.highThreshold,
+      },
+      samplingRate: volumeLevel === 'high' ? volumeState.samplingRate : (volumeLevel === 'elevated' ? 0.5 : 1.0),
+    },
+    note: 'Errors are logged to Cloud Logging. Use GCP Console to view. Rate limiting is per-instance.',
   });
 });
 

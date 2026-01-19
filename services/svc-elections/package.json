@@ -27,6 +27,7 @@
     "express": "^5.2.1",
     "express-rate-limit": "^8.2.1",
     "firebase-admin": "^13.6.0",
+    "opossum": "^9.0.0",
     "pg": "^8.17.1",
     "winston": "^3.19.0",
     "zod": "^4.3.5"

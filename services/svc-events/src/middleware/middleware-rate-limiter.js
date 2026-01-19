@@ -144,9 +144,30 @@ const adminLimiter = rateLimit({
   validate: false
 });
 
+/**
+ * Rate limiter for health check endpoints
+ *
+ * Applied to: /health/ready (readiness probe with DB query)
+ * Limit: 60 requests per minute per IP
+ * Note: Simple IP-based limiting (no fingerprinting needed for health checks)
+ */
+const healthLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 60, // 60 requests per window
+  message: {
+    error: 'RATE_LIMIT_EXCEEDED',
+    message: 'Too many health check requests.',
+    retryAfter: '1 minute'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: false
+});
+
 module.exports = {
   readLimiter,
   writeLimiter,
   tokenLimiter,
-  adminLimiter
+  adminLimiter,
+  healthLimiter
 };

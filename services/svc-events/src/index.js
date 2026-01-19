@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { version } = require('../package.json');
+const rateLimit = require('express-rate-limit');
 
 // Initialize Firebase Admin SDK (required for App Check, Storage, etc.)
 require('./config/config-firebase');
@@ -15,8 +16,8 @@ const partyWikiRouter = require('./routes/route-party-wiki');
 const systemHealthRouter = require('./routes/route-system-health');
 const errorsRouter = require('./routes/route-errors');
 const analyticsRouter = require('./routes/route-analytics');
-const { verifyAppCheckOptional } = require('./middleware/middleware-app-check');
-const { readLimiter, adminLimiter } = require('./middleware/middleware-rate-limiter');
+const { verifyAppCheck } = require('./middleware/middleware-app-check');
+const { readLimiter, adminLimiter, healthLimiter } = require('./middleware/middleware-rate-limiter');
 const logger = require('./utils/util-logger');
 const { pool } = require('./config/config-database');
 
@@ -84,7 +85,8 @@ app.get('/health', (req, res) => {
 });
 
 // Readiness probe - checks database connectivity
-app.get('/health/ready', async (req, res) => {
+// Rate limited to prevent abuse (CodeQL: Missing rate limiting fix)
+app.get('/health/ready', healthLimiter, async (req, res) => {
   try {
     await pool.query('SELECT 1');
     res.json({
@@ -109,14 +111,19 @@ app.get('/health/ready', async (req, res) => {
 // Uses 10kb limit for error batches, has its own rate limiting
 app.use('/api/errors', express.json({ limit: '10kb', strict: true }), errorsRouter);
 
-// Security: Firebase App Check verification (monitor-only mode)
-// After 1-2 days of monitoring, switch to verifyAppCheck for enforcement
-// See: docs/security/FIREBASE_APP_CHECK_IMPLEMENTATION.md Phase 5
-app.use('/api', verifyAppCheckOptional);
+// Rate limiting for App Check–protected API routes
+const appCheckLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs for /api
+});
 
-// Rate limiting for API routes
+// Rate limiting for API routes (MUST come before auth to prevent DoS on auth endpoints)
 app.use('/api', readLimiter);
 app.use('/api/admin', adminLimiter);
+// Security: Firebase App Check verification (ENFORCED)
+// Rejects requests without valid App Check token (403 Forbidden)
+// See: docs/security/FIREBASE_APP_CHECK_IMPLEMENTATION.md
+app.use('/api', appCheckLimiter, verifyAppCheck);
 
 // API routes
 app.use('/api', electionRoutes);
