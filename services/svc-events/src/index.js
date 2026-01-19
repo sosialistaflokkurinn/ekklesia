@@ -15,7 +15,7 @@ const partyWikiRouter = require('./routes/route-party-wiki');
 const systemHealthRouter = require('./routes/route-system-health');
 const errorsRouter = require('./routes/route-errors');
 const analyticsRouter = require('./routes/route-analytics');
-const { verifyAppCheckOptional } = require('./middleware/middleware-app-check');
+const { verifyAppCheck } = require('./middleware/middleware-app-check');
 const { readLimiter, adminLimiter } = require('./middleware/middleware-rate-limiter');
 const logger = require('./utils/util-logger');
 const { pool } = require('./config/config-database');
@@ -109,10 +109,10 @@ app.get('/health/ready', async (req, res) => {
 // Uses 10kb limit for error batches, has its own rate limiting
 app.use('/api/errors', express.json({ limit: '10kb', strict: true }), errorsRouter);
 
-// Security: Firebase App Check verification (monitor-only mode)
-// After 1-2 days of monitoring, switch to verifyAppCheck for enforcement
-// See: docs/security/FIREBASE_APP_CHECK_IMPLEMENTATION.md Phase 5
-app.use('/api', verifyAppCheckOptional);
+// Security: Firebase App Check verification (ENFORCED)
+// Rejects requests without valid App Check token (403 Forbidden)
+// See: docs/security/FIREBASE_APP_CHECK_IMPLEMENTATION.md
+app.use('/api', verifyAppCheck);
 
 // Rate limiting for API routes
 app.use('/api', readLimiter);

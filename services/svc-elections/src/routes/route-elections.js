@@ -2,7 +2,7 @@ const express = require('express');
 const crypto = require('crypto');
 const pool = require('../config/config-database');
 const authenticateS2S = require('../middleware/middleware-s2s-auth');
-const { verifyAppCheckOptional } = require('../middleware/middleware-app-check');
+const { verifyAppCheck } = require('../middleware/middleware-app-check');
 const { logAudit } = require('../services/service-audit');
 const logger = require('../utils/util-logger');
 const { hashUidForLogging } = require('../utils/util-hash-uid');
@@ -929,13 +929,12 @@ router.get('/s2s/results', readLimiter, authenticateS2S, async (req, res) => {
 // =====================================================
 // POST /api/vote
 // Headers: Authorization: Bearer <token-from-events>
-//         X-Firebase-AppCheck: <app-check-token> (optional, monitored)
+//         X-Firebase-AppCheck: <app-check-token> (required)
 // Body: { answer: 'yes' | 'no' | 'abstain' }
 //
-// Security: Firebase App Check verification (monitor-only mode)
-// After 1-2 days of monitoring, switch to verifyAppCheck for enforcement
+// Security: Firebase App Check verification (ENFORCED)
 
-router.post('/vote', voteLimiter, verifyAppCheckOptional, async (req, res) => {
+router.post('/vote', voteLimiter, verifyAppCheck, async (req, res) => {
   const startTime = Date.now();
   const correlation_id = crypto.randomUUID(); // Random ID for request tracing (no PII)
 
@@ -1065,11 +1064,11 @@ router.post('/vote', voteLimiter, verifyAppCheckOptional, async (req, res) => {
 // =====================================================
 // GET /api/token-status
 // Headers: Authorization: Bearer <token-from-events>
-//         X-Firebase-AppCheck: <app-check-token> (optional, monitored)
+//         X-Firebase-AppCheck: <app-check-token> (required)
 //
-// Security: Firebase App Check verification (monitor-only mode)
+// Security: Firebase App Check verification (ENFORCED)
 
-router.get('/token-status', readLimiter, verifyAppCheckOptional, async (req, res) => {
+router.get('/token-status', readLimiter, verifyAppCheck, async (req, res) => {
   // Extract token from Authorization header
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
