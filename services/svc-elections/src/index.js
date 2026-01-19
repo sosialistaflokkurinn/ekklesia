@@ -3,6 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const { version } = require('../package.json');
 const logger = require('./utils/util-logger');
+const { getPoolStats } = require('./config/config-database');
+const { getAllCircuitBreakerStats } = require('./services/service-circuit-breaker');
 
 const electionsRouter = require('./routes/route-elections');
 const adminRouter = require('./routes/route-admin'); // Admin CRUD routes (Issue #192)
@@ -50,13 +52,25 @@ app.use(correlationIdMiddleware);
 // =====================================================
 
 // Health check endpoint (no auth required)
+// Includes pool and circuit breaker stats for monitoring (Issue #337, #338)
 app.get('/health', (req, res) => {
+  const poolStats = getPoolStats();
+  const circuitBreakerStats = getAllCircuitBreakerStats();
+
+  // Determine overall health status
+  // Unhealthy if: pool waiting > 0 (requests queued) or circuit breaker open
+  const poolHealthy = poolStats.waiting === 0;
+  const circuitHealthy = circuitBreakerStats.every(cb => cb.state !== 'open');
+  const status = poolHealthy && circuitHealthy ? 'healthy' : 'degraded';
+
   res.json({
-    status: 'healthy',
+    status,
     service: 'elections-service',
     version,
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    pool: poolStats,
+    circuitBreakers: circuitBreakerStats,
   });
 });
 

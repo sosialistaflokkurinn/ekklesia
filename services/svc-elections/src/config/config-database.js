@@ -35,11 +35,17 @@ const pool = new Pool({
   user: process.env.DATABASE_USER || 'postgres',
   password: process.env.DATABASE_PASSWORD,
 
-  // Connection pool settings (critical for load spike)
+  // Connection pool settings - optimized for 300 votes/sec spike (Issue #337)
+  // With 100 Cloud Run instances max and 5 connections each = 500 total connections
+  // Each vote transaction ~5ms, so 5 connections can handle ~1000 votes/sec per instance
   min: parseInt(process.env.DATABASE_POOL_MIN) || 2,        // Keep 2 connections warm
-  max: parseInt(process.env.DATABASE_POOL_MAX) || 5,        // Max 5 per instance (2 per instance recommended)
+  max: parseInt(process.env.DATABASE_POOL_MAX) || 5,        // Max 5 per instance
   idleTimeoutMillis: parseInt(process.env.DATABASE_POOL_IDLE_TIMEOUT) || 30000,
-  connectionTimeoutMillis: parseInt(process.env.DATABASE_POOL_CONNECTION_TIMEOUT) || 2000,  // Fail fast
+  connectionTimeoutMillis: parseInt(process.env.DATABASE_POOL_CONNECTION_TIMEOUT) || 2000,  // Fail fast on connect
+
+  // Additional pool settings for high load resilience
+  allowExitOnIdle: false,           // Keep pool alive even when idle
+  statement_timeout: 5000,          // 5s query timeout (matches circuit breaker)
 
   // Always use elections schema
   options: '-c search_path=elections,public',
@@ -113,4 +119,21 @@ pool.query('SELECT NOW() as current_time', (err, res) => {
   });
 });
 
+/**
+ * Get current pool statistics for monitoring
+ * Used by health endpoint to expose pool state (Issue #337)
+ *
+ * @returns {Object} Pool statistics
+ */
+function getPoolStats() {
+  return {
+    total: pool.totalCount,       // Total connections (active + idle)
+    idle: pool.idleCount,         // Connections available for use
+    waiting: pool.waitingCount,   // Requests waiting for a connection
+    max: pool.options.max,        // Maximum pool size
+    min: pool.options.min,        // Minimum pool size
+  };
+}
+
 module.exports = pool;
+module.exports.getPoolStats = getPoolStats;
