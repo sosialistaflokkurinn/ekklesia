@@ -110,14 +110,14 @@ app.get('/health/ready', healthLimiter, async (req, res) => {
 // Uses 10kb limit for error batches, has its own rate limiting
 app.use('/api/errors', express.json({ limit: '10kb', strict: true }), errorsRouter);
 
+// Rate limiting for API routes (MUST come before auth to prevent DoS on auth endpoints)
+app.use('/api', readLimiter);
+app.use('/api/admin', adminLimiter);
+
 // Security: Firebase App Check verification (ENFORCED)
 // Rejects requests without valid App Check token (403 Forbidden)
 // See: docs/security/FIREBASE_APP_CHECK_IMPLEMENTATION.md
 app.use('/api', verifyAppCheck);
-
-// Rate limiting for API routes
-app.use('/api', readLimiter);
-app.use('/api/admin', adminLimiter);
 
 // API routes
 app.use('/api', electionRoutes);
