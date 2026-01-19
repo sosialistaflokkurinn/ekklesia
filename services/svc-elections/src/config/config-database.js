@@ -45,10 +45,10 @@ const pool = new Pool({
 
   // Additional pool settings for high load resilience
   allowExitOnIdle: false,           // Keep pool alive even when idle
-  statement_timeout: 5000,          // 5s query timeout (matches circuit breaker)
 
-  // Always use elections schema
-  options: '-c search_path=elections,public',
+  // Always use elections schema + 5s query timeout (matches circuit breaker)
+  // Note: statement_timeout must be set via options string, not as Pool config
+  options: '-c search_path=elections,public -c statement_timeout=5000',
 
   // SSL configuration (disabled for Cloud SQL Unix socket)
   // Unix socket connections are already secure and don't support SSL

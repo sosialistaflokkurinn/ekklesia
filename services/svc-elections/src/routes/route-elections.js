@@ -33,10 +33,9 @@ const router = express.Router();
  * @param {Object} params - Vote parameters
  * @param {string} params.tokenHash - SHA-256 hash of voting token
  * @param {string} params.answer - Vote answer (yes/no/abstain)
- * @param {string} params.correlationId - Request correlation ID
  * @returns {Promise<{success: boolean, ballotId?: number, error?: string, code?: string}>}
  */
-async function processVoteTransaction({ tokenHash, answer, correlationId }) {
+async function processVoteTransaction({ tokenHash, answer }) {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -1050,7 +1049,6 @@ router.post('/vote', voteLimiter, verifyAppCheck, async (req, res) => {
     const result = await voteCircuitBreaker.fire({
       tokenHash,
       answer,
-      correlationId: correlation_id,
     });
 
     const duration = Date.now() - startTime;
@@ -1129,8 +1127,8 @@ router.post('/vote', voteLimiter, verifyAppCheck, async (req, res) => {
       });
     }
 
-    // Check if circuit breaker timeout
-    if (error.message && error.message.includes('Timed out')) {
+    // Check if circuit breaker timeout (opossum throws TimeoutError)
+    if (error.name === 'TimeoutError' || (error.message && error.message.includes('Timed out'))) {
       logger.warn('Vote timed out via circuit breaker', {
         operation: 'record_ballot',
         circuit: 'vote-processing',

@@ -51,6 +51,16 @@ async function verifyRoleAgainstDatabase(uid, claimedRole) {
       expectedDbRole = 'superuser';
     } else if (claimedRole === 'election-manager') {
       expectedDbRole = 'admin';
+    } else {
+      // Fail closed explicitly for unexpected claimed roles
+      // This should never happen as caller filters elevatedRoles, but defense-in-depth
+      logger.error('RBAC: Unexpected claimed role during database verification', {
+        uid,
+        claimedRole,
+        dbRoles,
+        security: 'UNEXPECTED_ROLE',
+      });
+      return { verified: false, dbRoles };
     }
 
     const verified = dbRoles.includes(expectedDbRole);

@@ -132,7 +132,7 @@ function checkErrorDedup(fingerprint) {
     // New error or expired
     errorFingerprints.set(fingerprint, { firstSeen: now, count: 1 });
 
-    // LRU cleanup if too many fingerprints
+    // FIFO cleanup if too many fingerprints (Map maintains insertion order)
     if (errorFingerprints.size > DEDUP_CONFIG.maxFingerprints) {
       const oldestKey = errorFingerprints.keys().next().value;
       errorFingerprints.delete(oldestKey);
