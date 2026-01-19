@@ -2,26 +2,18 @@
  * Party Wiki Chat Route
  *
  * Provides a chat endpoint for members to learn about the Socialist Party.
- * Uses Moonshot AI (Kimi) as Wikipedia-style knowledge assistant.
+ * Uses Google Gemini as Wikipedia-style knowledge assistant.
  * Knowledge base: xj.is (sosialistaflokkurinn.is) and discourse-archive
  */
 
 const express = require('express');
-const axios = require('axios');
 const logger = require('../utils/util-logger');
 const { pool } = require('../config/config-database');
 const authenticate = require('../middleware/middleware-auth');
+const gemini = require('../services/service-gemini');
+const webSearch = require('../services/service-web-search');
 
 const router = express.Router();
-
-// Kimi API Configuration
-const KIMI_API_KEY = process.env.KIMI_API_KEY;
-const KIMI_API_BASE = 'https://api.moonshot.ai/v1';
-const KIMI_MODEL_DEFAULT = 'kimi-k2-0711-preview';
-const KIMI_MODELS = {
-  'kimi-k2-0711-preview': { name: 'Preview (hraður)', timeout: 60000 },
-  'kimi-k2-thinking': { name: 'Thinking (nákvæmur)', timeout: 120000 }
-};
 
 // Party Wiki System Prompt - Contains core knowledge about the party
 const PARTY_WIKI_PROMPT = `Þú ert Wikipedia-stílaður þekkingaraðstoðarmaður um Sósíalistaflokkinn (xj.is).
@@ -141,26 +133,11 @@ Tveir fylkingar:
 
 1. Svaraðu á íslensku, stuttlega og hnitmiðað
 2. Notaðu markdown fyrir fyrirsagnir og lista
-3. Ef þú veist ekki svarið, NOTAÐU VEFLEIT til að finna rétt svar
-4. Ekki þykjast vita hluti sem þú veist ekki - leitaðu frekar
+3. Ef þú veist ekki svarið, segðu það hreinskilnislega
+4. Ekki þykjast vita hluti sem þú veist ekki
 5. Vertu hlutlaus - ekki taka afstöðu í innri deilum
 6. Beindu fólki á xj.is fyrir nýjustu upplýsingar
-7. ALLTAF greina á milli flokksins og tengdra samtaka (Vorstjarnan, Samstöðin, Efling)
-8. Notaðu vefleit til að SANNREYNA upplýsingar ef þú ert óviss
-
-## VEFLEIT
-
-Þú hefur aðgang að vefleit ($web_search). Notaðu hana til að:
-- Sannreyna staðreyndir sem þú ert ekki viss um
-- Finna nýjustu fréttir um flokkinn
-- Leita að upplýsingum á xj.is, ruv.is, mbl.is, visir.is
-- Staðfesta dagsetningar og tölur`;
-
-// Web search tool configuration
-const WEB_SEARCH_TOOL = {
-  type: 'builtin_function',
-  function: { name: '$web_search' }
-};
+7. ALLTAF greina á milli flokksins og tengdra samtaka (Vorstjarnan, Samstöðin, Efling)`;
 
 /**
  * Save conversation to database for usage tracking
@@ -195,6 +172,50 @@ async function saveConversation({
 }
 
 /**
+ * Web search tool definition for Gemini
+ */
+const WEB_SEARCH_TOOL = {
+  name: 'web_search',
+  description: 'Leita á vefnum eftir upplýsingum um Sósíalistaflokkinn eða íslensk stjórnmál. Notaðu þetta til að finna nýjustu fréttir eða staðfesta staðreyndir.',
+  parameters: {
+    type: 'object',
+    properties: {
+      query: {
+        type: 'string',
+        description: 'Leitarstrengur á íslensku eða ensku'
+      }
+    },
+    required: ['query']
+  }
+};
+
+/**
+ * Execute a tool call
+ */
+async function executeToolCall({ name, arguments: args }) {
+  if (name === 'web_search') {
+    const query = args.query;
+    logger.info('Party wiki web search', {
+      operation: 'party_wiki_web_search',
+      query
+    });
+
+    const results = await webSearch.search(query);
+
+    if (results.length === 0) {
+      return 'Engar niðurstöður fundust.';
+    }
+
+    // Format results for the AI
+    return results.map(r =>
+      `**${r.title}**\n${r.description}\nHeimild: ${r.url}`
+    ).join('\n\n');
+  }
+
+  return 'Óþekkt verkfæri';
+}
+
+/**
  * POST /api/party-wiki/chat
  * Send a message to party wiki assistant and get a response
  * Requires authentication (any member)
@@ -212,68 +233,44 @@ router.post('/chat', authenticate, async (req, res) => {
       });
     }
 
-    // Validate and select model (default to preview)
-    const selectedModel = requestedModel && KIMI_MODELS[requestedModel]
-      ? requestedModel
-      : KIMI_MODEL_DEFAULT;
-    const modelConfig = KIMI_MODELS[selectedModel];
-
-    if (!KIMI_API_KEY) {
+    if (!gemini.isAvailable()) {
       return res.status(503).json({
         error: 'Service Unavailable',
         message: 'AI service not configured'
       });
     }
 
-    // Build messages array with history
-    const messages = [
-      { role: 'system', content: PARTY_WIKI_PROMPT },
-      ...history.slice(-10).map(h => ({
-        role: h.role,
-        content: h.content
-      })),
-      { role: 'user', content: message }
-    ];
+    // Map frontend model names to Gemini models
+    const modelName = gemini.resolveModel(requestedModel);
+    const modelConfig = gemini.getModelConfig(modelName);
 
     logger.info('Party wiki chat request', {
       operation: 'party_wiki_chat',
       userId: req.user?.uid,
       messageLength: message.length,
       historyLength: history.length,
-      model: selectedModel
+      model: modelName
     });
 
-    const response = await axios.post(
-      `${KIMI_API_BASE}/chat/completions`,
-      {
-        model: selectedModel,
-        messages,
-        temperature: 0.5,  // Lower temperature for more factual responses
-        max_tokens: 2000,
-        tools: [WEB_SEARCH_TOOL]  // Enable web search for fact verification
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${KIMI_API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        timeout: modelConfig.timeout
-      }
-    );
-
-    const reply = response.data?.choices?.[0]?.message?.content;
-
-    if (!reply) {
-      throw new Error('Empty response from AI');
-    }
+    // Use Gemini with web search tool
+    const result = await gemini.generateChatWithTools({
+      systemPrompt: PARTY_WIKI_PROMPT,
+      message,
+      history,
+      model: modelName,
+      tools: [WEB_SEARCH_TOOL],
+      executeToolCall,
+      maxIterations: 3,
+    });
 
     const responseTimeMs = Date.now() - startTime;
 
     logger.info('Party wiki chat response', {
       operation: 'party_wiki_chat_response',
       userId: req.user?.uid,
-      replyLength: reply.length,
-      responseTimeMs
+      replyLength: result.reply.length,
+      responseTimeMs,
+      toolIterations: result.toolIterations
     });
 
     // Save conversation for usage tracking (async, don't wait)
@@ -281,27 +278,26 @@ router.post('/chat', authenticate, async (req, res) => {
       userId: req.user?.uid,
       userName: req.user?.name || null,
       question: message,
-      response: reply,
-      model: selectedModel,
+      response: result.reply,
+      model: result.model,
       responseTimeMs,
     });
 
     res.json({
-      reply,
-      model: selectedModel,
-      modelName: modelConfig.name
+      reply: result.reply,
+      model: result.model,
+      modelName: result.modelName
     });
 
   } catch (error) {
     logger.error('Party wiki chat error', {
       operation: 'party_wiki_chat_error',
       error: error.message,
-      response: error.response?.data
     });
 
     res.status(500).json({
       error: 'Internal Server Error',
-      message: 'Failed to get response'
+      message: 'Villa: Ekki tókst að fá svar frá AI'
     });
   }
 });

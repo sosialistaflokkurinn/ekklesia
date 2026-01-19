@@ -23,7 +23,7 @@ const router = express.Router();
 const RAG_CONFIG = {
   maxDocuments: 3,
   similarityThreshold: 0.4,
-  webSearchThreshold: 3.0, // Trigger web search if below this (scores are boosted 1-10+)
+  webSearchThreshold: 5.0, // Trigger web search if below this (scores are boosted 1-10+)
   maxTokens: 3000,
 };
 

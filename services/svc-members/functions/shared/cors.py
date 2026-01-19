@@ -14,6 +14,8 @@ DEFAULT_ALLOWED_ORIGINS = [
     'https://ekklesia-prod-10-2025.web.app',
     'https://ekklesia-prod-10-2025.firebaseapp.com',
     'https://felagar.sosialistaflokkurinn.is',
+    'https://sosialistaflokkurinn.is',
+    'https://xj-next-521240388393.europe-west1.run.app',
     'http://localhost:3000'
 ]
 

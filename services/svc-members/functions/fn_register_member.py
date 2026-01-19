@@ -351,7 +351,7 @@ def register_member(req: https_fn.CallableRequest) -> dict[str, Any]:
                      kennitala=f"{normalized_kennitala[:6]}****")
             return {
                 'comrade_id': None,
-                'error': {'kennitala': 'Þessi kennitala er þegar skráð'}
+                'error': {'kennitala': 'Þessi kennitala er nú þegar skráð í flokkinn. Skráðu þig inn á mínar síður til að skoða aðildina þína.'}
             }
 
         # Initialize Firestore (only for audit logging)
@@ -405,9 +405,12 @@ def register_member(req: https_fn.CallableRequest) -> dict[str, Any]:
         title_name = get_lookup_name(db, 'lookup_job_titles', int(title_id)) if title_id else None
 
         # Extract optional fields
-        housing_situation = data.get('comrade-housing_situation')
-        reachable = data.get('comrade-reachable') not in [False, 'false', 'False']
-        groupable = data.get('comrade-groupable') not in [False, 'false', 'False']
+        housing_situation = data.get('comrade-housing_situation') or data.get('housingStatus')
+        reachable_val = data.get('comrade-reachable', data.get('reachable'))
+        groupable_val = data.get('comrade-groupable', data.get('groupable'))
+        # Default to True if not specified, False only if explicitly false
+        reachable = reachable_val not in [False, 'false', 'False']
+        groupable = groupable_val not in [False, 'false', 'False']
 
         # Build address data for Django API
         address_for_django = {}
