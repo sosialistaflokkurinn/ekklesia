@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { version } = require('../package.json');
+const rateLimit = require('express-rate-limit');
 
 // Initialize Firebase Admin SDK (required for App Check, Storage, etc.)
 require('./config/config-firebase');
@@ -110,10 +111,16 @@ app.get('/health/ready', healthLimiter, async (req, res) => {
 // Uses 10kb limit for error batches, has its own rate limiting
 app.use('/api/errors', express.json({ limit: '10kb', strict: true }), errorsRouter);
 
+// Rate limiting for App Check–protected API routes
+const appCheckLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs for /api
+});
+
 // Rate limiting for API routes (MUST come before auth to prevent DoS on auth endpoints)
 app.use('/api', readLimiter);
 app.use('/api/admin', adminLimiter);
-
+app.use('/api', appCheckLimiter, verifyAppCheck);
 // Security: Firebase App Check verification (ENFORCED)
 // Rejects requests without valid App Check token (403 Forbidden)
 // See: docs/security/FIREBASE_APP_CHECK_IMPLEMENTATION.md
