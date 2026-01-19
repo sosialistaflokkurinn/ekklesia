@@ -41,7 +41,7 @@ const RATE_LIMIT = {
 const errorFingerprints = new Map();
 const DEDUP_CONFIG = {
   windowMs: 5 * 60 * 1000,  // 5 minute dedup window
-  maxFingerprints: 1000,    // Max fingerprints to track (LRU-style cleanup)
+  maxFingerprints: 1000,    // Max fingerprints to track (FIFO-style cleanup)
 };
 
 /**

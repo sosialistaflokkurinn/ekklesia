@@ -120,11 +120,10 @@ const appCheckLimiter = rateLimit({
 // Rate limiting for API routes (MUST come before auth to prevent DoS on auth endpoints)
 app.use('/api', readLimiter);
 app.use('/api/admin', adminLimiter);
-app.use('/api', appCheckLimiter, verifyAppCheck);
 // Security: Firebase App Check verification (ENFORCED)
 // Rejects requests without valid App Check token (403 Forbidden)
 // See: docs/security/FIREBASE_APP_CHECK_IMPLEMENTATION.md
-app.use('/api', verifyAppCheck);
+app.use('/api', appCheckLimiter, verifyAppCheck);
 
 // API routes
 app.use('/api', electionRoutes);
