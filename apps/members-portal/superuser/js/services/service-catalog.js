@@ -89,7 +89,7 @@ export const SERVICES = [
   { id: 'xj-strapi', nameKey: 'service_name_xj_strapi', group: GROUPS.CLOUDRUN, category: CATEGORIES.CORE, type: SERVICE_TYPES.CLOUDRUN, region: REGIONS.EU_WEST1 },
   { id: 'healthz', nameKey: 'service_name_healthz', group: GROUPS.AUDIT, category: CATEGORIES.CORE, type: SERVICE_TYPES.CLOUDRUN, region: REGIONS.EU_WEST2 },
   { id: 'django-socialism', nameKey: 'service_name_django_socialism', group: GROUPS.CLOUDRUN, category: CATEGORIES.CORE, type: SERVICE_TYPES.CLOUDRUN, region: REGIONS.EU_WEST1 },
-  { id: 'warmup', nameKey: 'service_name_warmup', group: GROUPS.CLOUDRUN, category: CATEGORIES.CORE, type: SERVICE_TYPES.CLOUDRUN, region: REGIONS.EU_WEST1 },
+  { id: 'warmup', nameKey: 'service_name_warmup', group: GROUPS.CLOUDRUN, category: CATEGORIES.CORE, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST1 },
 
   // ==========================================================================
   // FIREBASE FUNCTIONS - Member Operations
