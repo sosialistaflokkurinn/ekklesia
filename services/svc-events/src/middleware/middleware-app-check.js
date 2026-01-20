@@ -7,20 +7,52 @@
  *
  * Based on: Cloud Run Security: Firebase App Check research document
  * Implementation: docs/security/FIREBASE_APP_CHECK_IMPLEMENTATION.md
+ *
+ * S2S Bypass: Server-to-server calls can use X-API-Key header instead
+ * Used by: xj-next (sosialistaflokkurinn.is) for /api/external-events
  */
 
 const admin = require('firebase-admin');
+const crypto = require('crypto');
 const logger = require('../utils/util-logger');
+
+/**
+ * Constant-time string comparison to prevent timing attacks
+ * Uses HMAC to normalize inputs to same length before comparison
+ */
+function secureCompare(a, b) {
+  if (!a || !b) return false;
+  const key = crypto.randomBytes(32);
+  const hmacA = crypto.createHmac('sha256', key).update(String(a)).digest();
+  const hmacB = crypto.createHmac('sha256', key).update(String(b)).digest();
+  return crypto.timingSafeEqual(hmacA, hmacB);
+}
 
 /**
  * Verify Firebase App Check token (ENFORCED)
  * Returns 403 if token is missing or invalid
+ *
+ * S2S Bypass: Accepts X-API-Key header as alternative for server-to-server calls
  *
  * @param {object} req - Express request
  * @param {object} res - Express response
  * @param {function} next - Express next middleware
  */
 async function verifyAppCheck(req, res, next) {
+  // S2S bypass: Allow server-to-server calls with API key
+  const apiKey = req.header('X-API-Key');
+  const expectedKey = process.env.S2S_API_KEY;
+
+  if (apiKey && expectedKey && secureCompare(apiKey, expectedKey)) {
+    logger.info('S2S authentication successful (App Check bypass)', {
+      operation: 'app_check_verification',
+      bypass: 's2s_api_key',
+      path: req.path,
+      method: req.method
+    });
+    return next();
+  }
+
   const appCheckToken = req.header('X-Firebase-AppCheck');
 
   // Check if App Check token is present
