@@ -71,6 +71,21 @@ CLOUD_RUN_SERVICES = [
         "name": "Django Admin (GCP)",
         "url": "https://starf.sosialistaflokkurinn.is/felagar/api/"
     },
+    {
+        "id": "xj-next",
+        "name": "Vefsíða (xj-next)",
+        "url": "https://xj-next-521240388393.europe-west1.run.app/"
+    },
+    {
+        "id": "xj-strapi",
+        "name": "Strapi CMS",
+        "url": "https://xj-strapi-521240388393.europe-west1.run.app/_health"
+    },
+    {
+        "id": "warmup",
+        "name": "Warmup þjónusta",
+        "url": "https://warmup-521240388393.europe-west1.run.app/health"
+    },
 ]
 
 # Base URL for Firebase Callable Functions
