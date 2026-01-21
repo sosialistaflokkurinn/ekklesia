@@ -4,7 +4,7 @@
  * Issue #330 - Sveitarfélagasía fyrir félagalista
  *
  * List of all Icelandic municipalities for filtering members.
- * Data from iceaddr library's svfheiti field.
+ * Data from Cloud SQL map_municipality table.
  *
  * Last updated: 2025-12-16
  * Total: 64 municipalities (after 2024 mergers)
@@ -17,7 +17,7 @@
  */
 export const MUNICIPALITIES = [
   // Höfuðborgarsvæðið (Capital Region)
-  'Reykjavíkurborg',
+  'Reykjavík',
   'Kópavogsbær',
   'Seltjarnarnesbær',
   'Garðabær',
@@ -121,7 +121,8 @@ export const FILTER_MISSING_ADDRESS = 'missing_address';
 export function getMunicipalityOptions() {
   return [
     { value: 'all', label: 'Öll sveitarfélög' },
-    { value: FILTER_MISSING_ADDRESS, label: '⚠️ Vantar heimilisfang' },
+    { value: FILTER_MISSING_ADDRESS, label: 'Vantar heimilisfang' },
+    { value: 'Erlendis', label: 'Erlendis' },
     ...MUNICIPALITIES_SORTED.map(name => ({
       value: name,
       label: name
@@ -148,6 +149,9 @@ export function getMunicipalityName(municipalityKey) {
  * @returns {boolean} True if member has valid address
  */
 export function memberHasAddress(member) {
+  // Check top-level municipality field from listMembers API
+  if (member?.municipality) return true;
+
   const addresses = member?.profile?.addresses || member?.addresses || [];
   if (addresses.length === 0) return false;
 
@@ -174,9 +178,10 @@ export function filterMembersByMunicipality(members, municipalityKey) {
 
   return members.filter(member => {
     // Check default address municipality (is_default in synced data, is_primary in user-edited data)
+    // Also check top-level municipality field from listMembers API
     const addresses = member?.profile?.addresses || member?.addresses || [];
     const primaryAddress = addresses.find(a => a.is_default || a.is_primary) || addresses[0];
-    const municipality = primaryAddress?.municipality || member?.address?.municipality;
+    const municipality = primaryAddress?.municipality || member?.address?.municipality || member?.municipality;
     return municipality === municipalityKey;
   });
 }

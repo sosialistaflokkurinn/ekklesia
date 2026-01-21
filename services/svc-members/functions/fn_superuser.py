@@ -86,6 +86,11 @@ CLOUD_RUN_SERVICES = [
         "name": "Warmup þjónusta",
         "url": "https://warmup-521240388393.europe-west1.run.app/health"
     },
+    {
+        "id": "xj-site",
+        "name": "Vefsíða (xj-site)",
+        "url": "https://xj-site-521240388393.europe-west1.run.app/"
+    },
 ]
 
 # Base URL for Firebase Callable Functions

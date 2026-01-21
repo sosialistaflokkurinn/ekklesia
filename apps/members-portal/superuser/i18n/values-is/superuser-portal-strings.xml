@@ -126,6 +126,7 @@
   <string name="service_name_events">Viðburðaþjónusta</string>
   <string name="service_name_xj_next">Vefsíða (xj-next)</string>
   <string name="service_name_xj_strapi">Strapi CMS</string>
+  <string name="service_name_xj_site">Vefsíða (xj-site)</string>
   <string name="service_name_healthz">Kenni.is Health Check</string>
   <string name="service_name_django_socialism">Django Admin (GCP)</string>
   <string name="service_name_handlekenniauth">Kenni.is Auth</string>

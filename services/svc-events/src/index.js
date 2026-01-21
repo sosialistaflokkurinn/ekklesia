@@ -111,6 +111,23 @@ app.get('/health/ready', healthLimiter, async (req, res) => {
 // Uses 10kb limit for error batches, has its own rate limiting
 app.use('/api/errors', express.json({ limit: '10kb', strict: true }), errorsRouter);
 
+// =============================================================================
+// PUBLIC API ROUTES (no App Check required)
+// These routes are designed for public access or have their own auth mechanisms
+// =============================================================================
+
+// External events - public API for xj-next website and dashboard
+// S2S calls can use X-API-Key header for additional features
+app.use('/api/external-events', readLimiter, externalEventsRouter);
+
+// Analytics tracking - public for anonymous page view tracking
+app.use('/api/analytics', readLimiter, analyticsRouter);
+
+// =============================================================================
+// APP CHECK PROTECTED ROUTES
+// All routes below require valid Firebase App Check token
+// =============================================================================
+
 // Rate limiting for App Check–protected API routes
 const appCheckLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -125,9 +142,8 @@ app.use('/api/admin', adminLimiter);
 // See: docs/security/FIREBASE_APP_CHECK_IMPLEMENTATION.md
 app.use('/api', appCheckLimiter, verifyAppCheck);
 
-// API routes
+// API routes (App Check protected)
 app.use('/api', electionRoutes);
-app.use('/api/external-events', externalEventsRouter);
 
 // Kimi chat needs larger body limit for conversation history
 app.use('/api/kimi', express.json({ limit: '100kb', strict: true }), kimiChatRouter);
@@ -137,8 +153,6 @@ app.use('/api/member-assistant', express.json({ limit: '100kb', strict: true }),
 app.use('/api/email-template-assistant', express.json({ limit: '50kb', strict: true }), emailTemplateAssistantRouter);
 app.use('/api/party-wiki', partyWikiRouter);
 app.use('/api/system', systemHealthRouter);
-// Analytics tracking
-app.use('/api/analytics', analyticsRouter);
 // Admin-only routes (developer testing only)
 app.use('/api/admin', adminRouter);
 
