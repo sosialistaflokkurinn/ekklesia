@@ -105,7 +105,7 @@ function calculateNextOccurrence(startTime, endTime, isOngoing) {
   const dayOfWeek = startTime.getDay();
   const nextOccurrence = new Date(now);
   const daysUntilNext = (dayOfWeek - now.getDay() + 7) % 7;
-  nextOccurrence.setDate(now.getDate() + (daysUntilNext === 0 ? 0 : daysUntilNext));
+  nextOccurrence.setDate(now.getDate() + daysUntilNext);
   nextOccurrence.setHours(startTime.getHours(), startTime.getMinutes(), 0, 0);
 
   // If today's occurrence has passed, show next week

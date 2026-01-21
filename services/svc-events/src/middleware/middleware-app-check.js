@@ -30,8 +30,9 @@ function secureCompare(a, b) {
   const bufB = Buffer.alloc(maxLen, 0);
   bufA.write(strA);
   bufB.write(strB);
-  // Length check is not timing-safe but API keys are fixed length
-  return strA.length === strB.length && crypto.timingSafeEqual(bufA, bufB);
+  // Always perform timing-safe comparison; also require equal lengths
+  const equal = crypto.timingSafeEqual(bufA, bufB);
+  return equal && strA.length === strB.length;
 }
 
 /**
