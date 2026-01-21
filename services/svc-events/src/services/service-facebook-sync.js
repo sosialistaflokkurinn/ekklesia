@@ -84,6 +84,44 @@ async function getEventsFromDatabase(options = {}) {
 }
 
 /**
+ * Calculate next occurrence for recurring weekly events.
+ * Returns ISO string for the next occurrence, or null if not applicable.
+ *
+ * @param {Date} startTime - Event start time
+ * @param {Date|null} endTime - Event end time
+ * @param {boolean} isOngoing - Whether event is currently ongoing
+ * @returns {string|null} ISO string of next occurrence, or null
+ */
+function calculateNextOccurrence(startTime, endTime, isOngoing) {
+  const now = new Date();
+
+  // Only for ongoing events that span multiple weeks (recurring weekly pattern)
+  const isRecurringWeekly = isOngoing && endTime &&
+    (endTime - startTime) > 7 * 24 * 60 * 60 * 1000; // More than 1 week
+
+  if (!isRecurringWeekly) return null;
+
+  // Calculate next occurrence (same day of week as start)
+  const dayOfWeek = startTime.getDay();
+  const nextOccurrence = new Date(now);
+  const daysUntilNext = (dayOfWeek - now.getDay() + 7) % 7;
+  nextOccurrence.setDate(now.getDate() + (daysUntilNext === 0 ? 0 : daysUntilNext));
+  nextOccurrence.setHours(startTime.getHours(), startTime.getMinutes(), 0, 0);
+
+  // If today's occurrence has passed, show next week
+  if (nextOccurrence <= now) {
+    nextOccurrence.setDate(nextOccurrence.getDate() + 7);
+  }
+
+  // Make sure next occurrence is before end date
+  if (nextOccurrence <= endTime) {
+    return nextOccurrence.toISOString();
+  }
+
+  return null; // Past the end date
+}
+
+/**
  * Format database row for API response
  */
 function formatEventForApi(row) {
@@ -137,6 +175,9 @@ function formatEventForApi(row) {
     }
   }
 
+  // Calculate next occurrence for recurring events
+  const nextOccurrence = calculateNextOccurrence(startTime, endTime, isOngoing);
+
   return {
     id: row.id,
     facebookId: row.facebook_id,
@@ -151,6 +192,7 @@ function formatEventForApi(row) {
     isFeatured: row.is_featured,
     isUpcoming: isUpcoming,
     isOngoing: isOngoing,
+    nextOccurrence: nextOccurrence,
     syncedAt: row.synced_at
   };
 }
