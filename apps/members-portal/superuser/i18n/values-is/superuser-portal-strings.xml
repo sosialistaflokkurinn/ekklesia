@@ -124,6 +124,8 @@
   <!-- System Health (JS) -->
   <string name="service_name_elections">Kosningaþjónusta</string>
   <string name="service_name_events">Viðburðaþjónusta</string>
+  <string name="service_name_xj_next">Vefsíða (xj-next)</string>
+  <string name="service_name_xj_strapi">Strapi CMS</string>
   <string name="service_name_healthz">Kenni.is Health Check</string>
   <string name="service_name_django_socialism">Django Admin (GCP)</string>
   <string name="service_name_handlekenniauth">Kenni.is Auth</string>
@@ -186,6 +188,24 @@
   <!-- Heatmap services -->
   <string name="service_name_compute_heatmap_stats">Reikna hitakortsgögn</string>
   <string name="service_name_get_heatmap_data">Sækja hitakortsgögn</string>
+
+  <!-- SMS services -->
+  <string name="service_name_listsmstemplates">Lista SMS sniðmát</string>
+  <string name="service_name_getsmstemplate">Sækja SMS sniðmát</string>
+  <string name="service_name_savesmstemplate">Vista SMS sniðmát</string>
+  <string name="service_name_deletesmstemplate">Eyða SMS sniðmáti</string>
+  <string name="service_name_sendsms">Senda SMS</string>
+  <string name="service_name_listsmscampaigns">Lista SMS herferðir</string>
+  <string name="service_name_createsmscampaign">Búa til SMS herferð</string>
+  <string name="service_name_sendsmscampaign">Senda SMS herferð</string>
+  <string name="service_name_getsmsstats">SMS tölfræði</string>
+  <string name="service_name_listsmslogs">SMS sendingarskrá</string>
+  <string name="service_name_getsmslogs">Sækja SMS loga</string>
+  <string name="service_name_previewsmsrecipientcount">Forskoðun SMS viðtakenda</string>
+
+  <!-- Infrastructure services -->
+  <string name="service_name_warmup">Upphitunarþjónusta</string>
+  <string name="service_name_rotate_secret">Snúa leynilykli</string>
 
   <string name="service_status_no_url">Engin heilsuslóð skilgreind</string>
   <string name="service_status_active">Virk</string>
@@ -353,6 +373,7 @@
   <string name="architecture_group_member">Félagsaðgerðir</string>
   <string name="architecture_group_email">Tölvupóstur</string>
   <string name="architecture_group_heatmap">Hitakort</string>
+  <string name="architecture_group_sms">SMS</string>
   <string name="architecture_group_infra">Innviðir</string>
 
   <!-- Architecture service names -->
@@ -454,6 +475,8 @@
   <string name="health_section_email_desc">SendGrid tölvupóstþjónustur fyrir sniðmát, herferðir og sendingar.</string>
   <string name="health_section_heatmap">Hitakort</string>
   <string name="health_section_heatmap_desc">Hitakort og tölfræði um félagsdreifingu.</string>
+  <string name="health_section_sms">SMS</string>
+  <string name="health_section_sms_desc">SMS þjónustur fyrir sniðmát, herferðir og sendingar.</string>
   <string name="health_section_database">Gagnagrunnar</string>
   <string name="health_section_schema">Gagnagrunnsskemu</string>
   <string name="health_section_schema_desc">Yfirlit yfir gagnaskipan í Firestore og PostgreSQL.</string>

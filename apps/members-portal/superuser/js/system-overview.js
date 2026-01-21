@@ -27,7 +27,6 @@ import { superuserStrings } from './i18n/superuser-strings-loader.js';
 import { fetchHealthData, mapServicesWithHealth } from './services/health-service.js';
 import {
   getServicesByCategory,
-  getRegistrationSiteServices,
   getServiceCounts,
   CATEGORIES
 } from './services/service-catalog.js';
@@ -70,6 +69,7 @@ function updateServicesTab() {
     { category: CATEGORIES.REGISTRATION, containerId: 'registration-functions' },
     { category: CATEGORIES.SUPERUSER, containerId: 'superuser-functions' },
     { category: CATEGORIES.EMAIL, containerId: 'email-functions' },
+    { category: CATEGORIES.SMS, containerId: 'sms-functions' },
     { category: CATEGORIES.HEATMAP, containerId: 'heatmap-functions' },
     { category: CATEGORIES.DATABASE, containerId: 'database-services' },
     { category: CATEGORIES.FIREBASE, containerId: 'firebase-services' }
@@ -81,11 +81,6 @@ function updateServicesTab() {
     const servicesWithHealth = mapServicesWithHealth(services);
     renderServicesGrid(containerId, servicesWithHealth);
   });
-
-  // Registration site (special section with usage field)
-  const registrationServices = getRegistrationSiteServices();
-  const registrationWithHealth = mapServicesWithHealth(registrationServices);
-  renderServicesGrid('registration-site-functions', registrationWithHealth);
 
   // Update breakdown counts
   updateBreakdownCounts(getServiceCounts());

@@ -20,7 +20,7 @@ import { requireAuth, getUserData, signOut, AuthenticationError } from '../sessi
 import { requireMember } from './rbac.js';
 import { httpsCallable, getFirebaseAuth, getFirebaseFirestore } from '../firebase/app.js';
 import { setTextContent, setInnerHTML, addEventListener, setDisabled, validateElements } from '../ui/dom.js';
-import { formatPhone, normalizePhoneForComparison, formatDateWithDayIcelandic, getNextRecurringOccurrence } from './utils/util-format.js';
+import { formatPhone, normalizePhoneForComparison, formatDateWithDayIcelandic } from './utils/util-format.js';
 import { updateMemberProfile } from './api/api-members.js';
 import { createButton } from './components/ui-button.js';
 import { showModal } from './components/ui-modal.js';
@@ -513,8 +513,8 @@ function setFeaturedEventCache(event) {
 function displayFeaturedEvent(event) {
   if (!event) return;
 
-  // Check for recurring events and use next occurrence date
-  const nextOccurrence = getNextRecurringOccurrence(event);
+  // Use nextOccurrence from API for recurring events
+  const nextOccurrence = event.nextOccurrence ? new Date(event.nextOccurrence) : null;
   const dateToShow = nextOccurrence || new Date(event.startTime);
 
   // Format date in Icelandic using central formatter
@@ -566,11 +566,10 @@ async function fetchFeaturedEvent() {
     if (allEventsResponse.ok) {
       const events = await allEventsResponse.json();
       // Filter for upcoming or ongoing events, sort by next relevant date
-      // For ongoing recurring events, use next occurrence; for upcoming, use startTime
+      // Use nextOccurrence from API for recurring events
       const getRelevantDate = (e) => {
-        if (e.isOngoing) {
-          const nextOccurrence = getNextRecurringOccurrence(e);
-          if (nextOccurrence) return nextOccurrence;
+        if (e.nextOccurrence) {
+          return new Date(e.nextOccurrence);
         }
         return new Date(e.startTime);
       };

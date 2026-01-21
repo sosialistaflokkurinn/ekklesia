@@ -12,7 +12,7 @@ import { debug } from './utils/util-debug.js';
 import { initAuthenticatedPage } from './page-init.js';
 import { setTextContent, setInnerHTML } from '../ui/dom.js';
 import { createButton } from './components/ui-button.js';
-import { extractVideoLinks, formatRichText, getNextRecurringOccurrence } from './utils/util-format.js';
+import { extractVideoLinks, formatRichText } from './utils/util-format.js';
 import { SERVICES } from './config/config.js';
 
 // API Configuration - from js/config/config.js
@@ -331,8 +331,8 @@ function processEvents(rawEvents) {
     // Format date - handle recurring events specially
     let formattedDate;
 
-    // Check if this is a recurring weekly event using shared utility
-    const nextOccurrence = getNextRecurringOccurrence(event);
+    // Use nextOccurrence from API for recurring events
+    const nextOccurrence = event.nextOccurrence ? new Date(event.nextOccurrence) : null;
 
     if (nextOccurrence) {
       // Use special marker for prominent styling
@@ -370,7 +370,7 @@ function processEvents(rawEvents) {
       isOngoing: event.isOngoing,
       facebookUrl: event.facebookUrl,
       imageUrl: event.imageUrl,
-      rawDate: startDate
+      rawDate: nextOccurrence || startDate
     };
   });
 }

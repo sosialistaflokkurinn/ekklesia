@@ -7,12 +7,17 @@
 import { superuserStrings } from '../i18n/superuser-strings-loader.js';
 import { formatTimeIcelandic } from '../../../js/utils/util-format.js';
 import { getOverallStatus, getLastFetchTime } from '../services/health-service.js';
+import { getServiceCounts } from '../services/service-catalog.js';
 
 /**
  * Update the health summary in the header
  */
 export function updateHealthSummary() {
-  const { status, healthy, degraded, down, available } = getOverallStatus();
+  const { status, degraded, down } = getOverallStatus();
+
+  // Use catalog counts for total (consistent with breakdown display)
+  const counts = getServiceCounts();
+  const totalServices = counts.gcp + counts.functions + counts.database + counts.firebase;
 
   let text;
   if (down > 0) {
@@ -20,8 +25,7 @@ export function updateHealthSummary() {
   } else if (degraded > 0) {
     text = superuserStrings.get('health_summary_degraded')?.replace('%s', degraded) || `${degraded} hægvirkar`;
   } else {
-    const healthyTotal = healthy + available;
-    text = superuserStrings.get('health_summary_healthy')?.replace('%s', healthyTotal) || `${healthyTotal} heilbrigðar`;
+    text = superuserStrings.get('health_summary_healthy')?.replace('%s', totalServices) || `${totalServices} heilbrigðar`;
   }
 
   updateSummaryStatus(status, text);
