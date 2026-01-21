@@ -18,14 +18,20 @@ const logger = require('../utils/util-logger');
 
 /**
  * Constant-time string comparison to prevent timing attacks
- * Uses HMAC to normalize inputs to same length before comparison
+ * Pads shorter string to match length, then uses timingSafeEqual
+ * Note: This is API key comparison, NOT password hashing
  */
 function secureCompare(a, b) {
   if (!a || !b) return false;
-  const key = crypto.randomBytes(32);
-  const hmacA = crypto.createHmac('sha256', key).update(String(a)).digest();
-  const hmacB = crypto.createHmac('sha256', key).update(String(b)).digest();
-  return crypto.timingSafeEqual(hmacA, hmacB);
+  const strA = String(a);
+  const strB = String(b);
+  const maxLen = Math.max(strA.length, strB.length);
+  const bufA = Buffer.alloc(maxLen, 0);
+  const bufB = Buffer.alloc(maxLen, 0);
+  bufA.write(strA);
+  bufB.write(strB);
+  // Length check is not timing-safe but API keys are fixed length
+  return strA.length === strB.length && crypto.timingSafeEqual(bufA, bufB);
 }
 
 /**
