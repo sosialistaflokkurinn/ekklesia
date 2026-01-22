@@ -16,7 +16,7 @@ import { initSession } from '../../session/init.js';
 import { initNavigation } from '../../js/nav-interactions.js';
 import { debug } from '../../js/utils/util-debug.js';
 import { getFirebaseAuth, getFirebaseFirestore, httpsCallable } from '../../firebase/app.js';
-import MembersAPI from './api/members-api.js';
+import MembersAPI from './api/members-api.js?v=20260122a';
 import { formatPhone, maskKennitala, formatDateOnlyIcelandic } from '../../js/utils/util-format.js';
 import { filterMembersByDistrict, getElectoralDistrictName } from './utils/electoral-districts.js';
 import { filterMembersByMunicipality, getMunicipalityName, getMunicipalityOptions, FILTER_MISSING_ADDRESS } from './utils/municipalities.js';
@@ -783,14 +783,26 @@ function setCache(data) {
 
     // Build address string from member data
     const getAddress = (member) => {
+      // Try direct address object first (from listMembers API)
+      const addr = member?.address || {};
+      if (addr.street) {
+        const parts = [addr.street];
+        if (addr.number) parts[0] += ' ' + addr.number;
+        if (addr.letter) parts[0] += addr.letter;
+        if (addr.postal_code || addr.city) {
+          parts.push([addr.postal_code, addr.city].filter(Boolean).join(' '));
+        }
+        return parts.join(', ');
+      }
+      // Fallback to addresses array (from getMember API)
       const addresses = member?.profile?.addresses || member?.addresses || [];
-      const addr = addresses.find(a => a.is_default || a.is_primary) || addresses[0];
-      if (!addr) return '-';
-      const parts = [addr.street || ''];
-      if (addr.number) parts[0] += ' ' + addr.number;
-      if (addr.letter) parts[0] += addr.letter;
-      if (addr.postal_code || addr.city) {
-        parts.push([addr.postal_code, addr.city].filter(Boolean).join(' '));
+      const fallbackAddr = addresses.find(a => a.is_default || a.is_primary) || addresses[0];
+      if (!fallbackAddr) return '-';
+      const parts = [fallbackAddr.street || ''];
+      if (fallbackAddr.number) parts[0] += ' ' + fallbackAddr.number;
+      if (fallbackAddr.letter) parts[0] += fallbackAddr.letter;
+      if (fallbackAddr.postal_code || fallbackAddr.city) {
+        parts.push([fallbackAddr.postal_code, fallbackAddr.city].filter(Boolean).join(' '));
       }
       return parts.join(', ') || '-';
     };

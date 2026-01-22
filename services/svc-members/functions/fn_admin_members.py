@@ -73,7 +73,7 @@ def list_members_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     check_uid_rate_limit(req.auth.uid, "list_members", max_attempts=100, window_minutes=1)
 
     data = req.data or {}
-    limit = min(int(data.get("limit", 50)), 200)
+    limit = min(int(data.get("limit", 50)), 5000)  # Allow up to 5000 for filtered queries
     offset = int(data.get("offset", 0))
     status = data.get("status", "active")
     search = data.get("search", "").strip()
@@ -195,7 +195,24 @@ def list_members_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
                     WHERE fa.comrade_id = c.id AND nca.current = true
                     LIMIT 1
                 )
-            ) as municipality
+            ) as municipality,
+            (
+                SELECT jsonb_build_object(
+                    'street', s.name,
+                    'number', a.number,
+                    'letter', a.letter,
+                    'postal_code', pc.code,
+                    'city', m.name
+                )
+                FROM membership_newlocaladdress la
+                JOIN membership_newcomradeaddress nca ON la.newcomradeaddress_ptr_id = nca.id
+                JOIN map_address a ON la.address_id = a.id
+                JOIN map_street s ON a.street_id = s.id
+                JOIN map_municipality m ON s.municipality_id = m.id
+                LEFT JOIN map_postalcode pc ON s.postal_code_id = pc.id
+                WHERE la.comrade_id = c.id AND nca.current = true
+                LIMIT 1
+            ) as address
         FROM membership_comrade c
         LEFT JOIN membership_contactinfo ci ON ci.comrade_id = c.id
         WHERE {where_clause}
@@ -206,8 +223,17 @@ def list_members_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
 
     rows = execute_query(main_query, params=tuple(params))
 
+    import json as json_module
     members = []
     for row in rows:
+        # Parse address JSON if present
+        address = row.get('address') or {}
+        if isinstance(address, str):
+            try:
+                address = json_module.loads(address)
+            except (json_module.JSONDecodeError, TypeError):
+                address = {}
+
         members.append({
             'id': str(row['django_id']),
             'django_id': row['django_id'],
@@ -219,6 +245,7 @@ def list_members_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             'date_joined': str(row['date_joined']) if row['date_joined'] else None,
             'status': 'deleted' if row['deleted_at'] else 'active',
             'municipality': row['municipality'] or '',
+            'address': address,
             'metadata': {
                 'django_id': row['django_id']
             }
