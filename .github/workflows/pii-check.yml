@@ -22,6 +22,21 @@ jobs:
         uses: actions/github-script@v8
         with:
           script: |
+            // Domains to exclude from email PII detection (not personal emails)
+            const excludedEmailDomains = [
+              'example.com',
+              'example.org',
+              'example.net',
+              // GCP service accounts
+              'developer.gserviceaccount.com',
+              'cloudservices.gserviceaccount.com',
+              'appspot.gserviceaccount.com',
+              'iam.gserviceaccount.com',
+              // Other service accounts
+              'noreply.github.com',
+              'github.com',
+            ];
+
             // PII patterns (excluding clearly fake examples)
             const patterns = {
               kennitala: {
@@ -29,8 +44,12 @@ jobs:
                 name: 'Kennitala (Icelandic SSN)'
               },
               email: {
-                regex: /\b[A-Za-z0-9._%+-]+@(?!example\.com|example\.org|example\.net)[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/gi,
-                name: 'Email address (not @example.com)'
+                regex: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/gi,
+                name: 'Email address',
+                filter: (match) => {
+                  const domain = match.split('@')[1]?.toLowerCase();
+                  return !excludedEmailDomains.some(excluded => domain?.endsWith(excluded));
+                }
               },
               phone: {
                 regex: /\b(?!555-1234|000-0000)[0-9]{3}[\s-]?[0-9]{4}\b/g,
@@ -57,8 +76,14 @@ jobs:
             // Check for PII patterns
             const findings = [];
             for (const [type, pattern] of Object.entries(patterns)) {
-              const matches = fullText.match(pattern.regex);
-              if (matches) {
+              let matches = fullText.match(pattern.regex);
+              
+              // Apply filter if defined (e.g., to exclude service account emails)
+              if (matches && pattern.filter) {
+                matches = matches.filter(pattern.filter);
+              }
+              
+              if (matches && matches.length > 0) {
                 findings.push({
                   type: pattern.name,
                   count: matches.length,
