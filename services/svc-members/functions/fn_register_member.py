@@ -60,7 +60,7 @@ Returns: `{ "comrade_id": 1234, "django_id": 1234, "error": null }`
 import logging
 import re
 import random
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any
 
 from firebase_functions import https_fn, options

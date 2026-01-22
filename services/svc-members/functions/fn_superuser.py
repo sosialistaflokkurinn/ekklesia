@@ -10,15 +10,13 @@ Functions for superuser console operations:
 All functions require superuser role.
 """
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 from firebase_admin import auth, firestore
-from firebase_functions import https_fn, options
+from firebase_functions import https_fn
 from util_logging import log_json
 from shared.rate_limit import check_uid_rate_limit
 from db_members import (
-    get_member_by_kennitala,
     get_member_by_django_id,
-    get_member_by_email,
     get_deleted_member_count,
     get_deleted_members,
     hard_delete_member_sql,
@@ -26,8 +24,6 @@ from db_members import (
 )
 import requests
 import time
-import os
-import ast
 import re
 
 # Import Cloud Logging lazily to avoid import issues in local dev
@@ -85,6 +81,11 @@ CLOUD_RUN_SERVICES = [
         "id": "warmup",
         "name": "Warmup þjónusta",
         "url": "https://warmup-521240388393.europe-west1.run.app/health"
+    },
+    {
+        "id": "xj-site",
+        "name": "Vefsíða (xj-site)",
+        "url": "https://xj-site-521240388393.europe-west1.run.app/"
     },
 ]
 
@@ -240,7 +241,7 @@ def set_user_role_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
         Success status with updated claims.
     """
     # Verify superuser access
-    caller_claims = require_superuser(req)
+    require_superuser(req)
     caller_uid = req.auth.uid
 
     # Security: Rate limit role changes (10 per 10 minutes)
@@ -831,7 +832,7 @@ def hard_delete_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
         Deletion status.
     """
     # Verify superuser access
-    caller_claims = require_superuser(req)
+    require_superuser(req)
     caller_uid = req.auth.uid
 
     # Security: Rate limit destructive operations (3 per hour)
@@ -944,7 +945,7 @@ def anonymize_member_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
         Anonymization status.
     """
     # Verify superuser access
-    caller_claims = require_superuser(req)
+    require_superuser(req)
     caller_uid = req.auth.uid
 
     # Security: Rate limit destructive operations (5 per hour for anonymization)

@@ -128,7 +128,7 @@ def send_sms_via_twilio(to_phone: str, message: str, tags: list = None) -> dict:
             "segments": len(message) // 160 + 1  # Approximate segment count
         }
     else:
-        raise Exception(f"Twilio error: No message SID returned")
+        raise Exception("Twilio error: No message SID returned")
 
 
 def get_filtered_members_with_phone(recipient_filter: Dict[str, Any], max_results: int = MAX_RECIPIENTS_PER_BATCH) -> List[Dict]:

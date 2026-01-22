@@ -4,7 +4,6 @@ Validation and normalization utilities for Ekklesia Members Service
 Handles kennitala and phone number validation and formatting.
 """
 
-import re
 from util_logging import log_json
 
 

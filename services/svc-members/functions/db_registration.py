@@ -16,7 +16,6 @@ Tables affected:
 
 import logging
 from datetime import datetime
-from typing import Optional
 
 from db import get_connection, execute_query
 from util_logging import log_json

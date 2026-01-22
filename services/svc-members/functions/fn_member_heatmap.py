@@ -29,8 +29,7 @@ import json
 import logging
 import os
 import time
-from typing import Dict, List
-from collections import defaultdict
+from typing import Dict
 
 from firebase_functions import https_fn, options, scheduler_fn
 from firebase_admin import firestore

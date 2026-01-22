@@ -6,14 +6,13 @@ Handles membership verification, sync operations, and profile updates.
 
 from datetime import datetime, timezone
 from typing import Dict, Any
-from concurrent.futures import ThreadPoolExecutor, as_completed
-import json
+from concurrent.futures import ThreadPoolExecutor
 import re
 
 from firebase_admin import auth, firestore
-from firebase_functions import https_fn, options
+from firebase_functions import https_fn
 from util_logging import log_json
-from shared.validators import normalize_kennitala, normalize_phone
+from shared.validators import normalize_kennitala
 from shared.rate_limit import check_uid_rate_limit
 from db_members import get_member_by_kennitala
 from db import execute_update

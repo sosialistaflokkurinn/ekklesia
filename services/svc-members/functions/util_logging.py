@@ -3,7 +3,6 @@ Logging utilities for Cloud Functions.
 Provides structured JSON logging and PII redaction.
 """
 import json
-import os
 from typing import Any, Dict
 
 SENSITIVE_KEYS = {

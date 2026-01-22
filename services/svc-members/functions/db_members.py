@@ -540,11 +540,11 @@ def update_member_firebase_uid(kennitala: str, firebase_uid: str) -> bool:
     """
 
     try:
-        from db import execute_query as exec_write
-        result = exec_write(query, params=(firebase_uid, kennitala, firebase_uid))
-        # execute_query returns affected rows count for UPDATE
-        logger.info(f"Updated firebase_uid for kennitala {kennitala[:6]}****")
-        return True
+        from db import execute_update
+        affected = execute_update(query, params=(firebase_uid, kennitala, firebase_uid))
+        if affected > 0:
+            logger.info(f"Updated firebase_uid for kennitala {kennitala[:6]}****")
+        return affected > 0
     except Exception as e:
         logger.error(f"Failed to update firebase_uid for kennitala {kennitala[:6]}****: {e}")
         return False

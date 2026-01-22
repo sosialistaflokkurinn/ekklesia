@@ -46,6 +46,7 @@ const MembersAPI = {
         birthday: m.birthday,
         date_joined: m.date_joined,
         municipality: m.municipality,
+        address: m.address || {},
         metadata: m.metadata || {},
         // For backwards compatibility
         membership: {
