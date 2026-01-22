@@ -84,7 +84,7 @@ def _get_db_password() -> str:
     try:
         from google.cloud import secretmanager
         client = secretmanager.SecretManagerServiceClient()
-        name = f"projects/ekklesia-prod-10-2025/secrets/django-socialism-db-password/versions/latest"
+        name = "projects/ekklesia-prod-10-2025/secrets/django-socialism-db-password/versions/latest"
         response = client.access_secret_version(request={"name": name})
         _db_password = response.payload.data.decode("UTF-8").strip()
         logger.info("Loaded database password from Secret Manager API")

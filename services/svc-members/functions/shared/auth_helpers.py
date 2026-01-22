@@ -2,7 +2,7 @@
 Authentication helpers for Cloud Functions.
 """
 
-from typing import Optional, Dict, Any
+from typing import Dict, Any
 from firebase_admin import auth
 from firebase_functions import https_fn
 from util_logging import log_json

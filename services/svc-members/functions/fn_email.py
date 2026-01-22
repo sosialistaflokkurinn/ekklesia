@@ -522,7 +522,7 @@ def save_email_template_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
     Returns:
         Saved template with ID.
     """
-    claims = require_admin(req)
+    require_admin(req)
 
     # Security: Rate limit template saves (20 per 10 minutes)
     if not check_uid_rate_limit(req.auth.uid, "save_template", max_attempts=20, window_minutes=10):
@@ -805,7 +805,7 @@ def send_email_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
         if not member_data:
             raise https_fn.HttpsError(
                 code=https_fn.FunctionsErrorCode.NOT_FOUND,
-                message=f"Member with kennitala not found"
+                message="Member with kennitala not found"
             )
         recipient_email = member_data.get("profile", {}).get("email")
     elif recipient_email and email_type == "broadcast":

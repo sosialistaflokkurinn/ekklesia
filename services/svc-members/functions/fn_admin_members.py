@@ -7,7 +7,7 @@ These read from Cloud SQL (source of truth) instead of Firestore.
 Issue: Migrate admin pages from Firestore to Cloud SQL
 """
 
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any
 from datetime import datetime, timezone
 from firebase_functions import https_fn
 from firebase_admin import auth

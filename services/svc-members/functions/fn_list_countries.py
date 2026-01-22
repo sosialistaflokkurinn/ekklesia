@@ -14,7 +14,7 @@ Caching:
 
 import logging
 import time
-from typing import Any, Optional, List
+from typing import Optional, List
 
 from firebase_functions import https_fn, options
 

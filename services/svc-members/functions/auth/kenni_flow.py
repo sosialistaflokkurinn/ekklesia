@@ -10,7 +10,6 @@ import requests
 import jwt
 import uuid
 from jwt import PyJWKClient
-from typing import Optional
 
 from firebase_admin import auth, firestore
 from firebase_functions import https_fn

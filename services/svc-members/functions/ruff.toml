@@ -1,0 +1,13 @@
+# Ruff configuration for Firebase Functions
+# https://docs.astral.sh/ruff/configuration/
+
+[lint]
+# Rules to enable (same as ruff defaults)
+select = ["E4", "E7", "E9", "F"]
+
+# Per-file ignores
+[lint.per-file-ignores]
+# E402: Module level import not at top of file
+# These files intentionally import after Firebase Admin initialization
+"main.py" = ["E402"]
+"membership/functions.py" = ["E402"]

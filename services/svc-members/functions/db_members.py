@@ -541,7 +541,7 @@ def update_member_firebase_uid(kennitala: str, firebase_uid: str) -> bool:
 
     try:
         from db import execute_query as exec_write
-        result = exec_write(query, params=(firebase_uid, kennitala, firebase_uid))
+        exec_write(query, params=(firebase_uid, kennitala, firebase_uid))
         # execute_query returns affected rows count for UPDATE
         logger.info(f"Updated firebase_uid for kennitala {kennitala[:6]}****")
         return True

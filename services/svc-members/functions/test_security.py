@@ -20,7 +20,8 @@ try:
     from .security_utils import _rate_limit_bucket_id, validate_auth_input
 except ImportError:
     # When executed directly, adjust path and import absolute
-    import sys, os
+    import sys
+    import os
     sys.path.insert(0, os.path.dirname(__file__))
     from util_security import _rate_limit_bucket_id, validate_auth_input
 
