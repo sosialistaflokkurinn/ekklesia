@@ -145,8 +145,20 @@ function setCache(data) {
       elements.paginationContainer.style.display = 'flex';
     }
 
+    // Read URL parameters for initial filter state
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlMunicipality = urlParams.get('municipality');
+    if (urlMunicipality) {
+      currentMunicipality = urlMunicipality;
+    }
+
     // Populate municipality dropdown
     populateMunicipalityDropdown();
+
+    // Set dropdown value from URL parameter
+    if (urlMunicipality && elements.filterMunicipality) {
+      elements.filterMunicipality.value = urlMunicipality;
+    }
 
     // Initialize searchable selects after strings are loaded
     initSearchableSelects({
@@ -452,6 +464,7 @@ function setCache(data) {
         limit: limitCount,
         status: 'active',  // Only fetch active members (exclude soft-deleted)
         search: currentSearch,
+        municipality: currentMunicipality !== 'all' ? currentMunicipality : '',
         startAfter: needsClientSideFiltering ? null : lastDoc  // No pagination when filtering
       });
 
@@ -518,11 +531,12 @@ function setCache(data) {
     try {
       // If any filter is active, count filtered members
       if (currentDistrict !== 'all' || currentMunicipality !== 'all') {
-        // Load all members for client-side counting
+        // Load all members for client-side counting (with server-side filter if applicable)
         const result = await MembersAPI.fetchMembers({
           limit: 5000,
           status: 'active',  // Only count active members
           search: '',
+          municipality: currentMunicipality !== 'all' ? currentMunicipality : '',
           startAfter: null
         });
 

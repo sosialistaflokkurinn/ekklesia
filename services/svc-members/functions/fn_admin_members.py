@@ -124,19 +124,35 @@ def list_members_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
 
     # Municipality filter
     if municipality:
-        conditions.append("""
-            EXISTS (
-                SELECT 1 FROM membership_newlocaladdress la
-                JOIN membership_newcomradeaddress nca ON la.newcomradeaddress_ptr_id = nca.id
-                JOIN map_address a ON la.address_id = a.id
-                JOIN map_street s ON a.street_id = s.id
-                JOIN map_municipality m ON s.municipality_id = m.id
-                WHERE la.comrade_id = c.id
-                  AND nca.current = true
-                  AND m.name = %s
-            )
-        """)
-        params.append(municipality)
+        if municipality == "Erlendis":
+            # Filter for members with foreign address (no local address)
+            conditions.append("""
+                EXISTS (
+                    SELECT 1 FROM membership_newforeignaddress fa
+                    JOIN membership_newcomradeaddress nca ON fa.newcomradeaddress_ptr_id = nca.id
+                    WHERE fa.comrade_id = c.id AND nca.current = true
+                )
+                AND NOT EXISTS (
+                    SELECT 1 FROM membership_newlocaladdress la
+                    JOIN membership_newcomradeaddress nca ON la.newcomradeaddress_ptr_id = nca.id
+                    WHERE la.comrade_id = c.id AND nca.current = true
+                )
+            """)
+        else:
+            # Filter for members with local address in specific municipality
+            conditions.append("""
+                EXISTS (
+                    SELECT 1 FROM membership_newlocaladdress la
+                    JOIN membership_newcomradeaddress nca ON la.newcomradeaddress_ptr_id = nca.id
+                    JOIN map_address a ON la.address_id = a.id
+                    JOIN map_street s ON a.street_id = s.id
+                    JOIN map_municipality m ON s.municipality_id = m.id
+                    WHERE la.comrade_id = c.id
+                      AND nca.current = true
+                      AND m.name = %s
+                )
+            """)
+            params.append(municipality)
 
     where_clause = " AND ".join(conditions)
 
@@ -161,15 +177,24 @@ def list_members_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             c.deleted_at,
             ci.email,
             ci.phone,
-            (
-                SELECT m.name
-                FROM membership_newlocaladdress la
-                JOIN membership_newcomradeaddress nca ON la.newcomradeaddress_ptr_id = nca.id
-                JOIN map_address a ON la.address_id = a.id
-                JOIN map_street s ON a.street_id = s.id
-                JOIN map_municipality m ON s.municipality_id = m.id
-                WHERE la.comrade_id = c.id AND nca.current = true
-                LIMIT 1
+            COALESCE(
+                (
+                    SELECT m.name
+                    FROM membership_newlocaladdress la
+                    JOIN membership_newcomradeaddress nca ON la.newcomradeaddress_ptr_id = nca.id
+                    JOIN map_address a ON la.address_id = a.id
+                    JOIN map_street s ON a.street_id = s.id
+                    JOIN map_municipality m ON s.municipality_id = m.id
+                    WHERE la.comrade_id = c.id AND nca.current = true
+                    LIMIT 1
+                ),
+                (
+                    SELECT 'Erlendis'
+                    FROM membership_newforeignaddress fa
+                    JOIN membership_newcomradeaddress nca ON fa.newcomradeaddress_ptr_id = nca.id
+                    WHERE fa.comrade_id = c.id AND nca.current = true
+                    LIMIT 1
+                )
             ) as municipality
         FROM membership_comrade c
         LEFT JOIN membership_contactinfo ci ON ci.comrade_id = c.id
