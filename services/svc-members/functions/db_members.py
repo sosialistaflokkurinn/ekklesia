@@ -49,6 +49,7 @@ def get_member_by_kennitala(kennitala: str) -> Optional[Dict[str, Any]]:
             c.groupable,
             c.email_marketing,
             c.email_marketing_updated_at,
+            c.profile_image_url,
             ci.email,
             ci.phone
         FROM membership_comrade c
@@ -70,6 +71,7 @@ def get_member_by_kennitala(kennitala: str) -> Optional[Dict[str, Any]]:
             'email': result['email'],
             'phone': result['phone'],
             'birthday': str(result['birthday']) if result['birthday'] else None,
+            'profile_image_url': result['profile_image_url'],
         },
         'membership': {
             'date_joined': str(result['date_joined']) if result['date_joined'] else None,
@@ -105,6 +107,7 @@ def get_member_by_django_id(django_id: int) -> Optional[Dict[str, Any]]:
             c.groupable,
             c.email_marketing,
             c.email_marketing_updated_at,
+            c.profile_image_url,
             ci.email,
             ci.phone
         FROM membership_comrade c
@@ -125,6 +128,7 @@ def get_member_by_django_id(django_id: int) -> Optional[Dict[str, Any]]:
             'email': result['email'],
             'phone': result['phone'],
             'birthday': str(result['birthday']) if result['birthday'] else None,
+            'profile_image_url': result['profile_image_url'],
         },
         'membership': {
             'date_joined': str(result['date_joined']) if result['date_joined'] else None,
@@ -160,6 +164,7 @@ def get_member_by_firebase_uid(firebase_uid: str) -> Optional[Dict[str, Any]]:
             c.groupable,
             c.email_marketing,
             c.email_marketing_updated_at,
+            c.profile_image_url,
             ci.email,
             ci.phone
         FROM membership_comrade c
@@ -180,6 +185,7 @@ def get_member_by_firebase_uid(firebase_uid: str) -> Optional[Dict[str, Any]]:
             'email': result['email'],
             'phone': result['phone'],
             'birthday': str(result['birthday']) if result['birthday'] else None,
+            'profile_image_url': result['profile_image_url'],
         },
         'membership': {
             'date_joined': str(result['date_joined']) if result['date_joined'] else None,

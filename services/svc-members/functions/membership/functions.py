@@ -23,6 +23,7 @@ MAX_EMAIL_LENGTH = 254
 MAX_PHONE_LENGTH = 20
 MAX_ADDRESS_FIELD_LENGTH = 200
 MAX_ADDRESSES = 5
+MAX_URL_LENGTH = 2048
 from django_api import (
     update_django_member, update_django_address
 )
@@ -157,7 +158,8 @@ def updatememberprofile_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
                 'groupable': bool (optional),
                 'gender': int (optional) - 1=male, 2=female, 3=other,
                 'birthday': str (optional) - ISO 8601 date string (YYYY-MM-DD),
-                'addresses': array (optional) - Array of address objects with is_default flag
+                'addresses': array (optional) - Array of address objects with is_default flag,
+                'profile_image_url': str or null (optional) - Firebase Storage URL for profile image
             }
         }
 
@@ -215,6 +217,27 @@ def updatememberprofile_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
                 code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
                 message="Invalid email format"
             )
+
+    # Validate profile_image_url if provided (can be string URL or null to clear)
+    if 'profile_image_url' in updates:
+        url = updates['profile_image_url']
+        if url is not None:  # null is valid (clears the image)
+            if not isinstance(url, str):
+                raise https_fn.HttpsError(
+                    code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+                    message="profile_image_url must be a string or null"
+                )
+            if len(url) > MAX_URL_LENGTH:
+                raise https_fn.HttpsError(
+                    code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+                    message=f"profile_image_url exceeds maximum length of {MAX_URL_LENGTH}"
+                )
+            # Validate URL format (must be Firebase Storage URL)
+            if not url.startswith('https://firebasestorage.googleapis.com/'):
+                raise https_fn.HttpsError(
+                    code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+                    message="profile_image_url must be a Firebase Storage URL"
+                )
 
     # Validate addresses if provided
     if 'addresses' in updates:
@@ -337,6 +360,10 @@ def updatememberprofile_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
             django_updates['gender'] = updates['gender']
         if 'birthday' in updates:
             django_updates['birthday'] = updates['birthday']
+
+        # Handle profile_image_url (can be URL string or null to clear)
+        if 'profile_image_url' in updates:
+            django_updates['profile_image_url'] = updates['profile_image_url']
 
         # Handle addresses - find default Iceland address and sync to Django NewLocalAddress
         address_sync_result = None

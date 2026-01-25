@@ -568,7 +568,18 @@ def get_member_self_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
                 FROM membership_comradetitle ct
                 JOIN membership_title t ON ct.title_id = t.id
                 WHERE ct.comrade_id = c.id
-            ) as titles
+            ) as titles,
+            (
+                SELECT json_agg(json_build_object(
+                    'id', co.id,
+                    'name', co.name,
+                    'slug', co.slug,
+                    'is_alternate', cm.is_alternate
+                ))
+                FROM membership_councilmembership cm
+                JOIN membership_council co ON cm.council_id = co.id
+                WHERE cm.comrade_id = c.id
+            ) as councils
         FROM membership_comrade c
         LEFT JOIN membership_contactinfo ci ON ci.comrade_id = c.id
         WHERE c.ssn = %s
@@ -596,6 +607,10 @@ def get_member_self_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
     if isinstance(titles, str):
         titles = json.loads(titles)
 
+    councils = result['councils'] or []
+    if isinstance(councils, str):
+        councils = json.loads(councils)
+
     # Format kennitala with hyphen for display
     kt_display = kennitala
     if len(kennitala) == 10 and '-' not in kennitala:
@@ -619,6 +634,7 @@ def get_member_self_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
         'address': address,
         'unions': unions or [],
         'titles': titles or [],
+        'councils': councils or [],
         'metadata': {
             'django_id': result['django_id']
         },
@@ -638,7 +654,8 @@ def get_member_self_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             'deleted_at': str(result['deleted_at']) if result['deleted_at'] else None,
             'status': 'deleted' if result['deleted_at'] else 'active',
             'unions': unions or [],
-            'titles': titles or []
+            'titles': titles or [],
+            'councils': councils or []
         },
         'preferences': {
             'email_marketing': result['email_marketing'] if result['email_marketing'] is not None else True,
