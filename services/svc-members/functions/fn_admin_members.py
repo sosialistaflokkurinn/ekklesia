@@ -529,6 +529,7 @@ def get_member_self_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             c.email_marketing_updated_at,
             c.gender,
             c.housing_situation,
+            c.profile_image_url,
             ci.email,
             ci.phone,
             (
@@ -625,6 +626,7 @@ def get_member_self_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
         'phone': result['phone'] or '',
         'birthday': str(result['birthday']) if result['birthday'] else None,
         'gender': result['gender'],
+        'profile_image_url': result['profile_image_url'],
         'date_joined': str(result['date_joined']) if result['date_joined'] else None,
         'status': 'deleted' if result['deleted_at'] else 'active',
         'deleted_at': str(result['deleted_at']) if result['deleted_at'] else None,
@@ -645,6 +647,7 @@ def get_member_self_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             'birthday': str(result['birthday']) if result['birthday'] else None,
             'gender': result['gender'],
             'housing_situation': result['housing_situation'],
+            'profile_image_url': result['profile_image_url'],
             'reachable': result['reachable'] if result['reachable'] is not None else True,
             'groupable': result['groupable'] if result['groupable'] is not None else True,
             'addresses': [address] if address else []
