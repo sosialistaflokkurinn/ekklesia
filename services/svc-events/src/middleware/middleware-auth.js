@@ -40,15 +40,14 @@ async function authenticate(req, res, next) {
     const s2sUserId = req.header('X-User-Id');
 
     // Debug logging for S2S auth
-    logger.info('S2S auth check', {
-      operation: 'authenticate_debug',
+    console.log('S2S auth check:', JSON.stringify({
       hasApiKey: !!apiKey,
       hasExpectedKey: !!expectedKey,
       hasUserId: !!s2sUserId,
       apiKeyLength: apiKey?.length,
       expectedKeyLength: expectedKey?.length,
       path: req.path,
-    });
+    }));
 
     if (apiKey && expectedKey && secureCompare(apiKey, expectedKey) && s2sUserId) {
       logger.info('S2S authentication successful', {
