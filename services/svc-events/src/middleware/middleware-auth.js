@@ -1,5 +1,22 @@
 const admin = require('../config/config-firebase');
+const crypto = require('crypto');
 const logger = require('../utils/util-logger');
+
+/**
+ * Constant-time string comparison to prevent timing attacks
+ */
+function secureCompare(a, b) {
+  if (!a || !b) return false;
+  const strA = String(a);
+  const strB = String(b);
+  const maxLen = Math.max(strA.length, strB.length);
+  const bufA = Buffer.alloc(maxLen, 0);
+  const bufB = Buffer.alloc(maxLen, 0);
+  bufA.write(strA);
+  bufB.write(strB);
+  const equal = crypto.timingSafeEqual(bufA, bufB);
+  return equal && strA.length === strB.length;
+}
 
 /**
  * Authentication Middleware
@@ -10,10 +27,54 @@ const logger = require('../utils/util-logger');
  * - kennitala: Icelandic national ID (DDMMYY-XXXX)
  * - isMember: boolean (membership status)
  *
+ * S2S Bypass: Server-to-server calls can use X-API-Key + X-User-Id headers
+ * Used by: xj-next for proxied chat requests
+ *
  * Adds `req.user` with verified claims
  */
 async function authenticate(req, res, next) {
   try {
+    // S2S bypass: Allow server-to-server calls with API key + user info
+    const apiKey = req.header('X-API-Key');
+    const expectedKey = process.env.S2S_API_KEY;
+    const s2sUserId = req.header('X-User-Id');
+
+    if (apiKey && expectedKey && secureCompare(apiKey, expectedKey) && s2sUserId) {
+      logger.info('S2S authentication successful', {
+        operation: 'authenticate',
+        bypass: 's2s_api_key',
+        userId: s2sUserId,
+        path: req.path,
+      });
+
+      // Fetch user data from Firebase to get claims
+      try {
+        const userRecord = await admin.auth().getUser(s2sUserId);
+        const customClaims = userRecord.customClaims || {};
+
+        req.user = {
+          uid: s2sUserId,
+          email: userRecord.email,
+          name: userRecord.displayName,
+          kennitala: customClaims.kennitala,
+          isMember: customClaims.isMember,
+          roles: Array.isArray(customClaims.roles) ? customClaims.roles : [],
+        };
+
+        return next();
+      } catch (userError) {
+        logger.error('S2S auth: Failed to fetch user', {
+          operation: 'authenticate',
+          userId: s2sUserId,
+          error: userError.message,
+        });
+        return res.status(401).json({
+          error: 'Unauthorized',
+          message: 'Authentication failed',
+        });
+      }
+    }
+
     // Extract token from Authorization header
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
