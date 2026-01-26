@@ -39,28 +39,18 @@ async function authenticate(req, res, next) {
     const expectedKey = process.env.S2S_API_KEY;
     const s2sUserId = req.header('X-User-Id');
 
-    // Debug logging for S2S auth
-    const keysMatch = secureCompare(apiKey, expectedKey);
-    console.log('=== S2S AUTH DEBUG ===');
-    console.log('hasApiKey:', !!apiKey);
-    console.log('hasExpectedKey:', !!expectedKey);
-    console.log('hasUserId:', !!s2sUserId);
-    console.log('apiKeyLength:', apiKey?.length);
-    console.log('expectedKeyLength:', expectedKey?.length);
-    console.log('keysMatch:', keysMatch);
-    console.log('apiKeyFirst8:', apiKey?.substring(0, 8));
-    console.log('expectedKeyFirst8:', expectedKey?.substring(0, 8));
-
-    if (apiKey && expectedKey && keysMatch && s2sUserId) {
-      console.log('=== S2S BYPASS ENTERED ===');
-      console.log('Fetching user:', s2sUserId);
+    if (apiKey && expectedKey && secureCompare(apiKey, expectedKey) && s2sUserId) {
+      logger.info('S2S authentication successful', {
+        operation: 'authenticate',
+        bypass: 's2s_api_key',
+        userId: s2sUserId,
+        path: req.path,
+      });
 
       // Fetch user data from Firebase to get claims
       try {
         const userRecord = await admin.auth().getUser(s2sUserId);
-        console.log('User fetched successfully:', userRecord.uid);
         const customClaims = userRecord.customClaims || {};
-        console.log('Custom claims:', JSON.stringify(customClaims));
 
         req.user = {
           uid: s2sUserId,
@@ -71,11 +61,8 @@ async function authenticate(req, res, next) {
           roles: Array.isArray(customClaims.roles) ? customClaims.roles : [],
         };
 
-        console.log('=== S2S AUTH SUCCESS ===');
         return next();
       } catch (userError) {
-        console.log('=== S2S GETUSER FAILED ===');
-        console.log('Error:', userError.message);
         logger.error('S2S auth: Failed to fetch user', {
           operation: 'authenticate',
           userId: s2sUserId,
