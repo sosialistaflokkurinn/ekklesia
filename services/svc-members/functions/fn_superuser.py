@@ -127,6 +127,7 @@ SUPERUSER_FUNCTIONS = [
     {"id": "checksystemhealth", "name": "Staða kerfis"},
     {"id": "setuserrole", "name": "Setja hlutverk notanda"},
     {"id": "getuserrole", "name": "Sækja hlutverk notanda"},
+    {"id": "getrolechangehistory", "name": "Saga hlutverkabreytinga"},
     {"id": "getauditlogs", "name": "Aðgerðaskrár"},
     {"id": "getloginaudit", "name": "Innskráningarsaga"},
     {"id": "harddeletemember", "name": "Eyða félaga"},
@@ -313,6 +314,19 @@ def set_user_role_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             "roleUpdatedBy": caller_uid
         }, merge=True)
 
+        # Store role change in history collection for the roles page
+        caller_user = auth.get_user(caller_uid)
+        db.collection("roleChanges").add({
+            "targetUid": target_uid,
+            "targetName": target_user.display_name or target_user.email,
+            "targetEmail": target_user.email,
+            "oldRole": old_role,
+            "newRole": new_role,
+            "changedBy": caller_uid,
+            "changedByName": caller_user.display_name or caller_user.email,
+            "timestamp": firestore.SERVER_TIMESTAMP
+        })
+
         return {
             "success": True,
             "target_uid": target_uid,
@@ -384,6 +398,63 @@ def get_user_role_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
         raise https_fn.HttpsError(
             code=https_fn.FunctionsErrorCode.NOT_FOUND,
             message=f"User not found: {target_uid}"
+        )
+
+
+# ==============================================================================
+# ROLE CHANGE HISTORY
+# ==============================================================================
+
+def get_role_change_history_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
+    """
+    Get recent role change history from Firestore.
+
+    Optional data:
+        - limit: Max results (default 20, max 50)
+
+    Returns:
+        List of recent role changes.
+    """
+    # Verify superuser access
+    require_superuser(req)
+
+    data = req.data or {}
+    result_limit = min(data.get("limit", 20), 50)
+
+    try:
+        db = firestore.client()
+
+        changes_ref = db.collection("roleChanges")
+        query = changes_ref.order_by(
+            "timestamp", direction=firestore.Query.DESCENDING
+        ).limit(result_limit)
+
+        changes = []
+        for doc in query.stream():
+            change = doc.to_dict()
+            timestamp = change.get("timestamp")
+            changes.append({
+                "id": doc.id,
+                "targetUid": change.get("targetUid"),
+                "targetName": change.get("targetName"),
+                "targetEmail": change.get("targetEmail"),
+                "oldRole": change.get("oldRole"),
+                "newRole": change.get("newRole"),
+                "changedBy": change.get("changedBy"),
+                "changedByName": change.get("changedByName"),
+                "timestamp": timestamp.isoformat() if timestamp else None
+            })
+
+        return {
+            "changes": changes,
+            "count": len(changes)
+        }
+
+    except Exception as e:
+        log_json("error", "Failed to fetch role change history", error=str(e))
+        raise https_fn.HttpsError(
+            code=https_fn.FunctionsErrorCode.INTERNAL,
+            message=f"Failed to fetch role change history: {str(e)}"
         )
 
 
