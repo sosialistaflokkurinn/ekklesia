@@ -30,9 +30,10 @@ const { pool } = require('./config/config-database');
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// Trust proxy headers (X-Forwarded-For, etc.) from Cloud Run
-// Required for express-rate-limit to work correctly behind a reverse proxy
-app.set('trust proxy', true);
+// Trust proxy headers from Cloud Run (1 = trust first proxy hop)
+// Required for express-rate-limit to correctly identify clients
+// Using 1 instead of true to prevent IP spoofing bypass (ERR_ERL_PERMISSIVE_TRUST_PROXY)
+app.set('trust proxy', 1);
 
 // Middleware
 // CORS configuration - only allow known origins in production
