@@ -22,16 +22,16 @@
     "@google-cloud/aiplatform": "^6.1.0",
     "@google-cloud/logging-winston": "^6.0.0",
     "@google/generative-ai": "^0.24.1",
-    "axios": "^1.13.2",
-    "cors": "^2.8.5",
+    "axios": "^1.13.3",
+    "cors": "^2.8.6",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "express-rate-limit": "^8.2.1",
     "firebase-admin": "^13.6.0",
     "google-auth-library": "^10.5.0",
-    "pg": "^8.17.1",
+    "pg": "^8.17.2",
     "winston": "^3.19.0",
-    "zod": "^4.3.5"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@jest/globals": "^30.2.0",

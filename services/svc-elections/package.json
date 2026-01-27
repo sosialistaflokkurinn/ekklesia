@@ -22,15 +22,15 @@
   "private": true,
   "dependencies": {
     "@google-cloud/logging-winston": "^6.0.0",
-    "cors": "^2.8.5",
+    "cors": "^2.8.6",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "express-rate-limit": "^8.2.1",
     "firebase-admin": "^13.6.0",
     "opossum": "^9.0.0",
-    "pg": "^8.17.1",
+    "pg": "^8.17.2",
     "winston": "^3.19.0",
-    "zod": "^4.3.5"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@jest/globals": "^30.2.0",

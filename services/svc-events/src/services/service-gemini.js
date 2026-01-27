@@ -191,6 +191,68 @@ function getAvailableModels() {
 }
 
 /**
+ * Generate a streaming chat completion using Gemini
+ *
+ * Returns an async iterable stream of text chunks.
+ * Same setup as generateChatCompletion() but uses sendMessageStream().
+ *
+ * @param {object} options - Chat options
+ * @param {string} options.systemPrompt - System prompt with context
+ * @param {string} options.message - User message
+ * @param {Array} options.history - Conversation history [{role, content}]
+ * @param {string} options.model - Model name (kimi or gemini format)
+ * @returns {Promise<object>} - { stream, model, modelName }
+ */
+async function generateChatCompletionStream({ systemPrompt, message, history = [], model: requestedModel }) {
+  const client = initClient();
+
+  if (!client) {
+    throw new Error('Gemini API key not configured');
+  }
+
+  const modelName = resolveModel(requestedModel);
+  const modelConfig = getModelConfig(modelName);
+
+  logger.info('Gemini streaming chat request', {
+    operation: 'gemini_chat_stream_start',
+    model: modelName,
+    messageLength: message.length,
+    historyLength: history.length,
+  });
+
+  // Get the generative model with system instruction
+  const generativeModel = client.getGenerativeModel({
+    model: modelName,
+    systemInstruction: systemPrompt,
+  });
+
+  // Convert history to Gemini format
+  const geminiHistory = history.slice(-6).map(h => ({
+    role: h.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: h.content }],
+  }));
+
+  // Start chat with history
+  const chat = generativeModel.startChat({
+    history: geminiHistory,
+    generationConfig: {
+      temperature: 0.7,
+      topP: 0.9,
+      topK: 40,
+      maxOutputTokens: modelConfig.maxTokens,
+    },
+  });
+
+  const streamResult = await chat.sendMessageStream(message);
+
+  return {
+    stream: streamResult.stream,
+    model: modelName,
+    modelName: modelConfig.name,
+  };
+}
+
+/**
  * Generate a chat completion with tool calling support
  *
  * @param {object} options - Chat options
@@ -370,6 +432,7 @@ module.exports = {
   resolveModel,
   getModelConfig,
   generateChatCompletion,
+  generateChatCompletionStream,
   generateChatWithTools,
   getAvailableModels,
   GEMINI_MODELS,

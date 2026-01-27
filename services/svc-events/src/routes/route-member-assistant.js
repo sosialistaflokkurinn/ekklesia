@@ -611,6 +611,102 @@ router.post('/chat', authenticate, async (req, res) => {
     const context = ragContext + webContext;
     const systemPromptWithContext = SYSTEM_PROMPT.replace('{{CONTEXT}}', context);
 
+    // Step 5: Streaming or non-streaming path
+    // =========================================================================
+    // STREAMING PATH: ?stream=1
+    // =========================================================================
+    if (req.query.stream === '1') {
+      res.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'X-Accel-Buffering': 'no',
+      });
+
+      try {
+        const streamResult = await gemini.generateChatCompletionStream({
+          systemPrompt: systemPromptWithContext,
+          message,
+          history: history.slice(-6),
+          model: requestedModel,
+        });
+
+        let fullReply = '';
+        for await (const chunk of streamResult.stream) {
+          const text = chunk.text();
+          if (text) {
+            fullReply += text;
+            res.write(`event: text\ndata: ${JSON.stringify({ chunk: text })}\n\n`);
+          }
+        }
+
+        if (!fullReply) {
+          res.write(`event: error\ndata: ${JSON.stringify({ message: 'Tómt svar frá AI' })}\n\n`);
+          res.end();
+          return;
+        }
+
+        // Build citations
+        const filteredDocs = filterCitations(retrievedDocs, message);
+        const citations = extractCitationSummary(filteredDocs);
+        const webCitations = webResults.map(result => ({
+          type: 'web-search',
+          title: result.title,
+          url: result.url,
+          source: result.source,
+        }));
+        const allCitations = [...citations, ...webCitations];
+
+        // Send done event with metadata
+        res.write(`event: done\ndata: ${JSON.stringify({
+          citations: allCitations,
+          model: selectedModel,
+          modelName: modelConfig.name,
+          webSearchUsed: webResults.length > 0,
+        })}\n\n`);
+        res.end();
+
+        // Save conversation (non-blocking)
+        const responseTimeMs = Date.now() - startTime;
+        if (!isAdminUser(req.user)) {
+          saveConversation({
+            userId: req.user?.uid,
+            userName: req.user?.name || req.user?.email,
+            question: message,
+            response: fullReply,
+            citations: allCitations,
+            model: selectedModel,
+            contextDocs: retrievedDocs.length,
+            responseTimeMs,
+          });
+        }
+
+        logger.info('Member assistant streaming response', {
+          operation: 'member_assistant_stream_response',
+          userId: req.user?.uid,
+          replyLength: fullReply.length,
+          citationsCount: allCitations.length,
+          webSearchUsed: webResults.length > 0,
+          responseTimeMs,
+        });
+
+      } catch (aiErr) {
+        logger.error('Gemini streaming error', {
+          operation: 'member_assistant_stream_error',
+          error: aiErr.message,
+          status: aiErr.status,
+        });
+        res.write(`event: error\ndata: ${JSON.stringify({ message: 'Villa kom upp við að fá svar frá AI' })}\n\n`);
+        res.end();
+      }
+
+      return;
+    }
+
+    // =========================================================================
+    // NON-STREAMING PATH (unchanged)
+    // =========================================================================
+
     // Step 5: Call Gemini API
     let aiReply;
     try {

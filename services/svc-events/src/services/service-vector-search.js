@@ -415,6 +415,8 @@ async function searchSimilar(embedding, options = {}) {
           ELSE ${contentBoostClause} END`;
       }
 
+      // Kosningaúrslit (election results) - moved to end of content boosts (after ideology)
+
       // RÚV kosningapróf heilbrigðismál
       if (queryLower.includes('rúv') && (queryLower.includes('heilbrigð') || queryLower.includes('kosningapróf'))) {
         contentBoostClause = `CASE
@@ -690,6 +692,29 @@ async function searchSimilar(embedding, options = {}) {
         if (queryLower.includes('leig') && queryLower.includes('kærunefnd')) {
           contentBoostClause = `CASE
             WHEN source_type = 'vidskiptarad-2024' AND LOWER(content) LIKE '%kærunefnd%' THEN 5.0
+            ELSE ${contentBoostClause} END`;
+        }
+      }
+
+      // === KOSNINGAÚRSLIT (election results) ===
+      // MUST run LAST to wrap all other content boosts (especially ideology boost)
+      // so that wikipedia-kosningar documents always rank highest for election queries
+      const kosningaursltTerms = ['kosningaúrslit', 'úrslit', 'hve mörg atkvæði', 'fylgi í kosning'];
+      if (kosningaursltTerms.some(term => queryLower.includes(term))) {
+        contentBoostClause = `CASE
+          WHEN source_type = 'wikipedia-kosningar' AND chunk_id = 'wikipedia-kosningar-kosningasaga-samantekt' THEN 12.0
+          WHEN source_type = 'wikipedia-kosningar' THEN 8.0
+          ELSE ${contentBoostClause} END`;
+      }
+
+      // Kosningaúrslit with specific year
+      if ((queryLower.includes('kosning') || queryLower.includes('úrslit') || queryLower.includes('atkvæð')) && queryLower.match(/20(18|21|22|24)/)) {
+        const yearMatch = queryLower.match(/20(18|21|22|24)/);
+        if (yearMatch) {
+          const year = yearMatch[0];
+          contentBoostClause = `CASE
+            WHEN source_type = 'wikipedia-kosningar' AND LOWER(title) LIKE '%${year}%' THEN 12.0
+            WHEN source_type = 'wikipedia-kosningar' THEN 6.0
             ELSE ${contentBoostClause} END`;
         }
       }
