@@ -36,6 +36,9 @@ const sourceTypeBoosts = {
   'kosningaprof-2024': 1.2,   // RÚV
   'vidskiptarad-2024': 1.1,
 
+  // Election results (Wikipedia, verified against official data)
+  'wikipedia-kosningar': 1.5,
+
   // Historical/discussion sources
   'discourse-archive': 1.0,
   'discourse-person': 0.5,    // Individual profiles, lowest priority
@@ -127,6 +130,12 @@ const topicKeywords = {
     'jafnrétt', 'kynjajafnrétt', 'launamun', 'kynbundinn'
   ],
 
+  // Election results
+  kosningar: [
+    'kosning', 'kosningaúrslit', 'úrslit', 'atkvæð', 'þingsæt',
+    'borgarfulltrú', 'fylgi', 'þröskuld', 'sveitarstjórn', 'alþingiskosning'
+  ],
+
   // Party history
   saga: [
     'stofnað', 'stofnun', 'saga', 'sögul', 'fyrsti', 'upphafl',
@@ -192,6 +201,13 @@ const curatedAnswerMappings = {
   'oddvitar-2024': {
     patterns: ['oddviti', '2024 oddvit'],
     chunkId: 'saga-oddvitar-2024',
+    boost: 7.0,
+  },
+
+  // Election results
+  'kosningaurslit': {
+    patterns: ['kosningaúrslit', 'úrslit', 'kosningum', 'atkvæði fékk', 'hve mörg atkvæði', 'fylgi í kosning'],
+    chunkId: 'wikipedia-kosningar-kosningasaga-samantekt',
     boost: 7.0,
   },
 
@@ -267,6 +283,7 @@ const sourceTypeNames = {
   'kjosturett-2024': 'Kjóstu rétt 2024',
   'kosningaprof-2024': 'RÚV kosningapróf 2024',
   'vidskiptarad-2024': 'Viðskiptaráð kosningaáttaviti 2024',
+  'wikipedia-kosningar': 'Kosningaúrslit (Wikipedia)',
   'discourse-archive': 'Umræður úr safni',
   'discourse-person': 'Einstaklingsupplýsingar',
 };
