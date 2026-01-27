@@ -41,7 +41,7 @@ BROWSER="$BROWSER_WRAPPER" gcloud auth application-default login
 
 echo ""
 echo "🔥 3. Logging into Firebase..."
-BROWSER="$BROWSER_WRAPPER" firebase login --reauth
+BROWSER="$BROWSER_WRAPPER" firebase login --reauth --interactive
 
 echo "✅ Firebase logged in"
 
