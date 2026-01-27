@@ -30,6 +30,10 @@ const { pool } = require('./config/config-database');
 const app = express();
 const PORT = process.env.PORT || 8080;
 
+// Trust proxy headers (X-Forwarded-For, etc.) from Cloud Run
+// Required for express-rate-limit to work correctly behind a reverse proxy
+app.set('trust proxy', true);
+
 // Middleware
 // CORS configuration - only allow known origins in production
 // Support both comma and semicolon separators (semicolons work better with gcloud --set-env-vars)
