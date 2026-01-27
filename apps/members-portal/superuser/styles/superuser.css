@@ -1930,6 +1930,67 @@ body.superuser {
 }
 
 /* ============================================
+   ROLE CHANGE HISTORY
+   ============================================ */
+
+.role-history-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.role-history-entry {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--color-border, #e5e7eb);
+  background: white;
+  transition: background 0.2s ease;
+}
+
+.role-history-entry:first-child {
+  border-top: none;
+}
+
+.role-history-entry:hover {
+  background: var(--color-surface, #f9fafb);
+}
+
+.role-history-entry__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.role-history-entry__action {
+  font-weight: 500;
+  color: var(--color-text, #1a202c);
+  margin-bottom: 0.125rem;
+}
+
+.role-history-entry__roles {
+  font-size: 0.875rem;
+  color: var(--color-text-muted, #6b7280);
+}
+
+.role-history-entry__time {
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #6b7280);
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .role-history-entry {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .role-history-entry__time {
+    align-self: flex-end;
+  }
+}
+
+/* ============================================
    SYSTEM OVERVIEW PAGE
    ============================================ */
 

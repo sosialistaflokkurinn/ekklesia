@@ -130,10 +130,24 @@
       </div>
     </div>
 
-    <!-- Recent Role Changes (placeholder for future) -->
+    <!-- Recent Role Changes -->
     <div class="card">
       <h2 class="card__title" data-i18n="role_recent_changes_title">Nýlegar breytingar</h2>
-      <p class="card__description u-text-muted" data-i18n="role_recent_changes_desc">Saga hlutverkabreytinga kemur síðar.</p>
+      <p class="card__description" data-i18n="role_recent_changes_desc">Saga hlutverkabreytinga.</p>
+
+      <div id="role-history-loading" class="loading-placeholder">
+        <span class="loading-spinner"></span> <span data-i18n="role_history_loading">Hleð sögu...</span>
+      </div>
+
+      <div id="role-history-list" class="role-history-list u-hidden"></div>
+
+      <div id="role-history-empty" class="u-hidden">
+        <p class="u-text-muted" data-i18n="role_history_empty">Engar hlutverkabreytingar skráðar.</p>
+      </div>
+
+      <div id="role-history-error" class="u-hidden">
+        <p class="u-text-muted" data-i18n="role_history_error">Villa við að sækja sögu.</p>
+      </div>
     </div>
   </div>
 

@@ -107,6 +107,7 @@ from fn_search_addresses import search_addresses
 from fn_superuser import (
     set_user_role_handler,
     get_user_role_handler,
+    get_role_change_history_handler,
     check_system_health_handler,
     get_audit_logs_handler,
     hard_delete_member_handler,
@@ -127,6 +128,11 @@ def setUserRole(req: https_fn.CallableRequest) -> dict:
 def getUserRole(req: https_fn.CallableRequest) -> dict:
     """Get Firebase custom claims for a user - requires superuser"""
     return get_user_role_handler(req)
+
+@https_fn.on_call(timeout_sec=30, memory=256)
+def getRoleChangeHistory(req: https_fn.CallableRequest) -> dict:
+    """Get recent role change history - requires superuser"""
+    return get_role_change_history_handler(req)
 
 @https_fn.on_call(timeout_sec=60, memory=256)
 def checkSystemHealth(req: https_fn.CallableRequest) -> dict:
@@ -457,6 +463,7 @@ __all__ = [
     # Superuser functions
     'setUserRole',
     'getUserRole',
+    'getRoleChangeHistory',
     'checkSystemHealth',
     'getAuditLogs',
     'hardDeleteMember',

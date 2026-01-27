@@ -32,6 +32,10 @@ const strings = {
   'logged_in': 'Innskráð/ur',
   'not_logged_in': 'Ekki innskráð/ur',
   
+  // Role change history
+  'role_history_changed_by': '${changedByName} breytti hlutverki ${targetName}',
+  'role_history_from_to': '${oldRole} \u2192 ${newRole}',
+
   // Source labels
   'source_system_admin': 'Kerfisstjórn',
   'source_firebase': 'Firebase',

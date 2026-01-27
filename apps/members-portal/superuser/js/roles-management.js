@@ -44,6 +44,7 @@ const db = getFirebaseFirestore();
 // SESSION STORAGE CACHE - Cleared on browser close for security
 // ============================================================================
 const CACHE_KEY = 'superuser_elevated_users_cache';
+const HISTORY_CACHE_KEY = 'superuser_role_history_cache';
 const CACHE_MAX_AGE_MS = 5 * 60 * 1000; // 5 minutes
 
 /**
@@ -397,16 +398,18 @@ async function saveRoleChange() {
 
     showToast(superuserStrings.get('role_changed_success', { role: selectedRole }), 'success');
 
-    // Invalidate cache since roles changed
+    // Invalidate caches since roles changed
     sessionStorage.removeItem(CACHE_KEY);
+    sessionStorage.removeItem(HISTORY_CACHE_KEY);
 
     // Update local state
     selectedMember.currentRoles = [selectedRole];
     renderCurrentRoles([selectedRole]);
     resetRoleSelector();
 
-    // Refresh elevated users list
+    // Refresh elevated users list and history
     loadElevatedUsers(true);
+    loadRoleHistory(true);
 
   } catch (error) {
     debug.error('Error changing role:', error);
@@ -731,6 +734,142 @@ function formatDateString(isoString) {
   }
 }
 
+// ============================================================================
+// ROLE CHANGE HISTORY
+// ============================================================================
+
+/**
+ * Get cached role change history from sessionStorage
+ * @returns {Object|null} { data, isStale } or null
+ */
+function getHistoryCache() {
+  try {
+    const cached = sessionStorage.getItem(HISTORY_CACHE_KEY);
+    if (!cached) return null;
+    const { data, timestamp } = JSON.parse(cached);
+    return { data, isStale: (Date.now() - timestamp) > CACHE_MAX_AGE_MS };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Save role change history to sessionStorage cache
+ * @param {Object} data - History data to cache
+ */
+function setHistoryCache(data) {
+  try {
+    sessionStorage.setItem(HISTORY_CACHE_KEY, JSON.stringify({
+      data,
+      timestamp: Date.now()
+    }));
+  } catch {
+    // Ignore storage errors
+  }
+}
+
+/**
+ * Render role change history data to the page
+ * @param {Object} data - { changes, count }
+ */
+function renderRoleHistory(data) {
+  const loadingEl = document.getElementById('role-history-loading');
+  const listEl = document.getElementById('role-history-list');
+  const emptyEl = document.getElementById('role-history-empty');
+
+  const { changes } = data;
+
+  if (!changes || changes.length === 0) {
+    loadingEl.classList.add('u-hidden');
+    listEl.classList.add('u-hidden');
+    emptyEl.classList.remove('u-hidden');
+    return;
+  }
+
+  listEl.innerHTML = changes.map(change => {
+    const roleLabels = {
+      member: R.string.role_badge_member || 'Félagi',
+      admin: R.string.role_badge_admin || 'Stjórnandi',
+      superuser: R.string.role_badge_superuser || 'Kerfisstjóri'
+    };
+    const oldLabel = roleLabels[change.oldRole] || change.oldRole;
+    const newLabel = roleLabels[change.newRole] || change.newRole;
+    const actionText = superuserStrings.get('role_history_changed_by', {
+      changedByName: escapeHtml(change.changedByName || '-'),
+      targetName: escapeHtml(change.targetName || '-')
+    });
+    const rolesText = superuserStrings.get('role_history_from_to', {
+      oldRole: oldLabel,
+      newRole: newLabel
+    });
+    const timeStr = change.timestamp ? formatDateTimeString(change.timestamp) : '';
+
+    return `
+      <div class="role-history-entry">
+        <div class="role-history-entry__info">
+          <div class="role-history-entry__action">${actionText}</div>
+          <div class="role-history-entry__roles">${rolesText}</div>
+        </div>
+        <div class="role-history-entry__time">${timeStr}</div>
+      </div>
+    `;
+  }).join('');
+
+  loadingEl.classList.add('u-hidden');
+  emptyEl.classList.add('u-hidden');
+  listEl.classList.remove('u-hidden');
+}
+
+/**
+ * Format ISO date string for display with time
+ */
+function formatDateTimeString(isoString) {
+  if (!isoString) return '';
+  try {
+    const date = new Date(isoString);
+    return new Intl.DateTimeFormat('is-IS', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * Load and display role change history
+ * @param {boolean} backgroundRefresh - If true, don't show loading spinner
+ */
+async function loadRoleHistory(backgroundRefresh = false) {
+  const loadingEl = document.getElementById('role-history-loading');
+  const listEl = document.getElementById('role-history-list');
+  const errorEl = document.getElementById('role-history-error');
+
+  try {
+    if (!backgroundRefresh) {
+      loadingEl.classList.remove('u-hidden');
+      listEl.classList.add('u-hidden');
+    }
+
+    const getRoleChangeHistory = httpsCallable('getRoleChangeHistory', 'europe-west2');
+    const result = await getRoleChangeHistory();
+
+    setHistoryCache(result.data);
+    renderRoleHistory(result.data);
+
+    debug.log(`Loaded ${result.data.count} role changes`);
+  } catch (error) {
+    debug.error('Failed to load role change history:', error);
+    if (!backgroundRefresh) {
+      loadingEl.classList.add('u-hidden');
+      errorEl.classList.remove('u-hidden');
+    }
+  }
+}
+
 /**
  * Initialize page
  */
@@ -741,6 +880,12 @@ async function init() {
     if (cached?.data) {
       debug.log('[Cache] Showing cached elevated users immediately');
       renderElevatedUsersData(cached.data);
+    }
+
+    const cachedHistory = getHistoryCache();
+    if (cachedHistory?.data) {
+      debug.log('[Cache] Showing cached role history immediately');
+      renderRoleHistory(cachedHistory.data);
     }
 
     // Load i18n
@@ -772,6 +917,17 @@ async function init() {
     } else {
       // No cache - load normally with loading spinner
       loadElevatedUsers();
+    }
+
+    // Load role change history (background refresh if we have cached data)
+    if (cachedHistory?.data) {
+      if (cachedHistory.isStale) {
+        loadRoleHistory(true).catch(err => {
+          debug.warn('[Cache] History background refresh failed:', err);
+        });
+      }
+    } else {
+      loadRoleHistory();
     }
 
     debug.log('Role management page initialized');
