@@ -2,20 +2,29 @@
 # Ekklesia — Full local development stack
 #
 # Starts:
-#   1. PostgreSQL 15 via Docker Compose (port 5433)
-#   2. Firebase Emulators: Auth (9099), Firestore (8081), Functions (5001), Hosting (5000), UI (4000)
+#   1. PostgreSQL 15 via Podman Compose (port 5433)
+#   2. Firebase Emulators: Firestore (8081), Functions (5001), Hosting (5000), UI (4000)
 #   3. Elections service (port 8082)
 #   4. Events service (port 8080)
+#
+# NOTE: Auth emulator is NOT used — Kenni.is OAuth requires real Firebase Auth.
+#       The frontend uses production Firebase Auth even in local development.
 #
 # Usage:
 #   ./scripts/dev.sh          # Start everything
 #   ./scripts/dev.sh --db     # Only start PostgreSQL
 #
 # Prerequisites:
-#   - Docker (for PostgreSQL)
+#   - Podman + podman-compose (for PostgreSQL)
 #   - Firebase CLI (npm i -g firebase-tools)
+#   - Java 11+ (for Firebase Emulators)
 #   - Node.js 18+
 #   - .env files in svc-elections/ and svc-events/ (copy from .env.local.example)
+#
+# Troubleshooting:
+#   If login fails with "auth/network-request-failed", clear browser storage:
+#   - Open DevTools > Application > Storage > Clear site data
+#   - This clears cached Firebase Auth emulator config from previous sessions
 
 set -e
 
@@ -47,10 +56,10 @@ trap cleanup SIGINT SIGTERM
 
 # ---- 1. PostgreSQL ----
 echo -e "${CYAN}[1/4] Starting PostgreSQL...${NC}"
-docker compose up -d
+podman-compose up -d
 
 echo -n "  Waiting for Postgres"
-until docker compose exec -T postgres pg_isready -U postgres > /dev/null 2>&1; do
+until podman-compose exec -T postgres pg_isready -U postgres > /dev/null 2>&1; do
   echo -n "."
   sleep 1
 done

@@ -19,7 +19,6 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { debug } from '../js/utils/util-debug.js';
 import {
   getAuth,
-  connectAuthEmulator,
   onAuthStateChanged,
   signOut as firebaseSignOut
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
@@ -65,12 +64,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 // Local development: connect to Firebase Emulators
+// NOTE: Auth emulator is NOT used — Kenni.is OAuth requires real Firebase Auth
 const IS_LOCAL = window.location.hostname === 'localhost'
   || window.location.hostname === '127.0.0.1';
 
 if (IS_LOCAL) {
-  debug.log('Local development detected — connecting to Firebase Emulators');
-  connectAuthEmulator(getAuth(app), 'http://127.0.0.1:9099', { disableWarnings: true });
+  debug.log('Local development detected — connecting to Firestore Emulator (Auth uses production for Kenni.is)');
   connectFirestoreEmulator(getFirestore(app), '127.0.0.1', 8081);
 }
 
