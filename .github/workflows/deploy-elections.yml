@@ -1,0 +1,76 @@
+name: Deploy Elections Service
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'services/svc-elections/**'
+      - '.github/workflows/deploy-elections.yml'
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: ekklesia-prod-10-2025
+  REGION: europe-west1
+  SERVICE: elections-service
+  REGISTRY: europe-west1-docker.pkg.dev
+  DB_CONNECTION_NAME: ekklesia-prod-10-2025:europe-west1:ekklesia-db-eu1
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker ${{ env.REGISTRY }} --quiet
+
+      - name: Build and push Docker image
+        working-directory: services/svc-elections
+        run: |
+          IMAGE="${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/docker/${{ env.SERVICE }}:${{ github.sha }}"
+          docker build -t $IMAGE .
+          docker push $IMAGE
+          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy ${{ env.SERVICE }} \
+            --image ${{ env.IMAGE }} \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --allow-unauthenticated \
+            --max-instances 100 \
+            --min-instances 0 \
+            --memory 512Mi \
+            --cpu 1 \
+            --cpu-boost \
+            --timeout 5s \
+            --concurrency 50 \
+            --port 8081 \
+            --add-cloudsql-instances "${{ env.DB_CONNECTION_NAME }}" \
+            --set-env-vars "NODE_ENV=production,DATABASE_HOST=/cloudsql/${{ env.DB_CONNECTION_NAME }},DATABASE_PORT=5432,DATABASE_NAME=socialism,DATABASE_USER=postgres,DATABASE_POOL_MIN=2,DATABASE_POOL_MAX=5,DATABASE_POOL_IDLE_TIMEOUT=30000,DATABASE_POOL_CONNECTION_TIMEOUT=2000,CORS_ORIGINS=https://felagar.sosialistaflokkurinn.is^https://ekklesia-prod-10-2025.web.app^https://ekklesia-prod-10-2025.firebaseapp.com,LOG_LEVEL=info,ELECTION_TITLE=Prófunarkosning 2025,ELECTION_QUESTION=Do you support this proposal?" \
+            --set-secrets "DATABASE_PASSWORD=postgres-password:latest,S2S_API_KEY=elections-s2s-api-key:latest,LOG_SALT=log-salt:latest"
+
+      - name: Health check
+        run: |
+          SERVICE_URL=$(gcloud run services describe ${{ env.SERVICE }} \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --format 'value(status.url)')
+          echo "Service URL: $SERVICE_URL"
+          curl -sf "$SERVICE_URL/health" || (echo "Health check failed" && exit 1)

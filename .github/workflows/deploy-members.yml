@@ -1,0 +1,122 @@
+name: Deploy Members Portal & Functions
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/members-portal/**'
+      - 'services/svc-members/functions/**'
+      - '.github/workflows/deploy-members.yml'
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'What to deploy'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - hosting-only
+          - functions-only
+
+env:
+  PROJECT_ID: ekklesia-prod-10-2025
+  REGION: europe-west1
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install firebase-tools
+        run: npm install -g firebase-tools
+
+      - name: Install Python dependencies
+        working-directory: services/svc-members/functions
+        run: pip install -r requirements.txt
+
+      - name: CSS version check
+        run: ./scripts/check-css-versions.sh
+
+      - name: Detect changed targets
+        id: changes
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            case "${{ inputs.target }}" in
+              hosting-only)
+                echo "hosting=true" >> $GITHUB_OUTPUT
+                echo "functions=false" >> $GITHUB_OUTPUT
+                ;;
+              functions-only)
+                echo "hosting=false" >> $GITHUB_OUTPUT
+                echo "functions=true" >> $GITHUB_OUTPUT
+                ;;
+              *)
+                echo "hosting=true" >> $GITHUB_OUTPUT
+                echo "functions=true" >> $GITHUB_OUTPUT
+                ;;
+            esac
+          else
+            HOSTING=false
+            FUNCTIONS=false
+            CHANGED=$(git diff --name-only HEAD~1 HEAD)
+            if echo "$CHANGED" | grep -q "^apps/members-portal/"; then
+              HOSTING=true
+            fi
+            if echo "$CHANGED" | grep -q "^services/svc-members/functions/"; then
+              FUNCTIONS=true
+            fi
+            # Workflow file change deploys everything
+            if echo "$CHANGED" | grep -q "deploy-members.yml"; then
+              HOSTING=true
+              FUNCTIONS=true
+            fi
+            echo "hosting=$HOSTING" >> $GITHUB_OUTPUT
+            echo "functions=$FUNCTIONS" >> $GITHUB_OUTPUT
+          fi
+          echo "Deploy hosting: $(cat $GITHUB_OUTPUT | grep hosting)"
+          echo "Deploy functions: $(cat $GITHUB_OUTPUT | grep functions)"
+
+      - name: Deploy hosting
+        if: steps.changes.outputs.hosting == 'true'
+        working-directory: services/svc-members
+        run: |
+          firebase deploy --only hosting \
+            --project ${{ env.PROJECT_ID }} \
+            --non-interactive
+
+      - name: Deploy functions
+        if: steps.changes.outputs.functions == 'true'
+        working-directory: services/svc-members
+        run: |
+          firebase deploy --only functions \
+            --project ${{ env.PROJECT_ID }} \
+            --non-interactive
