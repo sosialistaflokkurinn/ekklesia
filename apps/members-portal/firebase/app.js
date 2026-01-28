@@ -19,6 +19,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { debug } from '../js/utils/util-debug.js';
 import {
   getAuth,
+  connectAuthEmulator,
   onAuthStateChanged,
   signOut as firebaseSignOut
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
@@ -32,6 +33,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import {
   getFirestore,
+  connectFirestoreEmulator,
   doc,
   getDoc,
   getDocs,
@@ -62,6 +64,16 @@ const firebaseConfig = {
 // Initialize Firebase (singleton)
 const app = initializeApp(firebaseConfig);
 
+// Local development: connect to Firebase Emulators
+const IS_LOCAL = window.location.hostname === 'localhost'
+  || window.location.hostname === '127.0.0.1';
+
+if (IS_LOCAL) {
+  debug.log('Local development detected — connecting to Firebase Emulators');
+  connectAuthEmulator(getAuth(app), 'http://127.0.0.1:9099', { disableWarnings: true });
+  connectFirestoreEmulator(getFirestore(app), '127.0.0.1', 8081);
+}
+
 // App Check - LAZY LOADED for performance
 // reCAPTCHA Enterprise SDK is ~355KB and takes ~1,500ms to initialize
 // We only load it when actually needed (first Cloud Function call)
@@ -78,12 +90,18 @@ let appCheckModule = null;
  * @returns {Promise<Object|null>} App Check instance
  */
 async function initAppCheckLazy() {
+  // Skip App Check in local development (emulators don't support it)
+  if (IS_LOCAL) {
+    debug.log('Skipping App Check (local development)');
+    return null;
+  }
+
   // Already initialized
   if (appCheck) return appCheck;
-  
+
   // Initialization in progress - wait for it
   if (appCheckInitPromise) return appCheckInitPromise;
-  
+
   // Start lazy initialization
   appCheckInitPromise = (async () => {
     try {

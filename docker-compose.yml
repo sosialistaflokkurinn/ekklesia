@@ -1,0 +1,30 @@
+# Local development PostgreSQL
+# Usage: podman-compose up -d
+# Connect: psql -h 127.0.0.1 -p 5433 -U postgres
+#
+# First start runs all migrations via init-db.sh.
+# Data persists in pgdata volume between restarts.
+# To reset: podman-compose down -v && podman-compose up -d
+
+services:
+  postgres:
+    image: docker.io/library/postgres:15
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: localdev
+      POSTGRES_DB: postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./scripts/dev/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:Z
+      - ./services/svc-elections/migrations:/migrations/elections:Z
+      - ./services/svc-events/migrations:/migrations/events:Z
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  pgdata:
