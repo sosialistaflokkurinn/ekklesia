@@ -17,7 +17,8 @@ DEFAULT_ALLOWED_ORIGINS = [
     'https://sosialistaflokkurinn.is',
     'https://xj-site.web.app',
     'https://xj-next-521240388393.europe-west1.run.app',
-    'http://localhost:3000'
+    'http://localhost:3000',
+    'http://localhost:5000'
 ]
 
 

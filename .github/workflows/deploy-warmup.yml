@@ -1,0 +1,55 @@
+name: Deploy Warmup Function
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'services/svc-warmup/**'
+      - '.github/workflows/deploy-warmup.yml'
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: ekklesia-prod-10-2025
+  REGION: europe-west1
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy warmup function
+        working-directory: services/svc-warmup
+        run: |
+          gcloud functions deploy warmup \
+            --gen2 \
+            --runtime=python312 \
+            --region=${{ env.REGION }} \
+            --source=. \
+            --entry-point=warmup \
+            --trigger-http \
+            --allow-unauthenticated \
+            --memory=128Mi \
+            --timeout=60s \
+            --project=${{ env.PROJECT_ID }}
+
+      - name: Verify deployment
+        run: |
+          FUNCTION_URL="https://${{ env.REGION }}-${{ env.PROJECT_ID }}.cloudfunctions.net/warmup"
+          echo "Function URL: $FUNCTION_URL"
+          curl -sf "$FUNCTION_URL" || (echo "Verification failed" && exit 1)

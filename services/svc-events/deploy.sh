@@ -1,17 +1,20 @@
 #!/bin/bash
 set -e
 
+# Events Service Deployment to Cloud Run
+#
+# NOTE: CI/CD is the primary deployment method. See .github/workflows/deploy-events.yml
+# This script is kept for manual deployments and debugging.
+
 # Source the centralized environment variables (PROJECT_ID, REGION, DB_CONNECTION_NAME)
 # This provides a single source of truth for deployment configuration
 source "$(dirname "$0")/../../scripts/deployment/set-env.sh"
 
-# Events Service Deployment to Cloud Run
-# This script deploys the Events service to Google Cloud Run
-
 # Configuration
 # PROJECT_ID and REGION are loaded from set-env.sh
 SERVICE_NAME="events-service"
-IMAGE_NAME="gcr.io/${PROJECT_ID}/${SERVICE_NAME}"
+REGISTRY="europe-west1-docker.pkg.dev"
+IMAGE_NAME="${REGISTRY}/${PROJECT_ID}/docker/${SERVICE_NAME}"
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -44,7 +47,7 @@ if [ -z "${ALLOWED_RESET_UIDS}" ]; then
   exit 1
 fi
 
-# Build and push image to Container Registry
+# Build and push image to Artifact Registry
 echo -e "\n${YELLOW}Building and pushing Docker image...${NC}"
 gcloud builds submit --tag ${IMAGE_NAME} .
 
