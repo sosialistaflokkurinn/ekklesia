@@ -61,7 +61,7 @@ app.use(cors({
 
 // Body parser with size limit (prevent DoS attacks)
 // Skip for routes that need larger limits (they have their own parsers)
-const largeBodyRoutes = ['/api/sysadmin', '/api/kimi', '/api/member-assistant', '/api/email-template-assistant'];
+const largeBodyRoutes = ['/api/sysadmin', '/api/member-assistant', '/api/email-template-assistant'];
 app.use((req, res, next) => {
   if (largeBodyRoutes.some(route => req.path.startsWith(route))) {
     return next(); // Skip global parser, use route-specific one
@@ -152,8 +152,6 @@ app.use('/api', electionRoutes);
 
 // Sysadmin chat needs larger body limit for conversation history
 app.use('/api/sysadmin', express.json({ limit: '100kb', strict: true }), sysadminChatRouter);
-// Legacy path (remove after frontend deploy)
-app.use('/api/kimi', express.json({ limit: '100kb', strict: true }), sysadminChatRouter);
 // Member assistant (RAG-powered) - larger limit for history + web search context
 app.use('/api/member-assistant', express.json({ limit: '100kb', strict: true }), memberAssistantRouter);
 // Email template assistant - helps admins write email templates

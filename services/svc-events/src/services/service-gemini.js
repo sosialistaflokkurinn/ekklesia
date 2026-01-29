@@ -37,9 +37,6 @@ const DEFAULT_MODEL = 'gemini-2.0-flash';
 const MODEL_MAPPING = {
   'fast': 'gemini-2.0-flash',
   'thinking': 'gemini-2.0-flash-thinking-exp-01-21',
-  // Legacy keys (remove after frontend deploy)
-  'kimi-k2-0711-preview': 'gemini-2.0-flash',
-  'kimi-k2-thinking': 'gemini-2.0-flash-thinking-exp-01-21',
   // Direct Gemini model names also work
   'gemini-2.0-flash': 'gemini-2.0-flash',
   'gemini-2.0-flash-thinking-exp-01-21': 'gemini-2.0-flash-thinking-exp-01-21',
