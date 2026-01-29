@@ -530,6 +530,11 @@ async function sendMessage(message) {
 
     // Build user-friendly error message
     let errorMsg = error.message || R.string.sysadmin_chat_error_generic;
+    if (error.message?.includes('timeout')) {
+      errorMsg = R.string.sysadmin_chat_error_generic;
+    } else if (error.message?.includes('fetch') || error.message?.includes('network')) {
+      errorMsg = R.string.sysadmin_chat_error_network;
+    }
 
     // Add retry info if available
     if (error.retryAfter) {

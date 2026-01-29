@@ -857,6 +857,9 @@ async function sendMessage(message) {
     debug.error('member-assistant', 'Error:', error);
     // User-friendly error messages
     let errorMsg = error.message;
+    if (error.message?.includes('timeout')) {
+      errorMsg = R.string.member_assistant_error_timeout;
+    }
     addMessage('assistant', `${R.string.member_assistant_error_prefix} ${errorMsg}`);
   } finally {
     isLoading = false;
