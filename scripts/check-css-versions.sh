@@ -44,9 +44,13 @@ check_css_file() {
     local css_basename=$(basename "$css_file")
     local css_dir=$(dirname "$css_file")
 
-    # Get last modified time of CSS file
-    local css_mtime=$(stat -c %Y "$css_file" 2>/dev/null || stat -f %m "$css_file")
-    local css_date=$(date -d "@$css_mtime" +%Y%m%d 2>/dev/null || date -r "$css_mtime" +%Y%m%d)
+    # Get last modified date from git (not filesystem, which changes on merge/checkout)
+    local css_date=$(git log -1 --format="%cd" --date=format:"%Y%m%d" -- "$css_file" 2>/dev/null)
+    if [[ -z "$css_date" ]]; then
+        # Fallback to filesystem if not tracked by git
+        local css_mtime=$(stat -c %Y "$css_file" 2>/dev/null || stat -f %m "$css_file")
+        css_date=$(date -d "@$css_mtime" +%Y%m%d 2>/dev/null || date -r "$css_mtime" +%Y%m%d)
+    fi
 
     # Find HTML files that reference this CSS
     local html_files=$(grep -rl "$css_basename?v=" "$PORTAL_DIR" --include="*.html" 2>/dev/null || true)
