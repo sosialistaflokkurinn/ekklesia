@@ -91,6 +91,7 @@ export const SERVICES = [
   { id: 'healthz', nameKey: 'service_name_healthz', group: GROUPS.AUDIT, category: CATEGORIES.CORE, type: SERVICE_TYPES.CLOUDRUN, region: REGIONS.EU_WEST2 },
   { id: 'django-socialism', nameKey: 'service_name_django_socialism', group: GROUPS.CLOUDRUN, category: CATEGORIES.CORE, type: SERVICE_TYPES.CLOUDRUN, region: REGIONS.EU_WEST1 },
   { id: 'warmup', nameKey: 'service_name_warmup', group: GROUPS.CLOUDRUN, category: CATEGORIES.CORE, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST1 },
+  { id: 'svc-members-health', nameKey: 'service_name_svc_members_health', group: GROUPS.AUTH, category: CATEGORIES.CORE, type: SERVICE_TYPES.FUNCTION, region: REGIONS.EU_WEST2 },
 
   // ==========================================================================
   // FIREBASE FUNCTIONS - Member Operations

@@ -22,6 +22,7 @@ options.set_global_options(region="europe-west2")
 
 # Import authentication handlers (not decorated)
 from auth.kenni_flow import healthz_handler, handleKenniAuth_handler
+from fn_health import svc_members_health_handler
 from firebase_functions import https_fn
 
 # Define decorated functions in main.py (required by Firebase Functions SDK)
@@ -29,6 +30,11 @@ from firebase_functions import https_fn
 def healthz(req: https_fn.Request) -> https_fn.Response:
     """Health check endpoint - delegates to handler"""
     return healthz_handler(req)
+
+@https_fn.on_request(memory=options.MemoryOption.MB_256)
+def svcmembershealth(req: https_fn.Request) -> https_fn.Response:
+    """svc-members health check endpoint"""
+    return svc_members_health_handler(req)
 
 @https_fn.on_request(secrets=["kenni-client-secret"])
 def handleKenniAuth(req: https_fn.Request) -> https_fn.Response:
@@ -443,6 +449,7 @@ def rotate_secret(event: pubsub_fn.CloudEvent[pubsub_fn.MessagePublishedData]) -
 __all__ = [
     # Auth functions
     'healthz',
+    'svcmembershealth',
     'handleKenniAuth',
     # Membership functions
     'verifyMembership',

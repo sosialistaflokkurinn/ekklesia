@@ -206,6 +206,7 @@
 
   <!-- Infrastructure services -->
   <string name="service_name_warmup">Upphitunarþjónusta</string>
+  <string name="service_name_svc_members_health">Firebase Functions (svc-members)</string>
   <string name="service_name_rotate_secret">Snúa leynilykli</string>
 
   <string name="service_status_no_url">Engin heilsuslóð skilgreind</string>
