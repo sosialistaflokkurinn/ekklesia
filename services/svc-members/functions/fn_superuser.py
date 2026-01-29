@@ -87,6 +87,11 @@ CLOUD_RUN_SERVICES = [
         "name": "Vefsíða (xj-site)",
         "url": "https://xj-site-521240388393.europe-west1.run.app/"
     },
+    {
+        "id": "svc-members-health",
+        "name": "Firebase Functions (svc-members)",
+        "url": "https://svcmembershealth-521240388393.europe-west2.run.app/"
+    },
 ]
 
 # Base URL for Firebase Callable Functions
