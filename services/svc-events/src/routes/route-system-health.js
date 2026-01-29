@@ -1,7 +1,7 @@
 /**
  * System Health Routes
  *
- * Provides detailed health information for superuser dashboard and Kimi AI.
+ * Provides detailed health information for superuser dashboard and AI assistant.
  * Returns real-time metrics from database, services, and runtime.
  */
 
@@ -238,7 +238,7 @@ router.get('/health', authenticate, requireRole('superuser'), async (req, res) =
 
 /**
  * GET /api/system/health/summary
- * Quick health summary (text format for Kimi)
+ * Quick health summary (text format for AI assistant)
  */
 router.get('/health/summary', authenticate, requireRole('superuser'), async (req, res) => {
   try {
@@ -249,7 +249,7 @@ router.get('/health/summary', authenticate, requireRole('superuser'), async (req
 
     const runtime = getRuntimeStats();
 
-    // Build text summary for Kimi
+    // Build text summary for AI assistant
     const lines = [
       `## Kerfisheilsa - ${new Date().toLocaleString('is-IS')}`,
       '',

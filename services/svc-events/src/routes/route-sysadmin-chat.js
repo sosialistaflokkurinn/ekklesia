@@ -4,9 +4,6 @@
  * Provides a chat endpoint for superuser system administration assistance.
  * Uses Google Gemini with tool calling for GitHub repository access.
  * Includes real-time system health data for context-aware responses.
- *
- * NOTE: This route was originally built for Moonshot AI (Kimi) but now uses Gemini.
- * The endpoint path /api/kimi/* is kept for backwards compatibility.
  */
 
 const express = require('express');
@@ -260,7 +257,7 @@ async function listGitHubDirectory(path = '') {
       timeout: 10000,
       headers: {
         'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'Ekklesia-Kimi-Bot'
+        'User-Agent': 'Ekklesia-Sysadmin-Bot'
       }
     });
 
@@ -559,7 +556,7 @@ const SYSADMIN_TOOLS = [
       properties: {
         path: {
           type: 'string',
-          description: 'Slóð á skrá í repo-inu, t.d. "apps/members-portal/superuser/js/kimi-chat.js" eða "services/svc-events/src/routes/route-kimi-chat.js"'
+          description: 'Slóð á skrá í repo-inu, t.d. "apps/members-portal/superuser/js/sysadmin-chat.js" eða "services/svc-events/src/routes/route-sysadmin-chat.js"'
         }
       },
       required: ['path']
@@ -760,7 +757,7 @@ ekklesia/
 │   ├── svc-members/         # Firebase Functions (Python)
 │   │   └── functions/       # Cloud Functions handlers
 │   ├── svc-elections/       # Cloud Run (Node.js) - Atkvæðagreiðslur
-│   └── svc-events/          # Cloud Run (Node.js) - Viðburðir & Kimi
+│   └── svc-events/          # Cloud Run (Node.js) - Viðburðir & AI
 ├── scripts/                 # Automation & deployment
 └── docs/                    # Documentation
 \`\`\`
@@ -901,7 +898,7 @@ function formatUptime(seconds) {
 }
 
 /**
- * Get real-time system health summary for Kimi context
+ * Get real-time system health summary for AI assistant context
  */
 async function getSystemHealthContext() {
   try {
@@ -1020,12 +1017,10 @@ async function getSystemHealthContext() {
 }
 
 /**
- * POST /api/kimi/chat
+ * POST /api/sysadmin/chat
  * Send a message to the sysadmin AI assistant and get a response
  * Supports tool calling for GitHub repository access
  * Requires superuser role
- *
- * NOTE: Uses Gemini but keeps /api/kimi/* path for backwards compatibility
  */
 router.post('/chat', authenticate, requireRole('superuser'), async (req, res) => {
   try {
@@ -1139,7 +1134,7 @@ router.post('/chat', authenticate, requireRole('superuser'), async (req, res) =>
 });
 
 /**
- * GET /api/kimi/models
+ * GET /api/sysadmin/models
  * Get available AI models
  * Public endpoint (for UI)
  */

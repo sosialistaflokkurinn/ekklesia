@@ -15,7 +15,7 @@
 const axios = require('axios');
 const logger = require('../utils/util-logger');
 const { query } = require('../config/config-database');
-const { improveEventDescription, isKimiConfigured } = require('../utils/util-kimi');
+const { improveEventDescription, isMoonshotConfigured } = require('../utils/util-moonshot');
 const { cacheEventImage } = require('../utils/util-image-cache');
 
 // Security: Timeouts for external API calls
@@ -372,7 +372,7 @@ function validateEventData(event) {
 
 /**
  * Upsert a single Facebook event to database
- * Uses Kimi AI to improve description text if configured
+ * Uses Moonshot AI to improve description text if configured
  * Caches event images in Cloud Storage to prevent Facebook CDN expiration
  */
 async function upsertFacebookEvent(event) {
@@ -382,9 +382,9 @@ async function upsertFacebookEvent(event) {
   const place = validated.place || {};
   const location = place.location || {};
 
-  // Use Kimi to improve description if available
+  // Use Moonshot AI to improve description if available
   let description = validated.description;
-  if (isKimiConfigured() && description) {
+  if (isMoonshotConfigured() && description) {
     description = await improveEventDescription(description, validated.name);
   }
 
@@ -420,7 +420,7 @@ async function upsertFacebookEvent(event) {
   `, [
     validated.id,
     validated.name,
-    description,  // Use Kimi-improved description
+    description,  // Use Moonshot AI-improved description
     validated.start_time,
     validated.end_time,
     place.name ? String(place.name).substring(0, 200) : null,

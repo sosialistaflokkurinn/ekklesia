@@ -523,9 +523,9 @@
   <string name="member_assistant_title">Spyrja um flokkinn</string>
   <string name="member_assistant_info_title">Um þennan aðstoðarmann</string>
   <string name="member_assistant_info_heading">Um gervigreindaraðstoðarmanninn</string>
-  <string name="member_assistant_info_kimi">Þessi aðstoðarmaður notar Kimi K2 tungumálalíkan frá Moonshot AI.</string>
+  <string name="member_assistant_info_kimi">Þessi aðstoðarmaður notar gervigreind til að svara spurningum um flokkinn.</string>
   <string name="member_assistant_info_rag">Líkanið var sérsniðið fyrir flokkinn með RAG (Retrieval Augmented Generation) tækni sem tryggir að svör byggi á raunverulegum heimildum úr stefnu og sögu flokksins.</string>
-  <string name="member_assistant_info_data">Gögnin eru geymd á Íslandi/Evrópu (Google Cloud) og eru ekki send til Kína - aðeins spurningin fer til Kimi API.</string>
+  <string name="member_assistant_info_data">Gögnin eru geymd á Íslandi/Evrópu (Google Cloud).</string>
   <string name="member_assistant_new_chat">Nýtt samtal</string>
   <string name="member_assistant_expand">Stækka</string>
   <string name="member_assistant_shrink">Minnka</string>
@@ -541,23 +541,23 @@
   <string name="member_assistant_error_timeout">Beiðnin tók of langan tíma. Prófaðu aftur eða notaðu hraðari módel.</string>
   <string name="member_assistant_error_prefix">Villa:</string>
 
-  <!-- Kimi Chat (Superuser) -->
-  <string name="kimi_chat_title">Kimi aðstoð</string>
-  <string name="kimi_chat_header">🤖 Kimi Aðstoð</string>
-  <string name="kimi_chat_select_model">Velja módel</string>
-  <string name="kimi_chat_model_fast">⚡ Hraður</string>
-  <string name="kimi_chat_model_accurate">🧠 Nákvæmur (hægur)</string>
-  <string name="kimi_chat_welcome">Hæ! Ég er Kimi, gervigreindaraðstoðarmaður fyrir Ekklesia kerfið. Hvernig get ég aðstoðað þig?</string>
-  <string name="kimi_chat_placeholder">Skrifaðu spurningu...</string>
-  <string name="kimi_chat_waking_up">Kimi er að vakna...</string>
-  <string name="kimi_chat_fetching_data">Sæki gögn úr kerfinu...</string>
-  <string name="kimi_chat_error_generic">Villa kom upp</string>
-  <string name="kimi_chat_error_network">Náði ekki sambandi við þjónustuna. Athugaðu nettengingu.</string>
-  <string name="kimi_chat_error_unexpected">Óvænt villa kom upp</string>
-  <string name="kimi_chat_error_auth">Þú þarft að skrá þig inn aftur.</string>
-  <string name="kimi_chat_retry_format">Reyndu aftur eftir %d sekúndur.</string>
-  <string name="kimi_chat_hint_context">💡 Ábending: Smelltu á "Nýtt samtal" til að byrja upp á nýtt.</string>
-  <string name="kimi_chat_hint_rate_limit">⏳ Of margar beiðnir sendar. Bíddu aðeins.</string>
+  <!-- Sysadmin Chat (Superuser) -->
+  <string name="sysadmin_chat_title">AI aðstoð</string>
+  <string name="sysadmin_chat_header">🤖 AI Aðstoð</string>
+  <string name="sysadmin_chat_select_model">Velja módel</string>
+  <string name="sysadmin_chat_model_fast">⚡ Hraður</string>
+  <string name="sysadmin_chat_model_accurate">🧠 Nákvæmur (hægur)</string>
+  <string name="sysadmin_chat_welcome">Hæ! Ég er gervigreindaraðstoðarmaður fyrir Ekklesia kerfið. Hvernig get ég aðstoðað þig?</string>
+  <string name="sysadmin_chat_placeholder">Skrifaðu spurningu...</string>
+  <string name="sysadmin_chat_waking_up">AI er að vakna...</string>
+  <string name="sysadmin_chat_fetching_data">Sæki gögn úr kerfinu...</string>
+  <string name="sysadmin_chat_error_generic">Villa kom upp</string>
+  <string name="sysadmin_chat_error_network">Náði ekki sambandi við þjónustuna. Athugaðu nettengingu.</string>
+  <string name="sysadmin_chat_error_unexpected">Óvænt villa kom upp</string>
+  <string name="sysadmin_chat_error_auth">Þú þarft að skrá þig inn aftur.</string>
+  <string name="sysadmin_chat_retry_format">Reyndu aftur eftir %d sekúndur.</string>
+  <string name="sysadmin_chat_hint_context">💡 Ábending: Smelltu á "Nýtt samtal" til að byrja upp á nýtt.</string>
+  <string name="sysadmin_chat_hint_rate_limit">⏳ Of margar beiðnir sendar. Bíddu aðeins.</string>
 
   <!-- Party Wiki Chat -->
   <string name="party_wiki_title">📚 Flokkurinn</string>

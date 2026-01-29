@@ -2,7 +2,7 @@
  * Member Assistant Chat Widget
  *
  * RAG-powered floating chat widget for party members.
- * Uses semantic search and Kimi AI for context-aware responses.
+ * Uses semantic search and AI for context-aware responses.
  *
  * Module cleanup not needed - widget persists for page lifetime.
  *
@@ -14,15 +14,15 @@ import { getFirebaseAuth } from '../../firebase/app.js';
 import { trackAction } from '../utils/util-analytics.js';
 import { R } from '../../i18n/strings-loader.js';
 import { escapeHTML } from '../utils/util-format.js';
-
-const EVENTS_API_BASE = 'https://events-service-521240388393.europe-west1.run.app';
+import { authenticatedFetch } from '../auth.js';
+import { SERVICES } from '../config/config.js';
 
 // Chat state
 let isOpen = false;
 let isLoading = false;
 let isExpanded = false;
 let chatHistory = [];
-let selectedModel = 'kimi-k2-0711-preview';
+let selectedModel = 'fast';
 
 /**
  * Create the chat widget HTML
@@ -43,7 +43,7 @@ function createChatWidget() {
           </button>
           <div class="member-assistant__info-tooltip" id="member-assistant-tooltip">
             <div class="member-assistant__info-tooltip-title">${R.string.member_assistant_info_heading}</div>
-            <p>${R.string.member_assistant_info_kimi.replace('Kimi K2', '<a href="https://moonshotai.github.io/Kimi-K2/" target="_blank" rel="noopener">Kimi K2</a>')}</p>
+            <p>${R.string.member_assistant_info_kimi}</p>
             <p>${R.string.member_assistant_info_rag}</p>
             <p class="member-assistant__info-tooltip-note">${R.string.member_assistant_info_data}</p>
           </div>
@@ -63,10 +63,10 @@ function createChatWidget() {
             <span class="member-assistant__model-icon" id="member-assistant-model-icon">&#9889;</span>
           </button>
           <div class="member-assistant__model-menu" id="member-assistant-model-menu">
-            <div class="member-assistant__model-option member-assistant__model-option--selected" data-value="kimi-k2-0711-preview" title="${R.string.member_assistant_fast}">
+            <div class="member-assistant__model-option member-assistant__model-option--selected" data-value="fast" title="${R.string.member_assistant_fast}">
               <span class="member-assistant__model-icon">&#9889;</span>
             </div>
-            <div class="member-assistant__model-option" data-value="kimi-k2-thinking" title="${R.string.member_assistant_accurate}">
+            <div class="member-assistant__model-option" data-value="thinking" title="${R.string.member_assistant_accurate}">
               <span class="member-assistant__model-icon">&#129504;</span>
             </div>
           </div>
@@ -819,41 +819,25 @@ async function sendMessage(message) {
 
   // Get model for timeout and countdown
   const model = selectedModel;
-  const isThinking = model === 'kimi-k2-thinking';
+  const isThinking = model === 'thinking';
 
   // Expected response time: thinking ~60-120s, preview ~15-30s
   const expectedSeconds = isThinking ? 90 : 20;
   showLoading(expectedSeconds);
 
   try {
-    const auth = getFirebaseAuth();
-    const user = auth.currentUser;
-    if (!user) {
-      throw new Error(R.string.member_assistant_error_not_logged_in);
-    }
-
-    const token = await user.getIdToken();
-
     // Set timeout based on model (backend + buffer)
     const timeoutMs = isThinking ? 210000 : 120000;
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-    const response = await fetch(`${EVENTS_API_BASE}/api/member-assistant/chat`, {
+    const response = await authenticatedFetch(`${SERVICES.EVENTS}/api/member-assistant/chat`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
       body: JSON.stringify({
         message,
         history: chatHistory.slice(-6),
         model
       }),
-      signal: controller.signal
+      timeout: timeoutMs
     });
-
-    clearTimeout(timeoutId);
 
     if (!response.ok) {
       const error = await response.json();
@@ -873,9 +857,6 @@ async function sendMessage(message) {
     debug.error('member-assistant', 'Error:', error);
     // User-friendly error messages
     let errorMsg = error.message;
-    if (error.name === 'AbortError') {
-      errorMsg = R.string.member_assistant_error_timeout;
-    }
     addMessage('assistant', `${R.string.member_assistant_error_prefix} ${errorMsg}`);
   } finally {
     isLoading = false;

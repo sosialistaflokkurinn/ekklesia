@@ -9,7 +9,7 @@ require('./config/config-firebase');
 const electionRoutes = require('./routes/route-election');
 const adminRouter = require('./routes/route-admin');
 const externalEventsRouter = require('./routes/route-external-events');
-const kimiChatRouter = require('./routes/route-kimi-chat');
+const sysadminChatRouter = require('./routes/route-sysadmin-chat');
 const memberAssistantRouter = require('./routes/route-member-assistant');
 const emailTemplateAssistantRouter = require('./routes/route-email-template-assistant');
 const partyWikiRouter = require('./routes/route-party-wiki');
@@ -61,7 +61,7 @@ app.use(cors({
 
 // Body parser with size limit (prevent DoS attacks)
 // Skip for routes that need larger limits (they have their own parsers)
-const largeBodyRoutes = ['/api/kimi', '/api/member-assistant', '/api/email-template-assistant'];
+const largeBodyRoutes = ['/api/sysadmin', '/api/kimi', '/api/member-assistant', '/api/email-template-assistant'];
 app.use((req, res, next) => {
   if (largeBodyRoutes.some(route => req.path.startsWith(route))) {
     return next(); // Skip global parser, use route-specific one
@@ -150,8 +150,10 @@ app.use('/api', appCheckLimiter, verifyAppCheck);
 // API routes (App Check protected)
 app.use('/api', electionRoutes);
 
-// Kimi chat needs larger body limit for conversation history
-app.use('/api/kimi', express.json({ limit: '100kb', strict: true }), kimiChatRouter);
+// Sysadmin chat needs larger body limit for conversation history
+app.use('/api/sysadmin', express.json({ limit: '100kb', strict: true }), sysadminChatRouter);
+// Legacy path (remove after frontend deploy)
+app.use('/api/kimi', express.json({ limit: '100kb', strict: true }), sysadminChatRouter);
 // Member assistant (RAG-powered) - larger limit for history + web search context
 app.use('/api/member-assistant', express.json({ limit: '100kb', strict: true }), memberAssistantRouter);
 // Email template assistant - helps admins write email templates

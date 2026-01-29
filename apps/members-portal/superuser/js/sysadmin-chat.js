@@ -1,5 +1,5 @@
 /**
- * Kimi AI Chat Widget for Superuser Dashboard
+ * Sysadmin AI Chat Widget for Superuser Dashboard
  *
  * Floating chat widget that provides AI-powered system administration help.
  *
@@ -8,17 +8,16 @@
  */
 
 import { debug } from '../../js/utils/util-debug.js';
-import { getFirebaseAuth } from '../../firebase/app.js';
 import { R } from '../../i18n/strings-loader.js';
-
-const EVENTS_API_BASE = 'https://events-service-521240388393.europe-west1.run.app';
+import { authenticatedFetch } from '../../js/auth.js';
+import { SERVICES } from '../../js/config/config.js';
 
 // Chat state
 let isOpen = false;
 let isLoading = false;
 let isExpanded = false;
 let chatHistory = [];
-let selectedModel = 'kimi-k2-0711-preview';
+let selectedModel = 'fast';
 let availableModels = [];
 
 /**
@@ -26,39 +25,39 @@ let availableModels = [];
  */
 function createChatWidget() {
   const widget = document.createElement('div');
-  widget.id = 'kimi-chat-widget';
+  widget.id = 'sysadmin-chat-widget';
   widget.innerHTML = `
-    <button id="kimi-chat-toggle" class="kimi-chat__toggle" title="${R.string.kimi_chat_title}">
-      <span class="kimi-chat__toggle-icon">🤖</span>
+    <button id="sysadmin-chat-toggle" class="sysadmin-chat__toggle" title="${R.string.sysadmin_chat_title}">
+      <span class="sysadmin-chat__toggle-icon">🤖</span>
     </button>
-    <div id="kimi-chat-panel" class="kimi-chat__panel kimi-chat__panel--hidden">
-      <div class="kimi-chat__header">
-        <span class="kimi-chat__title">${R.string.kimi_chat_header}</span>
-        <div class="kimi-chat__header-actions">
-          <select id="kimi-chat-model" class="kimi-chat__model-select" title="${R.string.kimi_chat_select_model}">
-            <option value="kimi-k2-0711-preview">${R.string.kimi_chat_model_fast}</option>
-            <option value="kimi-k2-thinking">${R.string.kimi_chat_model_accurate}</option>
+    <div id="sysadmin-chat-panel" class="sysadmin-chat__panel sysadmin-chat__panel--hidden">
+      <div class="sysadmin-chat__header">
+        <span class="sysadmin-chat__title">${R.string.sysadmin_chat_header}</span>
+        <div class="sysadmin-chat__header-actions">
+          <select id="sysadmin-chat-model" class="sysadmin-chat__model-select" title="${R.string.sysadmin_chat_select_model}">
+            <option value="fast">${R.string.sysadmin_chat_model_fast}</option>
+            <option value="thinking">${R.string.sysadmin_chat_model_accurate}</option>
           </select>
-          <button id="kimi-chat-clear" class="kimi-chat__clear" title="${R.string.member_assistant_new_chat}">🗑️</button>
-          <button id="kimi-chat-expand" class="kimi-chat__expand" title="${R.string.member_assistant_expand}">⛶</button>
-          <button id="kimi-chat-close" class="kimi-chat__close" title="${R.string.member_assistant_close}">&times;</button>
+          <button id="sysadmin-chat-clear" class="sysadmin-chat__clear" title="${R.string.member_assistant_new_chat}">🗑️</button>
+          <button id="sysadmin-chat-expand" class="sysadmin-chat__expand" title="${R.string.member_assistant_expand}">⛶</button>
+          <button id="sysadmin-chat-close" class="sysadmin-chat__close" title="${R.string.member_assistant_close}">&times;</button>
         </div>
       </div>
-      <div id="kimi-chat-messages" class="kimi-chat__messages">
-        <div class="kimi-chat__message kimi-chat__message--assistant">
-          <div class="kimi-chat__bubble">
-            ${R.string.kimi_chat_welcome}
+      <div id="sysadmin-chat-messages" class="sysadmin-chat__messages">
+        <div class="sysadmin-chat__message sysadmin-chat__message--assistant">
+          <div class="sysadmin-chat__bubble">
+            ${R.string.sysadmin_chat_welcome}
           </div>
         </div>
       </div>
-      <div class="kimi-chat__input-area">
+      <div class="sysadmin-chat__input-area">
         <textarea
-          id="kimi-chat-input"
-          class="kimi-chat__input"
-          placeholder="${R.string.kimi_chat_placeholder}"
+          id="sysadmin-chat-input"
+          class="sysadmin-chat__input"
+          placeholder="${R.string.sysadmin_chat_placeholder}"
           rows="1"
         ></textarea>
-        <button id="kimi-chat-send" class="kimi-chat__send" title="${R.string.member_assistant_send}">
+        <button id="sysadmin-chat-send" class="sysadmin-chat__send" title="${R.string.member_assistant_send}">
           <span>➤</span>
         </button>
       </div>
@@ -74,7 +73,7 @@ function createChatWidget() {
 function addChatStyles() {
   const style = document.createElement('style');
   style.textContent = `
-    #kimi-chat-widget {
+    #sysadmin-chat-widget {
       position: fixed;
       bottom: 20px;
       right: 20px;
@@ -82,7 +81,7 @@ function addChatStyles() {
       font-family: inherit;
     }
 
-    .kimi-chat__toggle {
+    .sysadmin-chat__toggle {
       width: 60px;
       height: 60px;
       border-radius: 50%;
@@ -96,16 +95,16 @@ function addChatStyles() {
       justify-content: center;
     }
 
-    .kimi-chat__toggle:hover {
+    .sysadmin-chat__toggle:hover {
       transform: scale(1.1);
       box-shadow: 0 6px 16px rgba(0,0,0,0.4);
     }
 
-    .kimi-chat__toggle-icon {
+    .sysadmin-chat__toggle-icon {
       font-size: 28px;
     }
 
-    .kimi-chat__panel {
+    .sysadmin-chat__panel {
       position: absolute;
       bottom: 70px;
       right: 0;
@@ -122,13 +121,13 @@ function addChatStyles() {
       transition: opacity 0.2s, transform 0.2s;
     }
 
-    .kimi-chat__panel--hidden {
+    .sysadmin-chat__panel--hidden {
       opacity: 0;
       transform: translateY(20px) scale(0.95);
       pointer-events: none;
     }
 
-    .kimi-chat__header {
+    .sysadmin-chat__header {
       background: var(--color-burgundy, #722f37);
       color: var(--color-cream, #fce9d8);
       padding: 12px 16px;
@@ -137,18 +136,18 @@ function addChatStyles() {
       align-items: center;
     }
 
-    .kimi-chat__title {
+    .sysadmin-chat__title {
       font-weight: 600;
       font-size: 1rem;
     }
 
-    .kimi-chat__header-actions {
+    .sysadmin-chat__header-actions {
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
-    .kimi-chat__model-select {
+    .sysadmin-chat__model-select {
       background: rgba(255,255,255,0.15);
       border: 1px solid rgba(255,255,255,0.3);
       color: inherit;
@@ -160,18 +159,18 @@ function addChatStyles() {
       max-width: 120px;
     }
 
-    .kimi-chat__model-select:hover {
+    .sysadmin-chat__model-select:hover {
       background: rgba(255,255,255,0.25);
     }
 
-    .kimi-chat__model-select option {
+    .sysadmin-chat__model-select option {
       background: var(--color-burgundy, #722f37);
       color: var(--color-cream, #fce9d8);
     }
 
-    .kimi-chat__clear,
-    .kimi-chat__expand,
-    .kimi-chat__close {
+    .sysadmin-chat__clear,
+    .sysadmin-chat__expand,
+    .sysadmin-chat__close {
       background: none;
       border: none;
       color: inherit;
@@ -183,20 +182,20 @@ function addChatStyles() {
       border-radius: 4px;
     }
 
-    .kimi-chat__expand,
-    .kimi-chat__close {
+    .sysadmin-chat__expand,
+    .sysadmin-chat__close {
       font-size: 20px;
     }
 
-    .kimi-chat__clear:hover,
-    .kimi-chat__expand:hover,
-    .kimi-chat__close:hover {
+    .sysadmin-chat__clear:hover,
+    .sysadmin-chat__expand:hover,
+    .sysadmin-chat__close:hover {
       opacity: 1;
       background: rgba(255,255,255,0.1);
     }
 
     /* Expanded state */
-    .kimi-chat__panel--expanded {
+    .sysadmin-chat__panel--expanded {
       width: 700px;
       max-width: calc(100vw - 40px);
       height: 80vh;
@@ -204,13 +203,13 @@ function addChatStyles() {
     }
 
     @media (min-width: 1200px) {
-      .kimi-chat__panel--expanded {
+      .sysadmin-chat__panel--expanded {
         width: 900px;
         height: 85vh;
       }
     }
 
-    .kimi-chat__messages {
+    .sysadmin-chat__messages {
       flex: 1;
       overflow-y: auto;
       padding: 16px;
@@ -219,20 +218,20 @@ function addChatStyles() {
       gap: 12px;
     }
 
-    .kimi-chat__message {
+    .sysadmin-chat__message {
       display: flex;
       max-width: 85%;
     }
 
-    .kimi-chat__message--user {
+    .sysadmin-chat__message--user {
       align-self: flex-end;
     }
 
-    .kimi-chat__message--assistant {
+    .sysadmin-chat__message--assistant {
       align-self: flex-start;
     }
 
-    .kimi-chat__bubble {
+    .sysadmin-chat__bubble {
       padding: 10px 14px;
       border-radius: 16px;
       line-height: 1.4;
@@ -243,19 +242,19 @@ function addChatStyles() {
       max-width: 100%;
     }
 
-    .kimi-chat__message--user .kimi-chat__bubble {
+    .sysadmin-chat__message--user .sysadmin-chat__bubble {
       background: var(--color-burgundy, #722f37);
       color: var(--color-cream, #fce9d8);
       border-bottom-right-radius: 4px;
     }
 
-    .kimi-chat__message--assistant .kimi-chat__bubble {
+    .sysadmin-chat__message--assistant .sysadmin-chat__bubble {
       background: var(--color-surface-secondary, #f5f5f5);
       color: var(--color-text, #333);
       border-bottom-left-radius: 4px;
     }
 
-    .kimi-chat__bubble code {
+    .sysadmin-chat__bubble code {
       background: rgba(0,0,0,0.1);
       padding: 2px 6px;
       border-radius: 4px;
@@ -264,7 +263,7 @@ function addChatStyles() {
       word-break: break-all;
     }
 
-    .kimi-chat__bubble pre {
+    .sysadmin-chat__bubble pre {
       background: rgba(0,0,0,0.1);
       padding: 8px;
       border-radius: 6px;
@@ -275,12 +274,12 @@ function addChatStyles() {
       word-break: break-all;
     }
 
-    .kimi-chat__bubble pre code {
+    .sysadmin-chat__bubble pre code {
       background: none;
       padding: 0;
     }
 
-    .kimi-chat__input-area {
+    .sysadmin-chat__input-area {
       padding: 12px;
       border-top: 1px solid var(--color-border, #ddd);
       display: flex;
@@ -288,7 +287,7 @@ function addChatStyles() {
       background: var(--color-surface, #fff);
     }
 
-    .kimi-chat__input {
+    .sysadmin-chat__input {
       flex: 1;
       border: 1px solid var(--color-border, #ddd);
       border-radius: 20px;
@@ -299,12 +298,12 @@ function addChatStyles() {
       font-family: inherit;
     }
 
-    .kimi-chat__input:focus {
+    .sysadmin-chat__input:focus {
       outline: none;
       border-color: var(--color-burgundy, #722f37);
     }
 
-    .kimi-chat__send {
+    .sysadmin-chat__send {
       width: 40px;
       height: 40px;
       border-radius: 50%;
@@ -319,46 +318,46 @@ function addChatStyles() {
       transition: opacity 0.2s;
     }
 
-    .kimi-chat__send:hover {
+    .sysadmin-chat__send:hover {
       opacity: 0.9;
     }
 
-    .kimi-chat__send:disabled {
+    .sysadmin-chat__send:disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
 
-    .kimi-chat__loading {
+    .sysadmin-chat__loading {
       display: flex;
       align-items: center;
       gap: 4px;
       padding: 8px;
     }
 
-    .kimi-chat__loading-dot {
+    .sysadmin-chat__loading-dot {
       width: 8px;
       height: 8px;
       background: var(--color-burgundy, #722f37);
       border-radius: 50%;
-      animation: kimi-bounce 1.4s infinite ease-in-out both;
+      animation: sysadmin-bounce 1.4s infinite ease-in-out both;
     }
 
-    .kimi-chat__loading-dot:nth-child(1) { animation-delay: -0.32s; }
-    .kimi-chat__loading-dot:nth-child(2) { animation-delay: -0.16s; }
+    .sysadmin-chat__loading-dot:nth-child(1) { animation-delay: -0.32s; }
+    .sysadmin-chat__loading-dot:nth-child(2) { animation-delay: -0.16s; }
 
-    .kimi-chat__loading-text {
+    .sysadmin-chat__loading-text {
       margin-left: 8px;
       font-size: 0.85rem;
       color: var(--color-text-muted, #666);
-      animation: kimi-fade-in 0.3s ease-in;
+      animation: sysadmin-fade-in 0.3s ease-in;
     }
 
-    @keyframes kimi-bounce {
+    @keyframes sysadmin-bounce {
       0%, 80%, 100% { transform: scale(0); }
       40% { transform: scale(1); }
     }
 
-    @keyframes kimi-fade-in {
+    @keyframes sysadmin-fade-in {
       from { opacity: 0; }
       to { opacity: 1; }
     }
@@ -392,10 +391,10 @@ function formatMessage(text) {
  * Add a message to the chat
  */
 function addMessage(role, content) {
-  const messagesEl = document.getElementById('kimi-chat-messages');
+  const messagesEl = document.getElementById('sysadmin-chat-messages');
   const msgEl = document.createElement('div');
-  msgEl.className = `kimi-chat__message kimi-chat__message--${role}`;
-  msgEl.innerHTML = `<div class="kimi-chat__bubble">${formatMessage(content)}</div>`;
+  msgEl.className = `sysadmin-chat__message sysadmin-chat__message--${role}`;
+  msgEl.innerHTML = `<div class="sysadmin-chat__bubble">${formatMessage(content)}</div>`;
   messagesEl.appendChild(msgEl);
   messagesEl.scrollTop = messagesEl.scrollHeight;
 }
@@ -407,16 +406,16 @@ let coldStartTimer = null;
  * Show loading indicator
  */
 function showLoading() {
-  const messagesEl = document.getElementById('kimi-chat-messages');
+  const messagesEl = document.getElementById('sysadmin-chat-messages');
   const loadingEl = document.createElement('div');
-  loadingEl.id = 'kimi-chat-loading';
-  loadingEl.className = 'kimi-chat__message kimi-chat__message--assistant';
+  loadingEl.id = 'sysadmin-chat-loading';
+  loadingEl.className = 'sysadmin-chat__message sysadmin-chat__message--assistant';
   loadingEl.innerHTML = `
-    <div class="kimi-chat__bubble kimi-chat__loading">
-      <div class="kimi-chat__loading-dot"></div>
-      <div class="kimi-chat__loading-dot"></div>
-      <div class="kimi-chat__loading-dot"></div>
-      <span class="kimi-chat__loading-text"></span>
+    <div class="sysadmin-chat__bubble sysadmin-chat__loading">
+      <div class="sysadmin-chat__loading-dot"></div>
+      <div class="sysadmin-chat__loading-dot"></div>
+      <div class="sysadmin-chat__loading-dot"></div>
+      <span class="sysadmin-chat__loading-text"></span>
     </div>
   `;
   messagesEl.appendChild(loadingEl);
@@ -424,17 +423,17 @@ function showLoading() {
 
   // Show cold start message after 3 seconds
   coldStartTimer = setTimeout(() => {
-    const textEl = loadingEl.querySelector('.kimi-chat__loading-text');
+    const textEl = loadingEl.querySelector('.sysadmin-chat__loading-text');
     if (textEl) {
-      textEl.textContent = ` ${R.string.kimi_chat_waking_up}`;
+      textEl.textContent = ` ${R.string.sysadmin_chat_waking_up}`;
     }
   }, 3000);
 
   // Update message after 8 seconds
   setTimeout(() => {
-    const textEl = loadingEl.querySelector('.kimi-chat__loading-text');
+    const textEl = loadingEl.querySelector('.sysadmin-chat__loading-text');
     if (textEl && textEl.textContent) {
-      textEl.textContent = ` ${R.string.kimi_chat_fetching_data}`;
+      textEl.textContent = ` ${R.string.sysadmin_chat_fetching_data}`;
     }
   }, 8000);
 }
@@ -447,17 +446,17 @@ function hideLoading() {
     clearTimeout(coldStartTimer);
     coldStartTimer = null;
   }
-  const loadingEl = document.getElementById('kimi-chat-loading');
+  const loadingEl = document.getElementById('sysadmin-chat-loading');
   if (loadingEl) loadingEl.remove();
 }
 
 /**
  * Custom error class for API errors with structured data
  */
-class KimiApiError extends Error {
+class SysadminApiError extends Error {
   constructor(message, type, retryAfter = null, status = 500) {
     super(message);
-    this.name = 'KimiApiError';
+    this.name = 'SysadminApiError';
     this.type = type;
     this.retryAfter = retryAfter;
     this.status = status;
@@ -465,60 +464,33 @@ class KimiApiError extends Error {
 }
 
 /**
- * Make API request - backend handles retries now
+ * Parse API response and convert errors to SysadminApiError
+ * @param {Response} response - Fetch response from authenticatedFetch
+ * @returns {Promise<object>} Parsed JSON data
  */
-async function fetchKimiApi(url, options) {
-  try {
-    const response = await fetch(url, options);
+async function parseSysadminResponse(response) {
+  const data = await response.json().catch(() => ({}));
 
-    // Parse response body
-    const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const errorMsg = data.message || R.string.sysadmin_chat_error_generic;
+    const errorType = data.error || 'unknown';
+    const retryAfter = data.retryAfter || parseInt(response.headers.get('Retry-After')) || null;
 
-    if (!response.ok) {
-      // Use error message from server if available
-      const errorMsg = data.message || R.string.kimi_chat_error_generic;
-      const errorType = data.error || 'unknown';
-      const retryAfter = data.retryAfter || parseInt(response.headers.get('Retry-After')) || null;
-
-      throw new KimiApiError(errorMsg, errorType, retryAfter, response.status);
-    }
-
-    return data;
-  } catch (error) {
-    // Re-throw KimiApiError as-is
-    if (error instanceof KimiApiError) {
-      throw error;
-    }
-
-    // Network errors
-    if (error.name === 'TypeError' && error.message.includes('fetch')) {
-      throw new KimiApiError(
-        R.string.kimi_chat_error_network,
-        'network_error',
-        null,
-        0
-      );
-    }
-
-    // Other errors
-    throw new KimiApiError(
-      error.message || R.string.kimi_chat_error_unexpected,
-      'unknown',
-      null,
-      500
-    );
+    throw new SysadminApiError(errorMsg, errorType, retryAfter, response.status);
   }
+
+  return data;
 }
 
 /**
- * Send message to Kimi API
+ * Send message to sysadmin chat API
  */
 async function sendMessage(message) {
   if (isLoading || !message.trim()) return;
 
   isLoading = true;
-  const sendBtn = document.getElementById('kimi-chat-send');
-  const inputEl = document.getElementById('kimi-chat-input');
+  const sendBtn = document.getElementById('sysadmin-chat-send');
+  const inputEl = document.getElementById('sysadmin-chat-input');
 
   sendBtn.disabled = true;
   inputEl.value = '';
@@ -531,30 +503,19 @@ async function sendMessage(message) {
   showLoading();
 
   try {
-    // Get Firebase auth token
-    const auth = getFirebaseAuth();
-    const user = auth.currentUser;
-    if (!user) {
-      throw new KimiApiError(R.string.kimi_chat_error_auth, 'auth_error', null, 401);
-    }
-
-    const token = await user.getIdToken();
-
-    const modelSelect = document.getElementById('kimi-chat-model');
+    const modelSelect = document.getElementById('sysadmin-chat-model');
     const model = modelSelect ? modelSelect.value : selectedModel;
 
-    const data = await fetchKimiApi(`${EVENTS_API_BASE}/api/kimi/chat`, {
+    const response = await authenticatedFetch(`${SERVICES.EVENTS}/api/sysadmin/chat`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
       body: JSON.stringify({
         message,
         history: chatHistory.slice(-10),
         model
       })
     });
+
+    const data = await parseSysadminResponse(response);
 
     const reply = data.reply;
 
@@ -564,22 +525,22 @@ async function sendMessage(message) {
     chatHistory.push({ role: 'assistant', content: reply });
 
   } catch (error) {
-    debug.error('Kimi chat error:', error);
+    debug.error('Sysadmin chat error:', error);
     hideLoading();
 
     // Build user-friendly error message
-    let errorMsg = error.message || R.string.kimi_chat_error_generic;
+    let errorMsg = error.message || R.string.sysadmin_chat_error_generic;
 
     // Add retry info if available
     if (error.retryAfter) {
-      errorMsg += ` ${R.string.kimi_chat_retry_format.replace('%d', error.retryAfter)}`;
+      errorMsg += ` ${R.string.sysadmin_chat_retry_format.replace('%d', error.retryAfter)}`;
     }
 
     // Add helpful hints based on error type
     if (error.type === 'context_exceeded') {
-      errorMsg += `\n\n${R.string.kimi_chat_hint_context}`;
+      errorMsg += `\n\n${R.string.sysadmin_chat_hint_context}`;
     } else if (error.type === 'rate_limit') {
-      errorMsg += `\n\n${R.string.kimi_chat_hint_rate_limit}`;
+      errorMsg += `\n\n${R.string.sysadmin_chat_hint_rate_limit}`;
     }
 
     addMessage('assistant', errorMsg);
@@ -595,15 +556,15 @@ async function sendMessage(message) {
  */
 function toggleChat() {
   isOpen = !isOpen;
-  const panel = document.getElementById('kimi-chat-panel');
-  const toggle = document.getElementById('kimi-chat-toggle');
+  const panel = document.getElementById('sysadmin-chat-panel');
+  const toggle = document.getElementById('sysadmin-chat-toggle');
 
   if (isOpen) {
-    panel.classList.remove('kimi-chat__panel--hidden');
+    panel.classList.remove('sysadmin-chat__panel--hidden');
     toggle.style.display = 'none';
-    document.getElementById('kimi-chat-input').focus();
+    document.getElementById('sysadmin-chat-input').focus();
   } else {
-    panel.classList.add('kimi-chat__panel--hidden');
+    panel.classList.add('sysadmin-chat__panel--hidden');
     toggle.style.display = 'flex';
   }
 }
@@ -613,15 +574,15 @@ function toggleChat() {
  */
 function toggleExpand() {
   isExpanded = !isExpanded;
-  const panel = document.getElementById('kimi-chat-panel');
-  const expandBtn = document.getElementById('kimi-chat-expand');
+  const panel = document.getElementById('sysadmin-chat-panel');
+  const expandBtn = document.getElementById('sysadmin-chat-expand');
 
   if (isExpanded) {
-    panel.classList.add('kimi-chat__panel--expanded');
+    panel.classList.add('sysadmin-chat__panel--expanded');
     expandBtn.textContent = '⛶';
     expandBtn.title = R.string.member_assistant_shrink;
   } else {
-    panel.classList.remove('kimi-chat__panel--expanded');
+    panel.classList.remove('sysadmin-chat__panel--expanded');
     expandBtn.textContent = '⛶';
     expandBtn.title = R.string.member_assistant_expand;
   }
@@ -635,22 +596,22 @@ function clearChat() {
   chatHistory = [];
 
   // Reset messages UI
-  const messagesEl = document.getElementById('kimi-chat-messages');
+  const messagesEl = document.getElementById('sysadmin-chat-messages');
   messagesEl.innerHTML = `
-    <div class="kimi-chat__message kimi-chat__message--assistant">
-      <div class="kimi-chat__bubble">
-        ${R.string.kimi_chat_welcome}
+    <div class="sysadmin-chat__message sysadmin-chat__message--assistant">
+      <div class="sysadmin-chat__bubble">
+        ${R.string.sysadmin_chat_welcome}
       </div>
     </div>
   `;
 
-  debug.log('Kimi chat cleared');
+  debug.log('Sysadmin chat cleared');
 }
 
 /**
  * Initialize chat widget
  */
-export function initKimiChat() {
+export function initSysadminChat() {
   // Add styles
   addChatStyles();
 
@@ -658,17 +619,17 @@ export function initKimiChat() {
   createChatWidget();
 
   // Event listeners
-  document.getElementById('kimi-chat-toggle').addEventListener('click', toggleChat);
-  document.getElementById('kimi-chat-close').addEventListener('click', toggleChat);
-  document.getElementById('kimi-chat-expand').addEventListener('click', toggleExpand);
-  document.getElementById('kimi-chat-clear').addEventListener('click', clearChat);
+  document.getElementById('sysadmin-chat-toggle').addEventListener('click', toggleChat);
+  document.getElementById('sysadmin-chat-close').addEventListener('click', toggleChat);
+  document.getElementById('sysadmin-chat-expand').addEventListener('click', toggleExpand);
+  document.getElementById('sysadmin-chat-clear').addEventListener('click', clearChat);
 
-  document.getElementById('kimi-chat-send').addEventListener('click', () => {
-    const input = document.getElementById('kimi-chat-input');
+  document.getElementById('sysadmin-chat-send').addEventListener('click', () => {
+    const input = document.getElementById('sysadmin-chat-input');
     sendMessage(input.value);
   });
 
-  document.getElementById('kimi-chat-input').addEventListener('keydown', (e) => {
+  document.getElementById('sysadmin-chat-input').addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendMessage(e.target.value);
@@ -676,10 +637,10 @@ export function initKimiChat() {
   });
 
   // Auto-resize textarea
-  document.getElementById('kimi-chat-input').addEventListener('input', (e) => {
+  document.getElementById('sysadmin-chat-input').addEventListener('input', (e) => {
     e.target.style.height = 'auto';
     e.target.style.height = Math.min(e.target.scrollHeight, 100) + 'px';
   });
 
-  debug.log('Kimi chat widget initialized');
+  debug.log('Sysadmin chat widget initialized');
 }
