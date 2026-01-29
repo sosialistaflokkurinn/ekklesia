@@ -1,6 +1,6 @@
 # Ekklesia - AI Assistant Guide
 
-**Last Updated:** 2026-01-16
+**Last Updated:** 2026-01-29
 
 ## Before You Code
 
@@ -32,6 +32,47 @@
 
 ---
 
+## Workflow & CI/CD
+
+### Branching
+
+`main` is **protected** — all changes go through pull requests.
+
+```
+feature-branch → push → open PR → CI checks pass → merge → auto-deploy
+```
+
+### Deploy Pipelines
+
+On merge to `main`, GitHub Actions auto-deploys based on changed paths:
+
+| Service | Path trigger | Workflow | Manual fallback |
+|---------|-------------|----------|-----------------|
+| Hosting + Functions | `apps/members-portal/**` or `services/svc-members/functions/**` | `deploy-members.yml` | `workflow_dispatch` (hosting-only / functions-only / all) |
+| Elections (Cloud Run) | `services/svc-elections/**` | `deploy-elections.yml` | `workflow_dispatch` |
+| Events (Cloud Run) | `services/svc-events/**` | `deploy-events.yml` | `workflow_dispatch` |
+| Warmup (Cloud Run) | `services/svc-warmup/**` | `deploy-warmup.yml` | `workflow_dispatch` |
+
+### CI Checks (run on PRs)
+
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| `test-functions.yml` | All pushes + PRs (non-docs) | Python unit tests |
+| `code-quality.yml` | PRs + main (code files) | Code health + patterns |
+| `pii-check.yml` | Issues + PRs (opened/edited) | PII scanning |
+| `codeql-analysis.yml` | PRs to main + pushes to main/feature/** | CodeQL security analysis |
+| `dependency-scan.yml` | PRs + main (package/requirements files) | Dependency vulnerability scan |
+
+### Scheduled
+
+| Workflow | Schedule | Purpose |
+|----------|----------|---------|
+| `security-hygiene.yml` | Weekly Monday 9AM UTC | Security hygiene review |
+| `check-docs-freshness.yml` | Weekly Monday 9AM UTC + pushes to main | Documentation freshness |
+| `codeql-analysis.yml` | Weekly Monday 3:30AM UTC | Scheduled CodeQL scan |
+
+---
+
 ## Quick Reference
 
 | What | Where |
@@ -40,12 +81,6 @@
 | Functions | `services/svc-members/functions/` |
 | Elections | `services/svc-elections/` |
 | Events | `services/svc-events/` |
-
-| Deploy | Command |
-|--------|---------|
-| Frontend | `firebase deploy --only hosting` |
-| Function | `firebase deploy --only functions:NAME` |
-| Cloud Run | `./deploy.sh` |
 
 | URL | Purpose |
 |-----|---------|
@@ -59,12 +94,15 @@
 ## Critical Rules (Summary)
 
 **NEVER:**
-- `firebase deploy --only functions` - deploys ALL, slow, wipes secrets
+- Push directly to `main` — use PRs (branch protection enforced)
+- `firebase deploy --only functions` (without specific name) — deploys ALL, slow, wipes secrets
+- `firebase deploy --only functions` for routine deploys — CI handles deploys on merge
 - Hardcode Icelandic text - use `i18n/values-is/*.xml`
 - Commit `.env` or credentials - use GCP Secret Manager
 - Create duplicate code - search existing first
 
 **ALWAYS:**
+- Use PRs to merge into `main` — CI auto-deploys affected services on merge
 - Run `./scripts/build-css-bundle.sh` after CSS changes
 - Use `--gcloud-auth` with cloud-sql-proxy
 - Add rate limiting: `check_uid_rate_limit()`
