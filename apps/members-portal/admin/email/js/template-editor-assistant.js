@@ -8,10 +8,9 @@
  */
 
 import { debug } from '../../../js/utils/util-debug.js';
-import { getFirebaseAuth } from '../../../firebase/app.js';
 import { escapeHTML } from '../../../js/utils/util-format.js';
-
-const EVENTS_API_BASE = 'https://events-service-521240388393.europe-west1.run.app';
+import { authenticatedFetch } from '../../../js/auth.js';
+import { SERVICES } from '../../../js/config/config.js';
 
 // Quick action prompts (Icelandic) - focus on formatting, not changing words
 const QUICK_ACTIONS = {
@@ -148,35 +147,18 @@ export class TemplateEditorAssistant {
     this.showLoading();
 
     try {
-      const auth = getFirebaseAuth();
-      const user = auth.currentUser;
-      if (!user) {
-        throw new Error('Þú þarft að vera innskráð/ur');
-      }
-
-      const token = await user.getIdToken();
-
       // Get current template content for context
       const templateContent = this.textareaEl?.value || '';
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
-
-      const response = await fetch(`${EVENTS_API_BASE}/api/email-template-assistant/chat`, {
+      const response = await authenticatedFetch(`${SERVICES.EVENTS}/api/email-template-assistant/chat`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
         body: JSON.stringify({
           message,
           templateContent,
           history: this.chatHistory.slice(-4)
         }),
-        signal: controller.signal
+        timeout: 60000
       });
-
-      clearTimeout(timeoutId);
 
       if (!response.ok) {
         const error = await response.json();

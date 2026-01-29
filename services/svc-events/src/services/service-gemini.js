@@ -35,6 +35,9 @@ const DEFAULT_MODEL = 'gemini-2.0-flash';
 
 // Map from frontend model names to Gemini models
 const MODEL_MAPPING = {
+  'fast': 'gemini-2.0-flash',
+  'thinking': 'gemini-2.0-flash-thinking-exp-01-21',
+  // Legacy keys (remove after frontend deploy)
   'kimi-k2-0711-preview': 'gemini-2.0-flash',
   'kimi-k2-thinking': 'gemini-2.0-flash-thinking-exp-01-21',
   // Direct Gemini model names also work
@@ -87,7 +90,7 @@ function getModelConfig(modelName) {
  * @param {string} options.systemPrompt - System prompt with context
  * @param {string} options.message - User message
  * @param {Array} options.history - Conversation history [{role, content}]
- * @param {string} options.model - Model name (kimi or gemini format)
+ * @param {string} options.model - Model name (e.g. 'fast', 'thinking', or gemini format)
  * @returns {Promise<object>} - { reply, model, modelName }
  */
 async function generateChatCompletion({ systemPrompt, message, history = [], model: requestedModel }) {
@@ -200,7 +203,7 @@ function getAvailableModels() {
  * @param {string} options.systemPrompt - System prompt with context
  * @param {string} options.message - User message
  * @param {Array} options.history - Conversation history [{role, content}]
- * @param {string} options.model - Model name (kimi or gemini format)
+ * @param {string} options.model - Model name (e.g. 'fast', 'thinking', or gemini format)
  * @returns {Promise<object>} - { stream, model, modelName }
  */
 async function generateChatCompletionStream({ systemPrompt, message, history = [], model: requestedModel }) {

@@ -38,7 +38,7 @@ export const SERVICES = {
     : 'https://elections-service-521240388393.europe-west1.run.app',
 
   /**
-   * Events service - handles external events and Kimi chat
+   * Events service - handles external events and AI chat
    * Note: Deployed to europe-west1 for proximity to database (ekklesia-db-eu1)
    */
   EVENTS: IS_LOCAL

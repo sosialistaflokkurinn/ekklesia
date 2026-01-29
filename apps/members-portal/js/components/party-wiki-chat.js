@@ -2,16 +2,15 @@
  * Party Wiki Chat Widget for Members Area
  *
  * Floating chat widget that provides AI-powered information about the Socialist Party.
- * Uses Kimi API with party knowledge base (xj.is + discourse-archive data).
+ * Uses AI with party knowledge base (xj.is + discourse-archive data).
  *
  * Module cleanup not needed - widget persists for page lifetime.
  */
 
 import { debug } from '../utils/util-debug.js';
-import { getFirebaseAuth } from '../../firebase/app.js';
 import { R } from '../../i18n/strings-loader.js';
-
-const EVENTS_API_BASE = 'https://events-service-521240388393.europe-west1.run.app';
+import { authenticatedFetch } from '../auth.js';
+import { SERVICES } from '../config/config.js';
 
 // Chat state
 let isOpen = false;
@@ -428,19 +427,8 @@ async function sendMessage(message) {
   showLoading();
 
   try {
-    // Get Firebase auth token
-    const auth = getFirebaseAuth();
-    const user = auth.currentUser;
-    if (!user) throw new Error('Not authenticated');
-
-    const token = await user.getIdToken();
-
-    const response = await fetch(`${EVENTS_API_BASE}/api/party-wiki/chat`, {
+    const response = await authenticatedFetch(`${SERVICES.EVENTS}/api/party-wiki/chat`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
       body: JSON.stringify({
         message,
         history: chatHistory.slice(-10)

@@ -1,28 +1,29 @@
 /**
- * Kimi AI Text Enhancement Utility
+ * Moonshot AI Text Enhancement Utility
  *
- * Uses Moonshot AI (Kimi) to improve event descriptions
+ * Uses Moonshot AI to improve event descriptions
  * from Facebook by making them more readable and well-formatted.
  */
 
 const axios = require('axios');
 const logger = require('./util-logger');
 
-// Kimi API Configuration
-const KIMI_API_KEY = process.env.KIMI_API_KEY;
-const KIMI_API_BASE = 'https://api.moonshot.ai/v1';
-const KIMI_MODEL = 'kimi-k2-0711-preview';
+// Moonshot AI API Configuration
+// Reads from KIMI_API_KEY env var for backwards compatibility
+const MOONSHOT_API_KEY = process.env.KIMI_API_KEY;
+const MOONSHOT_API_BASE = 'https://api.moonshot.ai/v1';
+const MOONSHOT_MODEL = 'kimi-k2-0711-preview';
 
 /**
- * Improve event description text using Kimi AI
+ * Improve event description text using Moonshot AI
  * @param {string} originalText - Original description from Facebook
  * @param {string} eventTitle - Event title for context
  * @returns {Promise<string>} - Improved text or original if API fails
  */
 async function improveEventDescription(originalText, eventTitle = '') {
   // Skip if no API key or empty text
-  if (!KIMI_API_KEY) {
-    logger.debug('Kimi API key not configured, skipping text improvement');
+  if (!MOONSHOT_API_KEY) {
+    logger.debug('Moonshot AI API key not configured, skipping text improvement');
     return originalText;
   }
 
@@ -56,16 +57,16 @@ ${originalText}
 Skrifaðu aðeins endurbættan texta, ekki útskýringar.`;
 
     const response = await axios.post(
-      `${KIMI_API_BASE}/chat/completions`,
+      `${MOONSHOT_API_BASE}/chat/completions`,
       {
-        model: KIMI_MODEL,
+        model: MOONSHOT_MODEL,
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.7,
         max_tokens: 2000
       },
       {
         headers: {
-          'Authorization': `Bearer ${KIMI_API_KEY}`,
+          'Authorization': `Bearer ${MOONSHOT_API_KEY}`,
           'Content-Type': 'application/json'
         },
         timeout: 30000
@@ -75,7 +76,7 @@ Skrifaðu aðeins endurbættan texta, ekki útskýringar.`;
     const improvedText = response.data?.choices?.[0]?.message?.content;
 
     if (improvedText && improvedText.trim().length > 0) {
-      logger.info('Event description improved by Kimi', {
+      logger.info('Event description improved by Moonshot AI', {
         eventTitle,
         originalLength: originalText.length,
         improvedLength: improvedText.length
@@ -86,7 +87,7 @@ Skrifaðu aðeins endurbættan texta, ekki útskýringar.`;
     return originalText;
 
   } catch (error) {
-    logger.warn('Kimi API call failed, using original text', {
+    logger.warn('Moonshot AI API call failed, using original text', {
       eventTitle,
       error: error.message
     });
@@ -95,13 +96,13 @@ Skrifaðu aðeins endurbættan texta, ekki útskýringar.`;
 }
 
 /**
- * Check if Kimi API is configured and available
+ * Check if Moonshot AI API is configured and available
  */
-function isKimiConfigured() {
-  return !!KIMI_API_KEY;
+function isMoonshotConfigured() {
+  return !!MOONSHOT_API_KEY;
 }
 
 module.exports = {
   improveEventDescription,
-  isKimiConfigured
+  isMoonshotConfigured
 };
