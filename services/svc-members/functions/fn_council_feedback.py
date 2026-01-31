@@ -175,13 +175,13 @@ def send_council_feedback_handler(req: https_fn.CallableRequest) -> Dict[str, An
             message="Skilaboð verða að vera 10-5000 stafir"
         )
 
-    # Look up sender name
+    # Look up sender name (prefer display_name if set)
     sender = execute_query(
-        "SELECT name FROM membership_comrade WHERE ssn = %s AND deleted_at IS NULL",
+        "SELECT name, display_name FROM membership_comrade WHERE ssn = %s AND deleted_at IS NULL",
         params=(kennitala,),
         fetch_one=True
     )
-    sender_name = sender['name'] if sender else "Óþekkt"
+    sender_name = (sender.get('display_name') or sender['name']) if sender else "Óþekkt"
 
     # Create GitHub issue
     issue = create_github_issue(subject, message, sender_name)

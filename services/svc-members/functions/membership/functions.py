@@ -19,6 +19,7 @@ from db import execute_update
 
 # Security: Input validation limits
 MAX_NAME_LENGTH = 100
+MAX_DISPLAY_NAME_LENGTH = 100
 MAX_EMAIL_LENGTH = 254
 MAX_PHONE_LENGTH = 20
 MAX_ADDRESS_FIELD_LENGTH = 200
@@ -206,6 +207,7 @@ def updatememberprofile_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
             )
 
     validate_string_field(updates.get('name'), 'name', MAX_NAME_LENGTH)
+    validate_string_field(updates.get('display_name'), 'display_name', MAX_DISPLAY_NAME_LENGTH)
     validate_string_field(updates.get('email'), 'email', MAX_EMAIL_LENGTH)
     validate_string_field(updates.get('phone'), 'phone', MAX_PHONE_LENGTH)
 
@@ -360,6 +362,10 @@ def updatememberprofile_handler(req: https_fn.CallableRequest) -> Dict[str, Any]
             django_updates['gender'] = updates['gender']
         if 'birthday' in updates:
             django_updates['birthday'] = updates['birthday']
+
+        # Handle display_name (can be string or None to clear)
+        if 'display_name' in updates:
+            django_updates['display_name'] = updates['display_name']
 
         # Handle profile_image_url (can be URL string or null to clear)
         if 'profile_image_url' in updates:
