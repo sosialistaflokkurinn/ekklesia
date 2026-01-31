@@ -530,6 +530,7 @@ def get_member_self_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
             c.gender,
             c.housing_situation,
             c.profile_image_url,
+            c.display_name,
             ci.email,
             ci.phone,
             (
@@ -627,6 +628,7 @@ def get_member_self_handler(req: https_fn.CallableRequest) -> Dict[str, Any]:
         'birthday': str(result['birthday']) if result['birthday'] else None,
         'gender': result['gender'],
         'profile_image_url': result['profile_image_url'],
+        'display_name': result['display_name'] or None,
         'date_joined': str(result['date_joined']) if result['date_joined'] else None,
         'status': 'deleted' if result['deleted_at'] else 'active',
         'deleted_at': str(result['deleted_at']) if result['deleted_at'] else None,

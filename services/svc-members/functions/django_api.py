@@ -22,7 +22,7 @@ DJANGO_API_BASE_URL = os.environ.get(
 )
 
 # Field mappings for Cloud SQL tables
-COMRADE_FIELDS = {'name', 'reachable', 'groupable', 'gender', 'birthday', 'profile_image_url'}
+COMRADE_FIELDS = {'name', 'reachable', 'groupable', 'gender', 'birthday', 'profile_image_url', 'display_name'}
 CONTACTINFO_FIELDS = {'email', 'phone'}
 
 
