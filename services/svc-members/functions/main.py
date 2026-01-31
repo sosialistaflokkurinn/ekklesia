@@ -254,6 +254,21 @@ def getMemberSelf(req: https_fn.CallableRequest) -> dict:
     return get_member_self_handler(req)
 
 # ==============================================================================
+# COUNCIL FEEDBACK (member → tækniráð)
+# ==============================================================================
+
+from fn_council_feedback import send_council_feedback_handler
+
+@https_fn.on_call(
+    timeout_sec=30,
+    memory=options.MemoryOption.MB_256,
+    secrets=["django-socialism-db-password", "sendgrid-api-key", "resend-api-key", "GITHUB_TOKEN"]
+)
+def sendCouncilFeedback(req: https_fn.CallableRequest) -> dict:
+    """Send feedback from member to tækniráð - creates GitHub issue + emails council"""
+    return send_council_feedback_handler(req)
+
+# ==============================================================================
 # EMAIL FUNCTIONS (Issue #323 - Postmark Integration)
 # ==============================================================================
 
@@ -525,6 +540,8 @@ __all__ = [
     'softDeleteAdmin',
     # Self-service member functions (Cloud SQL)
     'getMemberSelf',
+    # Council feedback
+    'sendCouncilFeedback',
     # Secret rotation (Pub/Sub triggered)
     'rotate_secret',
 ]
